@@ -3,8 +3,10 @@ package uk.ac.gla.cvr.gluetools.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,8 +19,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 public class XmlUtils {
@@ -70,7 +80,69 @@ public class XmlUtils {
 		prettyPrint(document, out, 4);
 	}
 	
+	public static List<Element> getXPathElements(Node startNode, String xPathExpression) {
+		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		List<Element> elems = new ArrayList<Element>();
+		for(int i = 0; i < resultNodeList.getLength(); i++) {
+			elems.add((Element) resultNodeList.item(i));
+		}
+		return elems;
+	}
 
+	public static List<Node> getXPathNodes(Node startNode, String xPathExpression) {
+		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		List<Node> nodes = new ArrayList<Node>();
+		for(int i = 0; i < resultNodeList.getLength(); i++) {
+			nodes.add(resultNodeList.item(i));
+		}
+		return nodes;
+	}
+
+	public static List<String> getXPathStrings(Node startNode, String xPathExpression) {
+		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		List<String> strings = new ArrayList<String>();
+		for(int i = 0; i < resultNodeList.getLength(); i++) {
+			Node node = resultNodeList.item(i);
+			strings.add(((Text) node).getWholeText());
+		}
+		return strings;
+	}
+
+	public static Element getXPathElement(Node startNode, String xPathExpression) {
+		return (Element) runXPath(startNode, xPathExpression, XPathConstants.NODE);
+	}
+
+	public static Node getXPathNode(Node startNode, String xPathExpression) {
+		return (Node) runXPath(startNode, xPathExpression, XPathConstants.NODE);
+	}
+
+	public static String getXPathString(Node startNode, String xPathExpression) {
+		Object xPathResult = runXPath(startNode, xPathExpression, XPathConstants.NODE);
+		if(xPathResult == null) { 
+			return null; 
+		}
+		return ((Text) xPathResult).getWholeText();
+	}
+
+	public static String getXPathString(Node startNode, String xPathExpression, String defaultValue) {
+		String xPathResult = getXPathString(startNode, xPathExpression);
+		if(xPathResult == null) {
+			return defaultValue;
+		}
+		return xPathResult;
+	}	
+	
+	private static Object runXPath(Node startNode, String xPathExpression, QName name) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		try {
+			return xpath.evaluate(xPathExpression, startNode, name);
+		} catch (XPathExpressionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	
+	
 		/*
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		String expression = "/genotype_result/sequence";
