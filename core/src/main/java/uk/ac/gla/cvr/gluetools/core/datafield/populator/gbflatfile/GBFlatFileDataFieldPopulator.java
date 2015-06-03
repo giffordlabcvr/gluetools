@@ -8,9 +8,10 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.xml.XmlPopulatorRule;
+import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 
-public class GBFlatFileDataFieldPopulator implements DataFieldPopulator {
+public class GBFlatFileDataFieldPopulator implements DataFieldPopulator, Plugin {
 
 	private List<XmlPopulatorRule> rules;
 	

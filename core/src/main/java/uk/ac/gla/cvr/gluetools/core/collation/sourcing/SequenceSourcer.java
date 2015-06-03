@@ -2,11 +2,8 @@ package uk.ac.gla.cvr.gluetools.core.collation.sourcing;
 
 import java.util.List;
 
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 
 /**
  * A plugin that can obtain collated sequences from a source.
