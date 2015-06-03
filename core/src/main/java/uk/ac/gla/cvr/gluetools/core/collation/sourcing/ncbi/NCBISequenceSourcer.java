@@ -30,10 +30,11 @@ import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerConfigException;
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerException;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class NCBISequenceSourcer implements SequenceSourcer {
@@ -42,24 +43,16 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	
 	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 	private String dbName;
-	private String eSearchTerm;
+	private String eSearchTerm = null;
 	private int eSearchRetMax;
 	// could make format configurable later.
 	private CollatedSequenceFormat collatedSequenceFormat = CollatedSequenceFormat.GENBANK_FLAT_FILE;
 
 	@Override
-	public void configure(Element sequenceSourcerElem) throws SequenceSourcerConfigException {
-		dbName = XmlUtils.getXPathString(sequenceSourcerElem, "database/text()", "nuccore");
-		eSearchTerm = XmlUtils.getXPathString(sequenceSourcerElem, "eSearchTerm/text()");
-		if(eSearchTerm == null) {
-			throw new SequenceSourcerConfigException(Code.REQUIRED_ELEMENT_MISSING, "eSearchTerm");
-		}
-		try {
-			eSearchRetMax = Integer.parseInt(XmlUtils.getXPathString(sequenceSourcerElem, 
-					"eSearchRetMax/text()", "1000"));
-		} catch(NumberFormatException nfe) {
-			throw new SequenceSourcerConfigException(Code.CONFIG_VALUE_FORMAT_ERROR, "eSearchRetMax");
-		}
+	public void configure(Element sequenceSourcerElem) throws PluginConfigException {
+		dbName = PluginUtils.configureString(sequenceSourcerElem, "database/text()", "nuccore");
+		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", true);
+		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 1000);
 	}
 
 	@Override
@@ -99,26 +92,23 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 					collatedSequenceFormat.name());
 		}
 		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
-		int startIndex = 0;
-		int endIndex;
+		List<String> individualGBFiles = GenbankFlatFileUtils.divideConcatenatedGBFiles(eFetchResponseString);
+		int i = 0;
 		for(String sequenceID: sequenceIDs) {
-			endIndex = eFetchResponseString.indexOf("//", startIndex) + 2;
-			if(endIndex > eFetchResponseString.length()) {
+			if(i >= individualGBFiles.size()) {
 				throw new SequenceSourcerException(SequenceSourcerException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
 			}
 			CollatedSequence collatedSequence = new CollatedSequence();
 			collatedSequence.setFormat(collatedSequenceFormat);
 			collatedSequence.setSourceUniqueID(getSourceUniqueID());
 			collatedSequence.setSequenceSourceID(sequenceID);
-			collatedSequence.setSequenceText(eFetchResponseString.substring(startIndex, endIndex));
+			collatedSequence.setSequenceText(individualGBFiles.get(i));
 			resultSequences.add(collatedSequence);
-			startIndex = endIndex+1;
+			i++;
 		}
 		return resultSequences;
 	}
 	
-	private String searchTerm = "\"Hepatitis C\"[Organism] AND 7000:10000[SLEN]";
-
 	// lists all the databases
 	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi
 	
@@ -247,7 +237,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 
 		StringEntity requestEntity;
 		try {
-			requestEntity = new StringEntity("term="+searchTerm);
+			requestEntity = new StringEntity("term="+eSearchTerm.trim());
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}

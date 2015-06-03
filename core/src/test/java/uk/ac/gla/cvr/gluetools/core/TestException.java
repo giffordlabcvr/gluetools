@@ -3,8 +3,8 @@ package uk.ac.gla.cvr.gluetools.core;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerFactoryException;
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerFactoryException.Code;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 
 public class TestException {
 
@@ -13,11 +13,11 @@ public class TestException {
 	public void testExceptionMessage() {
 		String exceptionMessage;
 		try {
-			throw new SequenceSourcerFactoryException(Code.UNKNOWN_SOURCER_TYPE, "foo");
+			throw new PluginFactoryException(Code.INCORRECT_ROOT_ELEMENT, "SomeFactory", "someRootElemName");
 		} catch(GlueException ge) {
 			exceptionMessage = ge.getMessage();
 		}
-		Assert.assertEquals("No SequenceSourcer of type foo is known.", exceptionMessage);
+		Assert.assertEquals("SomeFactory found incorrect root element in the plugin configuration: should be 'someRootElemName'.", exceptionMessage);
 	}
 	
 }

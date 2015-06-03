@@ -1,0 +1,41 @@
+package uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile;
+
+import java.io.InputStream;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+
+public class TestGBFlatFileUtils {
+
+	@Test
+	public void testDivideConcatenatedGBFiles() throws Exception {
+		String fileContent;
+		try(InputStream inputStream = getClass().getResourceAsStream("testinput1.gb")) {	
+			fileContent = IOUtils.toString(inputStream);
+		}
+		List<String> gbStrings = GenbankFlatFileUtils.divideConcatenatedGBFiles(fileContent);
+		Assert.assertEquals(4, gbStrings.size());
+	}
+	
+	@Test
+	public void testFeatureQualifiers() throws Exception {
+		String fileContent;
+		try(InputStream inputStream = getClass().getResourceAsStream("testinput2.gb")) {	
+			fileContent = IOUtils.toString(inputStream);
+		}
+		Document doc = GenbankFlatFileUtils.genbankFlatFileToXml(fileContent);
+		// XmlUtils.prettyPrint(doc, System.out);
+		
+		Assert.assertEquals("IDU24", XmlUtils.getXPathString(doc, 
+				"/genbankFile/feature[shortDesc/text()='source']/qualifier[@name='isolate']/text()"));
+		
+	}
+	
+	
+	
+}

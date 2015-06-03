@@ -5,20 +5,15 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 
 /**
  * A plugin that can obtain collated sequences from a source.
  * 
  */
-public interface SequenceSourcer {
+public interface SequenceSourcer extends Plugin {
 
-	/**
-	 * Set up this sequence sourcer based on its configuration XML element.
-	 * @param sequenceSourcerElem
-	 * @throws SequenceSourcerConfigException
-	 */
-	public void configure(Element sequenceSourcerElem) throws SequenceSourcerConfigException;
-	
 	/**
 	 * Get a list of IDs of sequences which this source can retrieve.
 	 * The IDs are valid within the source.
