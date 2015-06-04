@@ -8,7 +8,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
-public abstract class GlueException extends Exception {
+public abstract class GlueException extends RuntimeException {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 	

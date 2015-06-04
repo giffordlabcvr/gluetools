@@ -47,8 +47,8 @@ public class GenbankFlatFileUtils {
 	}
 	
 	
-	public static Map<String, DNASequence> inputStreamToBioJavaDNASequences(InputStream inputStream) 
-			throws IOException, GenbankFlatFileException {
+	public static Map<String, DNASequence> inputStreamToBioJavaDNASequences(InputStream inputStream) throws IOException 
+			 {
 		GenbankReader<DNASequence, NucleotideCompound> dnaReader = new GenbankReader<DNASequence, NucleotideCompound>(
 				inputStream, 
 		        new GenericGenbankHeaderParser<DNASequence,NucleotideCompound>(),
@@ -61,7 +61,7 @@ public class GenbankFlatFileUtils {
 		}
 	}
 	
-	public static Document genbankFlatFileToXml(String genbankFlatFileString) throws GenbankFlatFileException {
+	public static Document genbankFlatFileToXml(String genbankFlatFileString) {
 		Map<String, DNASequence> sequences;
 		try {
 			sequences = GenbankFlatFileUtils.inputStreamToBioJavaDNASequences(new ByteArrayInputStream(genbankFlatFileString.getBytes()));
@@ -74,21 +74,28 @@ public class GenbankFlatFileUtils {
 			throw new GenbankFlatFileException(Code.MULTIPLE_GENBANK_FILES_PARSED);
 		}
 		Document document = XmlUtils.newDocument();
-		Element genbankFileElem = (Element) document.appendChild(document.createElement("genbankFile"));
-		genbankFileElem.setAttribute("sequenceID", sequences.keySet().iterator().next());
+		Element gbSeqElem = (Element) document.appendChild(document.createElement("GBSeq"));
+		Element primaryAccElem = (Element) gbSeqElem.appendChild(document.createElement("GBSeq_primary-accession"));
+		primaryAccElem.appendChild(document.createTextNode(sequences.keySet().iterator().next()));
+	
 		DNASequence dnaSequence = sequences.values().iterator().next();
 		@SuppressWarnings("rawtypes")		
 		List<FeatureInterface<AbstractSequence<NucleotideCompound>, NucleotideCompound>> features = 
 			dnaSequence.getFeatures();
+		Element gbSeqFeatTableElem = (Element) gbSeqElem.appendChild(document.createElement("GBSeq_feature-table"));
+
 		features.forEach(feature -> {
-			Element featureElem = (Element) genbankFileElem.appendChild(document.createElement("feature"));
-			Element shortDescElem = (Element) featureElem.appendChild(document.createElement("shortDesc"));
-			shortDescElem.appendChild(document.createTextNode(feature.getShortDescription()));
+			Element gbFeatureElem = (Element) gbSeqFeatTableElem.appendChild(document.createElement("GBFeature"));
+			Element gbFeatureKeyElem = (Element) gbFeatureElem.appendChild(document.createElement("GBFeature_key"));
+			gbFeatureKeyElem.appendChild(document.createTextNode(feature.getShortDescription()));
+			Element gbFeatureQualsElem = (Element) gbFeatureElem.appendChild(document.createElement("GBFeature_quals"));
 			feature.getQualifiers().forEach( (qName, qualifier) -> {
+				Element gbQualiferElem = (Element) gbFeatureQualsElem.appendChild(document.createElement("GBQualifier"));
 				String value = qualifier.getValue();
-				Element qualifierElem = (Element) featureElem.appendChild(document.createElement("qualifier"));
-				qualifierElem.setAttribute("name", qName);
-				qualifierElem.appendChild(document.createTextNode(value));
+				Element gbQualifierNameElem = (Element) gbQualiferElem.appendChild(document.createElement("GBQualifier_name"));
+				gbQualifierNameElem.appendChild(document.createTextNode(qName));
+				Element gbQualifierValueElem = (Element) gbQualiferElem.appendChild(document.createElement("GBQualifier_value"));
+				gbQualifierValueElem.appendChild(document.createTextNode(value));
 			} );
 		});
 		return document;

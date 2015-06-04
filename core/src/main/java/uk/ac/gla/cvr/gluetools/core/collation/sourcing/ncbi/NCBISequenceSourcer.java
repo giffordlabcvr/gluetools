@@ -33,13 +33,12 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class NCBISequenceSourcer implements SequenceSourcer {
 
-	public static final String TYPE = "NCBISequenceSourcer";
+	public static final String ELEM_NAME = "ncbiSequenceSourcer";
 	
 	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 	private String dbName;
@@ -49,14 +48,14 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	private CollatedSequenceFormat collatedSequenceFormat = CollatedSequenceFormat.GENBANK_FLAT_FILE;
 
 	@Override
-	public void configure(Element sequenceSourcerElem) throws PluginConfigException {
+	public void configure(Element sequenceSourcerElem) {
 		dbName = PluginUtils.configureString(sequenceSourcerElem, "database/text()", "nuccore");
 		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", true);
 		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 1000);
 	}
 
 	@Override
-	public List<String> getSequenceIDs() throws SequenceSourcerException {
+	public List<String> getSequenceIDs() {
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eSearchHttpRequest = createESearchRequest();
 			Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
@@ -74,12 +73,12 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 
 	@Override
 	public String getSourceUniqueID() {
-		return TYPE+":"+dbName+":"+collatedSequenceFormat.name();
+		return ELEM_NAME+":"+dbName+":"+collatedSequenceFormat.name();
 	}
 
 	@Override
 	public List<CollatedSequence> retrieveSequences(List<String> sequenceIDs)
-			throws SequenceSourcerException {
+			 {
 		String eFetchResponseString;
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(sequenceIDs);
@@ -116,7 +115,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi?db=nuccore&version=2.0
 
 
-	private HttpUriRequest createEFetchRequest(List<String> idsToFetch) throws SequenceSourcerException {
+	private HttpUriRequest createEFetchRequest(List<String> idsToFetch)  {
 		String commaSeparatedIDs = String.join(",", idsToFetch.toArray(new String[]{}));
 
 
@@ -151,19 +150,19 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	
 
 	private Document runHttpRequestGetDocument(String requestName, HttpUriRequest httpRequest, CloseableHttpClient httpClient) 
-			throws SequenceSourcerException {
+			 {
 		return (Document) runHttpRequestGetObject(requestName, httpRequest, httpClient, new DocumentConsumer());
 	}
 
 	private String runHttpRequestGetString(String requestName, HttpUriRequest httpRequest, CloseableHttpClient httpClient) 
-			throws SequenceSourcerException {
+			 {
 		return (String) runHttpRequestGetObject(requestName, httpRequest, httpClient, new StringConsumer());
 	}
 
 	
 	private Object runHttpRequestGetObject(String requestName, HttpUriRequest httpRequest, CloseableHttpClient httpClient, 
 			EntityConsumer<?> entityConsumer) 
-			throws SequenceSourcerException {
+			 {
 		Object result;
 
 		try(CloseableHttpResponse response = httpClient.execute(httpRequest);) {
@@ -191,13 +190,13 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	
 	
 	private abstract static class EntityConsumer<P> {
-		public abstract P consumeEntity(String requestName, HttpEntity entity) throws SequenceSourcerException;
+		public abstract P consumeEntity(String requestName, HttpEntity entity) ;
 	}
 
 	private static class DocumentConsumer extends EntityConsumer<Document> {
 		@Override
 		public Document consumeEntity(String requestName, HttpEntity entity)
-				throws SequenceSourcerException {
+				 {
 			try {
 				return XmlUtils.documentFromStream(entity.getContent());
 			} catch (SAXException e) {
@@ -211,7 +210,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	private static class StringConsumer extends EntityConsumer<String> {
 		@Override
 		public String consumeEntity(String requestName, HttpEntity entity)
-				throws SequenceSourcerException {
+				 {
 			ContentType contentType = ContentType.getOrDefault(entity);
 			Charset charset = contentType.getCharset();
 			if(charset == null) { charset = Charset.forName("UTF-8"); }
@@ -250,7 +249,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 
 
 
-	private void checkForESearchErrors(Document document) throws SequenceSourcerException {
+	private void checkForESearchErrors(Document document)  {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		try {
 			String mainErrorXpathExpression = "/eSearchResult/ERROR/text()";

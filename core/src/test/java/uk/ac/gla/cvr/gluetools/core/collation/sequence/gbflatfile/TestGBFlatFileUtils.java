@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 public class TestGBFlatFileUtils {
 
 	@Test
-	public void testDivideConcatenatedGBFiles() throws Exception {
+	public void testDivideConcatenatedGBFiles() throws Exception  {
 		String fileContent;
 		try(InputStream inputStream = getClass().getResourceAsStream("testinput1.gb")) {	
 			fileContent = IOUtils.toString(inputStream);
@@ -23,16 +23,16 @@ public class TestGBFlatFileUtils {
 	}
 	
 	@Test
-	public void testFeatureQualifiers() throws Exception {
+	public void testFeatureQualifiers() throws Exception  {
 		String fileContent;
 		try(InputStream inputStream = getClass().getResourceAsStream("testinput2.gb")) {	
 			fileContent = IOUtils.toString(inputStream);
 		}
 		Document doc = GenbankFlatFileUtils.genbankFlatFileToXml(fileContent);
-		// XmlUtils.prettyPrint(doc, System.out);
+		XmlUtils.prettyPrint(doc, System.out);
 		
-		Assert.assertEquals("IDU24", XmlUtils.getXPathString(doc, 
-				"/genbankFile/feature[shortDesc/text()='source']/qualifier[@name='isolate']/text()"));
+		Assert.assertEquals("core protein", XmlUtils.getXPathString(doc, 
+				"/GBSeq/GBSeq_feature-table/GBFeature[3]/GBFeature_quals/GBQualifier[4]/GBQualifier_value/text()"));
 		
 	}
 	

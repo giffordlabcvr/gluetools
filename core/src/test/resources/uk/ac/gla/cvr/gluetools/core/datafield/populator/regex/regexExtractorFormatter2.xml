@@ -1,0 +1,4 @@
+<regexExtractorFormatter>
+	<matchPattern>foo (\w+)</matchPattern>
+	<outputPattern>thing: ${1}</outputPattern>
+</regexExtractorFormatter>

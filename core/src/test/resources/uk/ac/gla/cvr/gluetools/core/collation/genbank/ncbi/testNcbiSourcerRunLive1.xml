@@ -1,6 +1,6 @@
-<sequenceSourcer type="NCBISequenceSourcer">
+<ncbiSequenceSourcer>
 	<eSearchTerm><![CDATA[
 	"Hepatitis C"[Organism] AND 7000:10000[SLEN]
 	]]></eSearchTerm>
 	<eSearchRetMax>5</eSearchRetMax>
-</sequenceSourcer>
+</ncbiSequenceSourcer>

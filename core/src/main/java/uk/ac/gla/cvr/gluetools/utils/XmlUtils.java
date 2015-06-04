@@ -21,9 +21,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,7 +35,7 @@ import org.xml.sax.SAXException;
 
 public class XmlUtils {
 
-	public static Document documentFromStream(InputStream is) throws SAXException, IOException {
+	public static Document documentFromStream(InputStream is) throws SAXException, IOException  {
 		DocumentBuilder dBuilder = getDocumentBuilder();
 		Document doc = dBuilder.parse(is);
 		return doc;
@@ -116,14 +118,32 @@ public class XmlUtils {
 		return (Node) runXPath(startNode, xPathExpression, XPathConstants.NODE);
 	}
 
+	public static Node getXPathNode(Node startNode, XPathExpression xPathExpression) {
+		return (Node) runXPath(startNode, xPathExpression, XPathConstants.NODE);
+	}
+
 	public static String getXPathString(Node startNode, String xPathExpression) {
+		Object xPathResult = runXPath(startNode, xPathExpression, XPathConstants.NODE);
+		if(xPathResult == null) { 
+			return null; 
+		}
+		if(xPathResult instanceof Text) {
+			return ((Text) xPathResult).getWholeText();
+		} else if(xPathResult instanceof Attr) {
+			return ((Attr) xPathResult).getTextContent();
+		} else {
+			throw new RuntimeException("Unable to get text value from XPath result of type: "+xPathResult.getClass().getCanonicalName());
+		}
+	}
+
+	public static String getXPathString(Node startNode, XPathExpression xPathExpression) {
 		Object xPathResult = runXPath(startNode, xPathExpression, XPathConstants.NODE);
 		if(xPathResult == null) { 
 			return null; 
 		}
 		return ((Text) xPathResult).getWholeText();
 	}
-
+	
 	public static String getXPathString(Node startNode, String xPathExpression, String defaultValue) {
 		String xPathResult = getXPathString(startNode, xPathExpression);
 		if(xPathResult == null) {
@@ -131,14 +151,28 @@ public class XmlUtils {
 		}
 		return xPathResult;
 	}	
+
+	private static Object runXPath(Node startNode, XPathExpression xPathExpression, QName name) {
+		try {
+			return xPathExpression.evaluate(startNode, name);
+		} catch (XPathExpressionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	
 	private static Object runXPath(Node startNode, String xPathExpression, QName name) {
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPath xpath = createXPathEngine();
 		try {
 			return xpath.evaluate(xPathExpression, startNode, name);
 		} catch (XPathExpressionException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static XPath createXPathEngine() {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		return xpath;
 	}
 
 	

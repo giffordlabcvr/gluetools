@@ -1,11 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.project;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
-import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
 
 public class Project {
 
@@ -13,12 +11,25 @@ public class Project {
 	
 	private String displayName;
 	
-	private List<SequenceSourcer> sequenceSourcers;
+	private Map<String, DataField<?>> dataFields = new LinkedHashMap<String, DataField<?>>();
 	
-	private List<DataField<?>> dataFields;
+	public DataField<?> getDataField(String name) {
+		return dataFields.get(name);
+	}
+
+	public boolean hasDataField(String name) {
+		return dataFields.containsKey(name);
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
 	
-	private List<DataFieldPopulator> dataFieldPopulators;
-	
-	private List<CollatedSequence> collatedSequences;
-	
+	public String getID() {
+		return id;
+	}
+
+	public void addDataField(DataField<?> dataField) {
+		dataFields.put(dataField.getName(), dataField);
+	}
 }

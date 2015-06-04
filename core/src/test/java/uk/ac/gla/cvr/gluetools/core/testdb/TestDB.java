@@ -7,7 +7,7 @@ import javax.persistence.Persistence;
 public class TestDB {
 
 	//@Test
-	public void test() throws Exception {
+	public void test()  {
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("glue-persistence-unit");
 		EntityManager entityManager = emf.createEntityManager();
 		entityManager.close();

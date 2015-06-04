@@ -1,0 +1,893 @@
+<?xml version="1.0"?>
+ <!DOCTYPE GBSet PUBLIC "-//NCBI//NCBI GBSeq/EN" "http://www.ncbi.nlm.nih.gov/dtd/NCBI_GBSeq.dtd">
+<GBSet>
+	<GBSeq>
+		<GBSeq_locus>HOLE_ECOLI</GBSeq_locus>
+		<GBSeq_length>76</GBSeq_length>
+		<GBSeq_moltype>AA</GBSeq_moltype>
+		<GBSeq_topology>linear</GBSeq_topology>
+		<GBSeq_division>BCT</GBSeq_division>
+		<GBSeq_update-date>24-JAN-2006</GBSeq_update-date>
+		<GBSeq_create-date>01-DEC-1992</GBSeq_create-date>
+		<GBSeq_definition>DNA polymerase III, theta subunit</GBSeq_definition>
+		<GBSeq_primary-accession>P28689</GBSeq_primary-accession>
+		<GBSeq_accession-version>P28689</GBSeq_accession-version>
+		<GBSeq_other-seqids>
+			<GBSeqid>sp|P28689|HOLE_ECOLI</GBSeqid>
+			<GBSeqid>gi|399924</GBSeqid>
+		</GBSeq_other-seqids>
+		<GBSeq_keywords>
+			<GBKeyword>3D-structure</GBKeyword>
+			<GBKeyword>Complete proteome</GBKeyword>
+			<GBKeyword>Direct protein sequencing</GBKeyword>
+			<GBKeyword>DNA replication</GBKeyword>
+			<GBKeyword>DNA-directed DNA polymerase</GBKeyword>
+			<GBKeyword>Nucleotidyltransferase</GBKeyword>
+			<GBKeyword>Transferase</GBKeyword>
+		</GBSeq_keywords>
+		<GBSeq_source>Shigella flexneri</GBSeq_source>
+		<GBSeq_organism>Shigella flexneri</GBSeq_organism>
+		<GBSeq_taxonomy>Bacteria; Proteobacteria; Gammaproteobacteria;
+			Enterobacteriales; Enterobacteriaceae; Shigella</GBSeq_taxonomy>
+		<GBSeq_references>
+			<GBReference>
+				<GBReference_reference>1</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Studwell-Vaughan,P.S.</GBAuthor>
+					<GBAuthor>O&apos;Donnell,M.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>DNA polymerase III accessory proteins. V. Theta
+					encoded by holE</GBReference_title>
+				<GBReference_journal>J. Biol. Chem. 268 (16), 11785-11791 (1993)</GBReference_journal>
+				<GBReference_pubmed>8505306</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [GENOMIC
+					DNA].~SPECIES=E.coli; STRAIN=K12</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>2</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Carter,J.R.</GBAuthor>
+					<GBAuthor>Franden,M.A.</GBAuthor>
+					<GBAuthor>Aebersold,R.</GBAuthor>
+					<GBAuthor>Kim,D.R.</GBAuthor>
+					<GBAuthor>McHenry,C.S.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Isolation, sequencing and overexpression of the
+					gene encoding the theta subunit of DNA polymerase III holoenzyme</GBReference_title>
+				<GBReference_journal>Nucleic Acids Res. 21 (14), 3281-3286 (1993)</GBReference_journal>
+				<GBReference_pubmed>8341603</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [GENOMIC DNA], AND PROTEIN
+					SEQUENCE OF 1-23; 44-49 AND 69-73.~SPECIES=E.coli; STRAIN=K12 /
+					MG1655</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>3</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Blattner,F.R.</GBAuthor>
+					<GBAuthor>Plunkett,G. 3rd</GBAuthor>
+					<GBAuthor>Bloch,C.A.</GBAuthor>
+					<GBAuthor>Perna,N.T.</GBAuthor>
+					<GBAuthor>Burland,V.</GBAuthor>
+					<GBAuthor>Riley,M.</GBAuthor>
+					<GBAuthor>Collado-Vides,J.</GBAuthor>
+					<GBAuthor>Glasner,J.D.</GBAuthor>
+					<GBAuthor>Rode,C.K.</GBAuthor>
+					<GBAuthor>Mayhew,G.F.</GBAuthor>
+					<GBAuthor>Gregor,J.</GBAuthor>
+					<GBAuthor>Davis,N.W.</GBAuthor>
+					<GBAuthor>Kirkpatrick,H.A.</GBAuthor>
+					<GBAuthor>Goeden,M.A.</GBAuthor>
+					<GBAuthor>Rose,D.J.</GBAuthor>
+					<GBAuthor>Mau,B.</GBAuthor>
+					<GBAuthor>Shao,Y.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>The complete genome sequence of Escherichia coli
+					K-12</GBReference_title>
+				<GBReference_journal>Science 277 (5331), 1453-1474 (1997)</GBReference_journal>
+				<GBReference_pubmed>9278503</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC
+					DNA].~SPECIES=E.coli; STRAIN=K12 / MG1655</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>4</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Itoh,T.</GBAuthor>
+					<GBAuthor>Aiba,H.</GBAuthor>
+					<GBAuthor>Baba,T.</GBAuthor>
+					<GBAuthor>Fujita,K.</GBAuthor>
+					<GBAuthor>Hayashi,K.</GBAuthor>
+					<GBAuthor>Inada,T.</GBAuthor>
+					<GBAuthor>Isono,K.</GBAuthor>
+					<GBAuthor>Kasai,H.</GBAuthor>
+					<GBAuthor>Kimura,S.</GBAuthor>
+					<GBAuthor>Kitakawa,M.</GBAuthor>
+					<GBAuthor>Kitagawa,M.</GBAuthor>
+					<GBAuthor>Makino,K.</GBAuthor>
+					<GBAuthor>Miki,T.</GBAuthor>
+					<GBAuthor>Mizobuchi,K.</GBAuthor>
+					<GBAuthor>Mori,H.</GBAuthor>
+					<GBAuthor>Mori,T.</GBAuthor>
+					<GBAuthor>Motomura,K.</GBAuthor>
+					<GBAuthor>Nakade,S.</GBAuthor>
+					<GBAuthor>Nakamura,Y.</GBAuthor>
+					<GBAuthor>Nashimoto,H.</GBAuthor>
+					<GBAuthor>Nishio,Y.</GBAuthor>
+					<GBAuthor>Oshima,T.</GBAuthor>
+					<GBAuthor>Saito,N.</GBAuthor>
+					<GBAuthor>Sampei,G.</GBAuthor>
+					<GBAuthor>Seki,Y.</GBAuthor>
+					<GBAuthor>Sivasundaram,S.</GBAuthor>
+					<GBAuthor>Tagami,H.</GBAuthor>
+					<GBAuthor>Takeda,J.</GBAuthor>
+					<GBAuthor>Takemoto,K.</GBAuthor>
+					<GBAuthor>Wada,C.</GBAuthor>
+					<GBAuthor>Yamamoto,Y.</GBAuthor>
+					<GBAuthor>Horiuchi,T.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>A 460-kb DNA sequence of the Escherichia coli
+					K-12 genome corresponding to the 40.1-50.0 min region on the
+					linkage map</GBReference_title>
+				<GBReference_journal>DNA Res. 3 (6), 379-392 (1996)</GBReference_journal>
+				<GBReference_pubmed>9097040</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [GENOMIC
+					DNA].~SPECIES=E.coli; STRAIN=K12</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>5</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Welch,R.A.</GBAuthor>
+					<GBAuthor>Burland,V.</GBAuthor>
+					<GBAuthor>Plunkett,G. 3rd</GBAuthor>
+					<GBAuthor>Redford,P.</GBAuthor>
+					<GBAuthor>Roesch,P.</GBAuthor>
+					<GBAuthor>Rasko,D.</GBAuthor>
+					<GBAuthor>Buckles,E.L.</GBAuthor>
+					<GBAuthor>Liou,S.R.</GBAuthor>
+					<GBAuthor>Boutin,A.</GBAuthor>
+					<GBAuthor>Hackett,J.</GBAuthor>
+					<GBAuthor>Stroud,D.</GBAuthor>
+					<GBAuthor>Mayhew,G.F.</GBAuthor>
+					<GBAuthor>Rose,D.J.</GBAuthor>
+					<GBAuthor>Zhou,S.</GBAuthor>
+					<GBAuthor>Schwartz,D.C.</GBAuthor>
+					<GBAuthor>Perna,N.T.</GBAuthor>
+					<GBAuthor>Mobley,H.L.</GBAuthor>
+					<GBAuthor>Donnenberg,M.S.</GBAuthor>
+					<GBAuthor>Blattner,F.R.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Extensive mosaic structure revealed by the
+					complete genome sequence of uropathogenic Escherichia coli</GBReference_title>
+				<GBReference_journal>Proc. Natl. Acad. Sci. U.S.A. 99 (26),
+					17020-17024 (2002)</GBReference_journal>
+				<GBReference_xref>
+					<GBXref>
+						<GBXref_dbname>doi</GBXref_dbname>
+						<GBXref_id>10.1073/pnas.252529799</GBXref_id>
+					</GBXref>
+				</GBReference_xref>
+				<GBReference_pubmed>12471157</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC
+					DNA].~SPECIES=E.coli; STRAIN=O6:H1 / CFT073 / ATCC 700928 / UPEC</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>6</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Perna,N.T.</GBAuthor>
+					<GBAuthor>Plunkett,G. 3rd</GBAuthor>
+					<GBAuthor>Burland,V.</GBAuthor>
+					<GBAuthor>Mau,B.</GBAuthor>
+					<GBAuthor>Glasner,J.D.</GBAuthor>
+					<GBAuthor>Rose,D.J.</GBAuthor>
+					<GBAuthor>Mayhew,G.F.</GBAuthor>
+					<GBAuthor>Evans,P.S.</GBAuthor>
+					<GBAuthor>Gregor,J.</GBAuthor>
+					<GBAuthor>Kirkpatrick,H.A.</GBAuthor>
+					<GBAuthor>Posfai,G.</GBAuthor>
+					<GBAuthor>Hackett,J.</GBAuthor>
+					<GBAuthor>Klink,S.</GBAuthor>
+					<GBAuthor>Boutin,A.</GBAuthor>
+					<GBAuthor>Shao,Y.</GBAuthor>
+					<GBAuthor>Miller,L.</GBAuthor>
+					<GBAuthor>Grotbeck,E.J.</GBAuthor>
+					<GBAuthor>Davis,N.W.</GBAuthor>
+					<GBAuthor>Lim,A.</GBAuthor>
+					<GBAuthor>Dimalanta,E.T.</GBAuthor>
+					<GBAuthor>Potamousis,K.D.</GBAuthor>
+					<GBAuthor>Apodaca,J.</GBAuthor>
+					<GBAuthor>Anantharaman,T.S.</GBAuthor>
+					<GBAuthor>Lin,J.</GBAuthor>
+					<GBAuthor>Yen,G.</GBAuthor>
+					<GBAuthor>Schwartz,D.C.</GBAuthor>
+					<GBAuthor>Welch,R.A.</GBAuthor>
+					<GBAuthor>Blattner,F.R.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Genome sequence of enterohaemorrhagic Escherichia
+					coli O157:H7</GBReference_title>
+				<GBReference_journal>Nature 409 (6819), 529-533 (2001)</GBReference_journal>
+				<GBReference_xref>
+					<GBXref>
+						<GBXref_dbname>doi</GBXref_dbname>
+						<GBXref_id>10.1038/35054089</GBXref_id>
+					</GBXref>
+				</GBReference_xref>
+				<GBReference_pubmed>11206551</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC
+					DNA].~SPECIES=E.coli; STRAIN=O157:H7 / EDL933 / ATCC 700927 / EHEC</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>7</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Hayashi,T.</GBAuthor>
+					<GBAuthor>Makino,K.</GBAuthor>
+					<GBAuthor>Ohnishi,M.</GBAuthor>
+					<GBAuthor>Kurokawa,K.</GBAuthor>
+					<GBAuthor>Ishii,K.</GBAuthor>
+					<GBAuthor>Yokoyama,K.</GBAuthor>
+					<GBAuthor>Han,C.G.</GBAuthor>
+					<GBAuthor>Ohtsubo,E.</GBAuthor>
+					<GBAuthor>Nakayama,K.</GBAuthor>
+					<GBAuthor>Murata,T.</GBAuthor>
+					<GBAuthor>Tanaka,M.</GBAuthor>
+					<GBAuthor>Tobe,T.</GBAuthor>
+					<GBAuthor>Iida,T.</GBAuthor>
+					<GBAuthor>Takami,H.</GBAuthor>
+					<GBAuthor>Honda,T.</GBAuthor>
+					<GBAuthor>Sasakawa,C.</GBAuthor>
+					<GBAuthor>Ogasawara,N.</GBAuthor>
+					<GBAuthor>Yasunaga,T.</GBAuthor>
+					<GBAuthor>Kuhara,S.</GBAuthor>
+					<GBAuthor>Shiba,T.</GBAuthor>
+					<GBAuthor>Hattori,M.</GBAuthor>
+					<GBAuthor>Shinagawa,H.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Complete genome sequence of enterohemorrhagic
+					Escherichia coli O157:H7 and genomic comparison with a laboratory
+					strain K-12</GBReference_title>
+				<GBReference_journal>DNA Res. 8 (1), 11-22 (2001)</GBReference_journal>
+				<GBReference_pubmed>11258796</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC
+					DNA].~SPECIES=E.coli; STRAIN=O157:H7 / Sakai / RIMD 0509952 / EHEC</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>8</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Jin,Q.</GBAuthor>
+					<GBAuthor>Yuan,Z.</GBAuthor>
+					<GBAuthor>Xu,J.</GBAuthor>
+					<GBAuthor>Wang,Y.</GBAuthor>
+					<GBAuthor>Shen,Y.</GBAuthor>
+					<GBAuthor>Lu,W.</GBAuthor>
+					<GBAuthor>Wang,J.</GBAuthor>
+					<GBAuthor>Liu,H.</GBAuthor>
+					<GBAuthor>Yang,J.</GBAuthor>
+					<GBAuthor>Yang,F.</GBAuthor>
+					<GBAuthor>Zhang,X.</GBAuthor>
+					<GBAuthor>Zhang,J.</GBAuthor>
+					<GBAuthor>Yang,G.</GBAuthor>
+					<GBAuthor>Wu,H.</GBAuthor>
+					<GBAuthor>Qu,D.</GBAuthor>
+					<GBAuthor>Dong,J.</GBAuthor>
+					<GBAuthor>Sun,L.</GBAuthor>
+					<GBAuthor>Xue,Y.</GBAuthor>
+					<GBAuthor>Zhao,A.</GBAuthor>
+					<GBAuthor>Gao,Y.</GBAuthor>
+					<GBAuthor>Zhu,J.</GBAuthor>
+					<GBAuthor>Kan,B.</GBAuthor>
+					<GBAuthor>Ding,K.</GBAuthor>
+					<GBAuthor>Chen,S.</GBAuthor>
+					<GBAuthor>Cheng,H.</GBAuthor>
+					<GBAuthor>Yao,Z.</GBAuthor>
+					<GBAuthor>He,B.</GBAuthor>
+					<GBAuthor>Chen,R.</GBAuthor>
+					<GBAuthor>Ma,D.</GBAuthor>
+					<GBAuthor>Qiang,B.</GBAuthor>
+					<GBAuthor>Wen,Y.</GBAuthor>
+					<GBAuthor>Hou,Y.</GBAuthor>
+					<GBAuthor>Yu,J.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Genome sequence of Shigella flexneri 2a: insights
+					into pathogenicity through comparison with genomes of Escherichia
+					coli K12 and O157</GBReference_title>
+				<GBReference_journal>Nucleic Acids Res. 30 (20), 4432-4441 (2002)</GBReference_journal>
+				<GBReference_pubmed>12384590</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC
+					DNA].~SPECIES=S.flexneri; STRAIN=301 / Serotype 2a</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>9</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>Wei,J.</GBAuthor>
+					<GBAuthor>Goldberg,M.B.</GBAuthor>
+					<GBAuthor>Burland,V.</GBAuthor>
+					<GBAuthor>Venkatesan,M.M.</GBAuthor>
+					<GBAuthor>Deng,W.</GBAuthor>
+					<GBAuthor>Fournier,G.</GBAuthor>
+					<GBAuthor>Mayhew,G.F.</GBAuthor>
+					<GBAuthor>Plunkett,G. 3rd</GBAuthor>
+					<GBAuthor>Rose,D.J.</GBAuthor>
+					<GBAuthor>Darling,A.</GBAuthor>
+					<GBAuthor>Mau,B.</GBAuthor>
+					<GBAuthor>Perna,N.T.</GBAuthor>
+					<GBAuthor>Payne,S.M.</GBAuthor>
+					<GBAuthor>Runyen-Janecky,L.J.</GBAuthor>
+					<GBAuthor>Zhou,S.</GBAuthor>
+					<GBAuthor>Schwartz,D.C.</GBAuthor>
+					<GBAuthor>Blattner,F.R.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Complete genome sequence and comparative genomics
+					of Shigella flexneri serotype 2a strain 2457T</GBReference_title>
+				<GBReference_journal>Infect. Immun. 71 (5), 2775-2786 (2003)</GBReference_journal>
+				<GBReference_pubmed>12704152</GBReference_pubmed>
+				<GBReference_remark>NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC
+					DNA].~SPECIES=S.flexneri; STRAIN=2457T / ATCC 700930 / Serotype 2a</GBReference_remark>
+			</GBReference>
+			<GBReference>
+				<GBReference_reference>10</GBReference_reference>
+				<GBReference_position>1..76</GBReference_position>
+				<GBReference_authors>
+					<GBAuthor>O&apos;Donnell,M.</GBAuthor>
+				</GBReference_authors>
+				<GBReference_title>Accessory protein function in the DNA polymerase
+					III holoenzyme from E. coli</GBReference_title>
+				<GBReference_journal>Bioessays 14 (2), 105-111 (1992)</GBReference_journal>
+				<GBReference_xref>
+					<GBXref>
+						<GBXref_dbname>doi</GBXref_dbname>
+						<GBXref_id>10.1002/bies.950140206</GBXref_id>
+					</GBXref>
+				</GBReference_xref>
+				<GBReference_pubmed>1575709</GBReference_pubmed>
+				<GBReference_remark>REVIEW.~SPECIES=E.coli</GBReference_remark>
+			</GBReference>
+		</GBSeq_references>
+		<GBSeq_comment>[WARNING] On Oct 25, 2005 this sequence was replaced by
+			gi:78100168.; On or before Jul 5, 2005 this sequence version replaced
+			gi:25497874, gi:25390886, gi:421013, gi:123456.; [FUNCTION] DNA
+			polymerase III is a complex, multichain enzyme responsible for most
+			of the replicative synthesis in bacteria. This DNA polymerase also
+			exhibits 3&apos; to 5&apos; exonuclease activity.; [FUNCTION] The
+			exact function of the theta subunit is unknown.; [CATALYTIC ACTIVITY]
+			Deoxynucleoside triphosphate + DNA(n) = diphosphate + DNA(n+1).;
+			[SUBUNIT] The DNA polymerase holoenzyme is a complex that contains 10
+			different types of subunits. These subunits are organized into 3
+			functionally essential subassemblies: the pol III core, the beta
+			sliding clamp processivity factor and the clamp-loading complex. The
+			pol III core (subunits alpha,epsilon and theta) contains the
+			polymerase and the 3&apos;-5&apos; exonuclease proofreading
+			activities. The polymerase is tethered to the template via the
+			sliding clamp processivity factor. The clamp-loading complex
+			assembles the beta processivity factor onto the primer template and
+			plays a central role in the organization and communication at the
+			replication fork. This complex contains delta, delta&apos;, psi and
+			chi, and copies of either or both of two different dnaX proteins,
+			gamma and tau. The composition of the holoenzyme is, therefore:
+			(alpha,epsilon,theta)[2]-(gamma/tau)[3]-delta,delta&apos;,
+			psi,chi-beta[4].; [INTERACTION] P10443:dnaE; NbExp=1;
+			IntAct=EBI-549182, EBI-549111; P0A6Y8:dnaK; NbExp=1;
+			IntAct=EBI-549182, EBI-542092; P03007:dnaQ; NbExp=1;
+			IntAct=EBI-549182, EBI-549131; P06710:dnaX; NbExp=1;
+			IntAct=EBI-549182, EBI-549140; P08936:hns; NbExp=1;
+			IntAct=EBI-549182, EBI-544934; P28630:holA; NbExp=1;
+			IntAct=EBI-549182, EBI-549153; P28631:holB; NbExp=1;
+			IntAct=EBI-549182, EBI-549161; P28905:holC; NbExp=1;
+			IntAct=EBI-549182, EBI-549169; P28632:holD; NbExp=1;
+			IntAct=EBI-549182, EBI-549176; P13029:katG; NbExp=1;
+			IntAct=EBI-549182, EBI-371302; P0A7L0:rplA; NbExp=1;
+			IntAct=EBI-549182, EBI-543771; P0A7K2:rplL; NbExp=1;
+			IntAct=EBI-549182, EBI-543702; P02424:rplW; NbExp=1;
+			IntAct=EBI-549182, EBI-542264; P0A7V0:rpsB; NbExp=1;
+			IntAct=EBI-549182, EBI-543439; P02358:rpsF; NbExp=1;
+			IntAct=EBI-549182, EBI-543068; P0A7R5:rpsJ; NbExp=1;
+			IntAct=EBI-549182, EBI-544602; P0A7T3:rpsP; NbExp=1;
+			IntAct=EBI-549182, EBI-546580; P28043:ssb; NbExp=1;
+			IntAct=EBI-549182, EBI-549252; P06612:topA; NbExp=1;
+			IntAct=EBI-549182, EBI-544172; P02990:tufA; NbExp=1;
+			IntAct=EBI-549182, EBI-301077; P10904:ugpB; NbExp=1;
+			IntAct=EBI-549182, EBI-546637; P77395:ybbN; NbExp=1;
+			IntAct=EBI-549182, EBI-545297; P33635:yfiF; NbExp=1;
+			IntAct=EBI-549182, EBI-547368</GBSeq_comment>
+		<GBSeq_source-db>UniProtKB: locus HOLE_ECOLI, accession P28689; class:
+			standard. created: Dec 1, 1992. sequence updated: Jul 1, 1993.
+			annotation updated: Jan 24, 2006. xrefs: L04572.1, AAA23697.1,
+			L05381.1, AAA23982.1, U00096.2, AAC74912.1, D90827.1, BAA15650.1,
+			AE016761.1, AAN80711.1, AE005174.2, AAG56832.1, BA000007.2,
+			BAB35975.1, AE005674.1, AAN43412.1, AE016984.1, AAP17234.1, D85796,
+			H90947, S34951, 1DU2_A xrefs (non-sequence databases): IntAct:P28689,
+			EchoBASE:EB1468, EcoGene:EG11505, GO:0005515, InterPro:IPR009052,
+			Pfam:PF06440</GBSeq_source-db>
+		<GBSeq_feature-table>
+			<GBFeature>
+				<GBFeature_key>source</GBFeature_key>
+				<GBFeature_location>1..76</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>76</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>organism</GBQualifier_name>
+						<GBQualifier_value>Shigella flexneri</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>db_xref</GBQualifier_name>
+						<GBQualifier_value>taxon:623</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>source</GBFeature_key>
+				<GBFeature_location>1..76</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>76</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>organism</GBQualifier_name>
+						<GBQualifier_value>Escherichia coli O6</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>db_xref</GBQualifier_name>
+						<GBQualifier_value>taxon:217992</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>source</GBFeature_key>
+				<GBFeature_location>1..76</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>76</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>organism</GBQualifier_name>
+						<GBQualifier_value>Escherichia coli O157:H7</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>db_xref</GBQualifier_name>
+						<GBQualifier_value>taxon:83334</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>source</GBFeature_key>
+				<GBFeature_location>1..76</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>76</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>organism</GBQualifier_name>
+						<GBQualifier_value>Escherichia coli</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>db_xref</GBQualifier_name>
+						<GBQualifier_value>taxon:562</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>gene</GBFeature_key>
+				<GBFeature_location>1..76</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>76</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Protein</GBFeature_key>
+				<GBFeature_location>1..76</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>76</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>product</GBQualifier_name>
+						<GBQualifier_value>DNA polymerase III, theta subunit</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>EC_number</GBQualifier_name>
+						<GBQualifier_value>2.7.7.7</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>calculated_mol_wt</GBQualifier_name>
+						<GBQualifier_value>8715</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Region</GBFeature_key>
+				<GBFeature_location>1..74</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>1</GBInterval_from>
+						<GBInterval_to>74</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>region_name</GBQualifier_name>
+						<GBQualifier_value>PRK10969</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>note</GBQualifier_name>
+						<GBQualifier_value>DNA polymerase III subunit theta; Reviewed</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>db_xref</GBQualifier_name>
+						<GBQualifier_value>CDD:182872</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Region</GBFeature_key>
+				<GBFeature_location>11..21</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>11</GBInterval_from>
+						<GBInterval_to>21</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>region_name</GBQualifier_name>
+						<GBQualifier_value>Helical region</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>experiment</GBQualifier_name>
+						<GBQualifier_value>experimental evidence, no additional details
+							recorded</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Region</GBFeature_key>
+				<GBFeature_location>26..27</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>26</GBInterval_from>
+						<GBInterval_to>27</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>region_name</GBQualifier_name>
+						<GBQualifier_value>Hydrogen bonded turn</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>experiment</GBQualifier_name>
+						<GBQualifier_value>experimental evidence, no additional details
+							recorded</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Region</GBFeature_key>
+				<GBFeature_location>38..43</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>38</GBInterval_from>
+						<GBInterval_to>43</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>region_name</GBQualifier_name>
+						<GBQualifier_value>Helical region</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>experiment</GBQualifier_name>
+						<GBQualifier_value>experimental evidence, no additional details
+							recorded</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Region</GBFeature_key>
+				<GBFeature_location>47..53</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>47</GBInterval_from>
+						<GBInterval_to>53</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>region_name</GBQualifier_name>
+						<GBQualifier_value>Helical region</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>experiment</GBQualifier_name>
+						<GBQualifier_value>experimental evidence, no additional details
+							recorded</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+			<GBFeature>
+				<GBFeature_key>Region</GBFeature_key>
+				<GBFeature_location>54..56</GBFeature_location>
+				<GBFeature_intervals>
+					<GBInterval>
+						<GBInterval_from>54</GBInterval_from>
+						<GBInterval_to>56</GBInterval_to>
+						<GBInterval_accession>P28689</GBInterval_accession>
+					</GBInterval>
+				</GBFeature_intervals>
+				<GBFeature_quals>
+					<GBQualifier>
+						<GBQualifier_name>gene</GBQualifier_name>
+						<GBQualifier_value>holE</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>locus_tag</GBQualifier_name>
+						<GBQualifier_value>b1842</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>c2252</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>ECs2552</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>S1918</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>SF1852.1</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>gene_synonym</GBQualifier_name>
+						<GBQualifier_value>z2891</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>region_name</GBQualifier_name>
+						<GBQualifier_value>Helical region</GBQualifier_value>
+					</GBQualifier>
+					<GBQualifier>
+						<GBQualifier_name>experiment</GBQualifier_name>
+						<GBQualifier_value>experimental evidence, no additional details
+							recorded</GBQualifier_value>
+					</GBQualifier>
+				</GBFeature_quals>
+			</GBFeature>
+		</GBSeq_feature-table>
+		<GBSeq_sequence>mlknlakldqtemdkvnvdlaaagvafkerynmpviaeavereqpehlrswfrerliahrlasvnlsrlpyepklk</GBSeq_sequence>
+	</GBSeq>
+</GBSet>
+

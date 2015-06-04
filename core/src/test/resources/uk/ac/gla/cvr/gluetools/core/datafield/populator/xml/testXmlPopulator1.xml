@@ -1,0 +1,16 @@
+<dataFieldPopulator>
+	<rules>
+		<nodeSelector>
+			<xPathExpression>/GBSeq/GBSeq_feature-table/GBFeature[GBFeature_key='source']/GBFeature_quals</xPathExpression>
+			<rules>
+				<fieldPopulator fieldName="GENBANK_GENOTYPE">
+					<xPathExpression>GBQualifier[GBQualifier_name/text() = 'note']/GBQualifier_value/text()</xPathExpression>
+					<regexExtractorFormatter>
+						<matchPattern>genotype:\s+([1-9][a-z])+</matchPattern>
+						<outputPattern>${1}</outputPattern>
+					</regexExtractorFormatter>
+				</fieldPopulator>
+			</rules>
+		</nodeSelector>
+	</rules>
+</dataFieldPopulator>

@@ -13,7 +13,7 @@ import org.biojava.nbio.core.sequence.loader.GenbankProxySequenceReader;
 
 public class GenbankFile {
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args)  throws Exception {
 		GenbankProxySequenceReader<NucleotideCompound> genbankDNAReader 
 			= new GenbankProxySequenceReader<NucleotideCompound>("/tmp", "JX183551.1", AmbiguityDNACompoundSet.getDNACompoundSet());
 		DNASequence dnaSequence = new DNASequence(genbankDNAReader);
@@ -30,7 +30,8 @@ public class GenbankFile {
 			System.out.println("Key: "+name);
 			fList.forEach(f -> {
 				System.out.println("Location:"+f.getSource());
-				HashMap<String, Qualifier> qualifiers = f.getQualifiers();
+				@SuppressWarnings("unchecked")
+				HashMap<String, Qualifier> qualifiers = (HashMap<String, Qualifier>) f.getQualifiers();
 				System.out.println("Qualifiers:");
 				qualifiers.forEach((qName, q) -> {
 					System.out.println(q.getName() + " = " + q.getValue());

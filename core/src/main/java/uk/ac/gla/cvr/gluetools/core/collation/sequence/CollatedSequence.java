@@ -1,8 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.collation.sequence;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.w3c.dom.Document;
+
+import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataFieldValue;
+import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException;
+import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.project.Project;
 
 
@@ -21,13 +27,15 @@ public class CollatedSequence {
 
 	private Project owningProject;
 	
-	private List<DataFieldValue> dataFieldValues;
+	private Map<String, DataFieldValue<?>> dataFieldValues = new LinkedHashMap<String, DataFieldValue<?>>();
 	
 	private String sequenceSourceID;
 	
 	private String sourceUniqueID;
 	
 	private String sequenceText;
+	
+	private Document cachedXml;
 	
 	private CollatedSequenceFormat format;
 
@@ -53,6 +61,7 @@ public class CollatedSequence {
 
 	public void setSequenceText(String sequenceText) {
 		this.sequenceText = sequenceText;
+		this.cachedXml = null;
 	}
 
 	public CollatedSequenceFormat getFormat() {
@@ -63,7 +72,31 @@ public class CollatedSequence {
 		this.format = format;
 	}
 	
+	public void setDataFieldValue(String name, String valueAsString) {
+		DataField<?> dataField = owningProject.getDataField(name);
+		if(dataField == null) {
+			throw new DataFieldPopulatorException(Code.NO_SUCH_FIELD, name, owningProject.getID());
+		}
+		dataFieldValues.put(name, dataField.valueFromString(valueAsString));
+	}
 
+	public Document asXml() {
+		if(cachedXml == null) {
+			cachedXml = getFormat().asXml(getSequenceText());
+		}
+		return cachedXml;
+	}
 
+	public Project getOwningProject() {
+		return owningProject;
+	}
+
+	public void setOwningProject(Project owningProject) {
+		this.owningProject = owningProject;
+	}
+
+	public DataFieldValue<?> getDataFieldValue(String name) {
+		return dataFieldValues.get(name);
+	}
 	
 }

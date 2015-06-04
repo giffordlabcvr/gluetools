@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
-
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerFactory;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class TestNcbiGenbank {
@@ -17,14 +17,14 @@ public class TestNcbiGenbank {
 	@Test
 	public void testNcbiSourcerCreate() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testNcbiSourcerCreate.xml"));
-		SequenceSourcer sequenceSourcer = SequenceSourcerFactory.getInstance().createFromXml(document.getDocumentElement());
+		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
 		Assert.assertEquals("NCBISequenceSourcer:nuccore:GENBANK_FLAT_FILE", sequenceSourcer.getSourceUniqueID());
 	}
 
 	@Test
 	public void testNcbiSourcerRunLive1() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testNcbiSourcerRunLive1.xml"));
-		SequenceSourcer sequenceSourcer = SequenceSourcerFactory.getInstance().createFromXml(document.getDocumentElement());
+		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
 		List<String> sequenceIDs = sequenceSourcer.getSequenceIDs().stream().sorted().collect(Collectors.toList());
 		Assert.assertEquals(5, sequenceIDs.size());
 		List<CollatedSequence> collatedSequences = sequenceSourcer.retrieveSequences(sequenceIDs);
