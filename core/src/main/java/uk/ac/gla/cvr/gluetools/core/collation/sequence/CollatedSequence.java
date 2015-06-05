@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.collation.sequence;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.w3c.dom.Document;
 
@@ -95,8 +96,17 @@ public class CollatedSequence {
 		this.owningProject = owningProject;
 	}
 
-	public DataFieldValue<?> getDataFieldValue(String name) {
-		return dataFieldValues.get(name);
+	public Optional<DataFieldValue<?>> getDataFieldValue(String name) {
+		return Optional.ofNullable(dataFieldValues.get(name));
+	}
+
+	public boolean hasDataFieldValue(String dataFieldName) {
+		return dataFieldValues.containsKey(dataFieldName);
+	}
+
+	public void setSequenceDocument(Document document) {
+		this.cachedXml = document;
+		this.sequenceText = null;
 	}
 	
 }

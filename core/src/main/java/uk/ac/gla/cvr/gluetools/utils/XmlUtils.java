@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -123,16 +125,20 @@ public class XmlUtils {
 	}
 
 	public static String getXPathString(Node startNode, String xPathExpression) {
-		Object xPathResult = runXPath(startNode, xPathExpression, XPathConstants.NODE);
+		Node xPathResult = (Node) runXPath(startNode, xPathExpression, XPathConstants.NODE);
 		if(xPathResult == null) { 
 			return null; 
 		}
-		if(xPathResult instanceof Text) {
-			return ((Text) xPathResult).getWholeText();
-		} else if(xPathResult instanceof Attr) {
-			return ((Attr) xPathResult).getTextContent();
+		return getNodeText(xPathResult);
+	}
+
+	public static String getNodeText(Node node) {
+		if(node instanceof Text) {
+			return ((Text) node).getWholeText();
+		} else if(node instanceof Attr) {
+			return ((Attr) node).getTextContent();
 		} else {
-			throw new RuntimeException("Unable to get text value from XPath result of type: "+xPathResult.getClass().getCanonicalName());
+			throw new RuntimeException("Unable to get text value from Node of type: "+node.getClass().getCanonicalName());
 		}
 	}
 
@@ -173,6 +179,11 @@ public class XmlUtils {
 	public static XPath createXPathEngine() {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		return xpath;
+	}
+
+	// http://stackoverflow.com/questions/4079565/xpath-selecting-multiple-elements-with-predicates
+	public static String alternateElemsXPath(Collection<String> elementNames) {
+		return "*["+String.join("|", elementNames.stream().map(s -> "self::"+s).collect(Collectors.toList()))+"]";
 	}
 
 	

@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 
 /**
@@ -16,16 +17,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class DataFieldPopulator implements Plugin {
 
 	public static String ELEM_NAME = "dataFieldPopulator";
-	private List<DataFieldPopulatorRule> rules;
+	private List<PopulatorRule> rules;
 	
-	protected List<DataFieldPopulatorRule> getRules() {
+	protected List<PopulatorRule> getRules() {
 		return rules;
 	}
 	
 	@Override
 	public void configure(Element configElem) {
-		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, "rules/*");
-		rules = PluginFactory.get(DataFieldPopulatorRuleFactory.creator).createFromElements(ruleElems);
+		PopulatorRuleFactory populatorRuleFactory = PluginFactory.get(PopulatorRuleFactory.creator);
+		String alternateElemsXPath = XmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
+		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
+		rules = populatorRuleFactory.createFromElements(ruleElems);
 	}
 
 	/**

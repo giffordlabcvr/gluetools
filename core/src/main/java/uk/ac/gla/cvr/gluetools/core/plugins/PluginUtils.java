@@ -1,9 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.plugins;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
+import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -18,11 +22,15 @@ public class PluginUtils {
 	}
 	
 	public static String configureString(Element configElem, String xPathExpression, boolean required)  {
-		String configured = XmlUtils.getXPathString(configElem, xPathExpression);
-		if(required && configured == null) {
+		Node configuredNode = XmlUtils.getXPathNode(configElem, xPathExpression);
+		if(required && configuredNode == null) {
 			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
 		}
-		return configured;
+		if(configuredNode == null) {
+			return null;
+		}
+		setValidConfig(configuredNode);
+		return XmlUtils.getNodeText(configuredNode);
 	}
 
 	public static Integer configureInt(Element configElem, String xPathExpression, int defaultValue)  {
@@ -34,15 +42,12 @@ public class PluginUtils {
 	}
 	
 	public static Integer configureInt(Element configElem, String xPathExpression, boolean required)  {
-		String configuredString = XmlUtils.getXPathString(configElem, xPathExpression);
-		if(required && configuredString == null) {
-			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
-		}
+		String configuredString = configureString(configElem, xPathExpression, required);
 		if(configuredString == null) { return null; }
 		try {
 			return Integer.parseInt(configuredString);
 		} catch(NumberFormatException nfe) {
-			throw new PluginConfigException(Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), xPathExpression, nfe.getLocalizedMessage());
+			throw new PluginConfigException(nfe, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), xPathExpression, nfe.getLocalizedMessage());
 		}
 	}
 
@@ -53,6 +58,7 @@ public class PluginUtils {
 	public static Element findConfigElement(Element configElem, String xPathExpression, boolean required)  {
 		Element configSubElem = XmlUtils.getXPathElement(configElem, xPathExpression);
 		if(configSubElem != null) {
+			setValidConfig(configSubElem);
 			return (Element) configSubElem;
 		} else if(required) {
 			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
@@ -74,7 +80,51 @@ public class PluginUtils {
 		if(min != null && size < min) {
 			throw new PluginConfigException(Code.TOO_FEW_CONFIG_ELEMENTS, configElem.getNodeName(), xPathExpression, size, max);
 		}
+		configSubElems.forEach(elem -> setValidConfig(elem));
 		return configSubElems;
 	}
+	
+	public static void setValidConfig(Node node) {
+		while(!(node instanceof Attr || node instanceof Element)) {
+			node = node.getParentNode();
+		}
+		while(node != null && !isValidConfig(node)) {
+			node.setUserData("glueTools.PluginUtils", Boolean.TRUE, null);
+			node = node.getParentNode();
+		}
+	}
 
+	public static boolean isValidConfig(Node node) {
+		Object userData = node.getUserData("glueTools.PluginUtils");
+		return(userData != null && userData instanceof Boolean && ((Boolean) userData));
+	}
+
+	public static <E extends Enum<E>> E configureEnum(Class<E> enumClass, Element configElem, String xPathExpression, E defaultValue) {
+		E configuredValue = configureEnum(enumClass, configElem, xPathExpression, false);
+		if(configuredValue == null) {
+			return defaultValue;
+		}
+		return configuredValue;
+	}
+	
+	public static <E extends Enum<E>> E configureEnum(Class<E> enumClass, Element configElem, String xPathExpression, boolean required) {
+		String configuredString = configureString(configElem, xPathExpression, required);
+		if(configuredString == null) { return null; }
+		try {
+			return Enum.valueOf(enumClass, configuredString);
+		} catch(IllegalArgumentException iae) {
+			throw new PluginConfigException(iae, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), xPathExpression, iae.getLocalizedMessage());
+		}
+	}
+
+	public static List<String> configureStrings(Element configElem, String xPathExpression, boolean required) {
+		List<Node> configuredNodes = XmlUtils.getXPathNodes(configElem, xPathExpression);
+		if(required && configuredNodes.isEmpty()) {
+			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
+		}
+		configuredNodes.forEach(c -> setValidConfig(c));
+		return configuredNodes.stream().map(c -> XmlUtils.getNodeText(c)).collect(Collectors.toList());
+	}
+
+	
 }

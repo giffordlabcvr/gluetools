@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -44,18 +45,27 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	private String dbName;
 	private String eSearchTerm = null;
 	private int eSearchRetMax;
-	// could make format configurable later.
-	private CollatedSequenceFormat collatedSequenceFormat = CollatedSequenceFormat.GENBANK_FLAT_FILE;
+	private int eFetchBatchSize;
+	private List<String> specificSequenceIDs;
+	private CollatedSequenceFormat collatedSequenceFormat;
 
 	@Override
 	public void configure(Element sequenceSourcerElem) {
 		dbName = PluginUtils.configureString(sequenceSourcerElem, "database/text()", "nuccore");
-		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", true);
-		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 1000);
+		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", false);
+		if(eSearchTerm == null) {
+			specificSequenceIDs = PluginUtils.configureStrings(sequenceSourcerElem, "specificSequenceIDs/sequenceID/text()", true);
+		}
+		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 4000);
+		eFetchBatchSize = PluginUtils.configureInt(sequenceSourcerElem, "eFetchBatchSize/text()", 200);
+		collatedSequenceFormat = PluginUtils.configureEnum(CollatedSequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
 	}
 
 	@Override
 	public List<String> getSequenceIDs() {
+		if(specificSequenceIDs != null) {
+			return specificSequenceIDs;
+		}
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eSearchHttpRequest = createESearchRequest();
 			Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
@@ -77,21 +87,45 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	}
 
 	@Override
-	public List<CollatedSequence> retrieveSequences(List<String> sequenceIDs)
-			 {
-		String eFetchResponseString;
+	public List<CollatedSequence> retrieveSequences(List<String> sequenceIDs) {
+		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
+		int batchStart = 0;
+		int batchEnd;
+		do {
+			batchEnd = Math.min(batchStart+eFetchBatchSize, sequenceIDs.size());
+			resultSequences.addAll(fetchBatch(sequenceIDs.subList(batchStart, batchEnd)));
+			batchStart = batchEnd;
+		} while(batchEnd < sequenceIDs.size());
+		return resultSequences;
+	}
+
+	private List<CollatedSequence> fetchBatch(List<String> sequenceIDs) {
+		Object eFetchResponseObject;
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(sequenceIDs);
-			eFetchResponseString = runHttpRequestGetString("eFetch", eFetchRequest, httpClient);
+			switch(collatedSequenceFormat) {
+			case GENBANK_FLAT_FILE:
+				eFetchResponseObject = runHttpRequestGetString("eFetch", eFetchRequest, httpClient);
+				break;
+			case GENBANK_XML:
+				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
+				break;
+			default:
+				throw new SequenceSourcerException(SequenceSourcerException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+						collatedSequenceFormat.name());
+			}
 		} catch (IOException e) {
 			throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
 		}
-		if(collatedSequenceFormat != CollatedSequenceFormat.GENBANK_FLAT_FILE) {
-			throw new SequenceSourcerException(SequenceSourcerException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
-					collatedSequenceFormat.name());
-		}
 		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
-		List<String> individualGBFiles = GenbankFlatFileUtils.divideConcatenatedGBFiles(eFetchResponseString);
+		List<Object> individualGBFiles = null;
+		switch(collatedSequenceFormat) {
+		case GENBANK_FLAT_FILE:
+			individualGBFiles = GenbankFlatFileUtils.divideConcatenatedGBFiles((String) eFetchResponseObject);
+		case GENBANK_XML:
+			individualGBFiles = divideDocuments((Document) eFetchResponseObject);
+		}
+		
 		int i = 0;
 		for(String sequenceID: sequenceIDs) {
 			if(i >= individualGBFiles.size()) {
@@ -101,7 +135,13 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			collatedSequence.setFormat(collatedSequenceFormat);
 			collatedSequence.setSourceUniqueID(getSourceUniqueID());
 			collatedSequence.setSequenceSourceID(sequenceID);
-			collatedSequence.setSequenceText(individualGBFiles.get(i));
+			Object individualFile = individualGBFiles.get(i);
+			if(individualFile instanceof String) {
+				collatedSequence.setSequenceText((String) individualFile);
+			}
+			if(individualFile instanceof Document) {
+				collatedSequence.setSequenceDocument((Document) individualFile);
+			}
 			resultSequences.add(collatedSequence);
 			i++;
 		}
@@ -115,6 +155,17 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi?db=nuccore&version=2.0
 
 
+	private List<Object> divideDocuments(Document parentDocument) {
+		List<Element> elems = XmlUtils.getXPathElements(parentDocument, "/*/*");
+		return elems.stream().map(elem -> {
+			Document subDoc = XmlUtils.newDocument();
+			subDoc.appendChild(subDoc.importNode(elem, true));
+			XmlUtils.prettyPrint(subDoc, System.out);
+			System.out.println("--------------------------------------");
+			return subDoc;
+		}).collect(Collectors.toList());
+	}
+
 	private HttpUriRequest createEFetchRequest(List<String> idsToFetch)  {
 		String commaSeparatedIDs = String.join(",", idsToFetch.toArray(new String[]{}));
 
@@ -123,12 +174,23 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 		// Other formats are possible.
 		// http://www.ncbi.nlm.nih.gov/books/NBK25499/table/chapter4.T._valid_values_of__retmode_and/?report=objectonly
 		
-		if(collatedSequenceFormat != CollatedSequenceFormat.GENBANK_FLAT_FILE) {
-			throw new SequenceSourcerException(SequenceSourcerException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
-					collatedSequenceFormat.name());
+		String rettype;
+		String retmode;
+		switch(collatedSequenceFormat) {
+		case GENBANK_FLAT_FILE:
+			rettype="gb";
+			retmode="text";
+			break;
+		case GENBANK_XML:
+			rettype="gb";
+			retmode="xml";
+			break;
+			default:
+				throw new SequenceSourcerException(SequenceSourcerException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+						collatedSequenceFormat.name());
 		}
 		
-		String url = eUtilsBaseURL+"/efetch.fcgi?db="+dbName+"&rettype=gb&retmode=text";
+		String url = eUtilsBaseURL+"/efetch.fcgi?db="+dbName+"&rettype="+rettype+"&retmode="+retmode;
 		HttpPost httpPost = new HttpPost(url);
 
 		StringEntity requestEntity;

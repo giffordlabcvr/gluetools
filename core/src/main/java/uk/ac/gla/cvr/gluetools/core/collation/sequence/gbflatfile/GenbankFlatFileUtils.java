@@ -24,8 +24,8 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class GenbankFlatFileUtils {
 
-	public static List<String> divideConcatenatedGBFiles(String concatenated) {
-		List<String> individualGBFiles = new ArrayList<String>();
+	public static List<Object> divideConcatenatedGBFiles(String concatenated) {
+		List<Object> individualGBFiles = new ArrayList<Object>();
 		int startIndex = 0;
 		String delimiter = "\n//";
 		int matchLoc, endIndex;

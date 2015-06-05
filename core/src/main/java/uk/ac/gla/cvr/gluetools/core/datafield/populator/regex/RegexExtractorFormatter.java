@@ -30,33 +30,53 @@ public class RegexExtractorFormatter implements Plugin {
 	@Override
 	public void configure(Element configElem)  {
 		String matchPatternXPathExpression = "matchPattern/text()";
-		String matchPatternString = PluginUtils.configureString(configElem, matchPatternXPathExpression, true);
-		try {
-			matchPattern = Pattern.compile(matchPatternString);
-		} catch(PatternSyntaxException pse) {
-			throw new PluginConfigException(pse, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), matchPatternXPathExpression, pse.getLocalizedMessage(), matchPatternString);
+		String matchPatternString = PluginUtils.configureString(configElem, matchPatternXPathExpression, false);
+		if(matchPatternString != null) {
+			try {
+				matchPattern = Pattern.compile(matchPatternString);
+			} catch(PatternSyntaxException pse) {
+				throw new PluginConfigException(pse, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), matchPatternXPathExpression, pse.getLocalizedMessage(), matchPatternString);
+			}
+		} else {
+			matchPattern = null;
 		}
-		outputPattern = PluginUtils.configureString(configElem, "outputPattern/text()", "${0}");
+		outputPattern = PluginUtils.configureString(configElem, "outputPattern/text()", false);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public String matchAndConvert(String input) {
-		final Matcher matcher = matchPattern.matcher(input);
-		if(!matcher.find()) {
-			return null;
+		StrLookup variableResolver;
+		if(matchPattern == null) {
+			if(outputPattern == null) {
+				return input;
+			}
+			variableResolver = new StrLookup() {
+				@Override
+				public String lookup(String key) {
+					if(key.equals("0")) { return input; } else { return null; }
+				}
+			};
+		} else {
+			final Matcher matcher = matchPattern.matcher(input);
+			if(!matcher.find()) {
+				return null;
+			}
+			if(outputPattern == null) {
+				return matcher.group(0);
+			}
+			variableResolver = new StrLookup() {
+				@Override
+				public String lookup(String key) {
+					if(key.matches("\\d+")) {
+						return matcher.group(Integer.parseInt(key));
+					} else {
+						return matcher.group(key);
+					}
+				}
+			};
 		}
 		StrSubstitutor strSubstitutor = new StrSubstitutor();
 		strSubstitutor.setEscapeChar('\\');
-		@SuppressWarnings("rawtypes")
-		StrLookup variableResolver = new StrLookup() {
-			@Override
-			public String lookup(String key) {
-				if(key.matches("\\d+")) {
-					return matcher.group(Integer.parseInt(key));
-				} else {
-					return matcher.group(key);
-				}
-			}
-		};
 		strSubstitutor.setVariableResolver(variableResolver);
 		StrBuilder strBuilder = new StrBuilder(outputPattern);
 		strSubstitutor.replaceIn(strBuilder);

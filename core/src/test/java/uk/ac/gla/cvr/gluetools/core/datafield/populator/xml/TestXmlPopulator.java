@@ -1,16 +1,21 @@
 package uk.ac.gla.cvr.gluetools.core.datafield.populator.xml;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
+import uk.ac.gla.cvr.gluetools.core.datafield.BooleanField;
+import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
 import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorFactory;
@@ -23,26 +28,100 @@ public class TestXmlPopulator {
 	
 	@Test 
 	public void testXmlPopulator1() throws Exception {
-		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testXmlPopulator1.xml"));
-		DataFieldPopulator dataFieldPopulator = PluginFactory.get(DataFieldPopulatorFactory.creator).createFromElement(document.getDocumentElement());
+		String genbankFile = "testXmlPopulator1.gb";
+		String populatorRulesFile = "testXmlPopulator1.xml";
+		List<String> fieldNames = Arrays.asList("GB_GENOTYPE");
+		Project project = initProject(fieldNames);
+		List<CollatedSequence> collatedSequences = initSequences(project, genbankFile);
+		runPopulator(collatedSequences, populatorRulesFile);
+		dumpFieldValues(fieldNames, collatedSequences);
+	}
+
+	@Test 
+	public void testXmlPopulator2() throws Exception {
+		String genbankFile = "testXmlPopulator2.gb";
+		String populatorRulesFile = "testXmlPopulator2.xml";
+		List<String> fieldNames = Arrays.asList("GB_GENOTYPE", "GB_PRIMARY_ACCESSION");
+		Project project = initProject(fieldNames);
+		List<CollatedSequence> collatedSequences = initSequences(project, genbankFile);
+		runPopulator(collatedSequences, populatorRulesFile);
+		dumpFieldValues(fieldNames, collatedSequences);
+	}
+
+	@Test 
+	public void testHcvRuleSet() throws Exception {
+		String genbankFile = "HCV_all_genbank.gb";
+		String populatorRulesFile = "hcvRuleSet.xml";
+		List<DataField<?>> fields = Arrays.asList(
+				new StringField("GB_PRIMARY_ACCESSION"),
+				new StringField("GB_GENOTYPE"), 
+				new StringField("GB_SUBTYPE"), 
+				new BooleanField("GB_RECOMBINANT") 
+		);
+		Project project = initProjectFromFields(fields);
+		List<CollatedSequence> collatedSequences = initSequences(project, genbankFile);
+		runPopulator(collatedSequences, populatorRulesFile);
+		List<String> fieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
+		dumpFieldValues(fieldNames, collatedSequences);
+	}
+	
+	private void dumpFieldValues(List<String> fieldNames,
+			List<CollatedSequence> collatedSequences) {
+		collatedSequences.forEach(sequence -> {
+			fieldNames.forEach(fieldName -> {
+				sequence.getDataFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+":"+f.getValue()+", "); });
+			});
+			System.out.println();
+		});
+	}
+
+	private Project initProject(List<String> fieldNames) {
 		Project project = new Project();
-		project.addDataField(new StringField("GENBANK_GENOTYPE"));
+		fieldNames.forEach(f -> {project.addDataField(new StringField(f));});
+		return project;
+	}
+
+	private Project initProjectFromFields(List<DataField<?>> fields) {
+		Project project = new Project();
+		fields.forEach(f -> {project.addDataField(f);});
+		return project;
+	}
+
+	
+	private void runPopulator(List<CollatedSequence> collatedSequences, String populatorRulesFile)
+			throws SAXException, IOException {
+		Document document;
+		try(InputStream docStream = getClass().getResourceAsStream(populatorRulesFile)) {
+			document = XmlUtils.documentFromStream(docStream);
+		}
+		DataFieldPopulator dataFieldPopulator = PluginFactory.get(DataFieldPopulatorFactory.creator).createFromElement(document.getDocumentElement());
+		collatedSequences.forEach(sequence -> {
+			dataFieldPopulator.populate(sequence);
+		});
+	}
+
+	public List<CollatedSequence> initSequences(Project project, String genbankFile)
+			throws IOException {
 		String fileContent;
-		try(InputStream inputStream = getClass().getResourceAsStream("testXmlPopulator1.gb")) {	
+		try(InputStream inputStream = getClass().getResourceAsStream(genbankFile)) {	
 			fileContent = IOUtils.toString(inputStream);
 		}
-		List<String> gbStrings = GenbankFlatFileUtils.divideConcatenatedGBFiles(fileContent);
+		List<Object> gbStrings = GenbankFlatFileUtils.divideConcatenatedGBFiles(fileContent);
 		List<CollatedSequence> collatedSequences = gbStrings.stream().map(string -> {
 			CollatedSequence collatedSequence = new CollatedSequence();
 			collatedSequence.setOwningProject(project);
 			collatedSequence.setFormat(CollatedSequenceFormat.GENBANK_FLAT_FILE);
-			collatedSequence.setSequenceText(string);
+			collatedSequence.setSequenceText((String) string);
 			return collatedSequence;
 		}).collect(Collectors.toList());
-		collatedSequences.forEach(sequence -> {
-			dataFieldPopulator.populate(sequence);
-			System.out.println(sequence.getDataFieldValue("GENBANK_GENOTYPE").getValue());
-		});
-		
+		return collatedSequences;
 	}
+	
+	@Test
+	public void textXPath() throws Exception {
+		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testXmlPopulator1.xml"));
+		System.out.println(XmlUtils.getXPathStrings(document, "/dataFieldPopulator/*[self::rules|self::foo]/xPathNodes/xPathExpression/text()"));
+	}
+	
+	
 }

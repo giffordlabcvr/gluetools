@@ -45,8 +45,8 @@ public class TestRegexExtractorFormatter {
 	private RegexExtractorFormatter loadTestFile(String testFile)
 			throws SAXException, IOException {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream(testFile));
-		RegexExtractorFormatter regexExtractorFormatter = PluginFactory.get(RegexExtractorFormatterFactory.creator).
-				createFromElement(document.getDocumentElement());
+		RegexExtractorFormatter regexExtractorFormatter = PluginFactory.createPlugin(RegexExtractorFormatter.class,
+				document.getDocumentElement());
 		return regexExtractorFormatter;
 	}
 	

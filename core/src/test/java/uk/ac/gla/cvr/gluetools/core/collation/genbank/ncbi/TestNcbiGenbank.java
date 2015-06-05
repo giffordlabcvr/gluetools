@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
+
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerFactory;
@@ -36,4 +37,14 @@ public class TestNcbiGenbank {
 		Assert.assertEquals(sourceIDs, sequenceIDs);
 	}
 
+	@Test
+	public void retrieveAllHcvIncludedAsXml() throws Exception {
+		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
+		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
+		List<String> sequenceIDs = sequenceSourcer.getSequenceIDs();
+		System.out.println(sequenceIDs.size());
+		List<CollatedSequence> collatedSequences = sequenceSourcer.retrieveSequences(sequenceIDs);
+		
+	}
+	
 }

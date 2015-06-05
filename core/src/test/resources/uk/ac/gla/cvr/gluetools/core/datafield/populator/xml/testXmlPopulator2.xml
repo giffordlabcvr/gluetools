@@ -1,0 +1,13 @@
+<dataFieldPopulator>
+	<gbPrimaryAccession>
+		<fieldPopulator fieldName="GB_PRIMARY_ACCESSION"/>
+	</gbPrimaryAccession>
+	<gbFeature key="source">
+		<gbQualifier name="note">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>genotype:\s+([1-9][a-z])+</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+	</gbFeature>
+</dataFieldPopulator>

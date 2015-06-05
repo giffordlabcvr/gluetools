@@ -18,7 +18,7 @@ public class TestGBFlatFileUtils {
 		try(InputStream inputStream = getClass().getResourceAsStream("testinput1.gb")) {	
 			fileContent = IOUtils.toString(inputStream);
 		}
-		List<String> gbStrings = GenbankFlatFileUtils.divideConcatenatedGBFiles(fileContent);
+		List<Object> gbStrings = GenbankFlatFileUtils.divideConcatenatedGBFiles(fileContent);
 		Assert.assertEquals(4, gbStrings.size());
 	}
 	
