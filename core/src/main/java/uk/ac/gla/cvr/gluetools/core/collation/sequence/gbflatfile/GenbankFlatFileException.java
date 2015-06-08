@@ -6,7 +6,18 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class GenbankFlatFileException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		COMPOUND_NOT_FOUND, GENBANK_PARSING_FAILED, MULTIPLE_GENBANK_FILES_PARSED
+		COMPOUND_NOT_FOUND("errorTxt"), 
+		GENBANK_PARSING_FAILED, 
+		MULTIPLE_GENBANK_FILES_PARSED;
+		
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
+		}
 	}
 	
 	public GenbankFlatFileException(Code code, Object... errorArgs) {

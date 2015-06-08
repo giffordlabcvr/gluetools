@@ -57,7 +57,7 @@ public class GenbankFlatFileUtils {
 		try {
 			return dnaReader.process();
 		} catch (CompoundNotFoundException e) {
-			throw new GenbankFlatFileException(e, Code.COMPOUND_NOT_FOUND);
+			throw new GenbankFlatFileException(e, Code.COMPOUND_NOT_FOUND, e.getLocalizedMessage());
 		}
 	}
 	

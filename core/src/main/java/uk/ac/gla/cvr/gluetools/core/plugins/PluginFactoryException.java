@@ -6,7 +6,17 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class PluginFactoryException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		UNKNOWN_ELEMENT_NAME, PLUGIN_CREATION_FAILED
+		UNKNOWN_ELEMENT_NAME("factory", "elementName"), 
+		PLUGIN_CREATION_FAILED("class");
+		
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
+		}
 		
 	}
 	

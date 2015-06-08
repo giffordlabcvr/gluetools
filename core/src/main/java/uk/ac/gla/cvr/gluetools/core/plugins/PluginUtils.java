@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -29,7 +29,7 @@ public class PluginUtils {
 		if(configuredNode == null) {
 			return null;
 		}
-		setValidConfig(configuredNode);
+		setValidConfig(configElem, configuredNode);
 		return XmlUtils.getNodeText(configuredNode);
 	}
 
@@ -47,7 +47,7 @@ public class PluginUtils {
 		try {
 			return Integer.parseInt(configuredString);
 		} catch(NumberFormatException nfe) {
-			throw new PluginConfigException(nfe, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), xPathExpression, nfe.getLocalizedMessage());
+			throw new PluginConfigException(nfe, Code.CONFIG_FORMAT_ERROR, xPathExpression, nfe.getLocalizedMessage());
 		}
 	}
 
@@ -58,10 +58,10 @@ public class PluginUtils {
 	public static Element findConfigElement(Element configElem, String xPathExpression, boolean required)  {
 		Element configSubElem = XmlUtils.getXPathElement(configElem, xPathExpression);
 		if(configSubElem != null) {
-			setValidConfig(configSubElem);
+			setValidConfig(configElem, configSubElem);
 			return (Element) configSubElem;
 		} else if(required) {
-			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
+			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, xPathExpression);
 		} else {
 			return null;
 		}
@@ -80,18 +80,31 @@ public class PluginUtils {
 		if(min != null && size < min) {
 			throw new PluginConfigException(Code.TOO_FEW_CONFIG_ELEMENTS, configElem.getNodeName(), xPathExpression, size, max);
 		}
-		configSubElems.forEach(elem -> setValidConfig(elem));
+		configSubElems.forEach(elem -> setValidConfig(configElem, elem));
 		return configSubElems;
 	}
 	
-	public static void setValidConfig(Node node) {
+	/**
+	 * Sets the valid config flag to true for all the Element / Attribute ancestors of a node, 
+	 * up to, but not including the configElem.
+	 * @param configElem
+	 * @param node
+	 */
+	public static void setValidConfig(Element configElem, Node node) {
 		while(!(node instanceof Attr || node instanceof Element)) {
 			node = node.getParentNode();
 		}
-		while(node != null && !isValidConfig(node)) {
-			node.setUserData("glueTools.PluginUtils", Boolean.TRUE, null);
+		while(node != configElem) {
+			setValidConfigLocal(node);
 			node = node.getParentNode();
 		}
+	}
+
+	/**
+	 * Sets the valid config flag to true for a node, 
+	 */
+	public static void setValidConfigLocal(Node node) {
+		node.setUserData("glueTools.PluginUtils", Boolean.TRUE, null);
 	}
 
 	public static boolean isValidConfig(Node node) {
@@ -113,17 +126,39 @@ public class PluginUtils {
 		try {
 			return Enum.valueOf(enumClass, configuredString);
 		} catch(IllegalArgumentException iae) {
-			throw new PluginConfigException(iae, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), xPathExpression, iae.getLocalizedMessage());
+			throw new PluginConfigException(iae, Code.CONFIG_FORMAT_ERROR, xPathExpression, iae.getLocalizedMessage());
 		}
 	}
 
 	public static List<String> configureStrings(Element configElem, String xPathExpression, boolean required) {
 		List<Node> configuredNodes = XmlUtils.getXPathNodes(configElem, xPathExpression);
 		if(required && configuredNodes.isEmpty()) {
-			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
+			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, xPathExpression);
 		}
-		configuredNodes.forEach(c -> setValidConfig(c));
+		configuredNodes.forEach(c -> setValidConfig(configElem, c));
 		return configuredNodes.stream().map(c -> XmlUtils.getNodeText(c)).collect(Collectors.toList());
+	}
+
+	public static void checkValidConfig(Element element) {
+		checkValidConfig(element, "");
+	}
+
+	private static void checkValidConfig(Element element, String xPathBase) {
+		NodeList childNodes = element.getChildNodes();
+		for(int i = 0; i < childNodes.getLength(); i++) {
+			Node node = childNodes.item(i);
+			if(node instanceof Element) {
+				String xPath = xPathBase+node.getNodeName();
+				if(!PluginUtils.isValidConfig(node)) {
+					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ELEMENT, xPath);
+				}
+				checkValidConfig((Element) node, xPath+"/");
+			} else if(node instanceof Attr) {
+				if(!PluginUtils.isValidConfig(node)) {
+					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ATTRIBUTE, xPathBase+"@"+node.getNodeName());
+				}
+			}
+		}
 	}
 
 	

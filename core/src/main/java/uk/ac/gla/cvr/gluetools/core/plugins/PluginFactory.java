@@ -6,10 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -66,18 +63,9 @@ public class PluginFactory<P extends Plugin> {
 		} catch(Exception e) {
 			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
 		}
+		PluginUtils.setValidConfigLocal(element);
 		plugin.configure(element);
-		NodeList childNodes = element.getChildNodes();
-		for(int i = 0; i < childNodes.getLength(); i++) {
-			Node node = childNodes.item(i);
-			if(!PluginUtils.isValidConfig(node)) {
-				if(node instanceof Element) {
-					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ELEMENT, pluginClass.getCanonicalName(), node.getNodeName());
-				} else if(node instanceof Attr) {
-					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ATTRIBUTE, pluginClass.getCanonicalName(), node.getNodeName());
-				}
-			}
-		}
+		PluginUtils.checkValidConfig(element);
 		return plugin;
 	}
 	

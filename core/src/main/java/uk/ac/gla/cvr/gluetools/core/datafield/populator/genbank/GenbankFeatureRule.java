@@ -22,7 +22,7 @@ public class GenbankFeatureRule extends NodeSelectorRule {
 		try {
 			setXPathExpression(XmlUtils.createXPathEngine().compile(xPathString));
 		} catch (XPathExpressionException xpee) {
-			throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), keyXPath, xpee.getLocalizedMessage(), featureKey);
+			throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, keyXPath, xpee.getLocalizedMessage(), featureKey);
 		}
 	}
 

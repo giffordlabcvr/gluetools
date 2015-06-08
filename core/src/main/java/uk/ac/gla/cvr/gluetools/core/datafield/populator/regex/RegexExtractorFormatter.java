@@ -35,7 +35,7 @@ public class RegexExtractorFormatter implements Plugin {
 			try {
 				matchPattern = Pattern.compile(matchPatternString);
 			} catch(PatternSyntaxException pse) {
-				throw new PluginConfigException(pse, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), matchPatternXPathExpression, pse.getLocalizedMessage(), matchPatternString);
+				throw new PluginConfigException(pse, Code.CONFIG_FORMAT_ERROR, matchPatternXPathExpression, pse.getLocalizedMessage(), matchPatternString);
 			}
 		} else {
 			matchPattern = null;

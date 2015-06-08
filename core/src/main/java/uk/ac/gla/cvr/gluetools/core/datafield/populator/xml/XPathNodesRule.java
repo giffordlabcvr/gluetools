@@ -28,7 +28,7 @@ public class XPathNodesRule extends NodeSelectorRule implements Plugin {
 		try {
 			setXPathExpression(xPathEngine.compile(xPathExpressionString));
 		} catch (XPathExpressionException xpee) {
-			throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, configElem.getNodeName(), 
+			throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, 
 					xPathExpressionExpression, xpee.getLocalizedMessage(), xPathExpressionString);
 		}
 	}

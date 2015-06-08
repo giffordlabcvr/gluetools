@@ -6,12 +6,21 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class SequenceSourcerException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		IO_ERROR, 
-		FORMATTING_ERROR,
-		SEARCH_ERROR,
-		PROTOCOL_ERROR,
-		CANNOT_PROCESS_SEQUENCE_FORMAT, 
-		INSUFFICIENT_SEQUENCES_RETURNED
+		IO_ERROR("requestName", "errorTxt"), 
+		FORMATTING_ERROR("requestName", "errorTxt"),
+		SEARCH_ERROR("errorTxt"),
+		PROTOCOL_ERROR("requestName", "errorTxt"),
+		CANNOT_PROCESS_SEQUENCE_FORMAT("formatName"), 
+		INSUFFICIENT_SEQUENCES_RETURNED();
+		
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
+		}
 	}
 
 	public SequenceSourcerException(Code code, Object... errorArgs) {
