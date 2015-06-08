@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -153,7 +154,12 @@ public class PluginUtils {
 					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ELEMENT, xPath);
 				}
 				checkValidConfig((Element) node, xPath+"/");
-			} else if(node instanceof Attr) {
+			} 
+		}
+		NamedNodeMap attributes = element.getAttributes();
+		for(int j = 0; j < attributes.getLength(); j++) {
+			Node node = attributes.item(j);
+			if(node instanceof Attr) {
 				if(!PluginUtils.isValidConfig(node)) {
 					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ATTRIBUTE, xPathBase+"@"+node.getNodeName());
 				}

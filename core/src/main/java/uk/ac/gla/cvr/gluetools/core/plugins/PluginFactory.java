@@ -45,7 +45,11 @@ public class PluginFactory<P extends Plugin> {
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
-		return createPlugin(pluginClass, element);
+		try {
+			return createPlugin(pluginClass, element);
+		} catch(Exception e) {
+			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
+		}
 	}
 	
 	public List<P> createFromElements(List<Element> elements)  {
