@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.collation.genbank.ncbi;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,9 +44,16 @@ public class TestNcbiGenbank {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
 		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
 		List<String> sequenceIDs = sequenceSourcer.getSequenceIDs();
-		System.out.println(sequenceIDs.size());
 		List<CollatedSequence> collatedSequences = sequenceSourcer.retrieveSequences(sequenceIDs);
-		
+		File directory = new File("/Users/joshsinger/hcv_rega/retrieved_xml");
+		collatedSequences.forEach(seq -> {
+			File xmlFile = new File(directory, seq.getSequenceSourceID()+".xml");
+			try(FileOutputStream fileOutputStream = new FileOutputStream(xmlFile)) {
+				XmlUtils.prettyPrint(seq.asXml(), fileOutputStream);
+			} catch(Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
 	}
 	
 }

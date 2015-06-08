@@ -1,15 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.datafield.populator.xml;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
@@ -50,7 +54,7 @@ public class TestXmlPopulator {
 
 	@Test 
 	public void testHcvRuleSet() throws Exception {
-		String genbankFile = "HCV_all_genbank.gb";
+		String xmlDirectory = "/Users/joshsinger/hcv_rega/retrieved_xml";
 		String populatorRulesFile = "hcvRuleSet.xml";
 		List<DataField<?>> fields = Arrays.asList(
 				new StringField("GB_PRIMARY_ACCESSION"),
@@ -59,7 +63,7 @@ public class TestXmlPopulator {
 				new BooleanField("GB_RECOMBINANT") 
 		);
 		Project project = initProjectFromFields(fields);
-		List<CollatedSequence> collatedSequences = initSequences(project, genbankFile);
+		List<CollatedSequence> collatedSequences = initSequencesXml(project, xmlDirectory);
 		runPopulator(collatedSequences, populatorRulesFile);
 		List<String> fieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
 		dumpFieldValues(fieldNames, collatedSequences);
@@ -69,7 +73,7 @@ public class TestXmlPopulator {
 			List<CollatedSequence> collatedSequences) {
 		collatedSequences.forEach(sequence -> {
 			fieldNames.forEach(fieldName -> {
-				sequence.getDataFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+":"+f.getValue()+", "); });
+				sequence.getDataFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+": "+f.getValue()+", "); });
 			});
 			System.out.println();
 		});
@@ -115,6 +119,24 @@ public class TestXmlPopulator {
 			return collatedSequence;
 		}).collect(Collectors.toList());
 		return collatedSequences;
+	}
+	
+	public List<CollatedSequence> initSequencesXml(Project project, String directoryPath) {
+		File directory = new File(directoryPath);
+		File[] files = directory.listFiles();
+		return Arrays.asList(files).stream().map(file -> {
+			Document document;
+			try(FileInputStream fileInputStream = new FileInputStream(file)) {
+				document = XmlUtils.documentFromStream(fileInputStream);
+			} catch(Exception e) {
+				throw new RuntimeException(e);
+			}
+			CollatedSequence collatedSequence = new CollatedSequence();
+			collatedSequence.setOwningProject(project);
+			collatedSequence.setFormat(CollatedSequenceFormat.GENBANK_XML);
+			collatedSequence.setSequenceDocument(document);
+			return collatedSequence;
+		}).collect(Collectors.toList());
 	}
 	
 	@Test

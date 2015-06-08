@@ -5,11 +5,27 @@
 	<gbFeature key="source">
 		<gbQualifier name="note">
 			<fieldPopulator fieldName="GB_GENOTYPE">
-				<matchPattern>genotype:\s+([1-9])[a-z]*</matchPattern>
+				<matchPattern>genotype:?\s+([1-9])</matchPattern>
 				<outputPattern>${1}</outputPattern>
 			</fieldPopulator>
 			<fieldPopulator fieldName="GB_SUBTYPE">
-				<matchPattern>genotype:\s+[1-9]([a-z]+)</matchPattern>
+				<matchPattern>genotype:?\s+[1-9]([a-z]+)</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="genotype">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="organism">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>subtype\s+([1-9])</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>subtype\s+[1-9]([a-z]+)</matchPattern>
 				<outputPattern>${1}</outputPattern>
 			</fieldPopulator>
 		</gbQualifier>

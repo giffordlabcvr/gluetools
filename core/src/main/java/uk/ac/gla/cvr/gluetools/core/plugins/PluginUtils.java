@@ -97,7 +97,11 @@ public class PluginUtils {
 		}
 		while(node != configElem) {
 			setValidConfigLocal(node);
-			node = node.getParentNode();
+			if(node instanceof Attr) {
+				node = ((Attr) node).getOwnerElement();
+			} else {
+				node = node.getParentNode();
+			}
 		}
 	}
 
