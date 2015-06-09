@@ -8,12 +8,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
@@ -56,22 +54,37 @@ public class TestXmlPopulator {
 	public void testHcvRuleSet() throws Exception {
 		String xmlDirectory = "/Users/joshsinger/hcv_rega/retrieved_xml";
 		String populatorRulesFile = "hcvRuleSet.xml";
+		String 
+			GB_PRIMARY_ACCESSION = "GB_PRIMARY_ACCESSION",
+			GB_GENOTYPE = "GB_GENOTYPE",
+			GB_SUBTYPE = "GB_SUBTYPE",
+			GB_RECOMBINANT = "GB_RECOMBINANT",
+			GB_PATENT_RELATED = "GB_PATENT_RELATED";
+		
 		List<DataField<?>> fields = Arrays.asList(
-				new StringField("GB_PRIMARY_ACCESSION"),
-				new StringField("GB_GENOTYPE"), 
-				new StringField("GB_SUBTYPE"), 
-				new BooleanField("GB_RECOMBINANT") 
+				new StringField(GB_PRIMARY_ACCESSION),
+				new StringField(GB_GENOTYPE), 
+				new StringField(GB_SUBTYPE), 
+				new BooleanField(GB_RECOMBINANT),
+				new BooleanField(GB_PATENT_RELATED)
+				
 		);
 		Project project = initProjectFromFields(fields);
 		List<CollatedSequence> collatedSequences = initSequencesXml(project, xmlDirectory);
 		runPopulator(collatedSequences, populatorRulesFile);
-		List<String> fieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
-		dumpFieldValues(fieldNames, collatedSequences);
+		//List<String> displayFieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
+		List<String> displayFieldNames = Arrays.asList(
+				GB_GENOTYPE,
+				GB_SUBTYPE,
+				GB_RECOMBINANT
+		);
+		dumpFieldValues(displayFieldNames, collatedSequences);
 	}
 	
 	private void dumpFieldValues(List<String> fieldNames,
 			List<CollatedSequence> collatedSequences) {
 		collatedSequences.forEach(sequence -> {
+			System.out.print(sequence.getSequenceSourceID()+" -- ");
 			fieldNames.forEach(fieldName -> {
 				sequence.getDataFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+": "+f.getValue()+", "); });
 			});
@@ -133,6 +146,7 @@ public class TestXmlPopulator {
 			}
 			CollatedSequence collatedSequence = new CollatedSequence();
 			collatedSequence.setOwningProject(project);
+			collatedSequence.setSequenceSourceID(file.getName().replace(".xml", ""));
 			collatedSequence.setFormat(CollatedSequenceFormat.GENBANK_XML);
 			collatedSequence.setSequenceDocument(document);
 			return collatedSequence;

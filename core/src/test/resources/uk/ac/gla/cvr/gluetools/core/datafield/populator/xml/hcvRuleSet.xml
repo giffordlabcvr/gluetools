@@ -12,10 +12,28 @@
 				<matchPattern>genotype:?\s+[1-9]([a-z]+)</matchPattern>
 				<outputPattern>${1}</outputPattern>
 			</fieldPopulator>
+			<fieldPopulator fieldName="GB_RECOMBINANT">
+				<matchPattern>[Rr]ecombinant</matchPattern>
+				<outputPattern>true</outputPattern>
+			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="genotype">
 			<fieldPopulator fieldName="GB_GENOTYPE">
 				<matchPattern>([1-9])</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>[1-9]([a-z]+)</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="subtype">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])[a-z]+</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>([a-z]+)</matchPattern>
 				<outputPattern>${1}</outputPattern>
 			</fieldPopulator>
 		</gbQualifier>
@@ -28,6 +46,12 @@
 				<matchPattern>subtype\s+[1-9]([a-z]+)</matchPattern>
 				<outputPattern>${1}</outputPattern>
 			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="strain">
+			<fieldPopulator fieldName="GB_RECOMBINANT">
+				<matchPattern>[Rr]ecombinant</matchPattern>
+				<outputPattern>true</outputPattern>
+			</fieldPopulator>		
 		</gbQualifier>
 	</gbFeature>
 </dataFieldPopulator>
