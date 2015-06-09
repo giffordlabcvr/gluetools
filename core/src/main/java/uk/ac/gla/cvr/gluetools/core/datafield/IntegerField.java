@@ -10,9 +10,9 @@ public class IntegerField extends DataField<Integer> {
 	}
 
 	@Override
-	public DataFieldValue<Integer> valueFromString(String string) {
+	public FieldValue<Integer> valueFromString(String string) {
 		try {
-			return new DataFieldValue<Integer>(this, Integer.parseInt(string));
+			return new FieldValue<Integer>(this, Integer.parseInt(string));
 		} catch(NumberFormatException nfe) {
 			throw new DataFieldPopulatorException(nfe, Code.INCORRECT_VALUE_FORMAT, string, getValueClass().getSimpleName(), getName(), nfe.getMessage());
 		}

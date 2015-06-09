@@ -25,9 +25,9 @@ public class FieldPopulatorRule extends PopulatorRule implements Plugin {
 	@Override
 	public void configure(Element configElem)  {
 		dataFieldName = PluginUtils.configureString(configElem, "@fieldName", true);
-		mainExtractor = PluginFactory.createPlugin(RegexExtractorFormatter.class, configElem);
 		valueConverters = PluginFactory.createPlugins(RegexExtractorFormatter.class, 
 				PluginUtils.findConfigElements(configElem, "valueConverter"));
+		mainExtractor = PluginFactory.createPlugin(RegexExtractorFormatter.class, configElem);
 	}
 
 	
@@ -59,7 +59,7 @@ public class FieldPopulatorRule extends PopulatorRule implements Plugin {
 		if(!collatedSequence.getOwningProject().hasDataField(dataFieldName)) {
 			return;
 		}
-		if(collatedSequence.hasDataFieldValue(dataFieldName)) {
+		if(collatedSequence.hasFieldValue(dataFieldName)) {
 			return;
 		}
 		String selectedText;

@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -18,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.datafield.BooleanField;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
+import uk.ac.gla.cvr.gluetools.core.datafield.FieldValue;
 import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorFactory;
@@ -27,6 +31,15 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 
 public class TestXmlPopulator {
+	
+	String 
+		GB_PRIMARY_ACCESSION = "GB_PRIMARY_ACCESSION",
+		GB_GENOTYPE = "GB_GENOTYPE",
+		GB_SUBTYPE = "GB_SUBTYPE",
+		GB_RECOMBINANT = "GB_RECOMBINANT",
+		GB_PATENT_RELATED = "GB_PATENT_RELATED",
+		GB_ORGANISM = "GB_ORGANISM",
+		GB_ISOLATE = "GB_ISOLATE";
 	
 	@Test 
 	public void testXmlPopulator1() throws Exception {
@@ -54,31 +67,57 @@ public class TestXmlPopulator {
 	public void testHcvRuleSet() throws Exception {
 		String xmlDirectory = "/Users/joshsinger/hcv_rega/retrieved_xml";
 		String populatorRulesFile = "hcvRuleSet.xml";
-		String 
-			GB_PRIMARY_ACCESSION = "GB_PRIMARY_ACCESSION",
-			GB_GENOTYPE = "GB_GENOTYPE",
-			GB_SUBTYPE = "GB_SUBTYPE",
-			GB_RECOMBINANT = "GB_RECOMBINANT",
-			GB_PATENT_RELATED = "GB_PATENT_RELATED";
+		
 		
 		List<DataField<?>> fields = Arrays.asList(
 				new StringField(GB_PRIMARY_ACCESSION),
 				new StringField(GB_GENOTYPE), 
-				new StringField(GB_SUBTYPE), 
+				new StringField(GB_SUBTYPE),
+				new StringField(GB_ORGANISM),
 				new BooleanField(GB_RECOMBINANT),
-				new BooleanField(GB_PATENT_RELATED)
+				new BooleanField(GB_PATENT_RELATED),
+				new StringField(GB_ISOLATE)
 				
 		);
 		Project project = initProjectFromFields(fields);
 		List<CollatedSequence> collatedSequences = initSequencesXml(project, xmlDirectory);
 		runPopulator(collatedSequences, populatorRulesFile);
+		Predicate<? super CollatedSequence> problematicPredicate = problematicPredicate();
+		
+		collatedSequences = collatedSequences.stream().filter(problematicPredicate).collect(Collectors.toList());
 		//List<String> displayFieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
 		List<String> displayFieldNames = Arrays.asList(
 				GB_GENOTYPE,
 				GB_SUBTYPE,
-				GB_RECOMBINANT
+				GB_RECOMBINANT,
+				GB_PATENT_RELATED
+				// GB_ISOLATE
 		);
 		dumpFieldValues(displayFieldNames, collatedSequences);
+	}
+
+	// return true if the sequence fields are problematic.
+	private Predicate<? super CollatedSequence> problematicPredicate() {
+		return seq -> {
+			if(!seq.getString(GB_ORGANISM).equals(Optional.of("Hepatitis C virus"))) {
+				return false;
+			}
+			if(seq.getBoolean(GB_PATENT_RELATED).equals(Optional.of(Boolean.TRUE))) {
+				if(seq.hasFieldValue(GB_GENOTYPE) || seq.hasFieldValue(GB_SUBTYPE)) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+			if(seq.getBoolean(GB_RECOMBINANT).equals(Optional.of(Boolean.TRUE))) {
+				return false;
+			}
+			if(seq.hasFieldValue(GB_GENOTYPE) && seq.hasFieldValue(GB_SUBTYPE)) {
+				return false;
+			}			
+			return true;
+
+		};
 	}
 	
 	private void dumpFieldValues(List<String> fieldNames,
@@ -86,10 +125,12 @@ public class TestXmlPopulator {
 		collatedSequences.forEach(sequence -> {
 			System.out.print(sequence.getSequenceSourceID()+" -- ");
 			fieldNames.forEach(fieldName -> {
-				sequence.getDataFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+": "+f.getValue()+", "); });
+				sequence.getFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+": "+f.getValue()+", "); });
 			});
 			System.out.println();
 		});
+		System.out.println("------------------\nTotal: "+collatedSequences.size()+" sequences");
+		
 	}
 
 	private Project initProject(List<String> fieldNames) {

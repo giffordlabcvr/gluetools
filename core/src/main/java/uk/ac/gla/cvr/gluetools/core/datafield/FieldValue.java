@@ -1,11 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.datafield;
 
-public class DataFieldValue<T> {
+public class FieldValue<T> {
 
 	private DataField<T> dataField;
 	private T value;
 	
-	public DataFieldValue(DataField<T> dataField, T value) {
+	public FieldValue(DataField<T> dataField, T value) {
 		super();
 		this.dataField = dataField;
 		this.value = value;

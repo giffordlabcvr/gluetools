@@ -7,8 +7,8 @@ public class StringField extends DataField<String> {
 	}
 
 	@Override
-	public DataFieldValue<String> valueFromString(String string) {
-		return new DataFieldValue<String>(this, string);
+	public FieldValue<String> valueFromString(String string) {
+		return new FieldValue<String>(this, string);
 	}
 
 }

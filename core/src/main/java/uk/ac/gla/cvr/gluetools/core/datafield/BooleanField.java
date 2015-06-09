@@ -8,8 +8,8 @@ public class BooleanField extends DataField<Boolean> {
 	}
 
 	@Override
-	public DataFieldValue<Boolean> valueFromString(String string) {
-		return new DataFieldValue<Boolean>(this, Boolean.parseBoolean(string));
+	public FieldValue<Boolean> valueFromString(String string) {
+		return new FieldValue<Boolean>(this, Boolean.parseBoolean(string));
 	}
 
 

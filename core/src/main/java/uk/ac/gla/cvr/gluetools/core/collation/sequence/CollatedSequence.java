@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
-import uk.ac.gla.cvr.gluetools.core.datafield.DataFieldValue;
+import uk.ac.gla.cvr.gluetools.core.datafield.FieldValue;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.project.Project;
@@ -28,7 +28,7 @@ public class CollatedSequence {
 
 	private Project owningProject;
 	
-	private Map<String, DataFieldValue<?>> dataFieldValues = new LinkedHashMap<String, DataFieldValue<?>>();
+	private Map<String, FieldValue<?>> fieldValues = new LinkedHashMap<String, FieldValue<?>>();
 	
 	private String sequenceSourceID;
 	
@@ -78,7 +78,7 @@ public class CollatedSequence {
 		if(dataField == null) {
 			throw new DataFieldPopulatorException(Code.NO_SUCH_FIELD, name, owningProject.getID());
 		}
-		dataFieldValues.put(name, dataField.valueFromString(valueAsString));
+		fieldValues.put(name, dataField.valueFromString(valueAsString));
 	}
 
 	public Document asXml() {
@@ -96,12 +96,24 @@ public class CollatedSequence {
 		this.owningProject = owningProject;
 	}
 
-	public Optional<DataFieldValue<?>> getDataFieldValue(String name) {
-		return Optional.ofNullable(dataFieldValues.get(name));
+	public Optional<FieldValue<?>>getFieldValue(String name) {
+		return Optional.ofNullable(fieldValues.get(name));
 	}
 
-	public boolean hasDataFieldValue(String dataFieldName) {
-		return dataFieldValues.containsKey(dataFieldName);
+	public boolean hasFieldValue(String dataFieldName) {
+		return fieldValues.containsKey(dataFieldName);
+	}
+	
+	public Optional<Boolean> getBoolean(String fieldName) {
+		return getFieldValue(fieldName).map(dfv -> (Boolean) dfv.getValue());
+	}
+
+	public Optional<String> getString(String fieldName) {
+		return getFieldValue(fieldName).map(dfv -> (String) dfv.getValue());
+	}
+
+	public Optional<Integer> getInteger(String fieldName) {
+		return getFieldValue(fieldName).map(dfv -> (Integer) dfv.getValue());
 	}
 
 	public void setSequenceDocument(Document document) {
