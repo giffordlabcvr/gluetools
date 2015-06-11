@@ -93,8 +93,17 @@ public class XmlUtils {
 		return elems;
 	}
 
+	public static List<Node> getXPathNodes(Node startNode, XPathExpression xPathExpression) {
+		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		return nodeListToNodes(resultNodeList);
+	}
+	
 	public static List<Node> getXPathNodes(Node startNode, String xPathExpression) {
 		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		return nodeListToNodes(resultNodeList);
+	}
+
+	private static List<Node> nodeListToNodes(NodeList resultNodeList) {
 		List<Node> nodes = new ArrayList<Node>();
 		for(int i = 0; i < resultNodeList.getLength(); i++) {
 			nodes.add(resultNodeList.item(i));

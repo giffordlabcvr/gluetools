@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.datafield.BooleanField;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
-import uk.ac.gla.cvr.gluetools.core.datafield.FieldValue;
+import uk.ac.gla.cvr.gluetools.core.datafield.IntegerField;
 import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorFactory;
@@ -33,13 +32,18 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 public class TestXmlPopulator {
 	
 	String 
+		GB_GI_NUMBER = "GB_GI_NUMBER",
 		GB_PRIMARY_ACCESSION = "GB_PRIMARY_ACCESSION",
+		GB_LENGTH = "GB_LENGTH",
 		GB_GENOTYPE = "GB_GENOTYPE",
 		GB_SUBTYPE = "GB_SUBTYPE",
 		GB_RECOMBINANT = "GB_RECOMBINANT",
 		GB_PATENT_RELATED = "GB_PATENT_RELATED",
 		GB_ORGANISM = "GB_ORGANISM",
-		GB_ISOLATE = "GB_ISOLATE";
+		GB_ISOLATE = "GB_ISOLATE",
+		GB_TAXONOMY = "GB_TAXONOMY",
+		GB_HOST = "GB_HOST", 
+		GB_COUNTRY = "GB_COUNTRY";
 	
 	@Test 
 	public void testXmlPopulator1() throws Exception {
@@ -69,30 +73,41 @@ public class TestXmlPopulator {
 		String populatorRulesFile = "hcvRuleSet.xml";
 		
 		
-		List<DataField<?>> fields = Arrays.asList(
+		List<DataField<?>> fields = Arrays.asList(new DataField<?>[]{
+				new StringField(GB_GI_NUMBER),
 				new StringField(GB_PRIMARY_ACCESSION),
+				new IntegerField(GB_LENGTH),
 				new StringField(GB_GENOTYPE), 
 				new StringField(GB_SUBTYPE),
-				new StringField(GB_ORGANISM),
 				new BooleanField(GB_RECOMBINANT),
 				new BooleanField(GB_PATENT_RELATED),
-				new StringField(GB_ISOLATE)
-				
-		);
+				new StringField(GB_ORGANISM),
+				new StringField(GB_ISOLATE),
+				new StringField(GB_TAXONOMY),
+				new StringField(GB_HOST),
+				new StringField(GB_COUNTRY),
+		});
 		Project project = initProjectFromFields(fields);
 		List<CollatedSequence> collatedSequences = initSequencesXml(project, xmlDirectory);
 		runPopulator(collatedSequences, populatorRulesFile);
 		Predicate<? super CollatedSequence> problematicPredicate = problematicPredicate();
 		
-		collatedSequences = collatedSequences.stream().filter(problematicPredicate).collect(Collectors.toList());
+		//collatedSequences = collatedSequences.stream().filter(problematicPredicate).collect(Collectors.toList());
 		//List<String> displayFieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
-		List<String> displayFieldNames = Arrays.asList(
+		List<String> displayFieldNames = Arrays.asList(new String[]{
+		/*		GB_GI_NUMBER,
+				GB_PRIMARY_ACCESSION,
+				GB_LENGTH,
 				GB_GENOTYPE,
 				GB_SUBTYPE,
-				GB_RECOMBINANT,
-				GB_PATENT_RELATED
-				// GB_ISOLATE
-		);
+				GB_RECOMBINANT, */
+				GB_PATENT_RELATED,
+			/*	GB_ORGANISM,
+				GB_ISOLATE,
+				GB_TAXONOMY, */
+				GB_HOST, 
+			/*	GB_COUNTRY, */
+		});
 		dumpFieldValues(displayFieldNames, collatedSequences);
 	}
 

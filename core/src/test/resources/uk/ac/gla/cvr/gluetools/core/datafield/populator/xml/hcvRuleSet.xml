@@ -2,6 +2,18 @@
 	<gbPrimaryAccession>
 		<fieldPopulator fieldName="GB_PRIMARY_ACCESSION"/>
 	</gbPrimaryAccession>
+	<gbOtherID>
+		<fieldPopulator fieldName="GB_GI_NUMBER">
+			<matchPattern>gi\|(\d+)</matchPattern>
+			<outputPattern>${1}</outputPattern>
+		</fieldPopulator>
+	</gbOtherID>
+	<gbTaxonomy>
+		<fieldPopulator fieldName="GB_TAXONOMY"/>
+	</gbTaxonomy>
+	<gbLength>
+		<fieldPopulator fieldName="GB_LENGTH"/>
+	</gbLength>
 	<gbOrganism>
 		<fieldPopulator fieldName="GB_ORGANISM">
 			<valueConverter>
@@ -14,15 +26,29 @@
 				<outputPattern>true</outputPattern>
 		</fieldPopulator>
 	</gbOrganism>
-	<gbSeqDivision>
+	<gbDivision>
 		<fieldPopulator fieldName="GB_PATENT_RELATED">
 			<matchPattern>PAT</matchPattern>
 			<outputPattern>true</outputPattern>
 		</fieldPopulator>
-	</gbSeqDivision>
+	</gbDivision>
 	<gbFeature key="source">
 		<gbQualifier name="isolate">
 			<fieldPopulator fieldName="GB_ISOLATE"/>
+		</gbQualifier>
+		<gbQualifier name="country">
+			<fieldPopulator fieldName="GB_COUNTRY">
+				<matchPattern>([A-Za-z ]+)(?::.*)?</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="host">
+			<fieldPopulator fieldName="GB_HOST">
+				<valueConverter>
+					<matchPattern>.*Homo [sS]apiens.*</matchPattern>
+					<outputPattern>Homo sapiens</outputPattern>
+				</valueConverter>
+			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="note">
 			<fieldPopulator fieldName="GB_GENOTYPE">
@@ -57,7 +83,9 @@
 			</fieldPopulator>
 		</gbQualifier>
 
-	<!-- this will genotype about 70 odd sequences, not sure if it is valid. -->
+	<!-- this rule will genotype about 70 odd sequences, not sure if it is valid. 
+		Had a look at ViPR (www.viprbrc.org), they are also treating serotype as 
+		genotype / subtype -->
 		<gbQualifier name="serotype">
 			<fieldPopulator fieldName="GB_GENOTYPE">
 				<matchPattern>([1-9])</matchPattern>

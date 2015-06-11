@@ -27,14 +27,14 @@ public abstract class NodeSelectorRule extends PopulatorRule {
 		return xPathExpression;
 	}
 
-	protected Node selectNode(Node node) {
-		Node selectedNode;
+	private List<Node> selectNodes(Node node) {
+		List<Node> selectedNodes;
 		try {
-			selectedNode = XmlUtils.getXPathNode(node, getXPathExpression());
+			selectedNodes = XmlUtils.getXPathNodes(node, getXPathExpression());
 		} catch (Exception e) {
 			throw new DataFieldPopulatorException(e, DataFieldPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 		}
-		return selectedNode;
+		return selectedNodes;
 	}
 
 	protected List<PopulatorRule> getChildRules() {
@@ -59,20 +59,19 @@ public abstract class NodeSelectorRule extends PopulatorRule {
 	}
 
 	protected void executeChildRules(CollatedSequence collatedSequence, Node selectedNode) {
-		if(selectedNode != null) {
-			childRules.forEach(rule -> {
-				try {
-					rule.execute(collatedSequence, selectedNode);
-				} catch(Exception e) {
-					throw new DataFieldPopulatorException(e, DataFieldPopulatorException.Code.POPULATOR_CHILD_RULE_FAILED, e.getLocalizedMessage());
-				}
-			});
-		}
+		childRules.forEach(rule -> {
+			try {
+				rule.execute(collatedSequence, selectedNode);
+			} catch(Exception e) {
+				throw new DataFieldPopulatorException(e, DataFieldPopulatorException.Code.POPULATOR_CHILD_RULE_FAILED, e.getLocalizedMessage());
+			}
+		});
 	}
 
 	public final void execute(CollatedSequence collatedSequence, Node node) {
-		Node selectedNode = selectNode(node);
-		executeChildRules(collatedSequence, selectedNode);
+		List<Node> selectedNodes = selectNodes(node);
+		selectedNodes.forEach(selectedNode ->
+			executeChildRules(collatedSequence, selectedNode));
 	}
 
 }

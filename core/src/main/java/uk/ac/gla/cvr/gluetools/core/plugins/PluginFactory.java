@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.plugins;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +12,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
+
+// TODO would be nice to register plugin classes using an annotation processor
 
 public class PluginFactory<P extends Plugin> {
 
@@ -25,8 +29,35 @@ public class PluginFactory<P extends Plugin> {
 	
 	private Map<String, Class<? extends P>> typeStringToPluginClass = 
 			new LinkedHashMap<String, Class<? extends P>>();
-	
-	protected void registerPluginClass(String elemName, Class<? extends P> theClass) {
+		
+	protected void registerPluginClass(Class<? extends P> theClass) {
+		Field elemNameField = null;
+		try {
+			elemNameField = theClass.getDeclaredField("ELEM_NAME");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		if(elemNameField == null) {
+			throw new RuntimeException("Field ELEM_NAME not defined.");
+		}
+		if(!elemNameField.getType().equals(String.class)) {
+			throw new RuntimeException("Field ELEM_NAME not of type String.");
+		}
+		if( (elemNameField.getModifiers() | Modifier.STATIC) == 0) {
+			throw new RuntimeException("Field ELEM_NAME not static");
+		}
+		if( (elemNameField.getModifiers() | Modifier.PUBLIC) == 0) {
+			throw new RuntimeException("Field ELEM_NAME not public");
+		}
+		String elemName = null;
+		try {
+			elemName = (String) elemNameField.get(null);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		if(elemName == null) {
+			throw new RuntimeException("Field ELEM_NAME not initialized");
+		}
 		typeStringToPluginClass.put(elemName, theClass);
 	}
 	

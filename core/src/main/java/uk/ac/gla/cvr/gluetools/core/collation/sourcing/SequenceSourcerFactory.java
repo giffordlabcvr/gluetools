@@ -11,7 +11,7 @@ public class SequenceSourcerFactory extends PluginFactory<SequenceSourcer>{
 	
 	private SequenceSourcerFactory() {
 		super();
-		registerPluginClass(NCBISequenceSourcer.ELEM_NAME, NCBISequenceSourcer.class);
+		registerPluginClass(NCBISequenceSourcer.class);
 	}
 	
 }

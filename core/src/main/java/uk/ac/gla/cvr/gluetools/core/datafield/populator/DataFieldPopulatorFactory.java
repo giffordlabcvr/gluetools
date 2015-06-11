@@ -10,7 +10,7 @@ public class DataFieldPopulatorFactory extends PluginFactory<DataFieldPopulator>
 	
 	private DataFieldPopulatorFactory() {
 		super();
-		registerPluginClass(DataFieldPopulator.ELEM_NAME, DataFieldPopulator.class);
+		registerPluginClass(DataFieldPopulator.class);
 	}
 	
 }

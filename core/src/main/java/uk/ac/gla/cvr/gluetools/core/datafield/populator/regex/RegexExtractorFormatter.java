@@ -14,6 +14,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
+
+// TODO different formatters, e.g. velocity?, groovy?, need to at least support toLowerCase.
+
+
 /**
  * Plugin which runs a regular expression (the match pattern) on an input String.
  * If there is a match, the extractor uses its output pattern to create a string which may 
