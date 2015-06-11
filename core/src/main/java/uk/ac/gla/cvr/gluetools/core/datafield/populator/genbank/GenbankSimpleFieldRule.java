@@ -35,6 +35,11 @@ public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 		public PrimaryAccession() { super("/GBSeq/GBSeq_primary-accession/text()"); }	
 	}
 
+	public static class AccessionVersion extends GenbankSimpleFieldRule {
+		public static final String ELEM_NAME = "gbAccessionVersion";
+		public AccessionVersion() { super("/GBSeq/GBSeq_accession-version/text()"); }	
+	}
+	
 	public static class Division extends GenbankSimpleFieldRule {
 		public static final String ELEM_NAME = "gbDivision";
 		public Division() { super("/GBSeq/GBSeq_division/text()"); }	
@@ -58,6 +63,16 @@ public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 	public static class OtherID extends GenbankSimpleFieldRule {
 		public static final String ELEM_NAME = "gbOtherID";
 		public OtherID() { super("/GBSeq/GBSeq_other-seqids/GBSeqid/text()"); }	
+	}
+
+	public static class UpdateDate extends GenbankSimpleFieldRule {
+		public static final String ELEM_NAME = "gbUpdateDate";
+		public UpdateDate() { super("/GBSeq/GBSeq_update-date/text()"); }	
+	}
+
+	public static class CreateDate extends GenbankSimpleFieldRule {
+		public static final String ELEM_NAME = "gbCreateDate";
+		public CreateDate() { super("/GBSeq/GBSeq_create-date/text()"); }	
 	}
 
 }

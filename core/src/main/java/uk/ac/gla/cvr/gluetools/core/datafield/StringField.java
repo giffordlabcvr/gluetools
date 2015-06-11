@@ -11,4 +11,9 @@ public class StringField extends DataField<String> {
 		return new FieldValue<String>(this, string);
 	}
 
+	@Override
+	public String valueToString(String string) {
+		return string;
+	}
+
 }

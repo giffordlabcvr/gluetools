@@ -19,4 +19,8 @@ public class FieldValue<T> {
 		return value;
 	}
 	
+	public String toString() {
+		return dataField.valueToString(value);
+	}
+	
 }

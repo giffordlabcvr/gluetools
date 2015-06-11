@@ -17,6 +17,8 @@ public abstract class DataField<T extends Object> {
 	
 	public abstract FieldValue<T> valueFromString(String string);
 
+	public abstract String valueToString(T value);
+	
 	public Class<T> getValueClass() {
 		return valueClass;
 	}

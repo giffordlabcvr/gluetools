@@ -18,5 +18,10 @@ public class IntegerField extends DataField<Integer> {
 		}
 	}
 
+	@Override
+	public String valueToString(Integer value) {
+		return Integer.toString(value);
+	}
+
 
 }

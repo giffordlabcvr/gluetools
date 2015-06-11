@@ -2,6 +2,12 @@
 	<gbPrimaryAccession>
 		<fieldPopulator fieldName="GB_PRIMARY_ACCESSION"/>
 	</gbPrimaryAccession>
+	<gbAccessionVersion>
+		<fieldPopulator fieldName="GB_ACCESSION_VERSION"/>
+	</gbAccessionVersion>
+	<gbLocus>
+		<fieldPopulator fieldName="GB_LOCUS"/>
+	</gbLocus>
 	<gbOtherID>
 		<fieldPopulator fieldName="GB_GI_NUMBER">
 			<matchPattern>gi\|(\d+)</matchPattern>
@@ -14,6 +20,12 @@
 	<gbLength>
 		<fieldPopulator fieldName="GB_LENGTH"/>
 	</gbLength>
+	<gbUpdateDate>
+		<fieldPopulator fieldName="GB_UPDATE_DATE"/>
+	</gbUpdateDate>
+	<gbCreateDate>
+		<fieldPopulator fieldName="GB_CREATE_DATE"/>
+	</gbCreateDate>
 	<gbOrganism>
 		<fieldPopulator fieldName="GB_ORGANISM">
 			<valueConverter>
@@ -144,6 +156,20 @@
 				<matchPattern>RF</matchPattern>
 				<outputPattern>true</outputPattern>
 			</fieldPopulator>		
+		</gbQualifier>
+		<gbQualifier name="collection_date">
+			<fieldPopulator fieldName="GB_COLLECTION_DAY_OF_MONTH">
+				<matchPattern>(\d{2})-[A-Za-z]{3}-\d{4}</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_COLLECTION_MONTH">
+				<matchPattern>\d{2}-([A-Za-z]{3})-\d{4}</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_COLLECTION_YEAR">
+				<matchPattern>(\d{4})</matchPattern>
+				<outputPattern>${1}</outputPattern>
+			</fieldPopulator>
 		</gbQualifier>
 	</gbFeature>
 </dataFieldPopulator>

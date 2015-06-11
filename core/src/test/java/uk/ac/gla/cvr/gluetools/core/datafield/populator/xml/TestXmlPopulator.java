@@ -20,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.datafield.BooleanField;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
+import uk.ac.gla.cvr.gluetools.core.datafield.DateField;
 import uk.ac.gla.cvr.gluetools.core.datafield.IntegerField;
 import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
@@ -34,6 +35,8 @@ public class TestXmlPopulator {
 	String 
 		GB_GI_NUMBER = "GB_GI_NUMBER",
 		GB_PRIMARY_ACCESSION = "GB_PRIMARY_ACCESSION",
+		GB_ACCESSION_VERSION = "GB_ACCESSION_VERSION",
+		GB_LOCUS = "GB_LOCUS",
 		GB_LENGTH = "GB_LENGTH",
 		GB_GENOTYPE = "GB_GENOTYPE",
 		GB_SUBTYPE = "GB_SUBTYPE",
@@ -43,7 +46,12 @@ public class TestXmlPopulator {
 		GB_ISOLATE = "GB_ISOLATE",
 		GB_TAXONOMY = "GB_TAXONOMY",
 		GB_HOST = "GB_HOST", 
-		GB_COUNTRY = "GB_COUNTRY";
+		GB_COUNTRY = "GB_COUNTRY",
+		GB_COLLECTION_YEAR = "GB_COLLECTION_YEAR", 
+		GB_COLLECTION_MONTH = "GB_COLLECTION_MONTH",
+		GB_COLLECTION_DAY_OF_MONTH = "GB_COLLECTION_DAY_OF_MONTH",
+		GB_CREATE_DATE = "GB_CREATE_DATE",
+		GB_UPDATE_DATE = "GB_UPDATE_DATE";
 	
 	@Test 
 	public void testXmlPopulator1() throws Exception {
@@ -76,6 +84,8 @@ public class TestXmlPopulator {
 		List<DataField<?>> fields = Arrays.asList(new DataField<?>[]{
 				new StringField(GB_GI_NUMBER),
 				new StringField(GB_PRIMARY_ACCESSION),
+				new StringField(GB_ACCESSION_VERSION),
+				new StringField(GB_LOCUS),
 				new IntegerField(GB_LENGTH),
 				new StringField(GB_GENOTYPE), 
 				new StringField(GB_SUBTYPE),
@@ -86,6 +96,12 @@ public class TestXmlPopulator {
 				new StringField(GB_TAXONOMY),
 				new StringField(GB_HOST),
 				new StringField(GB_COUNTRY),
+				new IntegerField(GB_COLLECTION_YEAR),
+				new StringField(GB_COLLECTION_MONTH),
+				new IntegerField(GB_COLLECTION_DAY_OF_MONTH),
+				new DateField(GB_CREATE_DATE),
+				new DateField(GB_UPDATE_DATE),
+				
 		});
 		Project project = initProjectFromFields(fields);
 		List<CollatedSequence> collatedSequences = initSequencesXml(project, xmlDirectory);
@@ -96,17 +112,24 @@ public class TestXmlPopulator {
 		//List<String> displayFieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
 		List<String> displayFieldNames = Arrays.asList(new String[]{
 		/*		GB_GI_NUMBER,
-				GB_PRIMARY_ACCESSION,
-				GB_LENGTH,
+				GB_PRIMARY_ACCESSION, */
+				GB_ACCESSION_VERSION,
+				GB_LOCUS,
+/*				GB_LENGTH,
 				GB_GENOTYPE,
 				GB_SUBTYPE,
-				GB_RECOMBINANT, */
+				GB_RECOMBINANT, 
 				GB_PATENT_RELATED,
-			/*	GB_ORGANISM,
+				GB_ORGANISM,
 				GB_ISOLATE,
-				GB_TAXONOMY, */
+				GB_TAXONOMY,
 				GB_HOST, 
-			/*	GB_COUNTRY, */
+				GB_COUNTRY, 
+				GB_COLLECTION_YEAR,
+				GB_COLLECTION_MONTH,
+				GB_COLLECTION_DAY_OF_MONTH,
+				GB_CREATE_DATE,
+				GB_UPDATE_DATE */
 		});
 		dumpFieldValues(displayFieldNames, collatedSequences);
 	}
@@ -140,7 +163,7 @@ public class TestXmlPopulator {
 		collatedSequences.forEach(sequence -> {
 			System.out.print(sequence.getSequenceSourceID()+" -- ");
 			fieldNames.forEach(fieldName -> {
-				sequence.getFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+": "+f.getValue()+", "); });
+				sequence.getFieldValue(fieldName).ifPresent(f -> { System.out.print(fieldName+": "+f+", "); });
 			});
 			System.out.println();
 		});

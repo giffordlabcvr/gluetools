@@ -23,9 +23,12 @@ public class PopulatorRuleFactory extends PluginFactory<PopulatorRule>{
 		registerPluginClass(GenbankSimpleFieldRule.Locus.class);
 		registerPluginClass(GenbankSimpleFieldRule.Organism.class);
 		registerPluginClass(GenbankSimpleFieldRule.PrimaryAccession.class);
+		registerPluginClass(GenbankSimpleFieldRule.AccessionVersion.class);
 		registerPluginClass(GenbankSimpleFieldRule.Division.class);
 		registerPluginClass(GenbankSimpleFieldRule.Taxonomy.class);
 		registerPluginClass(GenbankSimpleFieldRule.OtherID.class);
+		registerPluginClass(GenbankSimpleFieldRule.CreateDate.class);
+		registerPluginClass(GenbankSimpleFieldRule.UpdateDate.class);
 	}
 	
 }
