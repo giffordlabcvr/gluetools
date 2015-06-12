@@ -5,6 +5,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.NodeSelectorRule;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
@@ -15,7 +16,7 @@ public class GenbankQualifierRule extends NodeSelectorRule {
 	public static String ELEM_NAME = "gbQualifier";
 	
 	@Override
-	public void configureLocal(Element configElem) {
+	public void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {
 		String nameXPath = "@name";
 		String qualifierName = PluginUtils.configureString(configElem, nameXPath, true);
 		String xPathString = "GBFeature_quals/GBQualifier[GBQualifier_name/text() = '"+qualifierName+"']/GBQualifier_value/text()";

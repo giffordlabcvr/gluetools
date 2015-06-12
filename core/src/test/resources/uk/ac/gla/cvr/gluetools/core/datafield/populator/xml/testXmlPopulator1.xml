@@ -5,7 +5,7 @@
 			<xPathExpression>GBQualifier[GBQualifier_name/text() = 'note']/GBQualifier_value/text()</xPathExpression>
 				<fieldPopulator fieldName="GB_GENOTYPE">
 					<matchPattern>genotype:\s+([1-9][a-z])+</matchPattern>
-					<outputPattern>${1}</outputPattern>
+					<outputPattern>${g1}</outputPattern>
 				</fieldPopulator>
 		</xPathNodes>
 	</xPathNodes>

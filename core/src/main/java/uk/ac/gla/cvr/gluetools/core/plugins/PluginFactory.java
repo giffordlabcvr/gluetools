@@ -70,28 +70,28 @@ public class PluginFactory<P extends Plugin> {
 		return typeStringToPluginClass.keySet();
 	}
 	
-	public P createFromElement(Element element)  {
+	public P createFromElement(PluginConfigContext pluginConfigContext, Element element)  {
 		String elementName = element.getNodeName();
 		Class<? extends P> pluginClass = typeStringToPluginClass.get(elementName);
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
 		try {
-			return createPlugin(pluginClass, element);
+			return createPlugin(pluginConfigContext, pluginClass, element);
 		} catch(Exception e) {
 			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
 		}
 	}
 	
-	public List<P> createFromElements(List<Element> elements)  {
-		return elements.stream().map(element -> createFromElement(element)).collect(Collectors.toList());
+	public List<P> createFromElements(PluginConfigContext pluginConfigContext, List<Element> elements)  {
+		return elements.stream().map(element -> createFromElement(pluginConfigContext, element)).collect(Collectors.toList());
 	}
 
-	public static <Q extends Plugin> List<Q> createPlugins(Class<Q> pluginClass, List<Element> elements) {
-		return elements.stream().map(e -> createPlugin(pluginClass, e)).collect(Collectors.toList());
+	public static <Q extends Plugin> List<Q> createPlugins(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, List<Element> elements) {
+		return elements.stream().map(e -> createPlugin(pluginConfigContext, pluginClass, e)).collect(Collectors.toList());
 	}
 	
-	public static <Q extends Plugin> Q createPlugin(Class<Q> pluginClass, Element element) {
+	public static <Q extends Plugin> Q createPlugin(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, Element element) {
 		Q plugin = null;
 		try {
 			plugin = pluginClass.newInstance();
@@ -99,7 +99,7 @@ public class PluginFactory<P extends Plugin> {
 			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
 		}
 		PluginUtils.setValidConfigLocal(element);
-		plugin.configure(element);
+		plugin.configure(pluginConfigContext, element);
 		PluginUtils.checkValidConfig(element);
 		return plugin;
 	}

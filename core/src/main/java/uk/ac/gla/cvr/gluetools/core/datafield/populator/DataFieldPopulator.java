@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
@@ -24,11 +25,11 @@ public class DataFieldPopulator implements Plugin {
 	}
 	
 	@Override
-	public void configure(Element configElem) {
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		PopulatorRuleFactory populatorRuleFactory = PluginFactory.get(PopulatorRuleFactory.creator);
 		String alternateElemsXPath = XmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
 		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
-		rules = populatorRuleFactory.createFromElements(ruleElems);
+		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
 	/**

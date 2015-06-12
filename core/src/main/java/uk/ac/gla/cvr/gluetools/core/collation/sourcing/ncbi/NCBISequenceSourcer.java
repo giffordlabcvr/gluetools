@@ -34,6 +34,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerException;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -50,7 +51,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 	private CollatedSequenceFormat collatedSequenceFormat;
 
 	@Override
-	public void configure(Element sequenceSourcerElem) {
+	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
 		dbName = PluginUtils.configureString(sequenceSourcerElem, "database/text()", "nuccore");
 		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", false);
 		if(eSearchTerm == null) {

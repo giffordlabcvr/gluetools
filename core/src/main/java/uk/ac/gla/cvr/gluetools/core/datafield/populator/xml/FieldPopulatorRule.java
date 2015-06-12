@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorExcept
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.PopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
@@ -23,11 +24,11 @@ public class FieldPopulatorRule extends PopulatorRule implements Plugin {
 	private List<RegexExtractorFormatter> valueConverters;
 
 	@Override
-	public void configure(Element configElem)  {
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
 		dataFieldName = PluginUtils.configureString(configElem, "@fieldName", true);
-		valueConverters = PluginFactory.createPlugins(RegexExtractorFormatter.class, 
+		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 				PluginUtils.findConfigElements(configElem, "valueConverter"));
-		mainExtractor = PluginFactory.createPlugin(RegexExtractorFormatter.class, configElem);
+		mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
 	}
 
 	

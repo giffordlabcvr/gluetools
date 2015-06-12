@@ -9,9 +9,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import freemarker.template.Configuration;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerFactory;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -19,15 +21,19 @@ public class TestNcbiGenbank {
 
 	@Test
 	public void testNcbiSourcerCreate() throws Exception {
+		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testNcbiSourcerCreate.xml"));
-		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
+		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(
+				pluginConfigContext, document.getDocumentElement());
 		Assert.assertEquals("NCBISequenceSourcer:nuccore:GENBANK_FLAT_FILE", sequenceSourcer.getSourceUniqueID());
 	}
 
 	@Test
 	public void testNcbiSourcerRunLive1() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testNcbiSourcerRunLive1.xml"));
-		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
+		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
+		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(
+				pluginConfigContext, document.getDocumentElement());
 		List<String> sequenceIDs = sequenceSourcer.getSequenceIDs().stream().sorted().collect(Collectors.toList());
 		Assert.assertEquals(5, sequenceIDs.size());
 		List<CollatedSequence> collatedSequences = sequenceSourcer.retrieveSequences(sequenceIDs);
@@ -42,7 +48,9 @@ public class TestNcbiGenbank {
 	@Test
 	public void retrieveAllHcvIncludedAsXml() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
-		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).createFromElement(document.getDocumentElement());
+		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
+		SequenceSourcer sequenceSourcer = PluginFactory.get(SequenceSourcerFactory.creator).
+					createFromElement(pluginConfigContext, document.getDocumentElement());
 		List<String> sequenceIDs = sequenceSourcer.getSequenceIDs();
 		List<CollatedSequence> collatedSequences = sequenceSourcer.retrieveSequences(sequenceIDs);
 		File directory = new File("/Users/joshsinger/hcv_rega/retrieved_xml");

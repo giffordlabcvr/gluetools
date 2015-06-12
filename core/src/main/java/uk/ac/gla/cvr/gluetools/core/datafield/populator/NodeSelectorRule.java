@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
@@ -41,21 +42,21 @@ public abstract class NodeSelectorRule extends PopulatorRule {
 		return childRules;
 	}
 
-	public final void configure(Element configElem) {
-		configureChildRules(configElem);
-		configureLocal(configElem);
+	public final void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		configureChildRules(pluginConfigContext, configElem);
+		configureLocal(pluginConfigContext, configElem);
 	}
 	
 	/**
 	 * Configure the local properties of this rule, i.e. not the child rules. 
 	 */
-	protected abstract void configureLocal(Element configElem);
+	protected abstract void configureLocal(PluginConfigContext pluginConfigContext, Element configElem);
 	
-	private void configureChildRules(Element configElem) {
+	private void configureChildRules(PluginConfigContext pluginConfigContext, Element configElem) {
 		PopulatorRuleFactory populatorRuleFactory = PluginFactory.get(PopulatorRuleFactory.creator);
 		String alternateElemsXPath = XmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
 		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
-		childRules = populatorRuleFactory.createFromElements(ruleElems);
+		childRules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
 	protected void executeChildRules(CollatedSequence collatedSequence, Node selectedNode) {

@@ -5,6 +5,6 @@ import org.w3c.dom.Element;
 public interface Plugin {
 
 	
-	public void configure(Element configElem) ;
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) ;
 	
 }

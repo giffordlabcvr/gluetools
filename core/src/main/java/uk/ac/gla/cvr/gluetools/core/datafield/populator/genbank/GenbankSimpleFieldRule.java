@@ -5,6 +5,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.NodeSelectorRule;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
@@ -12,7 +13,7 @@ public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 	private String xPathString;
 	
 	@Override
-	public final void configureLocal(Element configElem) {
+	public final void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {
 		try {
 			setXPathExpression(XmlUtils.createXPathEngine().compile(xPathString));
 		} catch (XPathExpressionException xpee) {

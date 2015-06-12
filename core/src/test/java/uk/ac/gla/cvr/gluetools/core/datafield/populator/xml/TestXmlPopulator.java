@@ -25,12 +25,15 @@ import uk.ac.gla.cvr.gluetools.core.datafield.IntegerField;
 import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorFactory;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import freemarker.template.Configuration;
 
 
 public class TestXmlPopulator {
+	
 	
 	String 
 		GB_GI_NUMBER = "GB_GI_NUMBER",
@@ -111,25 +114,25 @@ public class TestXmlPopulator {
 		//collatedSequences = collatedSequences.stream().filter(problematicPredicate).collect(Collectors.toList());
 		//List<String> displayFieldNames = fields.stream().map(s -> s.getName()).collect(Collectors.toList());
 		List<String> displayFieldNames = Arrays.asList(new String[]{
-		/*		GB_GI_NUMBER,
-				GB_PRIMARY_ACCESSION, */
-				GB_ACCESSION_VERSION,
-				GB_LOCUS,
-/*				GB_LENGTH,
+//				GB_GI_NUMBER,
+//				GB_PRIMARY_ACCESSION, 
+//				GB_ACCESSION_VERSION,
+//				GB_LOCUS,
+//				GB_LENGTH,
 				GB_GENOTYPE,
 				GB_SUBTYPE,
-				GB_RECOMBINANT, 
-				GB_PATENT_RELATED,
-				GB_ORGANISM,
-				GB_ISOLATE,
-				GB_TAXONOMY,
-				GB_HOST, 
-				GB_COUNTRY, 
-				GB_COLLECTION_YEAR,
-				GB_COLLECTION_MONTH,
-				GB_COLLECTION_DAY_OF_MONTH,
-				GB_CREATE_DATE,
-				GB_UPDATE_DATE */
+//				GB_RECOMBINANT, 
+//				GB_PATENT_RELATED,
+//				GB_ORGANISM,
+//				GB_ISOLATE,
+//				GB_TAXONOMY,
+//				GB_HOST, 
+//				GB_COUNTRY, 
+//				GB_COLLECTION_YEAR,
+//				GB_COLLECTION_MONTH,
+//				GB_COLLECTION_DAY_OF_MONTH,
+//				GB_CREATE_DATE,
+//				GB_UPDATE_DATE,
 		});
 		dumpFieldValues(displayFieldNames, collatedSequences);
 	}
@@ -190,7 +193,9 @@ public class TestXmlPopulator {
 		try(InputStream docStream = getClass().getResourceAsStream(populatorRulesFile)) {
 			document = XmlUtils.documentFromStream(docStream);
 		}
-		DataFieldPopulator dataFieldPopulator = PluginFactory.get(DataFieldPopulatorFactory.creator).createFromElement(document.getDocumentElement());
+		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
+		DataFieldPopulator dataFieldPopulator = PluginFactory.get(DataFieldPopulatorFactory.creator).
+				createFromElement(pluginConfigContext, document.getDocumentElement());
 		collatedSequences.forEach(sequence -> {
 			dataFieldPopulator.populate(sequence);
 		});

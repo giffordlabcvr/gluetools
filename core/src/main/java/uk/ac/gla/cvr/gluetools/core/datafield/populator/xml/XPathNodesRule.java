@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.NodeSelectorRule;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
@@ -17,7 +18,7 @@ public class XPathNodesRule extends NodeSelectorRule implements Plugin {
 	public static String ELEM_NAME = "xPathNodes";
 	
 	@Override
-	public void configureLocal(Element configElem) {
+	public void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {
 		configureXPathExpression(configElem);
 	}
 	

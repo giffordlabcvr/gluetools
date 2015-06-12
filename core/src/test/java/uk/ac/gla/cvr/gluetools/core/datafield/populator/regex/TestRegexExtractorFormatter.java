@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import freemarker.template.Configuration;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -42,10 +44,20 @@ public class TestRegexExtractorFormatter {
 		Assert.assertEquals("The hello thing: foo", regexExtractorFormatter.matchAndConvert("hello foo goodbye"));
 	}
 
+	@Test
+	public void test5() throws Exception {
+		String testFile = "regexExtractorFormatter5.xml";
+		RegexExtractorFormatter regexExtractorFormatter = loadTestFile(testFile);
+		Assert.assertEquals("thing: goodbye", regexExtractorFormatter.matchAndConvert("hello foo GOODBYE"));
+	}
+
+	
 	private RegexExtractorFormatter loadTestFile(String testFile)
 			throws SAXException, IOException {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream(testFile));
-		RegexExtractorFormatter regexExtractorFormatter = PluginFactory.createPlugin(RegexExtractorFormatter.class,
+		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
+		RegexExtractorFormatter regexExtractorFormatter = 
+				PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class,
 				document.getDocumentElement());
 		return regexExtractorFormatter;
 	}
