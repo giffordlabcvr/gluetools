@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Implementation-Title: biojava-core
+Implementation-Version: 4.0.0
+Built-By: tomcat
+Specification-Vendor: BioJava
+Application-Name: BioJava
+Created-By: Apache Maven 3.0.4
+Implementation-Vendor: BioJava
+Trusted-Library: true
+Implementation-Vendor-Id: org.biojava
+Build-Jdk: 1.7.0_71
+Permissions: all-permissions
+Specification-Title: biojava-core
+Specification-Version: 4.0.0
+Codebase: *
+Archiver-Version: Plexus Archiver
+

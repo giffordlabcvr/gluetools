@@ -1,0 +1,2692 @@
+Manifest-Version: 1.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Built-By: hudsonBuild
+Premain-Class: org.eclipse.persistence.internal.jpa.deployment.JavaSEC
+ MPInitializerAgent
+Bundle-SymbolicName: org.eclipse.persistence.jpa
+Require-Bundle: org.eclipse.persistence.core;bundle-version="2.6.0";vi
+ sibility:=reexport,org.eclipse.persistence.asm;bundle-version="5.0.1"
+ ;resolution:=optional
+Export-Package: org.eclipse.persistence.internal.jpa;version="2.6.0",o
+ rg.eclipse.persistence.internal.jpa.deployment;version="2.6.0",org.ec
+ lipse.persistence.internal.jpa.deployment.xml.parser;version="2.6.0",
+ org.eclipse.persistence.internal.jpa.jdbc;version="2.6.0",org.eclipse
+ .persistence.internal.jpa.metadata;version="2.6.0",org.eclipse.persis
+ tence.internal.jpa.metadata.accessors;version="2.6.0",org.eclipse.per
+ sistence.internal.jpa.metadata.accessors.classes;version="2.6.0",org.
+ eclipse.persistence.internal.jpa.metadata.accessors.mappings;version=
+ "2.6.0",org.eclipse.persistence.internal.jpa.metadata.accessors.objec
+ ts;version="2.6.0",org.eclipse.persistence.internal.jpa.metadata.addi
+ tionalcriteria;version="2.6.0",org.eclipse.persistence.internal.jpa.m
+ etadata.cache;version="2.6.0",org.eclipse.persistence.internal.jpa.me
+ tadata.changetracking;version="2.6.0",org.eclipse.persistence.interna
+ l.jpa.metadata.columns;version="2.6.0",org.eclipse.persistence.intern
+ al.jpa.metadata.converters;version="2.6.0",org.eclipse.persistence.in
+ ternal.jpa.metadata.copypolicy;version="2.6.0",org.eclipse.persistenc
+ e.internal.jpa.metadata.inheritance;version="2.6.0",org.eclipse.persi
+ stence.internal.jpa.metadata.listeners;version="2.6.0",org.eclipse.pe
+ rsistence.internal.jpa.metadata.locking;version="2.6.0",org.eclipse.p
+ ersistence.internal.jpa.metadata.mappings;version="2.6.0",org.eclipse
+ .persistence.internal.jpa.metadata.multitenant;version="2.6.0",org.ec
+ lipse.persistence.internal.jpa.metadata.nosql;version="2.6.0",org.ecl
+ ipse.persistence.internal.jpa.metadata.partitioning;version="2.6.0",o
+ rg.eclipse.persistence.internal.jpa.metadata.queries;version="2.6.0",
+ org.eclipse.persistence.internal.jpa.metadata.sequencing;version="2.6
+ .0",org.eclipse.persistence.internal.jpa.metadata.structures;version=
+ "2.6.0",org.eclipse.persistence.internal.jpa.metadata.tables;version=
+ "2.6.0",org.eclipse.persistence.internal.jpa.metadata.transformers;ve
+ rsion="2.6.0",org.eclipse.persistence.internal.jpa.metadata.xml;versi
+ on="2.6.0",org.eclipse.persistence.internal.jpa.metamodel;version="2.
+ 6.0",org.eclipse.persistence.internal.jpa.querydef;version="2.6.0",or
+ g.eclipse.persistence.internal.jpa.transaction;version="2.6.0",org.ec
+ lipse.persistence.internal.jpa.weaving;version="2.6.0",org.eclipse.pe
+ rsistence.jpa;version="2.6.0",org.eclipse.persistence.jpa.dynamic;ver
+ sion="2.6.0",org.eclipse.persistence.jpa.metadata;version="2.6.0",org
+ .eclipse.persistence.tools.weaving.jpa;version="2.6.0"
+Bundle-Version: 2.6.0.v20150309-bf26070
+Specification-Version: 2.4.0
+Build-Jdk: 1.7.0_55
+Bundle-Vendor: Eclipse.org - EclipseLink Project
+Bundle-Name: EclipseLink JPA
+HK2-Bundle-Name: org.eclipse.persistence:org.eclipse.persistence.jpa
+Archiver-Version: Plexus Archiver
+Private-Package: .
+Created-By: 1.6.0_21 (Sun Microsystems Inc.)
+Import-Package: javax.naming;resolution:=optional,javax.persistence;jp
+ a="2.1";version="[1.1.0,2.2)",javax.persistence.criteria;jpa="2.1";ve
+ rsion="[1.1.0,2.2)",javax.persistence.metamodel;jpa="2.1";version="[1
+ .1.0,2.2)",javax.persistence.spi;jpa="2.1";version="[1.1.0,2.2)",java
+ x.sql;resolution:=optional,javax.transaction;version="1.1.0";resoluti
+ on:=optional,javax.transaction.xa;version="1.1.0";resolution:=optiona
+ l,javax.validation;resolution:=optional,javax.validation.groups;resol
+ ution:=optional,javax.xml.parsers;resolution:=optional,javax.xml.tran
+ sform;resolution:=optional,javax.xml.transform.stream;resolution:=opt
+ ional,javax.xml.validation;resolution:=optional,org.apache.tools.ant;
+ resolution:=optional,org.apache.tools.ant.types;resolution:=optional,
+ org.eclipse.persistence.annotations;version="2.6.0",org.eclipse.persi
+ stence.config;version="2.6.0",org.eclipse.persistence.descriptors;ver
+ sion="2.6.0",org.eclipse.persistence.descriptors.changetracking;versi
+ on="2.6.0",org.eclipse.persistence.descriptors.copying;version="2.6.0
+ ",org.eclipse.persistence.descriptors.invalidation;version="2.6.0",or
+ g.eclipse.persistence.descriptors.partitioning;version="2.6.0",org.ec
+ lipse.persistence.dynamic;version="2.6.0",org.eclipse.persistence.exc
+ eptions;version="2.6.0",org.eclipse.persistence.expressions;version="
+ 2.6.0",org.eclipse.persistence.history;version="2.6.0",org.eclipse.pe
+ rsistence.indirection;version="2.6.0",org.eclipse.persistence.interna
+ l.databaseaccess;version="2.6.0",org.eclipse.persistence.internal.des
+ criptors;version="2.6.0",org.eclipse.persistence.internal.dynamic;ver
+ sion="2.6.0",org.eclipse.persistence.internal.expressions;version="2.
+ 6.0",org.eclipse.persistence.internal.helper;version="2.6.0",org.ecli
+ pse.persistence.internal.identitymaps;version="2.6.0",org.eclipse.per
+ sistence.internal.indirection;version="2.6.0",org.eclipse.persistence
+ .internal.jpa.parsing;version="2.6.0",org.eclipse.persistence.interna
+ l.jpa.parsing.jpql;version="2.6.0",org.eclipse.persistence.internal.l
+ ibraries.asm,org.eclipse.persistence.internal.libraries.asm.commons,o
+ rg.eclipse.persistence.internal.localization;version="2.6.0",org.ecli
+ pse.persistence.internal.mappings.converters;version="2.6.0",org.ecli
+ pse.persistence.internal.queries;version="2.6.0",org.eclipse.persiste
+ nce.internal.security;version="2.6.0",org.eclipse.persistence.interna
+ l.sessions;version="2.6.0",org.eclipse.persistence.internal.weaving;v
+ ersion="2.6.0",org.eclipse.persistence.logging;version="2.6.0",org.ec
+ lipse.persistence.mappings;version="2.6.0",org.eclipse.persistence.ma
+ ppings.converters;version="2.6.0",org.eclipse.persistence.mappings.fo
+ undation;version="2.6.0",org.eclipse.persistence.mappings.structures;
+ version="2.6.0",org.eclipse.persistence.mappings.transformers;version
+ ="2.6.0",org.eclipse.persistence.oxm;version="2.6.0",org.eclipse.pers
+ istence.oxm.mappings;version="2.6.0",org.eclipse.persistence.oxm.mapp
+ ings.nullpolicy;version="2.6.0",org.eclipse.persistence.oxm.platform;
+ version="2.6.0",org.eclipse.persistence.oxm.schema;version="2.6.0",or
+ g.eclipse.persistence.platform.database;version="2.6.0",org.eclipse.p
+ ersistence.platform.database.converters;version="2.6.0",org.eclipse.p
+ ersistence.platform.database.jdbc;version="2.6.0",org.eclipse.persist
+ ence.platform.database.oracle.annotations;version="2.6.0",org.eclipse
+ .persistence.platform.database.oracle.plsql;version="2.6.0",org.eclip
+ se.persistence.platform.database.partitioning;version="2.6.0",org.ecl
+ ipse.persistence.platform.server;version="2.6.0",org.eclipse.persiste
+ nce.queries;version="2.6.0",org.eclipse.persistence.sequencing;versio
+ n="2.6.0",org.eclipse.persistence.sessions;version="2.6.0",org.eclips
+ e.persistence.sessions.broker;version="2.6.0",org.eclipse.persistence
+ .sessions.coordination;version="2.6.0",org.eclipse.persistence.sessio
+ ns.coordination.jms;version="2.6.0",org.eclipse.persistence.sessions.
+ coordination.rmi;version="2.6.0",org.eclipse.persistence.sessions.fac
+ tories;version="2.6.0",org.eclipse.persistence.sessions.server;versio
+ n="2.6.0",org.eclipse.persistence.tools.profiler;version="2.6.0",org.
+ eclipse.persistence.tools.schemaframework;version="2.6.0",org.eclipse
+ .persistence.transaction;version="2.6.0",org.w3c.dom;resolution:=opti
+ onal,org.xml.sax;resolution:=optional
+Bundle-ManifestVersion: 2
+
+Name: org/eclipse/persistence/internal/jpa/config/MetadataImpl.class
+SHA1-Digest: KVZOtIGXX7Jq5OS21P28ym/UEmM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/FetchGroup
+ Metadata.class
+SHA1-Digest: 19EgW88Kxhod0DnX/tEAgF3rNT8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/cache/CacheInterce
+ ptorMetadata.class
+SHA1-Digest: DPPhNV080FAoIhxVRKeSUVPAiA4=
+
+Name: org/eclipse/persistence/jpa/persistence_2_0.xsd
+SHA1-Digest: RfOm0oRHBFjRt3ONYtHuE68ehiE=
+
+Name: org/eclipse/persistence/jpa/config/Transformation.class
+SHA1-Digest: Gx/0XMNLZZ0o03aBtcIyQr4OZDc=
+
+Name: org/eclipse/persistence/jpa/config/ConstructorResult.class
+SHA1-Digest: fk/mpnOj/lmiFqAPUvN8VAcXmHQ=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/RoundRo
+ binPartitioningImpl.class
+SHA1-Digest: EAP5d75Pl5wX557zrw1bEsRWLkU=
+
+Name: org/eclipse/persistence/jpa/config/TimeOfDay.class
+SHA1-Digest: 3xxLfW7uuoT19gJT7uQkKEJGWeo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataConstants.
+ class
+SHA1-Digest: yHfJzOJ/bfksCOHdtLqbmghIxJE=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/MethodWeaver.class
+SHA1-Digest: UD98ArryH+6M/zK9X05ijZdtY3U=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/AbstractPlsq
+ lStoredQueryImpl.class
+SHA1-Digest: JFHKIx+sOp9dHJREeJu9jp/6WaU=
+
+Name: org/eclipse/persistence/jpa/config/OneToMany.class
+SHA1-Digest: pgpTImdo3ITAgKNCqrgUPtdmJ50=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/PLSQLRecor
+ dMetadata.class
+SHA1-Digest: r+PuIysS4VR3PCYmSsskTz6miao=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Tempora
+ lMetadata.class
+SHA1-Digest: +plV/QL2JLaztZh+3KziwHRXBuQ=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/TypeConve
+ rterImpl.class
+SHA1-Digest: p0Fzma9yLpvl+kGrkuhCGfOWMxE=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AbstractColu
+ mnImpl.class
+SHA1-Digest: gwqOHCbshGrUaWEWsFFiq7+5SO0=
+
+Name: org/eclipse/persistence/jpa/config/StructConverter.class
+SHA1-Digest: RfHKoT+twcu+nsucTs47jhOILu8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/TypeCon
+ verterMetadata.class
+SHA1-Digest: eO8wedoIwzgoVxCCglIX5L2BhoY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Range
+ PartitionMetadata.class
+SHA1-Digest: 9EVT42DofAsvJu1Hziv8HQDr4zw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/copypolicy/Instant
+ iationCopyPolicyMetadata.class
+SHA1-Digest: vv12JK8fUfq+JBzseMF5GFdHEkU=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/FromImpl.class
+SHA1-Digest: 57BUc4LaXMJhOKSOqqW8PwLunEI=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/StructCon
+ verterImpl.class
+SHA1-Digest: tMwU6EOlVnPSWd4zUefUwAI9Nsw=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/SecondaryTabl
+ eImpl.class
+SHA1-Digest: 8CPN7l5A/Colr+pqTelMTiEPYrE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataLogger.cla
+ ss
+SHA1-Digest: EPX1++9H4C56M/wZYwdD+d2kPMw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/NamedPLSQL
+ StoredFunctionQueryMetadata.class
+SHA1-Digest: SUDZWvTofAJ4O3TQN7VYc0a9f/U=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/BeanValidationIn
+ itializationHelper$BeanValidationInitializationHelperImpl.class
+SHA1-Digest: Tr3VUWb2iMRIfoParOUpYkBS6HQ=
+
+Name: org/eclipse/persistence/jpa/config/NamedPlsqlStoredFunctionQuery
+ .class
+SHA1-Digest: GHXOrXNlwzeUo003g/YTc5kllYo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Partition
+ ingHint.class
+SHA1-Digest: 3wWyIClHZ9wPQwptqHk3aTo8mcw=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/NamedPlsqlSt
+ oredFunctionQueryImpl.class
+SHA1-Digest: xG7rsE11ccM5jprku/EgH3p7j04=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/xml/parser/XMLEx
+ ceptionHandler.class
+SHA1-Digest: 9qSoxAM4MexWyE/85L4aX0C/Wso=
+
+Name: org/eclipse/persistence/jpa/config/RangePartition.class
+SHA1-Digest: syhHQIh7Ya01/qEBI9Y0zSb3Sb8=
+
+Name: org/eclipse/persistence/jpa/JpaEntityManagerFactory.class
+SHA1-Digest: WkK9XEQvDb6tCQmfZj3bdsLV4RU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/mappings/ReturnIns
+ ertMetadata.class
+SHA1-Digest: w/WIgFO713JE9zZf9Rc5dYN6+D8=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/SetAttribut
+ eProxyImpl.class
+SHA1-Digest: GnCj5ye3lx+8oMK9QzEHSgw0tRI=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/xml/parser/XMLNo
+ deList.class
+SHA1-Digest: NBp6mWdiBhO9kD4hg0aWbHj6taY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/XMLMeta
+ data.class
+SHA1-Digest: WypBj0bGkpkwuANtcppxo61pjUk=
+
+Name: org/eclipse/persistence/jpa/config/Converter.class
+SHA1-Digest: TVnVk0qm0JRiAbEwGT6k8cxUn1Y=
+
+Name: org/eclipse/persistence/jpa/config/EntityListener.class
+SHA1-Digest: xFa0YfjrHZ89HRWfBh2Bz1ydt1k=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$BatchWrit
+ eHint.class
+SHA1-Digest: dMaVlPajcYeFauzW4DYUr/AHElU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAsmFactory$MetadataFieldVisitor.class
+SHA1-Digest: s/zrY7xJ6TsISIagwJc4Gauhfds=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$HintHint.
+ class
+SHA1-Digest: OqSwG3SNmt11OX+ihA/9L8ymWF0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /ObjectAccessor.class
+SHA1-Digest: vyqrL600UnqciTGp8xFsr0qH9J4=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/CollectionAttribu
+ teImpl.class
+SHA1-Digest: HM8PKq78Wtf8BjWsiufSFZKqMpY=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerFactoryProvide
+ r.class
+SHA1-Digest: h9qr2AnvgYXcVZ1GztRMvfAtQEI=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JavaSECMPInitial
+ izer$TempEntityLoader.class
+SHA1-Digest: moXub6xmsM3oSJfINkpsqGDR964=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$LeftFetch
+ Hint.class
+SHA1-Digest: wfe+ca9OHBnagHh7c8jWXqSnFH8=
+
+Name: org/eclipse/persistence/jpa/config/EmbeddedId.class
+SHA1-Digest: hE+XqJ+kqQf0wNjatXHfin9ZWpM=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$AsOfSCNHi
+ nt.class
+SHA1-Digest: Qqfl+P/4J/rgE+URkfXOFM0yv/s=
+
+Name: org/eclipse/persistence/jpa/metadata/MetadataSourceAdapter.class
+SHA1-Digest: cWK0i0TuhTNjwORN2N4VmVxZ5kA=
+
+Name: org/eclipse/persistence/jpa/config/InstantiationCopyPolicy.class
+SHA1-Digest: 1crGSjqWTsJOG5V9JKerJfIWvng=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/BeanValidationIn
+ itializationHelper.class
+SHA1-Digest: aCwWzpyST2uk1MU1tEalcxkN4lk=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Convert
+ Metadata.class
+SHA1-Digest: 1TCLI7MxmZ3ySD8Tv6FaMVUDlWg=
+
+Name: org/eclipse/persistence/jpa/config/UniqueConstraint.class
+SHA1-Digest: g56hcbSawbPp+QX/1fmQVbyWiLo=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$5.class
+SHA1-Digest: PASU1u1Cjq9BPM/JgSI+dejDCcY=
+
+Name: org/eclipse/persistence/jpa/config/RuntimeFactory.class
+SHA1-Digest: Z6fM4gt2GUCv7QndmD+won6DxPI=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/NamedStore
+ dFunctionQueryMetadata.class
+SHA1-Digest: 9I6DPEzpPoSJm+s7rrvC2Bt13qQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/NamedNativ
+ eQueryMetadata.class
+SHA1-Digest: ai9Qc8FjeK4YcMckZUNMPDZb6nE=
+
+Name: org/eclipse/persistence/internal/jpa/config/persistenceunit/Pers
+ istenceUnitImpl.class
+SHA1-Digest: lk3C1Sm7DOLP4x5dOsJBFSt6uk4=
+
+Name: org/eclipse/persistence/jpa/config/JoinTable.class
+SHA1-Digest: EFdeDkGNxdyKMm3cvzM683OpTRU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /CollectionAccessor.class
+SHA1-Digest: yceylEbyw5oCwQ1WEqje6NReG5g=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$11.clas
+ s
+SHA1-Digest: /07RwnTG/99ONu3RS3peSIbiGq4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/MixedCo
+ nverterMetadata.class
+SHA1-Digest: evIrHIhzh5K0Kd26blhJIsxY5MQ=
+
+Name: org/eclipse/persistence/jpa/metadata/MetadataSource.class
+SHA1-Digest: GZkY+wddiQX7+9b1DUjdUSvul50=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/TemporalI
+ mpl.class
+SHA1-Digest: vUzO36ZtBkRoeDZbs7C2LMA6yAA=
+
+Name: org/eclipse/persistence/internal/jpa/jdbc/DataSourceImpl.class
+SHA1-Digest: yGARCaVVsMFFpZgV7/VIIZVxIcM=
+
+Name: org/eclipse/persistence/jpa/config/ManyToOne.class
+SHA1-Digest: 3lBHlQN6VTesQhphU4LNRwRAQdo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$JDBCFirst
+ ResultHint.class
+SHA1-Digest: pWAVcCijVRfeKb09NErXnZnepkM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Pinne
+ dPartitioningMetadata.class
+SHA1-Digest: LExlJdLkaKA66LfgQD38wCFBPas=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Repli
+ cationPartitioningMetadata.class
+SHA1-Digest: BP13UbOjBrjFHonq/QKvvpIP9XM=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/RangePa
+ rtitionImpl.class
+SHA1-Digest: KTo3LOjFdGpa9l0Iw4YjupHtltc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /OneToManyAccessor.class
+SHA1-Digest: Tago9ffrCkxnYtzopnGd4VbgThE=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/IdentifiableTypeI
+ mpl.class
+SHA1-Digest: GS9QWWhr+wyCC7HTRRW8ZIgYrY8=
+
+Name: org/eclipse/persistence/internal/jpa/StaticWeaveInfo.class
+SHA1-Digest: f/lzfBElwZap2srEZQ4FrWr/I40=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/beanvalidation/Bea
+ nValidationHelper.class
+SHA1-Digest: L6PcYKVniFQvX0vPz9EKQDkLj4I=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$PropertyP
+ rocessor.class
+SHA1-Digest: ccjTXGKj8YMddvMoa/VYUhscpxk=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/NamedQueryIm
+ pl.class
+SHA1-Digest: j4f+TrXUO/7jjeDxnfKFu/As+yo=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/Partiti
+ oningImpl.class
+SHA1-Digest: exh4A+7unCgu63Q0WteusHeZJTM=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/EmbeddedIdI
+ mpl.class
+SHA1-Digest: giJlwY5be0vSd+AD4KPQRtVDzns=
+
+Name: org/eclipse/persistence/internal/jpa/config/cache/CacheIndexImpl
+ .class
+SHA1-Digest: PueSn2L1Er1dJzy06K24m6jMWy8=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl.class
+SHA1-Digest: u4GvcxKFjHX9YqHAkKWS+dZsnlY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/structures/Structu
+ reAccessor.class
+SHA1-Digest: sSjBPJRfoItk6BaiReEIiUqH360=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eInvalidateOnChangeHint.class
+SHA1-Digest: tvVsOxPLK4qS1tT88Q4tBuW6UpQ=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/AbstractTable
+ Impl.class
+SHA1-Digest: OnQHji4QaPqyB3r39KD1kHR3YnA=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaBuilderImp
+ l.class
+SHA1-Digest: my8TFb+T8IbF1wead3UbV8mN1zM=
+
+Name: org/eclipse/persistence/internal/jpa/EJBQueryImpl.class
+SHA1-Digest: bg/+vNhmSG4J5nu8DXFypgJACic=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/TableMetada
+ ta.class
+SHA1-Digest: gtVMKRMzpMr+FX7bxMNJRta+13w=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/PLSQLTable
+ Metadata.class
+SHA1-Digest: X7HAbEoR1igZ+wHSiVlbaM8nmAE=
+
+Name: org/eclipse/persistence/jpa/config/UnionPartitioning.class
+SHA1-Digest: eho6uMFvkriXLay7BIHmDarFi0c=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/Discrimina
+ torClassMetadata.class
+SHA1-Digest: 9LfWlutBgCkBjX+8oJ8RVUlBOlM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /TransformationAccessor.class
+SHA1-Digest: jiMc7da3rk26SNn+taZ8vvzimFE=
+
+Name: org/eclipse/persistence/jpa/config/JoinField.class
+SHA1-Digest: SJZLkRYiOHIDWkt6dhmjb01cPck=
+
+Name: org/eclipse/persistence/internal/jpa/config/inheritance/Inherita
+ nceImpl.class
+SHA1-Digest: mY+Ke1sGiniGPs6P/BSwhjAC+Bw=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/ValuePa
+ rtitioningImpl.class
+SHA1-Digest: jgMS3jBJ822ZI8vb7Ppl+H/HEi8=
+
+Name: org/eclipse/persistence/jpa/config/Convert.class
+SHA1-Digest: Yxy5FQ/xwnCtxkZIQ3uaRCPJBAg=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/QueryRedirec
+ torsImpl.class
+SHA1-Digest: Gmxe9wkh/Jd2aWRcPNHb9IkxL0E=
+
+Name: org/eclipse/persistence/jpa/config/FieldResult.class
+SHA1-Digest: zbEvTQxqb038UMf5H/hjatqA+zU=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/ConvertIm
+ pl.class
+SHA1-Digest: nNmjwMhAhZs0ObLQ83TlwnG9hvM=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/MappedSuperc
+ lassImpl.class
+SHA1-Digest: ewjStjAXrH4VIj1NVShEsP28nlU=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Scrollabl
+ eCursorHint.class
+SHA1-Digest: oPm1DVHkRWv8RH8RspTQO7KHAMI=
+
+Name: org/eclipse/persistence/jpa/config/NamedQuery.class
+SHA1-Digest: I84zaatY00dnRrpXkO8lYLdS5JA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/NamedPLSQL
+ StoredProcedureQueryMetadata.class
+SHA1-Digest: L9xYIlG+SHV/TmlY2RYRi9Umg7M=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Field
+ PartitioningMetadata.class
+SHA1-Digest: RkWiFCOWF/EZ702AOepClDQsbK4=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/BasicMapJoinImpl.c
+ lass
+SHA1-Digest: r8SmBXM7WR9qqi+OoV4vRt5ApF8=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Composite
+ MemberHint.class
+SHA1-Digest: pplITfyS5vjsf/eJ7cVJOv/AWQw=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/SetAttributeImpl.
+ class
+SHA1-Digest: 52sxepkoytWMn/S0xJaVF6PiuJ8=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/DirectoryArchive
+ $1.class
+SHA1-Digest: uqdv6/YqEbBfUlsCB/K5ksVyfqw=
+
+Name: org/eclipse/persistence/jpa/config/Column.class
+SHA1-Digest: v/1ueeAQv3a8tQ95HGhTUG1o4+o=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/sequencing/Sequenc
+ eGeneratorMetadata.class
+SHA1-Digest: ZaXuGTkJzN/WYpyLezgUdBTmvjA=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/xml/parser/XPath
+ Engine.class
+SHA1-Digest: bk9TZ7rmRRR0vTqB3CkSr+49h0Q=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/HashP
+ artitioningMetadata.class
+SHA1-Digest: 33XaIF7WZFSbHwm28XMFcu+Mvng=
+
+Name: org/eclipse/persistence/jpa/config/StoredProcedureParameter.clas
+ s
+SHA1-Digest: 1QLLqdzOEl8aYof+l9G8+uzhoAA=
+
+Name: org/eclipse/persistence/jpa/config/TypeConverter.class
+SHA1-Digest: reAd3MnaG1OFc7leSqfSzRPDNRQ=
+
+Name: org/eclipse/persistence/jpa/config/TenantDiscriminatorColumn.cla
+ ss
+SHA1-Digest: pzGeiCILxIZErL2JXPH1v+l27k0=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/HashPar
+ titioningImpl.class
+SHA1-Digest: wSdeTsA+GUtjBxpMJDhuZHIEnyw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/ColumnMeta
+ data.class
+SHA1-Digest: LBZOwtXSIOeLyPs25B/CgUZ42HM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ ClassAccessor.class
+SHA1-Digest: H1+ilGSuaDOK1mBZHmrfX59Pj70=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/Discriminato
+ rColumnImpl.class
+SHA1-Digest: Gkr5YelwPuhUwxvTOE4IDcH5mpQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/ObjectT
+ ypeConverterMetadata.class
+SHA1-Digest: t80CMSKeuwyhQ5FIIBAE59ziCXw=
+
+Name: org/eclipse/persistence/jpa/config/PersistenceUnitMetadata.class
+SHA1-Digest: qIrEVHTnFxM+KOVksXMtssoac94=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/PinnedP
+ artitioningImpl.class
+SHA1-Digest: OSvaBjp9MZYeRCZVK3KYyGdiSL0=
+
+Name: org/eclipse/persistence/internal/jpa/CacheImpl.class
+SHA1-Digest: oMBL9Lr5NpuQDCLbk2EdaG7dzgA=
+
+Name: org/eclipse/persistence/internal/jpa/CMP3Policy$FieldAccessor.cl
+ ass
+SHA1-Digest: xakQP92vOFl5+pXJYSBl1SkGafA=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/OneToManyIm
+ pl.class
+SHA1-Digest: 18XGsOMX09x/NeIrGzvHBf3cGSo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/BeanVali
+ dationListener$AutomaticLifeCycleValidationTraversableResolver.class
+SHA1-Digest: nE1jqV4qmiUHI0Zb0TT9z5vTm4k=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/AbstractName
+ dQueryImpl.class
+SHA1-Digest: rXVnxynOuAEk4G8AXPr7W4GLLm8=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/ColumnResult
+ Impl.class
+SHA1-Digest: JeleGxMp+zUhLLQwsmy/Q2/iuP8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /ManyToOneAccessor.class
+SHA1-Digest: pQJ+3Ex4a1DaSmMcAZN2bcurw+s=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/BeanVali
+ dationListener.class
+SHA1-Digest: QfiuUdXDViUiNgmWA9WGCoI4gPk=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/Attributes.c
+ lass
+SHA1-Digest: QFR+hCcH6Nvuw724mfGoI35RVwc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /MappingAccessor.class
+SHA1-Digest: Opsdr+ZJ1m/AJFKs57Cd2R+Rh3A=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/StoredProced
+ ureParameterImpl.class
+SHA1-Digest: HcfcECrPnjmhJgMDmt+BTpseIeU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/PLSQLCompl
+ exTypeMetadata.class
+SHA1-Digest: i/Q8R7p88ZAQJOW+Faq+8UO3m+E=
+
+Name: org/eclipse/persistence/jpa/config/ReplicationPartitioning.class
+SHA1-Digest: i2K75JOvskd7zym9XA0BARD8/sc=
+
+Name: org/eclipse/persistence/internal/jpa/config/multitenant/TenantTa
+ bleDiscriminatorImpl.class
+SHA1-Digest: 1UJKXhYR+O3jSJMP8c3phTRiT0A=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/Converter
+ Impl.class
+SHA1-Digest: ZeqrY+c3NrIWGR/YZ1Dsm6PqyQM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataField.class
+SHA1-Digest: gy23zk3o25O7VnDFpJ0pS8gCD8g=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/PersistenceUnitP
+ rocessor$Mode.class
+SHA1-Digest: xPfQ5B1m/YWr7Ke3kul1qPyNMB4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAsmFactory$MetadataMethodVisitor.class
+SHA1-Digest: ySuEsgjUGlN9Am+NjumjLQ2+uFE=
+
+Name: org/eclipse/persistence/jpa/config/OptimisticLocking.class
+SHA1-Digest: 1GPWu4YBVe+GlOgAVaHPjCj6kGg=
+
+Name: org/eclipse/persistence/jpa/config/AccessMethods.class
+SHA1-Digest: 7NKaFAVWQMlRt/jIwksYxA3msss=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerSetupImpl$Tabl
+ eCreationType.class
+SHA1-Digest: eHeT5Q0IduyqZFqnNgC4m9x/pNM=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/PrimaryKeyJo
+ inColumnImpl.class
+SHA1-Digest: ccQvN2ws9uQjLZ9ncR0fNBHRrL8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/PrimaryKey
+ JoinColumnMetadata.class
+SHA1-Digest: cKvzBNuuY64WzsoZ3hi9KsFgpwg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataDescriptor
+ .class
+SHA1-Digest: xqsWOYWXGLzFSVktchAAO9+DR0I=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/IdImpl.clas
+ s
+SHA1-Digest: J6hm/aD+R3DYU6hfIcYsZuqI/kE=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/DirectoryArchive
+ .class
+SHA1-Digest: 4m3k2+HHH+4PJ8T+qsu5W44oe0k=
+
+Name: org/eclipse/persistence/jpa/persistence_1_0.xsd
+SHA1-Digest: wD354lhLF1kcSWNDaL5ykQe3oZE=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/QueryHintImp
+ l.class
+SHA1-Digest: zrJGwQeGJ6+v3XgQmFRFSDKYrMQ=
+
+Name: org/eclipse/persistence/jpa/config/Cascade.class
+SHA1-Digest: keIY+SO0+8EpR6kkHF/YQUzAIac=
+
+Name: org/eclipse/persistence/jpa/config/SqlResultSetMapping.class
+SHA1-Digest: pls6nyKc64M7L3FBmXDJmMv8BmU=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eHint.class
+SHA1-Digest: XkV1fw86Fjs2sBitfkWK6mgvA+k=
+
+Name: org/eclipse/persistence/jpa/config/ConversionValue.class
+SHA1-Digest: okGNzyTnKOD0uCGKqNM6MEIX2CU=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/NamedStoredF
+ unctionQueryImpl.class
+SHA1-Digest: JR4MqBorIEV4FZ0W20eOY09Ikyw=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$JDBCMaxRo
+ wsHint.class
+SHA1-Digest: emwEimdTGKUl9lpxFOu4N8cza3M=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerFactoryDelegat
+ e.class
+SHA1-Digest: RaBgFnCIZE1Y1bJAbqvBEjzzvRA=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/Conversio
+ nValueImpl.class
+SHA1-Digest: Dk020dfeYa80Ia/EVJSFdBHyAjA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLEntityMappi
+ ngs.class
+SHA1-Digest: IrjlDPiJRYS4h+gDt6QsqgIdhCk=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ReturnNam
+ eValuePairsHint.class
+SHA1-Digest: 3tPjD7T7VEjUIyMreIXz5pQPdog=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/ORMetadata.class
+SHA1-Digest: yi/Gkw2Wz4OXmQ2AZdphlyiBdJE=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/TupleQuery.class
+SHA1-Digest: GDvhFhJUcEm9tId+wkZaWxe8Tzc=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$AsOfHint.
+ class
+SHA1-Digest: YsjWbJPDM/kN+/QCU/Uwa9Ix2og=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Indirecti
+ onPolicyHint.class
+SHA1-Digest: /GM20IU8K1Bi+WdHAsKVLjLC7EA=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/CascadeImpl
+ .class
+SHA1-Digest: rpYxYt1gPc5+WA/b56lyWTk56C4=
+
+Name: org/eclipse/persistence/internal/jpa/config/copypolicy/Instantia
+ tionCopyPolicyImpl.class
+SHA1-Digest: v9+1KP2sOpfO2i0VBG3eRaFQboI=
+
+Name: org/eclipse/persistence/jpa/config/Table.class
+SHA1-Digest: dlPjEnh+eO33sSrMmM5Lq9cbfqA=
+
+Name: org/eclipse/persistence/internal/jpa/config/transformers/ReadTra
+ nsformerImpl.class
+SHA1-Digest: XaZ5DZ9IxU7WizI4pDEOfZbmQSI=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/ManyToManyI
+ mpl.class
+SHA1-Digest: IYF17MUDWovMNuLLR1gr1sExjnU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/StructC
+ onverterMetadata.class
+SHA1-Digest: /4rNfgYyO+a+yX6T9WIcNa+t/xw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/EmptyElementCo
+ nverter.class
+SHA1-Digest: R8EGSrSba4u1V73XYtvemg87OPM=
+
+Name: org/eclipse/persistence/jpa/config/AdditionalCriteria.class
+SHA1-Digest: UttDiPwjkY2V5zoQarWYcBR15UU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/cache/TimeOfDayMet
+ adata.class
+SHA1-Digest: uoSja4AsVN/O2PmfvMUVbCePPi8=
+
+Name: org/eclipse/persistence/jpa/config/QueryRedirectors.class
+SHA1-Digest: LFH90e45hYsY7bClzyXV4dDlC9M=
+
+Name: org/eclipse/persistence/jpa/config/UuidGenerator.class
+SHA1-Digest: 7rUn3EMFJyKu8SgEYfd6h7xjH5o=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractBas
+ icMappingImpl.class
+SHA1-Digest: gu6x1ce5CsDWlFLYUgl5CkhItkI=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/AbstractQueryImpl$
+ ResultType.class
+SHA1-Digest: /FdAye2bU1PYOwf33FWeYpc03Nc=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/RestReferenceAdapte
+ rV2ClassWriter.class
+SHA1-Digest: zI8HRqXswqxCKv6x5QlFFktA7JM=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/BasicCollectionJoi
+ nImpl.class
+SHA1-Digest: Ki+Lmvx55V1htK9ILP9ZYQCZ1n4=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaBuilderImp
+ l$CaseImpl.class
+SHA1-Digest: PuFO0lOQhRKGb5C60xKfK+TVQt4=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/TransactionWrap
+ per.class
+SHA1-Digest: L4SSQkXaIN5jWsmVc8Zilb0IjUk=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/EntityTransacti
+ onWrapper.class
+SHA1-Digest: LSeYUck03sfGzKgrZr2/VChtLtI=
+
+Name: org/eclipse/persistence/jpa/config/Multitenant.class
+SHA1-Digest: Jkwg8EEOVAAcXfgEQX5qQQhskA0=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/TableImpl.cla
+ ss
+SHA1-Digest: cW9U1KnTjBfwgNMbodgVT23f8ck=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/UniqueConstra
+ intImpl.class
+SHA1-Digest: 3ulDgxrhDN83sMUnS6/3WVFrVTs=
+
+Name: org/eclipse/persistence/jpa/JpaHelper.class
+SHA1-Digest: /1TWtGubc4Qwzm+RJ1W9E7l2qCw=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/IndexImpl.cla
+ ss
+SHA1-Digest: emqgSfxQ47+txLVKjYsCJ6InUrU=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/JoinFieldImp
+ l.class
+SHA1-Digest: p/gBzumJ7DjGVwN91BGgndMXxBY=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CacheStat
+ ementHint.class
+SHA1-Digest: T7glJ8tlSPQblLCvo34D/4MKZjo=
+
+Name: org/eclipse/persistence/jpa/config/ChangeTracking.class
+SHA1-Digest: Osr1w05kqWCcboYQ4ndW6vk8TwU=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$NativeCon
+ nectionHint.class
+SHA1-Digest: 3vjKLmKnM3Bk0X8fnvo6Mnt3xPc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/Constructo
+ rResultMetadata.class
+SHA1-Digest: Dy1AedOlqPA80aGb1Jx7SNK6aws=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/BatchFetchI
+ mpl.class
+SHA1-Digest: QYWfm8AVjnB/7PG0PPyfXKFvjrM=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/MapKeyImpl.
+ class
+SHA1-Digest: 3r+tlS+MUFmA7h6a7+FzoacyNi8=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$4.class
+SHA1-Digest: tNWZTswLDTUQYd0h5lppruW8UdA=
+
+Name: org/eclipse/persistence/jpa/config/Field.class
+SHA1-Digest: esZYGqC8t6gkRPCV2/6CejSKoUw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataProcessor.
+ class
+SHA1-Digest: 4/VIsAvNNR16T722PiQwp5k0pyA=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/TenantDiscri
+ minatorColumnImpl.class
+SHA1-Digest: pgdYOKyJWTIUVPdI4FKz94cVeW8=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/BasicSetJoinImpl.c
+ lass
+SHA1-Digest: n9ags5b4uLClaFKU8zot/UNBrCU=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$PrepareHi
+ nt.class
+SHA1-Digest: LyKtM+CSJr2p6JpLZ1KlygqpczM=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$10.clas
+ s
+SHA1-Digest: nIb+SQc1Y6fFjXEQGUz8sNfLjo4=
+
+Name: org/eclipse/persistence/jpa/config/AttributeOverride.class
+SHA1-Digest: C+9TJhdJWn0LfZ/0cK4eGN0CWFs=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CollectionJoinImpl
+ .class
+SHA1-Digest: 9NWskalpi2FjkX2Saiv0A6h/cKQ=
+
+Name: org/eclipse/persistence/tools/weaving/jpa/StaticWeaveProcessor.c
+ lass
+SHA1-Digest: MkrI7XTMiKwT+MUUgC58tAkeDJw=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/BasicTypeImpl.cla
+ ss
+SHA1-Digest: ucraKGkjJaBKB641B5LWo1sElY0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/sop/SerializedObje
+ ctPolicyMetadata.class
+SHA1-Digest: 2SlHEtOQwLwIQjdw6SK6j75+gnU=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaBuilderImp
+ l$CoalesceImpl.class
+SHA1-Digest: dUiq+4rp+nKF/bccYXbvJ5UaBL4=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/ListAttribu
+ teProxyImpl.class
+SHA1-Digest: DYY1Zfsf/G5IDK91/5LbXIe4e6k=
+
+Name: org/eclipse/persistence/internal/jpa/config/cache/TimeOfDayImpl.
+ class
+SHA1-Digest: 6Z34C0xTNRCYyMeC5H/cMHIsZNI=
+
+Name: org/eclipse/persistence/jpa/config/CacheIndex.class
+SHA1-Digest: EswvcmaLYEMcb0BI7GBKLlX1K2U=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/ForeignKeyIm
+ pl.class
+SHA1-Digest: 2+CpQo9fcFLaPbFkZkd7sQd/EJo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/ColumnResu
+ ltMetadata.class
+SHA1-Digest: 0+viX5g464zwrFaHeWSywdCaTMg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/copypolicy/CloneCo
+ pyPolicyMetadata.class
+SHA1-Digest: +RqgRISHh+CuEy/M+WdAqy67E7M=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/Transformat
+ ionImpl.class
+SHA1-Digest: uWOSTpG0h7LOMocxf4LS2uTbMYg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/UniqueConst
+ raintMetadata.class
+SHA1-Digest: IyhtXLkIVhKHyPTFUeSlLI+uGxc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /ManyToManyAccessor.class
+SHA1-Digest: 1vS9oZbZS8HzuTfoqbWS/h24LC8=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/TransientIm
+ pl.class
+SHA1-Digest: YQMXi/cyU/5UL5R0i8wdIvHbULE=
+
+Name: org/eclipse/persistence/internal/jpa/config/cache/CacheImpl.clas
+ s
+SHA1-Digest: o3hhxSIkHvY/6MJX/ojApb03Y1A=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/ArchiveBase.clas
+ s
+SHA1-Digest: cTWuEkGUNmfC1h8dv0aha0yj1x8=
+
+Name: org/eclipse/persistence/internal/jpa/config/multitenant/Multiten
+ antImpl.class
+SHA1-Digest: gVLNMkmo3Fd0bdd5x2F1ftYP8Rw=
+
+Name: license.html
+SHA1-Digest: EQYcC4FF34XyzwwZy/Zdhq9gb/0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Convert
+ erMetadata.class
+SHA1-Digest: qxExlpPtMjyvmz77HmCtWUlGAB0=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AssociationO
+ verrideImpl.class
+SHA1-Digest: TJ2Z8fX+bLGKdgkJ98/hOZjaUx8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/CollectionT
+ ableMetadata.class
+SHA1-Digest: rX40Ik/lBPPV27cnJkl1CRBb39g=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/EntityResu
+ ltMetadata.class
+SHA1-Digest: qj+ZmPcVvEV+zvR9yIrU/N4jpEI=
+
+Name: org/eclipse/persistence/jpa/config/Enumerated.class
+SHA1-Digest: ODbdxwd18qE+BUQfEnisU4VKK5s=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaUpdateImpl
+ .class
+SHA1-Digest: c/3edaegtOP96iG88drrl80Qzbo=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/AbstractPlsq
+ lTypeImpl.class
+SHA1-Digest: JyFRK5FOpCfna6vxIDSQ+HeXnmk=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchGrou
+ pNameHint.class
+SHA1-Digest: W65xZ5ihdiovv3KkAdk++AIpDVI=
+
+Name: org/eclipse/persistence/jpa/config/Basic.class
+SHA1-Digest: hAkZyA2u0eHCNx3GlOY7Jz1rI10=
+
+Name: org/eclipse/persistence/jpa/config/CacheInterceptor.class
+SHA1-Digest: /sMPNJKqEjSBqk0uBG3Y8PVioK0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/EntityCl
+ assListener.class
+SHA1-Digest: OdibmbLoHWkLxwn/G5rTYBbxWcc=
+
+Name: org/eclipse/persistence/jpa/ArchiveFactory.class
+SHA1-Digest: puvWVGJ8DLpyTzxB/IubMtoqfj4=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/xml/parser/Persi
+ stenceContentHandler.class
+SHA1-Digest: dNJTEw6P+8wmv7lzby535MClBeI=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/TransactionMana
+ gerImpl.class
+SHA1-Digest: 6IESNG5X3xIkKwCvC38I9Pe+T3c=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/AbstractClas
+ sImpl.class
+SHA1-Digest: hu/peNr3bQ4+LJvUog6BQDUFF/Q=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/sequencing/Generat
+ edValueMetadata.class
+SHA1-Digest: yx4fYfkEbJqpUqL0AKerQ9N28os=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/PrimaryKey
+ ForeignKeyMetadata.class
+SHA1-Digest: VSRmrzSqJXM38gNJslScmBgESkI=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/OrderColumnI
+ mpl.class
+SHA1-Digest: 9qc8De/IvBgRdAbyCFDtxqgu0s4=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$9.class
+SHA1-Digest: EUTm+NTkXS/olTyTh2WTO7OMjeE=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/PlsqlParamet
+ erImpl.class
+SHA1-Digest: /8F3SdCq/gmf3C+rM97LhHDITEE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/EntityCl
+ assListenerMetadata.class
+SHA1-Digest: udPXSh/gfxtyYSFJG5CaiS96yVg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/graphs/NamedEntity
+ GraphMetadata.class
+SHA1-Digest: KxDYFNKZHhzmBez3Fikutc4UmTg=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/MapAttributeImpl.
+ class
+SHA1-Digest: 1kuM/d238MCYaT0FQAQvn2+UKK4=
+
+Name: org/eclipse/persistence/jpa/config/OrderColumn.class
+SHA1-Digest: fThg2cUcgbz68JzAjX++Jzx9l8c=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/LobMeta
+ data.class
+SHA1-Digest: eMawVcMs+PjywJkGsBnHn3GjgtY=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/StaticWeaveJAROutpu
+ tHandler.class
+SHA1-Digest: WX/l/aPMOkNNrQv1y3nbIufdENE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/sequencing/UuidGen
+ eratorMetadata.class
+SHA1-Digest: dhmgdnXtGR7enymxC2D4rHDVDcc=
+
+Name: org/eclipse/persistence/jpa/config/Inheritance.class
+SHA1-Digest: REBV2/kJrZS642O+L1m9W+1jID0=
+
+Name: org/eclipse/persistence/jpa/metadata/FileBasedProjectCache.class
+SHA1-Digest: K5V2rH7ochO/zHBFX3lS1F8q+RE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAsmFactory.class
+SHA1-Digest: frXWQbKqA2FXI7oeq/gI8vsASdc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/transformers/ReadT
+ ransformerMetadata.class
+SHA1-Digest: p+w6nwPtR18NiswOqoar6JD2BxM=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/ElementColl
+ ectionImpl.class
+SHA1-Digest: ql9Q84bN7K6cQjyK5vsbCsm4Jhw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/nosql/NoSqlMetadat
+ a.class
+SHA1-Digest: ebvKdc9KLElwMIFr+1758GzET0c=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/JoinColumn
+ Metadata.class
+SHA1-Digest: KnXgX0VhRTgHQWwYgvIXTfTWRBY=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CursorSiz
+ eHint.class
+SHA1-Digest: OBIMIB9fWCzkPK5dmzeMfVOzkis=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Pessimist
+ icLockScope.class
+SHA1-Digest: t6AhRF3qeN3Dvf8Nt1sJbc7b/08=
+
+Name: org/eclipse/persistence/internal/jpa/config/persistenceunit/Meta
+ dataSource.class
+SHA1-Digest: mpnwmmxqS54VeleWveFK4bSgsEo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Value
+ PartitionMetadata.class
+SHA1-Digest: h5YGYZTUhKQZHj8UopJ0OjmFjw0=
+
+Name: about.html
+SHA1-Digest: CA+3S6mgqDwaIAhcu0LHhMKGqsM=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/InternalExpression
+ .class
+SHA1-Digest: YcnmQc68i0fYf8gew1OWacc97A8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/JoinTableMe
+ tadata.class
+SHA1-Digest: W0ULXgIcHalctHJDou0GY/UDrm4=
+
+Name: org/eclipse/persistence/jpa/config/PinnedPartitioning.class
+SHA1-Digest: tVZD4VyI/bNShjXei/lOahTlguY=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CacheRetr
+ ieveModeHint.class
+SHA1-Digest: MkmXSN42SHkibBTPMaM1wIlwCVg=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/TypeImpl.class
+SHA1-Digest: ZK7YnFnwCc10F09locyBwKYwDXA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/Associatio
+ nOverrideMetadata.class
+SHA1-Digest: J8VVzP0liKQ6JPIAf1gyBC7cJlw=
+
+Name: org/eclipse/persistence/jpa/config/ConverterClass.class
+SHA1-Digest: lSMNthM37j1YAfFFgtbMl3W7cAA=
+
+Name: org/eclipse/persistence/jpa/config/ValuePartition.class
+SHA1-Digest: zgQ0kxRp9uZpctE51HnXI+E2Q7U=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLPersistence
+ UnitMetadata.class
+SHA1-Digest: i+am5h944eDERrwIfktzto9oazc=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/AbstractStor
+ edQueryImpl.class
+SHA1-Digest: eYyOZXH6eAZc1gzozHOmOKLjNrI=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /DerivedIdClassAccessor.class
+SHA1-Digest: 71iHUpSEMR/EMExCzUsH72U90Wo=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1.class
+SHA1-Digest: biADSpbKCECtMhrm2MMVz/oXK6w=
+
+Name: org/eclipse/persistence/internal/jpa/PersistenceInitializationAc
+ tivator.class
+SHA1-Digest: QJJhpX+KQw4khoVUOzJOC3znfkc=
+
+Name: org/eclipse/persistence/internal/jpa/StoredProcedureQueryImpl.cl
+ ass
+SHA1-Digest: n4ohVdM6OzqSkVS0jFMdvO+2X6c=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$MaintainC
+ acheHint.class
+SHA1-Digest: q6urB4oe9Dmh4fucJfP4Cga5/7I=
+
+Name: org/eclipse/persistence/internal/jpa/ExceptionFactory.class
+SHA1-Digest: H0U9hGgMJhqNGxFrFEsY9VePUIk=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/FieldImpl.cl
+ ass
+SHA1-Digest: wppuZ/0czRoUhv06GMYBDogpUdw=
+
+Name: org/eclipse/persistence/internal/jpa/CMP3Policy$PropertyAccessor
+ .class
+SHA1-Digest: feAmBeNAWH0hzUVJjENXkb3RA0E=
+
+Name: org/eclipse/persistence/jpa/config/PersistenceUnitDefaults.class
+SHA1-Digest: bBPCr8jY0JYShoQI3+rUgK5TSlM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/FieldResul
+ tMetadata.class
+SHA1-Digest: AioKpNPR3dn2+fDnfQF3iOkTFjM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/additionalcriteria
+ /AdditionalCriteriaMetadata.class
+SHA1-Digest: YF7oSWJaHlOfi1eqIqTv18pT/rw=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/RestCollectionAdapt
+ erClassWriter.class
+SHA1-Digest: Tw3ZkQmXp+S+QNjpGyRMYsLNxa4=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/RestAdapterClassWri
+ ter.class
+SHA1-Digest: Ie++XqwP6IgKOQf1Qezy2LYaWT0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/AttributeO
+ verrideMetadata.class
+SHA1-Digest: hAbzsbjTMlYfnHbd/FgQJP0WAQw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/sequencing/TableGe
+ neratorMetadata.class
+SHA1-Digest: lKYryN48y2C1qXMb5qbBr8x8BUE=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AbstractOver
+ rideImpl.class
+SHA1-Digest: Q+eGhyvowrg+tAifv1cW+/sU58U=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Convers
+ ionValueMetadata.class
+SHA1-Digest: 2bgN7fCli5nh+EH+zuZdXX/J80I=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /BasicAccessor.class
+SHA1-Digest: 4kGwOpejCW9TwwM8jx9TptWKijM=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/ConverterCla
+ ssImpl.class
+SHA1-Digest: G8qvN8vxDdiR1D+YYyDEgYKI7L4=
+
+Name: org/eclipse/persistence/internal/jpa/config/sequencing/SequenceG
+ eneratorImpl.class
+SHA1-Digest: F/HakHhw7v9yVrrYSd3EyA95D1Q=
+
+Name: org/eclipse/persistence/jpa/config/Cache.class
+SHA1-Digest: kx8IX/basafb4mpRgIXg/SqLGlc=
+
+Name: org/eclipse/persistence/jpa/config/PersistenceUnit.class
+SHA1-Digest: 5taL40pQysSopKwl9CoHPEbfA7w=
+
+Name: org/eclipse/persistence/jpa/config/Id.class
+SHA1-Digest: hPoXx/F2E/RqW/oivnFQaunW5SM=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CompoundExpression
+ Impl.class
+SHA1-Digest: Y1k/IOa8Hg667sklOAiMHeS6Qxw=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/ParameterExpressio
+ nImpl.class
+SHA1-Digest: rbhj8a1qAb5Unk5MPSJ7bolozDA=
+
+Name: org/eclipse/persistence/jpa/config/Transient.class
+SHA1-Digest: YYtyFWvF1bOsHXrR2QFRVl+B5cQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLEntityMappi
+ ngsMappingProject.class
+SHA1-Digest: luY2Ip0PE2cajdHriLOJ3uvT+NQ=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/ClassWeaver.class
+SHA1-Digest: Mf/gcy9WYHYx7KQVinMKYEnHtFY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/SecondaryTa
+ bleMetadata.class
+SHA1-Digest: dPpPJNlPT+vVJndzxHfjlatyQHE=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/JoinImpl.class
+SHA1-Digest: ngwiYfiy4i8N+9Lq596y1DVl4LE=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$BatchType
+ Hint.class
+SHA1-Digest: WgaBmQK0/ANuzRxoAOlfA5N74z4=
+
+Name: org/eclipse/persistence/jpa/config/DiscriminatorColumn.class
+SHA1-Digest: 06lEsQr1ImXvuQ+S03zildm3OcU=
+
+Name: org/eclipse/persistence/internal/jpa/CMP3Policy$ValuesFieldAcces
+ sor.class
+SHA1-Digest: Se3ID/4NoLNqnHcKTgjdNIm2ZI8=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/SEPersistenceUni
+ tProperty.class
+SHA1-Digest: dwuodHw4N6kqKhyi7rzZaLHEMek=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$BatchSize
+ Hint.class
+SHA1-Digest: vZJ8hambE8Sihf1gGAOdGPlU0o8=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchGrou
+ pDefaultHint.class
+SHA1-Digest: 3zhjrYZe5jTIvH4e1Pv+Jsg1ezE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Abstr
+ actPartitioningMetadata.class
+SHA1-Digest: o77qY2DXv9O8AaXLFsi4NObmtdI=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Redirecto
+ rHint.class
+SHA1-Digest: ytNoMTl+aVN1ZcSZeOo9pDZp0+A=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/EntityTypeImpl.cl
+ ass
+SHA1-Digest: drwD68zZk4mzlaXF7fUFjUrnZZI=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Abstrac
+ tConverterMetadata.class
+SHA1-Digest: qMtVv8BYNvMSozVfMn/id5w7Ias=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/StoredProc
+ edureParameterMetadata.class
+SHA1-Digest: tCBVgVC3X5yD94zKHjZxB0MglmA=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/Enumerate
+ dImpl.class
+SHA1-Digest: PqrMrGehPgBFxP28w6UqJqKQAG8=
+
+Name: org/eclipse/persistence/internal/jpa/config/structures/ArrayImpl
+ .class
+SHA1-Digest: +GMcKpdCuJeKEZoM9RRbUAHPzSo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /EmbeddedAccessor.class
+SHA1-Digest: xfF++qVOAj72mqKyyhZS6mNCULI=
+
+Name: org/eclipse/persistence/jpa/config/Structure.class
+SHA1-Digest: ZAOHdWMNG9OOpKsq0dXdSA+FOSE=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchGrou
+ pAttributeHint.class
+SHA1-Digest: Cr+mT/dLT6qJYBhjF0ZF/BTyTU4=
+
+Name: org/eclipse/persistence/jpa/JpaCache.class
+SHA1-Digest: I+MKruErRveE0Oyl3Kp/Sec9LuE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/SQLResultS
+ etMappingMetadata.class
+SHA1-Digest: F6RjRJPMy5R0Xyl+YtZO+9cS7tQ=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$3.class
+SHA1-Digest: H2IlFzczP8ppqXARRqbY5j4pxGw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/Property
+ Metadata.class
+SHA1-Digest: X8h89TYu68RcicI+VLd+3Rwedbk=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/NamedPlsqlSt
+ oredProcedureQueryImpl.class
+SHA1-Digest: FQN5evnTfjlVzyP4mDw8iCu5xeQ=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/FieldResultI
+ mpl.class
+SHA1-Digest: M5jf9M7i81GS1MDIQ9EXPuVfbfU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/graphs/NamedSubgra
+ phMetadata.class
+SHA1-Digest: qJmpIC8FpYnEuIcPNu1m7nv3JXw=
+
+Name: org/eclipse/persistence/jpa/orm_2_1.xsd
+SHA1-Digest: 3U5M+FjXVMlBc9Jpn0fFQByjLUU=
+
+Name: org/eclipse/persistence/internal/jpa/config/sequencing/Generated
+ ValueImpl.class
+SHA1-Digest: JsHoTVO0dXjdzN8AdSxqZjxbDG0=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ReadOnlyH
+ int.class
+SHA1-Digest: z1LvlIDKaJFPwJxpEeXZsR6yEJ4=
+
+Name: org/eclipse/persistence/jpa/Archive.class
+SHA1-Digest: 9+R4EixucHiq004gLBbcb7qOqPY=
+
+Name: org/eclipse/persistence/jpa/config/Struct.class
+SHA1-Digest: 73hOwtgLCGsx11S7ROXjkCvp2ac=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Seriali
+ zedConverterMetadata.class
+SHA1-Digest: bocxr+d+sYnCQggNLmWEAY8BdYM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/structures/ArrayAc
+ cessor.class
+SHA1-Digest: XyHhR5f86Il7ie3p/AOi9qn5OWU=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/BasicImpl.c
+ lass
+SHA1-Digest: oC/QUTTKXfLqrCNjrkC7HWNU4Uo=
+
+Name: org/eclipse/persistence/jpa/eclipselink_orm_2_5.xsd
+SHA1-Digest: DABhwA7gudqaI/XkWWFCSuyo6Gc=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eExpiryTimeOfDayHint.class
+SHA1-Digest: LtEQmV5PSBjBE+fkvqAVi4NKUQc=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/EntityTransacti
+ onImpl$TransactionFinalizer.class
+SHA1-Digest: chgIoerFhCvGuvk/jp2MGLFvVO8=
+
+Name: org/eclipse/persistence/jpa/config/OracleObject.class
+SHA1-Digest: iRUIDb8Jl20iV6wGdMphOvqz8QU=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CacheStor
+ eModeLegacyHint.class
+SHA1-Digest: dZOLmyPeFwhqO7E2hI/yBOkg6EE=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchGrou
+ pLoadHint.class
+SHA1-Digest: HSzJH6N0wpUTdoRMYIDmyw89ko8=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/MetamodelImpl.cla
+ ss
+SHA1-Digest: y5G4SlM66mDSdVpMm+EqLcPfcAk=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/SubQueryImpl.class
+SHA1-Digest: lDAFzmiBn/Eq4pKAV9ysW+/5894=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataDynamicCla
+ ssWriter.class
+SHA1-Digest: YUkTFAkHQDQ93Hc6oFlvfjRfyao=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /DirectCollectionAccessor.class
+SHA1-Digest: z9rQjEaK7HNKsn0P6SPDfnWGc3M=
+
+Name: org/eclipse/persistence/jpa/config/Temporal.class
+SHA1-Digest: u0+oFltYr4Nq8fJrZoXt7pNzQhk=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/NamedStore
+ dProcedureQueryMetadata.class
+SHA1-Digest: C9mxn3TOGTkwYHb2KvSeb/wAHA4=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaQueryImpl.
+ class
+SHA1-Digest: ma483Ql+Jjrk8Vs5EGDmsOrWnr0=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Inheritan
+ ceJoinHint.class
+SHA1-Digest: xigTlGRBZTfwOHC2bcDykNl0eUk=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CommonAbstractCrit
+ eriaImpl.class
+SHA1-Digest: L2/S3O7r6pURlclalVn44/OV82k=
+
+Name: org/eclipse/persistence/jpa/config/Mappings.class
+SHA1-Digest: jf3iVX10Tsqxx42R/LxgPtSa9ik=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Pessimist
+ icLockHint.class
+SHA1-Digest: SjDRq8HfPtMwsa2fYt2v5y5UlkA=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/NamedStoredP
+ rocedureQueryImpl.class
+SHA1-Digest: SKlugdUumLDjBiz4jCuuQq8DW5E=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAccessibleObject.class
+SHA1-Digest: wS3zcpAufqQDuC/BA/MrnwGooFQ=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ResultTyp
+ eHint.class
+SHA1-Digest: zQ3JvXcmrGoGEAo2dr4ZQyoQIBo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$RefreshHi
+ nt.class
+SHA1-Digest: DlWl6PaCIGIXjYMJQxXYluapZGI=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Parti
+ tioningMetadata.class
+SHA1-Digest: kAsS7aRTecxrqjmkBFx4mpRjlS0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/copypolicy/CopyPol
+ icyMetadata.class
+SHA1-Digest: UwRomJCWv0SrMlpFneTUEvEqivc=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/AttributePr
+ oxyImpl.class
+SHA1-Digest: FvzTrvjD0F3EI3qNZ/nYeptbU2M=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/VariableOne
+ ToOneImpl.class
+SHA1-Digest: vhRoi9zBer//SQ9gP06CpPxSSYc=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$Operation
+ Type.class
+SHA1-Digest: uxSwEmRqWDjCUbmNo8HdLeglKdY=
+
+Name: org/eclipse/persistence/internal/jpa/config/copypolicy/CopyPolic
+ yImpl.class
+SHA1-Digest: pW2tLvx8YTEULzp5fiAj1jbdOz4=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/PredicateImpl.clas
+ s
+SHA1-Digest: EHd0Mw4eFLmHRNcQZsehz+K6ag0=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ResultSet
+ Access.class
+SHA1-Digest: Dk5fOC9cD6Sk7VOxqmn+zMhtsSg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/ForeignKey
+ Metadata.class
+SHA1-Digest: WphkV4bgR5gS8PdfP1aQCIofrJA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/cache/CacheIndexMe
+ tadata.class
+SHA1-Digest: 5Wb9ToknPxPo3a3m7+z4w5TAYtg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/multitenant/Multit
+ enantMetadata.class
+SHA1-Digest: nm4vWZ1ZbF3JcDqAnQo06VOC96I=
+
+Name: org/eclipse/persistence/jpa/config/TenantTableDiscriminator.clas
+ s
+SHA1-Digest: XigD2ejSsYiYvJIq2X4N2AooM+4=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractCol
+ lectionMappingImpl.class
+SHA1-Digest: 1aIN3ryY/AR6PykMFSnrn9MI6GM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Metadat
+ aConverter.class
+SHA1-Digest: nyV9Im0LerzqRnsB4RwlDI2vVwg=
+
+Name: org/eclipse/persistence/jpa/config/PrimaryKey.class
+SHA1-Digest: eI1hBoVjXbZCp/7Kj6kw0pXebKU=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/VersionImpl
+ .class
+SHA1-Digest: HsWEsAfXf1L/H9sGwDbqeOxBnVs=
+
+Name: org/eclipse/persistence/tools/weaving/jpa/StaticWeave.class
+SHA1-Digest: 5wMprv2M7SBg/RwLksL348879Gg=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaBuilderImp
+ l$SimpleCaseImpl.class
+SHA1-Digest: afFCwb+A1h4o4o87YCnjTKtuvg8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/FieldMetad
+ ata.class
+SHA1-Digest: VQkVy9HC0L6hZtbiAZyRfSi217E=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CursorHin
+ t.class
+SHA1-Digest: 2Tro6yNJE22e/r7GWGuXEmUqFQo=
+
+Name: META-INF/services/javax.persistence.spi.PersistenceProvider
+SHA1-Digest: wD+exU00UXDYk00o+m5uHcNbTWc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/TenantDisc
+ riminatorColumnMetadata.class
+SHA1-Digest: A+Civ9PoZtrmE7CSRp1n/kC7aG8=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$8.class
+SHA1-Digest: wjni/VVEKLWBUdbE5YSbIr0Or/E=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/RelationalT
+ ableMetadata.class
+SHA1-Digest: QQ2SOoD42aFW1EI0o9j47QFdjmM=
+
+Name: org/eclipse/persistence/jpa/config/ColumnResult.class
+SHA1-Digest: 9upShTUMg/wh1IdpwNZR9vwD3hM=
+
+Name: org/eclipse/persistence/jpa/config/Lob.class
+SHA1-Digest: aswQi7M/pNGcxpMKOnZss7Q3TLk=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /IdAccessor.class
+SHA1-Digest: qPGydjXtI9y9CpVxEhWatDmGvwE=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/LobImpl.c
+ lass
+SHA1-Digest: IHX4/NHoZGWBQIiNiBB17xP6vIE=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CacheRetr
+ ieveModeLegacyHint.class
+SHA1-Digest: +eLnXTRDry4n0tB9PSYxGCjVdSQ=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$14.clas
+ s
+SHA1-Digest: 2OVKPb37LYCGNJZOpx86Pa3EXe0=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractRel
+ ationshipMappingImpl.class
+SHA1-Digest: X2bVHUvG/sjJB8fC3orkUKd9M1M=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eExpiryHint.class
+SHA1-Digest: 4v3RGz1RApHJeao/BnXb7Q3gQc0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /ElementCollectionAccessor.class
+SHA1-Digest: yDXRqIPgXMM05tlTxv7nclPofuE=
+
+Name: org/eclipse/persistence/jpa/config/NoSql.class
+SHA1-Digest: 3LJe+cMrT/ZiKlqXZAkQzNR29WM=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/SingularAtt
+ ributeProxyImpl.class
+SHA1-Digest: pW8BAjUAL3y//7In5xPL1VqF2eE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Union
+ PartitioningMetadata.class
+SHA1-Digest: WGHBl+v9pypupemfkIa6wCfBNbk=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eTypeHint.class
+SHA1-Digest: mDZKJhUyZ01+4darXGNZH/Tn1u8=
+
+Name: org/eclipse/persistence/internal/jpa/config/metadata/ReflectiveD
+ ynamicClassLoader.class
+SHA1-Digest: pgUK/pXO1+7GNmkiGoTmvWlnlb4=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eSizeHint.class
+SHA1-Digest: EXu5XBljHehRtDS3pJxwLeLU9To=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Exclusive
+ Hint.class
+SHA1-Digest: cPIUJuHSxeJek5O08fz1zPtNvAU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/locking/Optimistic
+ LockingMetadata.class
+SHA1-Digest: wAMj+1Q4jxt0qkm2EhSBwPU+P78=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAsmFactory$MetadataAnnotationVisitor.class
+SHA1-Digest: MmIzn4kqAZjESnxBcvpHIuAORxE=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/EntityTransacti
+ onImpl.class
+SHA1-Digest: sY7cWtd6eva7HJAI1MUe1fHvnkY=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/BasicListJoinImpl.
+ class
+SHA1-Digest: eUMSulnvzKdUPW7ROX+KM2JW6bo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CacheUsag
+ eHint.class
+SHA1-Digest: IPy4dUDRLitDwLU6UvMYmHuG2dE=
+
+Name: org/eclipse/persistence/internal/jpa/config/locking/OptimisticLo
+ ckingImpl.class
+SHA1-Digest: lDVlx0BMkOoDiHSESw3dNg2Kp4U=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/ReturnInser
+ tImpl.class
+SHA1-Digest: 2wKCgJHwAs9Frm6mIsu9jGiKO8I=
+
+Name: org/eclipse/persistence/jpa/config/NamedStoredFunctionQuery.clas
+ s
+SHA1-Digest: dC5puawAei2I13RzN3XVRgYASE4=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/AttributeImpl.cla
+ ss
+SHA1-Digest: DsOfCOGFVwjbA1QXBtWlNjSS5SM=
+
+Name: org/eclipse/persistence/jpa/config/NamedNativeQuery.class
+SHA1-Digest: ikkZ8449BKtUMwDz8h9evSjWdCY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/copypolicy/CustomC
+ opyPolicyMetadata.class
+SHA1-Digest: amFCOH0Y59v6LfhdqPJs2z2YYV4=
+
+Name: org/eclipse/persistence/internal/jpa/config/persistenceunit/Data
+ ServiceImpl.class
+SHA1-Digest: 0RdSmUIJo5Zzft+XG8ijnt/5HjE=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ResultSet
+ ConcurrencyHint.class
+SHA1-Digest: RByCI4a3spzcLOi/tX1T4nozt/I=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/inheritance/Inheri
+ tanceMetadata.class
+SHA1-Digest: 76szUlaB3N+W+BcAxjQWFhJrfe4=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JavaSECMPInitial
+ izer.class
+SHA1-Digest: pfZY8AYNTlx+UNlP3DIgg7p2NJ4=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/JTATransactionW
+ rapper.class
+SHA1-Digest: 5Aia1879Rc8jhNtrukmWUNvSDn0=
+
+Name: org/eclipse/persistence/internal/jpa/config/cache/CacheIntercept
+ orImpl.class
+SHA1-Digest: aoXr7r7I3zQG8H8tYNCYLbQkEHk=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/URLArchive.class
+SHA1-Digest: L9ZwRuHC/mfDag6MaUwcXave2No=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Value
+ PartitioningMetadata.class
+SHA1-Digest: HxnkwJCss0uxXw975SxxRl1EKJU=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAsmFactory$MetadataAnnotationArrayVisitor.class
+SHA1-Digest: QDpoxbsy7FOQeOyO3IlgeWL5Sx8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ MappedSuperclassAccessor.class
+SHA1-Digest: c4od8E1QOfXh+3D/5meQD8DYOeA=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/InternalSelection.
+ class
+SHA1-Digest: 3/sxyNQg2MnSFhJxx5r4geT5wfg=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$AllowNati
+ veSQLQueryHint.class
+SHA1-Digest: VP2qtI3vbw6K9GqTu29XPI2xZw4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /MappedKeyMapAccessor.class
+SHA1-Digest: EmtZlljO/nq5pe/OrDUBK3P+G+8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/MethodSe
+ rialImpl.class
+SHA1-Digest: 3mko7oQkrXhnOEaiLgp71Y/QzwM=
+
+Name: org/eclipse/persistence/internal/jpa/CMP3Policy.class
+SHA1-Digest: 7YzktBsJa32iRICsGabvE2OMy8Q=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ XMLAttributes.class
+SHA1-Digest: 5sis/basx33OgGSBV9IudqbtFFM=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/PluralAttri
+ buteProxyImpl.class
+SHA1-Digest: comqg3x8P2QTM7ZRoWhcsFTfYcc=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/OneToOneImp
+ l.class
+SHA1-Digest: A+poaFMmcDxQHobXnzujnjqPIjQ=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/ExpressionImpl.cla
+ ss
+SHA1-Digest: Xatrx890840EAhCUvIeoBDaQ+/I=
+
+Name: org/eclipse/persistence/jpa/orm_2_0.xsd
+SHA1-Digest: jE/1eVWXwk1cfCrjoIof+Z2quy4=
+
+Name: org/eclipse/persistence/jpa/config/RoundRobinPartitioning.class
+SHA1-Digest: Uzsi5OEdotjBrGq0F3gv+QqfAxM=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/ManagedTypeImpl.c
+ lass
+SHA1-Digest: gPFVbiQyTN6uKCZooH0vMtLcqBM=
+
+Name: org/eclipse/persistence/jpa/config/Property.class
+SHA1-Digest: rDJlqziBstRqDWbC9Z+oCWHzJkQ=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$LoadGroup
+ AttributeHint.class
+SHA1-Digest: PtoqcLvBQBjxYopI9jSxK5sg+xM=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CursorPag
+ eSizeHint.class
+SHA1-Digest: OnmH+tD3lUBp6MWQoayospvGb+A=
+
+Name: org/eclipse/persistence/jpa/config/CloneCopyPolicy.class
+SHA1-Digest: WEOyXWF4tZwFpmbORSS0xntCts0=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/AbstractMapp
+ edClassImpl.class
+SHA1-Digest: ZARuPXHFw4ta6xNTdfninwrv6/Y=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/PlsqlRecordI
+ mpl.class
+SHA1-Digest: lnYnq8dYUCSJ023f5PCWCmDWXY8=
+
+Name: org/eclipse/persistence/internal/jpa/config/listeners/EntityList
+ enerImpl.class
+SHA1-Digest: ecTpXvYjFDovI6o6r0jTucU+3Oo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/Discrimina
+ torColumnMetadata.class
+SHA1-Digest: sFKxjik5wmW5kZTAxjhDZXDRm7M=
+
+Name: org/eclipse/persistence/jpa/config/PlsqlTable.class
+SHA1-Digest: zpJG0jTTcWsMr3j6m4VBIMamBp8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLPersistence
+ UnitDefaults.class
+SHA1-Digest: RYF0/AKTQZgicEr/VAh5QUBD+9Y=
+
+Name: org/eclipse/persistence/jpa/config/BatchFetch.class
+SHA1-Digest: Wdys0KtZgmguM0SUrE8gQHu/KQo=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/ListJoinImpl.class
+SHA1-Digest: x+m51KoVWm4vfoLazB3zv9nTbb8=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/MapJoinImpl.class
+SHA1-Digest: ohFNMk8F6JbSZtnF7C7+LejnyiA=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/Replica
+ tionPartitioningImpl.class
+SHA1-Digest: FF4GoArM3MC4xwTaeB/7BIXdG6k=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eIgnoreNullHint.class
+SHA1-Digest: FXdiVFM0sjvPqUJNWecJwUxK7h4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/transformers/Write
+ TransformerMetadata.class
+SHA1-Digest: cJKZuEYvND3+BkqAlq2bG3ZisMc=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/JoinTableImpl
+ .class
+SHA1-Digest: EEn5ajSg4baN10mFmi2BOC5jMSI=
+
+Name: org/eclipse/persistence/internal/jpa/QueryImpl.class
+SHA1-Digest: coFkxgt3PrDJ9Hvrcdg4b6K1cRc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/cache/CacheMetadat
+ a.class
+SHA1-Digest: Yvuld2hDiBg4TuS0RQW1t6kkPWg=
+
+Name: org/eclipse/persistence/jpa/dynamic/DynamicIdentityPolicy.class
+SHA1-Digest: iEUruxi2a4I0vQ4+071sKuUSNhc=
+
+Name: org/eclipse/persistence/internal/jpa/jdbc/ConnectionProxyHandler
+ .class
+SHA1-Digest: QstEnGBMUNzMdI/UtYjz3/yIw4k=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractMap
+ pingImpl.class
+SHA1-Digest: BiEOmvb9ZnoIhCFqXM39iXo/r7I=
+
+Name: org/eclipse/persistence/jpa/config/ReadTransformer.class
+SHA1-Digest: HYXyzFOHxDH7vQ+eWVsAf1HeMAM=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractObj
+ ectMappingImpl.class
+SHA1-Digest: R+niTFDLU4sbFGE1kGeXqOypHZo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$BindParam
+ etersHint.class
+SHA1-Digest: fa8sMPmX6L+llgkEtPBB3lPxrwA=
+
+Name: org/eclipse/persistence/jpa/config/WriteTransformer.class
+SHA1-Digest: Nw2csQNEWTfNnv72hpk7RvXJu1c=
+
+Name: org/eclipse/persistence/internal/jpa/config/tables/CollectionTab
+ leImpl.class
+SHA1-Digest: I3NC3ERrybsdVNs9ACPoJbfzyz4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/tables/IndexMetada
+ ta.class
+SHA1-Digest: hBrCsEUASTgvkmZNI4h+lz2YV4k=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAnnotation.class
+SHA1-Digest: yWpxiUenwwUjaN/eJIRE7VwqEHs=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/PrimaryKey
+ Metadata.class
+SHA1-Digest: gWgym3iiRO4Qnzgrgy7l7Ggz2YE=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/PersistenceWeaver.c
+ lass
+SHA1-Digest: qr2kdJBxFArO28hZLNI1KBch7S0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/ClassIn
+ stanceMetadata.class
+SHA1-Digest: baLupcSZ8nGCOasoWWusSWTveLU=
+
+Name: org/eclipse/persistence/jpa/config/CopyPolicy.class
+SHA1-Digest: pfzQ66kMtYY8c809JIrNL6hWkC0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /BasicMapAccessor.class
+SHA1-Digest: eF+ymO4qkBiS7v4Gyh/hfDqzlpM=
+
+Name: org/eclipse/persistence/jpa/config/ReturnInsert.class
+SHA1-Digest: /cSNJSmXgPEsdnZ9nqGwBf/ZP0Y=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$2.class
+SHA1-Digest: rfVZ2H2cV7OwVvyN9U2Jo2FSnbM=
+
+Name: org/eclipse/persistence/jpa/JpaQuery.class
+SHA1-Digest: C1g5enjNVEJsaLLXelYH9L7s0J0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataFile.class
+SHA1-Digest: /ENvKcUUb/LyXuMIBmhpFExBdyw=
+
+Name: org/eclipse/persistence/jpa/JpaEntityManager.class
+SHA1-Digest: ah0jXF9+7xOQTHCYhYXs3uASf0I=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/OracleArrayI
+ mpl.class
+SHA1-Digest: mivJEt0KpzSzLwsZoZ4hSosd/eE=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FlushHint
+ .class
+SHA1-Digest: K4BSXlYV2ph2M0rp8vqHTKFYL28=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/PluralAttributeIm
+ pl.class
+SHA1-Digest: vAL+W5zgLc8+Au01aAa0jEiFKYA=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/AbstractStaticWeave
+ OutputHandler.class
+SHA1-Digest: TezqwINknkKfNhfKnY4xKi6r8Dc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/ComplexTyp
+ eMetadata.class
+SHA1-Digest: i6wzkWcDwjyztQgp7DvJtqHTA68=
+
+Name: org/eclipse/persistence/jpa/config/ValuePartitioning.class
+SHA1-Digest: VIPpJkTRUqkB7uz9oLQKxqgtv9Q=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerSetupImpl.clas
+ s
+SHA1-Digest: HVLocR2f6HkN2h3IkMfp/R6xkiI=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/SingularAttribute
+ Impl.class
+SHA1-Digest: t32ktHWnF5qDKLOOm20IIaW95YQ=
+
+Name: META-INF/eclipse.inf
+SHA1-Digest: 09gN05tobgS/MdtqyTNQhOhB73M=
+
+Name: org/eclipse/persistence/jpa/config/TableGenerator.class
+SHA1-Digest: R7HtkX+zc72kp92N02dk62nv8LE=
+
+Name: org/eclipse/persistence/jpa/config/HashPartitioning.class
+SHA1-Digest: erxJiHYkWdUTpQfzfqzOO2FaHHc=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/Metadata
+ Helper.class
+SHA1-Digest: r9HhgwpFNlBsvB0JnM2yKKlLXAo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ResultCol
+ lectionTypeHint.class
+SHA1-Digest: vymS9qEYAMkEnGTMNPYi0UsyAqM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/graphs/NamedAttrib
+ uteNodeMetadata.class
+SHA1-Digest: Xeaq8j7BY3AIwhysRCDxYnSh0VE=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerFactoryImpl.cl
+ ass
+SHA1-Digest: 6tSUw3uf4ShsAyN7q2XyIXiE9j0=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$ResultSet
+ TypeHint.class
+SHA1-Digest: NIw5FgcUT+DKs6EMkmY0Qndwk3U=
+
+Name: org/eclipse/persistence/internal/jpa/config/xml/MappingsImpl.cla
+ ss
+SHA1-Digest: WCDyM4MRJkuDCd314oUJBWl3yBo=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryType
+ Hint.class
+SHA1-Digest: nXr4xM6IgSEkEuC3OcrYLUCa6M8=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/TransactionWrap
+ perImpl.class
+SHA1-Digest: FUr3MwxXg0er428kGI+YQr+b2Fs=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataClass.class
+SHA1-Digest: qD0Fi96VkXlzwrYkwrft0E+YNOg=
+
+Name: org/eclipse/persistence/jpa/config/ManyToMany.class
+SHA1-Digest: pt5bigDa76puGbFxfbw9I1+3iLs=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /VariableOneToOneAccessor.class
+SHA1-Digest: XKFZlowrQeOWH0o4jQwZSFmdWpo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ EntityAccessor.class
+SHA1-Digest: omRVlDNYC6eEvDYz0jXtUKJPjmw=
+
+Name: org/eclipse/persistence/internal/jpa/config/xml/PersistenceUnitD
+ efaultsImpl.class
+SHA1-Digest: zWXdJLghJhqoH4D3ufMQwcdq49E=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/JSONMet
+ adata.class
+SHA1-Digest: hJRZ5IyBBkUEYqNDicwGKpwpWoY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /EmbeddedIdAccessor.class
+SHA1-Digest: lCRvGPgNja6+7O5Tpt/7dln+Gf0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/Metadata
+ Accessor.class
+SHA1-Digest: 9zKMtoAGiKoF0mJIM5uTdAidvEY=
+
+Name: org/eclipse/persistence/jpa/dynamic/JPADynamicTypeBuilder.class
+SHA1-Digest: 1M72NZJ8Mph5ngulgY0RsVJKhQA=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/AbstractQueryImpl.
+ class
+SHA1-Digest: 7RblmUBkbWm6PdWiL9J6Pgjqiq8=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/SEPersistenceUni
+ tInfo.class
+SHA1-Digest: CeUtzenN+Nv0aJIx7scaQP2iIQY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/ORMetadata$SimpleO
+ RMetadata.class
+SHA1-Digest: wBiULhuUamZAJSmUHuCyHAvxF1Y=
+
+Name: org/eclipse/persistence/jpa/PersistenceProvider.class
+SHA1-Digest: Quyg/odOK1630kT5mOm3DkmzScc=
+
+Name: org/eclipse/persistence/jpa/config/QueryHint.class
+SHA1-Digest: 4VLi8i1xRDZaakz06NadUEBswIc=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/PrimaryKeyIm
+ pl.class
+SHA1-Digest: xfkWJlsGoeEoT++/lIikCdLskdM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/mappings/BatchFetc
+ hMetadata.class
+SHA1-Digest: R21aFMkBzs+6I7pLirT++mmhY9I=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchHint
+ .class
+SHA1-Digest: oOm8vSkqsr6V4tM402eZTQ4AUvU=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$JDBCFetch
+ SizeHint.class
+SHA1-Digest: M8AMDZPI9TXC7j9yfFLSJU9r9f4=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$7.class
+SHA1-Digest: fmpNDU/smVd9ZlFEKZoG6gWmm1k=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Hint.clas
+ s
+SHA1-Digest: GN9sjVm0PIN/tZ5ritGuqalf15Q=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /BasicCollectionAccessor.class
+SHA1-Digest: yigWX0KlE0dclN1FJ6sjKp1Xfo8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/OverrideMe
+ tadata.class
+SHA1-Digest: ppnfPM08sAeUWy+mH5gVYY5P3mc=
+
+Name: org/eclipse/persistence/internal/jpa/DataSourceConfig.class
+SHA1-Digest: 6xp7Vi3N6w4Ullrn18DvfGYUHWc=
+
+Name: org/eclipse/persistence/internal/jpa/config/structures/Structure
+ Impl.class
+SHA1-Digest: 4ui0aVPS1WgDH2ggd1K879cJJmY=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CompoundSelectionI
+ mpl.class
+SHA1-Digest: T1WqJXHzOpzhDEBTzVEth/0HjVA=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$13.clas
+ s
+SHA1-Digest: xY8zq2c0qojA7eTZg5wHDs0XkaY=
+
+Name: org/eclipse/persistence/tools/weaving/jpa/StaticWeaveAntTask.cla
+ ss
+SHA1-Digest: 3z5s8XEBPGfVieRzVXZiCYZ2WH4=
+
+Name: org/eclipse/persistence/internal/jpa/config/AbstractAccessorImpl
+ .class
+SHA1-Digest: 1S/nnl3lRBB24viBKJTBnzw3mO8=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/PathImpl.class
+SHA1-Digest: iDhs4uepzPU+4yKNGq/tKaajiAA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/structures/StructM
+ etadata.class
+SHA1-Digest: iI5ucsy9AyyBkU0a0z5eGuJ3tJE=
+
+Name: org/eclipse/persistence/jpa/config/MapKey.class
+SHA1-Digest: 5BALfql/ycbWrKalRjiYENccYRI=
+
+Name: org/eclipse/persistence/jpa/config/CollectionTable.class
+SHA1-Digest: okW6ktdyvPUFHwR2v0vYoEClrko=
+
+Name: org/eclipse/persistence/internal/jpa/config/structures/StructImp
+ l.class
+SHA1-Digest: L9Qz++6K0wGuHmrZP+gOCc1l0mk=
+
+Name: org/eclipse/persistence/jpa/config/FetchGroup.class
+SHA1-Digest: 3mIMbPR3I8JvALjAtpo6et1k9ag=
+
+Name: org/eclipse/persistence/jpa/config/NamedStoredProcedureQuery.cla
+ ss
+SHA1-Digest: geq8OpaxEIVYPfOMxQxNUXSz5Cc=
+
+Name: org/eclipse/persistence/jpa/config/Index.class
+SHA1-Digest: Gf/oFMktk/zl5sFcnzUXgtq1eio=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/DirectColu
+ mnMetadata.class
+SHA1-Digest: IVwDbO5XrTXaXFAr5DfcQwInP9k=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/SetJoinImpl.class
+SHA1-Digest: +xpouPViyHE8OpJKU6+22JqmISM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/changetracking/Cha
+ ngeTrackingMetadata.class
+SHA1-Digest: pYnvZUbxxOx0k14Tvte8nuqFXas=
+
+Name: org/eclipse/persistence/internal/jpa/config/copypolicy/CloneCopy
+ PolicyImpl.class
+SHA1-Digest: lzcA0aOuyz4PE2zCglVCCup05WM=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JarInputStreamUR
+ LArchive.class
+SHA1-Digest: Po+j/vKn+bglMfTFjZM77fzyYUE=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/ManyToOneIm
+ pl.class
+SHA1-Digest: TJP/ud/2NiSFLYokNUKmuNBi330=
+
+Name: org/eclipse/persistence/jpa/config/SecondaryTable.class
+SHA1-Digest: mwjHDpexhJrf4pbgotve3LWvL28=
+
+Name: org/eclipse/persistence/internal/jpa/JPAQuery.class
+SHA1-Digest: gTKsJSRrf53luhSpCgNh1E4Aoiw=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JarFileArchive.c
+ lass
+SHA1-Digest: 4TFMava0UY4k4QvSV0VDzqIf9cU=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/EntityImpl.c
+ lass
+SHA1-Digest: hLv/9lqPYMROFHNpz2BlID838TU=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/MappedSuperclassT
+ ypeImpl.class
+SHA1-Digest: WFIY1Lz10tDGShlk/cwc3JxlZv0=
+
+Name: org/eclipse/persistence/jpa/JpaCriteriaBuilder.class
+SHA1-Digest: B9FPLx4MElwuQAPIi3S7m99FjvM=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /MultitenantIdAccessor.class
+SHA1-Digest: QNyB3Ruo2LbmjFI7tyWzviU/H5Y=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/StaticWeaveDirector
+ yOutputHandler.class
+SHA1-Digest: AnlACNqFweuGHWqGYZTvvTd6tXc=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$LoadGroup
+ Hint.class
+SHA1-Digest: gLAJd4WgHOPBexLO0wBVwmbj0i8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/QueryRedir
+ ectorsMetadata.class
+SHA1-Digest: MHi2TCFVbTel95hnIyeDboOZDaU=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractEmb
+ eddedMappingImpl.class
+SHA1-Digest: 82T8eQw8mVDp6hC7slL7q+tQhFA=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AbstractDir
+ ectMappingImpl.class
+SHA1-Digest: JMmeo52oTYbLTbG+aZ8F74krhaQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/OrderColum
+ nMetadata.class
+SHA1-Digest: EOs2PxOH/Y5UaQBLDVyqW1hqIGA=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/ConstructorR
+ esultImpl.class
+SHA1-Digest: x7pcQXpAx3/ncP+7V5F94f+zGT0=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/SqlResultSet
+ MappingImpl.class
+SHA1-Digest: UfmMJTKUBPwoOBQ+JSjjRbmtYtk=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/JTATransactionW
+ rapper$1.class
+SHA1-Digest: yD6Fv13HA1aWVhx67Cj/ffu3dLA=
+
+Name: org/eclipse/persistence/jpa/orm_1_0.xsd
+SHA1-Digest: fZQ3GEedkL6korOUtAmOKfjuS4c=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Range
+ PartitioningMetadata.class
+SHA1-Digest: HKbZD4XJdGcgnaOlde7c89OmXEo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/PLSQLParam
+ eterMetadata.class
+SHA1-Digest: smXNdAjEZ6t99RUxEVUgxnqBykY=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CascadePo
+ licyHint.class
+SHA1-Digest: WDpfT7gvoYpS9nsGGhR12WkzTF4=
+
+Name: org/eclipse/persistence/jpa/config/PlsqlRecord.class
+SHA1-Digest: 6pXLqnrkma7vLnn5uvki01spT2I=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$LoadGraph
+ Hint.class
+SHA1-Digest: E5sZ9+T6Yara9xtsvpvU78uR+kA=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/CollectionProxyClas
+ sWriter.class
+SHA1-Digest: oC6c6wz6UMeG1sTzzcg6ETAMg9s=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/mappings/AccessMet
+ hodsMetadata.class
+SHA1-Digest: gvc85/3hmG+1js1Al/B3BGaq0xo=
+
+Name: org/eclipse/persistence/jpa/metadata/ProjectCache.class
+SHA1-Digest: 0P6FCHgh6YLLPS29OMMzhVdMmoo=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/FetchAttribu
+ teImpl.class
+SHA1-Digest: b8a4v0HacE3q9vU9y8MAf9AzjFQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /OneToOneAccessor.class
+SHA1-Digest: hm5cnctnjURQbdeRae70g4w4jy4=
+
+Name: org/eclipse/persistence/jpa/config/EntityResult.class
+SHA1-Digest: HUYoQ6H3wlrqFcgLYG8RUlpjrXE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ InterfaceAccessor.class
+SHA1-Digest: nmM6aMfvUzeek8ESSKg//BXrVJU=
+
+Name: org/eclipse/persistence/jpa/metadata/XMLMetadataSource.class
+SHA1-Digest: Y0BBkjkWYAwEdbCAVJXbt31WKYQ=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/AttributeDetails.cl
+ ass
+SHA1-Digest: aTSX9g1s7NJkmv/LDsSa5wwdtcY=
+
+Name: org/eclipse/persistence/jpa/config/SequenceGenerator.class
+SHA1-Digest: E+i6ycY6BX9C23gUyHTAH7KilaE=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/JoinColumnIm
+ pl.class
+SHA1-Digest: W0JNC9Y5Slc8X6YNEHQgg613gIQ=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/MapAttribut
+ eProxyImpl.class
+SHA1-Digest: fGI1HxQdk/81W1vmEFYJT5bvPck=
+
+Name: org/eclipse/persistence/internal/jpa/config/PropertyImpl.class
+SHA1-Digest: ggo33lr9CQtvDvu6W4iii1C6QQY=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/ConstructorSelecti
+ onImpl.class
+SHA1-Digest: vU2I8Z7w1pX8FWg7c/xqTE+YWC4=
+
+Name: org/eclipse/persistence/internal/jpa/config/nosql/NoSqlImpl.clas
+ s
+SHA1-Digest: oFyhCU5+nko5Y7tmTmb3px7uqtk=
+
+Name: org/eclipse/persistence/jpa/config/Array.class
+SHA1-Digest: tKOVwlBbF3IxWxPXdho+8x+Ig3U=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/ComputeClassWriter.
+ class
+SHA1-Digest: vbpmQwqFTgbH9VXYsFNXYOZ6SNk=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/DirectoryInsideJ
+ arURLArchive.class
+SHA1-Digest: fXLrSAhFGaYgd+FPq/qktlLFyK8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/beanvalidation/Bea
+ nValidationHelper$1.class
+SHA1-Digest: cJ6tlNmPoKyHROpEKi5vzYWovHk=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Enumera
+ tedMetadata.class
+SHA1-Digest: +fZf46bO3CzQUcAWdyvx+/yN7Co=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/multitenant/Tenant
+ TableDiscriminatorMetadata.class
+SHA1-Digest: guxuf0T8j5L4gDx75hxHbwgvaqg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/Seriali
+ zedMetadata.class
+SHA1-Digest: FauJIHxr4uPdhfRBRyOrSfS1V5Y=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/EntityResult
+ Impl.class
+SHA1-Digest: lV7oRLntxVtjxz3LaTBMW/PlnnE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /VersionAccessor.class
+SHA1-Digest: g2b8btQF7WdG6cJ6fYMdcG05Jls=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/OracleComp
+ lexTypeMetadata.class
+SHA1-Digest: 2zE3b2dC1KmZuZHazUdxSXnrK+g=
+
+Name: org/eclipse/persistence/jpa/config/VariableOneToOne.class
+SHA1-Digest: zexV3hbcQ4YSKXAMlb7mJXymOvg=
+
+Name: org/eclipse/persistence/jpa/config/FetchAttribute.class
+SHA1-Digest: yBI2Ze+l20U9H9NbQFhUc22hhuw=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/Discriminato
+ rClassImpl.class
+SHA1-Digest: zYrzlcOZphe5mh84GeKJNvRqzpk=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/TupleImpl.class
+SHA1-Digest: Iwg+3Sf7HV9GAiRcsRT3wJaUaaA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/partitioning/Round
+ RobinPartitioningMetadata.class
+SHA1-Digest: pVDDt5Aw0Xp9cwI52+aTmIM/fCw=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/ClassDetails.class
+SHA1-Digest: +Uc+T+npffRom0b/Qd2RhmnW+TQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ ConverterAccessor.class
+SHA1-Digest: iZWCfMH+oua1svsptkMtooZJl5Y=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/OrderImpl.class
+SHA1-Digest: j9uJnb6/P1qGskCaxUxx5ejQhyc=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/FunctionExpression
+ Impl.class
+SHA1-Digest: OxpvUV22igKqv55pYtlBljaFe1E=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$BatchHint
+ .class
+SHA1-Digest: OSMvP8Lu1jcwd4h1nrslC6zfgl4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataFactory.class
+SHA1-Digest: Q2eKKro+Cacam1zxAdxrMdw1C0o=
+
+Name: org/eclipse/persistence/jpa/config/Embedded.class
+SHA1-Digest: V1WSaG/1WGsT+fZtI1VqoOVYY+c=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$1.class
+SHA1-Digest: enG792JQhWlfPwzKShgPsu7fza0=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JavaSECMPInitial
+ izer$1.class
+SHA1-Digest: +SdhNF5kL44WVrHimDWqF92WUOc=
+
+Name: org/eclipse/persistence/jpa/config/OracleArray.class
+SHA1-Digest: Jrp2GxWN0O1TzBabdSnLMp45cSg=
+
+Name: org/eclipse/persistence/internal/jpa/EntityGraphImpl.class
+SHA1-Digest: eMafHGZhpcLNPHOSD50UKfXYZPs=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/RangePa
+ rtitioningImpl.class
+SHA1-Digest: K7U00UOzH/WmvkKiAvCnjphcTsI=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$QueryCach
+ eRandomizedExpiryHint.class
+SHA1-Digest: 4iu1Vv+ZhBfa3wiYliVGVNozEHU=
+
+Name: org/eclipse/persistence/internal/jpa/transaction/TransactionImpl
+ .class
+SHA1-Digest: ds9+Lh7YzBrTRucRMD/92Fo24zE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/OracleObje
+ ctTypeMetadata.class
+SHA1-Digest: lrss4+y+rL87ehfEhE7WlJYsDd8=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchGrou
+ pHint.class
+SHA1-Digest: EiU+g1bAfmbkhXqrPdFnbDHNeGQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataProject.cl
+ ass
+SHA1-Digest: P7DURwAuCT2foQ5uR+oZV8gGOf4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAnnotatedElement.class
+SHA1-Digest: r98VsNoPcaVDcdwU2QzEzi6FtbM=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JavaSECMPInitial
+ izerAgent.class
+SHA1-Digest: ScMCuSNCWg1tVT43w5eKwhW3SvU=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/AccessMetho
+ dsImpl.class
+SHA1-Digest: ePOpJtpnPEOOOR1MTGWtJAxWYlo=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/ArchiveFactoryIm
+ pl.class
+SHA1-Digest: yAF7I2VR5Dbkh4s23hk7PzPDEVE=
+
+Name: org/eclipse/persistence/internal/jpa/config/xml/PersistenceUnitM
+ etadataImpl.class
+SHA1-Digest: /8e7//QwjUyRmFf/+5jCyZWGDDg=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/RootImpl.class
+SHA1-Digest: FJ9XAqkYAWoRXl1fQbmGjTMLdfU=
+
+Name: org/eclipse/persistence/jpa/config/ObjectTypeConverter.class
+SHA1-Digest: KkcT9TGnyTVK0tvSeCCRUZEQizI=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Pessimist
+ icLockTimeoutHint.class
+SHA1-Digest: B0MZ6sorYacZWtIyUMHSVPCAGl8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/MetadataCo
+ lumn.class
+SHA1-Digest: QNblpq1aHQZuUHTxnOfR5x9vhGA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/classes/
+ EmbeddableAccessor.class
+SHA1-Digest: Hi4FamuFfyW9C2Hb7gTx1dai2a8=
+
+Name: org/eclipse/persistence/internal/jpa/config/converters/ObjectTyp
+ eConverterImpl.class
+SHA1-Digest: +ciExehCLdnwETxyS1/I5DoGYkg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/FetchAttri
+ buteMetadata.class
+SHA1-Digest: /4lyKHf7/4TF/gPkDXQCNQYNu5o=
+
+Name: org/eclipse/persistence/jpa/config/GeneratedValue.class
+SHA1-Digest: uusjg07ylfh8V6+EzXfMmIUkCeI=
+
+Name: org/eclipse/persistence/jpa/config/Entity.class
+SHA1-Digest: f+ZNk4kgvo6A99njGZsG+TtKbEE=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /DirectAccessor.class
+SHA1-Digest: gN6JwnStUu0vCtxPccqtoOmKSBo=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/UnionPa
+ rtitioningImpl.class
+SHA1-Digest: HzG57eXWIF7jpqA492F0WpSXf1Q=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$FetchGrap
+ hHint.class
+SHA1-Digest: OGjbVHAGA5A6ovKMuj72cHcrJA0=
+
+Name: org/eclipse/persistence/jpa/config/RangePartitioning.class
+SHA1-Digest: D+2a+5U8/IHI5BJhpMA3a1unSsw=
+
+Name: org/eclipse/persistence/jpa/config/ForeignKey.class
+SHA1-Digest: xXYYyXwkwNYb2rVb9+du1DOKlSc=
+
+Name: org/eclipse/persistence/internal/jpa/config/transformers/WriteTr
+ ansformerImpl.class
+SHA1-Digest: aZyZQcpvCq0E0ivPs5f5HNXSes0=
+
+Name: org/eclipse/persistence/jpa/config/NamedPlsqlStoredProcedureQuer
+ y.class
+SHA1-Digest: oWdsXq1mE92vWrShw3/mQ0MM31I=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/xml/parser/XMLEx
+ ception.class
+SHA1-Digest: vxiS7ihkQR61igCcRT21lawXmac=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CacheStor
+ eModeHint.class
+SHA1-Digest: FD8ght8uFC3L2V5IoiteQB7Kq8k=
+
+Name: org/eclipse/persistence/internal/jpa/config/mappings/EmbeddedImp
+ l.class
+SHA1-Digest: 3vVVFV9E+6Lxzn8UtwTmLf+Q5kc=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/JPAInitializer.c
+ lass
+SHA1-Digest: f0maU/sq0UyyAF749P4+CI9pWBI=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/OracleObject
+ Impl.class
+SHA1-Digest: uEM4fyKAs0vH2oz9pYHuadU2/Jc=
+
+Name: org/eclipse/persistence/jpa/config/PrimaryKeyJoinColumn.class
+SHA1-Digest: MvCutdlczqXZsVHGNeD+5ZEJaOk=
+
+Name: org/eclipse/persistence/jpa/config/DataService.class
+SHA1-Digest: 3XOScH7astRk6L85Cv5CWDKTDU8=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$CursorIni
+ tialSizeHint.class
+SHA1-Digest: fuV8pA1Bd/0lx1VAFAJRpjZxVt8=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLEntityMappi
+ ngsReader$1.class
+SHA1-Digest: KZ3KJLWsYA1SihfYUw87iruZSnI=
+
+Name: org/eclipse/persistence/jpa/config/Embeddable.class
+SHA1-Digest: aLV0lvX1IjHoYhOrYrUElj7ataw=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/SelectionImpl.clas
+ s
+SHA1-Digest: ijvpxC5yrt3YNhZ4tmZlQL9pO/w=
+
+Name: org/eclipse/persistence/jpa/persistence_2_1.xsd
+SHA1-Digest: eI/wkf7/kKMfeIA9xWxgmJlPm7Q=
+
+Name: org/eclipse/persistence/internal/jpa/config/additionalcriteria/A
+ dditionalCriteriaImpl.class
+SHA1-Digest: Mle50tKEC4uMJXSg5wwZmoADpHk=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/ORMContentHand
+ ler.class
+SHA1-Digest: jS30Q1jCS1Ygle7+BblXB0mrJdc=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$6.class
+SHA1-Digest: /0oifD1AbA3DkPlAV6myGuhkp1Y=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Parameter
+ DelimiterHint.class
+SHA1-Digest: 3cnxCFWS6FAmaAwLGOC4q59sOzc=
+
+Name: org/eclipse/persistence/internal/jpa/config/sequencing/TableGene
+ ratorImpl.class
+SHA1-Digest: +CWzwFCfc+pQw61rC23KldsNNrI=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AttributeOve
+ rrideImpl.class
+SHA1-Digest: RYuhe2VxSltChASRp6RajBCt900=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerImpl$1$12.clas
+ s
+SHA1-Digest: 5WD4DERfDE4D5o0Vzu6Hmnyaf98=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/JPAEntit
+ yListenerHolder.class
+SHA1-Digest: /EWIU4rPoQMCzWg/wIq1V77X6Mk=
+
+Name: org/eclipse/persistence/internal/jpa/CMP3Policy$CommonAccessor.c
+ lass
+SHA1-Digest: QaCGf6nlpXU08TzqaVeIEDy+FEs=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/InImpl.class
+SHA1-Digest: d+SkPt6O4Ttrvu3PUdnlXrZA8nc=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AbstractDisc
+ riminatorColumnImpl.class
+SHA1-Digest: 4yu9jvn/mttGWa9n4GdngySlGVo=
+
+Name: org/eclipse/persistence/internal/jpa/config/classes/EmbeddableIm
+ pl.class
+SHA1-Digest: Vlqa8jQon+ozty5JPkxdF+ObUKo=
+
+Name: org/eclipse/persistence/internal/jpa/querydef/CriteriaDeleteImpl
+ .class
+SHA1-Digest: SPUILQcufTDaQVxHdBmE65GgD+4=
+
+Name: org/eclipse/persistence/jpa/dynamic/JPADynamicHelper.class
+SHA1-Digest: VzoUSzVitZ/dzkfNrD4SJK4gq4k=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/Relational
+ ColumnMetadata.class
+SHA1-Digest: hWmX+74RXxadPuIvzbLNdOMK6f4=
+
+Name: org/eclipse/persistence/jpa/config/OneToOne.class
+SHA1-Digest: 8ap31ZMQW6hZAqvzEp0RrjFNyhY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLEntityMappi
+ ngsWriter.class
+SHA1-Digest: dfKn5dk+DncJZzpaFQFeXAm0Ib4=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AbstractDire
+ ctColumnImpl.class
+SHA1-Digest: UWkhG7rxyMIOBCA0dcXBRT16rJY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/OracleArra
+ yTypeMetadata.class
+SHA1-Digest: DRiGpr1W6o3AfbgdNZi5mPXmbjs=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler.class
+SHA1-Digest: m4g9luJXCmFRwzm0rASYUIEOs70=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/NamedQuery
+ Metadata.class
+SHA1-Digest: ZGAIyiZaRP3jGr9mRWb5S6ZFRxQ=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$Serialize
+ dObject.class
+SHA1-Digest: osY/VtJnzu5jWq/mM56lmH4ICo0=
+
+Name: org/eclipse/persistence/jpa/config/MappedSuperclass.class
+SHA1-Digest: S06WQY4b61Mxb/otlgPD0pFEcWA=
+
+Name: org/eclipse/persistence/internal/jpa/config/partitioning/ValuePa
+ rtitionImpl.class
+SHA1-Digest: aeGv4AyeWO4/E1focu3kv2EYnzk=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/mappings/OrderByMe
+ tadata.class
+SHA1-Digest: g3yr96xQ+Yml83FGZsXQTtS26Wg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataMethod.class
+SHA1-Digest: vu3hbAC3IIT3e4jA+JgAr/BLVGU=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/PlsqlTableIm
+ pl.class
+SHA1-Digest: M3IGyFDdA3gDnmoSXwyoTYmtowc=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/ListAttributeImpl
+ .class
+SHA1-Digest: IJBfwUdhCloXQRdwG+TKSMef+BU=
+
+Name: org/eclipse/persistence/internal/jpa/deployment/PersistenceUnitP
+ rocessor.class
+SHA1-Digest: hJnjP2jW2wx8oR9N7XE41vLLs+Y=
+
+Name: org/eclipse/persistence/jpa/config/AssociationOverride.class
+SHA1-Digest: /HCI07TVwEgNK8MMAhAlsr0zoI4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/queries/QueryHintM
+ etadata.class
+SHA1-Digest: atoLCWIQ8IANbdTu2iB90JpA4tg=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/FetchGroupIm
+ pl.class
+SHA1-Digest: UO5Nckk5rIN6M6I4yoKrjJb+dMA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/MetadataHelper.cla
+ ss
+SHA1-Digest: C7YSqbjkCgDwrxPyS8pbhwj8nOQ=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/mappings/MapKeyMet
+ adata.class
+SHA1-Digest: Y3337fcTTRDB9zCZtB3DqpriqGo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/EntityLi
+ stener.class
+SHA1-Digest: IOcDtqXsN12+4Xx5lgK6nqejhz4=
+
+Name: org/eclipse/persistence/internal/jpa/weaving/TransformerFactory.
+ class
+SHA1-Digest: PEUipp95Udd94hIZ2Dp9/0Q9MeU=
+
+Name: org/eclipse/persistence/jpa/config/ElementCollection.class
+SHA1-Digest: Vk42/PqaDCYuCVCXb5IsplJdz5A=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/NamedNativeQ
+ ueryImpl.class
+SHA1-Digest: m8hyokli5nemnuO4K9aR5FUHGd8=
+
+Name: org/eclipse/persistence/internal/jpa/QueryHintsHandler$JDBCTimeo
+ utHint.class
+SHA1-Digest: LeZkv6VwbWRXM8rrdV/F4nB4uKU=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/EmbeddableTypeImp
+ l.class
+SHA1-Digest: BmMcawCW70b6CywPqOfrU/Ohezk=
+
+Name: org/eclipse/persistence/internal/jpa/config/sequencing/UuidGener
+ atorImpl.class
+SHA1-Digest: qyZFI08RrN18irN93rJY/rgE9A8=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/ColumnImpl.c
+ lass
+SHA1-Digest: m+evSWgWcYnBVQ2PZsEdfcr4hLg=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/listeners/EntityLi
+ stenerMetadata.class
+SHA1-Digest: tZHI/i/gfmI244RsWxS1bLp6BnY=
+
+Name: org/eclipse/persistence/internal/jpa/config/queries/AbstractQuer
+ yImpl.class
+SHA1-Digest: 4+2mGXh2Yr03G9hxIuY4plRuOV4=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/mappings/CascadeMe
+ tadata.class
+SHA1-Digest: 6J7gns+2RiqyCxDJ5lJRg5VU7KU=
+
+Name: org/eclipse/persistence/jpa/config/JoinColumn.class
+SHA1-Digest: hYavP+Pc3gzvahk0HWSNGYWA7Vw=
+
+Name: org/eclipse/persistence/tools/weaving/jpa/StaticWeaveClassTransf
+ ormer.class
+SHA1-Digest: eHy2q/yz5SgD86KwVQL+HisN+Ks=
+
+Name: org/eclipse/persistence/internal/jpa/AttributeNodeImpl.class
+SHA1-Digest: AsUmN+VPY3nVhExX1BgotZcBFmQ=
+
+Name: org/eclipse/persistence/internal/jpa/config/columns/AbstractRela
+ tionalColumnImpl.class
+SHA1-Digest: lBLkqoHwSGdpB5B2W/qnIYEntNw=
+
+Name: org/eclipse/persistence/internal/jpa/metamodel/proxy/CollectionA
+ ttributeProxyImpl.class
+SHA1-Digest: 7ET6M6gXNYKNtgEskYHs7fyUlF8=
+
+Name: readme.html
+SHA1-Digest: 9rCh25QyzWfUM/GQDTGwckdyi04=
+
+Name: org/eclipse/persistence/jpa/config/Version.class
+SHA1-Digest: dlNTPKehSqvSo1lolYoiYWNiBKE=
+
+Name: org/eclipse/persistence/internal/jpa/EntityManagerSetupImpl$1.cl
+ ass
+SHA1-Digest: htaBWUGphKc6Hy3OLmFRKbE6NIk=
+
+Name: org/eclipse/persistence/internal/jpa/config/changetracking/Chang
+ eTrackingImpl.class
+SHA1-Digest: /2hKtqXFl8dI7ZCZXzk2AdonHYY=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /TransientAccessor.class
+SHA1-Digest: AXvZRNjMKNBzBsRrFZShALeDZlo=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/mappings
+ /RelationshipAccessor.class
+SHA1-Digest: I3FlT9SyH4pEDIlqZN3DwWizPgA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/converters/KryoMet
+ adata.class
+SHA1-Digest: c5TmqjDwFTj/FGPbIxIX9tR4Gmw=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/xml/XMLEntityMappi
+ ngsReader.class
+SHA1-Digest: ftQF23URrfaeNrKRTZBon1yUwsk=
+
+Name: org/eclipse/persistence/jpa/config/PlsqlParameter.class
+SHA1-Digest: Ee7b8ATukDu5K27K2g2Khx5cG0Y=
+
+Name: org/eclipse/persistence/jpa/config/Partitioning.class
+SHA1-Digest: MvCm5lSxdCbJKBVqIgvQhdXffo0=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/columns/JoinFieldM
+ etadata.class
+SHA1-Digest: 4HdPQ/UmywCfHyzLpeeixRGefnA=
+
+Name: org/eclipse/persistence/internal/jpa/metadata/accessors/objects/
+ MetadataAsmFactory$ClassMetadataVisitor.class
+SHA1-Digest: cuR0a/2OE5+OgKM9zHyuYT3Yyb8=
+
+Name: org/eclipse/persistence/jpa/config/DiscriminatorClass.class
+SHA1-Digest: jPKFSbO8ZEE4qf7HON+8WJF/8Ek=
+

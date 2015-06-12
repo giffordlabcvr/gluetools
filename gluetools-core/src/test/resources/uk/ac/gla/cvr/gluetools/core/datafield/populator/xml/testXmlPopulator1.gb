@@ -1,0 +1,239 @@
+LOCUS       KM191148                 628 bp    RNA     linear   VRL 22-OCT-2014
+DEFINITION  Hepatitis C virus isolate IDU24 core protein gene, partial cds.
+ACCESSION   KM191148
+VERSION     KM191148.1  GI:697995441
+KEYWORDS    .
+SOURCE      Hepatitis C virus
+  ORGANISM  Hepatitis C virus
+            Viruses; ssRNA positive-strand viruses, no DNA stage; Flaviviridae;
+            Hepacivirus.
+REFERENCE   1  (bases 1 to 628)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Molecular Characterization of Hepatitis C virus Core in Moroccan
+            Intravenous Drug Users
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 628)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (11-JUL-2014) Medical Biology, Molecular Biology
+            Laboratory, Pasteur Institute of Morocco, 1, Place Louis Pasteur,
+            Casablanca 20000, Morocco
+COMMENT     ##Assembly-Data-START##
+            Assembly Method       :: MEGA v. 5.0
+            Sequencing Technology :: Sanger dideoxy sequencing
+            ##Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..628
+                     /organism="Hepatitis C virus"
+                     /mol_type="genomic RNA"
+                     /isolate="IDU24"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:11103"
+                     /country="Morocco"
+                     /collection_date="11-Jul-2014"
+                     /note="genotype: 1a"
+     5'UTR           <1..264
+     CDS             265..>628
+                     /note="forms part of the viral nucleocapsid"
+                     /codon_start=1
+                     /product="core protein"
+                     /protein_id="AIT70935.1"
+                     /db_xref="GI:697995442"
+                     /translation="MSTNPKPQRKTKRNTNRRPQDVKFPGGGQIVGGVYLLPRRGPRL
+                     GVRATRKTSERSQPRGRRQPIPKARRPEGRTWAQPGYPWPLYGNEGCGWAGWLLSPRG
+                     SRPSWGPTDPRRRSRNLGK"
+ORIGIN      
+        1 tctagccatg gcgttagtat gagtgtcgtg cagcctccag gaccccccct cccgggagag
+       61 ccatagtggt ctgcggaacc ggtgagtaca ccggaattgc caggacgacc gggtcctttc
+      121 ttggataaac ccgctcaatg cctggagatt tgggcgtgcc cccgcaagac tgctagccga
+      181 gtagtgttgg gtcgcgaaag gccttgtggt actgcctgat agggtgcttg cgagtgcccc
+      241 gggaggtctc gtagaccgtg caccatgagc acgaatccta aacctcaaag aaaaaccaaa
+      301 cgtaacacca accgtcgccc acaggacgtt aagttcccgg gtggcggtca gatcgttggt
+      361 ggagtttact tgttgccgcg caggggccct agattgggtg tgcgcgcgac gaggaagact
+      421 tccgagcggt cgcaacctcg aggtagacgt cagcctatcc ccaaggcacg tcggcccgag
+      481 ggcaggacct gggctcagcc cgggtaccct tggcccctct atggcaatga gggttgcggg
+      541 tgggcgggat ggctcctgtc tccccgtggc tcacggccta gctggggccc cacagacccc
+      601 cggcgtaggt cgcgcaattt gggtaagg
+//
+
+LOCUS       KM191147                 635 bp    RNA     linear   VRL 22-OCT-2014
+DEFINITION  Hepatitis C virus isolate IDU23 core protein gene, partial cds.
+ACCESSION   KM191147
+VERSION     KM191147.1  GI:697995439
+KEYWORDS    .
+SOURCE      Hepatitis C virus
+  ORGANISM  Hepatitis C virus
+            Viruses; ssRNA positive-strand viruses, no DNA stage; Flaviviridae;
+            Hepacivirus.
+REFERENCE   1  (bases 1 to 635)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Molecular Characterization of Hepatitis C virus Core in Moroccan
+            Intravenous Drug Users
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 635)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (11-JUL-2014) Medical Biology, Molecular Biology
+            Laboratory, Pasteur Institute of Morocco, 1, Place Louis Pasteur,
+            Casablanca 20000, Morocco
+COMMENT     ##Assembly-Data-START##
+            Assembly Method       :: MEGA v. 5.0
+            Sequencing Technology :: Sanger dideoxy sequencing
+            ##Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..635
+                     /organism="Hepatitis C virus"
+                     /mol_type="genomic RNA"
+                     /isolate="IDU23"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:11103"
+                     /country="Morocco"
+                     /collection_date="11-Jul-2014"
+                     /note="genotype: 3a"
+     5'UTR           <1..264
+     CDS             265..>635
+                     /note="forms part of the viral nucleocapsid"
+                     /codon_start=1
+                     /product="core protein"
+                     /protein_id="AIT70934.1"
+                     /db_xref="GI:697995440"
+                     /translation="MSTLPKPQRKTKRNTIRRPQDVKFPGGGQIVGGVYVLPRRGPRL
+                     GVRAARKTSERSQPRGRRQPIPKARRSEGRSWAQPGYPWPLYGNEGCGWAGWLLSPRG
+                     SRPSWGPNDPRRRSRNLGKVI"
+ORIGIN      
+        1 tctagccatg gcgttagtat gagtgtcgtg cagcctccag gcccccccct cccgggagag
+       61 ccatagtggt ctgcggaacc ggtgagtaca ccggaatcgc tggggtgacc gggtcctttc
+      121 ttggaacaac ccgctcaata cccagaaatt tgggcgtgcc cccgcgagat cactagccga
+      181 gtagtgttgg gtcgcgaaag gccttgtggt actgcctgat agggtgcttg cgagtgcccc
+      241 gggaggtctc gtagaccgtg caacatgagc acacttccta aacctcaaag aaaaaccaaa
+      301 agaaacacca tccgtcgccc acaggacgtt aagttcccgg gcggcggaca gatcgttggt
+      361 ggagtatacg tgctgccgcg caggggccca cgattgggtg tgcgcgcggc gcgtaaaact
+      421 tctgaacggt cacagcctcg cggacggcga cagcctatcc ccaaggcgcg tcggagcgaa
+      481 ggccggtcct gggctcagcc tgggtaccct tggcccctct acggtaacga gggctgcggg
+      541 tgggcaggat ggctcctgtc cccgcgcggc tcccgtccgt cttggggccc aaacgacccc
+      601 cggcggaggt ctcgcaattt gggtaaggtc atcga
+//
+
+LOCUS       KM191146                 628 bp    RNA     linear   VRL 22-OCT-2014
+DEFINITION  Hepatitis C virus isolate IDU22 core protein gene, partial cds.
+ACCESSION   KM191146
+VERSION     KM191146.1  GI:697995437
+KEYWORDS    .
+SOURCE      Hepatitis C virus
+  ORGANISM  Hepatitis C virus
+            Viruses; ssRNA positive-strand viruses, no DNA stage; Flaviviridae;
+            Hepacivirus.
+REFERENCE   1  (bases 1 to 628)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Molecular Characterization of Hepatitis C virus Core in Moroccan
+            Intravenous Drug Users
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 628)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (11-JUL-2014) Medical Biology, Molecular Biology
+            Laboratory, Pasteur Institute of Morocco, 1, Place Louis Pasteur,
+            Casablanca 20000, Morocco
+COMMENT     ##Assembly-Data-START##
+            Assembly Method       :: MEGA v. 5.0
+            Sequencing Technology :: Sanger dideoxy sequencing
+            ##Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..628
+                     /organism="Hepatitis C virus"
+                     /mol_type="genomic RNA"
+                     /isolate="IDU22"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:11103"
+                     /country="Morocco"
+                     /collection_date="11-Jul-2014"
+                     /note="genotype: 1a"
+     5'UTR           <1..264
+     CDS             265..>628
+                     /note="forms part of the viral nucleocapsid"
+                     /codon_start=1
+                     /product="core protein"
+                     /protein_id="AIT70933.1"
+                     /db_xref="GI:697995438"
+                     /translation="MSTNPKPQRKTKRNTNRRPQDVKFPGGGQIVGGVYLLPRRGPRL
+                     GVRATRKTSERSQPRGRRQPIPKARRPEGRAWAQPGYPWPLYGNEGCGWAGWLLSPRG
+                     SRPSWGPTDPRRRSRNLGK"
+ORIGIN      
+        1 tctagccatg gcgttagtat gagtgtcgtg cagcctccag gaccccccct cccgggagag
+       61 ccatagtggt ctgcggaacc ggtgagtaca ccggaattgc caggacgacc gggtcctttc
+      121 ttggataaac ccgctcaatg cctggagatt tgggcgtgcc cccgcaagac tgctagccga
+      181 gtagtgttgg gtcgcgaaag gccttgtggt actgcctgat agggtgcttg cgagtgcccc
+      241 gggaggtctc gtagaccgtg caccatgagc acgaatccta aacctcaaag aaaaaccaaa
+      301 cgtaacacca accgtcgccc acaggacgtc aagttcccgg gtggcggtca gatcgttggt
+      361 ggagtttact tgttgccgcg caggggccct agattgggtg tgcgcgcgac gaggaagact
+      421 tccgagcggt cgcaacctcg aggtagacgt cagcctattc ccaaggcgcg tcggcccgag
+      481 ggcagggcct gggctcagcc cgggtaccca tggcccctct atggcaatga gggttgcggg
+      541 tgggcgggat ggctcctgtc tccccgtggc tcacggccta gttggggccc cacagacccc
+      601 cggcgtaggt cgcgcaattt gggtaagg
+//
+
+LOCUS       KM191145                 622 bp    RNA     linear   VRL 22-OCT-2014
+DEFINITION  Hepatitis C virus isolate IDU21 core protein gene, partial cds.
+ACCESSION   KM191145
+VERSION     KM191145.1  GI:697995435
+KEYWORDS    .
+SOURCE      Hepatitis C virus
+  ORGANISM  Hepatitis C virus
+            Viruses; ssRNA positive-strand viruses, no DNA stage; Flaviviridae;
+            Hepacivirus.
+REFERENCE   1  (bases 1 to 622)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Molecular Characterization of Hepatitis C virus Core in Moroccan
+            Intravenous Drug Users
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 622)
+  AUTHORS   Trimbitas,R.-D., Serghini,F.-Z., Fayssel,N., Wakrim,L., Khyatti,M.,
+            Essalhi,M., Bellefquih,A. and Benani,A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (11-JUL-2014) Medical Biology, Molecular Biology
+            Laboratory, Pasteur Institute of Morocco, 1, Place Louis Pasteur,
+            Casablanca 20000, Morocco
+COMMENT     ##Assembly-Data-START##
+            Assembly Method       :: MEGA v. 5.0
+            Sequencing Technology :: Sanger dideoxy sequencing
+            ##Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..622
+                     /organism="Hepatitis C virus"
+                     /mol_type="genomic RNA"
+                     /isolate="IDU21"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:11103"
+                     /country="Morocco"
+                     /collection_date="11-Jul-2014"
+                     /note="genotype: 3a"
+     5'UTR           <1..264
+     CDS             265..>622
+                     /note="forms part of the viral nucleocapsid"
+                     /codon_start=1
+                     /product="core protein"
+                     /protein_id="AIT70932.1"
+                     /db_xref="GI:697995436"
+                     /translation="MSTLPKPQRQTKRNTIRRPQDVKFPGGGQIVGGVYVLPRRGPRL
+                     GVRAARKTSERSQPRGRRQPIPKARRSEGRSWAQPGYPWPLYGNEGCGWAGWLLSPRG
+                     SRPFWGPNDPRRRSRNL"
+ORIGIN      
+        1 tctagccatg gcgttagtat gagtgtcgtg cagcctccag gaccccccct cccgggagag
+       61 ccatagtggt ctgcggaacc ggtgagtaca ccggaatcgc tggggtgacc gggtcctttc
+      121 ttggaacaac ccgctcaata cccagaaatt tgggcgtgcc cccgcgagat cactagccga
+      181 gtagtgttgg gtcgcgaaag gccttgtggt actgcctgat agggtgcttg cgagtgcccc
+      241 gggaggtctc gtagaccgtg caacatgagc acacttccta aacctcaaag acaaaccaaa
+      301 agaaacacca tccgtcgccc acaggacgtt aagttcccgg gtggcggaca gatcgttggt
+      361 ggagtatacg tgctgccgcg caggggccca cgattgggtg tgcgcgcggc gcggaaaact
+      421 tctgaacggt cacagcctcg cggacggcga cagcctatcc ccaaggcgcg tcggagcgaa
+      481 ggccggtcct gggctcagcc tgggtaccct tggcccctct atggtaacga gggctgcggg
+      541 tgggcagggt ggctcctgtc cccgcgcggc tcccgtccat tctggggccc aaacgacccc
+      601 cggcggaggt ctcgcaattt gg
+//

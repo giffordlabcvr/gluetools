@@ -1,0 +1,44 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven Bundle Plugin
+Built-By: rgoers
+Build-Jdk: 1.6.0_65
+Implementation-Title: Apache Log4j API
+Implementation-Vendor: Apache Software Foundation
+Implementation-Vendor-Id: org.apache
+Implementation-Version: 2.1
+Specification-Title: Apache Log4j API
+Specification-Vendor: Apache Software Foundation
+Specification-Version: 2.1
+X-Compile-Source-JDK: 1.6
+X-Compile-Target-JDK: 1.6
+Bnd-LastModified: 1413769119733
+Bundle-Activator: org.apache.logging.log4j.util.Activator
+Bundle-Description: The Apache Log4j API
+Bundle-DocURL: http://www.apache.org
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache Log4j API
+Bundle-SymbolicName: org.apache.logging.log4j.api
+Bundle-Vendor: Apache Software Foundation
+Bundle-Version: 2.1.0
+Export-Package: org.apache.logging.log4j;uses:="org.apache.logging.log
+ 4j.message,org.apache.logging.log4j.spi";version="2.1.0",org.apache.l
+ ogging.log4j.message;version="2.1.0",org.apache.logging.log4j.simple;
+ uses:="org.apache.logging.log4j,org.apache.logging.log4j.message,org.
+ apache.logging.log4j.spi,org.apache.logging.log4j.util";version="2.1.
+ 0",org.apache.logging.log4j.spi;uses:="org.apache.logging.log4j,org.a
+ pache.logging.log4j.message";version="2.1.0",org.apache.logging.log4j
+ .status;uses:="org.apache.logging.log4j,org.apache.logging.log4j.mess
+ age,org.apache.logging.log4j.spi";version="2.1.0",org.apache.logging.
+ log4j.util;uses:="org.apache.logging.log4j.spi,org.osgi.framework";ve
+ rsion="2.1.0"
+Import-Package: org.osgi.framework;version="[1.6,2)",org.osgi.framewor
+ k.wiring;version="[1.0,2)",sun.reflect;resolution:=optional
+Log4jReleaseCount: seventeenth
+Log4jReleaseKey: 83D8E1BA
+Log4jReleaseManager: Ralph Goers
+Log4jReleaseVersion: 2.1
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.6))"
+Tool: Bnd-2.3.0.201405100607
+
