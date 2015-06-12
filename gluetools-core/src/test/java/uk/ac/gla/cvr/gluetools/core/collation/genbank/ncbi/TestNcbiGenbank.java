@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class TestNcbiGenbank {
 
-	@Test
+	//@Test
 	public void testNcbiSourcerCreate() throws Exception {
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testNcbiSourcerCreate.xml"));
@@ -28,7 +28,7 @@ public class TestNcbiGenbank {
 		Assert.assertEquals("NCBISequenceSourcer:nuccore:GENBANK_FLAT_FILE", sequenceSourcer.getSourceUniqueID());
 	}
 
-	@Test
+	//@Test
 	public void testNcbiSourcerRunLive1() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testNcbiSourcerRunLive1.xml"));
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
@@ -45,7 +45,7 @@ public class TestNcbiGenbank {
 		Assert.assertEquals(sourceIDs, sequenceIDs);
 	}
 
-	@Test
+	//@Test
 	public void retrieveAllHcvIncludedAsXml() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());

@@ -78,7 +78,7 @@ public class TestXmlPopulator {
 		dumpFieldValues(fieldNames, collatedSequences);
 	}
 
-	@Test 
+	//@Test 
 	public void testHcvRuleSet() throws Exception {
 		String xmlDirectory = "/Users/joshsinger/hcv_rega/retrieved_xml";
 		String populatorRulesFile = "hcvRuleSet.xml";
