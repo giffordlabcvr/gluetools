@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -15,9 +16,9 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 /**
  * A plugin which contains a set of rules to populate the data fields of a collated sequence.
  */
+@PluginClass(elemName="dataFieldPopulator")
 public class DataFieldPopulator implements Plugin {
 
-	public static String ELEM_NAME = "dataFieldPopulator";
 	private List<PopulatorRule> rules;
 	
 	protected List<PopulatorRule> getRules() {

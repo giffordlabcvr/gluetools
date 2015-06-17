@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-map xmlns="http://cayenne.apache.org/schema/3.0/modelMap"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/3.0/modelMap http://cayenne.apache.org/schema/3.0/modelMap.xsd"
+	 project-version="6">
+	<property name="defaultPackage" value="uk.ac.gla.cvr.gluetools.core.datamodel"/>
+	<property name="defaultSuperclass" value="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject"/>
+	<db-entity name="FIELD">
+		<db-attribute name="COLUMN_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="PROJECT" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="TYPE" type="VARCHAR" isMandatory="true" length="10"/>
+	</db-entity>
+	<db-entity name="POPULATOR">
+		<db-attribute name="CONFIG" type="BLOB" isMandatory="true"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="PROJECT" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+	</db-entity>
+	<db-entity name="PROJECT">
+		<db-attribute name="DISPLAY_NAME" type="VARCHAR" length="100"/>
+		<db-attribute name="ID" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+	</db-entity>
+	<db-entity name="SEQUENCE">
+		<db-attribute name="DATA" type="BLOB" isMandatory="true"/>
+		<db-attribute name="ID" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="PROJECT" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="SOURCER" type="INTEGER"/>
+		<db-attribute name="SOURCER_ID" type="VARCHAR" length="50"/>
+	</db-entity>
+	<db-entity name="SOURCER">
+		<db-attribute name="CONFIG" type="BLOB" isMandatory="true"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="PROJECT" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+	</db-entity>
+	<obj-entity name="Field" className="uk.ac.gla.cvr.gluetools.core.datamodel.Field" dbEntityName="FIELD" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="type" type="java.lang.String" db-attribute-path="TYPE"/>
+	</obj-entity>
+	<obj-entity name="Populator" className="uk.ac.gla.cvr.gluetools.core.datamodel.Populator" dbEntityName="POPULATOR" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="config" type="byte[]" db-attribute-path="CONFIG"/>
+	</obj-entity>
+	<obj-entity name="Project" className="uk.ac.gla.cvr.gluetools.core.datamodel.Project" dbEntityName="PROJECT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="DISPLAY_NAME"/>
+	</obj-entity>
+	<obj-entity name="Sequence" className="uk.ac.gla.cvr.gluetools.core.datamodel.Sequence" dbEntityName="SEQUENCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="data" type="byte[]" db-attribute-path="DATA"/>
+		<obj-attribute name="sourcerId" type="java.lang.String" db-attribute-path="SOURCER_ID"/>
+	</obj-entity>
+	<obj-entity name="Sourcer" className="uk.ac.gla.cvr.gluetools.core.datamodel.Sourcer" dbEntityName="SOURCER" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="config" type="byte[]" db-attribute-path="CONFIG"/>
+	</obj-entity>
+	<db-relationship name="project" source="FIELD" target="PROJECT" toDependentPK="true" toMany="false">
+		<db-attribute-pair source="PROJECT" target="ID"/>
+	</db-relationship>
+	<db-relationship name="project" source="POPULATOR" target="PROJECT" toDependentPK="true" toMany="false">
+		<db-attribute-pair source="PROJECT" target="ID"/>
+	</db-relationship>
+	<db-relationship name="fields" source="PROJECT" target="FIELD" toMany="true">
+		<db-attribute-pair source="ID" target="PROJECT"/>
+	</db-relationship>
+	<db-relationship name="populators" source="PROJECT" target="POPULATOR" toMany="true">
+		<db-attribute-pair source="ID" target="PROJECT"/>
+	</db-relationship>
+	<db-relationship name="sequences" source="PROJECT" target="SEQUENCE" toMany="true">
+		<db-attribute-pair source="ID" target="PROJECT"/>
+	</db-relationship>
+	<db-relationship name="sourcers" source="PROJECT" target="SOURCER" toMany="true">
+		<db-attribute-pair source="ID" target="PROJECT"/>
+	</db-relationship>
+	<db-relationship name="project" source="SEQUENCE" target="PROJECT" toMany="false">
+		<db-attribute-pair source="PROJECT" target="ID"/>
+	</db-relationship>
+	<db-relationship name="sourcer" source="SEQUENCE" target="SOURCER" toMany="false">
+		<db-attribute-pair source="SOURCER" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="project" source="SOURCER" target="PROJECT" toMany="false">
+		<db-attribute-pair source="PROJECT" target="ID"/>
+	</db-relationship>
+	<db-relationship name="sequences" source="SOURCER" target="SEQUENCE" toMany="true">
+		<db-attribute-pair source="NAME" target="SOURCER"/>
+	</db-relationship>
+	<obj-relationship name="project" source="Field" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="project" source="Populator" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="fields" source="Project" target="Field" deleteRule="Deny" db-relationship-path="fields"/>
+	<obj-relationship name="populators" source="Project" target="Populator" deleteRule="Deny" db-relationship-path="populators"/>
+	<obj-relationship name="sequences" source="Project" target="Sequence" deleteRule="Deny" db-relationship-path="sequences"/>
+	<obj-relationship name="sourcers" source="Project" target="Sourcer" deleteRule="Deny" db-relationship-path="sourcers"/>
+	<obj-relationship name="project" source="Sequence" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="sourcer" source="Sequence" target="Sourcer" deleteRule="Nullify" db-relationship-path="sourcer"/>
+	<obj-relationship name="project" source="Sourcer" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="sequences" source="Sourcer" target="Sequence" deleteRule="Deny" db-relationship-path="sequences"/>
+</data-map>

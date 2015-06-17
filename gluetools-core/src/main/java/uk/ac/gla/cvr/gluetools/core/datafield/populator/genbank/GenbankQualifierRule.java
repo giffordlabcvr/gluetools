@@ -5,15 +5,16 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.NodeSelectorRule;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+@PluginClass(elemName="gbQualifier")
 public class GenbankQualifierRule extends NodeSelectorRule {
 
-	public static String ELEM_NAME = "gbQualifier";
 	
 	@Override
 	public void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {

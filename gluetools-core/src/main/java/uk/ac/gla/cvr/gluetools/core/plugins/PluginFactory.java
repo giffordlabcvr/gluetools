@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.plugins;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,32 +30,13 @@ public class PluginFactory<P extends Plugin> {
 			new LinkedHashMap<String, Class<? extends P>>();
 		
 	protected void registerPluginClass(Class<? extends P> theClass) {
-		Field elemNameField = null;
-		try {
-			elemNameField = theClass.getDeclaredField("ELEM_NAME");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		PluginClass pluginClassAnnotation = theClass.getAnnotation(PluginClass.class);
+		if(pluginClassAnnotation == null) {
+			throw new RuntimeException("No PluginClass annotation on "+theClass.getCanonicalName());
 		}
-		if(elemNameField == null) {
-			throw new RuntimeException("Field ELEM_NAME not defined.");
-		}
-		if(!elemNameField.getType().equals(String.class)) {
-			throw new RuntimeException("Field ELEM_NAME not of type String.");
-		}
-		if( (elemNameField.getModifiers() | Modifier.STATIC) == 0) {
-			throw new RuntimeException("Field ELEM_NAME not static");
-		}
-		if( (elemNameField.getModifiers() | Modifier.PUBLIC) == 0) {
-			throw new RuntimeException("Field ELEM_NAME not public");
-		}
-		String elemName = null;
-		try {
-			elemName = (String) elemNameField.get(null);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		String elemName = pluginClassAnnotation.elemName();
 		if(elemName == null) {
-			throw new RuntimeException("Field ELEM_NAME not initialized");
+			throw new RuntimeException("No elemName defined on PluginClass annotation on "+theClass.getCanonicalName());
 		}
 		typeStringToPluginClass.put(elemName, theClass);
 	}
@@ -72,15 +52,16 @@ public class PluginFactory<P extends Plugin> {
 	
 	public P createFromElement(PluginConfigContext pluginConfigContext, Element element)  {
 		String elementName = element.getNodeName();
-		Class<? extends P> pluginClass = typeStringToPluginClass.get(elementName);
+		Class<? extends P> pluginClass = classForElementName(elementName);
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
-		try {
-			return createPlugin(pluginConfigContext, pluginClass, element);
-		} catch(Exception e) {
-			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
-		}
+		return createPlugin(pluginConfigContext, pluginClass, element);
+	}
+
+	public Class<? extends P> classForElementName(String elementName) {
+		Class<? extends P> pluginClass = typeStringToPluginClass.get(elementName);
+		return pluginClass;
 	}
 	
 	public List<P> createFromElements(PluginConfigContext pluginConfigContext, List<Element> elements)  {
@@ -102,6 +83,10 @@ public class PluginFactory<P extends Plugin> {
 		plugin.configure(pluginConfigContext, element);
 		PluginUtils.checkValidConfig(element);
 		return plugin;
+	}
+	
+	public List<Class<? extends P>> getRegisteredClasses() {
+		return new ArrayList<Class<? extends P>>(typeStringToPluginClass.values());
 	}
 	
 }

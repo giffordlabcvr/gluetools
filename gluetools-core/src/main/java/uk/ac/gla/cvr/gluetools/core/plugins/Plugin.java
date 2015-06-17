@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 public interface Plugin {
 
 	
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) ;
+	public default void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+	}
 	
 }

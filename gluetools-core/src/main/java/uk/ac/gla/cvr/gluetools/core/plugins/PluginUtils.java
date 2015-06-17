@@ -25,7 +25,7 @@ public class PluginUtils {
 	public static String configureString(Element configElem, String xPathExpression, boolean required)  {
 		Node configuredNode = XmlUtils.getXPathNode(configElem, xPathExpression);
 		if(required && configuredNode == null) {
-			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, configElem.getNodeName(), xPathExpression);
+			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, xPathExpression);
 		}
 		if(configuredNode == null) {
 			return null;
@@ -48,7 +48,7 @@ public class PluginUtils {
 		try {
 			return Integer.parseInt(configuredString);
 		} catch(NumberFormatException nfe) {
-			throw new PluginConfigException(nfe, Code.CONFIG_FORMAT_ERROR, xPathExpression, nfe.getLocalizedMessage());
+			throw new PluginConfigException(nfe, Code.CONFIG_FORMAT_ERROR, xPathExpression, "Not an integer", configuredString);
 		}
 	}
 

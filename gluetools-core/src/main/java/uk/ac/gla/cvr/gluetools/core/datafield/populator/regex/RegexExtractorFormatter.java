@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
@@ -30,9 +31,9 @@ import freemarker.template.TemplateModel;
  * contain groups from the match.
  * By default returns the whole match.
  */
+@PluginClass(elemName="regexExtractorFormatter")
 public class RegexExtractorFormatter implements Plugin {
 
-	public static final String ELEM_NAME = "regexExtractorFormatter";
 	
 	private Pattern matchPattern;
 	private Template outputTemplate;

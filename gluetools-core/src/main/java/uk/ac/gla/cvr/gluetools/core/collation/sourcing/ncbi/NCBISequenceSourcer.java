@@ -34,13 +34,14 @@ import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
 import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerException;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+@PluginClass(elemName="ncbiSequenceSourcer")
 public class NCBISequenceSourcer implements SequenceSourcer {
 
-	public static final String ELEM_NAME = "ncbiSequenceSourcer";
 	
 	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 	private String dbName;
@@ -84,7 +85,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 
 	@Override
 	public String getSourceUniqueID() {
-		return ELEM_NAME+":"+dbName+":"+collatedSequenceFormat.name();
+		return "ncbiSequenceSourcer:"+dbName+":"+collatedSequenceFormat.name();
 	}
 
 	@Override

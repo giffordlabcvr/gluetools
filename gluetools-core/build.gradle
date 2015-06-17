@@ -30,6 +30,10 @@ repositories {
     maven {
     	url 'http://repo.spring.io/libs-release-remote/'
     }
+    // required for j-text-utils
+    // maven {
+    //	url 'http://d-maven.googlecode.com/svn/trunk/repo'
+    // }
 }
 
 
@@ -44,16 +48,19 @@ configurations {
     cgen
 }
 
-task cayenneClasses(dependsOn: 'checkCayenneTools') << {
-	String mapFile = 'src/main/resources/datamap.map.xml'
+
+// uses cayenne to generate the datamodel classes.
+task datamodel(dependsOn: 'checkCayenneTools') << {
+	String mapFile = 'src/main/resources/gluecore-map.map.xml'
 	String destDir = 'src/main/java'
-	String superPkg = 'uk.ac.gla.cvr.gluetools.database.auto'
+	String superPkg = 'uk.ac.gla.cvr.gluetools.core.datamodel.auto'
 	ant.cgen(map: mapFile, destDir: destDir, usepkgpath: true, superpkg: superPkg)
 }
 
 dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.4.1'
     compile group: 'org.apache.cayenne', name: 'cayenne-server', version:'3.1'
+    compile group: 'org.apache.cayenne', name: 'cayenne-project', version:'3.1'
     compile group: 'org.biojava', name: 'biojava-core', version: '4.0.0'
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     compile group: 'org.freemarker', name: 'freemarker', version: '2.3.20'
@@ -63,6 +70,10 @@ dependencies {
     compile group: 'org.eclipse.persistence', name: 'org.eclipse.persistence.jpa', version: '2.6.0'
     compile group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.1.0'
     compile group: 'jline', name: 'jline', version: '2.12.1'
+    compile group: 'com.brsanthu', name: 'data-exporter', version: '1.0.4'
+    // compile group: 'dnl.utils', name: 'j-text-utils', version: '0.3.3'
+    compile group: 'com.offbytwo', name:'docopt', version:'0.6.0.20150202'
+    
     testCompile group: 'junit', name: 'junit', version: '4.+'
     cgen group: 'org.apache.cayenne', name: 'cayenne-tools', version: '3.1'
 }

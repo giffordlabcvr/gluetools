@@ -10,14 +10,15 @@ import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorExcept
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.PopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.datafield.populator.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+@PluginClass(elemName="fieldPopulator")
 public class FieldPopulatorRule extends PopulatorRule implements Plugin {
 
-	public static String ELEM_NAME = "fieldPopulator";
 	
 	private String dataFieldName;
 	private RegexExtractorFormatter mainExtractor = null;

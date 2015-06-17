@@ -15,7 +15,7 @@ public abstract class GlueException extends RuntimeException {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 	
-	protected interface GlueErrorCode {
+	public interface GlueErrorCode {
 		public String name();
 		public String[] getArgNames();
 	}
@@ -106,4 +106,13 @@ public abstract class GlueException extends RuntimeException {
 			return null;
 		}
 	}
+
+	public GlueErrorCode getCode() {
+		return code;
+	}
+	
+	public Object[] getErrorArgs() {
+		return errorArgs;
+	}
+	
 }
