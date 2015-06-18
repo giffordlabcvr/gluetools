@@ -6,6 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class PluginConfigException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
+		CONFIG_CONSTRAINT_VIOLATION("errorTxt"), 
 		REQUIRED_CONFIG_MISSING("xPath"), 
 		TOO_MANY_CONFIG_ELEMENTS("xPath", "numFound", "maximum"), 
 		TOO_FEW_CONFIG_ELEMENTS("xPath", "numFound", "minimum"),

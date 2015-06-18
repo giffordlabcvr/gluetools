@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.management.RuntimeErrorException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -200,6 +202,15 @@ public class XmlUtils {
 	// http://stackoverflow.com/questions/4079565/xpath-selecting-multiple-elements-with-predicates
 	public static String alternateElemsXPath(Collection<String> elementNames) {
 		return "*["+String.join("|", elementNames.stream().map(s -> "self::"+s).collect(Collectors.toList()))+"]";
+	}
+
+	public static Document documentFromBytes(byte[] bytes) throws SAXException {
+		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+		try {
+			return documentFromStream(bais);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	

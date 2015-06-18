@@ -97,8 +97,9 @@ public class Console implements CommandContextListener
 			ObjectId objectId = objCreateResult.getObjectId();
 			output(objectId.getEntityName()+" created: "+objectId.getIdSnapshot().toString());
 		} else if(commandResult instanceof DocumentResult) {
-			byte[] docBytes = XmlUtils.prettyPrint(((DocumentResult) commandResult).getDocument());
-			// TODO -- what encoding?
+			Document document = ((DocumentResult) commandResult).getDocument();
+			byte[] docBytes = XmlUtils.prettyPrint(document);
+			// TODO -- what encoding? -- maybe prettyPrint should have a parameter encoding?
 			output(new String(docBytes));			
 		} else if(commandResult instanceof ListCommandResult<?>) {
 			StringWriter stringWriter = new StringWriter();
