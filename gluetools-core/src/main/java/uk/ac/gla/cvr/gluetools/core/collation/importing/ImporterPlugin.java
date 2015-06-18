@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.collation.importing;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 
 /**
@@ -30,5 +31,10 @@ public interface ImporterPlugin extends Plugin {
 	 * @
 	 */
 	public List<CollatedSequence> retrieveSequences(List<String> sequenceIDs) ;
+	
+	
+	
+	public void importSequences(CommandContext cmdContext);
+	
 	
 }

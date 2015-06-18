@@ -1,10 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
+import java.util.Base64;
+
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
-
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -52,8 +51,8 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 		}
 		if(base64String != null) {
 			try {
-				dataFromBase64 = Base64.decode(base64String);
-			} catch (Base64DecodingException e) {
+				dataFromBase64 = Base64.getDecoder().decode(base64String);
+			} catch (IllegalArgumentException e) {
 				throw new PluginConfigException(e, Code.CONFIG_FORMAT_ERROR, "base64/text", e.getMessage(), base64String);
 			}
 		}

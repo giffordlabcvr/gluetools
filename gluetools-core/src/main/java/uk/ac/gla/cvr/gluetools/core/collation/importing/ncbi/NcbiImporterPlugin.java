@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,10 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPluginException;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -43,6 +48,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 public class NcbiImporterPlugin implements ImporterPlugin {
 
 	
+	private String glueSourceName;
 	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 	private String dbName;
 	private String eSearchTerm = null;
@@ -53,6 +59,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
+		glueSourceName = PluginUtils.configureString(sequenceSourcerElem, "glueSourceName/text()", "default-source");
 		dbName = PluginUtils.configureString(sequenceSourcerElem, "database/text()", "nuccore");
 		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", false);
 		if(eSearchTerm == null) {
@@ -162,8 +169,8 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		return elems.stream().map(elem -> {
 			Document subDoc = XmlUtils.newDocument();
 			subDoc.appendChild(subDoc.importNode(elem, true));
-			XmlUtils.prettyPrint(subDoc, System.out);
-			System.out.println("--------------------------------------");
+//			XmlUtils.prettyPrint(subDoc, System.out);
+//			System.out.println("--------------------------------------");
 			return subDoc;
 		}).collect(Collectors.toList());
 	}
@@ -335,6 +342,30 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			throw new RuntimeException(xpe);
 		}
 	}
+
+	@Override
+	public void importSequences(CommandContext cmdContext) {
+		List<String> sequenceIDs = getSequenceIDs();
+		List<CollatedSequence> sequences = retrieveSequences(sequenceIDs);
+		for(CollatedSequence sequence: sequences) {
+			Document doc = XmlUtils.newDocument();
+			String commandElemName = CommandUsage.commandForCmdClass(CreateSequenceCommand.class);
+			Element createSequenceElem = (Element) doc.appendChild(doc.createElement(commandElemName));
+			Element sourceNameElem = (Element) createSequenceElem.appendChild(doc.createElement("sourceName"));
+			sourceNameElem.appendChild(doc.createTextNode(glueSourceName));
+			Element sequenceIdElem = (Element) createSequenceElem.appendChild(doc.createElement("sequenceID"));
+			sequenceIdElem.appendChild(doc.createTextNode(sequence.getSequenceSourceID()));
+			Element formatElem = (Element) createSequenceElem.appendChild(doc.createElement("format"));
+			formatElem.appendChild(doc.createTextNode(sequence.getFormat().name()));
+			Element base64Elem = (Element) createSequenceElem.appendChild(doc.createElement("base64"));
+			Document sequenceDoc = sequence.asXml();
+			byte[] sequenceDocBytes = XmlUtils.prettyPrint(sequenceDoc);
+			// character encoding presumably not important here.
+			base64Elem.appendChild(doc.createTextNode(new String(Base64.getEncoder().encode(sequenceDocBytes))));
+			Command command = cmdContext.commandFromElement(createSequenceElem);
+			command.execute(cmdContext);
+		}
+	} 
 	
 	
 

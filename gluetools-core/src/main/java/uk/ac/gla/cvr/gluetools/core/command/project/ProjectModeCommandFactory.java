@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.field.ListFieldsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.importer.CreateImporterCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.importer.DeleteImporterCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.importer.ListImportersCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.importer.RunImporterCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.importer.ShowImporterCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.populator.CreatePopulatorCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.populator.DeletePopulatorCommand;
@@ -41,6 +42,7 @@ public class ProjectModeCommandFactory extends CommandFactory {
 		registerPluginClass(DeleteImporterCommand.class);
 		registerPluginClass(ListImportersCommand.class);
 		registerPluginClass(ShowImporterCommand.class);
+		registerPluginClass(RunImporterCommand.class);
 
 		registerPluginClass(CreateFieldCommand.class);
 		registerPluginClass(DeleteFieldCommand.class);
