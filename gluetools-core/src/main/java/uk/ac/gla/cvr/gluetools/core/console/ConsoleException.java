@@ -9,7 +9,12 @@ public class ConsoleException extends GlueException {
 		SYNTAX_ERROR("errorPosition"),
 		UNKNOWN_COMMAND("unknownCommand", "commandModePath"), 
 		COMMAND_USAGE_ERROR("errorText"), 
-		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue");
+		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue"),
+		INVALID_PATH("invalidPath", "errorText"), 
+		FILE_NOT_FOUND("path"), 
+		NOT_A_FILE("path"), 
+		FILE_NOT_READABLE("path"), 
+		READ_ERROR("path", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.collation.sourcing;
+package uk.ac.gla.cvr.gluetools.core.collation.importing;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
  * A plugin that can obtain collated sequences from a source.
  * 
  */
-public interface SequenceSourcer extends Plugin {
+public interface ImporterPlugin extends Plugin {
 
 	/**
 	 * Get a list of IDs of sequences which this source can retrieve.

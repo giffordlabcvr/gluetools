@@ -1,9 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.collation.sourcing;
+package uk.ac.gla.cvr.gluetools.core.collation.importing;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
 @SuppressWarnings("serial")
-public class SequenceSourcerException extends GlueException {
+public class ImporterPluginException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		IO_ERROR("requestName", "errorTxt"), 
@@ -23,11 +23,11 @@ public class SequenceSourcerException extends GlueException {
 		}
 	}
 
-	public SequenceSourcerException(Code code, Object... errorArgs) {
+	public ImporterPluginException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public SequenceSourcerException(Throwable cause, Code code,
+	public ImporterPluginException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

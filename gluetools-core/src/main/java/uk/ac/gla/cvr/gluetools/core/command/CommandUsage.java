@@ -41,6 +41,10 @@ public class CommandUsage {
 		return cmdClass.getAnnotation(CommandClass.class).description();
 	}
 
+	public static String furtherHelpForCmdClass(Class<? extends Command> cmdClass) {
+		return cmdClass.getAnnotation(CommandClass.class).furtherHelp();
+	}
+	
 	public static String commandForCmdClass(Class<? extends Command> cmdClass) {
 		return cmdClass.getAnnotation(PluginClass.class).elemName();
 	}

@@ -4,6 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.HelpCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.SetDirectoryCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.ShowDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 
 public abstract class CommandFactory extends PluginFactory<Command> {
@@ -14,6 +15,7 @@ public abstract class CommandFactory extends PluginFactory<Command> {
 		registerPluginClass(ExitCommand.class);
 		registerPluginClass(HelpCommand.class);
 		registerPluginClass(SetDirectoryCommand.class);
+		registerPluginClass(ShowDirectoryCommand.class);
 	}
 	
 	@Override

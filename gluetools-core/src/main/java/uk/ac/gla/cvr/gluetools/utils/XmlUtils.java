@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -78,6 +79,12 @@ public class XmlUtils {
 		} catch (TransformerException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public static byte[] prettyPrint(Document document) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		prettyPrint(document, baos);
+		return baos.toByteArray();
 	}
 
 	public static void prettyPrint(Document document, OutputStream out) {

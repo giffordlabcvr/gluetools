@@ -32,6 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
@@ -77,7 +78,7 @@ public class Console implements CommandContextListener
 		CommandResult commandResult = null;
 		try {
 			tokens = Lexer.lex(line);
-			//output(tokens.toString());
+			// output(tokens.toString());
 			commandResult = tokensToCommandResult(tokens);
 			
 		} catch(GlueException ge) {
@@ -95,6 +96,10 @@ public class Console implements CommandContextListener
 			CreateCommandResult objCreateResult = (CreateCommandResult) commandResult;
 			ObjectId objectId = objCreateResult.getObjectId();
 			output(objectId.getEntityName()+" created: "+objectId.getIdSnapshot().toString());
+		} else if(commandResult instanceof DocumentResult) {
+			byte[] docBytes = XmlUtils.prettyPrint(((DocumentResult) commandResult).getDocument());
+			// TODO -- what encoding?
+			output(new String(docBytes));			
 		} else if(commandResult instanceof ListCommandResult<?>) {
 			StringWriter stringWriter = new StringWriter();
 			ListCommandResult<?> listCmdResult = (ListCommandResult<?>) commandResult;
@@ -133,9 +138,6 @@ public class Console implements CommandContextListener
 			return null;
 		}
 		Token firstToken = nonWSTokens.get(0);
-		if(firstToken.getType() != TokenType.IDENTIFIER) {
-			throw new ConsoleException(Code.SYNTAX_ERROR, firstToken.getPosition());
-		}
 		String identifier = firstToken.render();
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.classForElementName(identifier);
@@ -184,9 +186,6 @@ public class Console implements CommandContextListener
 				tagName = key.substring(1);
 			} else {
 				tagName = key;
-			}
-			if(tagName.equals("help")) {
-				return;
 			}
 			if(value instanceof Collection<?>) {
 				((Collection <?>) value).forEach(item -> {

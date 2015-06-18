@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.collation.sourcing.ncbi;
+package uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,18 +29,18 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPluginException;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcer;
-import uk.ac.gla.cvr.gluetools.core.collation.sourcing.SequenceSourcerException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-@PluginClass(elemName="ncbiSequenceSourcer")
-public class NCBISequenceSourcer implements SequenceSourcer {
+@PluginClass(elemName="ncbiImporter")
+public class NcbiImporterPlugin implements ImporterPlugin {
 
 	
 	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
@@ -74,7 +74,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			checkForESearchErrors(eSearchResponseDoc);
 			return XmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()");
 		} catch (IOException e) {
-			throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
+			throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 		}
 	}
 
@@ -85,7 +85,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 
 	@Override
 	public String getSourceUniqueID() {
-		return "ncbiSequenceSourcer:"+dbName+":"+collatedSequenceFormat.name();
+		return "ncbiImporter:"+dbName+":"+collatedSequenceFormat.name();
 	}
 
 	@Override
@@ -113,11 +113,11 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
 				break;
 			default:
-				throw new SequenceSourcerException(SequenceSourcerException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+				throw new ImporterPluginException(ImporterPluginException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
 						collatedSequenceFormat.name());
 			}
 		} catch (IOException e) {
-			throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
+			throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
 		}
 		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
 		List<Object> individualGBFiles = null;
@@ -131,7 +131,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 		int i = 0;
 		for(String sequenceID: sequenceIDs) {
 			if(i >= individualGBFiles.size()) {
-				throw new SequenceSourcerException(SequenceSourcerException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
+				throw new ImporterPluginException(ImporterPluginException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
 			}
 			CollatedSequence collatedSequence = new CollatedSequence();
 			collatedSequence.setFormat(collatedSequenceFormat);
@@ -188,7 +188,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			retmode="xml";
 			break;
 			default:
-				throw new SequenceSourcerException(SequenceSourcerException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+				throw new ImporterPluginException(ImporterPluginException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
 						collatedSequenceFormat.name());
 		}
 		
@@ -231,7 +231,7 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 
 		try(CloseableHttpResponse response = httpClient.execute(httpRequest);) {
 			if(response.getStatusLine().getStatusCode() != 200) {
-				throw new SequenceSourcerException(SequenceSourcerException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
+				throw new ImporterPluginException(ImporterPluginException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
 			}
 
 			HttpEntity entity = response.getEntity();
@@ -241,12 +241,12 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			try {
 				EntityUtils.consume(entity);
 			} catch (IOException e) {
-				throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 		} catch (ClientProtocolException cpe) {
-			throw new SequenceSourcerException(cpe, SequenceSourcerException.Code.PROTOCOL_ERROR, requestName, cpe.getLocalizedMessage());
+			throw new ImporterPluginException(cpe, ImporterPluginException.Code.PROTOCOL_ERROR, requestName, cpe.getLocalizedMessage());
 		} catch (IOException ioe) {
-			throw new SequenceSourcerException(ioe, SequenceSourcerException.Code.IO_ERROR, requestName);
+			throw new ImporterPluginException(ioe, ImporterPluginException.Code.IO_ERROR, requestName);
 		}
 		return result;
 	}
@@ -264,9 +264,9 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			try {
 				return XmlUtils.documentFromStream(entity.getContent());
 			} catch (SAXException e) {
-				throw new SequenceSourcerException(e, SequenceSourcerException.Code.FORMATTING_ERROR, requestName, e.getLocalizedMessage());
+				throw new ImporterPluginException(e, ImporterPluginException.Code.FORMATTING_ERROR, requestName, e.getLocalizedMessage());
 			} catch (IOException e) {
-				throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 		}
 	}
@@ -282,12 +282,12 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			try {
 				inputStream = entity.getContent();
 			} catch (IOException e) {
-				throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 			try {
 				return IOUtils.toString(inputStream, charset.name());
 			} catch (IOException e) {
-				throw new SequenceSourcerException(e, SequenceSourcerException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 			
 		}
@@ -319,17 +319,17 @@ public class NCBISequenceSourcer implements SequenceSourcer {
 			String mainErrorXpathExpression = "/eSearchResult/ERROR/text()";
 			Node mainError = (Node) xpath.evaluate(mainErrorXpathExpression, document, XPathConstants.NODE);
 			if(mainError != null) {
-				throw new SequenceSourcerException(SequenceSourcerException.Code.SEARCH_ERROR, mainError.getTextContent());
+				throw new ImporterPluginException(ImporterPluginException.Code.SEARCH_ERROR, mainError.getTextContent());
 			}
 			String queryErrorXpathExpression = "/eSearchResult/ErrorList/*";
 			Node queryError = (Node) xpath.evaluate(queryErrorXpathExpression, document, XPathConstants.NODE);
 			if(queryError != null) {
-				throw new SequenceSourcerException(SequenceSourcerException.Code.SEARCH_ERROR, queryError.getNodeName()+": "+queryError.getTextContent());
+				throw new ImporterPluginException(ImporterPluginException.Code.SEARCH_ERROR, queryError.getNodeName()+": "+queryError.getTextContent());
 			}
 			String queryWarningXpathExpression = "/eSearchResult/WarningList/*";
 			Node queryWarning = (Node) xpath.evaluate(queryWarningXpathExpression, document, XPathConstants.NODE);
 			if(queryWarning != null) {
-				throw new SequenceSourcerException(SequenceSourcerException.Code.SEARCH_ERROR, queryWarning.getNodeName()+": "+queryWarning.getTextContent());
+				throw new ImporterPluginException(ImporterPluginException.Code.SEARCH_ERROR, queryWarning.getNodeName()+": "+queryWarning.getTextContent());
 			}
 		} catch(XPathException xpe) {
 			throw new RuntimeException(xpe);

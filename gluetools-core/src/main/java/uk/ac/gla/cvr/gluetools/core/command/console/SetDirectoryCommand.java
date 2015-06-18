@@ -10,22 +10,30 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="set-directory")
 @CommandClass(
-		description = "Change the directory for loading and saving",
+		description = "Set the directory path for loading and saving",
 		docoptUsages = {
-				"<directory>"
-		})
+				"<path>"
+		}, 
+		furtherHelp = "An absolute <path> replaces the current setting. A relative <path> updates the setting relative to its current value.")
 public class SetDirectoryCommand extends ConsoleCommand {
 
-	private String directory;
+	private String path;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		directory = PluginUtils.configureString(configElem, "directory/text()", true);
+		path = PluginUtils.configureString(configElem, "path/text()", true);
 	}
 
 	@Override
 	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
-		return CommandResult.OK;
+		cmdContext.updateLoadSavePath(path);
+		final String path = cmdContext.getLoadSavePath().getAbsolutePath();
+		return new ConsoleCommandResult() {
+			@Override
+			public String getResultAsConsoleText() {
+				return path;
+			}
+		};
 	}
 
 }
