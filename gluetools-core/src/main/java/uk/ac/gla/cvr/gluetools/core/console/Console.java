@@ -44,7 +44,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 import com.brsanthu.dataexporter.model.AlignType;
-import com.brsanthu.dataexporter.model.Column;
 import com.brsanthu.dataexporter.model.Row;
 import com.brsanthu.dataexporter.model.StringColumn;
 import com.brsanthu.dataexporter.output.texttable.TextTableExportOptions;
@@ -156,7 +155,7 @@ public class Console implements CommandContextListener
 		Element element = elementFromDocoptMap(identifier, docoptMap);
 		Command command;
 		try {
-			command = commandFactory.createFromElement(gluetoolsEngine.createPluginConfigContext(), element);
+			command = commandContext.commandFromElement(element);
 		} catch(PluginConfigException pce) {
 			if(pce.getCode() == PluginConfigException.Code.CONFIG_FORMAT_ERROR &&
 					pce.getErrorArgs().length >= 3 && 

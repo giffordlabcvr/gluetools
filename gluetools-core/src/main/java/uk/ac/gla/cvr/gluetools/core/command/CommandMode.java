@@ -1,7 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+
 
 public abstract class CommandMode {
 	
@@ -27,5 +30,8 @@ public abstract class CommandMode {
 		return commandFactory;
 	}
 
+	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass, Element elem) {
+		
+	}
 
 }

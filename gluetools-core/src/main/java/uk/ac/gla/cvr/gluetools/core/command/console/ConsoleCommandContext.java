@@ -18,6 +18,8 @@ public class ConsoleCommandContext extends CommandContext {
 	public void setFinished(boolean finished) {
 		this.finished = finished;
 	}
+
+
 	
 
 	

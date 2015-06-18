@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 
 
@@ -47,8 +49,20 @@ public class CommandContext {
 		return String.join("/", modeIds);
 	}
 
+	
+	
 	public GluetoolsEngine getGluetoolsEngine() {
 		return gluetoolsEngine;
 	}
+	
+	public Command commandFromElement(Element element) {
+		CommandFactory commandFactory = peekCommandMode().getCommandFactory();
+		Class<? extends Command> cmdClass = commandFactory.classForElementName(element.getNodeName());
+		for(int i = commandModeStack.size() - 1; i >= 0; i--) {
+			commandModeStack.get(i).addModeConfigToCommandElem(cmdClass, element);
+		}
+		return commandFactory.createFromElement(gluetoolsEngine.createPluginConfigContext(), element);
+	}
+
 	
 }

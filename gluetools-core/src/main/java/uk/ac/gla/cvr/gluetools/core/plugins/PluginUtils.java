@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.plugins;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -131,7 +132,8 @@ public class PluginUtils {
 		try {
 			return Enum.valueOf(enumClass, configuredString);
 		} catch(IllegalArgumentException iae) {
-			throw new PluginConfigException(iae, Code.CONFIG_FORMAT_ERROR, xPathExpression, iae.getLocalizedMessage());
+			String msg = "Allowed values: "+Arrays.asList(enumClass.getEnumConstants());
+			throw new PluginConfigException(iae, Code.CONFIG_FORMAT_ERROR, xPathExpression, msg, configuredString);
 		}
 	}
 

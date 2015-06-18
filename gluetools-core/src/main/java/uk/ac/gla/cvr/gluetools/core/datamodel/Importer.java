@@ -3,16 +3,14 @@ package uk.ac.gla.cvr.gluetools.core.datamodel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Importer;
 
-@GlueDataClass(listColumnHeaders = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY})
-public class Field extends _Field {
+@GlueDataClass(listColumnHeaders = {_Importer.NAME_PROPERTY})
+public class Importer extends _Importer {
 
 	@Override
 	public String[] populateListRow() {
-		return new String[]{
-				getName(), 
-				getType()};
+		return new String[]{getName()};
 	}
 
 	public static Map<String, String> pkMap(String projectName, String name) {
@@ -26,5 +24,6 @@ public class Field extends _Field {
 	public void setPKValues(Map<String, String> pkMap) {
 		setName(pkMap.get(NAME_PK_COLUMN));
 	}
+	
 	
 }

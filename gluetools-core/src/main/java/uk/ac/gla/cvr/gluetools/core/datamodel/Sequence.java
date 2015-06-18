@@ -1,35 +1,27 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel;
 
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 
-import org.apache.cayenne.Cayenne;
-import org.apache.cayenne.ObjectContext;
-
-import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 
-@GlueDataClass(listColumnHeaders = {"ID", "Sourcer", "SourcerID"})
+@GlueDataClass(listColumnHeaders = {_Sequence.SOURCE_PROPERTY, _Sequence.SOURCE_ID_PROPERTY})
 public class Sequence extends _Sequence {
 
 	@Override
 	public String[] populateListRow() {
-		return new String[]{
-				getObjectId().getIdSnapshot().get(ID_PK_COLUMN).toString(), 
-				Optional.ofNullable(getSourcer()).map(Sourcer::getName).orElse("n/a"), 
-				Optional.ofNullable(getSourcerId()).orElse("n/a"), 
-		};
-	}
-	
-	public static Sequence lookupSequence(ObjectContext objContext, String sequenceId) {
-		Map<String, String> idMap = Collections.singletonMap(Sequence.ID_PK_COLUMN, sequenceId);
-		Sequence sequence = Cayenne.objectForPK(objContext, Sequence.class, idMap);
-		if(sequence == null) {
-			throw new DataModelException(Code.OBJECT_NOT_FOUND, Sequence.class.getSimpleName(), idMap);
-		}
-		return sequence;
+		return new String[]{getSource().getName(), getSourceId()};
 	}
 
+	public static Map<String, String> pkMap(String sourceName, String sourceId) {
+		Map<String, String> idMap = new LinkedHashMap<String, String>();
+		idMap.put(SOURCE_PK_COLUMN, sourceName);
+		idMap.put(SOURCE_ID_PK_COLUMN, sourceId);
+		return idMap;
+	}
 
+	@Override
+	public void setPKValues(Map<String, String> pkMap) {
+		setSourceId(pkMap.get(SOURCE_ID_PK_COLUMN));
+	}
 }

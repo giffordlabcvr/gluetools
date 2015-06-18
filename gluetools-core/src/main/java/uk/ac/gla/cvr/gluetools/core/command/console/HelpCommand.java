@@ -1,17 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.command.console;
 
-import java.util.Comparator;
-import java.util.Formatter;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.SimpleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;

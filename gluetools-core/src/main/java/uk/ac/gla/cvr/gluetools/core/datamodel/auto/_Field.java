@@ -11,11 +11,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.Project;
  */
 public abstract class _Field extends GlueDataObject {
 
+    public static final String NAME_PROPERTY = "name";
     public static final String TYPE_PROPERTY = "type";
     public static final String PROJECT_PROPERTY = "project";
 
-    public static final String COLUMN_NAME_PK_COLUMN = "COLUMN_NAME";
+    public static final String NAME_PK_COLUMN = "NAME";
     public static final String PROJECT_PK_COLUMN = "PROJECT";
+
+    public void setName(String name) {
+        writeProperty(NAME_PROPERTY, name);
+    }
+    public String getName() {
+        return (String)readProperty(NAME_PROPERTY);
+    }
 
     public void setType(String type) {
         writeProperty(TYPE_PROPERTY, type);
