@@ -97,5 +97,5 @@
 	<obj-relationship name="sources" source="Project" target="Source" deleteRule="Cascade" db-relationship-path="sources"/>
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
 	<obj-relationship name="project" source="Source" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
-	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Deny" db-relationship-path="sequences"/>
+	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
 </data-map>
