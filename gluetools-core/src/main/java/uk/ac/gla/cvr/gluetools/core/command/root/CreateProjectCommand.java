@@ -9,7 +9,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
