@@ -1,5 +1,5 @@
 set-directory hcv
-create-project hcv
+create-project hcv "HCV analysis project"
 project hcv
   
   create-field GB_GI_NUMBER STRING
@@ -22,6 +22,9 @@ project hcv
   create-field GB_CREATE_DATE DATE
   create-field GB_UPDATE_DATE DATE
   list-fields
+  
+  create-source local
+  create-sequence local file1 GENBANK_XML -f sequence.xml
   
   create-source ncbi-nuccore
   create-importer ncbi-hcv -f hcvImporter.xml

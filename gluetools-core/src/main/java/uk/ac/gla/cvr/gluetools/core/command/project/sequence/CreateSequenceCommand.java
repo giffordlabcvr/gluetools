@@ -24,9 +24,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="create-sequence")
 @CommandClass(description="Create a new sequence", 
-	docoptUsages={"<sourceName> <sequenceID> <format> (-f <file> | -b64 <data>)"}, 
+	docoptUsages={
+		"<sourceName> <sequenceID> <format> -f <file>",
+		"<sourceName> <sequenceID> <format> --base64 <data>"
+	}, 
 	docoptOptions={"-f <file>, --file <file>  File containing the sequence data", 
-		"-b64 <data>, --base64 <data>  Sequence data encoded as Base64"}) 
+		"--base64 <data>  Sequence data encoded as Base64"}) 
 public class CreateSequenceCommand extends ProjectModeCommand {
 
 	private String sourceName;
