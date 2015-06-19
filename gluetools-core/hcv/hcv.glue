@@ -1,0 +1,33 @@
+set-directory hcv
+create-project hcv
+project hcv
+  
+  create-field GB_GI_NUMBER STRING
+  create-field GB_PRIMARY_ACCESSION STRING
+  create-field GB_ACCESSION_VERSION STRING
+  create-field GB_LOCUS STRING
+  create-field GB_LENGTH INTEGER
+  create-field GB_GENOTYPE STRING
+  create-field GB_SUBTYPE STRING
+  create-field GB_RECOMBINANT BOOLEAN
+  create-field GB_PATENT_RELATED BOOLEAN
+  create-field GB_ORGANISM STRING
+  create-field GB_ISOLATE STRING
+  create-field GB_TAXONOMY STRING
+  create-field GB_HOST STRING 
+  create-field GB_COUNTRY STRING
+  create-field GB_COLLECTION_YEAR INTEGER 
+  create-field GB_COLLECTION_MONTH STRING
+  create-field GB_COLLECTION_MONTH_DATE INTEGER
+  create-field GB_CREATE_DATE DATE
+  create-field GB_UPDATE_DATE DATE
+  list-fields
+  
+  create-source ncbi-nuccore
+  create-importer ncbi-hcv -f hcvImporter.xml
+  run-importer ncbi-hcv
+  list-sequences ncbi-nuccore
+  
+  create-populator gb-populator -f hcvPopulator.xml
+  show-populator gb-populator
+  run-populator gb-populator ncbi-nuccore

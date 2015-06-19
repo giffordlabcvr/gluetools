@@ -12,6 +12,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.importer.ShowImporterCommand
 import uk.ac.gla.cvr.gluetools.core.command.project.populator.CreatePopulatorCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.populator.DeletePopulatorCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.populator.ListPopulatorsCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.populator.RunPopulatorCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.populator.ShowPopulatorCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.DeleteSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ListSequencesCommand;
@@ -37,6 +39,8 @@ public class ProjectModeCommandFactory extends CommandFactory {
 		registerPluginClass(CreatePopulatorCommand.class);
 		registerPluginClass(DeletePopulatorCommand.class);
 		registerPluginClass(ListPopulatorsCommand.class);
+		registerPluginClass(ShowPopulatorCommand.class);
+		registerPluginClass(RunPopulatorCommand.class);
 
 		registerPluginClass(CreateImporterCommand.class);
 		registerPluginClass(DeleteImporterCommand.class);

@@ -1,5 +1,5 @@
 <ncbiImporter>
-	<glueSourceName>genbank</glueSourceName>
+	<glueSourceName>ncbi-nuccore</glueSourceName>
 	<eSearchTerm><![CDATA[
 	"Hepatitis C"[Organism] AND 5000:20000[SLEN]
 	]]></eSearchTerm>

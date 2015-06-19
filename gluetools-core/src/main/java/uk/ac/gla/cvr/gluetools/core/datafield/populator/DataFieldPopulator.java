@@ -4,8 +4,11 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.populating.PopulatorPlugin;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
-import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -17,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
  * A plugin which contains a set of rules to populate the data fields of a collated sequence.
  */
 @PluginClass(elemName="dataFieldPopulator")
-public class DataFieldPopulator implements Plugin {
+public class DataFieldPopulator implements PopulatorPlugin {
 
 	private List<PopulatorRule> rules;
 	
@@ -40,5 +43,15 @@ public class DataFieldPopulator implements Plugin {
 		rules.forEach(rule -> {
 			rule.execute(collatedSequence, collatedSequence.asXml());
 		});
+	}
+
+	@Override
+	public CommandResult populate(CommandContext cmdContext, String sourceName) {
+		return new ConsoleCommandResult() {
+			@Override
+			public String getResultAsConsoleText() {
+				return "run populator on source "+sourceName;
+			}
+		};
 	}
 }

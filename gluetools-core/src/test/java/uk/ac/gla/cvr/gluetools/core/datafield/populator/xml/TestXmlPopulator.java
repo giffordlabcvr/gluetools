@@ -52,7 +52,7 @@ public class TestXmlPopulator {
 		GB_COUNTRY = "GB_COUNTRY",
 		GB_COLLECTION_YEAR = "GB_COLLECTION_YEAR", 
 		GB_COLLECTION_MONTH = "GB_COLLECTION_MONTH",
-		GB_COLLECTION_DAY_OF_MONTH = "GB_COLLECTION_DAY_OF_MONTH",
+		GB_COLLECTION_MONTH_DAY = "GB_COLLECTION_MONTH_DAY",
 		GB_CREATE_DATE = "GB_CREATE_DATE",
 		GB_UPDATE_DATE = "GB_UPDATE_DATE";
 	
@@ -101,7 +101,7 @@ public class TestXmlPopulator {
 				new StringField(GB_COUNTRY),
 				new IntegerField(GB_COLLECTION_YEAR),
 				new StringField(GB_COLLECTION_MONTH),
-				new IntegerField(GB_COLLECTION_DAY_OF_MONTH),
+				new IntegerField(GB_COLLECTION_MONTH_DAY),
 				new DateField(GB_CREATE_DATE),
 				new DateField(GB_UPDATE_DATE),
 				
@@ -130,7 +130,7 @@ public class TestXmlPopulator {
 //				GB_COUNTRY, 
 //				GB_COLLECTION_YEAR,
 //				GB_COLLECTION_MONTH,
-//				GB_COLLECTION_DAY_OF_MONTH,
+//				GB_COLLECTION_MONTH_DAY,
 //				GB_CREATE_DATE,
 //				GB_UPDATE_DATE,
 		});

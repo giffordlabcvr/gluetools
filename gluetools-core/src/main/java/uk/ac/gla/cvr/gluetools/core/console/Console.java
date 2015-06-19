@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -72,8 +73,12 @@ public class Console implements CommandContextListener
 		return commandContext.isFinished();
 	}
 
-	private void handleNextLine() throws IOException {
+	private void handleInteractiveLine() throws IOException {
 		String line = reader.readLine();
+		handleLine(line);
+	}
+
+	private void handleLine(String line) {
 		ArrayList<Token> tokens = null;
 		CommandResult commandResult = null;
 		try {
@@ -107,7 +112,7 @@ public class Console implements CommandContextListener
 			List<? extends GlueDataObject> results = listCmdResult.getResults();
 			int numFound = results.size();
 			if(numFound > 0) {
-				int minColWidth = 15;
+				final int minColWidth = 25;
 				String[] headers = listCmdResult.getResultClass().getAnnotation(GlueDataClass.class).listColumnHeaders();
 				TextTableExportOptions options = new TextTableExportOptions();
 				options.setStyle(TextTableExportStyle.CLASSIC);
@@ -120,7 +125,11 @@ public class Console implements CommandContextListener
 				for(GlueDataObject glueDataObj: results) {
 					Row row = new Row();
 					Arrays.asList(glueDataObj.populateListRow()).forEach(c -> {
-						row.addCellValue(c);
+						String cString = c.toString();
+						if(cString.length() < minColWidth) {
+							cString = " "+cString;
+						}
+						row.addCellValue(cString);
 					});
 					textTable.addRows(row);
 				}
@@ -203,8 +212,28 @@ public class Console implements CommandContextListener
 
 	public static void main(String[] args) throws IOException {
 		Console console = new Console();
-		while(!console.isFinished()) {
-			console.handleNextLine();
+		Docopt docopt = null;
+		try(InputStream docoptStream = Console.class.getResourceAsStream("/Console.docopt")) {
+			docopt = new Docopt(docoptStream);
+		} 
+		Map<String, Object> docoptResult = docopt.parse(args);
+		Object fileString = docoptResult.get("--file");
+		if(fileString != null) {
+			String fileContent = null;
+			try {
+				fileContent = new String(console.commandContext.loadBytes(fileString.toString()));
+			} catch(GlueException glueException) {
+				console.handleGlueException(glueException);
+				System.exit(1);
+			}
+			String[] fileCommands = fileContent.split("\n");
+			for(String fileCommandLine: fileCommands) {
+				console.handleLine(fileCommandLine);
+			}
+		} else {
+			while(!console.isFinished()) {
+				console.handleInteractiveLine();
+			}
 		}
 	}
 
