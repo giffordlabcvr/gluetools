@@ -23,7 +23,7 @@ public class DeleteFieldCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fieldName = PluginUtils.configureString(configElem, "fieldName/text()", true);
+		fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
 	}
 
 	@Override

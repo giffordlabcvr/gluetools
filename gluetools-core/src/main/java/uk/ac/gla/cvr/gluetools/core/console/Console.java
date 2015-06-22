@@ -182,11 +182,10 @@ public class Console implements CommandContextListener
 		try {
 			command = commandContext.commandFromElement(element);
 		} catch(PluginConfigException pce) {
-			if(pce.getCode() == PluginConfigException.Code.CONFIG_FORMAT_ERROR &&
-					pce.getErrorArgs().length >= 3 && 
-					pce.getErrorArgs()[0].toString().endsWith("/text()")) {
+			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
+					pce.getErrorArgs().length >= 3) {
 				throw new ConsoleException(pce, Code.ARGUMENT_FORMAT_ERROR,
-						pce.getErrorArgs()[0].toString().replace("/text()", ""),
+						pce.getErrorArgs()[0].toString(),
 						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
 			} else {
 				throw pce;

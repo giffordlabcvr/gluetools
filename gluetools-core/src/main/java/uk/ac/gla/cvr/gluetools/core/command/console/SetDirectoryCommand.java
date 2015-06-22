@@ -21,7 +21,7 @@ public class SetDirectoryCommand extends ConsoleCommand {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		path = PluginUtils.configureString(configElem, "path/text()", true);
+		path = PluginUtils.configureStringProperty(configElem, "path", true);
 	}
 
 	@Override

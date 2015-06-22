@@ -24,7 +24,7 @@ public class CreateSourceCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		name = PluginUtils.configureString(configElem, "name/text()", true);
+		name = PluginUtils.configureStringProperty(configElem, "name", true);
 	}
 
 	@Override

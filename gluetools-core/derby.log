@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-2015-06-22 11:17:31.784 GMT:
- Booting Derby version The Apache Software Foundation - Apache Derby - 10.5.3.0 - (802917): instance a816c00e-014e-1afc-cba8-00000d18bd60
+2015-06-22 13:32:35.145 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.5.3.0 - (802917): instance a816c00e-014e-1b78-7170-00000d1a7760
 on database directory memory:/Users/joshsinger/gitrepos/gluetools/gluetools-core/testdb  
 
 Database Class Loader started - derby.database.classpath=''

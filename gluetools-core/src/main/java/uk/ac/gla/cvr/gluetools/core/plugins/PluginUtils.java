@@ -16,6 +16,32 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
 
+	public static String configureStringProperty(Element configElem, String propertyName, String defaultValue) {
+		String configured = configureStringProperty(configElem, propertyName, false);
+		if(configured != null) {
+			return configured;
+		}
+		return defaultValue;
+	}
+
+
+	public static String configureStringProperty(Element configElem, String propertyName, boolean required) {
+		List<Element> propertyElems = XmlUtils.findChildElements(configElem, propertyName);
+		if(propertyElems.isEmpty()) {
+			if(required) {
+				throw new PluginConfigException(Code.REQUIRED_PROPERTY_MISSING, propertyName);
+			} else {
+				return null;
+			}
+		}
+		propertyElems.forEach(e -> setValidConfig(configElem, e));
+		if(propertyElems.size() > 1) {
+			throw new PluginConfigException(Code.MULTIPLE_PROPERTY_SETTINGS, propertyName);
+		}
+		return propertyElems.get(0).getTextContent();
+	}
+
+	
 	public static String configureString(Element configElem, String xPathExpression, String defaultValue)  {
 		String configured = configureString(configElem, xPathExpression, false);
 		if(configured == null) {
@@ -119,6 +145,28 @@ public class PluginUtils {
 		return(userData != null && userData instanceof Boolean && ((Boolean) userData));
 	}
 
+	
+	public static <E extends Enum<E>> E configureEnumProperty(Class<E> enumClass, Element configElem, String propertyName, E defaultValue) {
+		E configuredValue = configureEnumProperty(enumClass, configElem, propertyName, false);
+		if(configuredValue == null) {
+			return defaultValue;
+		}
+		return configuredValue;
+	}
+	
+	public static <E extends Enum<E>> E configureEnumProperty(Class<E> enumClass, Element configElem, String propertyName, boolean required) {
+		String configuredString = configureStringProperty(configElem, propertyName, required);
+		if(configuredString == null) { return null; }
+		try {
+			return Enum.valueOf(enumClass, configuredString);
+		} catch(IllegalArgumentException iae) {
+			String msg = "Allowed values: "+Arrays.asList(enumClass.getEnumConstants());
+			throw new PluginConfigException(iae, Code.PROPERTY_FORMAT_ERROR, propertyName, msg, configuredString);
+		}
+	}
+
+	
+	
 	public static <E extends Enum<E>> E configureEnum(Class<E> enumClass, Element configElem, String xPathExpression, E defaultValue) {
 		E configuredValue = configureEnum(enumClass, configElem, xPathExpression, false);
 		if(configuredValue == null) {

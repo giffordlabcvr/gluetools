@@ -26,8 +26,8 @@ public class CreateProjectCommand extends Command {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		name = PluginUtils.configureString(configElem, "name/text()", true);
-		description = Optional.ofNullable(PluginUtils.configureString(configElem, "description/text()", false));
+		name = PluginUtils.configureStringProperty(configElem, "name", true);
+		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "description", false));
 	}
 
 	@Override

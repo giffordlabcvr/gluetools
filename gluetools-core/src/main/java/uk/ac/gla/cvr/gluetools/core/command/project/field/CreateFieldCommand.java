@@ -26,8 +26,8 @@ public class CreateFieldCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		name = PluginUtils.configureString(configElem, "name/text()", true);
-		type = PluginUtils.configureEnum(FieldType.class, configElem, "type/text()", true);
+		name = PluginUtils.configureStringProperty(configElem, "name", true);
+		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, "type", true);
 	}
 
 	@Override

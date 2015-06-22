@@ -41,11 +41,11 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureString(configElem, "sourceName/text()", true);
-		sequenceID = PluginUtils.configureString(configElem, "sequenceID/text()", true);
-		format = PluginUtils.configureEnum(SequenceFormat.class, configElem, "format/text()", true);
-		file = PluginUtils.configureString(configElem, "file/text()", false);
-		String base64String = PluginUtils.configureString(configElem, "base64/text()", false);
+		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", true);
+		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", true);
+		format = PluginUtils.configureEnumProperty(SequenceFormat.class, configElem, "format", true);
+		file = PluginUtils.configureStringProperty(configElem, "file", false);
+		String base64String = PluginUtils.configureStringProperty(configElem, "base64", false);
 		if(file == null && base64String == null) {
 			throw new SequenceException(Code.NO_DATA_PROVIDED);
 		}

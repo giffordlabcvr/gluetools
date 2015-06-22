@@ -22,7 +22,7 @@ public class DeleteProjectCommand extends Command {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		projectName = PluginUtils.configureString(configElem, "projectName/text()", true);
+		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
 	}
 
 	@Override

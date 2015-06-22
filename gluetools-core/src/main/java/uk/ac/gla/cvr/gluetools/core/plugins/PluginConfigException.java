@@ -12,7 +12,10 @@ public class PluginConfigException extends GlueException {
 		TOO_FEW_CONFIG_ELEMENTS("xPath", "numFound", "minimum"),
 		CONFIG_FORMAT_ERROR("xPath", "errorTxt", "value"),
 		UNKNOWN_CONFIG_ELEMENT("xPath"), 
-		UNKNOWN_CONFIG_ATTRIBUTE("xPath");
+		UNKNOWN_CONFIG_ATTRIBUTE("xPath"), 
+		REQUIRED_PROPERTY_MISSING("propertyName"), 
+		PROPERTY_FORMAT_ERROR("propertyName", "errorTxt", "value"), 
+		MULTIPLE_PROPERTY_SETTINGS("propertyName");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

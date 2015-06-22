@@ -27,7 +27,7 @@ public class ListSequencesCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureString(configElem, "sourceName/text()", true);
+		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", true);
 	}
 	
 	@Override

@@ -76,7 +76,20 @@ public class XmlUtils {
 		childElem.appendChild(textNode);
 		return textNode;
 	}
+	
+	public static List<Element> findChildElements(Element parentElement, String elemName) {
+		List<Element> childElems = new ArrayList<Element>();
+		NodeList childNodes = parentElement.getChildNodes();
+		for(int i = 0; i < childNodes.getLength(); i++) {
+			Node node = childNodes.item(i);
+			if(node instanceof Element && node.getNodeName().equals(elemName)) {
+				childElems.add((Element) node);
+			}
+		}
+		return childElems;
+	}
 
+	
 	public static void prettyPrint(Document document, OutputStream outputStream, int indent) {
 	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	    Transformer transformer;
@@ -111,6 +124,10 @@ public class XmlUtils {
 	
 	public static List<Element> getXPathElements(Node startNode, String xPathExpression) {
 		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		return nodeListToElems(resultNodeList);
+	}
+
+	public static List<Element> nodeListToElems(NodeList resultNodeList) {
 		List<Element> elems = new ArrayList<Element>();
 		for(int i = 0; i < resultNodeList.getLength(); i++) {
 			elems.add((Element) resultNodeList.item(i));

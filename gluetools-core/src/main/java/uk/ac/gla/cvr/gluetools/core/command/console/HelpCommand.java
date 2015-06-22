@@ -23,7 +23,7 @@ public class HelpCommand extends ConsoleCommand {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		command = PluginUtils.configureString(configElem, "command/text()", false);
+		command = PluginUtils.configureStringProperty(configElem, "command", false);
 	}
 
 	

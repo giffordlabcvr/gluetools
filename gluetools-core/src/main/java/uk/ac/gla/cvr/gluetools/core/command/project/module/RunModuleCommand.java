@@ -24,7 +24,7 @@ public class RunModuleCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		moduleName = PluginUtils.configureString(configElem, "moduleName/text()", true);
+		moduleName = PluginUtils.configureStringProperty(configElem, "moduleName", true);
 	}
 
 	@Override

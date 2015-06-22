@@ -55,8 +55,10 @@ public class NcbiImporterPlugin implements ModulePlugin {
 	private int eSearchRetMax;
 	private int eFetchBatchSize;
 	private List<String> specificSequenceIDs;
-	private SequenceFormat collatedSequenceFormat;
+	private SequenceFormat sequenceFormat;
 
+	// TODO change these to property lookups instead of XPaths.
+	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
 		glueSourceName = PluginUtils.configureString(sequenceSourcerElem, "glueSourceName/text()", "default-source");
@@ -67,7 +69,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 		}
 		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 4000);
 		eFetchBatchSize = PluginUtils.configureInt(sequenceSourcerElem, "eFetchBatchSize/text()", 200);
-		collatedSequenceFormat = PluginUtils.configureEnum(SequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
+		sequenceFormat = PluginUtils.configureEnum(SequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
 	}
 
 	List<String> getSequenceIDs() {
@@ -90,7 +92,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 	}
 
 	String getSourceUniqueID() {
-		return "ncbiImporter:"+dbName+":"+collatedSequenceFormat.name();
+		return "ncbiImporter:"+dbName+":"+sequenceFormat.name();
 	}
 
 	List<RetrievedSequence> retrieveSequences(List<String> sequenceIDs) {
@@ -109,20 +111,20 @@ public class NcbiImporterPlugin implements ModulePlugin {
 		Object eFetchResponseObject;
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(sequenceIDs);
-			switch(collatedSequenceFormat) {
+			switch(sequenceFormat) {
 			case GENBANK_XML:
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
 				break;
 			default:
 				throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
-						collatedSequenceFormat.name());
+						sequenceFormat.name());
 			}
 		} catch (IOException e) {
 			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
 		}
 		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
 		List<Object> individualGBFiles = null;
-		switch(collatedSequenceFormat) {
+		switch(sequenceFormat) {
 		case GENBANK_XML:
 			individualGBFiles = divideDocuments((Document) eFetchResponseObject);
 		}
@@ -133,7 +135,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 				throw new NcbiImporterException(NcbiImporterException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
 			}
 			RetrievedSequence retrievedSequence = new RetrievedSequence();
-			retrievedSequence.format = collatedSequenceFormat;
+			retrievedSequence.format = sequenceFormat;
 			retrievedSequence.sequenceID = sequenceID;
 			Object individualFile = individualGBFiles.get(i);
 			if(individualFile instanceof Document) {
@@ -173,14 +175,14 @@ public class NcbiImporterPlugin implements ModulePlugin {
 		
 		String rettype;
 		String retmode;
-		switch(collatedSequenceFormat) {
+		switch(sequenceFormat) {
 		case GENBANK_XML:
 			rettype="gb";
 			retmode="xml";
 			break;
 			default:
 				throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
-						collatedSequenceFormat.name());
+						sequenceFormat.name());
 		}
 		
 		String url = eUtilsBaseURL+"/efetch.fcgi?db="+dbName+"&rettype="+rettype+"&retmode="+retmode;

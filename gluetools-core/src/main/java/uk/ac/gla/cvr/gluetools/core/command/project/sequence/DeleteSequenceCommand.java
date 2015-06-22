@@ -24,8 +24,8 @@ public class DeleteSequenceCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureString(configElem, "sourceName/text()", true);
-		sequenceID = PluginUtils.configureString(configElem, "sequenceID/text()", true);
+		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", true);
+		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", true);
 	}
 
 	@Override

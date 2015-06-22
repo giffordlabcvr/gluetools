@@ -16,7 +16,7 @@ public abstract class ProjectModeCommand extends Command {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		projectName = PluginUtils.configureString(configElem, "projectName/text()", true);
+		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
 	}
 
 	protected String getProjectName() {
