@@ -5,6 +5,7 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 
+// TODO have a default source which always exists. Command arguments which require a source-name default to this.
 @GlueDataClass(listColumnHeaders = {_Source.NAME_PROPERTY})
 public class Source extends _Source {
 

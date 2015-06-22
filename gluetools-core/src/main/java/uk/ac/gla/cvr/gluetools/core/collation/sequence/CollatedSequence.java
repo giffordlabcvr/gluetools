@@ -6,10 +6,10 @@ import java.util.Optional;
 
 import org.w3c.dom.Document;
 
+import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorException;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
 import uk.ac.gla.cvr.gluetools.core.datafield.FieldValue;
-import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException;
-import uk.ac.gla.cvr.gluetools.core.datafield.populator.DataFieldPopulatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.project.Project;
 
 
@@ -76,7 +76,7 @@ public class CollatedSequence {
 	public void setDataFieldValue(String name, String valueAsString) {
 		DataField<?> dataField = owningProject.getDataField(name);
 		if(dataField == null) {
-			throw new DataFieldPopulatorException(Code.NO_SUCH_FIELD, name, owningProject.getID());
+			throw new XmlPopulatorException(Code.NO_SUCH_FIELD, name, owningProject.getID());
 		}
 		fieldValues.put(name, dataField.valueFromString(valueAsString));
 	}

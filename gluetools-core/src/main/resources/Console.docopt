@@ -1,7 +1,8 @@
 Usage: 
-  gluetools [-h]
-  gluetools [-h] -f <file>
+  gluetools [-he]
+  gluetools [-he] -f <file>
 
 Options:
   -f <file>, --file <file>   A file containing GLUE commands
   -h, --help                 Print usage and options information
+  -e, --verbose-error        Print out full error stack trace

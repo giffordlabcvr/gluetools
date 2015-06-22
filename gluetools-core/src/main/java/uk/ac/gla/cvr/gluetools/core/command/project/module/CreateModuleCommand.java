@@ -1,0 +1,52 @@
+package uk.ac.gla.cvr.gluetools.core.command.project.module;
+
+import org.apache.cayenne.ObjectContext;
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleCommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.Module;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+
+@PluginClass(elemName="create-module")
+@CommandClass(description="Create a new module in this project", 
+	docoptUsages={"<name> -f <configFile>"},
+	docoptOptions={"-f <file>, --file <file>  Module configuration file"}) 
+public class CreateModuleCommand extends ProjectModeCommand {
+
+	private String name;
+	private String file;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		name = PluginUtils.configureString(configElem, "name/text()", true);
+		file = PluginUtils.configureString(configElem, "file/text()", true);
+	}
+
+	@Override
+	public CommandResult execute(CommandContext cmdContext) {
+		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		Module module = GlueDataObject.create(objContext, Module.class, Module.pkMap(getProjectName(), name));
+		module.setProject(getProject(objContext));
+		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+		byte[] config = consoleCmdContext.loadBytes(file);
+		module.setConfig(config);
+		try {
+			module.getModulePlugin(cmdContext.getGluetoolsEngine().createPluginConfigContext());
+		} catch(Exception e) {
+			throw new ModuleCommandException(e, Code.CREATE_FROM_FILE_FAILED, file);
+		}
+		objContext.commitChanges();
+		return new CreateCommandResult(module.getObjectId());
+	}
+
+}

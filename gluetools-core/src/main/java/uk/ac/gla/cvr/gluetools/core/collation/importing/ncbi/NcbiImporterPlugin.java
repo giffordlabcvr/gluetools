@@ -30,22 +30,24 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPlugin;
-import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPluginException;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.CreateSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+// TODO importers and populators should just be instances of "module".
+// TODO these modules should provide commands to configure some module elements, and run them.
+// TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
-public class NcbiImporterPlugin implements ImporterPlugin {
+public class NcbiImporterPlugin implements ModulePlugin {
 
 	
 	private String glueSourceName;
@@ -70,8 +72,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		collatedSequenceFormat = PluginUtils.configureEnum(CollatedSequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
 	}
 
-	@Override
-	public List<String> getSequenceIDs() {
+	List<String> getSequenceIDs() {
 		if(specificSequenceIDs != null) {
 			return specificSequenceIDs;
 		}
@@ -81,7 +82,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			checkForESearchErrors(eSearchResponseDoc);
 			return XmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()");
 		} catch (IOException e) {
-			throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
+			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 		}
 	}
 
@@ -90,13 +91,11 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		return httpClient;
 	}
 
-	@Override
-	public String getSourceUniqueID() {
+	String getSourceUniqueID() {
 		return "ncbiImporter:"+dbName+":"+collatedSequenceFormat.name();
 	}
 
-	@Override
-	public List<CollatedSequence> retrieveSequences(List<String> sequenceIDs) {
+	List<CollatedSequence> retrieveSequences(List<String> sequenceIDs) {
 		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
 		int batchStart = 0;
 		int batchEnd;
@@ -113,24 +112,19 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(sequenceIDs);
 			switch(collatedSequenceFormat) {
-			case GENBANK_FLAT_FILE:
-				eFetchResponseObject = runHttpRequestGetString("eFetch", eFetchRequest, httpClient);
-				break;
 			case GENBANK_XML:
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
 				break;
 			default:
-				throw new ImporterPluginException(ImporterPluginException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+				throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
 						collatedSequenceFormat.name());
 			}
 		} catch (IOException e) {
-			throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
+			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
 		}
 		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
 		List<Object> individualGBFiles = null;
 		switch(collatedSequenceFormat) {
-		case GENBANK_FLAT_FILE:
-			individualGBFiles = GenbankFlatFileUtils.divideConcatenatedGBFiles((String) eFetchResponseObject);
 		case GENBANK_XML:
 			individualGBFiles = divideDocuments((Document) eFetchResponseObject);
 		}
@@ -138,7 +132,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		int i = 0;
 		for(String sequenceID: sequenceIDs) {
 			if(i >= individualGBFiles.size()) {
-				throw new ImporterPluginException(ImporterPluginException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
+				throw new NcbiImporterException(NcbiImporterException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
 			}
 			CollatedSequence collatedSequence = new CollatedSequence();
 			collatedSequence.setFormat(collatedSequenceFormat);
@@ -179,23 +173,19 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		String commaSeparatedIDs = String.join(",", idsToFetch.toArray(new String[]{}));
 
 
-		// rettype=gb and retmode=text means retrieve GenBank flat files.
+		// rettype=gb and retmode=xml means retrieve GenBank XML files.
 		// Other formats are possible.
 		// http://www.ncbi.nlm.nih.gov/books/NBK25499/table/chapter4.T._valid_values_of__retmode_and/?report=objectonly
 		
 		String rettype;
 		String retmode;
 		switch(collatedSequenceFormat) {
-		case GENBANK_FLAT_FILE:
-			rettype="gb";
-			retmode="text";
-			break;
 		case GENBANK_XML:
 			rettype="gb";
 			retmode="xml";
 			break;
 			default:
-				throw new ImporterPluginException(ImporterPluginException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+				throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
 						collatedSequenceFormat.name());
 		}
 		
@@ -225,6 +215,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 		return (Document) runHttpRequestGetObject(requestName, httpRequest, httpClient, new DocumentConsumer());
 	}
 
+	@SuppressWarnings("unused")
 	private String runHttpRequestGetString(String requestName, HttpUriRequest httpRequest, CloseableHttpClient httpClient) 
 			 {
 		return (String) runHttpRequestGetObject(requestName, httpRequest, httpClient, new StringConsumer());
@@ -238,7 +229,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 
 		try(CloseableHttpResponse response = httpClient.execute(httpRequest);) {
 			if(response.getStatusLine().getStatusCode() != 200) {
-				throw new ImporterPluginException(ImporterPluginException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
+				throw new NcbiImporterException(NcbiImporterException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
 			}
 
 			HttpEntity entity = response.getEntity();
@@ -248,12 +239,12 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			try {
 				EntityUtils.consume(entity);
 			} catch (IOException e) {
-				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 		} catch (ClientProtocolException cpe) {
-			throw new ImporterPluginException(cpe, ImporterPluginException.Code.PROTOCOL_ERROR, requestName, cpe.getLocalizedMessage());
+			throw new NcbiImporterException(cpe, NcbiImporterException.Code.PROTOCOL_ERROR, requestName, cpe.getLocalizedMessage());
 		} catch (IOException ioe) {
-			throw new ImporterPluginException(ioe, ImporterPluginException.Code.IO_ERROR, requestName);
+			throw new NcbiImporterException(ioe, NcbiImporterException.Code.IO_ERROR, requestName);
 		}
 		return result;
 	}
@@ -271,9 +262,9 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			try {
 				return XmlUtils.documentFromStream(entity.getContent());
 			} catch (SAXException e) {
-				throw new ImporterPluginException(e, ImporterPluginException.Code.FORMATTING_ERROR, requestName, e.getLocalizedMessage());
+				throw new NcbiImporterException(e, NcbiImporterException.Code.FORMATTING_ERROR, requestName, e.getLocalizedMessage());
 			} catch (IOException e) {
-				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 		}
 	}
@@ -289,12 +280,12 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			try {
 				inputStream = entity.getContent();
 			} catch (IOException e) {
-				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 			try {
 				return IOUtils.toString(inputStream, charset.name());
 			} catch (IOException e) {
-				throw new ImporterPluginException(e, ImporterPluginException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
+				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, requestName, e.getLocalizedMessage());
 			}
 			
 		}
@@ -326,17 +317,17 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			String mainErrorXpathExpression = "/eSearchResult/ERROR/text()";
 			Node mainError = (Node) xpath.evaluate(mainErrorXpathExpression, document, XPathConstants.NODE);
 			if(mainError != null) {
-				throw new ImporterPluginException(ImporterPluginException.Code.SEARCH_ERROR, mainError.getTextContent());
+				throw new NcbiImporterException(NcbiImporterException.Code.SEARCH_ERROR, mainError.getTextContent());
 			}
 			String queryErrorXpathExpression = "/eSearchResult/ErrorList/*";
 			Node queryError = (Node) xpath.evaluate(queryErrorXpathExpression, document, XPathConstants.NODE);
 			if(queryError != null) {
-				throw new ImporterPluginException(ImporterPluginException.Code.SEARCH_ERROR, queryError.getNodeName()+": "+queryError.getTextContent());
+				throw new NcbiImporterException(NcbiImporterException.Code.SEARCH_ERROR, queryError.getNodeName()+": "+queryError.getTextContent());
 			}
 			String queryWarningXpathExpression = "/eSearchResult/WarningList/*";
 			Node queryWarning = (Node) xpath.evaluate(queryWarningXpathExpression, document, XPathConstants.NODE);
 			if(queryWarning != null) {
-				throw new ImporterPluginException(ImporterPluginException.Code.SEARCH_ERROR, queryWarning.getNodeName()+": "+queryWarning.getTextContent());
+				throw new NcbiImporterException(NcbiImporterException.Code.SEARCH_ERROR, queryWarning.getNodeName()+": "+queryWarning.getTextContent());
 			}
 		} catch(XPathException xpe) {
 			throw new RuntimeException(xpe);
@@ -344,7 +335,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 	}
 
 	@Override
-	public void importSequences(CommandContext cmdContext) {
+	public CommandResult runModule(CommandContext cmdContext) {
 		List<String> sequenceIDs = getSequenceIDs();
 		List<CollatedSequence> sequences = retrieveSequences(sequenceIDs);
 		for(CollatedSequence sequence: sequences) {
@@ -365,10 +356,7 @@ public class NcbiImporterPlugin implements ImporterPlugin {
 			Command command = cmdContext.commandFromElement(createSequenceElem);
 			command.execute(cmdContext);
 		}
-	} 
-	
-	
-
-	
+		return CommandResult.OK;
+	}
 	
 }

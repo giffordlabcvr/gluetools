@@ -13,6 +13,7 @@ import org.w3c.dom.NodeList;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+// TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
 
 	public static String configureString(Element configElem, String xPathExpression, String defaultValue)  {

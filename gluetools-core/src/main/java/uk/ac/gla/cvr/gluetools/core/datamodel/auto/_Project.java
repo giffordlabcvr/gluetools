@@ -4,8 +4,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Importer;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Populator;
+import uk.ac.gla.cvr.gluetools.core.datamodel.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.Source;
 
 /**
@@ -19,8 +18,7 @@ public abstract class _Project extends GlueDataObject {
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String NAME_PROPERTY = "name";
     public static final String FIELDS_PROPERTY = "fields";
-    public static final String IMPORTERS_PROPERTY = "importers";
-    public static final String POPULATORS_PROPERTY = "populators";
+    public static final String MODULES_PROPERTY = "modules";
     public static final String SOURCES_PROPERTY = "sources";
 
     public static final String NAME_PK_COLUMN = "NAME";
@@ -51,27 +49,15 @@ public abstract class _Project extends GlueDataObject {
     }
 
 
-    public void addToImporters(Importer obj) {
-        addToManyTarget(IMPORTERS_PROPERTY, obj, true);
+    public void addToModules(Module obj) {
+        addToManyTarget(MODULES_PROPERTY, obj, true);
     }
-    public void removeFromImporters(Importer obj) {
-        removeToManyTarget(IMPORTERS_PROPERTY, obj, true);
-    }
-    @SuppressWarnings("unchecked")
-    public List<Importer> getImporters() {
-        return (List<Importer>)readProperty(IMPORTERS_PROPERTY);
-    }
-
-
-    public void addToPopulators(Populator obj) {
-        addToManyTarget(POPULATORS_PROPERTY, obj, true);
-    }
-    public void removeFromPopulators(Populator obj) {
-        removeToManyTarget(POPULATORS_PROPERTY, obj, true);
+    public void removeFromModules(Module obj) {
+        removeToManyTarget(MODULES_PROPERTY, obj, true);
     }
     @SuppressWarnings("unchecked")
-    public List<Populator> getPopulators() {
-        return (List<Populator>)readProperty(POPULATORS_PROPERTY);
+    public List<Module> getModules() {
+        return (List<Module>)readProperty(MODULES_PROPERTY);
     }
 
 

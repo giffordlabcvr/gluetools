@@ -27,10 +27,10 @@ project hcv
   create-sequence local file1 GENBANK_XML -f sequence.xml
   
   create-source ncbi-nuccore
-  create-importer ncbi-hcv -f hcvImporter.xml
-  run-importer ncbi-hcv
-  list-sequences ncbi-nuccore
+  create-module ncbi-hcv -f hcvImporter.xml
+  run-module ncbi-hcv
+  show-module ncbi-hcv
   
-  create-populator gb-populator -f hcvPopulator.xml
-  show-populator gb-populator
-  run-populator gb-populator ncbi-nuccore
+  create-module gb-populator -f hcvPopulator.xml
+  show-module gb-populator
+  run-module gb-populator

@@ -7,17 +7,11 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.SequenceFormatException.Code;
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.gbflatfile.GenbankFlatFileUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public enum CollatedSequenceFormat {
 
-	GENBANK_FLAT_FILE {
-		@Override
-		public Document asXml(String sequenceText) {
-			return GenbankFlatFileUtils.genbankFlatFileToXml(sequenceText);
-		}
-	},
+
 	GENBANK_XML {
 		@Override
 		public Document asXml(String sequenceText) {

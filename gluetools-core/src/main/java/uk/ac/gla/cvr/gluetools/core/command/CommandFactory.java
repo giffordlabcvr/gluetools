@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.SetDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ShowDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 
+// TODO Plugins should be able to add their own commands.
 public abstract class CommandFactory extends PluginFactory<Command> {
 
 	protected CommandFactory() {

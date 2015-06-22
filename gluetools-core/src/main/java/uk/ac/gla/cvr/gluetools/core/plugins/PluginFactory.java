@@ -56,7 +56,14 @@ public class PluginFactory<P extends Plugin> {
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
-		return createPlugin(pluginConfigContext, pluginClass, element);
+		P plugin = instantiatePlugin(element, pluginClass);
+		configurePluginStatic(pluginConfigContext, element, plugin);
+		return plugin;
+	}
+
+	protected P instantiatePlugin(Element element, Class<? extends P> pluginClass) {
+		P plugin = instantiatePluginStatic(pluginClass, element);
+		return plugin;
 	}
 
 	public Class<? extends P> classForElementName(String elementName) {
@@ -69,10 +76,21 @@ public class PluginFactory<P extends Plugin> {
 	}
 
 	public static <Q extends Plugin> List<Q> createPlugins(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, List<Element> elements) {
-		return elements.stream().map(e -> createPlugin(pluginConfigContext, pluginClass, e)).collect(Collectors.toList());
+		return elements.stream().map(e -> {
+			Q plugin = instantiatePluginStatic(pluginClass, e);
+			configurePluginStatic(pluginConfigContext, e, plugin);
+			return plugin;
+		}).collect(Collectors.toList());
 	}
 	
 	public static <Q extends Plugin> Q createPlugin(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, Element element) {
+		Q plugin = instantiatePluginStatic(pluginClass, element);
+		configurePluginStatic(pluginConfigContext, element, plugin);
+		return plugin;
+	}
+
+	private static <Q extends Plugin> Q instantiatePluginStatic(Class<Q> pluginClass,
+			Element element) {
 		Q plugin = null;
 		try {
 			plugin = pluginClass.newInstance();
@@ -80,9 +98,13 @@ public class PluginFactory<P extends Plugin> {
 			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
 		}
 		PluginUtils.setValidConfigLocal(element);
+		return plugin;
+	}
+
+	private static <Q extends Plugin> void configurePluginStatic(
+			PluginConfigContext pluginConfigContext, Element element, Q plugin) {
 		plugin.configure(pluginConfigContext, element);
 		PluginUtils.checkValidConfig(element);
-		return plugin;
 	}
 	
 	public List<Class<? extends P>> getRegisteredClasses() {

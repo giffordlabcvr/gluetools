@@ -52,6 +52,19 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExportOptions;
 import com.brsanthu.dataexporter.output.texttable.TextTableExportStyle;
 import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 
+// TODO accept on the command line an XML configuration file to configure the DB connection and other items.
+// TODO allow configuration via a System property.
+// TODO command lines ending with '\' should be concatenated to allow continuations.
+// TODO it should be possible to prefix mode-changing commands and so execute them temporarily in that mode.
+// TODO completion should extend to arguments, at least when these arguments select from a table / enum / map.
+// TODO improve command line table display to adapt columns to data.
+// TODO implement paging of commands in interactive mode.
+// TODO implement toggle for verbose exception reporting.
+// TODO catch general exceptions and continue.
+// TODO emit warning about temporary database
+// TODO implement toggle for whether output should be echoed in batch mode.
+// TODO history should be stored in the DB.
+// TODO in batch mode, exceptions should go to stderr.
 public class Console implements CommandContextListener
 {
 	private PrintWriter out;
@@ -59,6 +72,8 @@ public class Console implements CommandContextListener
 	private Completer currentCompleter;
 	private ConsoleCommandContext commandContext;
 	private GluetoolsEngine gluetoolsEngine;
+	private Integer batchLine = null;
+	private boolean verboseError = false;
 	
 	private Console() throws IOException {
 		this.reader = new ConsoleReader();
@@ -75,21 +90,19 @@ public class Console implements CommandContextListener
 
 	private void handleInteractiveLine() throws IOException {
 		String line = reader.readLine();
-		handleLine(line);
+		try {
+			handleLine(line);
+		} catch(GlueException ge) {
+			handleGlueException(ge);
+		}
 	}
 
 	private void handleLine(String line) {
 		ArrayList<Token> tokens = null;
 		CommandResult commandResult = null;
-		try {
-			tokens = Lexer.lex(line);
-			// output(tokens.toString());
-			commandResult = tokensToCommandResult(tokens);
-			
-		} catch(GlueException ge) {
-			handleGlueException(ge);
-			return;
-		}
+		tokens = Lexer.lex(line);
+		// output(tokens.toString());
+		commandResult = tokensToCommandResult(tokens);
 		renderCommandResult(commandResult);
 	}
 
@@ -217,19 +230,13 @@ public class Console implements CommandContextListener
 			docopt = new Docopt(docoptStream);
 		} 
 		Map<String, Object> docoptResult = docopt.parse(args);
+		Object verboseErrorOption = docoptResult.get("--verbose-error");
+		if(verboseErrorOption != null) {
+			console.verboseError = Boolean.parseBoolean(verboseErrorOption.toString());
+		}
 		Object fileString = docoptResult.get("--file");
 		if(fileString != null) {
-			String fileContent = null;
-			try {
-				fileContent = new String(console.commandContext.loadBytes(fileString.toString()));
-			} catch(GlueException glueException) {
-				console.handleGlueException(glueException);
-				System.exit(1);
-			}
-			String[] fileCommands = fileContent.split("\n");
-			for(String fileCommandLine: fileCommands) {
-				console.handleLine(fileCommandLine);
-			}
+			console.runBatchFile(fileString);
 		} else {
 			while(!console.isFinished()) {
 				console.handleInteractiveLine();
@@ -237,6 +244,37 @@ public class Console implements CommandContextListener
 		}
 	}
 
+	private void runBatchFile(Object fileString) {
+		String fileContent = null;
+		try {
+			fileContent = new String(commandContext.loadBytes(fileString.toString()));
+		} catch(GlueException glueException) {
+			handleGlueException(glueException);
+			System.exit(1);
+		}
+		String[] fileCommands = fileContent.split("\n");
+		int batchLine = 1;
+		for(String fileCommandLine: fileCommands) {
+			setBatchLine(batchLine);
+			try {
+				handleLine(fileCommandLine);
+			} catch(GlueException ge) {
+				handleGlueException(ge);
+				System.exit(1);
+			}
+			batchLine++;
+			
+		}
+	}
+
+
+	private Integer getBatchLine() {
+		return batchLine;
+	}
+
+	private void setBatchLine(Integer batchLine) {
+		this.batchLine = batchLine;
+	}
 
 	private void handleGlueException(GlueException glueException) {
 		GlueErrorCode errorCode = glueException.getCode();
@@ -247,17 +285,44 @@ public class Console implements CommandContextListener
 			output(StringUtils.repeat(" ", position+reader.getPrompt().length())+"^");
 			outputError("Bad syntax");
 		} else {
-			outputError(glueException.getLocalizedMessage());
+			outputError(glueException);
 		}
 	}
 	
+	private void outputError(Throwable exception) {
+		outputError(exception.getLocalizedMessage());
+		if(verboseError) {
+			outputStackTrace(exception);
+		}
+		Throwable cause = exception.getCause();
+		while(cause != null && cause != exception) {
+			output("Cause: "+cause.getLocalizedMessage());
+			if(verboseError) {
+				outputStackTrace(cause);
+			}
+			exception = cause;
+			cause = cause.getCause();
+		}
+	}
+
+	private void outputStackTrace(Throwable exception) {
+		output(exception.getClass().getCanonicalName());
+		for(StackTraceElement ste: exception.getStackTrace()) {
+			output(ste.toString());
+		}
+	}
+
 	private void output(String message) {
 		out.println(message);
 		out.flush();
 	}
 
 	private void outputError(String message) {
-		output("Error: "+message);
+		if(getBatchLine() == null) {
+			output("Error: "+message);
+		} else {
+			output("Error at line "+getBatchLine()+": "+message);
+		}
 	}
 
 	private void updatePrompt() {

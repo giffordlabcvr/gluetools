@@ -5,6 +5,8 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
 
+// TODO projects should have a data-field table linked to sequences.
+// TODO creation / deletion of fields should modify the relevant table in the DB.
 @GlueDataClass(listColumnHeaders = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY})
 public class Field extends _Field {
 
