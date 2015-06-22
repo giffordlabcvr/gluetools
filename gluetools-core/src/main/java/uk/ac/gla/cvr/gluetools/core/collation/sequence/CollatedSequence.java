@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorExcepti
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
 import uk.ac.gla.cvr.gluetools.core.datafield.FieldValue;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.project.Project;
 
 
@@ -26,6 +27,8 @@ import uk.ac.gla.cvr.gluetools.core.project.Project;
  */
 public class CollatedSequence {
 
+	
+	
 	private Project owningProject;
 	
 	private Map<String, FieldValue<?>> fieldValues = new LinkedHashMap<String, FieldValue<?>>();
@@ -38,7 +41,7 @@ public class CollatedSequence {
 	
 	private Document cachedXml;
 	
-	private CollatedSequenceFormat format;
+	private SequenceFormat format;
 
 	public String getSequenceSourceID() {
 		return sequenceSourceID;
@@ -65,11 +68,11 @@ public class CollatedSequence {
 		this.cachedXml = null;
 	}
 
-	public CollatedSequenceFormat getFormat() {
+	public SequenceFormat getFormat() {
 		return format;
 	}
 
-	public void setFormat(CollatedSequenceFormat format) {
+	public void setFormat(SequenceFormat format) {
 		this.format = format;
 	}
 	
@@ -83,7 +86,7 @@ public class CollatedSequence {
 
 	public Document asXml() {
 		if(cachedXml == null) {
-			cachedXml = getFormat().asXml(getSequenceText());
+			cachedXml = getFormat().asXml(getSequenceText().getBytes());
 		}
 		return cachedXml;
 	}

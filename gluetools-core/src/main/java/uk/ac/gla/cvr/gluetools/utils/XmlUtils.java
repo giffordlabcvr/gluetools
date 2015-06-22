@@ -61,6 +61,22 @@ public class XmlUtils {
 		return getDocumentBuilder().newDocument();
 	}
 	
+	public static Element documentWithElement(String elemName) {
+		Document document = newDocument();
+		return (Element) document.appendChild(document.createElement(elemName));
+	}
+	
+	public static Element appendElement(Element parentElem, String elemName) {
+		return (Element) parentElem.appendChild(parentElem.getOwnerDocument().createElement(elemName));
+	}
+
+	public static Node appendElementWithText(Element parentElem, String elemName, String text) {
+		Element childElem = appendElement(parentElem, elemName);
+		Text textNode = parentElem.getOwnerDocument().createTextNode(text);
+		childElem.appendChild(textNode);
+		return textNode;
+	}
+
 	public static void prettyPrint(Document document, OutputStream outputStream, int indent) {
 	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	    Transformer transformer;

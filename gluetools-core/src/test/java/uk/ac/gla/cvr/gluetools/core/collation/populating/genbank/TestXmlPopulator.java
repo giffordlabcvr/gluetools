@@ -15,12 +15,12 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datafield.BooleanField;
 import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
 import uk.ac.gla.cvr.gluetools.core.datafield.DateField;
 import uk.ac.gla.cvr.gluetools.core.datafield.IntegerField;
 import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -188,7 +188,7 @@ public class TestXmlPopulator {
 			CollatedSequence collatedSequence = new CollatedSequence();
 			collatedSequence.setOwningProject(project);
 			collatedSequence.setSequenceSourceID(file.getName().replace(".xml", ""));
-			collatedSequence.setFormat(CollatedSequenceFormat.GENBANK_XML);
+			collatedSequence.setFormat(SequenceFormat.GENBANK_XML);
 			collatedSequence.setSequenceDocument(document);
 			return collatedSequence;
 		}).collect(Collectors.toList());

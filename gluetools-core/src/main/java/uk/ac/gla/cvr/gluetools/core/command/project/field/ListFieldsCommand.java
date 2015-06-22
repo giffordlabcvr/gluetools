@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
 @PluginClass(elemName="list-fields")

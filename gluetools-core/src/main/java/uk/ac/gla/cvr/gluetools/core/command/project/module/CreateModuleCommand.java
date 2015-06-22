@@ -9,9 +9,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -43,7 +44,7 @@ public class CreateModuleCommand extends ProjectModeCommand {
 		try {
 			module.getModulePlugin(cmdContext.getGluetoolsEngine().createPluginConfigContext());
 		} catch(Exception e) {
-			throw new ModuleCommandException(e, Code.CREATE_FROM_FILE_FAILED, file);
+			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, file);
 		}
 		objContext.commitChanges();
 		return new CreateCommandResult(module.getObjectId());

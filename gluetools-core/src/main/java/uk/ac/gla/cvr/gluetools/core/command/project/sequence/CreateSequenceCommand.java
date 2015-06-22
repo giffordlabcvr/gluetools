@@ -5,7 +5,6 @@ import java.util.Base64;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
@@ -13,13 +12,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Project;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Source;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="create-sequence")
@@ -34,7 +34,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 
 	private String sourceName;
 	private String sequenceID;
-	private CollatedSequenceFormat format;
+	private SequenceFormat format;
 	private String file;
 	private byte[] dataFromBase64;
 	
@@ -43,20 +43,17 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 		super.configure(pluginConfigContext, configElem);
 		sourceName = PluginUtils.configureString(configElem, "sourceName/text()", true);
 		sequenceID = PluginUtils.configureString(configElem, "sequenceID/text()", true);
-		format = PluginUtils.configureEnum(CollatedSequenceFormat.class, configElem, "format/text()", true);
+		format = PluginUtils.configureEnum(SequenceFormat.class, configElem, "format/text()", true);
 		file = PluginUtils.configureString(configElem, "file/text()", false);
 		String base64String = PluginUtils.configureString(configElem, "base64/text()", false);
 		if(file == null && base64String == null) {
-			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Data not provided");
-		}
-		if(file != null && base64String != null) {
-			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Ambiguous data source");
+			throw new SequenceException(Code.NO_DATA_PROVIDED);
 		}
 		if(base64String != null) {
 			try {
 				dataFromBase64 = Base64.getDecoder().decode(base64String);
 			} catch (IllegalArgumentException e) {
-				throw new PluginConfigException(e, Code.CONFIG_FORMAT_ERROR, "base64/text", e.getMessage(), base64String);
+				throw new SequenceException(e, Code.BASE_64_FORMAT_EXCEPTION, e.getMessage());
 			}
 		}
 	}
@@ -73,6 +70,11 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 			sequence.setData(((ConsoleCommandContext) cmdContext).loadBytes(file));
 		} else if(dataFromBase64 != null){
 			sequence.setData(dataFromBase64);
+		}
+		try {
+			sequence.getSequenceDoc(); // checks XML format
+		} catch(Exception e) {
+			throw new SequenceException(e, Code.CREATE_FROM_FILE_FAILED, file);
 		}
 		objContext.commitChanges();
 		return new CreateCommandResult(sequence.getObjectId());

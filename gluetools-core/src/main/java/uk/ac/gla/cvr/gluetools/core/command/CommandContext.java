@@ -64,5 +64,7 @@ public class CommandContext {
 		return commandFactory.createFromElement(gluetoolsEngine.createPluginConfigContext(), element);
 	}
 
-	
+	public CommandResult executeElem(Element elem) {
+		return commandFromElement(elem).execute(this);
+	}
 }

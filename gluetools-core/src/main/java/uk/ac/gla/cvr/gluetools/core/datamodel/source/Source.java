@@ -1,20 +1,18 @@
-package uk.ac.gla.cvr.gluetools.core.datamodel;
+package uk.ac.gla.cvr.gluetools.core.datamodel.source;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 
-// TODO projects should have a data-field table linked to sequences.
-// TODO creation / deletion of fields should modify the relevant table in the DB.
-@GlueDataClass(listColumnHeaders = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY})
-public class Field extends _Field {
+// TODO have a default source which always exists. Command arguments which require a source-name default to this.
+@GlueDataClass(listColumnHeaders = {_Source.NAME_PROPERTY})
+public class Source extends _Source {
 
 	@Override
 	public String[] populateListRow() {
-		return new String[]{
-				getName(), 
-				getType()};
+		return new String[]{getName()};
 	}
 
 	public static Map<String, String> pkMap(String projectName, String name) {
@@ -28,5 +26,4 @@ public class Field extends _Field {
 	public void setPKValues(Map<String, String> pkMap) {
 		setName(pkMap.get(NAME_PK_COLUMN));
 	}
-	
 }

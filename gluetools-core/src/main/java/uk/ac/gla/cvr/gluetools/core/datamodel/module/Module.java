@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.datamodel;
+package uk.ac.gla.cvr.gluetools.core.datamodel.module;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

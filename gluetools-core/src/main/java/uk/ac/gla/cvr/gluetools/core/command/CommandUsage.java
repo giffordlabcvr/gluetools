@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class CommandUsage {
 
@@ -45,8 +48,12 @@ public class CommandUsage {
 		return cmdClass.getAnnotation(CommandClass.class).furtherHelp();
 	}
 	
-	public static String commandForCmdClass(Class<? extends Command> cmdClass) {
+	public static String elemNameForCmdClass(Class<? extends Command> cmdClass) {
 		return cmdClass.getAnnotation(PluginClass.class).elemName();
+	}
+	
+	public static Element docElemForCmdClass(Class<? extends Command> cmdClass) {
+		return XmlUtils.documentWithElement(elemNameForCmdClass(cmdClass));
 	}
 
 }

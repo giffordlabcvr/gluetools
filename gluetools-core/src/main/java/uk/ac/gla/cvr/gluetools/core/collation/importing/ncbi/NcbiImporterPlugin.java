@@ -30,13 +30,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequenceFormat;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.CreateSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -57,7 +55,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 	private int eSearchRetMax;
 	private int eFetchBatchSize;
 	private List<String> specificSequenceIDs;
-	private CollatedSequenceFormat collatedSequenceFormat;
+	private SequenceFormat collatedSequenceFormat;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
@@ -69,7 +67,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 		}
 		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 4000);
 		eFetchBatchSize = PluginUtils.configureInt(sequenceSourcerElem, "eFetchBatchSize/text()", 200);
-		collatedSequenceFormat = PluginUtils.configureEnum(CollatedSequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
+		collatedSequenceFormat = PluginUtils.configureEnum(SequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
 	}
 
 	List<String> getSequenceIDs() {
@@ -95,19 +93,19 @@ public class NcbiImporterPlugin implements ModulePlugin {
 		return "ncbiImporter:"+dbName+":"+collatedSequenceFormat.name();
 	}
 
-	List<CollatedSequence> retrieveSequences(List<String> sequenceIDs) {
-		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
+	List<RetrievedSequence> retrieveSequences(List<String> sequenceIDs) {
+		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
 		int batchStart = 0;
 		int batchEnd;
 		do {
 			batchEnd = Math.min(batchStart+eFetchBatchSize, sequenceIDs.size());
-			resultSequences.addAll(fetchBatch(sequenceIDs.subList(batchStart, batchEnd)));
+			retrievedSequences.addAll(fetchBatch(sequenceIDs.subList(batchStart, batchEnd)));
 			batchStart = batchEnd;
 		} while(batchEnd < sequenceIDs.size());
-		return resultSequences;
+		return retrievedSequences;
 	}
 
-	private List<CollatedSequence> fetchBatch(List<String> sequenceIDs) {
+	private List<RetrievedSequence> fetchBatch(List<String> sequenceIDs) {
 		Object eFetchResponseObject;
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(sequenceIDs);
@@ -122,7 +120,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 		} catch (IOException e) {
 			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
 		}
-		List<CollatedSequence> resultSequences = new ArrayList<CollatedSequence>();
+		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
 		List<Object> individualGBFiles = null;
 		switch(collatedSequenceFormat) {
 		case GENBANK_XML:
@@ -134,21 +132,17 @@ public class NcbiImporterPlugin implements ModulePlugin {
 			if(i >= individualGBFiles.size()) {
 				throw new NcbiImporterException(NcbiImporterException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
 			}
-			CollatedSequence collatedSequence = new CollatedSequence();
-			collatedSequence.setFormat(collatedSequenceFormat);
-			collatedSequence.setSourceUniqueID(getSourceUniqueID());
-			collatedSequence.setSequenceSourceID(sequenceID);
+			RetrievedSequence retrievedSequence = new RetrievedSequence();
+			retrievedSequence.format = collatedSequenceFormat;
+			retrievedSequence.sequenceID = sequenceID;
 			Object individualFile = individualGBFiles.get(i);
-			if(individualFile instanceof String) {
-				collatedSequence.setSequenceText((String) individualFile);
-			}
 			if(individualFile instanceof Document) {
-				collatedSequence.setSequenceDocument((Document) individualFile);
+				retrievedSequence.data = XmlUtils.prettyPrint((Document) individualFile);
 			}
-			resultSequences.add(collatedSequence);
+			retrievedSequences.add(retrievedSequence);
 			i++;
 		}
-		return resultSequences;
+		return retrievedSequences;
 	}
 	
 	// lists all the databases
@@ -337,26 +331,25 @@ public class NcbiImporterPlugin implements ModulePlugin {
 	@Override
 	public CommandResult runModule(CommandContext cmdContext) {
 		List<String> sequenceIDs = getSequenceIDs();
-		List<CollatedSequence> sequences = retrieveSequences(sequenceIDs);
-		for(CollatedSequence sequence: sequences) {
-			Document doc = XmlUtils.newDocument();
-			String commandElemName = CommandUsage.commandForCmdClass(CreateSequenceCommand.class);
-			Element createSequenceElem = (Element) doc.appendChild(doc.createElement(commandElemName));
-			Element sourceNameElem = (Element) createSequenceElem.appendChild(doc.createElement("sourceName"));
-			sourceNameElem.appendChild(doc.createTextNode(glueSourceName));
-			Element sequenceIdElem = (Element) createSequenceElem.appendChild(doc.createElement("sequenceID"));
-			sequenceIdElem.appendChild(doc.createTextNode(sequence.getSequenceSourceID()));
-			Element formatElem = (Element) createSequenceElem.appendChild(doc.createElement("format"));
-			formatElem.appendChild(doc.createTextNode(sequence.getFormat().name()));
-			Element base64Elem = (Element) createSequenceElem.appendChild(doc.createElement("base64"));
-			Document sequenceDoc = sequence.asXml();
-			byte[] sequenceDocBytes = XmlUtils.prettyPrint(sequenceDoc);
+		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
+		for(RetrievedSequence sequence: sequences) {
+			Element createSeqElem = CommandUsage.docElemForCmdClass(CreateSequenceCommand.class);
+			XmlUtils.appendElementWithText(createSeqElem, "sourceName", glueSourceName);
+			XmlUtils.appendElementWithText(createSeqElem, "sequenceID", sequence.sequenceID);
+			XmlUtils.appendElementWithText(createSeqElem, "format", sequence.format.name());
 			// character encoding presumably not important here.
-			base64Elem.appendChild(doc.createTextNode(new String(Base64.getEncoder().encode(sequenceDocBytes))));
-			Command command = cmdContext.commandFromElement(createSequenceElem);
-			command.execute(cmdContext);
+			String base64String = new String(Base64.getEncoder().encode(sequence.data));
+			XmlUtils.appendElementWithText(createSeqElem, "base64", base64String);
+			cmdContext.executeElem(createSeqElem);
 		}
 		return CommandResult.OK;
+	}
+	
+	
+	class RetrievedSequence {
+		String sequenceID;
+		SequenceFormat format;
+		byte[] data;
 	}
 	
 }

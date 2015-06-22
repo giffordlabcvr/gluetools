@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 

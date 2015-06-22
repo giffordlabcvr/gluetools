@@ -1,8 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.module;
+package uk.ac.gla.cvr.gluetools.core.datamodel.module;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class ModuleCommandException extends GlueException {
+public class ModuleException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
@@ -19,11 +19,11 @@ public class ModuleCommandException extends GlueException {
 
 	}
 	
-	public ModuleCommandException(Code code, Object... errorArgs) {
+	public ModuleException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public ModuleCommandException(Throwable cause, Code code,
+	public ModuleException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

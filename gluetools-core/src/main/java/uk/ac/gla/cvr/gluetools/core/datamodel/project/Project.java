@@ -1,9 +1,10 @@
-package uk.ac.gla.cvr.gluetools.core.datamodel;
+package uk.ac.gla.cvr.gluetools.core.datamodel.project;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 
 @GlueDataClass(listColumnHeaders = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})

@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.w3c.dom.Document;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterPlugin.RetrievedSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -19,15 +19,15 @@ public class TestNcbiGenbank {
 	public void retrieveAllHcvIncludedAsXml() throws Exception {
 		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
-		NcbiImporterPlugin sequenceSourcer = (NcbiImporterPlugin) PluginFactory.get(ModulePluginFactory.creator).
+		NcbiImporterPlugin ncbiImporter = (NcbiImporterPlugin) PluginFactory.get(ModulePluginFactory.creator).
 					createFromElement(pluginConfigContext, document.getDocumentElement());
-		List<String> sequenceIDs = sequenceSourcer.getSequenceIDs();
-		List<CollatedSequence> collatedSequences = sequenceSourcer.retrieveSequences(sequenceIDs);
+		List<String> sequenceIDs = ncbiImporter.getSequenceIDs();
+		List<RetrievedSequence> retrievedSequences = ncbiImporter.retrieveSequences(sequenceIDs);
 		File directory = new File("/Users/joshsinger/hcv_rega/retrieved_xml");
-		collatedSequences.forEach(seq -> {
-			File xmlFile = new File(directory, seq.getSequenceSourceID()+".xml");
+		retrievedSequences.forEach(seq -> {
+			File xmlFile = new File(directory, seq.sequenceID+".xml");
 			try(FileOutputStream fileOutputStream = new FileOutputStream(xmlFile)) {
-				XmlUtils.prettyPrint(seq.asXml(), fileOutputStream);
+				fileOutputStream.write(seq.data);
 			} catch(Exception e) {
 				throw new RuntimeException(e);
 			}
