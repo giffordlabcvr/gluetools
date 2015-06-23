@@ -10,7 +10,8 @@ public class SequenceException extends GlueException {
 		CREATE_FROM_FILE_FAILED("file"),
 		UNKNOWN_SEQUENCE_FORMAT("unknownFormat"),
 		NO_DATA_PROVIDED(),
-		BASE_64_FORMAT_EXCEPTION("errorText");
+		BASE_64_FORMAT_EXCEPTION("errorText"),
+		INVALID_FIELD("invalidField", "validFields");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

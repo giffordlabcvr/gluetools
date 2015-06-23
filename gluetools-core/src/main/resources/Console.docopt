@@ -1,8 +1,9 @@
 Usage: 
   gluetools [-he]
-  gluetools [-he] -f <file>
+  gluetools [-hei] -f <file>
 
 Options:
-  -f <file>, --file <file>   A file containing GLUE commands
+  -f <file>, --file <file>   Run batch mode from a file
   -h, --help                 Print usage and options information
   -e, --verbose-error        Print out full error stack trace
+  -i, --interactive          Enter interactive mode after batch mode

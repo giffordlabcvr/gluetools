@@ -107,6 +107,8 @@ public class GenbankXmlPopulatorPlugin implements ModulePlugin {
 	}
 	
 	
+	// TODO use cleaner command-building methods for the list-sequences command here.
+	
 	@Override
 	public CommandResult runModule(CommandContext cmdContext) {
 		Project project = initProject();

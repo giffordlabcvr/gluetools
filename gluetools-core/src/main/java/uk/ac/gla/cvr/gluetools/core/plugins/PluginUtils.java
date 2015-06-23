@@ -41,6 +41,19 @@ public class PluginUtils {
 		return propertyElems.get(0).getTextContent();
 	}
 
+	public static List<String> configureStringsProperty(Element configElem, String propertyName, 
+			Integer min, Integer max) {
+		List<Element> propertyElems = XmlUtils.findChildElements(configElem, propertyName);
+		int size = propertyElems.size();
+		if(max != null && size > max) {
+			throw new PluginConfigException(Code.TOO_FEW_PROPERTY_VALUES, propertyName, size, max);
+		}
+		if(min != null && size < min) {
+			throw new PluginConfigException(Code.TOO_MANY_PROPERTY_VALUES, propertyName, size, max);
+		}
+		propertyElems.forEach(e -> setValidConfig(configElem, e));
+		return propertyElems.stream().map(Element::getTextContent).collect(Collectors.toList());
+	}
 	
 	public static String configureString(Element configElem, String xPathExpression, String defaultValue)  {
 		String configured = configureString(configElem, xPathExpression, false);

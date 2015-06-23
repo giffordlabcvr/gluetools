@@ -11,8 +11,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 
 public abstract class GlueDataObject extends CayenneDataObject {
 
-	public abstract String[] populateListRow();
-	
 	public abstract void setPKValues(Map <String, String> pkMap);
 
 	public static <C extends GlueDataObject> C lookup(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
@@ -45,6 +43,14 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		C newObject = objContext.newObject(objClass);
 		newObject.setPKValues(pkMap);
 		return newObject;
+	}
+	
+	public String populateListCell(String propertyName) {
+		Object readResult = readNestedProperty(propertyName);
+		if(readResult == null) {
+			return "-";
+		}
+		return readResult.toString();
 	}
 	
 }

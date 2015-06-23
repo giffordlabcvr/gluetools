@@ -40,7 +40,6 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
@@ -74,6 +73,7 @@ public class Console implements CommandContextListener
 	private GluetoolsEngine gluetoolsEngine;
 	private Integer batchLine = null;
 	private boolean verboseError = false;
+	private boolean interactiveAfterBatch = false;
 	
 	private Console() throws IOException {
 		this.reader = new ConsoleReader();
@@ -126,10 +126,10 @@ public class Console implements CommandContextListener
 			int numFound = results.size();
 			if(numFound > 0) {
 				final int minColWidth = 25;
-				String[] headers = listCmdResult.getResultClass().getAnnotation(GlueDataClass.class).listColumnHeaders();
 				TextTableExportOptions options = new TextTableExportOptions();
 				options.setStyle(TextTableExportStyle.CLASSIC);
 				TextTableExporter textTable = new TextTableExporter(stringWriter);
+				String[] headers = listCmdResult.getColumnPropertyNames();
 				for(String header: headers) {
 					StringColumn column = new StringColumn(header, Math.max(minColWidth, header.length()));
 					column.setAlign(AlignType.TOP_LEFT);
@@ -137,8 +137,8 @@ public class Console implements CommandContextListener
 				}
 				for(GlueDataObject glueDataObj: results) {
 					Row row = new Row();
-					Arrays.asList(glueDataObj.populateListRow()).forEach(c -> {
-						String cString = c.toString();
+					Arrays.asList(headers).forEach(propertyName -> {
+						String cString = glueDataObj.populateListCell(propertyName);
 						if(cString.length() < minColWidth) {
 							cString = " "+cString;
 						}
@@ -233,15 +233,28 @@ public class Console implements CommandContextListener
 		if(verboseErrorOption != null) {
 			console.verboseError = Boolean.parseBoolean(verboseErrorOption.toString());
 		}
+		Object interactiveOption = docoptResult.get("--interactive");
+		if(interactiveOption != null) {
+			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
+		}
 		Object fileString = docoptResult.get("--file");
 		if(fileString != null) {
 			console.runBatchFile(fileString);
-		} else {
-			while(!console.isFinished()) {
-				console.handleInteractiveLine();
+			if(console.interactiveAfterBatch) {
+				console.batchLine = null;
+				console.interactiveSession();
 			}
+			
+		} else {
+			console.interactiveSession();
 		}
 		console.shutdown();
+	}
+
+	private void interactiveSession() throws IOException {
+		while(!isFinished()) {
+			handleInteractiveLine();
+		}
 	}
 
 	private void shutdown() {

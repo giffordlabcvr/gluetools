@@ -2,22 +2,22 @@ set-directory hcv
 create-project hcv "HCV analysis project"
 project hcv
   
-  create-field GB_GI_NUMBER STRING
-  create-field GB_PRIMARY_ACCESSION STRING
-  create-field GB_ACCESSION_VERSION STRING
-  create-field GB_LOCUS STRING
+  create-field GB_GI_NUMBER VARCHAR
+  create-field GB_PRIMARY_ACCESSION VARCHAR
+  create-field GB_ACCESSION_VERSION VARCHAR
+  create-field GB_LOCUS VARCHAR
   create-field GB_LENGTH INTEGER
-  create-field GB_GENOTYPE STRING
-  create-field GB_SUBTYPE STRING
+  create-field GB_GENOTYPE VARCHAR
+  create-field GB_SUBTYPE VARCHAR
   create-field GB_RECOMBINANT BOOLEAN
   create-field GB_PATENT_RELATED BOOLEAN
-  create-field GB_ORGANISM STRING
-  create-field GB_ISOLATE STRING
-  create-field GB_TAXONOMY STRING
-  create-field GB_HOST STRING 
-  create-field GB_COUNTRY STRING
+  create-field GB_ORGANISM VARCHAR
+  create-field GB_ISOLATE VARCHAR
+  create-field GB_TAXONOMY VARCHAR
+  create-field GB_HOST VARCHAR 
+  create-field GB_COUNTRY VARCHAR
   create-field GB_COLLECTION_YEAR INTEGER 
-  create-field GB_COLLECTION_MONTH STRING
+  create-field GB_COLLECTION_MONTH VARCHAR
   create-field GB_COLLECTION_MONTH_DATE INTEGER
   create-field GB_CREATE_DATE DATE
   create-field GB_UPDATE_DATE DATE
@@ -34,3 +34,8 @@ project hcv
   create-module gb-populator -f hcvPopulator.xml
   show-module gb-populator
   run-module gb-populator
+  
+  list-sequences -s local
+  list-sequences -s ncbi-nuccore
+  list-sequences -s ncbi-nuccore sequenceID source.name format
+  

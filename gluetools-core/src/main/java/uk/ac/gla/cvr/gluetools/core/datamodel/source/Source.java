@@ -7,13 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 
 // TODO have a default source which always exists. Command arguments which require a source-name default to this.
-@GlueDataClass(listColumnHeaders = {_Source.NAME_PROPERTY})
+@GlueDataClass(defaultListColumns = {_Source.NAME_PROPERTY})
 public class Source extends _Source {
-
-	@Override
-	public String[] populateListRow() {
-		return new String[]{getName()};
-	}
 
 	public static Map<String, String> pkMap(String projectName, String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
