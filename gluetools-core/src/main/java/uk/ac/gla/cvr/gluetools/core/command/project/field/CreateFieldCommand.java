@@ -17,25 +17,28 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="create-field")
 @CommandClass(description="Create a new data field in this project", 
-	docoptUsages={"<name> <type>"}) 
+	docoptUsages={"<name> <type> [<maxLength>]"}) 
 public class CreateFieldCommand extends ProjectModeCommand {
 
 	private String name;
 	private FieldType type;
+	private Integer maxLength;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		name = PluginUtils.configureStringProperty(configElem, "name", true);
 		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, "type", true);
+		maxLength = PluginUtils.configureIntProperty(configElem, "maxLength", false);
 	}
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(getProjectName(), name));
 		field.setProject(getProject(objContext));
 		field.setType(type.name());
+		field.setMaxLength(maxLength);
 		objContext.commitChanges();
 		return new CreateCommandResult(field.getObjectId());
 	}

@@ -29,7 +29,7 @@ public class ShowModuleCommand extends ProjectModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getProjectName(), moduleName));
 		return new DocumentResult(module.getConfigDoc());
 	}

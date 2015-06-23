@@ -60,7 +60,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		Sequence sequence = GlueDataObject.create(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID));
 		Project project = getProject(objContext);
 		Source source = GlueDataObject.lookup(objContext, Source.class, Source.pkMap(project.getName(), sourceName));

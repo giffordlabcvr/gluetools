@@ -29,7 +29,7 @@ public class CreateSourceCommand extends ProjectModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(getProjectName(), name));
 		source.setProject(getProject(objContext));
 		objContext.commitChanges();

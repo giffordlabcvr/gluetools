@@ -27,7 +27,7 @@ public class DeleteProjectCommand extends Command {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		GlueDataObject.delete(objContext, Project.class, Project.pkMap(projectName));
 		objContext.commitChanges();
 		return CommandResult.OK;

@@ -241,6 +241,14 @@ public class Console implements CommandContextListener
 				console.handleInteractiveLine();
 			}
 		}
+		console.shutdown();
+	}
+
+	private void shutdown() {
+		while(commandContext.peekCommandMode() != CommandMode.ROOT) {
+			commandContext.popCommandMode();
+		}
+		commandContext.popCommandMode();
 	}
 
 	private void runBatchFile(Object fileString) {
@@ -295,7 +303,11 @@ public class Console implements CommandContextListener
 		}
 		Throwable cause = exception.getCause();
 		while(cause != null && cause != exception) {
-			output("Cause: "+cause.getLocalizedMessage());
+			String message = cause.getLocalizedMessage();
+			if(message == null) {
+				message = cause.getClass().getSimpleName();
+			}
+			output("Cause: "+message);
 			if(verboseError) {
 				outputStackTrace(cause);
 			}
@@ -335,13 +347,16 @@ public class Console implements CommandContextListener
 	}
 
 	private void updateCompleter() {
-		List<String> commands = new ArrayList<String>(commandContext.peekCommandMode().getCommandFactory().getElementNames());
-		Collections.sort(commands);
 		if(currentCompleter != null) {
 			reader.removeCompleter(currentCompleter);
 		}
-		currentCompleter = new StringsCompleter(commands);
-		reader.addCompleter(currentCompleter);
+		CommandMode commandMode = commandContext.peekCommandMode();
+		if(commandMode != null) {
+			List<String> commands = new ArrayList<String>(commandMode.getCommandFactory().getElementNames());
+			Collections.sort(commands);
+			currentCompleter = new StringsCompleter(commands);
+			reader.addCompleter(currentCompleter);
+		}
 	}
 	
 	

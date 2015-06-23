@@ -41,7 +41,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-// TODO importers and populators should just be instances of "module".
 // TODO these modules should provide commands to configure some module elements, and run them.
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")

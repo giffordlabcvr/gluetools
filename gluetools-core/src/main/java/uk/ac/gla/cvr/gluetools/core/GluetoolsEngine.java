@@ -1,9 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core;
 
-import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.configuration.server.ServerRuntime;
+import java.net.URL;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.resource.GlueURLStreamHandlerFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 import freemarker.template.Configuration;
 
@@ -19,19 +19,15 @@ public class GluetoolsEngine {
 	}
 	
 	private Configuration freemarkerConfiguration;
-	private ServerRuntime cayenneServerRuntime;
 	
 	private GluetoolsEngine() {
 		freemarkerConfiguration = new Configuration();
-		cayenneServerRuntime = new ServerRuntime("cayenne-gluecore-domain.xml");
+		URL.setURLStreamHandlerFactory(new GlueURLStreamHandlerFactory());
 	}
 	
 	public PluginConfigContext createPluginConfigContext() {
 		return new PluginConfigContext(freemarkerConfiguration);
 	}
 
-	public ObjectContext getCayenneObjectContext() {
-		return cayenneServerRuntime.getContext();
-	}
 
 }

@@ -62,6 +62,25 @@ public class PluginUtils {
 		return XmlUtils.getNodeText(configuredNode);
 	}
 
+	public static Integer configureIntProperty(Element configElem, String propertyName, int defaultValue)  {
+		Integer configured = configureIntProperty(configElem, propertyName, false);
+		if(configured == null) {
+			return defaultValue;
+		}
+		return configured;
+	}
+	
+	public static Integer configureIntProperty(Element configElem, String propertyName, boolean required)  {
+		String configuredString = configureStringProperty(configElem, propertyName, required);
+		if(configuredString == null) { return null; }
+		try {
+			return Integer.parseInt(configuredString);
+		} catch(NumberFormatException nfe) {
+			throw new PluginConfigException(nfe, Code.PROPERTY_FORMAT_ERROR, propertyName, "Not an integer", configuredString);
+		}
+	}
+
+	
 	public static Integer configureInt(Element configElem, String xPathExpression, int defaultValue)  {
 		Integer configured = configureInt(configElem, xPathExpression, false);
 		if(configured == null) {

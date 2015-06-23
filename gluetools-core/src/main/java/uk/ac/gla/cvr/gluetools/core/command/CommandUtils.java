@@ -12,7 +12,7 @@ public abstract class CommandUtils {
 
 	public static <C extends GlueDataObject> ListCommandResult<C> runListCommand(
 			CommandContext cmdContext, Class<C> theClass, SelectQuery query) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		List<?> queryResult = objContext.performQuery(query);
 		List<C> projects = queryResult.stream().map(obj -> theClass.cast(obj)).collect(Collectors.toList());
 		return new ListCommandResult<C>(theClass, projects);

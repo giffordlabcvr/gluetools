@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
@@ -24,16 +25,21 @@ public class CommandContext {
 	private Optional<CommandContextListener> commandContextListener;
 	
 	public void pushCommandMode(CommandMode commandMode) {
+		commandMode.setParentCommandMode(peekCommandMode());
 		commandModeStack.add(0, commandMode);
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 	
 	public void popCommandMode() {
-		commandModeStack.remove(0);
+		CommandMode commandMode = commandModeStack.remove(0);
+		commandMode.exit();
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 	
 	public CommandMode peekCommandMode() {
+		if(commandModeStack.isEmpty()) {
+			return null;
+		}
 		return commandModeStack.get(0);
 	}
 	
@@ -67,4 +73,9 @@ public class CommandContext {
 	public CommandResult executeElem(Element elem) {
 		return commandFromElement(elem).execute(this);
 	}
+	
+	public ObjectContext getObjectContext() {
+		return peekCommandMode().getCayenneServerRuntime().getContext();
+	}
+	
 }

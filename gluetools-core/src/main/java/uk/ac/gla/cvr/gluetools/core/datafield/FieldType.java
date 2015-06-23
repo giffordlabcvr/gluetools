@@ -4,7 +4,7 @@ public enum FieldType {
 
 	BOOLEAN(BooleanField.class), 
 	DATE(DateField.class),
-	STRING(StringField.class),
+	VARCHAR(StringField.class),
 	INTEGER(IntegerField.class);
 	
 	private Class<? extends DataField<?>> fieldClass;

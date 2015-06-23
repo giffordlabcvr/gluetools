@@ -37,7 +37,7 @@ public class ShowSequenceCommand extends ProjectModeCommand {
 	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		Sequence sequence = GlueDataObject.lookup(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID));
 		if(sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
 			try {

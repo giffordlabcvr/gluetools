@@ -70,6 +70,10 @@ public class XmlUtils {
 		return (Element) parentElem.appendChild(parentElem.getOwnerDocument().createElement(elemName));
 	}
 
+	public static Element appendElement(Element parentElem, String namespace, String elemName) {
+		return (Element) parentElem.appendChild(parentElem.getOwnerDocument().createElementNS(namespace, elemName));
+	}
+
 	public static Node appendElementWithText(Element parentElem, String elemName, String text) {
 		Element childElem = appendElement(parentElem, elemName);
 		Text textNode = parentElem.getOwnerDocument().createTextNode(text);

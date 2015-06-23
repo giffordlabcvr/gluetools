@@ -11,12 +11,20 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
  */
 public abstract class _Field extends GlueDataObject {
 
+    public static final String MAX_LENGTH_PROPERTY = "maxLength";
     public static final String NAME_PROPERTY = "name";
     public static final String TYPE_PROPERTY = "type";
     public static final String PROJECT_PROPERTY = "project";
 
     public static final String NAME_PK_COLUMN = "NAME";
     public static final String PROJECT_PK_COLUMN = "PROJECT";
+
+    public void setMaxLength(Integer maxLength) {
+        writeProperty(MAX_LENGTH_PROPERTY, maxLength);
+    }
+    public Integer getMaxLength() {
+        return (Integer)readProperty(MAX_LENGTH_PROPERTY);
+    }
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);

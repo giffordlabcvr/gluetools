@@ -28,9 +28,9 @@ public class ProjectCommand extends Command {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
-		cmdContext.pushCommandMode(new ProjectMode(projectName));
+		cmdContext.pushCommandMode(new ProjectMode(cmdContext, projectName));
 		return CommandResult.OK;
 	}
 

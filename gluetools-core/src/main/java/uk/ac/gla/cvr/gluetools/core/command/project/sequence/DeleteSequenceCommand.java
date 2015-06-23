@@ -30,7 +30,7 @@ public class DeleteSequenceCommand extends ProjectModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		GlueDataObject.delete(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID));
 		objContext.commitChanges();
 		return CommandResult.OK;

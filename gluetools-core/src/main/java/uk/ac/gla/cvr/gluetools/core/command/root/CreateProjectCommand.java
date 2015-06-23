@@ -32,7 +32,7 @@ public class CreateProjectCommand extends Command {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getGluetoolsEngine().getCayenneObjectContext();
+		ObjectContext objContext = cmdContext.getObjectContext();
 		Project newProject = GlueDataObject.create(objContext, Project.class, Project.pkMap(name));
 		description.ifPresent(newProject::setDescription);
 		objContext.commitChanges();
