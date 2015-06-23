@@ -32,7 +32,6 @@ public class CreateSourceCommand extends ProjectModeCommand {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(getProjectName(), name));
 		source.setProject(getProject(objContext));
-		objContext.commitChanges();
 		return new CreateCommandResult(source.getObjectId());
 	}
 

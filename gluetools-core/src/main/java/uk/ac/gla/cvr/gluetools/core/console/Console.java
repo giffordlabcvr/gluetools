@@ -16,6 +16,7 @@ import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
 
+import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.ObjectId;
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
@@ -156,11 +157,13 @@ public class Console implements CommandContextListener
 
 
 	private CommandResult tokensToCommandResult(List<Token> tokens) {
-		List<Token> nonWSTokens = tokens.stream().filter(t -> t.getType() != TokenType.WHITESPACE).collect(Collectors.toList());
-		if(nonWSTokens.isEmpty()) {
+		List<Token> meaningfulTokens = tokens.stream().
+				filter(t -> t.getType() != TokenType.WHITESPACE && t.getType() != TokenType.SINGLELINECOMMENT).
+				collect(Collectors.toList());
+		if(meaningfulTokens.isEmpty()) {
 			return null;
 		}
-		Token firstToken = nonWSTokens.get(0);
+		Token firstToken = meaningfulTokens.get(0);
 		String identifier = firstToken.render();
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.classForElementName(identifier);
@@ -169,7 +172,7 @@ public class Console implements CommandContextListener
 		}
 		
 		String docoptUsage = CommandUsage.docoptStringForCmdClass(commandClass);
-		List<String> argStrings = nonWSTokens.subList(1, nonWSTokens.size()).stream().
+		List<String> argStrings = meaningfulTokens.subList(1, meaningfulTokens.size()).stream().
 				map(t -> t.render()).collect(Collectors.toList());
 		Map<String, Object> docoptMap;
 		try {
@@ -191,7 +194,12 @@ public class Console implements CommandContextListener
 				throw pce;
 			}
 		}
-		return command.execute(commandContext);
+		ObjectContext context = commandContext.peekCommandMode().getCayenneServerRuntime().getContext();
+		commandContext.setObjectContext(context);
+		CommandResult commandResult = command.execute(commandContext);
+		context.commitChanges();
+		// no need to rollback changes as we will throw the context away.
+		return commandResult;
 	}
 
 	private Element elementFromDocoptMap(String identifier, Map<String, Object> docoptMap) {

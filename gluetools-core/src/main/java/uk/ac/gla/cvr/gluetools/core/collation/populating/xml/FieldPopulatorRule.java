@@ -6,7 +6,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetSequenceFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -54,14 +56,9 @@ public class FieldPopulatorRule extends XmlPopulatorRule implements Plugin {
 	}
 
 	
-	public void execute(CollatedSequence collatedSequence, Node node) {
+	public void execute(CommandContext cmdContext, 
+			String sourceName, String sequenceID, Node node) {
 		String dataFieldName = getDataFieldName();
-		if(!collatedSequence.getOwningProject().hasDataField(dataFieldName)) {
-			return;
-		}
-		if(collatedSequence.hasFieldValue(dataFieldName)) {
-			return;
-		}
 		String selectedText;
 		try {
 			selectedText = XmlUtils.getNodeText(node);
@@ -71,7 +68,12 @@ public class FieldPopulatorRule extends XmlPopulatorRule implements Plugin {
 		if(selectedText != null) {
 			String extractAndConvertResult = extractAndConvert(selectedText);
 			if(extractAndConvertResult != null) {
-				collatedSequence.setDataFieldValue(dataFieldName, extractAndConvertResult);
+				Element setSeqFieldElem = CommandUsage.docElemForCmdClass(SetSequenceFieldCommand.class);
+				XmlUtils.appendElementWithText(setSeqFieldElem, "sourceName", sourceName);
+				XmlUtils.appendElementWithText(setSeqFieldElem, "sequenceID", sequenceID);
+				XmlUtils.appendElementWithText(setSeqFieldElem, "fieldName", dataFieldName);
+				XmlUtils.appendElementWithText(setSeqFieldElem, "fieldValue", extractAndConvertResult);
+				cmdContext.executeElem(setSeqFieldElem);
 			}
 		}
 	}

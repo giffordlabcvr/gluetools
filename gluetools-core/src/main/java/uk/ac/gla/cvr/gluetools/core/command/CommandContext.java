@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 public class CommandContext {
 	
 	private GluetoolsEngine gluetoolsEngine;
+	private ObjectContext objectContext;
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine) {
 		super();
@@ -73,9 +74,17 @@ public class CommandContext {
 	public CommandResult executeElem(Element elem) {
 		return commandFromElement(elem).execute(this);
 	}
-	
+
 	public ObjectContext getObjectContext() {
-		return peekCommandMode().getCayenneServerRuntime().getContext();
+		return objectContext;
 	}
+
+	/**
+	 * commands should not use this.
+	 */
+	public void setObjectContext(ObjectContext objectContext) {
+		this.objectContext = objectContext;
+	}
+	
 	
 }

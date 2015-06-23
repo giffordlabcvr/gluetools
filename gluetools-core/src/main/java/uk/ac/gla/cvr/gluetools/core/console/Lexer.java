@@ -10,8 +10,12 @@ public class Lexer {
 
 	public static enum TokenType {
 		// Token types cannot have underscores
-//		IDENTIFIER("[a-zA-Z][a-zA-Z0-9_\\-]*"),
-//		OPTION("-?-[a-zA-Z][a-zA-Z0-9_\\-]*"),
+		SINGLELINECOMMENT("#.*") {
+			@Override
+			protected String render(String data) {
+				return "";
+			}
+		},
 		DOUBLEQUOTED("\"(?:[^\"\\\\]|\\\\.)*\"") {
 			@Override
 			protected String render(String data) {

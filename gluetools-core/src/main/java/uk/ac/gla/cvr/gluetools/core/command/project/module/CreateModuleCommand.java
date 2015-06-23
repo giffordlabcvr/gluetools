@@ -46,7 +46,6 @@ public class CreateModuleCommand extends ProjectModeCommand {
 		} catch(Exception e) {
 			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, file);
 		}
-		objContext.commitChanges();
 		return new CreateCommandResult(module.getObjectId());
 	}
 

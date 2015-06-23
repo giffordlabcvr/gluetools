@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.datafield.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
 

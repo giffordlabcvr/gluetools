@@ -30,7 +30,7 @@ public class DeleteFieldCommand extends ProjectModeCommand {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		GlueDataObject.delete(objContext, Field.class, Field.pkMap(getProjectName(), fieldName));
-		objContext.commitChanges();
+		int todo; // possibly run a merge operation, then re-establish server runtime.
 		return CommandResult.OK;
 	}
 

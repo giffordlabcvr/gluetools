@@ -1,36 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.genbank;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
-import uk.ac.gla.cvr.gluetools.core.datafield.BooleanField;
-import uk.ac.gla.cvr.gluetools.core.datafield.DataField;
-import uk.ac.gla.cvr.gluetools.core.datafield.DateField;
-import uk.ac.gla.cvr.gluetools.core.datafield.IntegerField;
-import uk.ac.gla.cvr.gluetools.core.datafield.StringField;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
-import uk.ac.gla.cvr.gluetools.core.project.Project;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
-import freemarker.template.Configuration;
 
 
 public class TestXmlPopulator {
-	
+	/*
 	
 	String 
 		GB_GI_NUMBER = "GB_GI_NUMBER",
@@ -61,26 +34,26 @@ public class TestXmlPopulator {
 		String populatorRulesFile = "hcvRuleSet.xml";
 		
 		
-		List<DataField<?>> fields = Arrays.asList(new DataField<?>[]{
-				new StringField(GB_GI_NUMBER),
-				new StringField(GB_PRIMARY_ACCESSION),
-				new StringField(GB_ACCESSION_VERSION),
-				new StringField(GB_LOCUS),
-				new IntegerField(GB_LENGTH),
-				new StringField(GB_GENOTYPE), 
-				new StringField(GB_SUBTYPE),
-				new BooleanField(GB_RECOMBINANT),
-				new BooleanField(GB_PATENT_RELATED),
-				new StringField(GB_ORGANISM),
-				new StringField(GB_ISOLATE),
-				new StringField(GB_TAXONOMY),
-				new StringField(GB_HOST),
-				new StringField(GB_COUNTRY),
-				new IntegerField(GB_COLLECTION_YEAR),
-				new StringField(GB_COLLECTION_MONTH),
-				new IntegerField(GB_COLLECTION_MONTH_DAY),
-				new DateField(GB_CREATE_DATE),
-				new DateField(GB_UPDATE_DATE),
+		List<FieldTranslator<?>> fields = Arrays.asList(new FieldTranslator<?>[]{
+				new StringFieldTranslator(GB_GI_NUMBER),
+				new StringFieldTranslator(GB_PRIMARY_ACCESSION),
+				new StringFieldTranslator(GB_ACCESSION_VERSION),
+				new StringFieldTranslator(GB_LOCUS),
+				new IntegerFieldTranslator(GB_LENGTH),
+				new StringFieldTranslator(GB_GENOTYPE), 
+				new StringFieldTranslator(GB_SUBTYPE),
+				new BooleanFieldTranslator(GB_RECOMBINANT),
+				new BooleanFieldTranslator(GB_PATENT_RELATED),
+				new StringFieldTranslator(GB_ORGANISM),
+				new StringFieldTranslator(GB_ISOLATE),
+				new StringFieldTranslator(GB_TAXONOMY),
+				new StringFieldTranslator(GB_HOST),
+				new StringFieldTranslator(GB_COUNTRY),
+				new IntegerFieldTranslator(GB_COLLECTION_YEAR),
+				new StringFieldTranslator(GB_COLLECTION_MONTH),
+				new IntegerFieldTranslator(GB_COLLECTION_MONTH_DAY),
+				new DateFieldTranslator(GB_CREATE_DATE),
+				new DateFieldTranslator(GB_UPDATE_DATE),
 				
 		});
 		Project project = initProjectFromFields(fields);
@@ -152,7 +125,7 @@ public class TestXmlPopulator {
 		
 	}
 
-	private Project initProjectFromFields(List<DataField<?>> fields) {
+	private Project initProjectFromFields(List<FieldTranslator<?>> fields) {
 		Project project = new Project();
 		fields.forEach(f -> {project.addDataField(f);});
 		return project;
@@ -200,5 +173,5 @@ public class TestXmlPopulator {
 		System.out.println(XmlUtils.getXPathStrings(document, "/dataFieldPopulator/*[self::rules|self::foo]/xPathNodes/xPathExpression/text()"));
 	}
 	
-	
+	*/
 }

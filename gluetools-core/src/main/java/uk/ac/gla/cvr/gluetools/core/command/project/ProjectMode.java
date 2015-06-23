@@ -5,6 +5,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+
+import org.apache.cayenne.access.dbsync.CreateIfNoSchemaStrategy;
+import org.apache.cayenne.access.dbsync.SchemaUpdateStrategy;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -26,8 +31,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils.XmlNamespaceContext;
 
 public class ProjectMode extends CommandMode {
+
+	public static final String DYNAMIC_SEQUENCE_TABLE_PREFIX = "DYNAMIC_SEQUENCE_";
 
 	private static String CAYENNE_NS = "http://cayenne.apache.org/schema/3.0/modelMap";
 	
@@ -77,37 +85,55 @@ public class ProjectMode extends CommandMode {
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}
-		
-		Element dataMapElem = cayenneMapDocument.getDocumentElement();
-		Element firstDBEntityElem = XmlUtils.findChildElements(dataMapElem, "db-entity").get(0);
-		Element newDBEntityElem = cayenneMapDocument.createElementNS(CAYENNE_NS, "db-entity");
-		dataMapElem.insertBefore(newDBEntityElem, firstDBEntityElem);
-		newDBEntityElem.setAttribute("name", "SEQ_FIELD_VALUES_"+projectName);
-		Element sourceElem = XmlUtils.appendElement(newDBEntityElem, CAYENNE_NS, "db-attribute");
-		sourceElem.setAttribute("name", "SOURCE");
-		sourceElem.setAttribute("type", "VARCHAR");
-		sourceElem.setAttribute("length", "50");
-		sourceElem.setAttribute("isMandatory", "true");
-		sourceElem.setAttribute("isPrimaryKey", "true");
-		Element seqIdElem = XmlUtils.appendElement(newDBEntityElem, CAYENNE_NS, "db-attribute");
-		seqIdElem.setAttribute("name", "SEQUENCE_ID");
-		seqIdElem.setAttribute("type", "VARCHAR");
-		seqIdElem.setAttribute("length", "50");
-		seqIdElem.setAttribute("isMandatory", "true");
-		seqIdElem.setAttribute("isPrimaryKey", "true");
-		fields.forEach(f -> {
-			Element dbAttributeElem = XmlUtils.appendElement(newDBEntityElem, CAYENNE_NS, "db-attribute");
-			dbAttributeElem.setAttribute("name", f.getName());
-			dbAttributeElem.setAttribute("type", f.getFieldType().name());
-			Optional.ofNullable(f.getMaxLength()).ifPresent(
-					len -> { dbAttributeElem.setAttribute("length", Integer.toString(len)); });
-		});
+		String projectSequenceDbEntityName = DYNAMIC_SEQUENCE_TABLE_PREFIX+projectName;
+		XPath xPath = XmlUtils.createXPathEngine();
+		XmlNamespaceContext namespaceContext = new XmlUtils.XmlNamespaceContext();
+		namespaceContext.addNamespace("cay", CAYENNE_NS);
+		xPath.setNamespaceContext(namespaceContext);
+		{
+			XPathExpression xPathExpression = 
+					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='SEQUENCE']");
+			Element sequenceTableElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			sequenceTableElem.setAttribute("name", projectSequenceDbEntityName);
+			fields.forEach(f -> {
+				Element dbAttributeElem = XmlUtils.appendElement(sequenceTableElem, CAYENNE_NS, "db-attribute");
+				dbAttributeElem.setAttribute("name", f.getName());
+				dbAttributeElem.setAttribute("type", f.getFieldType().name());
+				Optional.ofNullable(f.getMaxLength()).ifPresent(
+						len -> { dbAttributeElem.setAttribute("length", Integer.toString(len)); });
+			});
+		}
+		{
+			XPathExpression xPathExpression = 
+					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='Sequence']");
+			Element sequenceObjElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			sequenceObjElem.setAttribute("dbEntityName", projectSequenceDbEntityName);
+			fields.forEach(f -> {
+				Element objAttributeElem = XmlUtils.appendElement(sequenceObjElem, CAYENNE_NS, "obj-attribute");
+				objAttributeElem.setAttribute("name", f.getName());
+				objAttributeElem.setAttribute("db-attribute-path", f.getName());
+				objAttributeElem.setAttribute("type", f.getFieldType().javaType());
+			});
+		}
+		{
+			XPathExpression xPathExpression = 
+					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship[@name='sequences' and @source='SOURCE']");
+			Element dbRelationshipElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			dbRelationshipElem.setAttribute("target", projectSequenceDbEntityName);
+		}
+		{
+			XPathExpression xPathExpression = 
+					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship[@name='source' and @source='SEQUENCE']");
+			Element dbRelationshipElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			dbRelationshipElem.setAttribute("source", projectSequenceDbEntityName);
+		}
+
 		
 		GlueResourceMap.getInstance().put("/"+projectDomainName, XmlUtils.prettyPrint(cayenneDomainDocument));
 		GlueResourceMap.getInstance().put("/"+projectMapName+".map.xml", XmlUtils.prettyPrint(cayenneMapDocument));
 
-//		XmlUtils.prettyPrint(cayenneDomainDocument, System.out);
-//		XmlUtils.prettyPrint(cayenneMapDocument, System.out);
+		XmlUtils.prettyPrint(cayenneDomainDocument, System.out);
+		XmlUtils.prettyPrint(cayenneMapDocument, System.out);
 
 		ServerRuntime projectRuntime = new ServerRuntime(
 					    projectDomainName, 
@@ -116,6 +142,9 @@ public class ProjectMode extends CommandMode {
 		// ensure it is working by getting the obj context.
 		projectRuntime.getContext();
 		setCayenneServerRuntime(projectRuntime);
+		
+		
+		SchemaUpdateStrategy schemaUpdateStrategy = new CreateIfNoSchemaStrategy();
 	}
 
 	

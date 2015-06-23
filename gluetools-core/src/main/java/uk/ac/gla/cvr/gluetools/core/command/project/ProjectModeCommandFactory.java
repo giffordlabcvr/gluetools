@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.DeleteSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ListSequencesCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetSequenceFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.source.CreateSourceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.source.DeleteSourceCommand;
@@ -45,6 +46,7 @@ public class ProjectModeCommandFactory extends CommandFactory {
 		registerPluginClass(DeleteSequenceCommand.class);
 		registerPluginClass(ListSequencesCommand.class);
 		registerPluginClass(ShowSequenceCommand.class);
+		registerPluginClass(SetSequenceFieldCommand.class);
 
 	}
 	

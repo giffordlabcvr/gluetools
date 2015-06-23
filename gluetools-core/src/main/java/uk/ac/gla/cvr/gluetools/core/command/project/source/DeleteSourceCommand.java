@@ -30,7 +30,6 @@ public class DeleteSourceCommand extends ProjectModeCommand {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		GlueDataObject.delete(objContext, Source.class, Source.pkMap(getProjectName(), sourceName));
-		objContext.commitChanges();
 		return CommandResult.OK;
 	}
 

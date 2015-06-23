@@ -6,11 +6,10 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class XmlPopulatorException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		
-		INCORRECT_VALUE_FORMAT("input", "fieldClass", "fieldName", "errorTxt"), 
-		NO_SUCH_FIELD("fieldName", "projectID"), 
+		INCOMPATIBLE_SEQUENCE_FORMAT("pkMap", "incompatibleFormat"), 
 		POPULATOR_RULE_FAILED("errorTxt"), 
-		POPULATOR_CHILD_RULE_FAILED("errorTxt");
+		POPULATOR_CHILD_RULE_FAILED("errorTxt"), 
+		SEQUENCE_INCORRECTLY_FORMATTED("pkMap", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

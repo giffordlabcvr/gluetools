@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -9,9 +8,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -19,7 +17,8 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 @PluginClass(elemName="show-sequence")
 @CommandClass(description="Show the data for a sequence", 
-	docoptUsages={"<sourceName> <sequenceID>"}) 
+	docoptUsages={"[-s <sourceName>] <sequenceID>"},
+	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"}) 
 public class ShowSequenceCommand extends ProjectModeCommand {
 
 	private String sourceName;
@@ -28,7 +27,7 @@ public class ShowSequenceCommand extends ProjectModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", true);
+		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", false);
 		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", true);
 	}
 
@@ -37,8 +36,7 @@ public class ShowSequenceCommand extends ProjectModeCommand {
 	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Sequence sequence = GlueDataObject.lookup(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID));
+		Sequence sequence = lookupSequence(cmdContext, sourceName, sequenceID, false);
 		if(sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
 			try {
 				return new DocumentResult(XmlUtils.documentFromBytes(sequence.getData()));

@@ -7,9 +7,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -48,6 +52,7 @@ public class XmlUtils {
 
 	private static DocumentBuilder getDocumentBuilder() {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		dbFactory.setNamespaceAware(true);
 		DocumentBuilder dBuilder;
 		try {
 			dBuilder = dbFactory.newDocumentBuilder();
@@ -250,6 +255,42 @@ public class XmlUtils {
 		}
 	}
 
+	public static XPathExpression compileXPathExpression(XPath xPath, String expressionString) {
+		try {
+			return xPath.compile(expressionString);
+		} catch(XPathExpressionException xpee) {
+			throw new RuntimeException(xpee);
+		}
+	}
+	
+	public static class XmlNamespaceContext implements NamespaceContext {
+		private Map<String, String> prefixToNamespaceUri = new LinkedHashMap<String, String>();
+		private Map<String, String> namespaceUriToPrefix = new LinkedHashMap<String, String>();
+		
+
+		@Override
+		public String getNamespaceURI(String prefix) {
+			return prefixToNamespaceUri.get(prefix);
+		}
+
+		@Override
+		public String getPrefix(String namespaceURI) {
+			return namespaceUriToPrefix.get(namespaceURI);
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Iterator getPrefixes(String namespaceURI) {
+			return prefixToNamespaceUri.keySet().iterator();
+		}
+		
+		public void addNamespace(String prefix, String namespaceURI) {
+			prefixToNamespaceUri.put(prefix, namespaceURI);
+			namespaceUriToPrefix.put(namespaceURI, prefix);
+		}
+		
+	}
+	
 	
 	
 		/*

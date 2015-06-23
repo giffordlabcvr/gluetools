@@ -7,7 +7,7 @@ import javax.xml.xpath.XPathExpression;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import uk.ac.gla.cvr.gluetools.core.collation.sequence.CollatedSequence;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
@@ -58,20 +58,21 @@ public abstract class NodeSelectorRule extends XmlPopulatorRule {
 		childRules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
-	protected void executeChildRules(CollatedSequence collatedSequence, Node selectedNode) {
+	protected void executeChildRules(CommandContext cmdContext, String sourceName, String sequenceID, Node selectedNode) {
 		childRules.forEach(rule -> {
 			try {
-				rule.execute(collatedSequence, selectedNode);
+				rule.execute(cmdContext, sourceName, sequenceID, selectedNode);
 			} catch(Exception e) {
 				throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_CHILD_RULE_FAILED, e.getLocalizedMessage());
 			}
 		});
 	}
 
-	public final void execute(CollatedSequence collatedSequence, Node node) {
+	public final void execute(CommandContext cmdContext, 
+			String sourceName, String sequenceID, Node node) {
 		List<Node> selectedNodes = selectNodes(node);
 		selectedNodes.forEach(selectedNode ->
-			executeChildRules(collatedSequence, selectedNode));
+			executeChildRules(cmdContext, sourceName, sequenceID, selectedNode));
 	}
 
 }

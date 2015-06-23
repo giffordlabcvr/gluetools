@@ -35,7 +35,6 @@ public class CreateProjectCommand extends Command {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project newProject = GlueDataObject.create(objContext, Project.class, Project.pkMap(name));
 		description.ifPresent(newProject::setDescription);
-		objContext.commitChanges();
 		return new CreateCommandResult(newProject.getObjectId());
 	}
 

@@ -1,12 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Document;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
@@ -20,10 +18,10 @@ public class Sequence extends _Sequence {
 	private SequenceFormat sequenceFormat;
 	private Document sequenceDoc;
 	
-	public static Map<String, String> pkMap(String sourceName, String sourceId) {
+	public static Map<String, String> pkMap(String sourceName, String sequenceID) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
 		idMap.put(SOURCE_PK_COLUMN, sourceName);
-		idMap.put(SEQUENCE_ID_PK_COLUMN, sourceId);
+		idMap.put(SEQUENCE_ID_PK_COLUMN, sequenceID);
 		return idMap;
 	}
 

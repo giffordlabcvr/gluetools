@@ -76,7 +76,6 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 		} catch(Exception e) {
 			throw new SequenceException(e, Code.CREATE_FROM_FILE_FAILED, file);
 		}
-		objContext.commitChanges();
 		return new CreateCommandResult(sequence.getObjectId());
 	}
 
