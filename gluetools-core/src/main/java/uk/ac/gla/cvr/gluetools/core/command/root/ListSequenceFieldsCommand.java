@@ -1,22 +1,23 @@
 package uk.ac.gla.cvr.gluetools.core.command.root;
 
-import org.apache.cayenne.ObjectContext;
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="project")
-@CommandClass(description="Enter a project command mode", 
+@PluginClass(elemName="list-sequence-fields")
+@CommandClass(description="List sequence fields in a project", 
 	docoptUsages={"<projectName>"}) 
-public class ProjectCommand extends RootModeCommand {
+public class ListSequenceFieldsCommand extends RootModeCommand {
 
 	private String projectName;
 	
@@ -24,13 +25,11 @@ public class ProjectCommand extends RootModeCommand {
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
 	}
-
+	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
-		cmdContext.pushCommandMode(new ProjectMode(cmdContext, projectName));
-		return CommandResult.OK;
+		Expression exp = ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, projectName);
+		return CommandUtils.runListCommand(cmdContext, Field.class, new SelectQuery(Field.class, exp));
 	}
 
 }

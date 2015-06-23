@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.source;
 
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -19,8 +17,7 @@ public class ListSourcesCommand extends ProjectModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		Expression exp = ExpressionFactory.matchExp(Source.PROJECT_PROPERTY, getProjectName());
-		return CommandUtils.runListCommand(cmdContext, Source.class, new SelectQuery(Source.class, exp));
+		return CommandUtils.runListCommand(cmdContext, Source.class, new SelectQuery(Source.class));
 	}
 
 }

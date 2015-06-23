@@ -26,9 +26,8 @@ public class Module extends _Module {
 	private Document configDoc = null;
 	private ModulePlugin modulePlugin = null;
 	
-	public static Map<String, String> pkMap(String projectName, String name) {
+	public static Map<String, String> pkMap(String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
-		idMap.put(PROJECT_PK_COLUMN, projectName);
 		idMap.put(NAME_PK_COLUMN, name);
 		return idMap;
 	}

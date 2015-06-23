@@ -30,7 +30,7 @@ public class RunModuleCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getProjectName(), moduleName));
+		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(moduleName));
 		ModulePlugin modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine().createPluginConfigContext());
 		return modulePlugin.runModule(cmdContext);
 	}

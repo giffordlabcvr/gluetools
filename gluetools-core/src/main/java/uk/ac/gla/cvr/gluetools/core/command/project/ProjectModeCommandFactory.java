@@ -1,9 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.project.field.CreateFieldCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.field.DeleteFieldCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.field.ListFieldsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.CreateModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.DeleteModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ListModulesCommand;
@@ -37,10 +34,6 @@ public class ProjectModeCommandFactory extends CommandFactory {
 		registerPluginClass(ListModulesCommand.class);
 		registerPluginClass(ShowModuleCommand.class);
 		registerPluginClass(RunModuleCommand.class);
-
-		registerPluginClass(CreateFieldCommand.class);
-		registerPluginClass(DeleteFieldCommand.class);
-		registerPluginClass(ListFieldsCommand.class);
 
 		registerPluginClass(CreateSequenceCommand.class);
 		registerPluginClass(DeleteSequenceCommand.class);

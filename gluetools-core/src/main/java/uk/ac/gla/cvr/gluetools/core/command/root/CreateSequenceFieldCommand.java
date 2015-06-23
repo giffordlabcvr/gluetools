@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.field;
+package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -7,7 +7,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
@@ -15,28 +14,33 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="create-field")
-@CommandClass(description="Create a new data field in this project", 
-	docoptUsages={"<name> <type> [<maxLength>]"}) 
-public class CreateFieldCommand extends ProjectModeCommand {
+@PluginClass(elemName="create-sequence-field")
+@CommandClass(description="Create a new sequence field in a project", 
+	docoptUsages={"<projectName> <fieldName> <type> [<maxLength>]"}) 
+public class CreateSequenceFieldCommand extends RootModeCommand {
 
-	private String name;
+	private String projectName;
+	private String fieldName;
 	private FieldType type;
 	private Integer maxLength;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		name = PluginUtils.configureStringProperty(configElem, "name", true);
+		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
+		fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
 		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, "type", true);
 		maxLength = PluginUtils.configureIntProperty(configElem, "maxLength", false);
+		if(type == FieldType.VARCHAR && maxLength == null) {
+			maxLength = 50;
+		}
 	}
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(getProjectName(), name));
-		field.setProject(getProject(objContext));
+		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(projectName, fieldName));
+		field.setProject(getProject(objContext, projectName));
 		field.setType(type.name());
 		field.setMaxLength(maxLength);
 		int todo; // possibly run a merge operation, then re-establish server runtime.

@@ -4,14 +4,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-
-
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
-
-
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -19,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
@@ -54,12 +49,12 @@ public class ListSequencesCommand extends ProjectModeCommand {
 	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		Expression exp;
+		SelectQuery selectQuery;
 		if(sourceName != null) {
-			exp = ExpressionFactory.matchExp(_Sequence.SOURCE_PROPERTY, sourceName);
+			Expression exp = ExpressionFactory.matchExp(_Sequence.SOURCE_PROPERTY, sourceName);
+			selectQuery = new SelectQuery(Sequence.class, exp);
 		} else {
-			exp = ExpressionFactory.matchExp(_Sequence.SOURCE_PROPERTY+"."+
-					_Source.PROJECT_PROPERTY, getProjectName());
+			selectQuery = new SelectQuery(Sequence.class);
 		}
 		List<String> validFieldNamesList = super.getValidSequenceFieldNames(cmdContext);
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
@@ -68,7 +63,7 @@ public class ListSequencesCommand extends ProjectModeCommand {
 				throw new SequenceException(Code.INVALID_FIELD, f, validFieldNamesList);
 			}
 		});
-		return CommandUtils.runListCommand(cmdContext, Sequence.class, new SelectQuery(Sequence.class, exp), 
+		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, 
 				fieldNames);
 	}
 

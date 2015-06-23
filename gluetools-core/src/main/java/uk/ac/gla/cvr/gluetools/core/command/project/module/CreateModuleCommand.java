@@ -36,8 +36,7 @@ public class CreateModuleCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.create(objContext, Module.class, Module.pkMap(getProjectName(), name));
-		module.setProject(getProject(objContext));
+		Module module = GlueDataObject.create(objContext, Module.class, Module.pkMap(name));
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		byte[] config = consoleCmdContext.loadBytes(file);
 		module.setConfig(config);

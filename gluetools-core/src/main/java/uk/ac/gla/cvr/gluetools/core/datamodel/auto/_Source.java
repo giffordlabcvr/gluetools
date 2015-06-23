@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.auto;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 /**
@@ -15,11 +14,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 public abstract class _Source extends GlueDataObject {
 
     public static final String NAME_PROPERTY = "name";
-    public static final String PROJECT_PROPERTY = "project";
     public static final String SEQUENCES_PROPERTY = "sequences";
 
     public static final String NAME_PK_COLUMN = "NAME";
-    public static final String PROJECT_PK_COLUMN = "PROJECT";
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);
@@ -27,15 +24,6 @@ public abstract class _Source extends GlueDataObject {
     public String getName() {
         return (String)readProperty(NAME_PROPERTY);
     }
-
-    public void setProject(Project project) {
-        setToOneTarget(PROJECT_PROPERTY, project, true);
-    }
-
-    public Project getProject() {
-        return (Project)readProperty(PROJECT_PROPERTY);
-    }
-
 
     public void addToSequences(Sequence obj) {
         addToManyTarget(SEQUENCES_PROPERTY, obj, true);

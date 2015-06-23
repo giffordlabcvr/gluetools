@@ -10,9 +10,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 @GlueDataClass(defaultListColumns = {_Source.NAME_PROPERTY})
 public class Source extends _Source {
 
-	public static Map<String, String> pkMap(String projectName, String name) {
+	public static Map<String, String> pkMap(String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
-		idMap.put(PROJECT_PK_COLUMN, projectName);
 		idMap.put(NAME_PK_COLUMN, name);
 		return idMap;
 	}

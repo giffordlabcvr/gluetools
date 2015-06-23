@@ -7,8 +7,8 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -49,8 +49,7 @@ public class SetSequenceFieldCommand extends ProjectModeCommand {
 		if(!customFieldNames.contains(fieldName)) {
 			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);
 		}
-		Field field = GlueDataObject.lookup(cmdContext.getObjectContext(), 
-				Field.class, Field.pkMap(getProjectName(), fieldName));
+		Field field = getProjectMode(cmdContext).getSequenceField(fieldName);
 		Object newValue = field.getFieldType().getFieldTranslator().valueFromString(fieldValue);
 		sequence.writeProperty(fieldName, newValue);
 		return CommandResult.OK;

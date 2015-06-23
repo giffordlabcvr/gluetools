@@ -8,8 +8,8 @@ import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 
 public abstract class CommandMode {
 	
-	public static String CAYENNE_DOMAIN_RESOURCE = "cayenne-gluecore-domain.xml";
-	public static String CAYENNE_MAP_RESOURCE = "gluecore-map.map.xml";
+	public static String CORE_DOMAIN_RESOURCE = "cayenne-gluecore-domain.xml";
+	public static String CORE_MAP_RESOURCE = "gluecore-map.map.xml";
 	
 	private ServerRuntime cayenneServerRuntime;
 	private CommandMode parentCommandMode;

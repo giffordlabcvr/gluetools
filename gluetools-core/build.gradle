@@ -51,10 +51,12 @@ configurations {
 
 // uses cayenne to generate the datamodel classes.
 task datamodel(dependsOn: 'checkCayenneTools') << {
-	String mapFile = 'src/main/resources/gluecore-map.map.xml'
 	String destDir = 'src/main/java'
 	String superPkg = 'uk.ac.gla.cvr.gluetools.core.datamodel.auto'
-	ant.cgen(map: mapFile, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+	String mapFile1 = 'src/main/resources/gluecore-map.map.xml'
+	ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+	String mapFile2 = 'src/main/resources/glueproject-map.map.xml'
+	ant.cgen(map: mapFile2, destDir: destDir, usepkgpath: true, superpkg: superPkg)
 }
 
 dependencies {
