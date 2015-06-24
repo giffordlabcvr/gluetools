@@ -1,8 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 

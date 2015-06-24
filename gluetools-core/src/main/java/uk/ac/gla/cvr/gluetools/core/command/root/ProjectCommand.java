@@ -9,13 +9,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="project")
-@CommandClass(description="Enter a project command mode", 
-	docoptUsages={"<projectName>"}) 
+
+@CommandClass( 
+	commandWords={"project"},
+	docoptUsages={"<projectName>"},
+	description="Enter a project command mode") 
 public class ProjectCommand extends RootModeCommand {
 
 	private String projectName;

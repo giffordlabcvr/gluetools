@@ -7,11 +7,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="list-projects")
-@CommandClass(description="List all projects", 
-	docoptUsages={""}) 
+
+@CommandClass( 
+	commandWords={"list", "projects"}, 
+	docoptUsages={""},
+	description="List all projects") 
 public class ListProjectsCommand extends RootModeCommand {
 
 	@Override

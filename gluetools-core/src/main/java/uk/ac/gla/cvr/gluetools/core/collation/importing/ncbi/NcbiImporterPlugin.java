@@ -341,7 +341,7 @@ public class NcbiImporterPlugin implements ModulePlugin {
 			// character encoding presumably not important here.
 			String base64String = new String(Base64.getEncoder().encode(sequence.data));
 			XmlUtils.appendElementWithText(createSeqElem, "base64", base64String);
-			cmdContext.executeElem(createSeqElem);
+			cmdContext.executeElem(createSeqElem.getOwnerDocument().getDocumentElement());
 		}
 		return CommandResult.OK;
 	}

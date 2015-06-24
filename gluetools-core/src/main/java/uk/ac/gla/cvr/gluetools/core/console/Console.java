@@ -75,6 +75,7 @@ public class Console implements CommandContextListener
 	private Integer batchLine = null;
 	private boolean verboseError = false;
 	private boolean interactiveAfterBatch = false;
+	private boolean showCmdXml = false;
 	
 	private Console() throws IOException {
 		this.reader = new ConsoleReader();
@@ -163,31 +164,33 @@ public class Console implements CommandContextListener
 		if(meaningfulTokens.isEmpty()) {
 			return null;
 		}
-		Token firstToken = meaningfulTokens.get(0);
-		String identifier = firstToken.render();
+		List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
-		Class<? extends Command> commandClass = commandFactory.classForElementName(identifier);
+		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(tokenStrings);
 		if(commandClass == null) {
-			throw new ConsoleException(Code.UNKNOWN_COMMAND, identifier, commandContext.getModePath());
+			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
 		}
 		
-		String docoptUsage = CommandUsage.docoptStringForCmdClass(commandClass);
-		List<String> argStrings = meaningfulTokens.subList(1, meaningfulTokens.size()).stream().
-				map(t -> t.render()).collect(Collectors.toList());
+		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
+		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
+		List<String> argStrings = tokenStrings.subList(commandWords.length, tokenStrings.size());
 		Map<String, Object> docoptMap;
 		try {
-			docoptMap = new Docopt(docoptUsage).withHelp(false).withExit(false).parse(argStrings);
+			docoptMap = new Docopt(docoptUsageSingleWord).withHelp(false).withExit(false).parse(argStrings);
 		} catch(DocoptExitException dee) {
-			throw new ConsoleException(dee, Code.COMMAND_USAGE_ERROR, docoptUsage.trim());
+			throw new ConsoleException(Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, false).trim());
 		}
-		Element element = elementFromDocoptMap(identifier, docoptMap);
+		Element element = buildCommandElement(commandClass, docoptMap);
+		if(showCmdXml) {
+			output(new String(XmlUtils.prettyPrint(element.getOwnerDocument())));
+		}
 		Command command;
 		try {
 			command = commandContext.commandFromElement(element);
 		} catch(PluginConfigException pce) {
 			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
 					pce.getErrorArgs().length >= 3) {
-				throw new ConsoleException(pce, Code.ARGUMENT_FORMAT_ERROR,
+				throw new ConsoleException(Code.ARGUMENT_FORMAT_ERROR,
 						pce.getErrorArgs()[0].toString(),
 						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
 			} else {
@@ -202,9 +205,8 @@ public class Console implements CommandContextListener
 		return commandResult;
 	}
 
-	private Element elementFromDocoptMap(String identifier, Map<String, Object> docoptMap) {
-		Document document = XmlUtils.newDocument();
-		Element rootElem = (Element) document.appendChild(document.createElement(identifier));
+	private Element buildCommandElement(Class<? extends Command> commandClass, Map<String, Object> docoptMap) {
+		Element docElem = CommandUsage.docElemForCmdClass(commandClass);
 		docoptMap.forEach((key, value) -> {
 			if(value == null) { return; }
 			String tagName;
@@ -219,15 +221,13 @@ public class Console implements CommandContextListener
 			}
 			if(value instanceof Collection<?>) {
 				((Collection <?>) value).forEach(item -> {
-					Element itemElem = (Element) rootElem.appendChild(document.createElement(tagName));
-					itemElem.appendChild(document.createTextNode(item.toString()));
+					XmlUtils.appendElementWithText(docElem, tagName, item.toString());
 				});
 			} else {
-				Element valueElem = (Element) rootElem.appendChild(document.createElement(tagName));
-				valueElem.appendChild(document.createTextNode(value.toString()));
+				XmlUtils.appendElementWithText(docElem, tagName, value.toString());
 			}
 		});
-		return rootElem;
+		return docElem.getOwnerDocument().getDocumentElement();
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -244,6 +244,10 @@ public class Console implements CommandContextListener
 		Object interactiveOption = docoptResult.get("--interactive");
 		if(interactiveOption != null) {
 			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
+		}
+		Object showCmdXmlOption = docoptResult.get("--show-cmd-xml");
+		if(showCmdXmlOption != null) {
+			console.showCmdXml = Boolean.parseBoolean(showCmdXmlOption.toString());
 		}
 		Object fileString = docoptResult.get("--file");
 		if(fileString != null) {

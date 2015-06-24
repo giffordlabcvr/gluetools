@@ -10,13 +10,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="list-sequence-fields")
-@CommandClass(description="List sequence fields in a project", 
-	docoptUsages={"<projectName>"}) 
+
+@CommandClass( 
+	commandWords={"list", "sequence", "fields"},
+	docoptUsages={"<projectName>"},
+	description="List sequence fields in a project") 
 public class ListSequenceFieldsCommand extends RootModeCommand {
 
 	private String projectName;

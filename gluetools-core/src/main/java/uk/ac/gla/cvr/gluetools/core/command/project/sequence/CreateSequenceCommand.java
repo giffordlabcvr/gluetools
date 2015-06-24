@@ -17,18 +17,20 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="create-sequence")
-@CommandClass(description="Create a new sequence", 
+
+@CommandClass( 
+	commandWords={"create", "sequence"}, 
 	docoptUsages={
 		"<sourceName> <sequenceID> <format> -f <file>",
 		"<sourceName> <sequenceID> <format> --base64 <data>"
 	}, 
-	docoptOptions={"-f <file>, --file <file>  File containing the sequence data", 
-		"--base64 <data>  Sequence data encoded as Base64"}) 
+	docoptOptions={
+		"-f <file>, --file <file>  File containing the sequence data", 
+		"--base64 <data>  Sequence data encoded as Base64"},
+	description="Create a new sequence") 
 public class CreateSequenceCommand extends ProjectModeCommand {
 
 	private String sourceName;

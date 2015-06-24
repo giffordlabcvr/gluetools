@@ -8,11 +8,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="list-sources")
-@CommandClass(description="List sequence sources in the current project", 
-	docoptUsages={""}) 
+
+@CommandClass(
+	commandWords={"list", "sources"}, 
+	docoptUsages={""},
+	description="List sequence sources in the current project") 
 public class ListSourcesCommand extends ProjectModeCommand {
 
 	@Override

@@ -87,11 +87,17 @@ public class XmlUtils {
 	}
 	
 	public static List<Element> findChildElements(Element parentElement, String elemName) {
+		return findChildElements(parentElement).stream().
+				filter(e -> e.getNodeName().equals(elemName)).collect(Collectors.toList());
+	}
+
+	
+	public static List<Element> findChildElements(Element parentElement) {
 		List<Element> childElems = new ArrayList<Element>();
 		NodeList childNodes = parentElement.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++) {
 			Node node = childNodes.item(i);
-			if(node instanceof Element && node.getNodeName().equals(elemName)) {
+			if(node instanceof Element) {
 				childElems.add((Element) node);
 			}
 		}

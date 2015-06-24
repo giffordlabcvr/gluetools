@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface CommandClass {
 
+	String[] commandWords();
 	String description();
 	String[] docoptUsages() default {};
 	String[] docoptOptions() default {};

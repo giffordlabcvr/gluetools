@@ -64,7 +64,7 @@ public class GenbankXmlPopulatorPlugin implements ModulePlugin {
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequencesCommand.class);
 		XmlUtils.appendElementWithText(listSequencesElem, "sourceName", sourceName);
 		@SuppressWarnings("unchecked")
-		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.executeElem(listSequencesElem);
+		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
 		
 		for(Sequence sequence: listResult.getResults()) {
 			populate(cmdContext, sequence);

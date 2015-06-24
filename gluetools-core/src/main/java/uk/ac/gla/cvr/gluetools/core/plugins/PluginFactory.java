@@ -38,6 +38,10 @@ public class PluginFactory<P extends Plugin> {
 		if(elemName == null) {
 			throw new RuntimeException("No elemName defined on PluginClass annotation on "+theClass.getCanonicalName());
 		}
+		registerPluginClass(elemName, theClass);
+	}
+
+	protected void registerPluginClass(String elemName, Class<? extends P> theClass) {
 		typeStringToPluginClass.put(elemName, theClass);
 	}
 	
@@ -70,7 +74,11 @@ public class PluginFactory<P extends Plugin> {
 		Class<? extends P> pluginClass = typeStringToPluginClass.get(elementName);
 		return pluginClass;
 	}
-	
+
+	public boolean containsElementName(String elementName) {
+		return typeStringToPluginClass.containsKey(elementName);
+	}
+
 	public List<P> createFromElements(PluginConfigContext pluginConfigContext, List<Element> elements)  {
 		return elements.stream().map(element -> createFromElement(pluginConfigContext, element)).collect(Collectors.toList());
 	}

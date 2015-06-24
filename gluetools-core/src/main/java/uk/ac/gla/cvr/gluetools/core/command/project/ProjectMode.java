@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 
 public class ProjectMode extends CommandMode {
 
@@ -16,7 +16,7 @@ public class ProjectMode extends CommandMode {
 	private Project project;
 	
 	public ProjectMode(CommandContext cmdContext, Project project) {
-		super("project-"+project.getName(), PluginFactory.get(ProjectModeCommandFactory.creator));
+		super("project-"+project.getName(), CommandFactory.get(ProjectModeCommandFactory.creator));
 		this.project = project;
 		setServerRuntime(ModelBuilder.createProjectModel(getServerRuntime(), project));
 	}

@@ -13,14 +13,15 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException.Code;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="create-module")
-@CommandClass(description="Create a new module in this project", 
+
+@CommandClass( 
+	commandWords={"create","module"}, 
 	docoptUsages={"<name> -f <configFile>"},
-	docoptOptions={"-f <file>, --file <file>  Module configuration file"}) 
+	docoptOptions={"-f <file>, --file <file>  Module configuration file"},
+	description="Create a new module in this project") 
 public class CreateModuleCommand extends ProjectModeCommand {
 
 	private String name;

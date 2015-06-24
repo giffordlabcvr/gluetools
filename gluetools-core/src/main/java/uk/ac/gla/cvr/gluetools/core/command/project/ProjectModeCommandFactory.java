@@ -25,21 +25,21 @@ public class ProjectModeCommandFactory extends CommandFactory {
 
 	public ProjectModeCommandFactory() {
 		super();
-		registerPluginClass(CreateSourceCommand.class);
-		registerPluginClass(DeleteSourceCommand.class);
-		registerPluginClass(ListSourcesCommand.class);
+		registerCommandClass(CreateSourceCommand.class);
+		registerCommandClass(DeleteSourceCommand.class);
+		registerCommandClass(ListSourcesCommand.class);
 
-		registerPluginClass(CreateModuleCommand.class);
-		registerPluginClass(DeleteModuleCommand.class);
-		registerPluginClass(ListModulesCommand.class);
-		registerPluginClass(ShowModuleCommand.class);
-		registerPluginClass(RunModuleCommand.class);
+		registerCommandClass(CreateModuleCommand.class);
+		registerCommandClass(DeleteModuleCommand.class);
+		registerCommandClass(ListModulesCommand.class);
+		registerCommandClass(ShowModuleCommand.class);
+		registerCommandClass(RunModuleCommand.class);
 
-		registerPluginClass(CreateSequenceCommand.class);
-		registerPluginClass(DeleteSequenceCommand.class);
-		registerPluginClass(ListSequencesCommand.class);
-		registerPluginClass(ShowSequenceCommand.class);
-		registerPluginClass(SetSequenceFieldCommand.class);
+		registerCommandClass(CreateSequenceCommand.class);
+		registerCommandClass(DeleteSequenceCommand.class);
+		registerCommandClass(ListSequencesCommand.class);
+		registerCommandClass(ShowSequenceCommand.class);
+		registerCommandClass(SetSequenceFieldCommand.class);
 
 	}
 	

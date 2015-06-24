@@ -10,13 +10,14 @@ import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="run-module")
-@CommandClass(description="Run a module", 
-	docoptUsages={"<moduleName>"}) 
+
+@CommandClass( 
+	commandWords={"run","module"}, 
+	docoptUsages={"<moduleName>"},
+	description="Run a module") 
 public class RunModuleCommand extends ProjectModeCommand {
 
 	private String moduleName;

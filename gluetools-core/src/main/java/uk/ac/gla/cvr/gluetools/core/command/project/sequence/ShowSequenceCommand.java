@@ -10,15 +10,16 @@ import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-@PluginClass(elemName="show-sequence")
-@CommandClass(description="Show the data for a sequence", 
+
+@CommandClass( 
+	commandWords={"show", "sequence"}, 
 	docoptUsages={"[-s <sourceName>] <sequenceID>"},
-	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"}) 
+	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"},
+	description="Show the data for a sequence") 
 public class ShowSequenceCommand extends ProjectModeCommand {
 
 	private String sourceName;

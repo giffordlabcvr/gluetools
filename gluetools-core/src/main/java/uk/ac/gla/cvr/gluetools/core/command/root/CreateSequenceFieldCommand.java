@@ -12,13 +12,14 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="create-sequence-field")
-@CommandClass(description="Create a new sequence field in a project", 
-	docoptUsages={"<projectName> <fieldName> <type> [<maxLength>]"}) 
+
+@CommandClass( 
+	commandWords={"create", "sequence", "field"}, 
+	docoptUsages={"<projectName> <fieldName> <type> [<maxLength>]"},
+	description="Create a new sequence field in a project") 
 public class CreateSequenceFieldCommand extends RootModeCommand {
 
 	private String projectName;

@@ -10,14 +10,14 @@ public class RootCommandFactory extends CommandFactory {
 
 	public RootCommandFactory() {
 		super();
-		registerPluginClass(ProjectCommand.class);
-		registerPluginClass(CreateProjectCommand.class);
-		registerPluginClass(DeleteProjectCommand.class);
-		registerPluginClass(ListProjectsCommand.class);
+		registerCommandClass(ProjectCommand.class);
+		registerCommandClass(CreateProjectCommand.class);
+		registerCommandClass(DeleteProjectCommand.class);
+		registerCommandClass(ListProjectsCommand.class);
 		
-		registerPluginClass(CreateSequenceFieldCommand.class);
-		registerPluginClass(DeleteSequenceFieldCommand.class);
-		registerPluginClass(ListSequenceFieldsCommand.class);
+		registerCommandClass(CreateSequenceFieldCommand.class);
+		registerCommandClass(DeleteSequenceFieldCommand.class);
+		registerCommandClass(ListSequenceFieldsCommand.class);
 
 
 	}

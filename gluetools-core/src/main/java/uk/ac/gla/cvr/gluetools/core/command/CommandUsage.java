@@ -6,20 +6,22 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class CommandUsage {
 
-	public static String docoptStringForCmdClass(Class<? extends Command> cmdClass) {
-		String identifier = cmdClass.getAnnotation(PluginClass.class).elemName();
+	public static String docoptStringForCmdClass(Class<? extends Command> cmdClass, boolean singleWordCmd) {
 		CommandClass cmdClassAnno = cmdClass.getAnnotation(CommandClass.class);
 		StringBuffer buf = new StringBuffer();
 		buf.append("Usage: ");
 		List<String> docoptUsages = new ArrayList<String>(Arrays.asList(cmdClassAnno.docoptUsages()));
 		for(int i = 0; i < docoptUsages.size(); i++) {
 			String usageLine = docoptUsages.get(i);
-			buf.append(identifier);
+			if(singleWordCmd) {
+				buf.append("command");
+			} else {
+				buf.append(String.join(" ", cmdClassAnno.commandWords()));
+			}
 			if(usageLine.trim().length() > 0) {
 				buf.append(" ").append(usageLine);
 			}
@@ -48,12 +50,17 @@ public class CommandUsage {
 		return cmdClass.getAnnotation(CommandClass.class).furtherHelp();
 	}
 	
-	public static String elemNameForCmdClass(Class<? extends Command> cmdClass) {
-		return cmdClass.getAnnotation(PluginClass.class).elemName();
+	public static String[] cmdWordsForCmdClass(Class<? extends Command> cmdClass) {
+		return cmdClass.getAnnotation(CommandClass.class).commandWords();
 	}
 	
 	public static Element docElemForCmdClass(Class<? extends Command> cmdClass) {
-		return XmlUtils.documentWithElement(elemNameForCmdClass(cmdClass));
+		String[] cmdWords = cmdWordsForCmdClass(cmdClass);
+		Element elem = XmlUtils.documentWithElement(cmdWords[0]);
+		for(int i = 1; i < cmdWords.length; i++) {
+			elem = XmlUtils.appendElement(elem, cmdWords[i]);
+		}
+		return elem;
 	}
 
 }

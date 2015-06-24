@@ -4,16 +4,14 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="set-directory")
-@CommandClass(
+
+@CommandClass( 
+		commandWords = {"console","set","directory"},
+		docoptUsages = {"<path>"}, 
 		description = "Set the directory path for loading and saving",
-		docoptUsages = {
-				"<path>"
-		}, 
 		furtherHelp = "An absolute <path> replaces the current setting. A relative <path> updates the setting relative to its current value.")
 public class SetDirectoryCommand extends ConsoleCommand {
 

@@ -7,22 +7,22 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="set-sequence-field")
-@CommandClass(description="Set a field value for a sequence", 
+
+@CommandClass( 
+	commandWords={"set", "sequence", "field"}, 
 	docoptUsages={"[-s <sourceName>] <sequenceID> -f <fieldName> <fieldValue>"},
 	docoptOptions={
 		"-s <sourceName>, --sourceName <sourceName>  Specify a particular source", 
-		"-f <fieldName>, --fieldName <fieldName>  Name of the field"}) 
+		"-f <fieldName>, --fieldName <fieldName>  Name of the field"},
+	description="Set a field value for a sequence") 
 public class SetSequenceFieldCommand extends ProjectModeCommand {
 
 	private String sourceName;

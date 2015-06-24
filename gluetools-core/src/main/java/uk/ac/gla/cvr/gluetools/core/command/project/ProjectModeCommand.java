@@ -43,7 +43,8 @@ public abstract class ProjectModeCommand extends Command {
 		XmlUtils.appendElementWithText(listSequencesElem, "sourceName", sourceName);
 		XmlUtils.appendElementWithText(listSequencesElem, "sequenceID", sequenceID);
 		@SuppressWarnings("unchecked")
-		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.executeElem(listSequencesElem);
+		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.
+			executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
 		List<Sequence> results = listResult.getResults();
 		if(results.size() == 0) {
 			if(allowNull) {

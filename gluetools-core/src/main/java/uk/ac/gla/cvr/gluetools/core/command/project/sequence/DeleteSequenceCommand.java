@@ -8,14 +8,15 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="delete-sequence")
-@CommandClass(description="Delete a sequence", 
+
+@CommandClass( 
+	commandWords={"delete","sequence"}, 
 	docoptUsages={"[-s <sourceName>] <sequenceID>"},
-	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"}) 
+	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"},
+	description="Delete a sequence") 
 public class DeleteSequenceCommand extends ProjectModeCommand {
 
 	private String sourceName;

@@ -8,13 +8,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="delete-project")
-@CommandClass(description="Delete a project", 
-	docoptUsages={"<projectName>"}) 
+
+@CommandClass( 
+	commandWords={"delete", "project"},
+	docoptUsages={"<projectName>"},
+	description="Delete a project") 
 public class DeleteProjectCommand extends RootModeCommand {
 
 	private String projectName;

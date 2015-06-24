@@ -73,7 +73,7 @@ public class FieldPopulatorRule extends XmlPopulatorRule implements Plugin {
 				XmlUtils.appendElementWithText(setSeqFieldElem, "sequenceID", sequenceID);
 				XmlUtils.appendElementWithText(setSeqFieldElem, "fieldName", dataFieldName);
 				XmlUtils.appendElementWithText(setSeqFieldElem, "fieldValue", extractAndConvertResult);
-				cmdContext.executeElem(setSeqFieldElem);
+				cmdContext.executeElem(setSeqFieldElem.getOwnerDocument().getDocumentElement());
 			}
 		}
 	}

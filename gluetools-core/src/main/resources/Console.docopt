@@ -1,9 +1,10 @@
 Usage: 
-  gluetools [-he]
-  gluetools [-hei] -f <file>
+  gluetools [-hex]
+  gluetools [-heix] -f <file>
 
 Options:
   -f <file>, --file <file>   Run batch mode from a file
   -h, --help                 Print usage and options information
   -e, --verbose-error        Print out full error stack trace
   -i, --interactive          Enter interactive mode after batch mode
+  -x, --show-cmd-xml         Output XML equivalent of each command

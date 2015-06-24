@@ -10,13 +10,14 @@ import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="show-module")
-@CommandClass(description="Show the configuration of a module", 
-	docoptUsages={"<moduleName>"}) 
+
+@CommandClass( 
+	commandWords={"show", "module"}, 
+	docoptUsages={"<moduleName>"},
+	description="Show the configuration of a module") 
 public class ShowModuleCommand extends ProjectModeCommand {
 
 	private String moduleName;

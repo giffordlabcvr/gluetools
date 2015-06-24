@@ -2,10 +2,13 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="quit")
-@CommandClass(description="Quit GLUE", docoptUsages={""}) 
+
+@CommandClass(
+	commandWords={"quit"},
+	docoptUsages={""},
+	description="Quit GLUE"
+) 
 public class QuitCommand extends ConsoleCommand {
 
 	@Override

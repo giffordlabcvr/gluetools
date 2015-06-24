@@ -9,13 +9,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="delete-sequence-field")
-@CommandClass(description="Delete a sequence field from a project", 
-	docoptUsages={"<projectName> <fieldName>"}) 
+
+@CommandClass( 
+	commandWords={"delete", "sequence", "field"}, 
+	docoptUsages={"<projectName> <fieldName>"},
+	description="Delete a sequence field from a project") 
 public class DeleteSequenceFieldCommand extends RootModeCommand {
 
 	private String projectName;
