@@ -194,7 +194,7 @@ public class Console implements CommandContextListener
 				throw pce;
 			}
 		}
-		ObjectContext context = commandContext.peekCommandMode().getCayenneServerRuntime().getContext();
+		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
 		CommandResult commandResult = command.execute(commandContext);
 		context.commitChanges();

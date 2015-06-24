@@ -41,6 +41,10 @@ public class PluginUtils {
 		return propertyElems.get(0).getTextContent();
 	}
 
+	public static List<String> configureStringsProperty(Element configElem, String propertyName) {
+		return configureStringsProperty(configElem, propertyName, null, null);
+	}
+	
 	public static List<String> configureStringsProperty(Element configElem, String propertyName, 
 			Integer min, Integer max) {
 		List<Element> propertyElems = XmlUtils.findChildElements(configElem, propertyName);

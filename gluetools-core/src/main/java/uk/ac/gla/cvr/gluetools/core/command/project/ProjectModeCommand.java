@@ -41,6 +41,7 @@ public abstract class ProjectModeCommand extends Command {
 			String sourceName, String sequenceID, boolean allowNull) {
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequencesCommand.class);
 		XmlUtils.appendElementWithText(listSequencesElem, "sourceName", sourceName);
+		XmlUtils.appendElementWithText(listSequencesElem, "sequenceID", sequenceID);
 		@SuppressWarnings("unchecked")
 		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.executeElem(listSequencesElem);
 		List<Sequence> results = listResult.getResults();

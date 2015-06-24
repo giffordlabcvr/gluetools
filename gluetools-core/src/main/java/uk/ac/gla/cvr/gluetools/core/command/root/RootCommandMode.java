@@ -10,7 +10,7 @@ public class RootCommandMode extends CommandMode {
 
 	public RootCommandMode() {
 		super("GLUE", PluginFactory.get(RootCommandFactory.creator));
-		setCayenneServerRuntime(new ServerRuntime(CORE_DOMAIN_RESOURCE));
+		setServerRuntime(new ServerRuntime(CORE_DOMAIN_RESOURCE));
 	}
 
 }

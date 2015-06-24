@@ -8,8 +8,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -40,10 +42,11 @@ public class CreateSequenceFieldCommand extends RootModeCommand {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(projectName, fieldName));
-		field.setProject(getProject(objContext, projectName));
+		Project project = getProject(objContext, projectName);
+		field.setProject(project);
 		field.setType(type.name());
 		field.setMaxLength(maxLength);
-		int todo; // possibly run a merge operation, then re-establish server runtime.
+		ModelBuilder.addSequenceColumnToModel(cmdContext.peekCommandMode().getServerRuntime(), project, field);
 		return new CreateCommandResult(field.getObjectId());
 	}
 

@@ -11,7 +11,7 @@ public abstract class CommandMode {
 	public static String CORE_DOMAIN_RESOURCE = "cayenne-gluecore-domain.xml";
 	public static String CORE_MAP_RESOURCE = "gluecore-map.map.xml";
 	
-	private ServerRuntime cayenneServerRuntime;
+	private ServerRuntime serverRuntime;
 	private CommandMode parentCommandMode;
 
 	
@@ -41,18 +41,18 @@ public abstract class CommandMode {
 		
 	}
 
-	public ServerRuntime getCayenneServerRuntime() {
-		if(cayenneServerRuntime == null) {
+	public ServerRuntime getServerRuntime() {
+		if(serverRuntime == null) {
 			CommandMode parentCommandMode = getParentCommandMode();
 			if(parentCommandMode != null) {
-				return parentCommandMode.getCayenneServerRuntime();
+				return parentCommandMode.getServerRuntime();
 			}
 		}
-		return cayenneServerRuntime;
+		return serverRuntime;
 	}
 
-	protected void setCayenneServerRuntime(ServerRuntime cayenneServerRuntime) {
-		this.cayenneServerRuntime = cayenneServerRuntime;
+	protected void setServerRuntime(ServerRuntime serverRuntime) {
+		this.serverRuntime = serverRuntime;
 	}
 
 	protected CommandMode getParentCommandMode() {
@@ -64,8 +64,8 @@ public abstract class CommandMode {
 	}
 
 	void exit() {
-		if(cayenneServerRuntime != null) {
-			cayenneServerRuntime.shutdown();
+		if(serverRuntime != null) {
+			serverRuntime.shutdown();
 		}
 	}
 	

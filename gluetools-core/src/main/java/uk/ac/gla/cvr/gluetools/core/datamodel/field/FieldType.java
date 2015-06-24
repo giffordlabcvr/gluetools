@@ -4,7 +4,8 @@ import java.util.Date;
 
 public enum FieldType {
 
-	BOOLEAN(new BooleanFieldTranslator(), Boolean.class.getCanonicalName()), 
+	// need BIT here because of bug in cayenne <-> Derby mapping?
+	BOOLEAN(new BooleanFieldTranslator(), Boolean.class.getCanonicalName(), "BIT"),  
 	DATE(new DateFieldTranslator(), Date.class.getCanonicalName()),
 	VARCHAR(new StringFieldTranslator(), String.class.getCanonicalName()),
 	INTEGER(new IntegerFieldTranslator(), Integer.class.getCanonicalName())/*,
@@ -12,12 +13,25 @@ public enum FieldType {
 	
 	private FieldTranslator<?> fieldTranslator;
 	private String javaType;
+	private String cayenneType;
 	
-	private FieldType(FieldTranslator<?> fieldTranslator, String javaType) {
+	private FieldType(FieldTranslator<?> fieldTranslator, String javaType, String cayenneType) {
 		this.fieldTranslator = fieldTranslator;
 		this.javaType = javaType;
+		this.cayenneType = cayenneType;
 	}
 
+	private FieldType(FieldTranslator<?> fieldTranslator, String javaType) {
+		this(fieldTranslator, javaType, null);
+	}
+
+	public String cayenneType() {
+		if(cayenneType != null) {
+			return cayenneType;
+		}
+		return name();
+	}
+	
 	public FieldTranslator<?> getFieldTranslator() {
 		return fieldTranslator;
 	}

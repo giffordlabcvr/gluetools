@@ -26,43 +26,45 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="list-sequences")
 @CommandClass(description="List sequences in the project or in a given source", 
-	docoptUsages={"[-s <sourceName>] [<fieldName> ...]"},
-	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"}) 
+	docoptUsages={"[-s <sourceName>] [-q <sequenceID>] [<fieldName> ...]"},
+	docoptOptions={"-s <sourceName>, --sourceName <sourceName>  Specify a particular source",
+		"-q <sequenceID>, --sequenceID <sequenceID>  Specify a particular sequenceID"}) 
 public class ListSequencesCommand extends ProjectModeCommand {
 
 	private String sourceName;
+	private String sequenceID;
 	private List<String> fieldNames;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", false);
-		fieldNames = PluginUtils.configureStringsProperty(configElem, "fieldName", 0, null);
+		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", false);
+		fieldNames = PluginUtils.configureStringsProperty(configElem, "fieldName");
 		if(fieldNames.isEmpty()) {
-			if(sourceName == null) {
-				fieldNames = null; // default fields
-			} else {
-				fieldNames.add(_Sequence.SEQUENCE_ID_PROPERTY);
-			}
+			fieldNames = null; // default fields
 		}
 	}
 	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		SelectQuery selectQuery;
+		Expression exp = ExpressionFactory.expTrue();
 		if(sourceName != null) {
-			Expression exp = ExpressionFactory.matchExp(_Sequence.SOURCE_PROPERTY, sourceName);
-			selectQuery = new SelectQuery(Sequence.class, exp);
-		} else {
-			selectQuery = new SelectQuery(Sequence.class);
+			exp = exp.andExp(ExpressionFactory.matchExp(_Sequence.SOURCE_PROPERTY, sourceName));
 		}
+		if(sequenceID != null) {
+			exp = exp.andExp(ExpressionFactory.matchExp(_Sequence.SEQUENCE_ID_PROPERTY, sequenceID));
+		}
+		SelectQuery selectQuery = new SelectQuery(Sequence.class, exp);
 		List<String> validFieldNamesList = super.getValidSequenceFieldNames(cmdContext);
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
-		fieldNames.forEach(f-> {
-			if(!validFieldNames.contains(f)) {
-				throw new SequenceException(Code.INVALID_FIELD, f, validFieldNamesList);
-			}
-		});
+		if(fieldNames != null) {
+			fieldNames.forEach(f-> {
+				if(!validFieldNames.contains(f)) {
+					throw new SequenceException(Code.INVALID_FIELD, f, validFieldNamesList);
+				}
+			});
+		}
 		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, 
 				fieldNames);
 	}

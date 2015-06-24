@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -30,8 +31,9 @@ public class DeleteSequenceFieldCommand extends RootModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		GlueDataObject.delete(objContext, Field.class, Field.pkMap(projectName, fieldName));
-		int todo; // possibly run a merge operation, then re-establish server runtime.
+		Field field = GlueDataObject.lookup(objContext, Field.class, Field.pkMap(projectName, fieldName));
+		ModelBuilder.deleteSequenceColumnFromModel(cmdContext.peekCommandMode().getServerRuntime(), field.getProject(), field);
+		objContext.deleteObject(field);
 		return CommandResult.OK;
 	}
 

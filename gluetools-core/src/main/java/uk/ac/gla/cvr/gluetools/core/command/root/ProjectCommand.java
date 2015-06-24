@@ -28,8 +28,8 @@ public class ProjectCommand extends RootModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
-		cmdContext.pushCommandMode(new ProjectMode(cmdContext, projectName));
+		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
+		cmdContext.pushCommandMode(new ProjectMode(cmdContext, project));
 		return CommandResult.OK;
 	}
 
