@@ -9,13 +9,9 @@ import java.util.Map;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.HelpCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.HelpLine;
-import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.SetDirectoryCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.ShowDirectoryCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.SpecificCommandHelpLine;
+import uk.ac.gla.cvr.gluetools.core.command.console.help.GroupHelpLine;
+import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
+import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -34,12 +30,6 @@ private static Multiton factories = new Multiton();
 	private CommandTreeNode rootNode = new CommandTreeNode();
 	
 	protected CommandFactory() {
-		super();
-		registerCommandClass(QuitCommand.class);
-		registerCommandClass(ExitCommand.class);
-		registerCommandClass(HelpCommand.class);
-		registerCommandClass(SetDirectoryCommand.class);
-		registerCommandClass(ShowDirectoryCommand.class);
 	}
 	
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
@@ -51,8 +41,10 @@ private static Multiton factories = new Multiton();
 	private class CommandTreeNode {
 		Map<String, CommandTreeNode> childNodes = new LinkedHashMap<String, CommandTreeNode>();
 		CommandPluginFactory cmdPluginFactory = new CommandPluginFactory();
+		GroupHelpLine groupHelpLine;
 		
-		private List<HelpLine> helpLines(List<String> commandWords) {
+		// fullHelp means expand group helps to cover sub groups.
+		private List<HelpLine> helpLines(List<String> commandWords, boolean fullHelp) {
 			List<HelpLine> helpLines = new ArrayList<HelpLine>();
 			if(commandWords.size() == 1) {
 				String finalWord = commandWords.get(0);
@@ -62,13 +54,18 @@ private static Multiton factories = new Multiton();
 				}
 			}
 			if(commandWords.size() == 0) {
-				childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords)));
-				cmdPluginFactory.getRegisteredClasses().forEach(c -> helpLines.add(new SpecificCommandHelpLine(c)));
+				if(groupHelpLine != null && !fullHelp) {
+					helpLines.add(groupHelpLine);
+				} else { 
+					childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false)));
+					cmdPluginFactory.getRegisteredClasses().forEach(c -> helpLines.add(new SpecificCommandHelpLine(c)));
+				}
 			} else {
 				String firstWord = commandWords.remove(0);
 				CommandTreeNode treeNode = childNodes.get(firstWord);
 				if(treeNode != null) {
-					helpLines.addAll(treeNode.helpLines(commandWords));
+					boolean newFullHelp = commandWords.isEmpty();
+					helpLines.addAll(treeNode.helpLines(commandWords, newFullHelp));
 				}
 			}
 			return helpLines;
@@ -124,6 +121,20 @@ private static Multiton factories = new Multiton();
 			}
 		}
 
+		public void addGroupHelp(LinkedList<String> commandWords,
+				GroupHelpLine groupHelpLine) {
+			if(commandWords.size() == 0) {
+				if(this.groupHelpLine != null) {
+					throw new RuntimeException("Group help line added twice.");
+				}
+				this.groupHelpLine = groupHelpLine;
+			} else {
+				CommandTreeNode treeNode = childNodes.computeIfAbsent(commandWords.remove(0), word -> new CommandTreeNode());
+				treeNode.addGroupHelp(commandWords, groupHelpLine);
+			}
+			
+		}
+
 	}
 	
 	private class CommandPluginFactory extends PluginFactory<Command> {
@@ -150,9 +161,12 @@ private static Multiton factories = new Multiton();
 	}
 
 	public List<HelpLine> helpLinesForCommandWords(List<String> commandWords) {
-		return rootNode.helpLines(new LinkedList<String>(commandWords));
+		return rootNode.helpLines(new LinkedList<String>(commandWords), false);
 	}
 
-
+	protected void addGroupHelp(List<String> commandWords, String description) {
+		GroupHelpLine groupHelpLine = new GroupHelpLine(commandWords, description);
+		rootNode.addGroupHelp(new LinkedList<String>(commandWords), groupHelpLine);
+	}
 	
 }

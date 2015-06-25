@@ -17,7 +17,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"create","source"}, 
 	docoptUsages={"<name>"},
-	description="Create a new sequence source in this project") 
+	description="Create a new sequence source", 
+	furtherHelp="A sequence source is a grouping of sequences where each sequence has a unique ID within the source.") 
 public class CreateSourceCommand extends ProjectModeCommand {
 
 	private String name;

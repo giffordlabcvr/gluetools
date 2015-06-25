@@ -1,25 +1,27 @@
 console set directory hcv
 create project HCV "HCV analysis project"
-create sequence field HCV GB_GI_NUMBER VARCHAR
-create sequence field HCV GB_PRIMARY_ACCESSION VARCHAR
-create sequence field HCV GB_ACCESSION_VERSION VARCHAR
-create sequence field HCV GB_LOCUS VARCHAR
-create sequence field HCV GB_LENGTH INTEGER
-create sequence field HCV GB_GENOTYPE VARCHAR
-create sequence field HCV GB_SUBTYPE VARCHAR
-create sequence field HCV GB_RECOMBINANT BOOLEAN
-create sequence field HCV GB_PATENT_RELATED BOOLEAN
-create sequence field HCV GB_ORGANISM VARCHAR
-create sequence field HCV GB_ISOLATE VARCHAR
-create sequence field HCV GB_TAXONOMY VARCHAR 200
-create sequence field HCV GB_HOST VARCHAR 
-create sequence field HCV GB_COUNTRY VARCHAR
-create sequence field HCV GB_COLLECTION_YEAR INTEGER 
-create sequence field HCV GB_COLLECTION_MONTH VARCHAR
-create sequence field HCV GB_COLLECTION_MONTH_DAY INTEGER
-create sequence field HCV GB_CREATE_DATE DATE
-create sequence field HCV GB_UPDATE_DATE DATE
-list sequence fields HCV
+project-schema HCV
+  create sequence field GB_GI_NUMBER VARCHAR
+  create sequence field GB_PRIMARY_ACCESSION VARCHAR
+  create sequence field GB_ACCESSION_VERSION VARCHAR
+  create sequence field GB_LOCUS VARCHAR
+  create sequence field GB_LENGTH INTEGER
+  create sequence field GB_GENOTYPE VARCHAR
+  create sequence field GB_SUBTYPE VARCHAR
+  create sequence field GB_RECOMBINANT BOOLEAN
+  create sequence field GB_PATENT_RELATED BOOLEAN
+  create sequence field GB_ORGANISM VARCHAR
+  create sequence field GB_ISOLATE VARCHAR
+  create sequence field GB_TAXONOMY VARCHAR 200
+  create sequence field GB_HOST VARCHAR 
+  create sequence field GB_COUNTRY VARCHAR
+  create sequence field GB_COLLECTION_YEAR INTEGER 
+  create sequence field GB_COLLECTION_MONTH VARCHAR
+  create sequence field GB_COLLECTION_MONTH_DAY INTEGER
+  create sequence field GB_CREATE_DATE DATE
+  create sequence field GB_UPDATE_DATE DATE
+  list sequence fields
+  exit
  
 project HCV
   create source local
@@ -37,8 +39,11 @@ project HCV
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
   exit
 
-delete sequence field HCV GB_SUBTYPE
-create sequence field HCV GB_SUBTYPE VARCHAR 40
+project-schema HCV
+  delete sequence field GB_SUBTYPE
+  create sequence field GB_SUBTYPE VARCHAR 40
+  exit
+  
 project HCV
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
   exit

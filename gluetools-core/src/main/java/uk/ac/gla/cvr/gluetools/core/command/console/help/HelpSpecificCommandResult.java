@@ -1,7 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.command.console;
+package uk.ac.gla.cvr.gluetools.core.command.console.help;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 
 public class HelpSpecificCommandResult extends ConsoleCommandResult {
 

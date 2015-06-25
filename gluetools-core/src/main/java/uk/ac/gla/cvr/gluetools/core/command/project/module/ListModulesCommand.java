@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 @CommandClass( 
 	commandWords={"list", "modules"}, 
 	docoptUsages={""},
-	description="List modules in the current project") 
+	description="List modules") 
 public class ListModulesCommand extends ProjectModeCommand {
 
 	@Override

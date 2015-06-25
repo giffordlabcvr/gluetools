@@ -14,15 +14,14 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
 	commandWords={"create", "project"}, 
 	docoptUsages={"<projectName> [<description>]"},
-	description="Create a new project") 
+	description="Create a new project",
+	furtherHelp="The project name must be a valid database identifier, e.g. MY_PROJECT_1") 
 public class CreateProjectCommand extends RootModeCommand {
 
 	private String projectName;
@@ -30,10 +29,7 @@ public class CreateProjectCommand extends RootModeCommand {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
-		if(!projectName.matches("[A-Z][A-Z0-9_]*")) {
-			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, "projectName", "Project names must begin with a capital, and may contain capitals, digits and underscores.", projectName);
-		}
+		projectName = PluginUtils.configureIdentifierProperty(configElem, "projectName", true);
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "description", false));
 	}
 

@@ -21,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create","module"}, 
 	docoptUsages={"<name> -f <configFile>"},
 	docoptOptions={"-f <file>, --file <file>  Module configuration file"},
-	description="Create a new module in this project") 
+	description="Create a new module") 
 public class CreateModuleCommand extends ProjectModeCommand {
 
 	private String name;

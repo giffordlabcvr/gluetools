@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -18,11 +18,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"create", "sequence", "field"}, 
-	docoptUsages={"<projectName> <fieldName> <type> [<maxLength>]"},
-	description="Create a new sequence field in a project") 
-public class CreateSequenceFieldCommand extends RootModeCommand {
+	docoptUsages={"<fieldName> <type> [<maxLength>]"},
+	description="Create a new field in the sequence table",
+	furtherHelp="The field name must be a valid database identifier, e.g. MY_FIELD_1") 
+public class CreateSequenceFieldCommand extends ProjectSchemaModeCommand {
 
-	private String projectName;
 	private String fieldName;
 	private FieldType type;
 	private Integer maxLength;
@@ -30,8 +30,7 @@ public class CreateSequenceFieldCommand extends RootModeCommand {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
-		fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
+		fieldName = PluginUtils.configureIdentifierProperty(configElem, "fieldName", true);
 		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, "type", true);
 		maxLength = PluginUtils.configureIntProperty(configElem, "maxLength", false);
 		if(type == FieldType.VARCHAR && maxLength == null) {
@@ -42,8 +41,8 @@ public class CreateSequenceFieldCommand extends RootModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(projectName, fieldName));
-		Project project = getProject(objContext, projectName);
+		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(getProjectName(), fieldName));
+		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(getProjectName()));
 		field.setProject(project);
 		field.setType(type.name());
 		field.setMaxLength(maxLength);

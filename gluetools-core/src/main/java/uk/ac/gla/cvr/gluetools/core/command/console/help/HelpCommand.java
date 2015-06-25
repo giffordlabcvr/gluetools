@@ -1,13 +1,14 @@
-package uk.ac.gla.cvr.gluetools.core.command.console;
+package uk.ac.gla.cvr.gluetools.core.command.console.help;
 
 import java.util.List;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -17,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 	commandWords={"help"},
 	docoptUsages={"[<commandWord> ...]"},
-	description="Help on commands beginning with a sequence of command words"
+	description="Command help, based on a sequence of command words"
 ) 
 public class HelpCommand extends ConsoleCommand {
 

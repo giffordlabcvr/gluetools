@@ -1,9 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.root;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-public class RootCommandFactory extends CommandFactory {
+public class RootCommandFactory extends BaseCommandFactory {
 
 	public static Multiton.Creator<RootCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(RootCommandFactory.class, RootCommandFactory::new);
@@ -14,10 +14,7 @@ public class RootCommandFactory extends CommandFactory {
 		registerCommandClass(CreateProjectCommand.class);
 		registerCommandClass(DeleteProjectCommand.class);
 		registerCommandClass(ListProjectsCommand.class);
-		
-		registerCommandClass(CreateSequenceFieldCommand.class);
-		registerCommandClass(DeleteSequenceFieldCommand.class);
-		registerCommandClass(ListSequenceFieldsCommand.class);
+		registerCommandClass(ProjectSchemaCommand.class);
 
 
 	}

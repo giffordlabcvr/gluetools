@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 @CommandClass(
 	commandWords={"list", "sources"}, 
 	docoptUsages={""},
-	description="List sequence sources in the current project") 
+	description="List sequence sources") 
 public class ListSourcesCommand extends ProjectModeCommand {
 
 	@Override

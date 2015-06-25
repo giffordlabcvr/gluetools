@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.console;
+package uk.ac.gla.cvr.gluetools.core.command.console.help;
 
 import java.util.List;
 

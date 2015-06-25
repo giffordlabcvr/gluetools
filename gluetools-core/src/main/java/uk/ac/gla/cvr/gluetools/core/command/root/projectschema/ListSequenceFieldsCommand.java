@@ -1,35 +1,27 @@
-package uk.ac.gla.cvr.gluetools.core.command.root;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
-import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
 	commandWords={"list", "sequence", "fields"},
-	docoptUsages={"<projectName>"},
-	description="List sequence fields in a project") 
-public class ListSequenceFieldsCommand extends RootModeCommand {
+	docoptUsages={""},
+	description="List the fields in the sequence table") 
+public class ListSequenceFieldsCommand extends ProjectSchemaModeCommand {
 
-	private String projectName;
 	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		projectName = PluginUtils.configureStringProperty(configElem, "projectName", true);
-	}
 	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		Expression exp = ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, projectName);
+		Expression exp = ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, getProjectName());
 		return CommandUtils.runListCommand(cmdContext, Field.class, new SelectQuery(Field.class, exp));
 	}
 

@@ -28,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptOptions={
 		"-s <sourceName>, --sourceName <sourceName>  Specify a particular source",
 		"-q <sequenceID>, --sequenceID <sequenceID>  Specify a particular sequenceID"},
-	description="List sequences in the project or in a given source"
+	description="List sequences, based on source or sequence ID"
 ) 
 public class ListSequencesCommand extends ProjectModeCommand {
 

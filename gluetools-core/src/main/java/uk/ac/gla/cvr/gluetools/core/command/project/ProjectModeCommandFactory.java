@@ -1,6 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import java.util.Arrays;
+
+import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.CreateModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.DeleteModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ListModulesCommand;
@@ -18,13 +21,14 @@ import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 // TODO -- mode command factories parameterized by mode command base class?
 // TODO -- generic list / delete / show commands?
-public class ProjectModeCommandFactory extends CommandFactory {
+public class ProjectModeCommandFactory extends BaseCommandFactory {
 
 	public static Multiton.Creator<ProjectModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(ProjectModeCommandFactory.class, ProjectModeCommandFactory::new);
 
 	public ProjectModeCommandFactory() {
 		super();
+		
 		registerCommandClass(CreateSourceCommand.class);
 		registerCommandClass(DeleteSourceCommand.class);
 		registerCommandClass(ListSourcesCommand.class);
@@ -41,6 +45,13 @@ public class ProjectModeCommandFactory extends CommandFactory {
 		registerCommandClass(ShowSequenceCommand.class);
 		registerCommandClass(SetSequenceFieldCommand.class);
 
+		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");
+		addGroupHelp(Arrays.asList("list"), "List certain objects in this project");
+		addGroupHelp(Arrays.asList("delete"), "Delete a certain object from this project");
+		addGroupHelp(Arrays.asList("show"), "Describe in detail a certain objecthelp");
+
+		
+		registerCommandClass(ExitCommand.class);
 	}
 	
 
