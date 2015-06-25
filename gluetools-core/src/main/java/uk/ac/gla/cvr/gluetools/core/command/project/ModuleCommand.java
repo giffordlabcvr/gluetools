@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
@@ -17,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"module"},
 	docoptUsages={"<moduleName>"},
 	description="Enter command mode to manage a module") 
-public class ModuleCommand extends ProjectModeCommand {
+public class ModuleCommand extends ProjectModeCommand implements EnterModeCommand {
 
 	private String moduleName;
 	

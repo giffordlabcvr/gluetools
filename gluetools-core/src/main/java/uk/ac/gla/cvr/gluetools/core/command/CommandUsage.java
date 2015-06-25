@@ -10,7 +10,8 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class CommandUsage {
 
-	public static String docoptStringForCmdClass(Class<? extends Command> cmdClass, boolean singleWordCmd) {
+	public static String docoptStringForCmdClass(Class<? extends Command> cmdClass, 
+			String specialUsageExtension, boolean singleWordCmd) {
 		CommandClass cmdClassAnno = cmdClass.getAnnotation(CommandClass.class);
 		StringBuffer buf = new StringBuffer();
 		buf.append("Usage: ");
@@ -24,6 +25,9 @@ public class CommandUsage {
 			}
 			if(usageLine.trim().length() > 0) {
 				buf.append(" ").append(usageLine);
+				if(specialUsageExtension != null) {
+					buf.append(" [").append("<").append(specialUsageExtension).append(">...]");
+				}
 			}
 			buf.append("\n");
 			if(i < docoptUsages.size() - 1) {

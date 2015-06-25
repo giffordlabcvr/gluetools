@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
@@ -104,7 +106,13 @@ public class Console implements CommandContextListener
 		CommandResult commandResult = null;
 		tokens = Lexer.lex(line);
 		// output(tokens.toString());
-		commandResult = tokensToCommandResult(tokens);
+		List<Token> meaningfulTokens = tokens.stream().
+				filter(t -> t.getType() != TokenType.WHITESPACE && t.getType() != TokenType.SINGLELINECOMMENT).
+				collect(Collectors.toList());
+		if(!meaningfulTokens.isEmpty()) {
+			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
+			commandResult = tokenStringsToCommandResult(tokenStrings);
+		}
 		renderCommandResult(commandResult);
 	}
 
@@ -157,28 +165,35 @@ public class Console implements CommandContextListener
 	}
 
 
-	private CommandResult tokensToCommandResult(List<Token> tokens) {
-		List<Token> meaningfulTokens = tokens.stream().
-				filter(t -> t.getType() != TokenType.WHITESPACE && t.getType() != TokenType.SINGLELINECOMMENT).
-				collect(Collectors.toList());
-		if(meaningfulTokens.isEmpty()) {
-			return null;
-		}
-		List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
+	private CommandResult tokenStringsToCommandResult(List<String> tokenStrings) {
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(tokenStrings);
 		if(commandClass == null) {
 			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
 		}
+		String docoptUsageSingleWord;
+		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
+		if(enterModeCmd) {
+			docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, "innerCmdArg", true);
+		} else {
+			docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, null, true);
+		}
 		
-		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
 		List<String> argStrings = tokenStrings.subList(commandWords.length, tokenStrings.size());
 		Map<String, Object> docoptMap;
 		try {
-			docoptMap = new Docopt(docoptUsageSingleWord).withHelp(false).withExit(false).parse(argStrings);
+			docoptMap = new LinkedHashMap<String, Object>(new Docopt(docoptUsageSingleWord).withHelp(false).withExit(false).parse(argStrings));
 		} catch(DocoptExitException dee) {
-			throw new ConsoleException(Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, false).trim());
+			throw new ConsoleException(Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, null, false).trim());
+		}
+		List<String> innerCmdWords = null;
+		if(enterModeCmd) {
+			Object docoptInnerCmdResult = docoptMap.remove("<innerCmdArg>");
+			if(docoptInnerCmdResult != null) {
+				innerCmdWords = ((Collection<?>) docoptInnerCmdResult).
+						stream().map(obj -> obj.toString()).collect(Collectors.toList());
+			}
 		}
 		Element element = buildCommandElement(commandClass, docoptMap);
 		if(showCmdXml) {
@@ -197,11 +212,26 @@ public class Console implements CommandContextListener
 				throw pce;
 			}
 		}
+		CommandResult commandResult;
+		
 		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
-		CommandResult commandResult = command.execute(commandContext);
-		context.commitChanges();
+		
+		// combine enter-mode command with inner commands.
+		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
+			command.execute(commandContext);
+			try {
+				commandResult = tokenStringsToCommandResult(innerCmdWords);
+			} finally {
+				commandContext.popCommandMode();
+			}
+		} else {
+			commandResult = command.execute(commandContext);
+		}
+
 		// no need to rollback changes as we will throw the context away.
+		context.commitChanges();
+
 		return commandResult;
 	}
 

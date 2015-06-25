@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -18,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptOptions={
 		"-s <sourceName>, --sourceName <sourceName>  Specify a particular source"},
 	description="Enter command mode to manage a sequence") 
-public class SequenceCommand extends ProjectModeCommand {
+public class SequenceCommand extends ProjectModeCommand implements EnterModeCommand {
 
 	private String sourceName;
 	private String sequenceID;

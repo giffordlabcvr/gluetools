@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -17,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"project"},
 	docoptUsages={"<projectName>"},
 	description="Enter a project command mode") 
-public class ProjectCommand extends RootModeCommand {
+public class ProjectCommand extends RootModeCommand implements EnterModeCommand {
 
 	private String projectName;
 	
