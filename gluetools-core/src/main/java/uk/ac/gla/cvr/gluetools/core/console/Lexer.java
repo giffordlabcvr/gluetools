@@ -1,8 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 
@@ -65,6 +67,10 @@ public class Lexer {
 		public int getPosition() {
 			return position;
 		}
+		
+		public String getData() {
+			return data;
+		}
 
 		public String render() {
 			return type.render(data);
@@ -74,6 +80,14 @@ public class Lexer {
 		
 	}
 
+	public static List<Token> meaningfulTokens(List<Token> tokens) {
+		List<Token> meaningfulTokens = tokens.stream().
+				filter(t -> t.getType() != TokenType.WHITESPACE && t.getType() != TokenType.SINGLELINECOMMENT).
+				collect(Collectors.toList());
+		return meaningfulTokens;
+	}
+
+	
 	public static ArrayList<Token> lex(String input) {
 		// The tokens to return
 		ArrayList<Token> tokens = new ArrayList<Token>();

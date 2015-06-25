@@ -42,7 +42,6 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
-import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
@@ -57,7 +56,6 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 // TODO accept on the command line an XML configuration file to configure the DB connection and other items.
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
-// TODO it should be possible to prefix mode-changing commands and so execute them temporarily in that mode.
 // TODO completion should extend to arguments, at least when these arguments select from a table / enum / map.
 // TODO improve command line table display to adapt columns to data.
 // TODO implement paging of commands in interactive mode.
@@ -71,7 +69,6 @@ public class Console implements CommandContextListener
 {
 	private PrintWriter out;
 	private ConsoleReader reader;
-	private Completer currentCompleter;
 	private ConsoleCommandContext commandContext;
 	private GluetoolsEngine gluetoolsEngine;
 	private Integer batchLine = null;
@@ -86,6 +83,7 @@ public class Console implements CommandContextListener
 		this.commandContext = new ConsoleCommandContext(gluetoolsEngine);
 		commandContext.setCommandContextListener(this);
 		commandContext.pushCommandMode(CommandMode.ROOT);
+		reader.addCompleter(new ConsoleCompleter(commandContext));
 	}
 	
 	private boolean isFinished() {
@@ -105,9 +103,7 @@ public class Console implements CommandContextListener
 		ArrayList<Token> tokens = null;
 		tokens = Lexer.lex(line);
 		// output(tokens.toString());
-		List<Token> meaningfulTokens = tokens.stream().
-				filter(t -> t.getType() != TokenType.WHITESPACE && t.getType() != TokenType.SINGLELINECOMMENT).
-				collect(Collectors.toList());
+		List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
 		if(!meaningfulTokens.isEmpty()) {
 			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
 			executeTokenStrings(tokenStrings);
@@ -407,21 +403,8 @@ public class Console implements CommandContextListener
 	@Override
 	public void commandModeChanged() {
 		updatePrompt();
-		updateCompleter();
 	}
 
-	private void updateCompleter() {
-		if(currentCompleter != null) {
-			reader.removeCompleter(currentCompleter);
-		}
-		CommandMode commandMode = commandContext.peekCommandMode();
-		if(commandMode != null) {
-			List<String> commands = new ArrayList<String>(commandMode.getCommandFactory().getElementNames());
-			Collections.sort(commands);
-			currentCompleter = new StringsCompleter(commands);
-			reader.addCompleter(currentCompleter);
-		}
-	}
 	
 	
 }

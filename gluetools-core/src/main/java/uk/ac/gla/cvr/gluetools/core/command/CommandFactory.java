@@ -138,6 +138,21 @@ private static Multiton factories = new Multiton();
 			
 		}
 
+		public List<String> getCommandWordSuggestions(LinkedList<String> commandWords) {
+			if(commandWords.size() == 0) {
+				List<String> suggestions = new LinkedList<String>(childNodes.keySet());
+				suggestions.addAll(cmdPluginFactory.getElementNames());
+				return suggestions;
+			} else {
+				String firstWord = commandWords.remove(0);
+				CommandTreeNode treeNode = childNodes.get(firstWord);
+				if(treeNode == null) {
+					return new LinkedList<String>();
+				}
+				return treeNode.getCommandWordSuggestions(commandWords);
+			}
+		}
+
 	}
 	
 	private class CommandPluginFactory extends PluginFactory<Command> {
@@ -170,6 +185,10 @@ private static Multiton factories = new Multiton();
 	protected void addGroupHelp(List<String> commandWords, String description) {
 		GroupHelpLine groupHelpLine = new GroupHelpLine(commandWords, description);
 		rootNode.addGroupHelp(new LinkedList<String>(commandWords), groupHelpLine);
+	}
+
+	public List<String> getCommandWordSuggestions(List<String> lookupBasis) {
+		return rootNode.getCommandWordSuggestions(new LinkedList<String>(lookupBasis));
 	}
 	
 }
