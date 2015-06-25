@@ -14,18 +14,15 @@ public class HelpSpecificCommandResult extends ConsoleCommandResult {
 
 	@Override
 	public String getResultAsConsoleText() {
-		/*
 		String cmdDesc = CommandUsage.descriptionForCmdClass(cmdClass);
-		String command = CommandUsage.elemNameForCmdClass(cmdClass);
-		String docoptString = CommandUsage.docoptStringForCmdClass(cmdClass);
+		String command = String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass));
+		String docoptString = CommandUsage.docoptStringForCmdClass(cmdClass, false);
 		String furtherHelp = CommandUsage.furtherHelpForCmdClass(cmdClass);
 		String help = command +": "+cmdDesc+"\n"+docoptString.trim();
 		if(furtherHelp.length() > 0) {
 			help = help+"\n"+furtherHelp;
 		}
 		return help;
-		*/
-		return "some help";
 	}
 
 }

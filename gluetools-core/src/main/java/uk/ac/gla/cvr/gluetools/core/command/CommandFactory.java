@@ -1,7 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,9 +11,11 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.HelpCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.HelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.SetDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ShowDirectoryCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.SpecificCommandHelpLine;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -41,22 +45,85 @@ private static Multiton factories = new Multiton();
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
 		CommandClass cmdClassAnno = cmdClass.getAnnotation(CommandClass.class);
 		if(cmdClassAnno == null) { throw new RuntimeException("No CommandClass annotation for "+cmdClass.getCanonicalName()); }
-		String[] commandWords = cmdClassAnno.commandWords();
-		CommandTreeNode treeNode = rootNode;
-		int i = 0;
-		for(i = 0; i < commandWords.length - 1; i++) {
-			treeNode = treeNode.childNodes.computeIfAbsent(commandWords[i], word -> new CommandTreeNode());
-		}
-		String finalWord = commandWords[i];
-		if(treeNode.cmdPluginFactory.containsElementName(finalWord)) {
-			throw new RuntimeException("Two command classes are using the same command words");
-		}
-		treeNode.cmdPluginFactory.registerCommandClass(finalWord, cmdClass);
+		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdClassAnno.commandWords())), cmdClass);
 	}
 
 	private class CommandTreeNode {
 		Map<String, CommandTreeNode> childNodes = new LinkedHashMap<String, CommandTreeNode>();
 		CommandPluginFactory cmdPluginFactory = new CommandPluginFactory();
+		
+		private List<HelpLine> helpLines(List<String> commandWords) {
+			List<HelpLine> helpLines = new ArrayList<HelpLine>();
+			if(commandWords.size() == 1) {
+				String finalWord = commandWords.get(0);
+				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
+				if(cmdClass != null) {
+					helpLines.add(new SpecificCommandHelpLine(cmdClass));
+				}
+			}
+			if(commandWords.size() == 0) {
+				childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords)));
+				cmdPluginFactory.getRegisteredClasses().forEach(c -> helpLines.add(new SpecificCommandHelpLine(c)));
+			} else {
+				String firstWord = commandWords.remove(0);
+				CommandTreeNode treeNode = childNodes.get(firstWord);
+				if(treeNode != null) {
+					helpLines.addAll(treeNode.helpLines(commandWords));
+				}
+			}
+			return helpLines;
+		}
+		
+		private void registerCommandClass(List<String> commandWords, Class<? extends Command> cmdClass) {
+			if(commandWords.size() == 1) {
+				String finalWord = commandWords.get(0);
+				if(cmdPluginFactory.containsElementName(finalWord)) {
+					throw new RuntimeException("Two command classes are using the same command words");
+				}
+				cmdPluginFactory.registerCommandClass(finalWord, cmdClass);
+			} else {
+				CommandTreeNode treeNode = childNodes.computeIfAbsent(commandWords.remove(0), word -> new CommandTreeNode());
+				treeNode.registerCommandClass(commandWords, cmdClass);
+			}
+		}
+		
+		private Class<? extends Command> identifyCommandClass(List<String> commandWords) {
+			if(commandWords.isEmpty()) { return null; }
+			String firstWord = commandWords.remove(0);
+			Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(firstWord);
+			if(cmdClass != null) {
+				return cmdClass;
+			}
+			CommandTreeNode treeNode = childNodes.get(firstWord);
+			if(treeNode == null) {
+				return null;
+			}
+			return treeNode.identifyCommandClass(commandWords);
+		}
+			
+		private Command commandFromElement(List<CommandMode> commandModeStack,
+			PluginConfigContext pluginConfigContext, Element element) {
+			String nodeName = element.getNodeName();
+			if(cmdPluginFactory.containsElementName(nodeName)) {
+				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(nodeName);
+				for(int i = commandModeStack.size() - 1; i >= 0; i--) {
+					commandModeStack.get(i).addModeConfigToCommandElem(cmdClass, element);
+				}
+				return cmdPluginFactory.createFromElement(pluginConfigContext, element);
+			} else {
+				CommandTreeNode treeNode = childNodes.get(nodeName);
+				if(treeNode == null) {
+					return null;
+				}
+				List<Element> childElements = XmlUtils.findChildElements(element);
+				if(childElements.size() != 1) {
+					return null;
+				} else {
+					return treeNode.commandFromElement(commandModeStack, pluginConfigContext, childElements.get(0));
+				}
+			}
+		}
+
 	}
 	
 	private class CommandPluginFactory extends PluginFactory<Command> {
@@ -67,43 +134,13 @@ private static Multiton factories = new Multiton();
 
 	public Command commandFromElement(List<CommandMode> commandModeStack,
 			PluginConfigContext pluginConfigContext, Element element) {
-		Element currentElem = element;
-		CommandTreeNode treeNode = rootNode;
-		while(treeNode != null && !treeNode.cmdPluginFactory.containsElementName(currentElem.getNodeName())) {
-			treeNode = treeNode.childNodes.get(currentElem.getNodeName());
-			List<Element> childElements = XmlUtils.findChildElements(currentElem);
-			if(childElements.size() != 1) {
-				treeNode = null;
-			} else {
-				currentElem = childElements.get(0);
-			}
-		}
-		if(treeNode == null) {
-			return null;
-		}
-		Class<? extends Command> cmdClass = treeNode.cmdPluginFactory.classForElementName(currentElem.getNodeName());
-		for(int i = commandModeStack.size() - 1; i >= 0; i--) {
-			commandModeStack.get(i).addModeConfigToCommandElem(cmdClass, currentElem);
-		}
-		return treeNode.cmdPluginFactory.createFromElement(pluginConfigContext, currentElem);
+		return rootNode.commandFromElement(commandModeStack, pluginConfigContext, element);
 	}
 
-	public Class<? extends Command> identifyCommandClass(List<String> tokenStrings) {
-		CommandTreeNode treeNode = rootNode;
-		int tokenIndex = 0;
-		while(treeNode != null && tokenIndex < tokenStrings.size() && 
-				!treeNode.cmdPluginFactory.containsElementName(tokenStrings.get(tokenIndex))) {
-			treeNode = treeNode.childNodes.get(tokenStrings.get(tokenIndex));
-			tokenIndex++;
-		}
-		if(treeNode == null) {
-			return null;
-		}
-		if(tokenIndex >= tokenStrings.size()) {
-			return null;
-		}
-		return treeNode.cmdPluginFactory.classForElementName(tokenStrings.get(tokenIndex));
+	public Class<? extends Command> identifyCommandClass(List<String> commandWords) {
+		return rootNode.identifyCommandClass(new LinkedList<String>(commandWords));
 	}
+
 
 	public List<String> getElementNames() {
 		List<String> names = new ArrayList<String>();
@@ -111,5 +148,11 @@ private static Multiton factories = new Multiton();
 		names.addAll(rootNode.cmdPluginFactory.getElementNames());
 		return names;
 	}
+
+	public List<HelpLine> helpLinesForCommandWords(List<String> commandWords) {
+		return rootNode.helpLines(new LinkedList<String>(commandWords));
+	}
+
+
 	
 }

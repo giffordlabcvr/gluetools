@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 	commandWords={"help"},
 	docoptUsages={"[<commandWord> ...]"},
-	description="Print help about available commands beginning with certain words"
+	description="Help on commands beginning with a sequence of command words"
 ) 
 public class HelpCommand extends ConsoleCommand {
 
@@ -25,26 +25,21 @@ public class HelpCommand extends ConsoleCommand {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		commandWords = PluginUtils.configureStringsProperty(configElem, "commandWords");
+		commandWords = PluginUtils.configureStringsProperty(configElem, "commandWord");
 	}
 
 	
 	@Override
 	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		/*
-		if(!commandWords.isEmpty()) {
-			Class<? extends Command> cmdClass = commandFactory.classForElementName(command);
-			if(cmdClass == null) {
-				throw new ConsoleException(Code.UNKNOWN_COMMAND, command, cmdContext.getModePath());
-			} else {
-				return new HelpSpecificCommandResult(cmdClass);
-			}
+		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(commandWords);
+		if(helpLines.isEmpty()) {
+			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
+		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
+			return new HelpSpecificCommandResult(((SpecificCommandHelpLine) helpLines.get(0)).getCmdClass());
 		} else {
-			List<Class<? extends Command>> cmdClasses = commandFactory.getRegisteredClasses();
-			return new HelpCommandResult(cmdClasses);
-		}*/
-		return CommandResult.OK;
+			return new HelpCommandResult(helpLines);
+		}
 	}
 
 	

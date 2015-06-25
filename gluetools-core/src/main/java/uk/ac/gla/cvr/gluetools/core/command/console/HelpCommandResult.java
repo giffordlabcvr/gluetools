@@ -1,52 +1,31 @@
 package uk.ac.gla.cvr.gluetools.core.command.console;
 
-import java.util.Comparator;
 import java.util.Formatter;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
-
 public class HelpCommandResult extends ConsoleCommandResult {
 
-	private List<Class<? extends Command>> cmdClasses;
-	
-	public HelpCommandResult(List<Class<? extends Command>> cmdClasses) {
+	private List<HelpLine> helpLines;
+
+	public HelpCommandResult(List<HelpLine> helpLines) {
 		super();
-		this.cmdClasses = cmdClasses;
+		this.helpLines = helpLines;
 	}
 
 	@Override
 	public String getResultAsConsoleText() {
 		StringBuffer buf = new StringBuffer();
-		// TODO make this adapt to terminal width
 		try(Formatter formatter = new Formatter(buf)) {
-			cmdClasses.stream().map(c -> new HelpLine(
-					c.getAnnotation(PluginClass.class ).elemName(),
-					c.getAnnotation(CommandClass.class).description()
-					)).sorted(new Comparator<HelpLine>() {
-						@Override
-						public int compare(HelpLine o1, HelpLine o2) {
-							return o1.command.compareTo(o2.command);
-						}
-					}).forEach(h -> {
-						formatter.format("  %-20s - %-55s\n", h.command, h.description);
-					});
+			helpLines.stream().forEach(h -> {
+				String commandWords = String.join(" ", h.getCommandWords());
+				if(h instanceof GroupHelpLine) { commandWords += " ..."; }
+				formatter.format("  %-20s - %-55s\n", commandWords, h.getDescription());
+			});
 		}
-		buf.append("\nTo describe a specific command, use: help <command>\n");
+		buf.append("\nFor more detailed help, use: help <commandWord>...\n");
 		return buf.toString();
 	}
 	
-	private class HelpLine {
-		String command;
-		String description;
-		public HelpLine(String command, String description) {
-			super();
-			this.command = command;
-			this.description = description;
-		}
-		
-	}
+	
 
 }
