@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.ProjectSchemaMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -15,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"project-schema"},
+	commandWords={"schema"},
 	docoptUsages={"<projectName>"},
 	description="Enter command mode to manage a project's schema") 
 public class ProjectSchemaCommand extends RootModeCommand implements EnterModeCommand {
@@ -34,5 +35,9 @@ public class ProjectSchemaCommand extends RootModeCommand implements EnterModeCo
 		cmdContext.pushCommandMode(new ProjectSchemaMode(cmdContext, project));
 		return CommandResult.OK;
 	}
+	
+	@CompleterClass
+	public static class Completer extends ProjectNameCompleter {}
+
 
 }

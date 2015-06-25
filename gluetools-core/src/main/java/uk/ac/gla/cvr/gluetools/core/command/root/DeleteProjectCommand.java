@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -33,6 +34,9 @@ public class DeleteProjectCommand extends RootModeCommand {
 		objContext.deleteObject(project);
 		return CommandResult.OK;
 	}
+
+	@CompleterClass
+	public static class Completer extends ProjectNameCompleter {}
 
 
 }

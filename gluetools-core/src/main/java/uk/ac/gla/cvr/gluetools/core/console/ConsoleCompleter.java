@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import jline.console.completer.Completer;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
 
@@ -53,14 +54,20 @@ public class ConsoleCompleter implements Completer {
 			}
 		}
 		List<String> lookupBasis = lookupBasisTokens.stream().map(Token::render).collect(Collectors.toList());
-		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis).
-				stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList());
-		if(suggestions.isEmpty()) {
-			return -1;
-		} else {
-			candidates.addAll(suggestions.stream().map(s -> s+" ").collect(Collectors.toList()));
-			return suggestionPos;
+		CommandMode cmdMode = cmdContext.peekCommandMode();
+		try {
+			cmdContext.setObjectContext(cmdMode.getServerRuntime().getContext());
+			CommandFactory commandFactory = cmdMode.getCommandFactory();
+			List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis).
+					stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList());
+			if(suggestions.isEmpty()) {
+				return -1;
+			} else {
+				candidates.addAll(suggestions.stream().map(s -> s+" ").collect(Collectors.toList()));
+				return suggestionPos;
+			} 
+		} finally {
+			cmdContext.setObjectContext(null);
 		}
 	}
 

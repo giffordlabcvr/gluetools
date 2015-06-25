@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -35,5 +36,8 @@ public class ModuleCommand extends ProjectModeCommand implements EnterModeComman
 		cmdContext.pushCommandMode(new ModuleMode(cmdContext, moduleName));
 		return CommandResult.OK;
 	}
+
+	@CompleterClass
+	public static class Completer extends ModuleNameCompleter {}
 
 }

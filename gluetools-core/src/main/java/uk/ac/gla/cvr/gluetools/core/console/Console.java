@@ -207,21 +207,24 @@ public class Console implements CommandContextListener
 		}
 		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
-		
-		// combine enter-mode command with inner commands.
-		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
-			command.execute(commandContext);
-			context.commitChanges();
-			try {
-				executeTokenStrings(innerCmdWords);
-			} finally {
-				commandContext.popCommandMode();
+		try {
+			// combine enter-mode command with inner commands.
+			if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
+				command.execute(commandContext);
+				context.commitChanges();
+				try {
+					executeTokenStrings(innerCmdWords);
+				} finally {
+					commandContext.popCommandMode();
+				}
+			} else {
+				CommandResult commandResult = command.execute(commandContext);
+				// no need to rollback changes as we will throw the context away.
+				context.commitChanges();
+				renderCommandResult(commandResult);
 			}
-		} else {
-			CommandResult commandResult = command.execute(commandContext);
-			// no need to rollback changes as we will throw the context away.
-			context.commitChanges();
-			renderCommandResult(commandResult);
+		} finally {
+			commandContext.setObjectContext(null);
 		}
 
 	}
