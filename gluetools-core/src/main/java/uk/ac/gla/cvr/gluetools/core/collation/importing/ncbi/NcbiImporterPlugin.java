@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.CreateSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -44,7 +44,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 // TODO these modules should provide commands to configure some module elements, and run them.
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
-public class NcbiImporterPlugin implements ModulePlugin {
+public class NcbiImporterPlugin extends ModulePlugin {
 
 	
 	private String glueSourceName;

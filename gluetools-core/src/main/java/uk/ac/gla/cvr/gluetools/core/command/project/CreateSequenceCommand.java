@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
+package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.Base64;
 
@@ -10,7 +10,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;

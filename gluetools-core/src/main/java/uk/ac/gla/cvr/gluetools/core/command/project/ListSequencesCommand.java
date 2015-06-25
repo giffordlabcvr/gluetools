@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
+package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,7 +13,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -57,7 +56,7 @@ public class ListSequencesCommand extends ProjectModeCommand {
 			exp = exp.andExp(ExpressionFactory.matchExp(_Sequence.SEQUENCE_ID_PROPERTY, sequenceID));
 		}
 		SelectQuery selectQuery = new SelectQuery(Sequence.class, exp);
-		List<String> validFieldNamesList = super.getValidSequenceFieldNames(cmdContext);
+		List<String> validFieldNamesList = getProjectMode(cmdContext).getProject().getAllSequenceFieldNames();
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {

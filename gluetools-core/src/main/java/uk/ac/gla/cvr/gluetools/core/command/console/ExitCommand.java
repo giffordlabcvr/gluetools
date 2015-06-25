@@ -10,7 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 @CommandClass( 
 	commandWords={"exit"},
 	docoptUsages={""},
-	description="Exit current command mode and return to parent mode") 
+	description="Exit current command mode") 
 public class ExitCommand extends Command {
 
 	@Override

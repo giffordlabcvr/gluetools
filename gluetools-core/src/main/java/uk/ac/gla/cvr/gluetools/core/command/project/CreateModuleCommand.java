@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.module;
+package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -8,7 +8,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;

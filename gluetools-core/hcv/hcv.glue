@@ -26,15 +26,27 @@ project-schema HCV
 project HCV
   create source local
   create sequence local file1 GENBANK_XML -f sequence.xml
+
+  sequence file1
+    set field GB_HOST "a creature"
+    show data
+    exit
+    
+  list sequences GB_HOST
   
   create source ncbi-nuccore
   create module ncbi-hcv -f hcvImporter.xml
-  run module ncbi-hcv
-  show module ncbi-hcv
   
+  module ncbi-hcv
+    show configuration
+    run
+	exit
+	  
   create module gb-populator -f hcvPopulator.xml
-  show module gb-populator
-  run module gb-populator
+  module gb-populator
+    show configuration
+  	run
+  	exit
   
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
   exit
@@ -44,7 +56,7 @@ project-schema HCV
   create sequence field GB_SUBTYPE VARCHAR 40
   exit
   
-project HCV
+ project HCV
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
   exit
 

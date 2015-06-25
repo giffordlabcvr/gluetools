@@ -8,29 +8,14 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ListSequencesCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public abstract class ProjectModeCommand extends Command {
 
-	protected List<String> getValidSequenceFieldNames(CommandContext cmdContext) {
-		List<String> fieldNames = getCustomSequenceFieldNames(cmdContext);
-		fieldNames.add(_Sequence.SEQUENCE_ID_PROPERTY);
-		fieldNames.add(_Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY);
-		fieldNames.add(_Sequence.FORMAT_PROPERTY);
-		return fieldNames;
-	}
-
-	protected List<String> getCustomSequenceFieldNames(CommandContext cmdContext) {
-		ProjectMode projectMode = getProjectMode(cmdContext);
-		return projectMode.getSequenceFieldNames();
-	}
-
+	
 	protected ProjectMode getProjectMode(CommandContext cmdContext) {
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		return projectMode;

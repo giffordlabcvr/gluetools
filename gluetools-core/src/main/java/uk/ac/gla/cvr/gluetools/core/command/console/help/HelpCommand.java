@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 	commandWords={"help"},
 	docoptUsages={"[<commandWord> ...]"},
-	description="Command help, based on a sequence of command words"
+	description="Command help, based on a word sequence"
 ) 
 public class HelpCommand extends ConsoleCommand {
 

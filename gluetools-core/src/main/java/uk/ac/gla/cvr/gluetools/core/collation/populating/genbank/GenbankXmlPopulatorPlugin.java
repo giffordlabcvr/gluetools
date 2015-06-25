@@ -14,7 +14,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ListSequencesCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListSequencesCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -26,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO remove legacy populator stuff.
 @PluginClass(elemName="genbankXmlPopulator")
-public class GenbankXmlPopulatorPlugin implements ModulePlugin {
+public class GenbankXmlPopulatorPlugin extends ModulePlugin {
 
 	private List<XmlPopulatorRule> rules;
 	
@@ -43,18 +45,24 @@ public class GenbankXmlPopulatorPlugin implements ModulePlugin {
 	}
 
 	private void populate(CommandContext cmdContext, Sequence sequence) {
-		rules.forEach(rule -> {
-			if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
-				throw new XmlPopulatorException(Code.INCOMPATIBLE_SEQUENCE_FORMAT, sequence.getObjectId().getIdSnapshot(), sequence.getFormat());
-			}
-			Document sequenceDataDoc = null; 
-			try {
-				sequenceDataDoc = XmlUtils.documentFromBytes(sequence.getData());
-			} catch (SAXException se) {
-				throw new XmlPopulatorException(se, Code.SEQUENCE_INCORRECTLY_FORMATTED, sequence.getObjectId().getIdSnapshot(), se.getLocalizedMessage());
-			}
-			rule.execute(cmdContext, sequence.getSource().getName(), sequence.getSequenceID(), sequenceDataDoc);
-		});
+		ProjectMode projectMode = getProjectMode(cmdContext);
+		cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), sequence.getSource().getName(), sequence.getSequenceID()));
+		try {
+			rules.forEach(rule -> {
+				if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
+					throw new XmlPopulatorException(Code.INCOMPATIBLE_SEQUENCE_FORMAT, sequence.getObjectId().getIdSnapshot(), sequence.getFormat());
+				}
+				Document sequenceDataDoc = null; 
+				try {
+					sequenceDataDoc = XmlUtils.documentFromBytes(sequence.getData());
+				} catch (SAXException se) {
+					throw new XmlPopulatorException(se, Code.SEQUENCE_INCORRECTLY_FORMATTED, sequence.getObjectId().getIdSnapshot(), se.getLocalizedMessage());
+				}
+				rule.execute(cmdContext, sequenceDataDoc);
+			});
+		} finally {
+			cmdContext.popCommandMode();
+		}
 	}
 
 	

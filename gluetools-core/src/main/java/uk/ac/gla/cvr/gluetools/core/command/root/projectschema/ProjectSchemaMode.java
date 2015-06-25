@@ -28,9 +28,5 @@ public class ProjectSchemaMode extends CommandMode {
 		}
 	}
 
-	public Project getProject() {
-		return project;
-	}
-
 	
 }

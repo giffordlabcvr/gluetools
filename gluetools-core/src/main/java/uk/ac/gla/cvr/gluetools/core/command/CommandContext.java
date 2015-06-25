@@ -31,10 +31,11 @@ public class CommandContext {
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 	
-	public void popCommandMode() {
+	public CommandMode popCommandMode() {
 		CommandMode commandMode = commandModeStack.remove(0);
 		commandMode.exit();
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
+		return commandMode;
 	}
 	
 	public CommandMode peekCommandMode() {

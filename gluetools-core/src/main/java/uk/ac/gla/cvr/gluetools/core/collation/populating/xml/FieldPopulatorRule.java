@@ -8,7 +8,7 @@ import org.w3c.dom.Node;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetSequenceFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -56,8 +56,8 @@ public class FieldPopulatorRule extends XmlPopulatorRule implements Plugin {
 	}
 
 	
-	public void execute(CommandContext cmdContext, 
-			String sourceName, String sequenceID, Node node) {
+	
+	public void execute(CommandContext cmdContext, Node node) {
 		String dataFieldName = getDataFieldName();
 		String selectedText;
 		try {
@@ -68,12 +68,10 @@ public class FieldPopulatorRule extends XmlPopulatorRule implements Plugin {
 		if(selectedText != null) {
 			String extractAndConvertResult = extractAndConvert(selectedText);
 			if(extractAndConvertResult != null) {
-				Element setSeqFieldElem = CommandUsage.docElemForCmdClass(SetSequenceFieldCommand.class);
-				XmlUtils.appendElementWithText(setSeqFieldElem, "sourceName", sourceName);
-				XmlUtils.appendElementWithText(setSeqFieldElem, "sequenceID", sequenceID);
-				XmlUtils.appendElementWithText(setSeqFieldElem, "fieldName", dataFieldName);
-				XmlUtils.appendElementWithText(setSeqFieldElem, "fieldValue", extractAndConvertResult);
-				cmdContext.executeElem(setSeqFieldElem.getOwnerDocument().getDocumentElement());
+				Element setFieldElem = CommandUsage.docElemForCmdClass(SetFieldCommand.class);
+				XmlUtils.appendElementWithText(setFieldElem, "fieldName", dataFieldName);
+				XmlUtils.appendElementWithText(setFieldElem, "fieldValue", extractAndConvertResult);
+				cmdContext.executeElem(setFieldElem.getOwnerDocument().getDocumentElement());
 			}
 		}
 	}
