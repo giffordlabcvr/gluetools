@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -103,7 +103,6 @@ public class Console implements CommandContextListener
 
 	private void handleLine(String line) {
 		ArrayList<Token> tokens = null;
-		CommandResult commandResult = null;
 		tokens = Lexer.lex(line);
 		// output(tokens.toString());
 		List<Token> meaningfulTokens = tokens.stream().
@@ -111,9 +110,8 @@ public class Console implements CommandContextListener
 				collect(Collectors.toList());
 		if(!meaningfulTokens.isEmpty()) {
 			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
-			commandResult = tokenStringsToCommandResult(tokenStrings);
+			executeTokenStrings(tokenStrings);
 		}
-		renderCommandResult(commandResult);
 	}
 
 	private void renderCommandResult(CommandResult commandResult) {
@@ -165,7 +163,7 @@ public class Console implements CommandContextListener
 	}
 
 
-	private CommandResult tokenStringsToCommandResult(List<String> tokenStrings) {
+	private void executeTokenStrings(List<String> tokenStrings) {
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(tokenStrings);
 		if(commandClass == null) {
@@ -173,27 +171,29 @@ public class Console implements CommandContextListener
 		}
 		String docoptUsageSingleWord;
 		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
-		if(enterModeCmd) {
-			docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, "innerCmdArg", true);
-		} else {
-			docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, null, true);
-		}
+		docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		
 		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
-		List<String> argStrings = tokenStrings.subList(commandWords.length, tokenStrings.size());
-		Map<String, Object> docoptMap;
-		try {
-			docoptMap = new LinkedHashMap<String, Object>(new Docopt(docoptUsageSingleWord).withHelp(false).withExit(false).parse(argStrings));
-		} catch(DocoptExitException dee) {
-			throw new ConsoleException(Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, null, false).trim());
-		}
-		List<String> innerCmdWords = null;
+		LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
+		LinkedList<String> innerCmdWords = null;
+		Map<String, Object> docoptMap = null;
 		if(enterModeCmd) {
-			Object docoptInnerCmdResult = docoptMap.remove("<innerCmdArg>");
-			if(docoptInnerCmdResult != null) {
-				innerCmdWords = ((Collection<?>) docoptInnerCmdResult).
-						stream().map(obj -> obj.toString()).collect(Collectors.toList());
+			ConsoleException firstCE = null;
+			innerCmdWords = new LinkedList<String>();
+			do {
+				try {
+					docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
+				} catch(ConsoleException ce) {
+					if(firstCE == null) { firstCE = ce; }
+				}
+				if(argStrings.isEmpty()) { break; }
+				if(docoptMap == null) { innerCmdWords.addFirst(argStrings.removeLast()); };
+			} while(docoptMap == null);
+			if(docoptMap == null) {
+				throw firstCE;
 			}
+		} else {
+			docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
 		}
 		Element element = buildCommandElement(commandClass, docoptMap);
 		if(showCmdXml) {
@@ -212,27 +212,36 @@ public class Console implements CommandContextListener
 				throw pce;
 			}
 		}
-		CommandResult commandResult;
-		
 		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
 		
 		// combine enter-mode command with inner commands.
 		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
 			command.execute(commandContext);
+			context.commitChanges();
 			try {
-				commandResult = tokenStringsToCommandResult(innerCmdWords);
+				executeTokenStrings(innerCmdWords);
 			} finally {
 				commandContext.popCommandMode();
 			}
 		} else {
-			commandResult = command.execute(commandContext);
+			CommandResult commandResult = command.execute(commandContext);
+			// no need to rollback changes as we will throw the context away.
+			context.commitChanges();
+			renderCommandResult(commandResult);
 		}
 
-		// no need to rollback changes as we will throw the context away.
-		context.commitChanges();
+	}
 
-		return commandResult;
+	public Map<String, Object> runDocopt(Class<? extends Command> commandClass,
+			String docoptUsageSingleWord, List<String> argStrings) {
+		Map<String, Object> docoptMap;
+		try {
+			docoptMap = new Docopt(docoptUsageSingleWord).withHelp(false).withExit(false).parse(argStrings);
+		} catch(DocoptExitException dee) {
+			throw new ConsoleException(Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, false).trim());
+		}
+		return docoptMap;
 	}
 
 	private Element buildCommandElement(Class<? extends Command> commandClass, Map<String, Object> docoptMap) {
