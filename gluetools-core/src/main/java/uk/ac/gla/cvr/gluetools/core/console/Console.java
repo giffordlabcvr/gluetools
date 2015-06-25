@@ -7,15 +7,12 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.ObjectId;

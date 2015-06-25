@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.GroupHelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine;
@@ -138,7 +139,7 @@ private static Multiton factories = new Multiton();
 			
 		}
 
-		public List<String> getCommandWordSuggestions(LinkedList<String> commandWords) {
+		public List<String> getCommandWordSuggestions(CommandContext cmdContext, LinkedList<String> commandWords) {
 			if(commandWords.size() == 0) {
 				List<String> suggestions = new LinkedList<String>(childNodes.keySet());
 				suggestions.addAll(cmdPluginFactory.getElementNames());
@@ -147,9 +148,16 @@ private static Multiton factories = new Multiton();
 				String firstWord = commandWords.remove(0);
 				CommandTreeNode treeNode = childNodes.get(firstWord);
 				if(treeNode == null) {
+					Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(firstWord);
+					if(cmdClass != null) {
+						CommandCompleter cmdCompleter = CommandUsage.commandCompleterForCmdClass(cmdClass);
+						if(cmdCompleter != null) {
+							return cmdCompleter.completionSuggestions(cmdContext, commandWords);
+						}
+					}
 					return new LinkedList<String>();
 				}
-				return treeNode.getCommandWordSuggestions(commandWords);
+				return treeNode.getCommandWordSuggestions(cmdContext, commandWords);
 			}
 		}
 
@@ -187,8 +195,8 @@ private static Multiton factories = new Multiton();
 		rootNode.addGroupHelp(new LinkedList<String>(commandWords), groupHelpLine);
 	}
 
-	public List<String> getCommandWordSuggestions(List<String> lookupBasis) {
-		return rootNode.getCommandWordSuggestions(new LinkedList<String>(lookupBasis));
+	public List<String> getCommandWordSuggestions(CommandContext cmdContext, List<String> lookupBasis) {
+		return rootNode.getCommandWordSuggestions(cmdContext, new LinkedList<String>(lookupBasis));
 	}
 	
 }

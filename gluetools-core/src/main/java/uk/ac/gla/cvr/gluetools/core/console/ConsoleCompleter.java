@@ -54,7 +54,7 @@ public class ConsoleCompleter implements Completer {
 		}
 		List<String> lookupBasis = lookupBasisTokens.stream().map(Token::render).collect(Collectors.toList());
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		List<String> suggestions = commandFactory.getCommandWordSuggestions(lookupBasis).
+		List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis).
 				stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList());
 		if(suggestions.isEmpty()) {
 			return -1;
