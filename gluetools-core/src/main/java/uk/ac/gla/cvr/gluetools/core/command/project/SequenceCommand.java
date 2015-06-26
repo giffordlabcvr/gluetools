@@ -1,11 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.List;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptorClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -37,6 +41,18 @@ public class SequenceCommand extends ProjectModeCommand implements EnterModeComm
 		Project project = getProjectMode(cmdContext).getProject();
 		cmdContext.pushCommandMode(new SequenceMode(project, sequence.getSource().getName(), sequenceID));
 		return CommandResult.OK;
+	}
+
+	@EnterModeCommandDescriptorClass
+	public static class Descriptor extends EnterModeCommandDescriptor {
+		@Override
+		public int numEnterModeArgs(List<String> argStrings) {
+			if(argStrings.size() > 1 && argStrings.get(0).equals("-s")) {
+				return 3; // source specified
+			} else {
+				return 1; // no source specified
+			}
+		}
 	}
 
 

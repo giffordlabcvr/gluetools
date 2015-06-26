@@ -14,7 +14,8 @@ public class ConsoleException extends GlueException {
 		FILE_NOT_FOUND("path"), 
 		NOT_A_FILE("path"), 
 		FILE_NOT_READABLE("path"), 
-		READ_ERROR("path", "errorTxt");
+		READ_ERROR("path", "errorTxt"),
+		COMMAND_NOT_WRAPPABLE("commandWords", "commandModePath");
 
 		private String[] argNames;
 		private Code(String... argNames) {

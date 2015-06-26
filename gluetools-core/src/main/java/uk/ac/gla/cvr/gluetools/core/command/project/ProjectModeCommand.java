@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
@@ -53,7 +54,7 @@ public abstract class ProjectModeCommand extends Command {
 	
 	public abstract static class ModuleNameCompleter extends CommandCompleter {
 		@Override
-		public List<String> completionSuggestions(CommandContext cmdContext, List<String> argStrings) {
+		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, List<String> argStrings) {
 			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
 				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Module.class, new SelectQuery(Module.class)).

@@ -26,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
@@ -34,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
@@ -155,66 +157,48 @@ public class Console implements CommandContextListener
 		}
 	}
 
-
 	private void executeTokenStrings(List<String> tokenStrings) {
+		executeTokenStrings(tokenStrings, false);
+	}
+	
+	private void executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(tokenStrings);
 		if(commandClass == null) {
 			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
 		}
-		String docoptUsageSingleWord;
 		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
-		docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		
 		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
 		LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
 		LinkedList<String> innerCmdWords = null;
-		Map<String, Object> docoptMap = null;
 		if(enterModeCmd) {
-			ConsoleException firstCE = null;
-			innerCmdWords = new LinkedList<String>();
-			do {
-				try {
-					docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
-				} catch(ConsoleException ce) {
-					if(firstCE == null) { firstCE = ce; }
-				}
-				if(argStrings.isEmpty()) { break; }
-				if(docoptMap == null) { innerCmdWords.addFirst(argStrings.removeLast()); };
-			} while(docoptMap == null);
-			if(docoptMap == null) {
-				throw firstCE;
-			}
-		} else {
-			docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
-		}
-		Element element = buildCommandElement(commandClass, docoptMap);
-		if(showCmdXml) {
-			output(new String(XmlUtils.prettyPrint(element.getOwnerDocument())));
-		}
-		Command command;
-		try {
-			command = commandContext.commandFromElement(element);
-		} catch(PluginConfigException pce) {
-			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
-					pce.getErrorArgs().length >= 3) {
-				throw new ConsoleException(Code.ARGUMENT_FORMAT_ERROR,
-						pce.getErrorArgs()[0].toString(),
-						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
-			} else {
-				throw pce;
+			@SuppressWarnings("unchecked")
+			EnterModeCommandDescriptor entModeCmdDescriptor = 
+					EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) commandClass);
+			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
+			if(numEnterModeArgs < argStrings.size()) {
+				innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
+				argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
 			}
 		}
+		if(requireModeWrappable && !CommandUsage.modeWrappableForCmdClass(commandClass)) {
+			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
+					String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
+		}
+		Command command = buildCommand(commandContext, commandClass, argStrings, this);
 		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
 		try {
 			// combine enter-mode command with inner commands.
 			if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
+				commandContext.setRequireModeWrappable(true);
 				command.execute(commandContext);
 				context.commitChanges();
 				try {
-					executeTokenStrings(innerCmdWords);
+					executeTokenStrings(innerCmdWords, true);
 				} finally {
+					commandContext.setRequireModeWrappable(false);
 					commandContext.popCommandMode();
 				}
 			} else {
@@ -229,7 +213,42 @@ public class Console implements CommandContextListener
 
 	}
 
-	public Map<String, Object> runDocopt(Class<? extends Command> commandClass,
+	public static Command buildCommand(
+			CommandContext commandContext,
+			Class<? extends Command> commandClass,
+			List<String> argStrings) {
+		return buildCommand(commandContext, commandClass, argStrings, null);
+	}
+	
+	private static Command buildCommand(
+			CommandContext commandContext,
+			Class<? extends Command> commandClass,
+			List<String> argStrings,
+			Console console) {
+		Map<String, Object> docoptMap;
+		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
+		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
+		Element element = buildCommandElement(commandClass, docoptMap);
+		if(console != null && console.showCmdXml) {
+			console.output(new String(XmlUtils.prettyPrint(element.getOwnerDocument())));
+		}
+		Command command;
+		try {
+			command = commandContext.commandFromElement(element);
+		} catch(PluginConfigException pce) {
+			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
+					pce.getErrorArgs().length >= 3) {
+				throw new ConsoleException(Code.ARGUMENT_FORMAT_ERROR,
+						pce.getErrorArgs()[0].toString(),
+						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
+			} else {
+				throw pce;
+			}
+		}
+		return command;
+	}
+
+	private static Map<String, Object> runDocopt(Class<? extends Command> commandClass,
 			String docoptUsageSingleWord, List<String> argStrings) {
 		Map<String, Object> docoptMap;
 		try {
@@ -240,7 +259,7 @@ public class Console implements CommandContextListener
 		return docoptMap;
 	}
 
-	private Element buildCommandElement(Class<? extends Command> commandClass, Map<String, Object> docoptMap) {
+	private static Element buildCommandElement(Class<? extends Command> commandClass, Map<String, Object> docoptMap) {
 		Element docElem = CommandUsage.docElemForCmdClass(commandClass);
 		docoptMap.forEach((key, value) -> {
 			if(value == null) { return; }

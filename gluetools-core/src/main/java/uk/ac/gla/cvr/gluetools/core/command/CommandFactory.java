@@ -6,10 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command.CommandCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.GroupHelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine;
@@ -46,36 +48,48 @@ private static Multiton factories = new Multiton();
 		Map<String, CommandTreeNode> childNodes = new LinkedHashMap<String, CommandTreeNode>();
 		CommandPluginFactory cmdPluginFactory = new CommandPluginFactory();
 		GroupHelpLine groupHelpLine;
+		boolean modeWrappable = false;
 		
 		// fullHelp means expand group helps to cover sub groups.
-		private List<HelpLine> helpLines(List<String> commandWords, boolean fullHelp) {
+		private List<HelpLine> helpLines(List<String> commandWords, boolean fullHelp, boolean requireModeWrappable) {
 			List<HelpLine> helpLines = new ArrayList<HelpLine>();
 			if(commandWords.size() == 1) {
 				String finalWord = commandWords.get(0);
 				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
 				if(cmdClass != null) {
-					helpLines.add(new SpecificCommandHelpLine(cmdClass));
+					if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
+						helpLines.add(new SpecificCommandHelpLine(cmdClass));
+					}
 				}
 			}
 			if(commandWords.size() == 0) {
 				if(groupHelpLine != null && !fullHelp) {
-					helpLines.add(groupHelpLine);
+					if(modeWrappable || !requireModeWrappable) {
+						helpLines.add(groupHelpLine);
+					}
 				} else { 
-					childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false)));
-					cmdPluginFactory.getRegisteredClasses().forEach(c -> helpLines.add(new SpecificCommandHelpLine(c)));
+					childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false, requireModeWrappable)));
+					cmdPluginFactory.getRegisteredClasses().forEach(c -> { 
+						if(CommandUsage.modeWrappableForCmdClass(c) || !requireModeWrappable) {
+							helpLines.add(new SpecificCommandHelpLine(c));
+						}
+					});
 				}
 			} else {
 				String firstWord = commandWords.remove(0);
 				CommandTreeNode treeNode = childNodes.get(firstWord);
 				if(treeNode != null) {
 					boolean newFullHelp = commandWords.isEmpty();
-					helpLines.addAll(treeNode.helpLines(commandWords, newFullHelp));
+					helpLines.addAll(treeNode.helpLines(commandWords, newFullHelp, requireModeWrappable));
 				}
 			}
 			return helpLines;
 		}
 		
 		private void registerCommandClass(List<String> commandWords, Class<? extends Command> cmdClass) {
+			if(CommandUsage.modeWrappableForCmdClass(cmdClass)) {
+				modeWrappable = true;
+			}
 			if(commandWords.size() == 1) {
 				String finalWord = commandWords.get(0);
 				if(cmdPluginFactory.containsElementName(finalWord)) {
@@ -139,25 +153,46 @@ private static Multiton factories = new Multiton();
 			
 		}
 
-		public List<String> getCommandWordSuggestions(CommandContext cmdContext, LinkedList<String> commandWords) {
+		public List<String> getCommandWordSuggestions(ConsoleCommandContext cmdContext, 
+				LinkedList<String> commandWords, 
+				boolean commandCompleters,
+				boolean requireModeWrappable) {
 			if(commandWords.size() == 0) {
-				List<String> suggestions = new LinkedList<String>(childNodes.keySet());
-				suggestions.addAll(cmdPluginFactory.getElementNames());
+				List<String> suggestions = new LinkedList<String>();
+				Set<String> childNodeElemNames = childNodes.keySet();
+				for(String childNodeElemName: childNodeElemNames) {
+					if(childNodes.get(childNodeElemName).modeWrappable || !requireModeWrappable) {
+						suggestions.add(childNodeElemName);
+					}
+				}
+				Set<String> elementNames = cmdPluginFactory.getElementNames();
+				for(String elementName: elementNames) {
+					Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(elementName);
+					if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
+						suggestions.add(elementName);
+					}
+				}
 				return suggestions;
 			} else {
 				String firstWord = commandWords.remove(0);
 				CommandTreeNode treeNode = childNodes.get(firstWord);
 				if(treeNode == null) {
 					Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(firstWord);
-					if(cmdClass != null) {
+					if(cmdClass != null && commandCompleters) {
 						CommandCompleter cmdCompleter = CommandUsage.commandCompleterForCmdClass(cmdClass);
 						if(cmdCompleter != null) {
-							return cmdCompleter.completionSuggestions(cmdContext, commandWords);
+							if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
+								return cmdCompleter.completionSuggestions(cmdContext, commandWords);
+							}
 						}
 					}
 					return new LinkedList<String>();
 				}
-				return treeNode.getCommandWordSuggestions(cmdContext, commandWords);
+				if(requireModeWrappable && !treeNode.modeWrappable) {
+					return new LinkedList<String>();
+				} else {
+					return treeNode.getCommandWordSuggestions(cmdContext, commandWords, commandCompleters, requireModeWrappable);
+				}
 			}
 		}
 
@@ -186,8 +221,8 @@ private static Multiton factories = new Multiton();
 		return names;
 	}
 
-	public List<HelpLine> helpLinesForCommandWords(List<String> commandWords) {
-		return rootNode.helpLines(new LinkedList<String>(commandWords), false);
+	public List<HelpLine> helpLinesForCommandWords(List<String> commandWords, boolean requireModeWrappable) {
+		return rootNode.helpLines(new LinkedList<String>(commandWords), false, requireModeWrappable);
 	}
 
 	protected void addGroupHelp(List<String> commandWords, String description) {
@@ -195,8 +230,10 @@ private static Multiton factories = new Multiton();
 		rootNode.addGroupHelp(new LinkedList<String>(commandWords), groupHelpLine);
 	}
 
-	public List<String> getCommandWordSuggestions(CommandContext cmdContext, List<String> lookupBasis) {
-		return rootNode.getCommandWordSuggestions(cmdContext, new LinkedList<String>(lookupBasis));
+	public List<String> getCommandWordSuggestions(ConsoleCommandContext cmdContext, List<String> lookupBasis, 
+			boolean commandCompleters, boolean requireModeWrappable) {
+		return rootNode.getCommandWordSuggestions(cmdContext, new LinkedList<String>(lookupBasis), commandCompleters, 
+				requireModeWrappable);
 	}
 	
 }

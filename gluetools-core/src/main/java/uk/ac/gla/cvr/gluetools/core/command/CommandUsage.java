@@ -59,7 +59,15 @@ public class CommandUsage {
 	public static String[] cmdWordsForCmdClass(Class<? extends Command> cmdClass) {
 		return cmdClass.getAnnotation(CommandClass.class).commandWords();
 	}
-	
+
+	public static String[] docoptUsagesForCmdClass(Class<? extends Command> cmdClass) {
+		return cmdClass.getAnnotation(CommandClass.class).docoptUsages();
+	}
+
+	public static boolean modeWrappableForCmdClass(Class<? extends Command> cmdClass) {
+		return cmdClass.getAnnotation(CommandClass.class).modeWrappable();
+	}
+
 	public static Element docElemForCmdClass(Class<? extends Command> cmdClass) {
 		String[] cmdWords = cmdWordsForCmdClass(cmdClass);
 		Element elem = XmlUtils.documentWithElement(cmdWords[0]);

@@ -39,5 +39,6 @@ public class ModuleCommand extends ProjectModeCommand implements EnterModeComman
 
 	@CompleterClass
 	public static class Completer extends ModuleNameCompleter {}
+	
 
 }

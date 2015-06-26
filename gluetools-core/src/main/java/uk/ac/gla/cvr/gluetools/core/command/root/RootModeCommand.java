@@ -8,8 +8,8 @@ import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
@@ -22,7 +22,7 @@ public abstract class RootModeCommand extends Command {
 	protected abstract static class ProjectNameCompleter extends CommandCompleter {
 
 		@Override
-		public List<String> completionSuggestions(CommandContext cmdContext, List<String> argStrings) {
+		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, List<String> argStrings) {
 			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
 				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Project.class, new SelectQuery(Project.class)).

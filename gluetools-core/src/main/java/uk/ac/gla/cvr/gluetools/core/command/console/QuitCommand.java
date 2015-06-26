@@ -7,7 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 @CommandClass(
 	commandWords={"quit"},
 	docoptUsages={""},
-	description="Quit GLUE"
+	description="Quit GLUE",
+	modeWrappable = false
 ) 
 public class QuitCommand extends ConsoleCommand {
 

@@ -9,8 +9,9 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 
 @CommandClass( 
 		commandWords = {"console","show","directory"},
-		description = "Show the current directory for loading and saving",
-		docoptUsages = {""})
+		docoptUsages = {""}, 
+		modeWrappable = false,
+		description = "Show the current directory for loading and saving")
 public class ShowDirectoryCommand extends ConsoleCommand {
 
 	@Override

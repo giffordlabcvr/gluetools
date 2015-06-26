@@ -20,6 +20,7 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 
 	private boolean finished = false;
+	private boolean requireModeWrappable = false;
 
 	public boolean isFinished() {
 		return finished;
@@ -75,6 +76,14 @@ public class ConsoleCommandContext extends CommandContext {
 		} catch (IOException e) {
 			throw new ConsoleException(e, Code.READ_ERROR, path, e.getMessage());
 		}
+	}
+
+	public boolean isRequireModeWrappable() {
+		return requireModeWrappable;
+	}
+
+	public void setRequireModeWrappable(boolean requireModeWrappable) {
+		this.requireModeWrappable = requireModeWrappable;
 	}
 
 	

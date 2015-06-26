@@ -5,7 +5,6 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -35,7 +34,7 @@ public class HelpCommand extends ConsoleCommand {
 	@Override
 	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(commandWords);
+		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(commandWords, cmdContext.isRequireModeWrappable());
 		if(helpLines.isEmpty()) {
 			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
 		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
@@ -48,9 +47,9 @@ public class HelpCommand extends ConsoleCommand {
 	@CompleterClass
 	public static class HelpCommandCompleter extends CommandCompleter {
 		@Override
-		public List<String> completionSuggestions(CommandContext commandContext, List<String> argStrings) {
+		public List<String> completionSuggestions(ConsoleCommandContext commandContext, List<String> argStrings) {
 			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
-			return commandFactory.getCommandWordSuggestions(commandContext, argStrings);
+			return commandFactory.getCommandWordSuggestions(commandContext, argStrings, false, commandContext.isRequireModeWrappable());
 		}
 		
 	}
