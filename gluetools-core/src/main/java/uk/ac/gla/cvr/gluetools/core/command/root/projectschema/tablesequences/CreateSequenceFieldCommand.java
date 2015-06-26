@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -17,11 +17,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"create", "sequence", "field"}, 
+	commandWords={"create", "field"}, 
 	docoptUsages={"<fieldName> <type> [<maxLength>]"},
-	description="Create a new field in the sequence table",
+	description="Create a new field in the table",
 	furtherHelp="The field name must be a valid database identifier, e.g. MY_FIELD_1") 
-public class CreateSequenceFieldCommand extends ProjectSchemaModeCommand {
+public class CreateSequenceFieldCommand extends TableSequencesModeCommand {
 
 	private String fieldName;
 	private FieldType type;

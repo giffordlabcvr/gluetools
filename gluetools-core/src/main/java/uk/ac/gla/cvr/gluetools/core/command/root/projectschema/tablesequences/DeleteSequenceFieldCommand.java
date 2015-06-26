@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -14,10 +14,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"delete", "sequence", "field"}, 
+	commandWords={"delete", "field"}, 
 	docoptUsages={"<fieldName>"},
-	description="Delete a field from the sequence table") 
-public class DeleteSequenceFieldCommand extends ProjectSchemaModeCommand {
+	description="Delete a field from the table") 
+public class DeleteSequenceFieldCommand extends TableSequencesModeCommand {
 
 	private String fieldName;
 	

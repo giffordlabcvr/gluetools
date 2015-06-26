@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
 
 import org.w3c.dom.Element;
 
@@ -9,13 +9,13 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-public class ProjectSchemaMode extends CommandMode {
+public class TableSequencesMode extends CommandMode {
 
 	
 	private Project project;
 	
-	public ProjectSchemaMode(CommandContext cmdContext, Project project) {
-		super("project-schema-"+project.getName(), CommandFactory.get(ProjectSchemaModeCommandFactory.creator));
+	public TableSequencesMode(CommandContext cmdContext, Project project) {
+		super("table-SEQUENCES", CommandFactory.get(TableSequencesModeCommandFactory.creator));
 		this.project = project;
 	}
 
@@ -23,13 +23,9 @@ public class ProjectSchemaMode extends CommandMode {
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
-		if(ProjectSchemaModeCommand.class.isAssignableFrom(cmdClass)) {
+		if(TableSequencesModeCommand.class.isAssignableFrom(cmdClass)) {
 			XmlUtils.appendElementWithText(elem, "projectName", project.getName());
 		}
-	}
-
-	public Project getProject() {
-		return project;
 	}
 
 	

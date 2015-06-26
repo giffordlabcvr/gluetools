@@ -11,9 +11,7 @@ public class ProjectSchemaModeCommandFactory extends BaseCommandFactory {
 
 	public ProjectSchemaModeCommandFactory() {
 		super();
-		registerCommandClass(CreateSequenceFieldCommand.class);
-		registerCommandClass(DeleteSequenceFieldCommand.class);
-		registerCommandClass(ListSequenceFieldsCommand.class);
+		registerCommandClass(TableSequencesCommand.class);
 		registerCommandClass(ExitCommand.class);
 
 
