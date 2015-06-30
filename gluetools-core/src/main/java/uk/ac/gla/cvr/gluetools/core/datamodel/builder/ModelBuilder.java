@@ -235,7 +235,7 @@ public class ModelBuilder {
 
 	public static String specializeTableName(String tableName,
 			String projectName) {
-		return tableName+"_"+projectName;
+		return projectName+"_"+tableName;
 	}
 
 	

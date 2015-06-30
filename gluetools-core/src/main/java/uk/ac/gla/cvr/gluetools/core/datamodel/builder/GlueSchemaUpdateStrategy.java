@@ -3,12 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.builder;
 import java.sql.SQLException;
 
 import org.apache.cayenne.access.DataNode;
-import org.apache.cayenne.access.dbsync.ThrowOnPartialOrCreateSchemaStrategy;
+import org.apache.cayenne.access.dbsync.CreateIfNoSchemaStrategy;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 
-public class GlueSchemaUpdateStrategy extends ThrowOnPartialOrCreateSchemaStrategy {
+public class GlueSchemaUpdateStrategy extends CreateIfNoSchemaStrategy {
 
 	@Override
 	protected void processSchemaUpdate(DataNode dataNode) throws SQLException {
