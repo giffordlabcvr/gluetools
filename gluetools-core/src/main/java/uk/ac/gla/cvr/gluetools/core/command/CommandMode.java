@@ -3,8 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
-
 
 public abstract class CommandMode {
 	
@@ -17,7 +15,6 @@ public abstract class CommandMode {
 	
 	// TODO need to enhance this so that Console commands are only available 
 	// for a given mode when we are using the console.
-	public static CommandMode ROOT = new RootCommandMode();
 	
 	private String modeId;
 	

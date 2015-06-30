@@ -39,7 +39,7 @@ public class CreateProjectCommand extends RootModeCommand {
 		Project newProject = GlueDataObject.create(objContext, Project.class, Project.pkMap(projectName));
 		description.ifPresent(newProject::setDescription);
 		ServerRuntime projectRuntime = 
-				ModelBuilder.createProjectModel(cmdContext.peekCommandMode().getServerRuntime(), newProject);
+				ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), newProject);
 		projectRuntime.shutdown();
 		return new CreateCommandResult(newProject.getObjectId());
 	}

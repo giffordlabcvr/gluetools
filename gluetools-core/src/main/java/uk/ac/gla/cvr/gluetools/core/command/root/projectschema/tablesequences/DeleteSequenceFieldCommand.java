@@ -31,7 +31,7 @@ public class DeleteSequenceFieldCommand extends TableSequencesModeCommand {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Field field = GlueDataObject.lookup(objContext, Field.class, Field.pkMap(getProjectName(), fieldName));
-		ModelBuilder.deleteSequenceColumnFromModel(cmdContext.peekCommandMode().getServerRuntime(), field.getProject(), field);
+		ModelBuilder.deleteSequenceColumnFromModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), field.getProject(), field);
 		objContext.deleteObject(field);
 		return CommandResult.OK;
 	}

@@ -46,7 +46,7 @@ public class CreateSequenceFieldCommand extends TableSequencesModeCommand {
 		field.setProject(project);
 		field.setType(type.name());
 		field.setMaxLength(maxLength);
-		ModelBuilder.addSequenceColumnToModel(cmdContext.peekCommandMode().getServerRuntime(), project, field);
+		ModelBuilder.addSequenceColumnToModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project, field);
 		return new CreateCommandResult(field.getObjectId());
 	}
 

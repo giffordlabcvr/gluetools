@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -21,6 +22,7 @@ import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
@@ -29,7 +31,6 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
@@ -39,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -69,28 +71,26 @@ public class Console implements CommandContextListener
 	private PrintWriter out;
 	private ConsoleReader reader;
 	private ConsoleCommandContext commandContext;
-	private GluetoolsEngine gluetoolsEngine;
 	private Integer batchLine = null;
+	private String configFilePath = null;
 	private boolean verboseError = false;
 	private boolean interactiveAfterBatch = false;
 	private boolean showCmdXml = false;
 	
-	private Console() throws IOException {
-		this.reader = new ConsoleReader();
-		this.out = new PrintWriter(reader.getOutput());
-		this.gluetoolsEngine = GluetoolsEngine.getInstance();
-		this.commandContext = new ConsoleCommandContext(gluetoolsEngine);
-		commandContext.setCommandContextListener(this);
-		commandContext.pushCommandMode(CommandMode.ROOT);
-		reader.addCompleter(new ConsoleCompleter(commandContext));
+	private Console() {
 	}
 	
 	private boolean isFinished() {
 		return commandContext.isFinished();
 	}
 
-	private void handleInteractiveLine() throws IOException {
-		String line = reader.readLine();
+	private void handleInteractiveLine() {
+		String line = null;
+		try {
+			line = reader.readLine();
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
 		try {
 			handleLine(line);
 		} catch(GlueException ge) {
@@ -284,13 +284,19 @@ public class Console implements CommandContextListener
 		return docElem.getOwnerDocument().getDocumentElement();
 	}
 
-	public static void main(String[] args) throws IOException {
-		Console console = new Console();
+	public static void main(String[] args) {
 		Docopt docopt = null;
 		try(InputStream docoptStream = Console.class.getResourceAsStream("/Console.docopt")) {
 			docopt = new Docopt(docoptStream);
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
 		} 
 		Map<String, Object> docoptResult = docopt.parse(args);
+		Console console = new Console();
+		Object configFileOption = docoptResult.get("--config-file");
+		if(configFileOption != null) {
+			console.configFilePath = configFileOption.toString();
+		}
 		Object verboseErrorOption = docoptResult.get("--verbose-error");
 		if(verboseErrorOption != null) {
 			console.verboseError = Boolean.parseBoolean(verboseErrorOption.toString());
@@ -303,7 +309,8 @@ public class Console implements CommandContextListener
 		if(showCmdXmlOption != null) {
 			console.showCmdXml = Boolean.parseBoolean(showCmdXmlOption.toString());
 		}
-		Object fileString = docoptResult.get("--file");
+		console.init();
+		Object fileString = docoptResult.get("--batch-file");
 		if(fileString != null) {
 			console.runBatchFile(fileString);
 			if(console.interactiveAfterBatch) {
@@ -317,14 +324,40 @@ public class Console implements CommandContextListener
 		console.shutdown();
 	}
 
-	private void interactiveSession() throws IOException {
+	private void init() {
+		try {
+			this.reader = new ConsoleReader();
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
+		this.out = new PrintWriter(reader.getOutput());
+		GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
+		Document configDocument = null;
+		if(configFilePath != null) {
+			try {
+				configDocument = XmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
+			} catch(SAXException saxe) {
+				throw new ConsoleException(ConsoleException.Code.GLUE_CONFIG_XML_FORMAT_ERROR, saxe.getLocalizedMessage());
+			}
+		} else {
+			configDocument = XmlUtils.documentWithElement("gluetools").getOwnerDocument();
+		}
+		gluetoolsEngine.configure(gluetoolsEngine.createPluginConfigContext(), configDocument.getDocumentElement());
+		gluetoolsEngine.init();
+		this.commandContext = new ConsoleCommandContext(gluetoolsEngine);
+		commandContext.setCommandContextListener(this);
+		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));
+		reader.addCompleter(new ConsoleCompleter(commandContext));
+	}
+
+	private void interactiveSession() {
 		while(!isFinished()) {
 			handleInteractiveLine();
 		}
 	}
 
 	private void shutdown() {
-		while(commandContext.peekCommandMode() != CommandMode.ROOT) {
+		while(!(commandContext.peekCommandMode() instanceof RootCommandMode)) {
 			commandContext.popCommandMode();
 		}
 		commandContext.popCommandMode();
@@ -423,6 +456,7 @@ public class Console implements CommandContextListener
 	public void commandModeChanged() {
 		updatePrompt();
 	}
+
 
 	
 	

@@ -30,7 +30,7 @@ public class DeleteProjectCommand extends RootModeCommand {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project project = getProject(objContext, projectName);
-		ModelBuilder.deleteProjectModel(cmdContext.peekCommandMode().getServerRuntime(), project);
+		ModelBuilder.deleteProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project);
 		objContext.deleteObject(project);
 		return CommandResult.OK;
 	}

@@ -14,7 +14,7 @@ public class ProjectMode extends CommandMode {
 	public ProjectMode(CommandContext cmdContext, Project project) {
 		super("project-"+project.getName(), CommandFactory.get(ProjectModeCommandFactory.creator));
 		this.project = project;
-		setServerRuntime(ModelBuilder.createProjectModel(getServerRuntime(), project));
+		setServerRuntime(ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project));
 	}
 
 	

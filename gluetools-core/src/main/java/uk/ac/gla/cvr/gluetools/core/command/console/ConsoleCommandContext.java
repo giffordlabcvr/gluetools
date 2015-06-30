@@ -3,6 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
@@ -14,6 +16,8 @@ import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 public class ConsoleCommandContext extends CommandContext {
 
 	private File loadSavePath = new File(System.getProperty("user.dir", "/"));
+	
+	private Map<String, String> consoleProperties = new LinkedHashMap<String, String>();
 	
 	public ConsoleCommandContext(GluetoolsEngine gluetoolsEngine) {
 		super(gluetoolsEngine);
@@ -62,19 +66,23 @@ public class ConsoleCommandContext extends CommandContext {
 		} catch (IOException e) {
 			throw new ConsoleException(e, Code.INVALID_PATH, path, e.getMessage());
 		}
-		if(!path.exists()) {
-			throw new ConsoleException(Code.FILE_NOT_FOUND, path);
+		return loadBytesFromFile(path);
+	}
+
+	public static byte[] loadBytesFromFile(File file) {
+		if(!file.exists()) {
+			throw new ConsoleException(Code.FILE_NOT_FOUND, file);
 		}
-		if(!path.isFile()) {
-			throw new ConsoleException(Code.NOT_A_FILE, path);
+		if(!file.isFile()) {
+			throw new ConsoleException(Code.NOT_A_FILE, file);
 		}
-		if(!path.canRead()) {
-			throw new ConsoleException(Code.FILE_NOT_READABLE, path);
+		if(!file.canRead()) {
+			throw new ConsoleException(Code.FILE_NOT_READABLE, file);
 		}
-		try(FileInputStream fileInputStream = new FileInputStream(path)) {
+		try(FileInputStream fileInputStream = new FileInputStream(file)) {
 			return IOUtils.toByteArray(fileInputStream);
 		} catch (IOException e) {
-			throw new ConsoleException(e, Code.READ_ERROR, path, e.getMessage());
+			throw new ConsoleException(e, Code.READ_ERROR, file, e.getMessage());
 		}
 	}
 

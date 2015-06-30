@@ -16,8 +16,12 @@ import javax.xml.xpath.XPathExpression;
 
 import org.apache.cayenne.access.DataDomain;
 import org.apache.cayenne.access.DataNode;
+import org.apache.cayenne.configuration.Constants;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.cayenne.dba.TypesMapping;
+import org.apache.cayenne.di.Binder;
+import org.apache.cayenne.di.MapBuilder;
+import org.apache.cayenne.di.Module;
 import org.apache.cayenne.map.DataMap;
 import org.apache.cayenne.map.DbAttribute;
 import org.apache.cayenne.map.DbEntity;
@@ -32,6 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -42,6 +47,13 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils.XmlNamespaceContext;
 
 public class ModelBuilder {
 
+
+	public static String META_DOMAIN_RESOURCE = "cayenne-gluemeta-domain.xml";
+	public static String META_MAP_RESOURCE = "gluemeta-map.map.xml";
+
+	public static String CORE_DOMAIN_RESOURCE = "cayenne-gluecore-domain.xml";
+	public static String CORE_MAP_RESOURCE = "gluecore-map.map.xml";
+
 	public static String PROJECT_DOMAIN_RESOURCE = "cayenne-glueproject-domain.xml";
 	public static String PROJECT_MAP_RESOURCE = "glueproject-map.map.xml";
 
@@ -49,7 +61,28 @@ public class ModelBuilder {
 
 	// TODO project runtime should just copy domain from root runtime.
 	
-	public static ServerRuntime createProjectModel(ServerRuntime rootServerRuntime, Project project) {
+	
+	public static ServerRuntime createRootRuntime(DatabaseConfiguration dbConfiguration) {
+		return new ServerRuntime(CORE_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration));
+	}
+
+
+	private static Module dbConfigModule(DatabaseConfiguration dbConfiguration) {
+		Module dbConfigModule = new Module() {
+			  @Override
+			  public void configure(Binder binder) {
+			    MapBuilder<Object> map = binder.bindMap(Constants.PROPERTIES_MAP)
+			       .put(Constants.JDBC_DRIVER_PROPERTY, dbConfiguration.getVendor().getJdbcDriverClass())
+			       .put(Constants.JDBC_URL_PROPERTY, dbConfiguration.getJdbcUrl());
+			    dbConfiguration.getUsername().ifPresent(u -> map.put(Constants.JDBC_USERNAME_PROPERTY, u));
+			    dbConfiguration.getPassword().ifPresent(p -> map.put(Constants.JDBC_PASSWORD_PROPERTY, p));
+			  }
+		};
+		return dbConfigModule;
+	}
+	
+	
+	public static ServerRuntime createProjectModel(DatabaseConfiguration dbConfiguration, Project project) {
 		String projectName = project.getName();
 		List<Field> fields = project.getFields();
 		List<String> projectTableNames = new ArrayList<String>();
@@ -142,6 +175,7 @@ public class ModelBuilder {
 
 		ServerRuntime projectRuntime = new ServerRuntime(
 					    projectDomainName, 
+					    dbConfigModule(dbConfiguration),
 					     binder -> binder.bind(ResourceLocator.class)
 					                     .to(GlueResourceLocator.class));
 		// ensure it is created by getting the obj context.
@@ -215,10 +249,10 @@ public class ModelBuilder {
 
 
 	
-	public static void deleteProjectModel(ServerRuntime rootServerRuntime, Project project) {
+	public static void deleteProjectModel(DatabaseConfiguration dbConfiguration, Project project) {
 		ServerRuntime projectRuntime = null;
 		try {
-			projectRuntime = createProjectModel(rootServerRuntime, project);
+			projectRuntime = createProjectModel(dbConfiguration, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 
 			List<MergerToken> tokens = new ArrayList<MergerToken>();
@@ -235,10 +269,10 @@ public class ModelBuilder {
 		}
 	}
 	
-	public static void addSequenceColumnToModel(ServerRuntime rootServerRuntime, Project project, Field field) {
+	public static void addSequenceColumnToModel(DatabaseConfiguration dbConfiguration, Project project, Field field) {
 		ServerRuntime projectRuntime = null;
 		try {
-			projectRuntime = createProjectModel(rootServerRuntime, project);
+			projectRuntime = createProjectModel(dbConfiguration, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 			AddColumnToDb addToken = getAddColumnToken(project, field, mergerContext);
 			addToken.execute(mergerContext);
@@ -271,10 +305,10 @@ public class ModelBuilder {
 		return mergerContext;
 	}
 
-	public static void deleteSequenceColumnFromModel(ServerRuntime rootServerRuntime, Project project, Field field) {
+	public static void deleteSequenceColumnFromModel(DatabaseConfiguration dbConfiguration, Project project, Field field) {
 		ServerRuntime projectRuntime = null;
 		try {
-			projectRuntime = createProjectModel(rootServerRuntime, project);
+			projectRuntime = createProjectModel(dbConfiguration, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 			AddColumnToDb addToken = getAddColumnToken(project, field, mergerContext);
 			DropColumnToDb dropToken = new DropColumnToDb(addToken.getEntity(), addToken.getColumn());
