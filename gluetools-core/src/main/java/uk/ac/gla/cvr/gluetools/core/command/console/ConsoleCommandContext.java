@@ -3,8 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
@@ -16,8 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 public class ConsoleCommandContext extends CommandContext {
 
 	private File loadSavePath = new File(System.getProperty("user.dir", "/"));
-	
-	private Map<String, String> consoleProperties = new LinkedHashMap<String, String>();
 	
 	public ConsoleCommandContext(GluetoolsEngine gluetoolsEngine) {
 		super(gluetoolsEngine);

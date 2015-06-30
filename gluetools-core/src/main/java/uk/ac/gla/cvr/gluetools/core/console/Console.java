@@ -54,7 +54,6 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExportOptions;
 import com.brsanthu.dataexporter.output.texttable.TextTableExportStyle;
 import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 
-// TODO accept on the command line an XML configuration file to configure the DB connection and other items.
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
 // TODO completion should extend to arguments, at least when these arguments select from a table / enum / map.
@@ -62,7 +61,6 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 // TODO implement paging of commands in interactive mode.
 // TODO implement toggle for verbose exception reporting.
 // TODO catch general exceptions and continue.
-// TODO emit warning about temporary database
 // TODO implement toggle for whether output should be echoed in batch mode.
 // TODO history should be stored in the DB.
 // TODO in batch mode, exceptions should go to stderr.
@@ -76,6 +74,7 @@ public class Console implements CommandContextListener
 	private boolean verboseError = false;
 	private boolean interactiveAfterBatch = false;
 	private boolean showCmdXml = false;
+	private boolean migrateSchema;
 	
 	private Console() {
 	}
@@ -293,22 +292,7 @@ public class Console implements CommandContextListener
 		} 
 		Map<String, Object> docoptResult = docopt.parse(args);
 		Console console = new Console();
-		Object configFileOption = docoptResult.get("--config-file");
-		if(configFileOption != null) {
-			console.configFilePath = configFileOption.toString();
-		}
-		Object verboseErrorOption = docoptResult.get("--verbose-error");
-		if(verboseErrorOption != null) {
-			console.verboseError = Boolean.parseBoolean(verboseErrorOption.toString());
-		}
-		Object interactiveOption = docoptResult.get("--interactive");
-		if(interactiveOption != null) {
-			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
-		}
-		Object showCmdXmlOption = docoptResult.get("--show-cmd-xml");
-		if(showCmdXmlOption != null) {
-			console.showCmdXml = Boolean.parseBoolean(showCmdXmlOption.toString());
-		}
+		setupConsoleOptions(docoptResult, console);
 		console.init();
 		Object fileString = docoptResult.get("--batch-file");
 		if(fileString != null) {
@@ -322,6 +306,29 @@ public class Console implements CommandContextListener
 			console.interactiveSession();
 		}
 		console.shutdown();
+	}
+
+	private static void setupConsoleOptions(Map<String, Object> docoptResult, Console console) {
+		Object configFileOption = docoptResult.get("--config-file");
+		if(configFileOption != null) {
+			console.configFilePath = configFileOption.toString();
+		}
+		Object verboseErrorOption = docoptResult.get("--verbose-error");
+		if(verboseErrorOption != null) {
+			console.verboseError = Boolean.parseBoolean(verboseErrorOption.toString());
+		}
+		Object migrateSchemaOption = docoptResult.get("--migrate-schema");
+		if(migrateSchemaOption != null) {
+			console.migrateSchema = Boolean.parseBoolean(migrateSchemaOption.toString());
+		}
+		Object interactiveOption = docoptResult.get("--interactive");
+		if(interactiveOption != null) {
+			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
+		}
+		Object showCmdXmlOption = docoptResult.get("--show-cmd-xml");
+		if(showCmdXmlOption != null) {
+			console.showCmdXml = Boolean.parseBoolean(showCmdXmlOption.toString());
+		}
 	}
 
 	private void init() {
@@ -343,7 +350,7 @@ public class Console implements CommandContextListener
 			configDocument = XmlUtils.documentWithElement("gluetools").getOwnerDocument();
 		}
 		gluetoolsEngine.configure(gluetoolsEngine.createPluginConfigContext(), configDocument.getDocumentElement());
-		gluetoolsEngine.init();
+		gluetoolsEngine.init(this.migrateSchema);
 		this.commandContext = new ConsoleCommandContext(gluetoolsEngine);
 		commandContext.setCommandContextListener(this);
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));

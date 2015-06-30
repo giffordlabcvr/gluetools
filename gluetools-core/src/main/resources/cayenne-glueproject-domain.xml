@@ -4,7 +4,7 @@
 
 	<node name="glueproject-node"
 		 factory="org.apache.cayenne.configuration.server.XMLPoolingDataSourceFactory"
-		 schema-update-strategy="org.apache.cayenne.access.dbsync.CreateIfNoSchemaStrategy"
+		 schema-update-strategy="uk.ac.gla.cvr.gluetools.core.datamodel.builder.GlueSchemaUpdateStrategy"
 		>
 		<map-ref name="glueproject-map"/>
 		<data-source>

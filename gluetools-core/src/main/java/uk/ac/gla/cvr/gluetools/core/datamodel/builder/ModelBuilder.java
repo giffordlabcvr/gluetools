@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 
+import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.access.DataDomain;
 import org.apache.cayenne.access.DataNode;
 import org.apache.cayenne.configuration.Constants;
@@ -37,8 +38,10 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
@@ -58,12 +61,32 @@ public class ModelBuilder {
 	public static String PROJECT_MAP_RESOURCE = "glueproject-map.map.xml";
 
 	private static String CAYENNE_NS = "http://cayenne.apache.org/schema/3.0/modelMap";
-
-	// TODO project runtime should just copy domain from root runtime.
 	
+
+	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration) {
+		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration));
+	}
 	
 	public static ServerRuntime createRootRuntime(DatabaseConfiguration dbConfiguration) {
 		return new ServerRuntime(CORE_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration));
+	}
+
+	public static String getDbSchemaVersionString(ObjectContext metaObjectContext) {
+		SchemaVersion schemaVersion = GlueDataObject.lookup(metaObjectContext, SchemaVersion.class, SchemaVersion.pkMap(1), true);
+		if(schemaVersion != null) {
+			return schemaVersion.getSchemaVersion();
+		} else {
+			return "0";
+		}
+	}
+
+	public static void setDbSchemaVersionString(ObjectContext metaObjectContext, String versionString) {
+		SchemaVersion schemaVersion = GlueDataObject.lookup(metaObjectContext, SchemaVersion.class, SchemaVersion.pkMap(1), true);
+		if(schemaVersion == null) {
+			schemaVersion = metaObjectContext.newObject(SchemaVersion.class);
+			schemaVersion.setId(1);
+		}
+		schemaVersion.setSchemaVersion(versionString);
 	}
 
 

@@ -57,6 +57,8 @@ task datamodel(dependsOn: 'checkCayenneTools') << {
 	ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
 	String mapFile2 = 'src/main/resources/glueproject-map.map.xml'
 	ant.cgen(map: mapFile2, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+	String mapFile3 = 'src/main/resources/gluemeta-map.map.xml'
+	ant.cgen(map: mapFile3, destDir: destDir, usepkgpath: true, superpkg: superPkg)
 }
 
 dependencies {

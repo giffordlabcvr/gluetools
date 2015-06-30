@@ -6,7 +6,10 @@ public class ModelBuilderException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		PROJECT_TABLE_MISSING("projectName", "tableName");
+		PROJECT_TABLE_MISSING("projectName", "tableName"), 
+		SCHEMA_VERSION_LATER_THAN_CURRENT("dbSchemaVersion", "currentSchemaVersion"),
+		SCHEMA_MIGRATION_NOT_IMPLEMENTED("dbSchemaVersion", "currentSchemaVersion"), 
+		MIGRATE_SCHEMA_OPTION_REMINDER("dbSchemaVersion", "currentSchemaVersion");
 
 		private String[] argNames;
 		private Code(String... argNames) {
