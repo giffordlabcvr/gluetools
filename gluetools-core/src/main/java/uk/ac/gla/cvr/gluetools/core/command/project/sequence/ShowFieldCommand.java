@@ -12,7 +12,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.SimpleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommand.FieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -23,29 +25,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"set", "field"}, 
-	docoptUsages={"[-n] <fieldName> <fieldValue>"},
-	docoptOptions={"-n, --noOverwrite  Do not overwrite an existing value"},
-	description="Set a field value for the sequence", 
-	furtherHelp=
-		"If --noOverwrite is used, and the field already has a non-null value, no update will take place. "+
-		"By default the command will overwrite any existing value.") 
-public class SetFieldCommand extends SequenceModeCommand {
+	commandWords={"show", "field"}, 
+	docoptUsages={"<fieldName>"},
+	description="Show a field value for the sequence") 
+public class ShowFieldCommand extends SequenceModeCommand {
 
 	public static final String FIELD_NAME = "fieldName";
-	public static final String FIELD_VALUE = "fieldValue";
-	public static final String NO_OVERWRITE = "noOverwrite";
 	
 	private String fieldName;
-	private String fieldValue;
-	private Optional<Boolean> noOverwrite;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
-		fieldValue = PluginUtils.configureStringProperty(configElem, FIELD_VALUE, true);
-		noOverwrite = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NO_OVERWRITE, false));
 	}
 
 
@@ -57,37 +49,16 @@ public class SetFieldCommand extends SequenceModeCommand {
 		if(!customFieldNames.contains(fieldName)) {
 			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);
 		}
-		Field field = project.getSequenceField(fieldName);
-		Object newValue = field.getFieldType().getFieldTranslator().valueFromString(fieldValue);
-		if(noOverwrite.orElse(false)) {
-			if(sequence.readProperty(fieldName) != null) {
-				return CommandResult.OK;
-			}
+		Object value = sequence.readProperty(fieldName);
+		if(value != null) {
+			return new SimpleCommandResult(value.toString());
+		} else {
+			return new SimpleCommandResult("No value defined for field "+fieldName);
 		}
-		sequence.writeProperty(fieldName, newValue);
-		return CommandResult.OK;
 	}
 
 	@CompleterClass
 	public static class Completer extends FieldCompleter {
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			List<String> suggestions = new ArrayList<String>();
-			if(argStrings.size() == 0) {
-				suggestions.add("-n");
-				suggestions.add("--noOverwrite");
-				suggestions.addAll(getCustomFieldNames(cmdContext));
-			} else if(argStrings.size() == 1) {
-				String arg0 = argStrings.get(0);
-				if(arg0.equals("-n") || arg0.equals("--noOverwrite")) {
-					suggestions.addAll(getCustomFieldNames(cmdContext));
-				}
-			}
-			return suggestions;
-		}
-		
 	}
 
 

@@ -1,10 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -42,7 +49,26 @@ public abstract class SequenceModeCommand extends Command {
 		return sequence;
 	}
 
-	
+	public static class FieldCompleter extends CommandCompleter {
+		@Override
+		public List<String> completionSuggestions(
+				ConsoleCommandContext cmdContext,
+				Class<? extends Command> cmdClass, List<String> argStrings) {
+			List<String> suggestions = new ArrayList<String>();
+			if(argStrings.size() == 0) {
+				suggestions.addAll(getCustomFieldNames(cmdContext));
+			}
+			return suggestions;
+		}
+
+		protected List<String> getCustomFieldNames(ConsoleCommandContext cmdContext) {
+			SequenceMode sequenceMode = (SequenceMode) cmdContext.peekCommandMode();
+			Project project = sequenceMode.getProject();
+			List<String> customFieldNames = project.getCustomSequenceFieldNames();
+			return customFieldNames;
+		}
+		
+	}
 	
 	
 }

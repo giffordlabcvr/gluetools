@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -47,7 +49,7 @@ public class HelpCommand extends ConsoleCommand {
 	@CompleterClass
 	public static class HelpCommandCompleter extends CommandCompleter {
 		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext commandContext, List<String> argStrings) {
+		public List<String> completionSuggestions(ConsoleCommandContext commandContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 			return commandFactory.getCommandWordSuggestions(commandContext, argStrings, false, commandContext.isRequireModeWrappable());
 		}

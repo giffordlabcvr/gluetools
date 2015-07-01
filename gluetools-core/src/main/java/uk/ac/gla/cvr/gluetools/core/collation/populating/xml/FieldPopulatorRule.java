@@ -69,8 +69,9 @@ public class FieldPopulatorRule extends XmlPopulatorRule implements Plugin {
 			String extractAndConvertResult = extractAndConvert(selectedText);
 			if(extractAndConvertResult != null) {
 				Element setFieldElem = CommandUsage.docElemForCmdClass(SetFieldCommand.class);
-				XmlUtils.appendElementWithText(setFieldElem, "fieldName", dataFieldName);
-				XmlUtils.appendElementWithText(setFieldElem, "fieldValue", extractAndConvertResult);
+				XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_NAME, dataFieldName);
+				XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_VALUE, extractAndConvertResult);
+				XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.NO_OVERWRITE, "true");
 				cmdContext.executeElem(setFieldElem.getOwnerDocument().getDocumentElement());
 			}
 		}

@@ -93,9 +93,18 @@ public class PluginUtils {
 		try {
 			return Integer.parseInt(configuredString);
 		} catch(NumberFormatException nfe) {
-			throw new PluginConfigException(nfe, Code.PROPERTY_FORMAT_ERROR, propertyName, "Not an integer", configuredString);
+			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, "Not an integer", configuredString);
 		}
 	}
+
+
+	public static Boolean configureBooleanProperty(Element configElem, String propertyName, boolean required)  {
+		String configuredString = configureStringProperty(configElem, propertyName, required);
+		if(configuredString == null) { return null; }
+		return Boolean.parseBoolean(configuredString);
+	}
+
+	
 
 	
 	public static Integer configureInt(Element configElem, String xPathExpression, int defaultValue)  {
@@ -112,7 +121,7 @@ public class PluginUtils {
 		try {
 			return Integer.parseInt(configuredString);
 		} catch(NumberFormatException nfe) {
-			throw new PluginConfigException(nfe, Code.CONFIG_FORMAT_ERROR, xPathExpression, "Not an integer", configuredString);
+			throw new PluginConfigException(Code.CONFIG_FORMAT_ERROR, xPathExpression, "Not an integer", configuredString);
 		}
 	}
 
@@ -197,7 +206,7 @@ public class PluginUtils {
 			return Enum.valueOf(enumClass, configuredString);
 		} catch(IllegalArgumentException iae) {
 			String msg = "Allowed values: "+Arrays.asList(enumClass.getEnumConstants());
-			throw new PluginConfigException(iae, Code.PROPERTY_FORMAT_ERROR, propertyName, msg, configuredString);
+			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, msg, configuredString);
 		}
 	}
 
@@ -218,7 +227,7 @@ public class PluginUtils {
 			return Enum.valueOf(enumClass, configuredString);
 		} catch(IllegalArgumentException iae) {
 			String msg = "Allowed values: "+Arrays.asList(enumClass.getEnumConstants());
-			throw new PluginConfigException(iae, Code.CONFIG_FORMAT_ERROR, xPathExpression, msg, configuredString);
+			throw new PluginConfigException(Code.CONFIG_FORMAT_ERROR, xPathExpression, msg, configuredString);
 		}
 	}
 

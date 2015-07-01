@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 	commandWords={"show", "data"}, 
 	docoptUsages={""},
 	docoptOptions={""},
-	description="Show the sequence data") 
+	description="Show the original sequence data") 
 public class ShowDataCommand extends SequenceModeCommand {
 
 	@Override

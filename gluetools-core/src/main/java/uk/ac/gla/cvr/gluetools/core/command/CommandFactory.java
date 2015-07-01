@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.GroupHelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
@@ -39,12 +38,12 @@ private static Multiton factories = new Multiton();
 	
 
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
-		CommandClass cmdClassAnno = cmdClass.getAnnotation(CommandClass.class);
-		if(cmdClassAnno == null) { throw new RuntimeException("No CommandClass annotation for "+cmdClass.getCanonicalName()); }
-		if(EnterModeCommand.class.isAssignableFrom(cmdClass) && cmdClassAnno.docoptUsages().length != 1) {
-			throw new RuntimeException("EnterModeCommand must have exactly one usage.");
+		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
+		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
+		if(EnterModeCommand.class.isAssignableFrom(cmdClass) && cmdUsage.docoptUsages().length != 1) {
+			throw new RuntimeException("EnterModeCommand must have exactly one docopt usage.");
 		}
-		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdClassAnno.commandWords())), cmdClass);
+		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdUsage.commandWords())), cmdClass);
 	}
 
 	private class CommandTreeNode {
@@ -182,10 +181,10 @@ private static Multiton factories = new Multiton();
 				if(treeNode == null) {
 					Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(firstWord);
 					if(cmdClass != null && commandCompleters) {
-						CommandCompleter cmdCompleter = CommandUsage.commandCompleterForCmdClass(cmdClass);
+						CommandCompleter cmdCompleter = CommandCompleter.commandCompleterForCmdClass(cmdClass);
 						if(cmdCompleter != null) {
 							if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
-								return cmdCompleter.completionSuggestions(cmdContext, commandWords);
+								return cmdCompleter.completionSuggestions(cmdContext, cmdClass, commandWords);
 							}
 						}
 					}

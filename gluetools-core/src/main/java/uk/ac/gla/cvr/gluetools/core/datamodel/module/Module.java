@@ -74,5 +74,15 @@ public class Module extends _Module {
 	public List<Class<? extends ModuleProvidedCommand<?>>> getProvidedCommandClasses(GluetoolsEngine gluetoolsEngine) {
 		return getModulePlugin(gluetoolsEngine).getProvidedCommandClasses();
 	}
+
+	@Override
+	public void writePropertyDirectly(String propName, Object val) {
+		super.writePropertyDirectly(propName, val);
+		if(propName.equals(CONFIG_PROPERTY)) {
+			// updating the config bytes invalidates the cached document / plugin.
+			configDoc = null;
+			modulePlugin = null;
+		}
+	}
 	
 }

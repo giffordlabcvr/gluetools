@@ -38,6 +38,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -51,9 +53,9 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 
 	
-	private String glueSourceName;
+	private String sourceName;
 	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
-	private String dbName;
+	private String database;
 	private String eSearchTerm = null;
 	private int eSearchRetMax;
 	private int eFetchBatchSize;
@@ -62,17 +64,18 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
-		glueSourceName = PluginUtils.configureStringProperty(sequenceSourcerElem, "glueSourceName", "default-source");
-		dbName = PluginUtils.configureStringProperty(sequenceSourcerElem, "database", "nuccore");
+		sourceName = PluginUtils.configureStringProperty(sequenceSourcerElem, "sourceName", "default-source");
+		database = PluginUtils.configureStringProperty(sequenceSourcerElem, "database", "nuccore");
 		eSearchTerm = PluginUtils.configureStringProperty(sequenceSourcerElem, "eSearchTerm", false);
 		if(eSearchTerm == null) {
 			specificSequenceIDs = PluginUtils.configureStrings(sequenceSourcerElem, "specificSequenceIDs/sequenceID/text()", true);
 		}
 		eSearchRetMax = PluginUtils.configureIntProperty(sequenceSourcerElem, "eSearchRetMax", 4000);
 		eFetchBatchSize = PluginUtils.configureIntProperty(sequenceSourcerElem, "eFetchBatchSize", 200);
-		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat", true);
+		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, sequenceSourcerElem, "sequenceFormat", true);
 		addProvidedCmdClass(ImportCommand.class);
 		addProvidedCmdClass(ShowImporterCommand.class);
+		addProvidedCmdClass(ConfigureImporterCommand.class);
 	}
 
 	List<String> getSequenceIDs() {
@@ -95,7 +98,7 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 	}
 
 	String getSourceUniqueID() {
-		return "ncbiImporter:"+dbName+":"+sequenceFormat.name();
+		return "ncbiImporter:"+database+":"+sequenceFormat.name();
 	}
 
 	List<RetrievedSequence> retrieveSequences(List<String> sequenceIDs) {
@@ -188,7 +191,7 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 						sequenceFormat.name());
 		}
 		
-		String url = eUtilsBaseURL+"/efetch.fcgi?db="+dbName+"&rettype="+rettype+"&retmode="+retmode;
+		String url = eUtilsBaseURL+"/efetch.fcgi?db="+database+"&rettype="+rettype+"&retmode="+retmode;
 		HttpPost httpPost = new HttpPost(url);
 
 		StringEntity requestEntity;
@@ -293,7 +296,7 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 	
 	private HttpUriRequest createESearchRequest() {
 		
-		String url = eUtilsBaseURL+"/esearch.fcgi?db="+dbName+"&retmax="+eSearchRetMax;
+		String url = eUtilsBaseURL+"/esearch.fcgi?db="+database+"&retmax="+eSearchRetMax;
 
 		StringEntity requestEntity;
 		try {
@@ -338,7 +341,7 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
 		for(RetrievedSequence sequence: sequences) {
 			Element createSeqElem = CommandUsage.docElemForCmdClass(CreateSequenceCommand.class);
-			XmlUtils.appendElementWithText(createSeqElem, "sourceName", glueSourceName);
+			XmlUtils.appendElementWithText(createSeqElem, "sourceName", sourceName);
 			XmlUtils.appendElementWithText(createSeqElem, "sequenceID", sequence.sequenceID);
 			XmlUtils.appendElementWithText(createSeqElem, "format", sequence.format.name());
 			// character encoding presumably not important here.
@@ -376,5 +379,9 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 			description="Show the current configuration of this importer") 
 	public static class ShowImporterCommand extends ShowConfigCommand<NcbiImporterPlugin> {}
 
-	
+	@SimpleConfigureCommandClass(
+			propertyNames={"sourceName", "database", "eSearchTerm", 
+					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize"}
+	)
+	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporterPlugin> {}
 }

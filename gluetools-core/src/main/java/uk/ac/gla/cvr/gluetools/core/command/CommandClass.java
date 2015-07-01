@@ -12,7 +12,7 @@ public @interface CommandClass {
 
 	String[] commandWords();
 	String description();
-	String[] docoptUsages() default {};
+	String[] docoptUsages();
 	String[] docoptOptions() default {};
 	String furtherHelp() default "";
 	boolean modeWrappable() default true; // whether on the console, the command may be executed in a single line within a mode.

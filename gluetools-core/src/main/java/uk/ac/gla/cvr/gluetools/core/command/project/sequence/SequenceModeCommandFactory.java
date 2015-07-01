@@ -13,6 +13,8 @@ public class SequenceModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		registerCommandClass(SetFieldCommand.class);
+		registerCommandClass(UnsetFieldCommand.class);
+		registerCommandClass(ShowFieldCommand.class);
 		registerCommandClass(ShowDataCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}
