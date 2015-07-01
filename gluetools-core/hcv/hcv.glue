@@ -41,13 +41,13 @@ project HCV
   
   module ncbi-hcv
     show configuration
-    run
+    import
 	exit
 	  
   create module gb-populator -f hcvPopulator.xml
   module gb-populator
     show configuration
-  	run
+  	populate
   	exit
   
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE

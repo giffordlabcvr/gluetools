@@ -65,7 +65,7 @@ public class CommandContext {
 	
 	public Command commandFromElement(Element element) {
 		CommandFactory commandFactory = peekCommandMode().getCommandFactory();
-		return commandFactory.commandFromElement(commandModeStack, gluetoolsEngine.createPluginConfigContext(), element);
+		return commandFactory.commandFromElement(this, commandModeStack, gluetoolsEngine.createPluginConfigContext(), element);
 	}
 
 	public CommandResult executeElem(Element elem) {

@@ -9,11 +9,9 @@ public class SequenceModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<SequenceModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(SequenceModeCommandFactory.class, SequenceModeCommandFactory::new);
 
-	
-	
-	
-	public SequenceModeCommandFactory() {
-		super();
+	@Override
+	protected void populateCommandTree() {
+		super.populateCommandTree();
 		registerCommandClass(SetFieldCommand.class);
 		registerCommandClass(ShowDataCommand.class);
 		registerCommandClass(ExitCommand.class);

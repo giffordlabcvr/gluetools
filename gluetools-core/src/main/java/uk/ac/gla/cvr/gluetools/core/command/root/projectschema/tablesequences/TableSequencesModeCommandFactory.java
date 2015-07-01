@@ -9,14 +9,13 @@ public class TableSequencesModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<TableSequencesModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(TableSequencesModeCommandFactory.class, TableSequencesModeCommandFactory::new);
 
-	public TableSequencesModeCommandFactory() {
-		super();
+	@Override
+	protected void populateCommandTree() {
+		super.populateCommandTree();
 		registerCommandClass(CreateSequenceFieldCommand.class);
 		registerCommandClass(DeleteSequenceFieldCommand.class);
 		registerCommandClass(ListSequenceFieldsCommand.class);
 		registerCommandClass(ExitCommand.class);
-
-
 	}
 	
 

@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"module"},
 	docoptUsages={"<moduleName>"},
-	description="Enter command mode to manage a module") 
+	description="Enter command mode for a module") 
 public class ModuleCommand extends ProjectModeCommand implements EnterModeCommand {
 
 	private String moduleName;
@@ -31,9 +31,8 @@ public class ModuleCommand extends ProjectModeCommand implements EnterModeComman
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		// check module exists.
-		GlueDataObject.lookup(objContext, Module.class, Module.pkMap(moduleName));
-		cmdContext.pushCommandMode(new ModuleMode(cmdContext, moduleName));
+		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(moduleName));
+		cmdContext.pushCommandMode(new ModuleMode(cmdContext, module.getName()));
 		return CommandResult.OK;
 	}
 

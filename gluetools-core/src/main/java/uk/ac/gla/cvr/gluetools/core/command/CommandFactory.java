@@ -30,11 +30,14 @@ private static Multiton factories = new Multiton();
 		return factories.get(creator);
 	}
 	
-	private CommandTreeNode rootNode = new CommandTreeNode();
+	private CommandTreeNode rootNode;
 	
 	protected CommandFactory() {
+		resetCommandTree();
+		populateCommandTree();
 	}
 	
+
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
 		CommandClass cmdClassAnno = cmdClass.getAnnotation(CommandClass.class);
 		if(cmdClassAnno == null) { throw new RuntimeException("No CommandClass annotation for "+cmdClass.getCanonicalName()); }
@@ -204,25 +207,21 @@ private static Multiton factories = new Multiton();
 		}
 	}
 
-	public Command commandFromElement(List<CommandMode> commandModeStack,
+	public Command commandFromElement(CommandContext cmdContext, List<CommandMode> commandModeStack,
 			PluginConfigContext pluginConfigContext, Element element) {
+		refreshCommandTree(cmdContext);
 		return rootNode.commandFromElement(commandModeStack, pluginConfigContext, element);
 	}
 
-	public Class<? extends Command> identifyCommandClass(List<String> commandWords) {
+	public Class<? extends Command> identifyCommandClass(ConsoleCommandContext cmdContext, List<String> commandWords) {
+		refreshCommandTree(cmdContext);
 		return rootNode.identifyCommandClass(new LinkedList<String>(commandWords));
 	}
+	
 
-
-	public List<String> getElementNames() {
-		List<String> names = new ArrayList<String>();
-		names.addAll(rootNode.childNodes.keySet());
-		names.addAll(rootNode.cmdPluginFactory.getElementNames());
-		return names;
-	}
-
-	public List<HelpLine> helpLinesForCommandWords(List<String> commandWords, boolean requireModeWrappable) {
-		return rootNode.helpLines(new LinkedList<String>(commandWords), false, requireModeWrappable);
+	public List<HelpLine> helpLinesForCommandWords(ConsoleCommandContext cmdContext, List<String> commandWords) {
+		refreshCommandTree(cmdContext);
+		return rootNode.helpLines(new LinkedList<String>(commandWords), false, cmdContext.isRequireModeWrappable());
 	}
 
 	protected void addGroupHelp(List<String> commandWords, String description) {
@@ -232,8 +231,15 @@ private static Multiton factories = new Multiton();
 
 	public List<String> getCommandWordSuggestions(ConsoleCommandContext cmdContext, List<String> lookupBasis, 
 			boolean commandCompleters, boolean requireModeWrappable) {
+		refreshCommandTree(cmdContext);
 		return rootNode.getCommandWordSuggestions(cmdContext, new LinkedList<String>(lookupBasis), commandCompleters, 
 				requireModeWrappable);
 	}
 	
+	protected void refreshCommandTree(CommandContext cmdContext) {}
+	protected void resetCommandTree() {
+		rootNode = new CommandTreeNode();
+	}
+	protected void populateCommandTree() {}
+
 }

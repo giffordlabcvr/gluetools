@@ -66,7 +66,7 @@ public class ConsoleCompleter implements Completer {
 			String prefix, List<String> lookupBasis, boolean requireModeWrappable) {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(lookupBasis);
+		Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
 		boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
 		List<String> innerCmdWords = null;
 		List<String> enterModeArgStrings = null;

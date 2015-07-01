@@ -2,26 +2,20 @@ package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
 import org.apache.cayenne.ObjectContext;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 
 
-@CommandClass( 
-	commandWords={"show", "configuration"}, 
-	docoptUsages={},
-	description="Show the XML configuration of the module") 
-public class ShowConfigCommand extends ModuleModeCommand {
+public abstract class ShowConfigCommand<P extends ModulePlugin<P>> extends ModuleProvidedCommand<P> {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	protected final CommandResult execute(CommandContext cmdContext, P modulePlugin) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getModuleName()));
 		return new DocumentResult(module.getConfigDoc());
 	}
-
-
 }

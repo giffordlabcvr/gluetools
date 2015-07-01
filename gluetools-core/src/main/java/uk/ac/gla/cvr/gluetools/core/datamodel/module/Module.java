@@ -3,12 +3,15 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.module;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -24,7 +27,7 @@ public class Module extends _Module {
 
 
 	private Document configDoc = null;
-	private ModulePlugin modulePlugin = null;
+	private ModulePlugin<?> modulePlugin = null;
 	
 	public static Map<String, String> pkMap(String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
@@ -37,7 +40,7 @@ public class Module extends _Module {
 		setName(pkMap.get(NAME_PK_COLUMN));
 	}
 
-	public ModulePlugin buildModulePlugin(PluginConfigContext pluginConfigContext) {
+	private ModulePlugin<?> buildModulePlugin(PluginConfigContext pluginConfigContext) {
 		Element rootElem = getConfigDoc().getDocumentElement();
 		ModulePluginFactory importerPluginFactory = PluginFactory.get(ModulePluginFactory.creator);
 		return importerPluginFactory.createFromElement(pluginConfigContext, rootElem);
@@ -50,9 +53,9 @@ public class Module extends _Module {
 		return configDoc;
 	}
 	
-	public ModulePlugin getModulePlugin(PluginConfigContext pluginConfigContext) {
+	public ModulePlugin<?> getModulePlugin(GluetoolsEngine gluetoolsEngine) {
 		if(modulePlugin == null) {
-			modulePlugin = buildModulePlugin(pluginConfigContext);
+			modulePlugin = buildModulePlugin(gluetoolsEngine.createPluginConfigContext());
 		}
 		return modulePlugin;
 	}
@@ -66,6 +69,10 @@ public class Module extends _Module {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public List<Class<? extends ModuleProvidedCommand<?>>> getProvidedCommandClasses(GluetoolsEngine gluetoolsEngine) {
+		return getModulePlugin(gluetoolsEngine).getProvidedCommandClasses();
 	}
 	
 }

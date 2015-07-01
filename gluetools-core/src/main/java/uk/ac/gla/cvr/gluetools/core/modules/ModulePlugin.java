@@ -1,16 +1,24 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import java.util.ArrayList;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 
-public abstract class ModulePlugin implements Plugin {
+public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin {
 	
 	
-	public abstract CommandResult runModule(CommandContext cmdContext);
+	private List<Class<? extends ModuleProvidedCommand<?>>> providedCmdClasses = 
+			new ArrayList<Class<? extends ModuleProvidedCommand<?>>>();
 	
-	public ProjectMode getProjectMode(CommandContext cmdContext) {
-		return (ProjectMode) cmdContext.peekCommandMode();
+	protected void addProvidedCmdClass(Class<? extends ModuleProvidedCommand<P>> providedCmdClass) {
+		providedCmdClasses.add(providedCmdClass);
 	}
+	
+	public List<Class<? extends ModuleProvidedCommand<?>>> getProvidedCommandClasses() {
+		return providedCmdClasses;
+	}
+	
+
 }

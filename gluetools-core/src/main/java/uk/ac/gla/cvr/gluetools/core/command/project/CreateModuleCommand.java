@@ -41,7 +41,7 @@ public class CreateModuleCommand extends ProjectModeCommand {
 		byte[] config = consoleCmdContext.loadBytes(file);
 		module.setConfig(config);
 		try {
-			module.getModulePlugin(cmdContext.getGluetoolsEngine().createPluginConfigContext());
+			module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		} catch(Exception e) {
 			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, file);
 		}

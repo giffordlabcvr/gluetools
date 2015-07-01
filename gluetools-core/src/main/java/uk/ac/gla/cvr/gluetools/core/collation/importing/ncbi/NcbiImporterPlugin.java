@@ -30,10 +30,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -44,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 // TODO these modules should provide commands to configure some module elements, and run them.
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
-public class NcbiImporterPlugin extends ModulePlugin {
+public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 
 	
 	private String glueSourceName;
@@ -56,19 +60,19 @@ public class NcbiImporterPlugin extends ModulePlugin {
 	private List<String> specificSequenceIDs;
 	private SequenceFormat sequenceFormat;
 
-	// TODO change these to property lookups instead of XPaths.
-	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
-		glueSourceName = PluginUtils.configureString(sequenceSourcerElem, "glueSourceName/text()", "default-source");
-		dbName = PluginUtils.configureString(sequenceSourcerElem, "database/text()", "nuccore");
-		eSearchTerm = PluginUtils.configureString(sequenceSourcerElem, "eSearchTerm/text()", false);
+		glueSourceName = PluginUtils.configureStringProperty(sequenceSourcerElem, "glueSourceName", "default-source");
+		dbName = PluginUtils.configureStringProperty(sequenceSourcerElem, "database", "nuccore");
+		eSearchTerm = PluginUtils.configureStringProperty(sequenceSourcerElem, "eSearchTerm", false);
 		if(eSearchTerm == null) {
 			specificSequenceIDs = PluginUtils.configureStrings(sequenceSourcerElem, "specificSequenceIDs/sequenceID/text()", true);
 		}
-		eSearchRetMax = PluginUtils.configureInt(sequenceSourcerElem, "eSearchRetMax/text()", 4000);
-		eFetchBatchSize = PluginUtils.configureInt(sequenceSourcerElem, "eFetchBatchSize/text()", 200);
-		sequenceFormat = PluginUtils.configureEnum(SequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat/text()", true);
+		eSearchRetMax = PluginUtils.configureIntProperty(sequenceSourcerElem, "eSearchRetMax", 4000);
+		eFetchBatchSize = PluginUtils.configureIntProperty(sequenceSourcerElem, "eFetchBatchSize", 200);
+		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, sequenceSourcerElem, "collatedSequenceFormat", true);
+		addProvidedCmdClass(ImportCommand.class);
+		addProvidedCmdClass(ShowImporterCommand.class);
 	}
 
 	List<String> getSequenceIDs() {
@@ -329,8 +333,7 @@ public class NcbiImporterPlugin extends ModulePlugin {
 		}
 	}
 
-	@Override
-	public CommandResult runModule(CommandContext cmdContext) {
+	private CommandResult doImport(CommandContext cmdContext) {
 		List<String> sequenceIDs = getSequenceIDs();
 		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
 		for(RetrievedSequence sequence: sequences) {
@@ -352,5 +355,26 @@ public class NcbiImporterPlugin extends ModulePlugin {
 		SequenceFormat format;
 		byte[] data;
 	}
+	
+	
+	@CommandClass( 
+			commandWords={"import"}, 
+			docoptUsages={""},
+			description="Import sequence data from NCBI into the project") 
+	public static class ImportCommand extends ModuleProvidedCommand<NcbiImporterPlugin> implements ProvidedProjectModeCommand {
+
+		@Override
+		protected CommandResult execute(CommandContext cmdContext, NcbiImporterPlugin importerPlugin) {
+			return importerPlugin.doImport(cmdContext);
+		}
+		
+	}
+
+	@CommandClass( 
+			commandWords={"show", "configuration"}, 
+			docoptUsages={},
+			description="Show the current configuration of this importer") 
+	public static class ShowImporterCommand extends ShowConfigCommand<NcbiImporterPlugin> {}
+
 	
 }

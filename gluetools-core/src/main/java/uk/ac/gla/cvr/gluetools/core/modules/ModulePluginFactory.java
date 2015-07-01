@@ -5,7 +5,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopul
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-public class ModulePluginFactory extends PluginFactory<ModulePlugin>{
+public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 
 	public static Multiton.Creator<ModulePluginFactory> creator = new
 			Multiton.SuppliedCreator<>(ModulePluginFactory.class, ModulePluginFactory::new);

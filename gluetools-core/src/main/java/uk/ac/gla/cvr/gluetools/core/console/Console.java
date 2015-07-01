@@ -161,34 +161,34 @@ public class Console implements CommandContextListener
 	}
 	
 	private void executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
-		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
-		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(tokenStrings);
-		if(commandClass == null) {
-			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
-		}
-		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
-		
-		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
-		LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
-		LinkedList<String> innerCmdWords = null;
-		if(enterModeCmd) {
-			@SuppressWarnings("unchecked")
-			EnterModeCommandDescriptor entModeCmdDescriptor = 
-					EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) commandClass);
-			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
-			if(numEnterModeArgs < argStrings.size()) {
-				innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
-				argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
-			}
-		}
-		if(requireModeWrappable && !CommandUsage.modeWrappableForCmdClass(commandClass)) {
-			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
-					String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
-		}
-		Command command = buildCommand(commandContext, commandClass, argStrings, this);
 		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
 		try {
+			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
+			Class<? extends Command> commandClass = commandFactory.identifyCommandClass(commandContext, tokenStrings);
+			if(commandClass == null) {
+				throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
+			}
+			boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
+
+			String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
+			LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
+			LinkedList<String> innerCmdWords = null;
+			if(enterModeCmd) {
+				@SuppressWarnings("unchecked")
+				EnterModeCommandDescriptor entModeCmdDescriptor = 
+				EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) commandClass);
+				int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
+				if(numEnterModeArgs < argStrings.size()) {
+					innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
+					argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
+				}
+			}
+			if(requireModeWrappable && !CommandUsage.modeWrappableForCmdClass(commandClass)) {
+				throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
+						String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
+			}
+			Command command = buildCommand(commandContext, commandClass, argStrings, this);
 			// combine enter-mode command with inner commands.
 			if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
 				commandContext.setRequireModeWrappable(true);

@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -14,7 +13,7 @@ public class ModuleMode extends CommandMode {
 	private String moduleName;
 	
 	public ModuleMode(CommandContext cmdContext, String moduleName) {
-		super("module-"+moduleName, CommandFactory.get(ModuleModeCommandFactory.creator));
+		super("module-"+moduleName, new ModuleModeCommandFactory(cmdContext, moduleName));
 		this.moduleName = moduleName;
 	}
 

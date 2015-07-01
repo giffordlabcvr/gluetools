@@ -10,12 +10,16 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorExcepti
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequencesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -26,9 +30,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-// TODO remove legacy populator stuff.
 @PluginClass(elemName="genbankXmlPopulator")
-public class GenbankXmlPopulatorPlugin extends ModulePlugin {
+public class GenbankXmlPopulatorPlugin extends ModulePlugin<GenbankXmlPopulatorPlugin> {
 
 	private List<XmlPopulatorRule> rules;
 	
@@ -42,10 +45,12 @@ public class GenbankXmlPopulatorPlugin extends ModulePlugin {
 		String alternateElemsXPath = XmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
 		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
+		addProvidedCmdClass(PopulateCommand.class);
+		addProvidedCmdClass(ShowPopulatorCommand.class);
 	}
 
 	private void populate(CommandContext cmdContext, Sequence sequence) {
-		ProjectMode projectMode = getProjectMode(cmdContext);
+		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), sequence.getSource().getName(), sequence.getSequenceID()));
 		try {
 			rules.forEach(rule -> {
@@ -64,10 +69,8 @@ public class GenbankXmlPopulatorPlugin extends ModulePlugin {
 			cmdContext.popCommandMode();
 		}
 	}
-
 	
-	@Override
-	public CommandResult runModule(CommandContext cmdContext) {
+	private CommandResult populate(CommandContext cmdContext) {
 		String sourceName = "ncbi-nuccore";
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequencesCommand.class);
 		XmlUtils.appendElementWithText(listSequencesElem, "sourceName", sourceName);
@@ -80,5 +83,24 @@ public class GenbankXmlPopulatorPlugin extends ModulePlugin {
 		return CommandResult.OK;
 	}
 	
+
+	@CommandClass( 
+			commandWords={"populate"}, 
+			docoptUsages={""},
+			description="Populate sequence field values based on Genbank XML") 
+	public static class PopulateCommand extends ModuleProvidedCommand<GenbankXmlPopulatorPlugin> implements ProvidedProjectModeCommand {
+
+		@Override
+		protected CommandResult execute(CommandContext cmdContext, GenbankXmlPopulatorPlugin populatorPlugin) {
+			return populatorPlugin.populate(cmdContext);
+		}
+		
+	}
+
+	@CommandClass( 
+			commandWords={"show", "configuration"}, 
+			docoptUsages={},
+			description="Show the current configuration of this populator") 
+	public static class ShowPopulatorCommand extends ShowConfigCommand<GenbankXmlPopulatorPlugin> {}
 	
 }

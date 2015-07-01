@@ -9,8 +9,9 @@ import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpCommand;
 
 public abstract class BaseCommandFactory extends CommandFactory {
 
-	public BaseCommandFactory() {
-		super();
+	@Override
+	protected void populateCommandTree() {
+		super.populateCommandTree();
 		registerCommandClass(QuitCommand.class);
 		registerCommandClass(HelpCommand.class);
 		addGroupHelp(Arrays.asList("console"), "Manage console settings");

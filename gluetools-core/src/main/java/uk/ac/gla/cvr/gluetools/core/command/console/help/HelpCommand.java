@@ -34,7 +34,7 @@ public class HelpCommand extends ConsoleCommand {
 	@Override
 	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(commandWords, cmdContext.isRequireModeWrappable());
+		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(cmdContext, commandWords);
 		if(helpLines.isEmpty()) {
 			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
 		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
