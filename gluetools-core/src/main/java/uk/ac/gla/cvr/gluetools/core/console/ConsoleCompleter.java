@@ -65,28 +65,28 @@ public class ConsoleCompleter implements Completer {
 	private int completeAux(List<CharSequence> candidates, int suggestionPos,
 			String prefix, List<String> lookupBasis, boolean requireModeWrappable) {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
-		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
-		boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
-		List<String> innerCmdWords = null;
-		List<String> enterModeArgStrings = null;
-		if(enterModeCmd) {
-			@SuppressWarnings("unchecked")
-			EnterModeCommandDescriptor entModeCmdDescriptor = 
-					EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) cmdClass);
-			int numCmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass).length;
-			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(lookupBasis);
-			enterModeArgStrings = lookupBasis.subList(numCmdWords, lookupBasis.size());
-			if(numEnterModeArgs <= enterModeArgStrings.size()) {
-				innerCmdWords = new LinkedList<String>(enterModeArgStrings.subList(numEnterModeArgs, enterModeArgStrings.size()));
-				enterModeArgStrings = new LinkedList<String>(enterModeArgStrings.subList(0, numEnterModeArgs));
-			}
-			//System.out.println("numEnterModeArgs: "+numEnterModeArgs+", innerCmdWords: "+innerCmdWords+", lookupBasis: "+lookupBasis);
-		}
 		CommandMode cmdMode = cmdContext.peekCommandMode();
-
+		CommandFactory commandFactory = cmdMode.getCommandFactory();
 		try {
 			cmdContext.setObjectContext(cmdMode.getServerRuntime().getContext());
+			Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
+			boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
+			List<String> innerCmdWords = null;
+			List<String> enterModeArgStrings = null;
+			if(enterModeCmd) {
+				@SuppressWarnings("unchecked")
+				EnterModeCommandDescriptor entModeCmdDescriptor = 
+				EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) cmdClass);
+				int numCmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass).length;
+				int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(lookupBasis);
+				enterModeArgStrings = lookupBasis.subList(numCmdWords, lookupBasis.size());
+				if(numEnterModeArgs <= enterModeArgStrings.size()) {
+					innerCmdWords = new LinkedList<String>(enterModeArgStrings.subList(numEnterModeArgs, enterModeArgStrings.size()));
+					enterModeArgStrings = new LinkedList<String>(enterModeArgStrings.subList(0, numEnterModeArgs));
+				}
+				//System.out.println("numEnterModeArgs: "+numEnterModeArgs+", innerCmdWords: "+innerCmdWords+", lookupBasis: "+lookupBasis);
+			}
+
 			if(enterModeCmd && innerCmdWords != null) {
 				Command enterModeCommand = Console.buildCommand(cmdContext, cmdClass, enterModeArgStrings);
 				try {

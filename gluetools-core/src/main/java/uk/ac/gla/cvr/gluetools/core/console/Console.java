@@ -156,11 +156,11 @@ public class Console implements CommandContextListener
 		}
 	}
 
-	private void executeTokenStrings(List<String> tokenStrings) {
-		executeTokenStrings(tokenStrings, false);
+	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings) {
+		return executeTokenStrings(tokenStrings, false);
 	}
 	
-	private void executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
+	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
 		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
 		commandContext.setObjectContext(context);
 		try {
@@ -194,17 +194,24 @@ public class Console implements CommandContextListener
 				commandContext.setRequireModeWrappable(true);
 				command.execute(commandContext);
 				context.commitChanges();
+				Class<? extends Command> innerCmdClass = null;
 				try {
-					executeTokenStrings(innerCmdWords, true);
+					innerCmdClass = executeTokenStrings(innerCmdWords, true);
+					return innerCmdClass;
 				} finally {
 					commandContext.setRequireModeWrappable(false);
-					commandContext.popCommandMode();
+					// case where innermost command is an enter mode command, stay in that mode.
+					// otherwise pop the mode.
+					if(innerCmdClass == null || !EnterModeCommand.class.isAssignableFrom(innerCmdClass)) {
+						commandContext.popCommandMode();
+					}
 				}
 			} else {
 				CommandResult commandResult = command.execute(commandContext);
 				// no need to rollback changes as we will throw the context away.
 				context.commitChanges();
 				renderCommandResult(commandResult);
+				return commandClass;
 			}
 		} finally {
 			commandContext.setObjectContext(null);
