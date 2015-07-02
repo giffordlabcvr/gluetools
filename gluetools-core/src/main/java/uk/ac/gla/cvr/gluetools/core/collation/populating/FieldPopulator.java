@@ -15,5 +15,7 @@ public interface FieldPopulator {
 
 	public Pattern getNullRegex();
 	
-	public String getFieldName();
+	public default String getFieldName() {
+		return null;
+	}
 }

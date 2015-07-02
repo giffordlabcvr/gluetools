@@ -6,8 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class SequenceException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		MALFORMED_XML("errorTxt"), 
-		CREATE_FROM_FILE_FAILED("file"),
+		SEQUENCE_FORMAT_ERROR("errorText"),
 		UNKNOWN_SEQUENCE_FORMAT("unknownFormat"),
 		NO_DATA_PROVIDED(),
 		BASE_64_FORMAT_EXCEPTION("errorText"),

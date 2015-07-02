@@ -12,13 +12,13 @@ public class SchemaVersion extends _SchemaVersion {
 	
 	public static Map<String, String> pkMap(Integer id) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
-		idMap.put(ID_PK_COLUMN, Integer.toString(id));
+		idMap.put(ID_PROPERTY, Integer.toString(id));
 		return idMap;
 	}
 
 	@Override
 	public void setPKValues(Map<String, String> pkMap) {
-		setId(Integer.parseInt(pkMap.get(ID_PK_COLUMN)));
+		setId(Integer.parseInt(pkMap.get(ID_PROPERTY)));
 	}
 
 	public static boolean isLaterThanCurrent(String dbVersionString) {
@@ -39,5 +39,11 @@ public class SchemaVersion extends _SchemaVersion {
 		String[] versionBits = versionString.split("\\.");
 		return Arrays.asList(versionBits).stream().map(b -> Integer.parseInt(b)).toArray(s->new Integer[s]);
 	}
+	
+	@Override
+	protected Map<String, String> pkMap() {
+		return pkMap(getId());
+	}
+
 	
 }

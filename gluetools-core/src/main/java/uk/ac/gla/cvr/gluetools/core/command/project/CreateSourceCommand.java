@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.Optional;
+
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
@@ -15,23 +17,30 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"create","source"}, 
-	docoptUsages={"<name>"},
+	docoptUsages={"[-a] <sourceName>"},
+	docoptOptions={"-a, --allowExisting  Continue without error if the source already exists."},
 	description="Create a new sequence source", 
 	furtherHelp="A sequence source is a grouping of sequences where each sequence has a unique ID within the source.") 
 public class CreateSourceCommand extends ProjectModeCommand {
 
-	private String name;
+	public static final String SOURCE_NAME = "sourceName";
+	public static final String ALLOW_EXISTING = "allowExisting";
+	
+	private String sourceName;
+	private boolean allowExisting;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		name = PluginUtils.configureStringProperty(configElem, "name", true);
+		sourceName = PluginUtils.configureStringProperty(configElem, SOURCE_NAME, true);
+		allowExisting = Optional.ofNullable(PluginUtils.
+				configureBooleanProperty(configElem, ALLOW_EXISTING, false)).orElse(false);
 	}
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(name));
+		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), allowExisting);
 		return new CreateCommandResult(source.getObjectId());
 	}
 

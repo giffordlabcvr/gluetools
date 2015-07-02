@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.textfile;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 
@@ -10,6 +11,6 @@ public class TextFilePopulatorContext {
 	Map<Integer, TextFilePopulatorColumn> positionToColumn = null;
 	Map<TextFilePopulatorColumn, Integer> columnToPosition = null;
 	ConsoleCommandContext cmdContext;
-	Expression whereClause;
+	Optional<Expression> whereClause;
 	
 }

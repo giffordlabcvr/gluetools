@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
@@ -56,11 +55,12 @@ public class ListSequencesCommand extends ProjectModeCommand {
 	
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		Expression exp = ExpressionFactory.expTrue();
+		SelectQuery selectQuery;
 		if(whereClause != null) {
-			exp = exp.andExp(whereClause);
+			selectQuery = new SelectQuery(Sequence.class, whereClause);
+		} else {
+			selectQuery = new SelectQuery(Sequence.class);
 		}
-		SelectQuery selectQuery = new SelectQuery(Sequence.class, exp);
 		List<String> validFieldNamesList = getProjectMode(cmdContext).getProject().getAllSequenceFieldNames();
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
 		if(fieldNames != null) {

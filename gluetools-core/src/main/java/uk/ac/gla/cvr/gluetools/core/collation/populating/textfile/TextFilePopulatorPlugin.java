@@ -81,7 +81,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
 		populatorContext.cmdContext = cmdContext;
-		populatorContext.whereClause = getWhereClause().orElse(ExpressionFactory.expTrue());
+		populatorContext.whereClause = getWhereClause();
 		if(!numberColumns.isEmpty()) {
 			populatorContext.positionToColumn = new LinkedHashMap<Integer, TextFilePopulatorColumn>();
 			populatorContext.columnToPosition = new LinkedHashMap<TextFilePopulatorColumn, Integer>();
@@ -109,13 +109,21 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 				return;
 			}
 		}
-		Expression identifyingExp = populatorContext.whereClause;
-		// and all the bits of the where clause together.
-		for(TextFilePopulatorColumn col : identifierColumns) {
-			int j = populatorContext.columnToPosition.get(col);
-			identifyingExp = identifyingExp.andExp(ExpressionFactory.matchExp(col.getFieldName(), cellValues[j]));
-		}
 		ConsoleCommandContext cmdContext = populatorContext.cmdContext;
+		List<Expression> idExpressions = 
+			identifierColumns.stream().map(col -> {
+				int j = populatorContext.columnToPosition.get(col);
+				String processedCellValue = 
+						SequencePopulatorPlugin.runFieldPopulator(col, cellValues[j]);
+				if(processedCellValue == null) {
+					throw new TextFilePopulatorException(TextFilePopulatorException.Code.NULL_IDENTIFIER, col.getFieldName());
+				}
+				return ExpressionFactory.matchExp(col.getFieldName(), processedCellValue);
+			}).collect(Collectors.toList());
+		populatorContext.whereClause.ifPresent(exp -> idExpressions.add(exp));
+		Expression identifyingExp = idExpressions.subList(1, idExpressions.size()).
+				stream().reduce(idExpressions.get(0), Expression::andExp);
+		
 		List<Sequence> sequences = identifySequences(identifyingExp, cmdContext);
 		for(Sequence sequence: sequences) {
 			ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
@@ -154,8 +162,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 	}
 
 
-	public List<Sequence> identifySequences(Expression identifyingExp,
-			ConsoleCommandContext cmdContext) {
+	public List<Sequence> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequencesCommand.class);
 		String identifyingExpString = identifyingExp.toString();
 		XmlUtils.appendElementWithText(listSequencesElem, ListSequencesCommand.WHERE_CLAUSE, identifyingExpString);

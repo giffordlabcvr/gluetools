@@ -161,8 +161,8 @@ public class Console implements CommandContextListener
 	}
 	
 	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
-		ObjectContext context = commandContext.peekCommandMode().getServerRuntime().getContext();
-		commandContext.setObjectContext(context);
+		ObjectContext objContext = GlueDataObject.createObjectContext(commandContext.peekCommandMode().getServerRuntime());
+		commandContext.setObjectContext(objContext);
 		try {
 			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 			Class<? extends Command> commandClass = commandFactory.identifyCommandClass(commandContext, tokenStrings);
@@ -193,7 +193,7 @@ public class Console implements CommandContextListener
 			if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
 				commandContext.setRequireModeWrappable(true);
 				command.execute(commandContext);
-				context.commitChanges();
+				objContext.commitChanges();
 				Class<? extends Command> innerCmdClass = null;
 				try {
 					innerCmdClass = executeTokenStrings(innerCmdWords, true);
@@ -209,7 +209,7 @@ public class Console implements CommandContextListener
 			} else {
 				CommandResult commandResult = command.execute(commandContext);
 				// no need to rollback changes as we will throw the context away.
-				context.commitChanges();
+				objContext.commitChanges();
 				renderCommandResult(commandResult);
 				return commandClass;
 			}

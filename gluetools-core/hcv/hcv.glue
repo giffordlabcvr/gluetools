@@ -38,8 +38,6 @@ project HCV
     
   list sequences GB_HOST
   
-  create source ncbi-nuccore
-
   create module ncbi-importer -f hcvNcbiImporter.xml
   module ncbi-importer
     show configuration
@@ -71,8 +69,12 @@ schema project HCV
 project HCV
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
   list sequences sequenceID CUSTOM_FIELD_X CUSTOM_FIELD_Y
-  exit
 
+  create module fasta-importer -f hcvFastaImporter.xml
+  module fasta-importer
+    show configuration
+    import -f fastaExample.fa
+	exit
 
   
 

@@ -121,10 +121,12 @@ public class RegexExtractorFormatter implements Plugin {
 				input = mainExtractorResult;
 			}
 		}
-		for(RegexExtractorFormatter valueConverter: valueConverters) {
-			String valueConverterResult = valueConverter.matchAndConvert(input);
-			if(valueConverterResult != null) {
-				return valueConverterResult;
+		if(valueConverters != null) {
+			for(RegexExtractorFormatter valueConverter: valueConverters) {
+				String valueConverterResult = valueConverter.matchAndConvert(input);
+				if(valueConverterResult != null) {
+					return valueConverterResult;
+				}
 			}
 		}
 		return input;

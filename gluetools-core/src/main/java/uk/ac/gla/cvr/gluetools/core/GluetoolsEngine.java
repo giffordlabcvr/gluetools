@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration.Vendor;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.GlueSchemaUpdateStrategy;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
@@ -72,7 +73,7 @@ public class GluetoolsEngine implements Plugin {
 		ServerRuntime metaRuntime = null;
 		try {
 			metaRuntime = ModelBuilder.createMetaRuntime(dbConfiguration);
-			ObjectContext metaObjectContext = metaRuntime.getContext();
+			ObjectContext metaObjectContext = GlueDataObject.createObjectContext(metaRuntime);
 			dbSchemaVersion = ModelBuilder.getDbSchemaVersionString(metaObjectContext);
 			String currentSchemaVersion = SchemaVersion.currentVersionString;
 			if(SchemaVersion.isLaterThanCurrent(dbSchemaVersion)) {

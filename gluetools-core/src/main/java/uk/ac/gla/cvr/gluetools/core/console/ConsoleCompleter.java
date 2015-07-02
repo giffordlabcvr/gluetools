@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.ObjectContext;
+
 import jline.console.completer.Completer;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
@@ -14,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 
 public class ConsoleCompleter implements Completer {
 
@@ -68,7 +71,8 @@ public class ConsoleCompleter implements Completer {
 		CommandMode cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
 		try {
-			cmdContext.setObjectContext(cmdMode.getServerRuntime().getContext());
+			ObjectContext objContext = GlueDataObject.createObjectContext(cmdMode.getServerRuntime());
+			cmdContext.setObjectContext(objContext);
 			Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
 			boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
 			List<String> innerCmdWords = null;

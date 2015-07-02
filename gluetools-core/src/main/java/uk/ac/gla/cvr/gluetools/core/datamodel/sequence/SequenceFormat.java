@@ -3,9 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaUtils;
+import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
+import uk.ac.gla.cvr.gluetools.core.command.SimpleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -14,16 +17,41 @@ public enum SequenceFormat {
 
 	GENBANK_XML {
 		@Override
-		public Document asXml(byte[] data) {
+		public void validateFormat(byte[] data) {
 			try {
-				return XmlUtils.documentFromStream(new ByteArrayInputStream(data));
+				XmlUtils.documentFromStream(new ByteArrayInputStream(data));
 			} catch (SAXException e) {
-				throw new SequenceException(e, Code.MALFORMED_XML, e.getMessage());
+				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, e.getMessage());
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
+
+		@Override
+		public CommandResult showDataResult(byte[] data) {
+			try {
+				return new DocumentResult(XmlUtils.documentFromStream(new ByteArrayInputStream(data)));
+			} catch (SAXException e) {
+				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, e.getMessage());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}, 
+	
+	FASTA {
+		@Override
+		public void validateFormat(byte[] data) {
+			FastaUtils.parseFasta(data);
+		}
+
+		@Override
+		public CommandResult showDataResult(byte[] data) {
+			return new SimpleCommandResult(new String(data));
+		}
 	};
 
-	public abstract Document asXml(byte[] data);
+	public abstract void validateFormat(byte[] data);
+
+	public abstract CommandResult showDataResult(byte[] data);
 }

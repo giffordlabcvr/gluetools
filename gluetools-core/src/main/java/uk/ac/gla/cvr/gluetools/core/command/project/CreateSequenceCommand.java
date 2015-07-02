@@ -71,16 +71,14 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 		Source source = GlueDataObject.lookup(objContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
+		byte[] sequenceData = null;
 		if(fileName != null) {
-			sequence.setData(((ConsoleCommandContext) cmdContext).loadBytes(fileName));
+			sequenceData = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
 		} else if(dataFromBase64 != null){
-			sequence.setData(dataFromBase64);
+			sequenceData = dataFromBase64;
 		}
-		try {
-			sequence.getSequenceDoc(); // checks XML format
-		} catch(Exception e) {
-			throw new SequenceException(e, Code.CREATE_FROM_FILE_FAILED, fileName);
-		}
+		format.validateFormat(sequenceData);
+		sequence.setData(sequenceData);
 		return new CreateCommandResult(sequence.getObjectId());
 	}
 

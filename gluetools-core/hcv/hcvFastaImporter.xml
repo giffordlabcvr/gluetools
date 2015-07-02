@@ -1,0 +1,7 @@
+<fastaImporter>
+	<idParser>
+		<!-- For the ID this matches everything before the first dot -->
+		<matchPattern>([^\.]+)\..*</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</idParser>
+</fastaImporter>

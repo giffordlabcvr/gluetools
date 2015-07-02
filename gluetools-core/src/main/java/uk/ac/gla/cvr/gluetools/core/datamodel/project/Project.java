@@ -15,12 +15,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 public class Project extends _Project {
 
 	public static Map<String, String> pkMap(String name) {
-		return Collections.singletonMap(NAME_PK_COLUMN, name);
+		return Collections.singletonMap(NAME_PROPERTY, name);
 	}
 
 	@Override
 	public void setPKValues(Map<String, String> idMap) {
-		setName(idMap.get(NAME_PK_COLUMN));
+		setName(idMap.get(NAME_PROPERTY));
 	}
 	
 	public Field getSequenceField(String fieldName) {
@@ -39,5 +39,9 @@ public class Project extends _Project {
 		return fieldNames;
 	}
 
-	
+	@Override
+	protected Map<String, String> pkMap() {
+		return pkMap(getName());
+	}
+
 }

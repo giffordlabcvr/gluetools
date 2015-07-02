@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPath;
@@ -30,18 +30,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPlugin;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -49,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
-public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
+public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 
 	
 	private String sourceName;
@@ -63,8 +61,9 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
-		sourceName = PluginUtils.configureStringProperty(sequenceSourcerElem, "sourceName", "default-source");
 		database = PluginUtils.configureStringProperty(sequenceSourcerElem, "database", "nuccore");
+		sourceName = Optional.ofNullable(PluginUtils.
+				configureStringProperty(sequenceSourcerElem, "sourceName", false)).orElse("ncbi-"+database);
 		eSearchTerm = PluginUtils.configureStringProperty(sequenceSourcerElem, "eSearchTerm", false);
 		if(eSearchTerm == null) {
 			specificSequenceIDs = PluginUtils.configureStrings(sequenceSourcerElem, "specificSequenceIDs/sequenceID/text()", true);
@@ -132,6 +131,10 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 		switch(sequenceFormat) {
 		case GENBANK_XML:
 			individualGBFiles = divideDocuments((Document) eFetchResponseObject);
+			break;
+		default:
+			throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
+					sequenceFormat.name());
 		}
 		
 		int i = 0;
@@ -338,15 +341,13 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 	private CommandResult doImport(CommandContext cmdContext) {
 		List<String> sequenceIDs = getSequenceIDs();
 		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
+		ensureSourceExists(cmdContext, sourceName);
+		
 		for(RetrievedSequence sequence: sequences) {
-			Element createSeqElem = CommandUsage.docElemForCmdClass(CreateSequenceCommand.class);
-			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.SOURCE_NAME, sourceName);
-			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.SEQUENCE_ID, sequence.sequenceID);
-			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.FORMAT, sequence.format.name());
-			// character encoding presumably not important here.
-			String base64String = new String(Base64.getEncoder().encode(sequence.data));
-			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.BASE64, base64String);
-			cmdContext.executeElem(createSeqElem.getOwnerDocument().getDocumentElement());
+			String sequenceID = sequence.sequenceID;
+			SequenceFormat format = sequence.format;
+			byte[] sequenceData = sequence.data;
+			createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
 		}
 		return CommandResult.OK;
 	}
@@ -383,4 +384,6 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize"}
 	)
 	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporterPlugin> {}
+
+
 }
