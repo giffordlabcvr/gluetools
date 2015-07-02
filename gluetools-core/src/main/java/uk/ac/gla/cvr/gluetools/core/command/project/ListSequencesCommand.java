@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,11 +10,13 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
@@ -23,24 +26,29 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"list", "sequences"},
-	docoptUsages={"[-s <sourceName>] [-q <sequenceID>] [<fieldName> ...]"},
+	docoptUsages={"[-w <whereClause>] [<fieldName> ...]"},
 	docoptOptions={
-		"-s <sourceName>, --sourceName <sourceName>  Specify a particular source",
-		"-q <sequenceID>, --sequenceID <sequenceID>  Specify a particular sequenceID"},
-	description="List sequences, based on source or sequence ID"
+		"-w <whereClause>, --whereClause <whereClause>  Qualify result set"},
+	description="List sequences or sequence field values",
+	furtherHelp=
+	"Where fieldNames are specified, only these field values will be displayed.\n"+
+	"Examples:\n"+
+	"  list sequences -w \"source.name = 'local'\"\n"+
+	"  list sequences -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
+	"  list sequences sequenceID CUSTOM_FIELD"
 ) 
 public class ListSequencesCommand extends ProjectModeCommand {
 
-	private String sourceName;
-	private String sequenceID;
+	public static final String FIELD_NAME = "fieldName";
+	public static final String WHERE_CLAUSE = "whereClause";
+	private Expression whereClause;
 	private List<String> fieldNames;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", false);
-		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", false);
-		fieldNames = PluginUtils.configureStringsProperty(configElem, "fieldName");
+		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
+		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
 		if(fieldNames.isEmpty()) {
 			fieldNames = null; // default fields
 		}
@@ -49,11 +57,8 @@ public class ListSequencesCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.expTrue();
-		if(sourceName != null) {
-			exp = exp.andExp(ExpressionFactory.matchExp(_Sequence.SOURCE_PROPERTY, sourceName));
-		}
-		if(sequenceID != null) {
-			exp = exp.andExp(ExpressionFactory.matchExp(_Sequence.SEQUENCE_ID_PROPERTY, sequenceID));
+		if(whereClause != null) {
+			exp = exp.andExp(whereClause);
 		}
 		SelectQuery selectQuery = new SelectQuery(Sequence.class, exp);
 		List<String> validFieldNamesList = getProjectMode(cmdContext).getProject().getAllSequenceFieldNames();
@@ -65,8 +70,32 @@ public class ListSequencesCommand extends ProjectModeCommand {
 				}
 			});
 		}
-		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, 
-				fieldNames);
+		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
 	}
+	
+	@CompleterClass
+	public static class Completer extends FieldCompleter {
+		@Override
+		public List<String> completionSuggestions(
+				ConsoleCommandContext cmdContext,
+				Class<? extends Command> cmdClass, List<String> argStrings) {
+			List<String> suggestions = new ArrayList<String>();
+			if(argStrings.size() == 0) {
+				suggestions.add("-w");
+				suggestions.add("--whereClause");
+				suggestions.addAll(getAllFieldNames(cmdContext));
+			} else if(argStrings.size() == 1) {
+				String arg0 = argStrings.get(0);
+				if(!arg0.equals("-w") && !arg0.equals("--whereClause")) {
+					suggestions.addAll(getAllFieldNames(cmdContext));
+				}
+			} else {
+				suggestions.addAll(getAllFieldNames(cmdContext));
+			}
+			return suggestions;
+		}
+		
+	}
+
 
 }

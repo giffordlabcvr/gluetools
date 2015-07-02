@@ -47,7 +47,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-// TODO these modules should provide commands to configure some module elements, and run them.
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
 public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
@@ -341,12 +340,12 @@ public class NcbiImporterPlugin extends ModulePlugin<NcbiImporterPlugin> {
 		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
 		for(RetrievedSequence sequence: sequences) {
 			Element createSeqElem = CommandUsage.docElemForCmdClass(CreateSequenceCommand.class);
-			XmlUtils.appendElementWithText(createSeqElem, "sourceName", sourceName);
-			XmlUtils.appendElementWithText(createSeqElem, "sequenceID", sequence.sequenceID);
-			XmlUtils.appendElementWithText(createSeqElem, "format", sequence.format.name());
+			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.SOURCE_NAME, sourceName);
+			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.SEQUENCE_ID, sequence.sequenceID);
+			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.FORMAT, sequence.format.name());
 			// character encoding presumably not important here.
 			String base64String = new String(Base64.getEncoder().encode(sequence.data));
-			XmlUtils.appendElementWithText(createSeqElem, "base64", base64String);
+			XmlUtils.appendElementWithText(createSeqElem, CreateSequenceCommand.BASE64, base64String);
 			cmdContext.executeElem(createSeqElem.getOwnerDocument().getDocumentElement());
 		}
 		return CommandResult.OK;

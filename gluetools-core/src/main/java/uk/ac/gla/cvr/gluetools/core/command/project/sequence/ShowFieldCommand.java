@@ -1,21 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.SimpleCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommand.FieldCompleter;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.command.project.FieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;

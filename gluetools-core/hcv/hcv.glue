@@ -21,6 +21,8 @@ schema project HCV
     create field GB_COLLECTION_MONTH_DAY INTEGER
     create field GB_CREATE_DATE DATE
     create field GB_UPDATE_DATE DATE
+    create field CUSTOM_FIELD_X INTEGER
+    create field CUSTOM_FIELD_Y VARCHAR 200
     list fields
     exit
   exit
@@ -37,17 +39,23 @@ project HCV
   list sequences GB_HOST
   
   create source ncbi-nuccore
-  create module ncbi-hcv -f hcvImporter.xml
-  
-  module ncbi-hcv
+
+  create module ncbi-importer -f hcvNcbiImporter.xml
+  module ncbi-importer
     show configuration
     import
 	exit
 	  
-  create module gb-populator -f hcvPopulator.xml
+  create module gb-populator -f hcvGenbankXmlPopulator.xml
   module gb-populator
     show configuration
   	populate
+  	exit
+  
+  create module textfile-populator -f hcvTextFilePopulator.xml
+  module textfile-populator
+    show configuration
+  	populate -f fieldValues.txt
   	exit
   
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
@@ -62,7 +70,9 @@ schema project HCV
   
 project HCV
   list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
+  list sequences sequenceID CUSTOM_FIELD_X CUSTOM_FIELD_Y
   exit
 
 
   
+

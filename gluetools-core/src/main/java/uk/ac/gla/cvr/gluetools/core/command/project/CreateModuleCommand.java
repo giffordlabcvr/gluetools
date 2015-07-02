@@ -18,19 +18,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"create","module"}, 
-	docoptUsages={"<name> -f <configFile>"},
-	docoptOptions={"-f <file>, --file <file>  Module configuration file"},
+	docoptUsages={"<name> -f <file>"},
+	docoptOptions={"-f <file>, --fileName <file>  Module configuration file"},
 	description="Create a new module") 
 public class CreateModuleCommand extends ProjectModeCommand {
 
 	private String name;
-	private String file;
+	private String fileName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		name = PluginUtils.configureStringProperty(configElem, "name", true);
-		file = PluginUtils.configureStringProperty(configElem, "file", true);
+		fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
 	}
 
 	@Override
@@ -38,12 +38,12 @@ public class CreateModuleCommand extends ProjectModeCommand {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Module module = GlueDataObject.create(objContext, Module.class, Module.pkMap(name));
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		byte[] config = consoleCmdContext.loadBytes(file);
+		byte[] config = consoleCmdContext.loadBytes(fileName);
 		module.setConfig(config);
 		try {
 			module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		} catch(Exception e) {
-			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, file);
+			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, fileName);
 		}
 		return new CreateCommandResult(module.getObjectId());
 	}

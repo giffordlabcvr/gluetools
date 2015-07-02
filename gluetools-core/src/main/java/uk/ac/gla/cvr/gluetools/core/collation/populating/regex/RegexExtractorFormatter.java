@@ -3,10 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.collation.populating.regex;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.w3c.dom.Element;
 
@@ -35,22 +36,12 @@ import freemarker.template.TemplateModel;
 public class RegexExtractorFormatter implements Plugin {
 
 	
-	private Pattern matchPattern;
+	private Optional<Pattern> matchPattern;
 	private Template outputTemplate;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
-		String matchPatternXPathExpression = "matchPattern/text()";
-		String matchPatternString = PluginUtils.configureString(configElem, matchPatternXPathExpression, false);
-		if(matchPatternString != null) {
-			try {
-				matchPattern = Pattern.compile(matchPatternString);
-			} catch(PatternSyntaxException pse) {
-				throw new PluginConfigException(pse, Code.CONFIG_FORMAT_ERROR, matchPatternXPathExpression, pse.getLocalizedMessage(), matchPatternString);
-			}
-		} else {
-			matchPattern = null;
-		}
+		matchPattern = Optional.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, "matchPattern", false));
 		String outputPatternXPathExpression = "outputPattern/text()";
 		String templateString = PluginUtils.configureString(configElem, outputPatternXPathExpression, false);
 		Configuration freemarkerConfiguration = pluginConfigContext.getFreemarkerConfiguration();
@@ -69,20 +60,8 @@ public class RegexExtractorFormatter implements Plugin {
 	@SuppressWarnings("rawtypes")
 	public String matchAndConvert(String input) {
 		TemplateHashModel variableResolver;
-		if(matchPattern == null) {
-			if(outputTemplate == null) {
-				return input;
-			}
-			variableResolver = new TemplateHashModel() {
-				@Override
-				public TemplateModel get(String key) {
-					if(key.equals("0")) { return new SimpleScalar(input); } else { return null; }
-				}
-				@Override
-				public boolean isEmpty() { return false; }
-			};
-		} else {
-			final Matcher matcher = matchPattern.matcher(input);
+		if(matchPattern.isPresent()) {
+			final Matcher matcher = matchPattern.get().matcher(input);
 			if(!matcher.find()) {
 				return null;
 			}
@@ -107,6 +86,18 @@ public class RegexExtractorFormatter implements Plugin {
 				@Override
 				public boolean isEmpty() { return false; }
 			};
+		} else {
+			if(outputTemplate == null) {
+				return input;
+			}
+			variableResolver = new TemplateHashModel() {
+				@Override
+				public TemplateModel get(String key) {
+					if(key.equals("0")) { return new SimpleScalar(input); } else { return null; }
+				}
+				@Override
+				public boolean isEmpty() { return false; }
+			};
 		}
 		StringWriter result = new StringWriter();
 		try {
@@ -119,7 +110,25 @@ public class RegexExtractorFormatter implements Plugin {
 		return result.toString();
 	}
 
-	public String getMatchPattern() {
-		return matchPattern.pattern();
+	
+	public static String extractAndConvert(String input, RegexExtractorFormatter mainExtractor, 
+			List<RegexExtractorFormatter> valueConverters) {
+		if(mainExtractor != null) {
+			String mainExtractorResult = mainExtractor.matchAndConvert(input);
+			if(mainExtractorResult == null) {
+				return null;
+			} else {
+				input = mainExtractorResult;
+			}
+		}
+		for(RegexExtractorFormatter valueConverter: valueConverters) {
+			String valueConverterResult = valueConverter.matchAndConvert(input);
+			if(valueConverterResult != null) {
+				return valueConverterResult;
+			}
+		}
+		return input;
 	}
+	
+	
 }

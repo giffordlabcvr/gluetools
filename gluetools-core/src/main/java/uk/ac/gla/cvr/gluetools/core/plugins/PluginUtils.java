@@ -2,8 +2,12 @@ package uk.ac.gla.cvr.gluetools.core.plugins;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -16,6 +20,35 @@ import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
 
+	public static Pattern configureRegexPatternProperty(Element configElem, String propertyName, boolean required) {
+		Pattern pattern;
+		String patternString = PluginUtils.configureStringProperty(configElem, propertyName, required);
+		if(patternString != null) {
+			try {
+				pattern = Pattern.compile(patternString);
+			} catch(PatternSyntaxException pse) {
+				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, pse.getLocalizedMessage(), patternString);
+			}
+		} else {
+			pattern = null;
+		}
+		return pattern;
+	}
+	
+	public static Expression configureCayenneExpressionProperty(Element configElem, String propertyName, boolean required) {
+		String expressionString = PluginUtils.configureStringProperty(configElem, propertyName, required);
+		Expression expression = null;
+		if(expressionString != null) {
+			try {
+				expression = Expression.fromString(expressionString);
+			} catch(ExpressionException ee) {
+				throw new PluginConfigException(PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
+						ee.getLocalizedMessage(), expressionString);
+			}
+		}
+		return expression;
+	}
+	
 	public static String configureStringProperty(Element configElem, String propertyName, String defaultValue) {
 		String configured = configureStringProperty(configElem, propertyName, false);
 		if(configured != null) {

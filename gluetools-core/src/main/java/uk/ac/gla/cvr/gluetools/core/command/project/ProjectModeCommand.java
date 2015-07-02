@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
@@ -32,8 +34,11 @@ public abstract class ProjectModeCommand extends Command {
 	protected Sequence lookupSequence(CommandContext cmdContext, 
 			String sourceName, String sequenceID, boolean allowNull) {
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequencesCommand.class);
-		XmlUtils.appendElementWithText(listSequencesElem, "sourceName", sourceName);
-		XmlUtils.appendElementWithText(listSequencesElem, "sequenceID", sequenceID);
+		Expression identifyingExp = ExpressionFactory.matchExp("sequenceID", sequenceID);
+		if(sourceName != null) {
+			identifyingExp = identifyingExp.andExp(ExpressionFactory.matchExp("source.name", sourceName));
+		}
+		XmlUtils.appendElementWithText(listSequencesElem, ListSequencesCommand.WHERE_CLAUSE, identifyingExp.toString());
 		@SuppressWarnings("unchecked")
 		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.
 			executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());

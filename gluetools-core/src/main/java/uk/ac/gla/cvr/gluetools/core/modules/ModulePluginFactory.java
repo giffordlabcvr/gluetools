@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.modules;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterPlugin;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulatorPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopulatorPlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -14,6 +15,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		super();
 		registerPluginClass(NcbiImporterPlugin.class);
 		registerPluginClass(GenbankXmlPopulatorPlugin.class);
+		registerPluginClass(TextFilePopulatorPlugin.class);
 	}
 	
 }

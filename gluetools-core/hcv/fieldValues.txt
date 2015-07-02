@@ -1,0 +1,10 @@
+224765585,3,some value 1
+347810390,6,some value 2
+375127704,67,some value 3
+384235365,2,some value 4
+384235367,54,some value 5
+384235369,23,some value 6
+384235371,1,n/a
+384235373,56,some value 3
+384235375,23,some value 9
+384235377,23,some value 12

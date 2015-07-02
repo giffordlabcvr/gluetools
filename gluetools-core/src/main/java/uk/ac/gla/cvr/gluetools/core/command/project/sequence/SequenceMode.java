@@ -5,10 +5,11 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-public class SequenceMode extends CommandMode {
+public class SequenceMode extends CommandMode implements InsideProjectMode {
 
 	private Project project;
 	private String sourceName;

@@ -6,7 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
-public class ProjectMode extends CommandMode {
+public class ProjectMode extends CommandMode implements InsideProjectMode {
 
 	
 	private Project project;
