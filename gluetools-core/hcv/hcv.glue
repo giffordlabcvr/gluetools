@@ -23,6 +23,14 @@ schema project HCV
     create field GB_UPDATE_DATE DATE
     create field CUSTOM_FIELD_X INTEGER
     create field CUSTOM_FIELD_Y VARCHAR 200
+    create field NIM_1 VARCHAR 50
+    create field NIM_2 VARCHAR 50
+    create field NIM_3 VARCHAR 50
+    create field NIM_4 VARCHAR 50
+    create field NIM_5 VARCHAR 50
+    create field NIM_6 VARCHAR 50
+    create field NIM_7 VARCHAR 50
+    create field NIM_8 VARCHAR 50
     list field
     exit
   exit
@@ -74,7 +82,7 @@ schema project HCV
   
 project HCV
   list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
-  list sequence sequenceID CUSTOM_FIELD_X CUSTOM_FIELD_Y
+  list sequence sequenceID NIM_1 NIM_2 NIM_4 NIM_5 NIM_8 CUSTOM_FIELD_X CUSTOM_FIELD_Y
 
 
   

@@ -50,11 +50,11 @@ public abstract class SequencePopulatorPlugin<P extends ModulePlugin<P>> extends
 		return null;
 	}
 
-	private static void runSetFieldCommand(CommandContext cmdContext,
-			FieldPopulator fieldPopulator, String extractAndConvertResult) {
+	public static void runSetFieldCommand(CommandContext cmdContext,
+			FieldPopulator fieldPopulator, String fieldValue) {
 		Element setFieldElem = CommandUsage.docElemForCmdClass(SetFieldCommand.class);
 		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName());
-		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_VALUE, extractAndConvertResult);
+		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_VALUE, fieldValue);
 		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.NO_OVERWRITE, "true");
 		cmdContext.executeElem(setFieldElem.getOwnerDocument().getDocumentElement());
 	}
