@@ -9,15 +9,16 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 
 @GlueDataClass(defaultListColumns = {
-		_Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY, 
+		Sequence.SOURCE_NAME_PATH, 
 		_Sequence.SEQUENCE_ID_PROPERTY})
 public class Sequence extends _Sequence {
 
+	public static final String SOURCE_NAME_PATH = _Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY;
 	private SequenceFormat sequenceFormat;
 	
 	public static Map<String, String> pkMap(String sourceName, String sequenceID) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
-		idMap.put(SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY, sourceName);
+		idMap.put(SOURCE_NAME_PATH, sourceName);
 		idMap.put(SEQUENCE_ID_PROPERTY, sequenceID);
 		return idMap;
 	}

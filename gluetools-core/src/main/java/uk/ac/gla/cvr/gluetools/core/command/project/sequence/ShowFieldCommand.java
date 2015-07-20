@@ -6,10 +6,10 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.SimpleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.FieldCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -45,9 +45,9 @@ public class ShowFieldCommand extends SequenceModeCommand {
 		}
 		Object value = sequence.readProperty(fieldName);
 		if(value != null) {
-			return new SimpleCommandResult(value.toString());
+			return new SimpleConsoleCommandResult(value.toString());
 		} else {
-			return new SimpleCommandResult("No value defined for field "+fieldName);
+			return new SimpleConsoleCommandResult("No value defined for field "+fieldName);
 		}
 	}
 

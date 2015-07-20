@@ -3,10 +3,10 @@ package uk.ac.gla.cvr.gluetools.core.command.console.config;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -30,12 +30,7 @@ public class SetDirectoryCommand extends ConsoleCommand {
 	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		cmdContext.updateLoadSavePath(path);
 		final String path = cmdContext.getLoadSavePath().getAbsolutePath();
-		return new ConsoleCommandResult() {
-			@Override
-			public String getResultAsConsoleText() {
-				return path;
-			}
-		};
+		return new SimpleConsoleCommandResult(path);
 	}
 
 }

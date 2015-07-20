@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +14,6 @@ import java.util.stream.Collectors;
 import jline.console.ConsoleReader;
 
 import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.ObjectId;
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
@@ -31,28 +28,18 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
-import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
-
-import com.brsanthu.dataexporter.model.AlignType;
-import com.brsanthu.dataexporter.model.Row;
-import com.brsanthu.dataexporter.model.StringColumn;
-import com.brsanthu.dataexporter.output.texttable.TextTableExportOptions;
-import com.brsanthu.dataexporter.output.texttable.TextTableExportStyle;
-import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
@@ -64,7 +51,7 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 // TODO implement toggle for whether output should be echoed in batch mode.
 // TODO history should be stored in the DB.
 // TODO in batch mode, exceptions should go to stderr.
-public class Console implements CommandContextListener
+public class Console implements CommandContextListener, CommandResultRenderingContext
 {
 	private PrintWriter out;
 	private ConsoleReader reader;
@@ -110,50 +97,7 @@ public class Console implements CommandContextListener
 
 	private void renderCommandResult(CommandResult commandResult) {
 		if(commandResult == null) { return; }
-		if(commandResult == CommandResult.OK) {
-			output("OK");
-		} else if(commandResult instanceof CreateCommandResult) {
-			CreateCommandResult objCreateResult = (CreateCommandResult) commandResult;
-			ObjectId objectId = objCreateResult.getObjectId();
-			output(objectId.getEntityName()+" created: "+objectId.getIdSnapshot().toString());
-		} else if(commandResult instanceof DocumentResult) {
-			Document document = ((DocumentResult) commandResult).getDocument();
-			byte[] docBytes = XmlUtils.prettyPrint(document);
-			// TODO -- what encoding? -- maybe prettyPrint should have a parameter encoding?
-			output(new String(docBytes));			
-		} else if(commandResult instanceof ListCommandResult<?>) {
-			StringWriter stringWriter = new StringWriter();
-			ListCommandResult<?> listCmdResult = (ListCommandResult<?>) commandResult;
-			List<? extends GlueDataObject> results = listCmdResult.getResults();
-			int numFound = results.size();
-			if(numFound > 0) {
-				final int minColWidth = 25;
-				TextTableExportOptions options = new TextTableExportOptions();
-				options.setStyle(TextTableExportStyle.CLASSIC);
-				TextTableExporter textTable = new TextTableExporter(stringWriter);
-				String[] headers = listCmdResult.getColumnPropertyNames();
-				for(String header: headers) {
-					StringColumn column = new StringColumn(header, Math.max(minColWidth, header.length()));
-					column.setAlign(AlignType.TOP_LEFT);
-					textTable.addColumns(column);
-				}
-				for(GlueDataObject glueDataObj: results) {
-					Row row = new Row();
-					Arrays.asList(headers).forEach(propertyName -> {
-						String cString = glueDataObj.populateListCell(propertyName);
-						if(cString.length() < minColWidth) {
-							cString = " "+cString;
-						}
-						row.addCellValue(cString);
-					});
-					textTable.addRows(row);
-				}
-				textTable.finishExporting();
-			} 
-			output(stringWriter.toString()+"Number found: "+numFound);
-		} else if(commandResult instanceof ConsoleCommandResult) {
-			output(((ConsoleCommandResult) commandResult).getResultAsConsoleText());
-		}
+		commandResult.renderToConsole(this);
 	}
 
 	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings) {
@@ -449,7 +393,8 @@ public class Console implements CommandContextListener
 		}
 	}
 
-	private void output(String message) {
+	@Override
+	public void output(String message) {
 		out.println(message);
 		out.flush();
 	}
@@ -469,6 +414,11 @@ public class Console implements CommandContextListener
 	@Override
 	public void commandModeChanged() {
 		updatePrompt();
+	}
+
+	@Override
+	public boolean showCmdXml() {
+		return showCmdXml;
 	}
 
 

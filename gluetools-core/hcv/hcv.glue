@@ -23,7 +23,7 @@ schema project HCV
     create field GB_UPDATE_DATE DATE
     create field CUSTOM_FIELD_X INTEGER
     create field CUSTOM_FIELD_Y VARCHAR 200
-    list fields
+    list field
     exit
   exit
  
@@ -31,12 +31,12 @@ project HCV
   create source local
   create sequence local file1 GENBANK_XML -f sequence.xml
 
-  sequence file1
+  sequence local file1
     set field GB_HOST "a creature"
     show data
     exit
     
-  list sequences GB_HOST
+  list sequence GB_HOST
   
   create module ncbi-importer -f hcvNcbiImporter.xml
   module ncbi-importer
@@ -49,14 +49,13 @@ project HCV
     show configuration
   	populate
   	exit
-  
   create module textfile-populator -f hcvTextFilePopulator.xml
   module textfile-populator
     show configuration
   	populate -f fieldValues.txt
   	exit
   
-  list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
+  list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
   exit
 
 schema project HCV
@@ -67,8 +66,8 @@ schema project HCV
   exit
   
 project HCV
-  list sequences sequenceID GB_GENOTYPE GB_SUBTYPE
-  list sequences sequenceID CUSTOM_FIELD_X CUSTOM_FIELD_Y
+  list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
+  list sequence sequenceID CUSTOM_FIELD_X CUSTOM_FIELD_Y
 
   create module fasta-importer -f hcvFastaImporter.xml
   module fasta-importer
@@ -77,4 +76,3 @@ project HCV
 	exit
 
   
-

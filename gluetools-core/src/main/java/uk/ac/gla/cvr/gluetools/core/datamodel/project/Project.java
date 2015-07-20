@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 @GlueDataClass(defaultListColumns = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
@@ -33,9 +34,9 @@ public class Project extends _Project {
 
 	public List<String> getAllSequenceFieldNames() {
 		List<String> fieldNames = getCustomSequenceFieldNames();
-		fieldNames.add(_Sequence.SEQUENCE_ID_PROPERTY);
-		fieldNames.add(_Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY);
-		fieldNames.add(_Sequence.FORMAT_PROPERTY);
+		fieldNames.add(Sequence.SOURCE_NAME_PATH);
+		fieldNames.add(Sequence.SEQUENCE_ID_PROPERTY);
+		fieldNames.add(Sequence.FORMAT_PROPERTY);
 		return fieldNames;
 	}
 

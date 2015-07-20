@@ -10,6 +10,7 @@ import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 
 
 public class CommandContext {

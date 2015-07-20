@@ -14,7 +14,7 @@ public class RootCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ProjectCommand.class);
 		registerCommandClass(CreateProjectCommand.class);
 		registerCommandClass(DeleteProjectCommand.class);
-		registerCommandClass(ListProjectsCommand.class);
+		registerCommandClass(ListProjectCommand.class);
 		registerCommandClass(ProjectSchemaCommand.class);
 	}
 }

@@ -17,13 +17,13 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;

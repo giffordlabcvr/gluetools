@@ -3,8 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.command.project.module;
 import org.apache.cayenne.ObjectContext;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;

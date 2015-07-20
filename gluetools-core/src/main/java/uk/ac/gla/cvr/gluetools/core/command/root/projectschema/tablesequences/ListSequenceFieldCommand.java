@@ -6,16 +6,16 @@ import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 
 
 @CommandClass( 
-	commandWords={"list", "fields"},
+	commandWords={"list", "field"},
 	docoptUsages={""},
 	description="List the fields in the table") 
-public class ListSequenceFieldsCommand extends TableSequencesModeCommand {
+public class ListSequenceFieldCommand extends TableSequencesModeCommand {
 
 	
 	

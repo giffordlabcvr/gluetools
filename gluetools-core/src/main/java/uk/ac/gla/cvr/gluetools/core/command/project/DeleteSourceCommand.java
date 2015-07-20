@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -29,8 +29,7 @@ public class DeleteSourceCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		GlueDataObject.delete(objContext, Source.class, Source.pkMap(sourceName));
-		return CommandResult.OK;
+		return GlueDataObject.delete(objContext, Source.class, Source.pkMap(sourceName));
 	}
 
 

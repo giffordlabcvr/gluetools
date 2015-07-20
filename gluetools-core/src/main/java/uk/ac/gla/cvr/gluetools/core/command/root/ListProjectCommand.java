@@ -4,16 +4,16 @@ import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 
 @CommandClass( 
-	commandWords={"list", "projects"}, 
+	commandWords={"list", "project"}, 
 	docoptUsages={""},
 	description="List all projects") 
-public class ListProjectsCommand extends RootModeCommand {
+public class ListProjectCommand extends RootModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {

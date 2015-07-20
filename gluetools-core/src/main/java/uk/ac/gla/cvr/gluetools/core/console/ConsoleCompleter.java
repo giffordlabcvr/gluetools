@@ -4,9 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jline.console.completer.Completer;
+
 import org.apache.cayenne.ObjectContext;
 
-import jline.console.completer.Completer;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;

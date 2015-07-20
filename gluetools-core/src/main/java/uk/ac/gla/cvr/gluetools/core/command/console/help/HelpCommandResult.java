@@ -4,6 +4,7 @@ import java.util.Formatter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 
 public class HelpCommandResult extends ConsoleCommandResult {
 
@@ -15,7 +16,7 @@ public class HelpCommandResult extends ConsoleCommandResult {
 	}
 
 	@Override
-	public String getResultAsConsoleText() {
+	public void renderToConsole(CommandResultRenderingContext renderCtx) {
 		StringBuffer buf = new StringBuffer();
 		try(Formatter formatter = new Formatter(buf)) {
 			helpLines.stream().forEach(h -> {
@@ -25,7 +26,7 @@ public class HelpCommandResult extends ConsoleCommandResult {
 			});
 		}
 		buf.append("\nFor more detailed help, use: help <commandWord>...\n");
-		return buf.toString();
+		renderCtx.output(buf.toString());
 	}
 	
 	

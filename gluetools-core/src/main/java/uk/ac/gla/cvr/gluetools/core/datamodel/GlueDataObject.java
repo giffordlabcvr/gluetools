@@ -13,6 +13,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 
 public abstract class GlueDataObject extends CayenneDataObject {
@@ -91,40 +92,55 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			return null;
 		}
 		
-		List<Expression> exps = pkMap.entrySet().stream().map(e -> 
-			ExpressionFactory.matchExp(e.getKey(), e.getValue())).collect(Collectors.toList());
-		Optional<Expression> exp = exps.stream().reduce(Expression::andExp);
-		SelectQuery query = new SelectQuery(objClass, exp.get());
+		Expression qualifier = pkMapToExpression(pkMap);
+		return lookupFromDB(objContext, objClass, allowNull, qualifier);
+	}
+
+	public static <C extends GlueDataObject> C lookupFromDB(
+			ObjectContext objContext, Class<C> objClass, boolean allowNull,
+			Expression qualifier) {
+		SelectQuery query = new SelectQuery(objClass, qualifier);
 		List<?> results = objContext.performQuery(query);
 		if(results.isEmpty()) {
 			if(allowNull) {
 				return null;
 			} else {
-				throw new DataModelException(Code.OBJECT_NOT_FOUND, objClass.getSimpleName(), pkMap);
+				throw new DataModelException(Code.OBJECT_NOT_FOUND, objClass.getSimpleName(), qualifier.toString());
 			}
 		}
 		if(results.size() > 1) {
-			throw new DataModelException(Code.MULTIPLE_OBJECTS_FOUND, objClass.getSimpleName(), pkMap);
+			throw new DataModelException(Code.MULTIPLE_OBJECTS_FOUND, objClass.getSimpleName(), qualifier.toString());
 		}
 		C object = objClass.cast(results.get(0));
 		((GlueDataObject) object).setMyContext(objContext);
 		return object;
 	}
 
-	public static <C extends GlueDataObject> void delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
+	public static Expression pkMapToExpression(Map<String, String> pkMap) {
+		List<Expression> exps = pkMap.entrySet().stream().map(e -> 
+			ExpressionFactory.matchExp(e.getKey(), e.getValue())).collect(Collectors.toList());
+		Optional<Expression> exp = exps.stream().reduce(Expression::andExp);
+		Expression qualifier = exp.get();
+		return qualifier;
+	}
+
+	public static <C extends GlueDataObject> DeleteResult delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowNull) {
 		C object = lookup(objContext, objClass, pkMap, allowNull);
-		Optional.ofNullable(object).ifPresent(obj -> {
-			objContext.deleteObject(obj);
-			cacheRemove(objContext, GLUE_NEW, pkMap, obj);
-			cacheRemove(objContext, GLUE_MODIFIED, pkMap, obj);
-			cachePut(objContext, GLUE_DELETED, pkMap, obj);
-		});
+		if(object != null) {
+			objContext.deleteObject(object);
+			cacheRemove(objContext, GLUE_NEW, pkMap, object);
+			cacheRemove(objContext, GLUE_MODIFIED, pkMap, object);
+			cachePut(objContext, GLUE_DELETED, pkMap, object);
+			return new DeleteResult(objClass, 1);
+		} else {
+			return new DeleteResult(objClass, 0);
+		}
 
 	}
 
-	public static <C extends GlueDataObject> void delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
-		delete(objContext, objClass, pkMap, false);
+	public static <C extends GlueDataObject> DeleteResult delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
+		return delete(objContext, objClass, pkMap, false);
 	}
 
 	public static <C extends GlueDataObject> C create(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
@@ -214,6 +230,4 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			cachePut(objContext, GLUE_MODIFIED, pkMap, this);
 		}
 	}
-	
-
 }

@@ -8,8 +8,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -41,7 +41,7 @@ public class CreateProjectCommand extends RootModeCommand {
 		ServerRuntime projectRuntime = 
 				ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), newProject);
 		projectRuntime.shutdown();
-		return new CreateCommandResult(newProject.getObjectId());
+		return new CreateResult(Project.class, 1);
 	}
 
 }

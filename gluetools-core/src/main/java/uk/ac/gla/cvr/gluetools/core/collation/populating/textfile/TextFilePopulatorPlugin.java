@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,11 +18,9 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.ListCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.ListSequencesCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -29,7 +28,10 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -124,10 +126,12 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		Expression identifyingExp = idExpressions.subList(1, idExpressions.size()).
 				stream().reduce(idExpressions.get(0), Expression::andExp);
 		
-		List<Sequence> sequences = identifySequences(identifyingExp, cmdContext);
-		for(Sequence sequence: sequences) {
+		List<Map<String, String>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
+		for(Map<String, String> seqMap: sequenceMaps) {
 			ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), sequence.getSource().getName(), sequence.getSequenceID()));
+			String name = seqMap.get(Sequence.SOURCE_NAME_PATH);
+			String sequenceID = seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), name, sequenceID));
 			try {
 				for(int i = 0; i < cellValues.length; i++) {
 					String cellText = cellValues[i];
@@ -162,20 +166,20 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 	}
 
 
-	public List<Sequence> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
-		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequencesCommand.class);
+	public List<Map<String,String>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
+		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequenceCommand.class);
 		String identifyingExpString = identifyingExp.toString();
-		XmlUtils.appendElementWithText(listSequencesElem, ListSequencesCommand.WHERE_CLAUSE, identifyingExpString);
+		XmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, identifyingExpString);
 		@SuppressWarnings("unchecked")
-		ListCommandResult<Sequence> listResult = (ListCommandResult<Sequence>) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
-		List<Sequence> sequences = listResult.getResults();
-		if(sequences.size() == 0 && !skipMissing) {
+		ListResult listResult = (ListResult) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
+		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
+		if(sequenceMaps.size() == 0 && !skipMissing) {
 			throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SEQUENCE_FOUND, identifyingExpString);
 		}
-		if(sequences.size() > 1 && !updateMultiple) {
+		if(sequenceMaps.size() > 1 && !updateMultiple) {
 			throw new TextFilePopulatorException(TextFilePopulatorException.Code.MULTIPLE_SEQUENCES_FOUND, identifyingExpString);
 		}
-		return sequences;
+		return sequenceMaps;
 	}
 
 	@CommandClass( 

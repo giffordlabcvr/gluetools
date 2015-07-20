@@ -7,8 +7,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -40,8 +40,8 @@ public class CreateSourceCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), allowExisting);
-		return new CreateCommandResult(source.getObjectId());
+		GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), allowExisting);
+		return new CreateResult(Source.class, 1);
 	}
 
 }

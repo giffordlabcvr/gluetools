@@ -14,7 +14,7 @@ public class TableSequencesModeCommandFactory extends BaseCommandFactory {
 		super.populateCommandTree();
 		registerCommandClass(CreateSequenceFieldCommand.class);
 		registerCommandClass(DeleteSequenceFieldCommand.class);
-		registerCommandClass(ListSequenceFieldsCommand.class);
+		registerCommandClass(ListSequenceFieldCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}
 	

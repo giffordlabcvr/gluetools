@@ -6,9 +6,9 @@ import java.io.IOException;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaUtils;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.DocumentResult;
-import uk.ac.gla.cvr.gluetools.core.command.SimpleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
@@ -47,7 +47,7 @@ public enum SequenceFormat {
 
 		@Override
 		public CommandResult showDataResult(byte[] data) {
-			return new SimpleCommandResult(new String(data));
+			return new SimpleConsoleCommandResult(new String(data));
 		}
 	};
 

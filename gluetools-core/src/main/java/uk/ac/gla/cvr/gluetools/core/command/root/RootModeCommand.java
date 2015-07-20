@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.query.SelectQuery;
@@ -27,7 +26,7 @@ public abstract class RootModeCommand extends Command {
 			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
 				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Project.class, new SelectQuery(Project.class)).
-						getResults().stream().map(Project::getName).collect(Collectors.toList()));
+						getColumnValues(Project.NAME_PROPERTY));
 			}
 			return suggestions;
 		}

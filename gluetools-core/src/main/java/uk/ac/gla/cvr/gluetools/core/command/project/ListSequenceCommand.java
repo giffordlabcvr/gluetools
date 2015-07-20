@@ -12,10 +12,10 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"list", "sequences"},
+	commandWords={"list", "sequence"},
 	docoptUsages={"[-w <whereClause>] [<fieldName> ...]"},
 	docoptOptions={
 		"-w <whereClause>, --whereClause <whereClause>  Qualify result set"},
@@ -32,11 +32,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	furtherHelp=
 	"Where fieldNames are specified, only these field values will be displayed.\n"+
 	"Examples:\n"+
-	"  list sequences -w \"source.name = 'local'\"\n"+
-	"  list sequences -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
-	"  list sequences sequenceID CUSTOM_FIELD"
+	"  list sequence -w \"source.name = 'local'\"\n"+
+	"  list sequence -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
+	"  list sequence sequenceID CUSTOM_FIELD"
 ) 
-public class ListSequencesCommand extends ProjectModeCommand {
+public class ListSequenceCommand extends ProjectModeCommand {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";

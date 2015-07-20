@@ -5,9 +5,9 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;
@@ -45,7 +45,7 @@ public class CreateModuleCommand extends ProjectModeCommand {
 		} catch(Exception e) {
 			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, fileName);
 		}
-		return new CreateCommandResult(module.getObjectId());
+		return new CreateResult(Module.class, 1);
 	}
 
 }

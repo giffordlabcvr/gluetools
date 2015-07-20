@@ -5,8 +5,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.CreateCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
@@ -47,7 +47,7 @@ public class CreateSequenceFieldCommand extends TableSequencesModeCommand {
 		field.setType(type.name());
 		field.setMaxLength(maxLength);
 		ModelBuilder.addSequenceColumnToModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project, field);
-		return new CreateCommandResult(field.getObjectId());
+		return new CreateResult(Field.class, 1);
 	}
 
 }
