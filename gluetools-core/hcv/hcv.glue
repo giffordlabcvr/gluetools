@@ -41,7 +41,7 @@ project HCV
 
   sequence local file1
     set field GB_HOST "a creature"
-    show data
+    show original-data
     exit
     
   list sequence GB_HOST

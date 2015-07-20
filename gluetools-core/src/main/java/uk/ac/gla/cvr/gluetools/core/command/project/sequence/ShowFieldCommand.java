@@ -7,7 +7,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.FieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -44,10 +43,10 @@ public class ShowFieldCommand extends SequenceModeCommand {
 			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);
 		}
 		Object value = sequence.readProperty(fieldName);
-		if(value != null) {
-			return new SimpleConsoleCommandResult(value.toString());
+		if(value == null) {
+			return new FieldValueResult(fieldName, null);
 		} else {
-			return new SimpleConsoleCommandResult("No value defined for field "+fieldName);
+			return new FieldValueResult(fieldName, value.toString());
 		}
 	}
 

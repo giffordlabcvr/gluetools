@@ -78,7 +78,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 			sequenceData = dataFromBase64;
 		}
 		format.validateFormat(sequenceData);
-		sequence.setData(sequenceData);
+		sequence.setOriginalData(sequenceData);
 		return new CreateResult(Sequence.class, 1);
 	}
 

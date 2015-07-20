@@ -15,7 +15,7 @@ public class SequenceModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(SetFieldCommand.class);
 		registerCommandClass(UnsetFieldCommand.class);
 		registerCommandClass(ShowFieldCommand.class);
-		registerCommandClass(ShowDataCommand.class);
+		registerCommandClass(ShowOriginalDataCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}
 	

@@ -11,26 +11,26 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
  */
 public abstract class _Sequence extends GlueDataObject {
 
-    public static final String DATA_PROPERTY = "data";
     public static final String FORMAT_PROPERTY = "format";
+    public static final String ORIGINAL_DATA_PROPERTY = "originalData";
     public static final String SEQUENCE_ID_PROPERTY = "sequenceID";
     public static final String SOURCE_PROPERTY = "source";
 
     public static final String SEQUENCE_ID_PK_COLUMN = "SEQUENCE_ID";
     public static final String SOURCE_PK_COLUMN = "SOURCE";
 
-    public void setData(byte[] data) {
-        writeProperty(DATA_PROPERTY, data);
-    }
-    public byte[] getData() {
-        return (byte[])readProperty(DATA_PROPERTY);
-    }
-
     public void setFormat(String format) {
         writeProperty(FORMAT_PROPERTY, format);
     }
     public String getFormat() {
         return (String)readProperty(FORMAT_PROPERTY);
+    }
+
+    public void setOriginalData(byte[] originalData) {
+        writeProperty(ORIGINAL_DATA_PROPERTY, originalData);
+    }
+    public byte[] getOriginalData() {
+        return (byte[])readProperty(ORIGINAL_DATA_PROPERTY);
     }
 
     public void setSequenceID(String sequenceID) {

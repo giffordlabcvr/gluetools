@@ -8,16 +8,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 
 
 @CommandClass( 
-	commandWords={"show", "data"}, 
+	commandWords={"show", "original-data"}, 
 	docoptUsages={""},
 	docoptOptions={""},
-	description="Show the original sequence data") 
-public class ShowDataCommand extends SequenceModeCommand {
+	description="Show the original sequence data",
+	furtherHelp="Returns the data from which the sequence object was created, in its original format") 
+public class ShowOriginalDataCommand extends SequenceModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		Sequence sequence = lookupSequence(cmdContext);
-		return SequenceFormat.valueOf(sequence.getFormat()).showDataResult(sequence.getData());
+		return new OriginalDataResult(SequenceFormat.valueOf(sequence.getFormat()),
+				sequence.getOriginalData());
 	}
 
 
