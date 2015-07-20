@@ -30,8 +30,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureComman
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -72,6 +72,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		if(!numberColumns.isEmpty() && !headerColumns.isEmpty()) {
 			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Either all columns must be numbered or none may be");
 		}
+		
 		addProvidedCmdClass(PopulateCommand.class);
 		addProvidedCmdClass(ShowPopulatorCommand.class);
 		addProvidedCmdClass(ConfigurePopulatorCommand.class);
@@ -93,10 +94,24 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 				populatorContext.columnToPosition.put(c, j);
 			});
 		}
-		
+		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
+		Project project = projectMode.getProject();
+		List<String> definedFieldNames = project.getAllSequenceFieldNames();
+		checkFieldsExist(headerColumns, definedFieldNames);
+		checkFieldsExist(numberColumns, definedFieldNames);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, Charset.forName("UTF-8")));
 		reader.lines().forEach(line -> processLine(populatorContext, line));
 		return CommandResult.OK;
+	}
+
+
+	private void checkFieldsExist(List<TextFilePopulatorColumn> columns, List<String> definedFieldNames) {
+		columns.forEach(col -> {
+			String fieldName = col.getFieldName();
+			if(!definedFieldNames.contains(fieldName)) {
+				throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SUCH_FIELD, fieldName, definedFieldNames.toString());
+			}
+		});
 	}
 	
 
@@ -161,7 +176,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 					return;
 				}
 			}
-			throw new TextFilePopulatorException(TextFilePopulatorException.Code.COLUMN_NOT_FOUND, c.getHeader().get());
+			throw new TextFilePopulatorException(TextFilePopulatorException.Code.HEADER_NOT_FOUND, c.getHeader().get());
 		});
 	}
 

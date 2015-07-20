@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 

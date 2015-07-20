@@ -3,7 +3,7 @@
 	<textFileColumn>
 		<identifier>true</identifier>
 		<number>0</number>
-		<fieldName>GB_PRIMARY_ACCESSION</fieldName>
+		<fieldName>sequenceID</fieldName>
 	</textFileColumn>
 	<textFileColumn>
 		<number>1</number>

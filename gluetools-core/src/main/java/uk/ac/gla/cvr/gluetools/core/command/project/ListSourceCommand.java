@@ -10,10 +10,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 
 
 @CommandClass(
-	commandWords={"list", "sources"}, 
+	commandWords={"list", "source"}, 
 	docoptUsages={""},
 	description="List sequence sources") 
-public class ListSourcesCommand extends ProjectModeCommand {
+public class ListSourceCommand extends ProjectModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {

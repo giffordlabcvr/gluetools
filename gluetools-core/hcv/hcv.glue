@@ -49,6 +49,13 @@ project HCV
     show configuration
   	populate
   	exit
+
+  create module fasta-importer -f hcvFastaImporter.xml
+  module fasta-importer
+    show configuration
+    import -f fastaExample.fa
+	exit
+  	
   create module textfile-populator -f hcvTextFilePopulator.xml
   module textfile-populator
     show configuration
@@ -69,10 +76,5 @@ project HCV
   list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
   list sequence sequenceID CUSTOM_FIELD_X CUSTOM_FIELD_Y
 
-  create module fasta-importer -f hcvFastaImporter.xml
-  module fasta-importer
-    show configuration
-    import -f fastaExample.fa
-	exit
 
   

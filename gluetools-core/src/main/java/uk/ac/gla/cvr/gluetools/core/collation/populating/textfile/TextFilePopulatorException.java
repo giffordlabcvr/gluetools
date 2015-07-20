@@ -5,10 +5,11 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class TextFilePopulatorException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		COLUMN_NOT_FOUND("header"),
+		HEADER_NOT_FOUND("header"),
 		NO_SEQUENCE_FOUND("combinedWhereClause"),
 		MULTIPLE_SEQUENCES_FOUND("combinedWhereClause"), 
-		NULL_IDENTIFIER("fieldName");
+		NULL_IDENTIFIER("fieldName"), 
+		NO_SUCH_FIELD("fieldName", "definedFieldNames");
 		
 		private String[] argNames;
 		private Code(String... argNames) {
