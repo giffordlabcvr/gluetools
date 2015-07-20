@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
@@ -25,8 +26,8 @@ public abstract class RootModeCommand extends Command {
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
-				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Project.class, new SelectQuery(Project.class)).
-						getColumnValues(Project.NAME_PROPERTY));
+				ListResult listCmdResult = CommandUtils.runListCommand(cmdContext, Project.class, new SelectQuery(Project.class));
+				suggestions.addAll(listCmdResult.getColumnValues(Project.NAME_PROPERTY));
 			}
 			return suggestions;
 		}

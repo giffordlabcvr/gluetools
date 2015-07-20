@@ -108,7 +108,7 @@ public class ListResult extends DocumentResult {
 		Element docElem = getDocument().getDocumentElement();
 		List<String> headers = XmlUtils.findChildElements(docElem, COLUMN).stream().
 				map(Element::getTextContent).collect(Collectors.toList());
-		int index = headers.indexOf(columnName);
+		int index = headers.indexOf(columnName)+1; // XPath indices start from 1
 		List<Element> valueElems = XmlUtils.getXPathElements(docElem, OBJECT+"/*["+index+"]");
 		return valueElems.stream().map(elem -> {
 			if(elem.getNodeName().equals(NULL)) {
