@@ -41,7 +41,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
-// TODO Need some element building utils.
 public class XmlUtils {
 
 	public static Document documentFromStream(InputStream is) throws SAXException, IOException  {

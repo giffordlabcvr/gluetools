@@ -4,19 +4,15 @@ import java.util.Formatter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 
 public class HelpCommandResult extends ConsoleCommandResult {
 
-	private List<HelpLine> helpLines;
 
 	public HelpCommandResult(List<HelpLine> helpLines) {
-		super();
-		this.helpLines = helpLines;
+		super(renderHelpLines(helpLines));
 	}
 
-	@Override
-	public void renderToConsole(CommandResultRenderingContext renderCtx) {
+	private static String renderHelpLines(List<HelpLine> helpLines) {
 		StringBuffer buf = new StringBuffer();
 		try(Formatter formatter = new Formatter(buf)) {
 			helpLines.stream().forEach(h -> {
@@ -26,7 +22,7 @@ public class HelpCommandResult extends ConsoleCommandResult {
 			});
 		}
 		buf.append("\nFor more detailed help, use: help <commandWord>...\n");
-		renderCtx.output(buf.toString());
+		return buf.toString();
 	}
 	
 	

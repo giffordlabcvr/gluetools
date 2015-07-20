@@ -19,7 +19,7 @@ public class DocumentResult extends CommandResult {
 
 	@Override
 	public final void renderToConsole(CommandResultRenderingContext renderCtx) {
-		if(renderCtx.showCmdXml()) {
+		if(renderCtx.getConsoleOutputFormat().equals("xml")) {
 			renderToConsoleAsXml(renderCtx);
 		} else {
 			renderToConsoleAsText(renderCtx);

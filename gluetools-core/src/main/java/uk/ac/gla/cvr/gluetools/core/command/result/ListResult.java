@@ -21,10 +21,8 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExportOptions;
 import com.brsanthu.dataexporter.output.texttable.TextTableExportStyle;
 import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 
-// TODO -- List command input should be able to specify field subset.
 // TODO -- default list command for web interface should return only IDs
 // TODO -- some kind of pagination for list commands.
-// TODO -- list commands should take an optional cayenne where query.
 
 public class ListResult extends DocumentResult {
 

@@ -3,8 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.command;
 import java.util.Arrays;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.config.SetDirectoryCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.config.ShowDirectoryCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleChangeDirectoryCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleHelpOptionCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleSetOptionCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleShowOptionCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleUnsetOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpCommand;
 
 public abstract class BaseCommandFactory extends CommandFactory {
@@ -14,9 +17,13 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		super.populateCommandTree();
 		registerCommandClass(QuitCommand.class);
 		registerCommandClass(HelpCommand.class);
-		addGroupHelp(Arrays.asList("console"), "Manage console settings");
-		registerCommandClass(SetDirectoryCommand.class);
-		registerCommandClass(ShowDirectoryCommand.class);
+		
+		addGroupHelp(Arrays.asList("console"), "Manage console options");
+		registerCommandClass(ConsoleChangeDirectoryCommand.class);
+		registerCommandClass(ConsoleShowOptionCommand.class);
+		registerCommandClass(ConsoleSetOptionCommand.class);
+		registerCommandClass(ConsoleUnsetOptionCommand.class);
+		registerCommandClass(ConsoleHelpOptionCommand.class);
 	}
 
 }

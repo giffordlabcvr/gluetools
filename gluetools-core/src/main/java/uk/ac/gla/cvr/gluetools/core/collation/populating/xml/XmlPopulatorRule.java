@@ -5,7 +5,6 @@ import org.w3c.dom.Node;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 
-// TODO wrap up "execute" arguments in a context?
 
 public abstract class XmlPopulatorRule implements Plugin {
 

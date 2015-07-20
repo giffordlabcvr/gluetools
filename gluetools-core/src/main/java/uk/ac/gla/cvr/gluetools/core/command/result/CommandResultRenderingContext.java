@@ -4,5 +4,5 @@ public interface CommandResultRenderingContext {
 
 	public void output(String outputLines);
 	
-	public boolean showCmdXml();
+	public String getConsoleOutputFormat();
 }

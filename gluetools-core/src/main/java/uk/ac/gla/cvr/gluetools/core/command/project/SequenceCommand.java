@@ -1,14 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.List;
-
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptorClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;

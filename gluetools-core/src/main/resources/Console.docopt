@@ -1,12 +1,10 @@
 Usage: 
-  gluetools [-heimx] [-c <configFile>] [-f <file>]
+  gluetools [-him] [-c <configFile>] [-f <file>]
 
 Options:
   -h, --help                       Print usage and options information
-  -e, --verbose-error              Print out full error stack trace
   -i, --interactive                Enter interactive mode after batch mode
   -m, --migrate-schema             Migrate database schema if necessary
-  -x, --show-cmd-xml               Output XML request/result of each command
   -f <file>, --batch-file <file>   Run commands in batch mode from a file
   -c <file>, --config-file <file>  Configure gluetools from a file
   

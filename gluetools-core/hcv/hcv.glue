@@ -1,4 +1,4 @@
-console set directory hcv
+console change load-save-path hcv
 create project HCV "HCV analysis project"
 schema project HCV
   table SEQUENCES

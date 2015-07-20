@@ -25,10 +25,10 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
+import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -58,9 +58,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	private ConsoleCommandContext commandContext;
 	private Integer batchLine = null;
 	private String configFilePath = null;
-	private boolean verboseError = false;
 	private boolean interactiveAfterBatch = false;
-	private boolean showCmdXml = false;
 	private boolean migrateSchema;
 	
 	private Console() {
@@ -164,14 +162,14 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	}
 
 	public static Command buildCommand(
-			CommandContext commandContext,
+			ConsoleCommandContext commandContext,
 			Class<? extends Command> commandClass,
 			List<String> argStrings) {
 		return buildCommand(commandContext, commandClass, argStrings, null);
 	}
 	
 	private static Command buildCommand(
-			CommandContext commandContext,
+			ConsoleCommandContext commandContext,
 			Class<? extends Command> commandClass,
 			List<String> argStrings,
 			Console console) {
@@ -179,7 +177,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
 		Element element = buildCommandElement(commandClass, docoptMap);
-		if(console != null && console.showCmdXml) {
+		if(console != null && commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
 			console.output(new String(XmlUtils.prettyPrint(element.getOwnerDocument())));
 		}
 		Command command;
@@ -264,10 +262,6 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(configFileOption != null) {
 			console.configFilePath = configFileOption.toString();
 		}
-		Object verboseErrorOption = docoptResult.get("--verbose-error");
-		if(verboseErrorOption != null) {
-			console.verboseError = Boolean.parseBoolean(verboseErrorOption.toString());
-		}
 		Object migrateSchemaOption = docoptResult.get("--migrate-schema");
 		if(migrateSchemaOption != null) {
 			console.migrateSchema = Boolean.parseBoolean(migrateSchemaOption.toString());
@@ -275,10 +269,6 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		Object interactiveOption = docoptResult.get("--interactive");
 		if(interactiveOption != null) {
 			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
-		}
-		Object showCmdXmlOption = docoptResult.get("--show-cmd-xml");
-		if(showCmdXmlOption != null) {
-			console.showCmdXml = Boolean.parseBoolean(showCmdXmlOption.toString());
 		}
 	}
 
@@ -368,6 +358,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	
 	private void outputError(Throwable exception) {
 		outputError(exception.getLocalizedMessage());
+		boolean verboseError = commandContext.getOptionValue(ConsoleOption.VERBOSE_ERROR).equals("true");
 		if(verboseError) {
 			outputStackTrace(exception);
 		}
@@ -417,8 +408,8 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	}
 
 	@Override
-	public boolean showCmdXml() {
-		return showCmdXml;
+	public String getConsoleOutputFormat() {
+		return commandContext.getOptionValue(ConsoleOption.CMD_RESULT_FORMAT);
 	}
 
 

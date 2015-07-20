@@ -12,12 +12,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-		commandWords = {"console","set","directory"},
+		commandWords = {"console","change","load-save-path"},
 		docoptUsages = {"<path>"}, 
 		modeWrappable = false,
-		description = "Set the directory path for loading and saving",
-		furtherHelp = "An absolute <path> replaces the current setting. A relative <path> updates the setting relative to its current value.")
-public class SetDirectoryCommand extends ConsoleCommand {
+		description = "Change the path for loading and saving file",
+		furtherHelp = "An absolute <path> replaces the load-save-path option value. A relative <path> updates the path relative to its current value")
+public class ConsoleChangeDirectoryCommand extends ConsoleCommand {
 
 	private String path;
 	

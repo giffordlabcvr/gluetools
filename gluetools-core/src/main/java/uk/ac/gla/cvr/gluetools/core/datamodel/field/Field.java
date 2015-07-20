@@ -7,8 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 
-// TODO projects should have a data-field table linked to sequences.
-// TODO creation / deletion of fields should modify the relevant table in the DB.
+// TODO create field should have a default value option.
 @GlueDataClass(defaultListColumns = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY})
 public class Field extends _Field {
 
