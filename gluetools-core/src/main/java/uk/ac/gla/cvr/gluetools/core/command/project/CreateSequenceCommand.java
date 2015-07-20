@@ -77,7 +77,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 		} else if(dataFromBase64 != null){
 			sequenceData = dataFromBase64;
 		}
-		format.validateFormat(sequenceData);
+		format.nucleotidesAsString(sequenceData); // check for format errors here.
 		sequence.setOriginalData(sequenceData);
 		return new CreateResult(Sequence.class, 1);
 	}

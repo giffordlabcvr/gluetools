@@ -15,6 +15,7 @@ public class Sequence extends _Sequence {
 
 	public static final String SOURCE_NAME_PATH = _Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY;
 	private SequenceFormat sequenceFormat;
+	private String nucleotides;
 	
 	public static Map<String, String> pkMap(String sourceName, String sequenceID) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
@@ -49,4 +50,11 @@ public class Sequence extends _Sequence {
 		return pkMap(getSource().getName(), getSequenceID());
 	}
 
+	public String getNucleotides() {
+		if(nucleotides == null) {
+			nucleotides = getSequenceFormat().nucleotidesAsString(getOriginalData());
+		}
+		return nucleotides;
+	}
+	
 }
