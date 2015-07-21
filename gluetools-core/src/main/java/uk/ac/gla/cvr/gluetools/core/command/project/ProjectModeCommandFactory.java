@@ -17,6 +17,10 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		
+		registerCommandClass(CreateAlignmentCommand.class);
+		registerCommandClass(DeleteAlignmentCommand.class);
+		registerCommandClass(ListAlignmentCommand.class);
+
 		registerCommandClass(CreateSourceCommand.class);
 		registerCommandClass(DeleteSourceCommand.class);
 		registerCommandClass(ListSourceCommand.class);
@@ -31,6 +35,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(ModuleCommand.class);
 		registerCommandClass(SequenceCommand.class);
+		registerCommandClass(AlignmentCommand.class);
 
 		
 		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");

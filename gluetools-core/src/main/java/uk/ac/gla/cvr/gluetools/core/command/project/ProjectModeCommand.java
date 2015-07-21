@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 
 public abstract class ProjectModeCommand extends Command {
@@ -33,5 +34,16 @@ public abstract class ProjectModeCommand extends Command {
 		}
 	}
 
+	public abstract static class AlignmentNameCompleter extends CommandCompleter {
+		@Override
+		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
+			LinkedList<String> suggestions = new LinkedList<String>();
+			if(argStrings.isEmpty()) {
+				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Alignment.class, new SelectQuery(Alignment.class)).
+						getColumnValues(Alignment.NAME_PROPERTY));
+			}
+			return suggestions;
+		}
+	}
 	
 }

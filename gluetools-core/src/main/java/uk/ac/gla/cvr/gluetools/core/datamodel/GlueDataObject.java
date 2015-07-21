@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.CayenneDataObject;
+import org.apache.cayenne.DeleteDenyException;
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.cayenne.exp.Expression;
@@ -128,7 +129,12 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			boolean allowNull) {
 		C object = lookup(objContext, objClass, pkMap, allowNull);
 		if(object != null) {
-			objContext.deleteObject(object);
+			try {
+				objContext.deleteObject(object);
+			} catch(DeleteDenyException dde) {
+				String relationship = dde.getRelationship();
+				throw new DataModelException(dde, Code.DELETE_DENIED, objClass.getSimpleName(), pkMap, relationship);
+			}
 			cacheRemove(objContext, GLUE_NEW, pkMap, object);
 			cacheRemove(objContext, GLUE_MODIFIED, pkMap, object);
 			cachePut(objContext, GLUE_DELETED, pkMap, object);
