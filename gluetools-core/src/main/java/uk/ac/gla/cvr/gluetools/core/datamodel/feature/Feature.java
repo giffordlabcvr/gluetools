@@ -7,7 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 
-@GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY})
+@GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, _Feature.DESCRIPTION_PROPERTY})
 public class Feature extends _Feature {
 	
 	public static final String ALIGNMENT_NAME_PATH = 

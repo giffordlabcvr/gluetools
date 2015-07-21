@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project;
+package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -6,39 +6,34 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"module"},
-	docoptUsages={"<moduleName>"},
-	description="Enter command mode for a module") 
-public class ModuleCommand extends ProjectModeCommand implements EnterModeCommand {
+	commandWords={"delete", "feature"}, 
+	docoptUsages={"<featureName>"},
+	description="Delete an alignment feature") 
+public class DeleteFeatureCommand extends AlignmentModeCommand {
 
-	private String moduleName;
+	private String featureName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		moduleName = PluginUtils.configureStringProperty(configElem, "moduleName", true);
+		featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
 	}
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(moduleName));
-		cmdContext.pushCommandMode(new ModuleMode(cmdContext, module.getName()));
-		return CommandResult.OK;
+		return GlueDataObject.delete(objContext, Feature.class, Feature.pkMap(getAlignmentName(), featureName));
 	}
 
 	@CompleterClass
-	public static class Completer extends ModuleNameCompleter {}
-	
+	public static class Completer extends FeatureNameCompleter {}
 
 }
