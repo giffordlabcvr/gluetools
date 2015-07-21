@@ -1,6 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.auto;
 
+import java.util.List;
+
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 
 /**
@@ -14,6 +18,8 @@ public abstract class _Sequence extends GlueDataObject {
     public static final String FORMAT_PROPERTY = "format";
     public static final String ORIGINAL_DATA_PROPERTY = "originalData";
     public static final String SEQUENCE_ID_PROPERTY = "sequenceID";
+    public static final String ALIGNMENT_MEMBERSHIPS_PROPERTY = "alignmentMemberships";
+    public static final String ALIGNMENTS_WHERE_REFERENCE_PROPERTY = "alignmentsWhereReference";
     public static final String SOURCE_PROPERTY = "source";
 
     public static final String SEQUENCE_ID_PK_COLUMN = "SEQUENCE_ID";
@@ -39,6 +45,30 @@ public abstract class _Sequence extends GlueDataObject {
     public String getSequenceID() {
         return (String)readProperty(SEQUENCE_ID_PROPERTY);
     }
+
+    public void addToAlignmentMemberships(AlignmentMember obj) {
+        addToManyTarget(ALIGNMENT_MEMBERSHIPS_PROPERTY, obj, true);
+    }
+    public void removeFromAlignmentMemberships(AlignmentMember obj) {
+        removeToManyTarget(ALIGNMENT_MEMBERSHIPS_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<AlignmentMember> getAlignmentMemberships() {
+        return (List<AlignmentMember>)readProperty(ALIGNMENT_MEMBERSHIPS_PROPERTY);
+    }
+
+
+    public void addToAlignmentsWhereReference(Alignment obj) {
+        addToManyTarget(ALIGNMENTS_WHERE_REFERENCE_PROPERTY, obj, true);
+    }
+    public void removeFromAlignmentsWhereReference(Alignment obj) {
+        removeToManyTarget(ALIGNMENTS_WHERE_REFERENCE_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<Alignment> getAlignmentsWhereReference() {
+        return (List<Alignment>)readProperty(ALIGNMENTS_WHERE_REFERENCE_PROPERTY);
+    }
+
 
     public void setSource(Source source) {
         setToOneTarget(SOURCE_PROPERTY, source, true);
