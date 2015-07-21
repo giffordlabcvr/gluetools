@@ -11,23 +11,25 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
  */
 public abstract class _AlignedSegment extends GlueDataObject {
 
-    public static final String LENGTH_PROPERTY = "length";
+    public static final String MEMBER_END_PROPERTY = "memberEnd";
     public static final String MEMBER_START_PROPERTY = "memberStart";
+    public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
     public static final String ALIGNMENT_MEMBER_PROPERTY = "alignmentMember";
 
     public static final String ALIGNMENT_PK_COLUMN = "ALIGNMENT";
-    public static final String LENGTH_PK_COLUMN = "LENGTH";
+    public static final String MEMBER_END_PK_COLUMN = "MEMBER_END";
     public static final String MEMBER_START_PK_COLUMN = "MEMBER_START";
+    public static final String REF_END_PK_COLUMN = "REF_END";
     public static final String REF_START_PK_COLUMN = "REF_START";
     public static final String SEQUENCE_PK_COLUMN = "SEQUENCE";
     public static final String SOURCE_PK_COLUMN = "SOURCE";
 
-    public void setLength(Integer length) {
-        writeProperty(LENGTH_PROPERTY, length);
+    public void setMemberEnd(Integer memberEnd) {
+        writeProperty(MEMBER_END_PROPERTY, memberEnd);
     }
-    public Integer getLength() {
-        return (Integer)readProperty(LENGTH_PROPERTY);
+    public Integer getMemberEnd() {
+        return (Integer)readProperty(MEMBER_END_PROPERTY);
     }
 
     public void setMemberStart(Integer memberStart) {
@@ -35,6 +37,13 @@ public abstract class _AlignedSegment extends GlueDataObject {
     }
     public Integer getMemberStart() {
         return (Integer)readProperty(MEMBER_START_PROPERTY);
+    }
+
+    public void setRefEnd(Integer refEnd) {
+        writeProperty(REF_END_PROPERTY, refEnd);
+    }
+    public Integer getRefEnd() {
+        return (Integer)readProperty(REF_END_PROPERTY);
     }
 
     public void setRefStart(Integer refStart) {

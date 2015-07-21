@@ -3,11 +3,13 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 
+@GlueDataClass(defaultListColumns = {AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
 public class AlignmentMember extends _AlignmentMember {
 	
 	public static final String SOURCE_NAME_PATH = 

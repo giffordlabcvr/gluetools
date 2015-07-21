@@ -15,9 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 public abstract class _Feature extends GlueDataObject {
 
     public static final String DESCRIPTION_PROPERTY = "description";
-    public static final String LENGTH_PROPERTY = "length";
     public static final String NAME_PROPERTY = "name";
-    public static final String REF_START_PROPERTY = "refStart";
     public static final String ALIGNMENT_PROPERTY = "alignment";
     public static final String SEGMENTS_PROPERTY = "segments";
 
@@ -31,25 +29,11 @@ public abstract class _Feature extends GlueDataObject {
         return (String)readProperty(DESCRIPTION_PROPERTY);
     }
 
-    public void setLength(Integer length) {
-        writeProperty(LENGTH_PROPERTY, length);
-    }
-    public Integer getLength() {
-        return (Integer)readProperty(LENGTH_PROPERTY);
-    }
-
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);
     }
     public String getName() {
         return (String)readProperty(NAME_PROPERTY);
-    }
-
-    public void setRefStart(Integer refStart) {
-        writeProperty(REF_START_PROPERTY, refStart);
-    }
-    public Integer getRefStart() {
-        return (Integer)readProperty(REF_START_PROPERTY);
     }
 
     public void setAlignment(Alignment alignment) {

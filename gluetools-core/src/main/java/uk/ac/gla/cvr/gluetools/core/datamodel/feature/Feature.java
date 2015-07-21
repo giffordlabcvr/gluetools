@@ -3,9 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.feature;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 
+@GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY})
 public class Feature extends _Feature {
 	
 	public static final String ALIGNMENT_NAME_PATH = 
