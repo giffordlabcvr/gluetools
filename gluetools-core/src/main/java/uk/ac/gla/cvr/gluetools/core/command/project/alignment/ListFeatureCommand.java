@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -17,7 +19,8 @@ public class ListFeatureCommand extends AlignmentModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class));
+		Expression exp = ExpressionFactory.matchExp(Feature.ALIGNMENT_NAME_PATH, getAlignmentName());
+		return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class, exp));
 	}
 
 }

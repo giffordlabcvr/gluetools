@@ -1,9 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
@@ -16,9 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -30,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-w <whereClause>, --whereClause <whereClause>  Qualify result set"},
 	description="List sequences or sequence field values",
 	furtherHelp=
+	"The optional whereClause qualifies which sequences are displayed.\n"+
 	"Where fieldNames are specified, only these field values will be displayed.\n"+
 	"Examples:\n"+
 	"  list sequence -w \"source.name = 'local'\"\n"+
@@ -40,13 +39,13 @@ public class ListSequenceCommand extends ProjectModeCommand {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
-	private Expression whereClause;
+	private Optional<Expression> whereClause;
 	private List<String> fieldNames;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
+		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
 		if(fieldNames.isEmpty()) {
 			fieldNames = null; // default fields
@@ -56,25 +55,18 @@ public class ListSequenceCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		SelectQuery selectQuery;
-		if(whereClause != null) {
-			selectQuery = new SelectQuery(Sequence.class, whereClause);
+		if(whereClause.isPresent()) {
+			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
 		} else {
 			selectQuery = new SelectQuery(Sequence.class);
 		}
-		List<String> validFieldNamesList = getProjectMode(cmdContext).getProject().getAllSequenceFieldNames();
-		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
-		if(fieldNames != null) {
-			fieldNames.forEach(f-> {
-				if(!validFieldNames.contains(f)) {
-					throw new SequenceException(Code.INVALID_FIELD, f, validFieldNamesList);
-				}
-			});
-		}
+		Project project = getProjectMode(cmdContext).getProject();
+		project.checkValidSequenceFieldNames(fieldNames);
 		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
 	}
 	
 	@CompleterClass
-	public static class Completer extends FieldCompleter {
+	public static class ListSequencesFieldCompleter extends FieldCompleter {
 		@Override
 		public List<String> completionSuggestions(
 				ConsoleCommandContext cmdContext,

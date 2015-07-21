@@ -15,7 +15,7 @@ public class ProjectSchemaMode extends CommandMode {
 	private Project project;
 	
 	public ProjectSchemaMode(CommandContext cmdContext, Project project) {
-		super("project-schema-"+project.getName(), CommandFactory.get(ProjectSchemaModeCommandFactory.creator));
+		super("proj-schema-"+project.getName(), CommandFactory.get(ProjectSchemaModeCommandFactory.creator));
 		this.project = project;
 	}
 

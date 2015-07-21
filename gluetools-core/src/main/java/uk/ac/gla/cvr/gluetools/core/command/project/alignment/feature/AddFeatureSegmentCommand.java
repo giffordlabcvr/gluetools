@@ -70,8 +70,9 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 			}
 		});
 		FeatureSegment featureSegment = GlueDataObject.create(objContext, FeatureSegment.class, 
-				FeatureSegment.pkMap(getAlignmentName(), getFeatureName(), refStart, refEnd), false);
+				FeatureSegment.pkMap(getAlignmentName(), getFeatureName(), refStart, refEnd), false, false);
 		featureSegment.setFeature(feature);
+		featureSegment.setLive(true);
 		return new CreateResult(FeatureSegment.class, 1);
 	}
 

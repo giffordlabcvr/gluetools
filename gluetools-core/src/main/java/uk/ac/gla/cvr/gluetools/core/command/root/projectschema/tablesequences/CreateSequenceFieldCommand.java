@@ -41,11 +41,12 @@ public class CreateSequenceFieldCommand extends TableSequencesModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(getProjectName(), fieldName));
+		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(getProjectName(), fieldName), false, false);
 		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(getProjectName()));
 		field.setProject(project);
 		field.setType(type.name());
 		field.setMaxLength(maxLength);
+		field.setLive(true);
 		ModelBuilder.addSequenceColumnToModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project, field);
 		return new CreateResult(Field.class, 1);
 	}

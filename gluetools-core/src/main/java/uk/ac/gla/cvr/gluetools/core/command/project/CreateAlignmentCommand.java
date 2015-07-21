@@ -44,8 +44,9 @@ public class CreateAlignmentCommand extends ProjectModeCommand {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Sequence sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
 				Sequence.pkMap(refSeqSourceName, refSeqID));
-		Alignment alignment = GlueDataObject.create(objContext, Alignment.class, Alignment.pkMap(alignmentName), false);
+		Alignment alignment = GlueDataObject.create(objContext, Alignment.class, Alignment.pkMap(alignmentName), false, false);
 		alignment.setRefSequence(sequence);
+		alignment.setLive(true);
 		return new CreateResult(Alignment.class, 1);
 	}
 

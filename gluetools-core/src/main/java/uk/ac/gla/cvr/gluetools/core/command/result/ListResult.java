@@ -36,6 +36,9 @@ public class ListResult extends DocumentResult {
 
 	public <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results, List<String> columns) {
 		super(XmlUtils.documentWithElement(LIST_RESULT).getOwnerDocument());
+		if(columns == null) {
+			columns = Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListColumns());
+		}
 		Element docElem = getDocument().getDocumentElement();
 		XmlUtils.appendElementWithText(docElem, 
 				OBJECT_TYPE, objectClass.getSimpleName());
@@ -54,11 +57,6 @@ public class ListResult extends DocumentResult {
 				}
 			}
 		}
-	}
-
-	public <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results) {
-		this(objectClass, results, 
-				Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListColumns()));
 	}
 
 	@Override

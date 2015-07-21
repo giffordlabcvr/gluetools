@@ -1,14 +1,18 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.project;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 
 @GlueDataClass(defaultListColumns = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
@@ -41,6 +45,18 @@ public class Project extends _Project {
 	@Override
 	protected Map<String, String> pkMap() {
 		return pkMap(getName());
+	}
+
+	public void checkValidSequenceFieldNames(List<String> fieldNames) {
+		List<String> validFieldNamesList = getAllSequenceFieldNames();
+		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
+		if(fieldNames != null) {
+			fieldNames.forEach(f-> {
+				if(!validFieldNames.contains(f)) {
+					throw new SequenceException(Code.INVALID_FIELD, f, validFieldNamesList);
+				}
+			});
+		}
 	}
 
 }

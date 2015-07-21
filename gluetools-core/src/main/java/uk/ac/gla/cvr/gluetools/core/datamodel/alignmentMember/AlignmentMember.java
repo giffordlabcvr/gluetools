@@ -37,7 +37,7 @@ public class AlignmentMember extends _AlignmentMember {
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(
 				getSequence().getSource().getName(), 
 				getSequence().getSequenceID(),

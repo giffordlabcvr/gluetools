@@ -42,8 +42,9 @@ public class CreateFeatureCommand extends AlignmentModeCommand {
 		Alignment alignment = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, 
 				Alignment.pkMap(getAlignmentName()));
 
-		Feature feature = GlueDataObject.create(objContext, Feature.class, Feature.pkMap(getAlignmentName(), featureName), false);
+		Feature feature = GlueDataObject.create(objContext, Feature.class, Feature.pkMap(getAlignmentName(), featureName), false, false);
 		feature.setAlignment(alignment);
+		feature.setLive(true);
 		description.ifPresent(d -> {feature.setDescription(d);});
 		return new CreateResult(Feature.class, 1);
 	}

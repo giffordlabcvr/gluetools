@@ -24,7 +24,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	private static final String GLUE_MODIFIED = "glueModified";
 	
 	private ObjectContext myContext;
-	private boolean finalized = false;
+	private boolean live = false;
 	
 	private ObjectContext getMyContext() {
 		return myContext;
@@ -34,12 +34,14 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		this.myContext = myContext;
 	}
 	
-	private boolean isFinalized() {
-		return finalized;
+	public boolean isLive() {
+		return live;
 	}
 
-	private void setFinalized(boolean finalized) {
-		this.finalized = finalized;
+	// should be set to true only after all relationships have been set up.
+	// before deleting, should be set to false.
+	public void setLive(boolean live) {
+		this.live = live;
 	}
 
 	public static ObjectContext createObjectContext(ServerRuntime serverRuntime) {
@@ -114,6 +116,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		}
 		C object = objClass.cast(results.get(0));
 		((GlueDataObject) object).setMyContext(objContext);
+		((GlueDataObject) object).setLive(true);
 		return object;
 	}
 
@@ -129,6 +132,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			boolean allowNull) {
 		C object = lookup(objContext, objClass, pkMap, allowNull);
 		if(object != null) {
+			((GlueDataObject) object).setLive(false);
 			try {
 				objContext.deleteObject(object);
 			} catch(DeleteDenyException dde) {
@@ -145,12 +149,23 @@ public abstract class GlueDataObject extends CayenneDataObject {
 
 	}
 
+	
+	public static <C extends GlueDataObject> List<C> query(ObjectContext objContext, Class<C> objClass, SelectQuery query) {
+		// should this also interact with the cache?
+		List<?> queryResult = objContext.performQuery(query);
+		return queryResult.stream().map(obj -> { 
+			C dataObject = objClass.cast(obj);
+			// ((GlueDataObject) dataObject).setFinalized();
+			return dataObject;
+		}).collect(Collectors.toList());
+	}
+	
 	public static <C extends GlueDataObject> DeleteResult delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
 		return delete(objContext, objClass, pkMap, false);
 	}
 
 	public static <C extends GlueDataObject> C create(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
-			boolean allowExists) {
+			boolean allowExists, boolean setLive) {
 		C existing = lookup(objContext, objClass, pkMap, true);
 		if(existing != null) {
 			if(allowExists) {
@@ -165,12 +180,10 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		cachePut(objContext, GLUE_NEW, pkMap, newObject);
 		((GlueDataObject) newObject).setMyContext(objContext);
 		newObject.setPKValues(pkMap);
-		((GlueDataObject) newObject).setFinalized(true);
+		if(setLive) {
+			((GlueDataObject) newObject).setLive(true);
+		}
 		return newObject;
-	}
-	
-	public static <C extends GlueDataObject> C create(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
-		return create(objContext, objClass, pkMap, false);
 	}
 	
 	public String populateListCell(String propertyName) {
@@ -229,7 +242,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	@Override
 	public void writePropertyDirectly(String propName, Object val) {
 		super.writePropertyDirectly(propName, val);
-		if(isFinalized()) {
+		if(isLive()) {
 			Map<String, String> pkMap = pkMap();
 			ObjectContext objContext = getMyContext();
 			cacheRemove(objContext, GLUE_NEW, pkMap, this);
