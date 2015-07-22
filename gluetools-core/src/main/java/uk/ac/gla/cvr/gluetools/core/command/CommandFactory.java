@@ -126,7 +126,9 @@ private static Multiton factories = new Multiton();
 				for(int i = commandModeStack.size() - 1; i >= 0; i--) {
 					commandModeStack.get(i).addModeConfigToCommandElem(cmdClass, element);
 				}
-				return cmdPluginFactory.createFromElement(pluginConfigContext, element);
+				Command command = cmdPluginFactory.createFromElement(pluginConfigContext, element);
+				command.setCmdElem(element);
+				return command;
 			} else {
 				CommandTreeNode treeNode = childNodes.get(nodeName);
 				if(treeNode == null) {

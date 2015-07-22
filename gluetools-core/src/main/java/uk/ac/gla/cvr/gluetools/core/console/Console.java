@@ -177,9 +177,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
 		Element element = buildCommandElement(commandClass, docoptMap);
-		if(console != null && commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
-			console.output(new String(XmlUtils.prettyPrint(element.getOwnerDocument())));
-		}
+		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
 		Command command;
 		try {
 			command = commandContext.commandFromElement(element);
@@ -192,6 +190,9 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			} else {
 				throw pce;
 			}
+		}
+		if(!enterModeCmd && console != null && commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
+			console.output(new String(XmlUtils.prettyPrint(command.getCmdElem().getOwnerDocument())));
 		}
 		return command;
 	}
