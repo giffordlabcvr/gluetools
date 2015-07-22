@@ -3,8 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.auto;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 
 /**
@@ -19,7 +19,7 @@ public abstract class _Sequence extends GlueDataObject {
     public static final String ORIGINAL_DATA_PROPERTY = "originalData";
     public static final String SEQUENCE_ID_PROPERTY = "sequenceID";
     public static final String ALIGNMENT_MEMBERSHIPS_PROPERTY = "alignmentMemberships";
-    public static final String ALIGNMENTS_WHERE_REFERENCE_PROPERTY = "alignmentsWhereReference";
+    public static final String REFERENCE_SEQUENCES_PROPERTY = "referenceSequences";
     public static final String SOURCE_PROPERTY = "source";
 
     public static final String SEQUENCE_ID_PK_COLUMN = "SEQUENCE_ID";
@@ -58,15 +58,15 @@ public abstract class _Sequence extends GlueDataObject {
     }
 
 
-    public void addToAlignmentsWhereReference(Alignment obj) {
-        addToManyTarget(ALIGNMENTS_WHERE_REFERENCE_PROPERTY, obj, true);
+    public void addToReferenceSequences(ReferenceSequence obj) {
+        addToManyTarget(REFERENCE_SEQUENCES_PROPERTY, obj, true);
     }
-    public void removeFromAlignmentsWhereReference(Alignment obj) {
-        removeToManyTarget(ALIGNMENTS_WHERE_REFERENCE_PROPERTY, obj, true);
+    public void removeFromReferenceSequences(ReferenceSequence obj) {
+        removeToManyTarget(REFERENCE_SEQUENCES_PROPERTY, obj, true);
     }
     @SuppressWarnings("unchecked")
-    public List<Alignment> getAlignmentsWhereReference() {
-        return (List<Alignment>)readProperty(ALIGNMENTS_WHERE_REFERENCE_PROPERTY);
+    public List<ReferenceSequence> getReferenceSequences() {
+        return (List<ReferenceSequence>)readProperty(REFERENCE_SEQUENCES_PROPERTY);
     }
 
 

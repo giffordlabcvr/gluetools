@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
 import java.util.Optional;
 
@@ -10,8 +10,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -19,9 +19,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"create","feature"}, 
 	docoptUsages={"<featureName> [<description>]"},
-	description="Create a new alignment feature", 
-	furtherHelp="A feature is a (possibly non-contiguous) region of the alignment's reference sequence which is of particular interest.") 
-public class CreateFeatureCommand extends AlignmentModeCommand {
+	description="Create a new reference sequence feature", 
+	furtherHelp="A feature is a (possibly non-contiguous) region of the reference sequence which is of particular interest.") 
+public class CreateFeatureCommand extends ReferenceSequenceModeCommand {
 
 	public static final String FEATURE_NAME = "featureName";
 	public static final String DESCRIPTION = "description";
@@ -39,11 +39,10 @@ public class CreateFeatureCommand extends AlignmentModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Alignment alignment = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, 
-				Alignment.pkMap(getAlignmentName()));
-
-		Feature feature = GlueDataObject.create(objContext, Feature.class, Feature.pkMap(getAlignmentName(), featureName), false, false);
-		feature.setAlignment(alignment);
+		ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext.getObjectContext(), ReferenceSequence.class, 
+				ReferenceSequence.pkMap(getRefSeqName()));
+		Feature feature = GlueDataObject.create(objContext, Feature.class, Feature.pkMap(getRefSeqName(), featureName), false, false);
+		feature.setReferenceSequence(referenceSequence);
 		feature.setLive(true);
 		description.ifPresent(d -> {feature.setDescription(d);});
 		return new CreateResult(Feature.class, 1);

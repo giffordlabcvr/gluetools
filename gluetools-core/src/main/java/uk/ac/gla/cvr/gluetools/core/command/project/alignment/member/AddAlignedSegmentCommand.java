@@ -58,7 +58,7 @@ public class AddAlignedSegmentCommand extends MemberModeCommand {
 		}
 		AlignmentMember almtMemb = GlueDataObject.lookup(cmdContext.getObjectContext(), AlignmentMember.class, 
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
-		Sequence refSequence = almtMemb.getAlignment().getRefSequence();
+		Sequence refSequence = almtMemb.getAlignment().getRefSequence().getSequence();
 		int refSeqLength = refSequence.getNucleotides().length();
 		if(refStart < 0 || refEnd > refSeqLength) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_OUT_OF_RANGE, 

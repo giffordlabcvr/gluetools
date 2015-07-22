@@ -13,12 +13,6 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 
-		registerCommandClass(CreateFeatureCommand.class);
-		registerCommandClass(DeleteFeatureCommand.class);
-		registerCommandClass(ListFeatureCommand.class);
-		registerCommandClass(FeatureCommand.class);
-
-		
 		registerCommandClass(AddMemberCommand.class);
 		registerCommandClass(RemoveMemberCommand.class);
 		registerCommandClass(ListMemberCommand.class);

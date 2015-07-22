@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -7,37 +7,38 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature.FeatureMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceSequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"feature"},
-	docoptUsages={"<featureName>"},
-	description="Enter command mode for a feature") 
-public class FeatureCommand extends AlignmentModeCommand implements EnterModeCommand {
+	commandWords={"reference"},
+	docoptUsages={"<refSeqName>"},
+	description="Enter command mode for a reference sequence") 
+public class ReferenceSequenceCommand extends ProjectModeCommand implements EnterModeCommand {
 
-	private String featureName;
+	private String refSeqName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
+		refSeqName = PluginUtils.configureStringProperty(configElem, "refSeqName", true);
 	}
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Feature feature = GlueDataObject.lookup(objContext, Feature.class, Feature.pkMap(getAlignmentName(), featureName));
-		cmdContext.pushCommandMode(new FeatureMode(cmdContext, feature.getName()));
+		ReferenceSequence refSequence = GlueDataObject.lookup(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSeqName));
+		cmdContext.pushCommandMode(new ReferenceSequenceMode(getProjectMode(cmdContext).getProject(), refSequence.getName()));
 		return CommandResult.OK;
 	}
 
 	@CompleterClass
-	public static class Completer extends FeatureNameCompleter {}	
+	public static class Completer extends RefSeqNameCompleter {}
+	
 
 }

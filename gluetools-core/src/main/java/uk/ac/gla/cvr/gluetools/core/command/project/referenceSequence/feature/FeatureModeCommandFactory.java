@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;

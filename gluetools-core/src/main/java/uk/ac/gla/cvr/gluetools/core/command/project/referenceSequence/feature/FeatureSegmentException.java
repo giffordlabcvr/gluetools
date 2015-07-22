@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
@@ -6,9 +6,9 @@ public class FeatureSegmentException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		FEATURE_SEGMENT_OUT_OF_RANGE("alignmentName", "featureName", "refSeqLength", "refStart", "refEnd"),
-		FEATURE_SEGMENT_ENDPOINTS_REVERSED("alignmentName", "featureName", "refStart", "refEnd"),
-		FEATURE_SEGMENT_OVERLAPS_EXISTING("alignmentName", "featureName", "refStart", "refEnd", "existingRefSeqStart", "existingRefSeqEnd"),
+		FEATURE_SEGMENT_OUT_OF_RANGE("refSeqName", "featureName", "refSeqLength", "refStart", "refEnd"),
+		FEATURE_SEGMENT_ENDPOINTS_REVERSED("refSeqName", "featureName", "refStart", "refEnd"),
+		FEATURE_SEGMENT_OVERLAPS_EXISTING("refSeqName", "featureName", "refStart", "refEnd", "existingRefSeqStart", "existingRefSeqEnd"),
 		;
 
 		private String[] argNames;

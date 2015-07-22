@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 
 import org.w3c.dom.Element;
 

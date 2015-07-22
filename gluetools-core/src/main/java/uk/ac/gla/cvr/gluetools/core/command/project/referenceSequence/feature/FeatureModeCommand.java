@@ -1,12 +1,12 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceSequenceModeCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public abstract class FeatureModeCommand extends AlignmentModeCommand {
+public abstract class FeatureModeCommand extends ReferenceSequenceModeCommand {
 
 
 	private String featureName;

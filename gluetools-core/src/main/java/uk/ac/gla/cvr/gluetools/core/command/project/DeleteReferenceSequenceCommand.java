@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -8,32 +8,33 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"delete", "feature"}, 
-	docoptUsages={"<featureName>"},
-	description="Delete an alignment feature") 
-public class DeleteFeatureCommand extends AlignmentModeCommand {
+	commandWords={"delete", "reference"}, 
+	docoptUsages={"<refSequenceName>"},
+	description="Delete a reference sequence", 
+	furtherHelp="Deletion of a reference sequence does not cause the deletion of its sequence.") 
+public class DeleteReferenceSequenceCommand extends ProjectModeCommand {
 
-	private String featureName;
+	private String refSequenceName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
+		refSequenceName = PluginUtils.configureStringProperty(configElem, "refSequenceName", true);
 	}
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		return GlueDataObject.delete(objContext, Feature.class, Feature.pkMap(getAlignmentName(), featureName));
+		return GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSequenceName));
 	}
 
 	@CompleterClass
-	public static class Completer extends FeatureNameCompleter {}
+	public static class Completer extends RefSeqNameCompleter {}
 
 }

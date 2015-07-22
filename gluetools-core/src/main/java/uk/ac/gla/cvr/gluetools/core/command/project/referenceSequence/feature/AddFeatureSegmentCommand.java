@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature.FeatureSegmentException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.FeatureSegmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -45,15 +45,15 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		if(refStart >= refEnd) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_ENDPOINTS_REVERSED, 
-					getAlignmentName(), getFeatureName(), Integer.toString(refStart), Integer.toString(refEnd));
+					getRefSeqName(), getFeatureName(), Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		Feature feature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, 
-				Feature.pkMap(getAlignmentName(), getFeatureName()));
-		Sequence refSequence = feature.getAlignment().getRefSequence();
+				Feature.pkMap(getRefSeqName(), getFeatureName()));
+		Sequence refSequence = feature.getReferenceSequence().getSequence();
 		int refSeqLength = refSequence.getNucleotides().length();
 		if(refStart < 0 || refEnd > refSeqLength) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OUT_OF_RANGE, 
-					getAlignmentName(), getFeatureName(), 
+					getRefSeqName(), getFeatureName(), 
 					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		List<FeatureSegment> existingSegments = feature.getSegments();
@@ -65,12 +65,12 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 				(refStart <= existingRefSeqStart && refEnd >= existingRefSeqEnd)
 			) {
 				throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OVERLAPS_EXISTING, 
-						getAlignmentName(), getFeatureName(), Integer.toString(refStart), 
+						getRefSeqName(), getFeatureName(), Integer.toString(refStart), 
 						Integer.toString(refEnd), Integer.toString(existingRefSeqStart), Integer.toString(existingRefSeqEnd));
 			}
 		});
 		FeatureSegment featureSegment = GlueDataObject.create(objContext, FeatureSegment.class, 
-				FeatureSegment.pkMap(getAlignmentName(), getFeatureName(), refStart, refEnd), false, false);
+				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd), false, false);
 		featureSegment.setFeature(feature);
 		featureSegment.setLive(true);
 		return new CreateResult(FeatureSegment.class, 1);

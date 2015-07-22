@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -19,7 +19,7 @@ public class ListFeatureSegmentCommand extends FeatureModeCommand {
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		Expression exp = ExpressionFactory.matchExp(FeatureSegment.ALIGNMENT_NAME_PATH, getAlignmentName());
+		Expression exp = ExpressionFactory.matchExp(FeatureSegment.REF_SEQ_NAME_PATH, getRefSeqName());
 		exp = exp.andExp(ExpressionFactory.matchExp(FeatureSegment.FEATURE_NAME_PATH, getFeatureName()));
 		return CommandUtils.runListCommand(cmdContext, FeatureSegment.class, new SelectQuery(FeatureSegment.class, exp));
 	}

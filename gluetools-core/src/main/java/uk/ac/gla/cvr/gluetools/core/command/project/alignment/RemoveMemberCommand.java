@@ -17,8 +17,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 

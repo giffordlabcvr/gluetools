@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -35,7 +35,7 @@ public class RemoveFeatureSegmentCommand extends FeatureModeCommand {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		return GlueDataObject.delete(objContext, FeatureSegment.class, 
-				FeatureSegment.pkMap(getAlignmentName(), getFeatureName(), refStart, refEnd));
+				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd));
 	}
 
 }
