@@ -88,8 +88,26 @@ project HCV
   list alignment
   delete alignment al2
   alignment al1
+    create feature GENE_1 "some gene"
+    create feature GENE_2 "some other gene"
+    create feature GENE_3 "yet another gene"
+    delete feature GENE_2
+    list feature
+    feature GENE_1
+      add segment 20 50
+      add segment 60 80
+      add segment 90 100
+      remove segment 60 80
+      list segment
+      exit
     add member -w "source.name = 'local'"
     member local NIM_161-0036_Ref
+      add segment 0 50 800 850
+      add segment 100 150 700 750
+      add segment 500 800 800 500
+      remove segment 100 150 700 750
+      list segment
+      
     
     
 
