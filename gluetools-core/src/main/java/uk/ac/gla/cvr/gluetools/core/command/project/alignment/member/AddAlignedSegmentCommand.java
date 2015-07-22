@@ -15,6 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
+// TODO add the constraint that, in a given alignment member, each reference sequence nucleotide may only be aligned with one
+// member sequence nucleotide.
 @CommandClass( 
 	commandWords={"add","segment"}, 
 	docoptUsages={"<refStart> <refEnd> <memberStart> <memberEnd>"},

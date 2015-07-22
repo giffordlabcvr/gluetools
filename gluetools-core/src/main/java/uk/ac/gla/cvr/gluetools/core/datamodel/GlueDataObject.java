@@ -17,6 +17,8 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 
+// TODO Consider removing local cache and associated pkMap code / isLive code. A working system may be achievable by simply
+// allowing modules to commit after each command. Another possibility could be to use Cayenne's nested contexts.
 public abstract class GlueDataObject extends CayenneDataObject {
 
 	private static final String GLUE_DELETED = "glueDeleted";

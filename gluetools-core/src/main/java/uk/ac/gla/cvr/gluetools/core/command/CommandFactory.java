@@ -20,6 +20,8 @@ import uk.ac.gla.cvr.gluetools.utils.Multiton;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO Plugins should be able to add their own commands.
+// TODO consider wrapping a CommandType around the Class<C extends Command>.
+// cmdType should be used wherever cmdClass is now. This should allow more dynamic specification of command types.
 public abstract class CommandFactory {
 
 private static Multiton factories = new Multiton();
