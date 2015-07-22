@@ -71,7 +71,7 @@ public class AddMemberCommand extends AlignmentModeCommand {
 		int added = 0;
 		for(Sequence seq: sequencesToAdd) {
 			AlignmentMember newMember = GlueDataObject.create(objContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(seq.getSource().getName(), seq.getSequenceID(), alignment.getName()), true, false);
+					AlignmentMember.pkMap(alignment.getName(), seq.getSource().getName(), seq.getSequenceID()), true, false);
 			if(!newMember.isLive()) {
 				newMember.setAlignment(alignment);
 				newMember.setSequence(seq);

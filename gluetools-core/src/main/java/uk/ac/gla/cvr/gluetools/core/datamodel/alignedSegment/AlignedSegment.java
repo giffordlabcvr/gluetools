@@ -30,8 +30,8 @@ public class AlignedSegment extends _AlignedSegment {
 					_Alignment.NAME_PROPERTY;
 	
 	
-	public static Map<String, String> pkMap(
-			String memberSourceName, String memberSequenceID, String alignmentName, 
+	public static Map<String, String> pkMap(String alignmentName, 
+			String memberSourceName, String memberSequenceID,
 			int refStart, int refEnd, int memberStart, int memberEnd) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
 		idMap.put(MEMBER_SOURCE_NAME_PATH, memberSourceName);

@@ -83,6 +83,14 @@ schema project HCV
 project HCV
   list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
   list sequence sequenceID NIM_1 NIM_2 NIM_4 NIM_5 NIM_8 CUSTOM_FIELD_X CUSTOM_FIELD_Y
-
+  create alignment al1 local file1
+  create alignment al2 local file1
+  list alignment
+  delete alignment al2
+  alignment al1
+    add member -w "source.name = 'local'"
+    member local NIM_161-0036_Ref
+    
+    
 
   

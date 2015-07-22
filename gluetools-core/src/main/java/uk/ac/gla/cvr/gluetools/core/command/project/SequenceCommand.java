@@ -32,10 +32,11 @@ public class SequenceCommand extends ProjectModeCommand implements EnterModeComm
 
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
-		Sequence sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
+		// check existence.
+		GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
 				Sequence.pkMap(sourceName, sequenceID));
 		Project project = getProjectMode(cmdContext).getProject();
-		cmdContext.pushCommandMode(new SequenceMode(project, sequence.getSource().getName(), sequenceID));
+		cmdContext.pushCommandMode(new SequenceMode(project, sourceName, sequenceID));
 		return CommandResult.OK;
 	}
 
