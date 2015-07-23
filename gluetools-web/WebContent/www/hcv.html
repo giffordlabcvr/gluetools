@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html ng-app="hcvApp">
+<head>
+	<script type="text/javascript" src="../angular/angular.min.js"></script>
+	<script type="text/javascript" src="../angular.treeview/angular.treeview.js"></script>
+	<script type="text/javascript" src="../underscore/underscore-min.js"></script>
+	<script type="text/javascript" src="../main/js/hcv.js"></script>
+	
+	<link rel="stylesheet" href="../bootstrap/css/bootstrap.css"/>
+	<link rel="stylesheet" href="../angular.treeview/css/angular.treeview.css"/>
+	<link rel="stylesheet" href="../main/css/style.css"/>
+</head>
+<body>
+<h1>HCV mutation frequencies</h1>
+<div ng-controller="searchCtrl">
+	<h3>Select genotype / subtype</h3>
+	<p>Selected ID: {{genotypeID}}</p>
+	<div
+	    data-angular-treeview="true"
+	    data-tree-id="hcvGenotypes"
+	    data-tree-model="treedata"
+	    data-default-selected-id="HCV"
+	    data-node-id="id"
+	    data-node-label="label"
+	    data-node-children="children">
+	</div>
+
+</div>
+
+
+
+
+</body>
+</html>
