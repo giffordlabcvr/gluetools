@@ -17,6 +17,8 @@
 		data-tree-id="tree"
 		data-tree-model="roleList"
 		data-node-id="roleId"
+		data-default-selected-id="HCV"
+		data-default-open-depth="1"
 		data-node-label="roleName"
 		data-node-children="children" >
 	</div>
@@ -47,15 +49,18 @@
 				//children
 				var defaultSelectedId = attrs.defaultSelectedId || '';
 
+				//children
+				var defaultOpenDepth = attrs.defaultOpenDepth || '-1';
+
 				//tree template
 				var template =
-					'<ul data-ng-init="' + treeId + '.init(node)">' +
+					'<ul data-ng-init="' + treeId + '.init(node, '+defaultOpenDepth+')">' +
 						'<li data-ng-repeat="node in ' + treeModel + '">' +
 							'<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"><span class="glyphicon glyphicon-plus-sign"/></i>' +
 							'<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"><span class="glyphicon glyphicon-minus-sign"/></i>' +
 							'<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"><span class="glyphicon glyphicon-record"/></i>'+
 							'<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{ node.' + nodeLabel + ' }}</span>' +
-							'<div data-ng-hide="node.collapsed" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
+							'<div data-ng-hide="node.collapsed" data-default-open-depth="'+(defaultOpenDepth-1)+'" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
 						'</li>' +
 					'</ul>';
 
@@ -91,10 +96,15 @@
 							scope[treeId].currentNode = selectedNode;
 						};
 						
-						scope[treeId].init = scope[treeId].init || function(node){
+						scope[treeId].init = scope[treeId].init || function(node, defaultOpenDepth){
 							if(node) {
 								 if(node[nodeId] == defaultSelectedId) {
 									 scope[treeId].selectNodeLabel(node);
+								 }
+								 if(defaultOpenDepth < 0) {
+									 node.collapsed = true;
+								 } else {
+									 node.collapsed = false;
 								 }
 							}
 						};
