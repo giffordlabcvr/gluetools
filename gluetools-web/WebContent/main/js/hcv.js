@@ -83,10 +83,12 @@ hcvApp.controller('selectRegionCtrl',
 
 
 
-hcvApp.controller('accordionCtrl', [ '$scope', 'GenotypeSelection', 'RegionSelection',
+hcvApp.controller('mainCtrl', [ '$scope', 'GenotypeSelection', 'RegionSelection',
 function ($scope, GenotypeSelection, RegionSelection) {
 	$scope.GenotypeSelection = GenotypeSelection;
 	$scope.RegionSelection = RegionSelection;
+	$scope.title = "HCV Mutations";  
+	$scope.strapline = "Amino-acid level mutation frequencies for aligned Hepatitis C virus sequences";  
 	$scope.genotypeSelectHeading = "Select genotype";  
 	$scope.genotypeSelectOpen = true;
 	$scope.regionSelectHeading = "Select region";  

@@ -12,11 +12,19 @@
 	<link rel="stylesheet" href="../main/css/style.css"/>
 </head>
 <body>
-<div class="container">
-<h1>HCV mutation frequencies</h1>
-
-
-<div ng-controller="accordionCtrl">
+<div class="container" ng-controller="mainCtrl">
+<div class="row">
+  <div class="col-md-4">
+	<img alt="" src="../images/CVRLogo.png">		
+  </div>
+  <div class="col-md-8">
+	<h2>{{title}}</h2>
+	 {{strapline}}
+	<!-- <img alt="" src="../images/STOP-HCV-logo-with-strapline.gif">	-->	
+	</div>
+</div>
+<p/>
+<div >
   <accordion close-others="oneAtATime">
     <accordion-group is-open="genotypeSelectOpen">
         <accordion-heading>
