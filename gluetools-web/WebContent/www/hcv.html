@@ -42,6 +42,25 @@
 			</div>
 		</div>
     </accordion-group>
+    <accordion-group is-open="regionSelectOpen">
+        <accordion-heading>
+            {{regionSelectHeading}} [{{RegionSelection.label}}]<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': regionSelectOpen, 'glyphicon-chevron-right': !regionSelectOpen}"></i>
+        </accordion-heading>
+	    <div ng-controller="selectRegionCtrl">
+			<div class="row">
+				<div class="col-xs-6">
+					<div data-angular-treeview="true" data-tree-id="regionsTree"
+						data-tree-model="regions" data-default-selected-id="{{defaultSelectedId}}"
+						data-default-open-depth="{{defaultOpenDepth}}" data-node-id="id"
+						data-node-label="label" data-node-children="children"></div>
+				</div>
+				<div class="col-xs-6">
+					<h4>{{RegionSelection.label}}</h4>
+					{{RegionSelection.description}}
+				</div>
+			</div>
+		</div>
+    </accordion-group>
   </accordion>
 </div>
 
