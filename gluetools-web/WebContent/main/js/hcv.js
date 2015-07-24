@@ -1,7 +1,21 @@
 var hcvApp = angular.module('hcvApp', ['angularTreeview', 'ui.bootstrap']);
 
-hcvApp.controller('searchCtrl', [ '$scope', '$http', function($scope, $http) {
-		
+hcvApp.factory('GenotypeSelection', function (){
+	return {
+		id: "",
+		label: "",
+		sequences: [], 
+		showSequences: false
+	};
+});
+
+hcvApp.controller('selectGenotypeCtrl', [ '$scope', '$http', 'GenotypeSelection',
+function($scope, $http, GenotypeSelection) {
+	$scope.GenotypeSelection = GenotypeSelection;
+
+	$scope.defaultOpenDepth = 1;
+	$scope.defaultSelectedId = "HCV";
+	
 	$scope.genotypes = null
     $http.get('../main/js/hcvGenotypes.json')
         .success(function(data) {
@@ -12,37 +26,24 @@ hcvApp.controller('searchCtrl', [ '$scope', '$http', function($scope, $http) {
         });
 	
 	$scope.$watch( 'genotypesTree.currentNode', function( newObj, oldObj ) {
-	    if( $scope.genotypesTree && angular.isObject($scope.genotypesTree.currentNode) ) {
-	        $scope.genotypeID = $scope.genotypesTree.currentNode.id;
+	    if( $scope.GenotypeSelection && $scope.genotypesTree && angular.isObject($scope.genotypesTree.currentNode) ) {
+	        var node = $scope.genotypesTree.currentNode;
+	    	$scope.GenotypeSelection.id = node.id;
+	        $scope.GenotypeSelection.label = node.label;
+	        var sequences = node.sequences || [];
+	        $scope.GenotypeSelection.sequences = _.map(sequences, function(seq) {
+	        	return {accession:seq, url:"http://www.ncbi.nlm.nih.gov/nuccore/"+seq};
+	        }); 
+	        $scope.GenotypeSelection.showSequences = sequences.length > 0;
 	    }
 	}, false);
 
 } ]);
 
 
-hcvApp.controller('AccordionDemoCtrl', function ($scope) {
-	  $scope.oneAtATime = true;
-
-	  $scope.groups = [
-	    {
-	      title: 'Dynamic Group Header - 1',
-	      content: 'Dynamic Group Body - 1'
-	    },
-	    {
-	      title: 'Dynamic Group Header - 2',
-	      content: 'Dynamic Group Body - 2'
-	    }
-	  ];
-
-	  $scope.items = ['Item 1', 'Item 2', 'Item 3'];
-
-	  $scope.addItem = function() {
-	    var newItemNo = $scope.items.length + 1;
-	    $scope.items.push('Item ' + newItemNo);
-	  };
-
-	  $scope.status = {
-	    isFirstOpen: true,
-	    isFirstDisabled: false
-	  };
-	});
+hcvApp.controller('accordionCtrl', [ '$scope', 'GenotypeSelection', 
+function ($scope, GenotypeSelection) {
+	$scope.GenotypeSelection = GenotypeSelection;
+	$scope.genotypeSelectHeading = "Select genotype";  
+	$scope.genotypeSelectOpen = true;
+} ]);

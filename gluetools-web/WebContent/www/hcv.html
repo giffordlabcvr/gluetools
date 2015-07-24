@@ -12,58 +12,41 @@
 	<link rel="stylesheet" href="../main/css/style.css"/>
 </head>
 <body>
+<div class="container">
 <h1>HCV mutation frequencies</h1>
 
 
-<div ng-controller="AccordionDemoCtrl">
-  <p>
-    <button class="btn btn-default btn-sm" ng-click="status.open = !status.open">Toggle last panel</button>
-    <button class="btn btn-default btn-sm" ng-click="status.isFirstDisabled = ! status.isFirstDisabled">Enable / Disable first panel</button>
-  </p>
-
-  <label class="checkbox">
-    <input type="checkbox" ng-model="oneAtATime">
-    Open only one at a time
-  </label>
+<div ng-controller="accordionCtrl">
   <accordion close-others="oneAtATime">
-    <accordion-group heading="Static Header, initially expanded" is-open="status.isFirstOpen" is-disabled="status.isFirstDisabled">
-      This content is straight in the template.
-    </accordion-group>
-    <accordion-group heading="{{group.title}}" ng-repeat="group in groups">
-      {{group.content}}
-    </accordion-group>
-    <accordion-group heading="Dynamic Body Content">
-      <p>The body of the accordion group grows to fit the contents</p>
-        <button class="btn btn-default btn-sm" ng-click="addItem()">Add Item</button>
-        <div ng-repeat="item in items">{{item}}</div>
-    </accordion-group>
-    <accordion-group is-open="status.open">
+    <accordion-group is-open="genotypeSelectOpen">
         <accordion-heading>
-            I can have markup, too! <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+            {{genotypeSelectHeading}} [{{GenotypeSelection.label}}]<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': genotypeSelectOpen, 'glyphicon-chevron-right': !genotypeSelectOpen}"></i>
         </accordion-heading>
-        This is just some content to illustrate fancy headings.
+	    <div ng-controller="selectGenotypeCtrl">
+			<div class="row">
+				<div class="col-xs-6">
+					<div data-angular-treeview="true" data-tree-id="genotypesTree"
+						data-tree-model="genotypes" data-default-selected-id="{{defaultSelectedId}}"
+						data-default-open-depth="{{defaultOpenDepth}}" data-node-id="id"
+						data-node-label="label" data-node-children="children"></div>
+				</div>
+				<div class="col-xs-6">
+					<h4>{{GenotypeSelection.label}}</h4>
+					<table ng-show="GenotypeSelection.showSequences" class="table table-bordered table-condensed">
+						<tr><td><b>Sequences</b></td></tr>
+						<tr ng-repeat="seqUrl in GenotypeSelection.sequences">
+							<td><a href="{{seqUrl.url}}" target="_blank">{{seqUrl.accession}}</a></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
     </accordion-group>
   </accordion>
 </div>
 
 
-<div ng-controller="searchCtrl">
-	<h3>Select genotype / subtype</h3>
-	<p>Selected ID: {{genotypeID}}</p>
-	<div
-	    data-angular-treeview="true"
-	    data-tree-id="genotypesTree"
-	    data-tree-model="genotypes"
-	    data-default-selected-id="HCV"
-	    data-default-open-depth="1"
-	    data-node-id="id"
-	    data-node-label="label"
-	    data-node-children="children">
-	</div>
-
 </div>
-
-
 
 
 </body>
