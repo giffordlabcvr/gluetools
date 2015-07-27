@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html ng-app="hcvApp">
+<head>
+	<script type="text/javascript" src="../angular/angular.min.js"></script>
+	<script type="text/javascript" src="../angular/angular-route.min.js"></script>
+	<script type="text/javascript" src="../angular.treeview/angular.treeview.js"></script>
+	<script type="text/javascript" src="../underscore/underscore-min.js"></script>
+	<script type="text/javascript" src="../ui-bootstrap/ui-bootstrap.js"></script>
+
+	<script type="text/javascript" src="../main/js/hcvApp.js"></script>
+	<script type="text/javascript" src="../main/js/mutationsBrowser.js"></script>
+	<script type="text/javascript" src="../main/js/home.js"></script>
+	
+	<link rel="stylesheet" href="../bootstrap/css/bootstrap.css"/>
+	<link rel="stylesheet" href="../angular.treeview/css/angular.treeview.css"/>
+	<link rel="stylesheet" href="../main/css/style.css"/>
+</head>
+<body>
+
+<div class="container" ng-controller="hcvAppCtrl">
+
+	<!--  http://plnkr.co/edit/by9bV5jBA4Qn8VASfw08?p=preview  -->
+	<div>
+	  <nav class="navbar navbar-default" role="navigation">
+	    <!-- Brand and toggle get grouped for better mobile display -->
+	    <div class="navbar-header">
+	
+	      <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
+	        <span class="sr-only">Toggle navigation</span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" href="#home">{{brand}}</a>
+	    </div>
+	  
+	    <!-- Collect the nav links, forms, and other content for toggling -->
+	    <div class="collapse navbar-collapse" ng-class="!navCollapsed && 'in'">
+	    
+	      <ul class="nav navbar-nav">
+	        <li><a href="#home">Home</a></li>
+	        <li class="dropdown" dropdown>
+	          <a href="#" dropdown-toggle class="dropdown-toggle" data-toggle="dropdown">Analysis <b class="caret"></b></a>
+	          <ul class="dropdown-menu" role="menu">
+	            <li><a href="#mutationsBrowser">Database mutation analysis</a></li>
+	          </ul>
+	        </li>
+	        
+	      </ul>
+	    </div><!-- /.navbar-collapse -->
+	  </nav>
+	</div>     
+
+  
+	<div ng-view></div>
+
+</div>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
-var hcvApp = angular.module('hcvApp', ['angularTreeview', 'ui.bootstrap']);
+var mutationsBrowser = angular.module('mutationsBrowser', ['angularTreeview', 'ui.bootstrap']);
 
-hcvApp.factory('GenotypeSelection', function (){
+mutationsBrowser.factory('GenotypeSelection', function (){
 	return {
 		id: "",
 		label: "",
@@ -9,7 +9,7 @@ hcvApp.factory('GenotypeSelection', function (){
 	};
 });
 
-hcvApp.factory('RegionSelection', function (){
+mutationsBrowser.factory('RegionSelection', function (){
 	return {
 		id: "",
 		label: "", 
@@ -18,7 +18,7 @@ hcvApp.factory('RegionSelection', function (){
 });
 
 
-hcvApp.controller('selectGenotypeCtrl', 
+mutationsBrowser.controller('selectGenotypeCtrl', 
 		[ '$scope', '$http', 'GenotypeSelection',
 		function($scope, $http, GenotypeSelection) {
 			$scope.GenotypeSelection = GenotypeSelection;
@@ -51,7 +51,7 @@ hcvApp.controller('selectGenotypeCtrl',
 		} ]);
 
 
-hcvApp.controller('selectRegionCtrl', 
+mutationsBrowser.controller('selectRegionCtrl', 
 		[ '$scope', '$http', 'RegionSelection',
 		function($scope, $http, RegionSelection) {
 			$scope.RegionSelection = RegionSelection;
@@ -83,14 +83,12 @@ hcvApp.controller('selectRegionCtrl',
 
 
 
-hcvApp.controller('mainCtrl', [ '$scope', 'GenotypeSelection', 'RegionSelection',
+mutationsBrowser.controller('mutationsBrowserCtrl', [ '$scope', 'GenotypeSelection', 'RegionSelection',
 function ($scope, GenotypeSelection, RegionSelection) {
 	$scope.GenotypeSelection = GenotypeSelection;
 	$scope.RegionSelection = RegionSelection;
-	$scope.title = "HCV Mutations";  
-	$scope.strapline = "Amino-acid level mutation frequencies for aligned Hepatitis C virus sequences";  
-	$scope.genotypeSelectHeading = "Select genotype";  
-	$scope.genotypeSelectOpen = true;
-	$scope.regionSelectHeading = "Select region";  
-	$scope.regionSelectOpen = true;
+	$scope.genotypeSelectHeading = "Select sequence genotype";  
+	$scope.genotypeSelectOpen = false;
+	$scope.regionSelectHeading = "Select genome region";  
+	$scope.regionSelectOpen = false;
 } ]);
