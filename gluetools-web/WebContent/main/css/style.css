@@ -14,10 +14,15 @@ body {
 }
 
 
-.mutationTable th, .mutationTable td { 
+.mutationTable {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.mutationTable th, .mutationTable td, .mutationTable tr, .mutationTable tbody { 
     border-right: thick solid #ffffff;
-    
-    border-top: 0px !important;
+    border-top-style: none !important;
+    border-bottom-style: none !important;
     padding-left: 0px !important;
     padding-right: 0px !important;
     padding-top: 0px !important;
