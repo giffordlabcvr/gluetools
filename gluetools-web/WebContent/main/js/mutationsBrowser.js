@@ -91,4 +91,9 @@ function ($scope, GenotypeSelection, RegionSelection) {
 	$scope.genotypeSelectOpen = false;
 	$scope.regionSelectHeading = "Select genome region";  
 	$scope.regionSelectOpen = false;
+	
+	$scope.updateMutations = function() {
+		console.log("update mutations!");
+	};
+	
 } ]);
