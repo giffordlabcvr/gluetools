@@ -39,7 +39,9 @@ import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
@@ -191,8 +193,13 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 				throw pce;
 			}
 		}
-		if(!enterModeCmd && console != null && commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
-			console.output(new String(XmlUtils.prettyPrint(command.getCmdElem().getOwnerDocument())));
+		if(!enterModeCmd && console != null) {
+			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
+				console.output(new String(XmlUtils.prettyPrint(command.getCmdElem().getOwnerDocument())));
+			}
+			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_JSON).equals("true")) {
+				console.output(JsonUtils.prettyPrint(JsonUtils.documentToJSonObjectBuilder(command.getCmdElem().getOwnerDocument()).build()));
+			}
 		}
 		return command;
 	}
@@ -224,10 +231,12 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			}
 			if(value instanceof Collection<?>) {
 				((Collection <?>) value).forEach(item -> {
-					XmlUtils.appendElementWithText(docElem, tagName, item.toString());
+					Element elem = (Element) XmlUtils.appendElementWithText(docElem, tagName, item.toString()).getParentNode();
+					JsonUtils.setJsonType(elem, JsonType.String, true);
 				});
 			} else {
-				XmlUtils.appendElementWithText(docElem, tagName, value.toString());
+				Element elem = (Element) XmlUtils.appendElementWithText(docElem, tagName, value.toString()).getParentNode();
+				JsonUtils.setJsonType(elem, JsonType.String, false);
 			}
 		});
 		return docElem.getOwnerDocument().getDocumentElement();

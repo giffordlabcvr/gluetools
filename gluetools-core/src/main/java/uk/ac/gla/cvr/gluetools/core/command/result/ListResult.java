@@ -24,7 +24,7 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 // TODO -- default list command for web interface should return only IDs
 // TODO -- some kind of pagination for list commands.
 
-public class ListResult extends DocumentResult {
+public class ListResult extends CommandResult {
 
 	
 	public static final String NULL = "null";

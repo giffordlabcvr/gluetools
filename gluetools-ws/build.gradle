@@ -1,9 +1,12 @@
 apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'war'
  
 repositories {
     mavenCentral()
 }
  
 dependencies {
-	compile project('gluetools-core')
+	compile project(':gluetools-core')
+	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 }

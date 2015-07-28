@@ -22,7 +22,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureComman
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.DocumentResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -62,7 +61,7 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
 					Element showDataElem = CommandUsage.docElemForCmdClass(ShowOriginalDataCommand.class);
-					Document sequenceDataDoc = ((DocumentResult) cmdContext.executeElem(showDataElem.getOwnerDocument().getDocumentElement())).getDocument();
+					Document sequenceDataDoc = ((CommandResult) cmdContext.executeElem(showDataElem.getOwnerDocument().getDocumentElement())).getDocument();
 					rule.execute(cmdContext, sequenceDataDoc);
 				}
 			});

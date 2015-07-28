@@ -2,7 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-public class OkResult extends DocumentResult {
+public class OkResult extends CommandResult {
 
 	private static final String OK_RESULT = "okResult";
 

@@ -4,10 +4,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.DocumentResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
-public class NucleotidesResult extends DocumentResult {
+public class NucleotidesResult extends CommandResult {
 
 	public NucleotidesResult(int beginIndex, int endIndex, String nucleotides) {
 		super(nucleotidesResultDocument(beginIndex, endIndex, nucleotides));
