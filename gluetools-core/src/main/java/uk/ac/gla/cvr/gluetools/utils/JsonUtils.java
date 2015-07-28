@@ -59,26 +59,7 @@ public class JsonUtils {
 		switch(jsonType) {
 		case Object:
 			JsonObjectBuilder childBuilder = jsonObjectBuilder();
-			List<Element> childElements = XmlUtils.findChildElements(element);
-			Map<String, List<Element>> arrayItems = new LinkedHashMap<String, List<Element>>();
-			childElements.forEach(childElem -> {
-				String childElemName = childElem.getNodeName();
-				Boolean isJsonArray = isJsonArray(childElem);
-				if(isJsonArray) {
-					List<Element> arrayElems = arrayItems.getOrDefault(childElemName, new ArrayList<Element>());
-					arrayElems.add(childElem);
-					arrayItems.putIfAbsent(childElemName, arrayElems);
-				} else {
-					elementToJSon(childBuilder, childElem);
-				}
-			});
-			arrayItems.forEach((name, arrayElems) -> {
-				JsonArrayBuilder jsonArrayBuilder = jsonArrayBuilder();
-				for(Element arrayElem: arrayElems) {
-					elementToJSon(jsonArrayBuilder, arrayElem);
-				}
-				childBuilder.add(name, jsonArrayBuilder);
-			});
+			childElemsToJson(childBuilder, element);
 			parentBuilder.add(elemName, childBuilder);
 			break;
 		case Double:
@@ -98,6 +79,29 @@ public class JsonUtils {
 			break;
 		}
 	}
+
+	private static void childElemsToJson(JsonObjectBuilder childBuilder, Element element) {
+		List<Element> childElements = XmlUtils.findChildElements(element);
+		Map<String, List<Element>> arrayItems = new LinkedHashMap<String, List<Element>>();
+		childElements.forEach(childElem -> {
+			String childElemName = childElem.getNodeName();
+			Boolean isJsonArray = isJsonArray(childElem);
+			if(isJsonArray) {
+				List<Element> arrayElems = arrayItems.getOrDefault(childElemName, new ArrayList<Element>());
+				arrayElems.add(childElem);
+				arrayItems.putIfAbsent(childElemName, arrayElems);
+			} else {
+				elementToJSon(childBuilder, childElem);
+			}
+		});
+		arrayItems.forEach((name, arrayElems) -> {
+			JsonArrayBuilder jsonArrayBuilder = jsonArrayBuilder();
+			for(Element arrayElem: arrayElems) {
+				elementToJSon(jsonArrayBuilder, arrayElem);
+			}
+			childBuilder.add(name, jsonArrayBuilder);
+		});
+	}
 	
 	private static void elementToJSon(JsonArrayBuilder parentBuilder, Element element) {
 		JsonType jsonType = getJsonType(element);
@@ -105,7 +109,7 @@ public class JsonUtils {
 		switch(jsonType) {
 		case Object:
 			JsonObjectBuilder childBuilder = jsonObjectBuilder();
-			elementToJSon(childBuilder, element);
+			childElemsToJson(childBuilder, element);
 			parentBuilder.add(childBuilder);
 			break;
 		case Double:
@@ -142,11 +146,19 @@ public class JsonUtils {
 	}
 
 	public static JsonType getJsonType(Element elem) {
-		return (JsonType) elem.getUserData(XML_TO_JSON_TYPE_PROPERTY);
+		Object userData = elem.getUserData(XML_TO_JSON_TYPE_PROPERTY);
+		if(userData == null) {
+			throw new RuntimeException("Element "+elem.getNodeName()+" has no JSON type.");
+		}
+		return (JsonType) userData;
 	}
 
 	public static boolean isJsonArray(Element elem) {
-		return (Boolean) elem.getUserData(XML_TO_JSON_IS_ARRAY_PROPERTY);
+		Object userData = elem.getUserData(XML_TO_JSON_IS_ARRAY_PROPERTY);
+		if(userData == null) {
+			throw new RuntimeException("Element "+elem.getNodeName()+" has no JSON array boolean.");
+		}
+		return (Boolean) userData;
 	}
 
 }

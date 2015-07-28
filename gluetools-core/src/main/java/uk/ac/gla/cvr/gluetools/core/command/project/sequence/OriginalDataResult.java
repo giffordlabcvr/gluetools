@@ -8,7 +8,9 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class OriginalDataResult extends CommandResult {
 
@@ -18,9 +20,10 @@ public class OriginalDataResult extends CommandResult {
 
 	private static Document originalDataResultDocument(SequenceFormat format, byte[] originalData) {
 		Element rootElem = XmlUtils.documentWithElement("originalDataResult");
-		XmlUtils.appendElementWithText(rootElem, "format", format.name());
+		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
+		XmlUtils.appendElementWithText(rootElem, "format", format.name(), JsonType.String);
 		String base64String = new String(Base64.getEncoder().encode(originalData));
-		XmlUtils.appendElementWithText(rootElem, "base64", base64String);
+		XmlUtils.appendElementWithText(rootElem, "base64", base64String, JsonType.String);
 		return rootElem.getOwnerDocument();
 	}
 

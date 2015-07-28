@@ -41,6 +41,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+
 public class XmlUtils {
 
 	public static Document documentFromStream(InputStream is) throws SAXException, IOException  {
@@ -71,18 +73,28 @@ public class XmlUtils {
 	}
 	
 	public static Element appendElement(Element parentElem, String elemName) {
-		return (Element) parentElem.appendChild(parentElem.getOwnerDocument().createElement(elemName));
+		return appendElement(parentElem, elemName, null);
 	}
 
-	public static Element appendElement(Element parentElem, String namespace, String elemName) {
+	public static Element appendElementNS(Element parentElem, String namespace, String elemName) {
 		return (Element) parentElem.appendChild(parentElem.getOwnerDocument().createElementNS(namespace, elemName));
 	}
 
-	public static Node appendElementWithText(Element parentElem, String elemName, String text) {
-		Element childElem = appendElement(parentElem, elemName);
+	public static Node appendElementWithText(Element parentElem, String elemName, String text, JsonType jsonType) {
+		Element childElem = appendElement(parentElem, elemName, jsonType);
 		Text textNode = parentElem.getOwnerDocument().createTextNode(text);
 		childElem.appendChild(textNode);
 		return textNode;
+	}
+	
+	public static Element appendElement(Element parentElem, String elemName, JsonType jsonType) {
+		Element elem = (Element) parentElem.appendChild(parentElem.getOwnerDocument().createElement(elemName));
+		if(jsonType != null) { JsonUtils.setJsonType(elem, jsonType, false); };
+		return elem;
+	}
+
+	public static Node appendElementWithText(Element parentElem, String elemName, String text) {
+		return appendElementWithText(parentElem, elemName, text, null);
 	}
 	
 	public static List<Element> findChildElements(Element parentElement, String elemName) {

@@ -1,11 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
+import java.util.Optional;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class FieldValueResult extends CommandResult {
 
@@ -15,11 +19,14 @@ public class FieldValueResult extends CommandResult {
 
 	private static Document fieldValueResultDocument(String fieldName, String fieldValue) {
 		Element rootElem = XmlUtils.documentWithElement("fieldValueResult");
-		XmlUtils.appendElementWithText(rootElem, "fieldName", fieldName);
+		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
+		XmlUtils.appendElementWithText(rootElem, "fieldName", fieldName, JsonType.String);
 		if(fieldValue == null) {
-			XmlUtils.appendElement(rootElem, "null");
+			Element valueElem = XmlUtils.appendElement(rootElem, "value");
+			valueElem.setAttribute("isNull", "true");
+			JsonUtils.setJsonType(valueElem, JsonType.Null, false);
 		} else {
-			XmlUtils.appendElementWithText(rootElem, "value", fieldValue);
+			XmlUtils.appendElementWithText(rootElem, "value", fieldValue, JsonType.String);
 		}
 		return rootElem.getOwnerDocument();
 	}
@@ -29,11 +36,13 @@ public class FieldValueResult extends CommandResult {
 		StringBuffer buf = new StringBuffer();
 		buf.append(XmlUtils.getXPathString(getDocument(), "/fieldValueResult/fieldName/text()"));
 		buf.append(": ");
+		String valueIsNull = Optional.ofNullable(XmlUtils.getXPathString(getDocument(), "/fieldValueResult/value/@isNull")).orElse("false");
 		String valueString = XmlUtils.getXPathString(getDocument(), "/fieldValueResult/value/text()");
-		if(valueString != null) {	
-			buf.append(valueString);
-		} else {
+		if(valueIsNull.equals("true")) {	
 			buf.append("-");
+		} else {
+			buf.append(valueString);
+
 		}
 		renderCtx.output(buf.toString());
 	}

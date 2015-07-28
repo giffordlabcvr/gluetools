@@ -32,7 +32,9 @@ public class CommandResult {
 	}
 
 	public final void renderToConsole(CommandResultRenderingContext renderCtx) {
-		if(renderCtx.getConsoleOutputFormat().equals("xml")) {
+		if(renderCtx.getConsoleOutputFormat().equals("json")) {
+			renderToConsoleAsJson(renderCtx);
+		} else if(renderCtx.getConsoleOutputFormat().equals("xml")) {
 			renderToConsoleAsXml(renderCtx);
 		} else {
 			renderToConsoleAsText(renderCtx);
@@ -45,6 +47,12 @@ public class CommandResult {
 		renderCtx.output(new String(docBytes));
 	}
 
+	protected final void renderToConsoleAsJson(CommandResultRenderingContext renderCtx) {
+		JsonObject jsonObject = getJsonObject();
+		renderCtx.output(JsonUtils.prettyPrint(jsonObject));
+	}
+
+	
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		renderToConsoleAsXml(renderCtx);
 	}

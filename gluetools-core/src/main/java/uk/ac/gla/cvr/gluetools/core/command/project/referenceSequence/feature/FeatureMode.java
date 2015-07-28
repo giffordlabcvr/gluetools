@@ -6,6 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class FeatureMode extends CommandMode {
 
@@ -22,7 +23,7 @@ public class FeatureMode extends CommandMode {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(FeatureModeCommand.class.isAssignableFrom(cmdClass)) {
-			XmlUtils.appendElementWithText(elem, "featureName", featureName);
+			XmlUtils.appendElementWithText(elem, "featureName", featureName, JsonType.String);
 		}
 	}
 

@@ -140,7 +140,7 @@ public class ModelBuilder {
 					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='SEQUENCE']");
 			Element sequenceTableElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 			fields.forEach(f -> {
-				Element dbAttributeElem = XmlUtils.appendElement(sequenceTableElem, CAYENNE_NS, "db-attribute");
+				Element dbAttributeElem = XmlUtils.appendElementNS(sequenceTableElem, CAYENNE_NS, "db-attribute");
 				dbAttributeElem.setAttribute("name", f.getName());
 				dbAttributeElem.setAttribute("type", f.getFieldType().cayenneType());
 				Optional.ofNullable(f.getMaxLength()).ifPresent(
@@ -152,7 +152,7 @@ public class ModelBuilder {
 					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='Sequence']");
 			Element sequenceObjElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 			fields.forEach(f -> {
-				Element objAttributeElem = XmlUtils.appendElement(sequenceObjElem, CAYENNE_NS, "obj-attribute");
+				Element objAttributeElem = XmlUtils.appendElementNS(sequenceObjElem, CAYENNE_NS, "obj-attribute");
 				objAttributeElem.setAttribute("name", f.getName());
 				objAttributeElem.setAttribute("db-attribute-path", f.getName());
 				objAttributeElem.setAttribute("type", f.getFieldType().javaType());

@@ -5,7 +5,9 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class LengthResult extends CommandResult {
 
@@ -15,7 +17,8 @@ public class LengthResult extends CommandResult {
 
 	private static Document lengthResultDocument(int length) {
 		Element rootElem = XmlUtils.documentWithElement("lengthResult");
-		XmlUtils.appendElementWithText(rootElem, "length", Integer.toString(length));
+		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
+		XmlUtils.appendElementWithText(rootElem, "length", Integer.toString(length), JsonType.Integer);
 		return rootElem.getOwnerDocument();
 	}
 

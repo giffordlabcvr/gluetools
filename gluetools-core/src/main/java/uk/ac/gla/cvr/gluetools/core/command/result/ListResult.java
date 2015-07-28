@@ -6,12 +6,15 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 import com.brsanthu.dataexporter.model.AlignType;
@@ -27,7 +30,7 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 public class ListResult extends CommandResult {
 
 	
-	public static final String NULL = "null";
+	public static final String IS_NULL = "isNull";
 	public static final String VALUE = "value";
 	public static final String OBJECT = "object";
 	public static final String COLUMN = "column";
@@ -40,20 +43,26 @@ public class ListResult extends CommandResult {
 			columns = Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListColumns());
 		}
 		Element docElem = getDocument().getDocumentElement();
+		JsonUtils.setJsonType(docElem, JsonType.Object, false);	
 		XmlUtils.appendElementWithText(docElem, 
-				OBJECT_TYPE, objectClass.getSimpleName());
+				OBJECT_TYPE, objectClass.getSimpleName(), JsonType.String);
 		for(String column: columns) {
-			XmlUtils.appendElementWithText(docElem, COLUMN, column);
+			Element elem = (Element) XmlUtils.appendElementWithText(docElem, COLUMN, column).getParentNode();
+			JsonUtils.setJsonType(elem, JsonType.String, true);
 		}
 		for(D object: results) {
 			Element rowElem = XmlUtils.appendElement(docElem, OBJECT);
+			JsonUtils.setJsonType(rowElem, JsonType.Object, true);	
 			for(String column: columns) {
 				Object columnValue = object.readNestedProperty(column);
 				if(columnValue == null) {
-					XmlUtils.appendElement(rowElem, NULL);
+					Element valueElem = XmlUtils.appendElement(rowElem, VALUE);
+					valueElem.setAttribute(IS_NULL, "true");
+					JsonUtils.setJsonType(valueElem, JsonType.Null, true);
 				} else {
 					String valueText = columnValue.toString();
-					XmlUtils.appendElementWithText(rowElem, VALUE, valueText);
+					Element elem = (Element) XmlUtils.appendElementWithText(rowElem, VALUE, valueText).getParentNode();
+					JsonUtils.setJsonType(elem, JsonType.String, true);
 				}
 			}
 		}
@@ -80,10 +89,10 @@ public class ListResult extends CommandResult {
 			}
 			for(Element objElem: objElems) {
 				Row row = new Row();
-				List<Element> valueElems = XmlUtils.findChildElements(objElem);
+				List<Element> valueElems = XmlUtils.findChildElements(objElem, VALUE);
 				valueElems.forEach(valueElem -> {
 					String cString;
-					if(valueElem.getNodeName().equals(NULL)) {
+					if(Optional.ofNullable(valueElem.getAttribute(IS_NULL)).orElse("false").equals("true")) {
 						cString = "-";
 					} else {
 						cString = valueElem.getTextContent();
@@ -105,9 +114,9 @@ public class ListResult extends CommandResult {
 		List<String> headers = XmlUtils.findChildElements(docElem, COLUMN).stream().
 				map(Element::getTextContent).collect(Collectors.toList());
 		int index = headers.indexOf(columnName)+1; // XPath indices start from 1
-		List<Element> valueElems = XmlUtils.getXPathElements(docElem, OBJECT+"/*["+index+"]");
+		List<Element> valueElems = XmlUtils.getXPathElements(docElem, OBJECT+"/value["+index+"]");
 		return valueElems.stream().map(elem -> {
-			if(elem.getNodeName().equals(NULL)) {
+			if(Optional.ofNullable(elem.getAttribute(IS_NULL)).orElse("false").equals("true")) {
 				return null;
 			} else {
 				return elem.getTextContent();
@@ -124,11 +133,11 @@ public class ListResult extends CommandResult {
 		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
 		for(Element objElem: objElems) {
 			Map<String, String> map = new LinkedHashMap<String, String>();
-			List<Element> valueElems = XmlUtils.findChildElements(objElem);
+			List<Element> valueElems = XmlUtils.findChildElements(objElem, VALUE);
 			for(int i = 0; i < headers.size(); i++) {
 				String header = headers.get(i);
 				Element valueElem = valueElems.get(i);
-				if(valueElem.getNodeName().equals(NULL)) {
+				if(Optional.ofNullable(valueElem.getAttribute(IS_NULL)).orElse("false").equals("true")) {
 					map.put(header, null);
 				} else {
 					map.put(header, valueElem.getTextContent());

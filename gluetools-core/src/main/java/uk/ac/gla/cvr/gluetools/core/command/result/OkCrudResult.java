@@ -4,6 +4,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public abstract class OkCrudResult extends OkResult {
 
@@ -23,11 +24,11 @@ public abstract class OkCrudResult extends OkResult {
 			int number) {
 		super();
 		XmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
-				OPERATION, operation.name());
+				OPERATION, operation.name(), JsonType.String);
 		XmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
-				OBJECT_TYPE, objectClass.getSimpleName());
+				OBJECT_TYPE, objectClass.getSimpleName(), JsonType.String);
 		XmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
-				NUMBER, Integer.toString(number));
+				NUMBER, Integer.toString(number), JsonType.Integer);
 	}
 
 	@Override

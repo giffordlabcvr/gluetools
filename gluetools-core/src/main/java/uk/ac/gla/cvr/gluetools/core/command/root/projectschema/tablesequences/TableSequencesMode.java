@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class TableSequencesMode extends CommandMode {
 
@@ -24,7 +25,7 @@ public class TableSequencesMode extends CommandMode {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(TableSequencesModeCommand.class.isAssignableFrom(cmdClass)) {
-			XmlUtils.appendElementWithText(elem, "projectName", project.getName());
+			XmlUtils.appendElementWithText(elem, "projectName", project.getName(), JsonType.String);
 		}
 	}
 

@@ -5,9 +5,11 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
-public abstract class ConsoleCommandResult extends CommandResult {
+public class ConsoleCommandResult extends CommandResult {
 
 	public ConsoleCommandResult(String text) {
 		super(cmdDocFromText(text));
@@ -16,6 +18,7 @@ public abstract class ConsoleCommandResult extends CommandResult {
 	private static Document cmdDocFromText(String text) {
 		Document doc = XmlUtils.newDocument();
 		Element rootElem = doc.createElement("consoleCommandResult");
+		JsonUtils.setJsonType(rootElem, JsonType.String, false);
 		doc.appendChild(rootElem);
 		rootElem.appendChild(doc.createTextNode(text));
 		return doc;

@@ -1,6 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class OkResult extends CommandResult {
 
@@ -8,6 +10,7 @@ public class OkResult extends CommandResult {
 
 	public OkResult() {
 		super(XmlUtils.documentWithElement(OK_RESULT).getOwnerDocument());
+		JsonUtils.setJsonType(getDocument().getDocumentElement(), JsonType.Object, false);
 	}
 
 	@Override

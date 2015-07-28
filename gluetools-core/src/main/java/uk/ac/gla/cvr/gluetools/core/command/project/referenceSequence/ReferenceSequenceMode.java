@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class ReferenceSequenceMode extends CommandMode implements InsideProjectMode {
 
@@ -25,7 +26,7 @@ public class ReferenceSequenceMode extends CommandMode implements InsideProjectM
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(ReferenceSequenceModeCommand.class.isAssignableFrom(cmdClass)) {
-			XmlUtils.appendElementWithText(elem, "refSeqName", refSeqName);
+			XmlUtils.appendElementWithText(elem, "refSeqName", refSeqName, JsonType.String);
 		}
 	}
 

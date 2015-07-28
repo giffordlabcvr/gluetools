@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class AlignmentMode extends CommandMode implements InsideProjectMode {
 
@@ -25,7 +26,7 @@ public class AlignmentMode extends CommandMode implements InsideProjectMode {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(AlignmentModeCommand.class.isAssignableFrom(cmdClass)) {
-			XmlUtils.appendElementWithText(elem, "alignmentName", alignmentName);
+			XmlUtils.appendElementWithText(elem, "alignmentName", alignmentName, JsonType.String);
 		}
 	}
 

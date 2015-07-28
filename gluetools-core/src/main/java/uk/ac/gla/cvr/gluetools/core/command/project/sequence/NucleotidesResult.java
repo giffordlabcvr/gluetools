@@ -5,7 +5,9 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class NucleotidesResult extends CommandResult {
 
@@ -15,9 +17,10 @@ public class NucleotidesResult extends CommandResult {
 
 	private static Document nucleotidesResultDocument(int beginIndex, int endIndex, String nucleotides) {
 		Element rootElem = XmlUtils.documentWithElement("nucleotidesResult");
-		XmlUtils.appendElementWithText(rootElem, "beginIndex", Integer.toString(beginIndex));
-		XmlUtils.appendElementWithText(rootElem, "endIndex", Integer.toString(endIndex));
-		XmlUtils.appendElementWithText(rootElem, "nucleotides", nucleotides);
+		JsonUtils.setJsonType(rootElem, JsonType.Object, false);	
+		XmlUtils.appendElementWithText(rootElem, "beginIndex", Integer.toString(beginIndex), JsonType.Integer);
+		XmlUtils.appendElementWithText(rootElem, "endIndex", Integer.toString(endIndex), JsonType.Integer);
+		XmlUtils.appendElementWithText(rootElem, "nucleotides", nucleotides, JsonType.String);
 		return rootElem.getOwnerDocument();
 	}
 
