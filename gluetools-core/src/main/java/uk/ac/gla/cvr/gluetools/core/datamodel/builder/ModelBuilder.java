@@ -83,9 +83,10 @@ public class ModelBuilder {
 	public static void setDbSchemaVersionString(ObjectContext metaObjectContext, String versionString) {
 		SchemaVersion schemaVersion = GlueDataObject.lookup(metaObjectContext, SchemaVersion.class, SchemaVersion.pkMap(1), true);
 		if(schemaVersion == null) {
-			schemaVersion = GlueDataObject.create(metaObjectContext, SchemaVersion.class, SchemaVersion.pkMap(1), false, true);
+			schemaVersion = GlueDataObject.create(metaObjectContext, SchemaVersion.class, SchemaVersion.pkMap(1), false);
 		}
 		schemaVersion.setSchemaVersion(versionString);
+		
 	}
 
 

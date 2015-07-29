@@ -65,6 +65,7 @@ public class SetFieldCommand extends SequenceModeCommand {
 			}
 		}
 		sequence.writeProperty(fieldName, newValue);
+		cmdContext.commit();
 		return CommandResult.OK;
 	}
 

@@ -67,7 +67,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Sequence sequence = GlueDataObject.create(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false, false);
+		Sequence sequence = GlueDataObject.create(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
 		Source source = GlueDataObject.lookup(objContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
@@ -79,7 +79,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 		}
 		format.nucleotidesAsString(sequenceData); // check for format errors here.
 		sequence.setOriginalData(sequenceData);
-		sequence.setLive(true);
+		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);
 	}
 

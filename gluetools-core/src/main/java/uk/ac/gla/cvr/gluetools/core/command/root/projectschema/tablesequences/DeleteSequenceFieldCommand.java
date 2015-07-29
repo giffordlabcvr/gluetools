@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
@@ -35,7 +36,9 @@ public class DeleteSequenceFieldCommand extends TableSequencesModeCommand {
 		Map<String, String> pkMap = Field.pkMap(getProjectName(), fieldName);
 		Field field = GlueDataObject.lookup(objContext, Field.class, pkMap);
 		ModelBuilder.deleteSequenceColumnFromModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), field.getProject(), field);
-		return GlueDataObject.delete(objContext, Field.class, pkMap);
+		DeleteResult result = GlueDataObject.delete(objContext, Field.class, pkMap);
+		cmdContext.commit();
+		return result;
 	}
 
 

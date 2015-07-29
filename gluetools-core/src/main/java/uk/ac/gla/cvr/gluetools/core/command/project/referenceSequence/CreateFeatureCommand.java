@@ -41,10 +41,10 @@ public class CreateFeatureCommand extends ReferenceSequenceModeCommand {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext.getObjectContext(), ReferenceSequence.class, 
 				ReferenceSequence.pkMap(getRefSeqName()));
-		Feature feature = GlueDataObject.create(objContext, Feature.class, Feature.pkMap(getRefSeqName(), featureName), false, false);
+		Feature feature = GlueDataObject.create(objContext, Feature.class, Feature.pkMap(getRefSeqName(), featureName), false);
 		feature.setReferenceSequence(referenceSequence);
-		feature.setLive(true);
 		description.ifPresent(d -> {feature.setDescription(d);});
+		cmdContext.commit();
 		return new CreateResult(Feature.class, 1);
 	}
 

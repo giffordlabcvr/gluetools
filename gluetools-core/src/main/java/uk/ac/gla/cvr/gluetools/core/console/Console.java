@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import jline.console.ConsoleReader;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
@@ -34,7 +33,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
@@ -102,62 +100,52 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	}
 	
 	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
-		ObjectContext objContext = GlueDataObject.createObjectContext(commandContext.peekCommandMode().getServerRuntime());
-		commandContext.setObjectContext(objContext);
-		try {
-			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
-			Class<? extends Command> commandClass = commandFactory.identifyCommandClass(commandContext, tokenStrings);
-			if(commandClass == null) {
-				throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
-			}
-			boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
-
-			String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
-			LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
-			LinkedList<String> innerCmdWords = null;
-			if(enterModeCmd) {
-				@SuppressWarnings("unchecked")
-				EnterModeCommandDescriptor entModeCmdDescriptor = 
-				EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) commandClass);
-				int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
-				if(numEnterModeArgs < argStrings.size()) {
-					innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
-					argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
-				}
-			}
-			if(requireModeWrappable && !CommandUsage.modeWrappableForCmdClass(commandClass)) {
-				throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
-						String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
-			}
-			Command command = buildCommand(commandContext, commandClass, argStrings, this);
-			// combine enter-mode command with inner commands.
-			if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
-				commandContext.setRequireModeWrappable(true);
-				command.execute(commandContext);
-				objContext.commitChanges();
-				Class<? extends Command> innerCmdClass = null;
-				try {
-					innerCmdClass = executeTokenStrings(innerCmdWords, true);
-					return innerCmdClass;
-				} finally {
-					commandContext.setRequireModeWrappable(false);
-					// case where innermost command is an enter mode command, stay in that mode.
-					// otherwise pop the mode.
-					if(innerCmdClass == null || !EnterModeCommand.class.isAssignableFrom(innerCmdClass)) {
-						commandContext.popCommandMode();
-					}
-				}
-			} else {
-				CommandResult commandResult = command.execute(commandContext);
-				// no need to rollback changes as we will throw the context away.
-				objContext.commitChanges();
-				renderCommandResult(commandResult);
-				return commandClass;
-			}
-		} finally {
-			commandContext.setObjectContext(null);
+		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
+		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(commandContext, tokenStrings);
+		if(commandClass == null) {
+			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
 		}
+		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
 
+		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
+		LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
+		LinkedList<String> innerCmdWords = null;
+		if(enterModeCmd) {
+			@SuppressWarnings("unchecked")
+			EnterModeCommandDescriptor entModeCmdDescriptor = 
+			EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) commandClass);
+			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
+			if(numEnterModeArgs < argStrings.size()) {
+				innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
+				argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
+			}
+		}
+		if(requireModeWrappable && !CommandUsage.modeWrappableForCmdClass(commandClass)) {
+			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
+					String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
+		}
+		Command command = buildCommand(commandContext, commandClass, argStrings, this);
+		// combine enter-mode command with inner commands.
+		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
+			commandContext.setRequireModeWrappable(true);
+			command.execute(commandContext);
+			Class<? extends Command> innerCmdClass = null;
+			try {
+				innerCmdClass = executeTokenStrings(innerCmdWords, true);
+				return innerCmdClass;
+			} finally {
+				commandContext.setRequireModeWrappable(false);
+				// case where innermost command is an enter mode command, stay in that mode.
+				// otherwise pop the mode.
+				if(innerCmdClass == null || !EnterModeCommand.class.isAssignableFrom(innerCmdClass)) {
+					commandContext.popCommandMode();
+				}
+			}
+		} else {
+			CommandResult commandResult = command.execute(commandContext);
+			renderCommandResult(commandResult);
+			return commandClass;
+		}
 	}
 
 	public static Command buildCommand(

@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -31,7 +32,9 @@ public class DeleteReferenceSequenceCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		return GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSequenceName));
+		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSequenceName));
+		cmdContext.commit();
+		return result;
 	}
 
 	@CompleterClass

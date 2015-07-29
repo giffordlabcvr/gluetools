@@ -84,9 +84,9 @@ public class AddAlignedSegmentCommand extends MemberModeCommand {
 		}
 		// TODO specify and enforce further constraints as necessary. 
 		AlignedSegment alignedSegment = GlueDataObject.create(objContext, AlignedSegment.class, 
-				AlignedSegment.pkMap(getAlignmentName(), getSourceName(), getSequenceID(), refStart, refEnd, memberStart, memberEnd), false, false);
+				AlignedSegment.pkMap(getAlignmentName(), getSourceName(), getSequenceID(), refStart, refEnd, memberStart, memberEnd), false);
 		alignedSegment.setAlignmentMember(almtMemb);
-		alignedSegment.setLive(true);
+		cmdContext.commit();
 		return new CreateResult(AlignedSegment.class, 1);
 	}
 

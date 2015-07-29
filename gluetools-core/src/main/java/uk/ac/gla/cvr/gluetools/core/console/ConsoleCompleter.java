@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import jline.console.completer.Completer;
-
-import org.apache.cayenne.ObjectContext;
-
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
@@ -17,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 
 public class ConsoleCompleter implements Completer {
 
@@ -71,47 +67,41 @@ public class ConsoleCompleter implements Completer {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
 		CommandMode cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
-		try {
-			ObjectContext objContext = GlueDataObject.createObjectContext(cmdMode.getServerRuntime());
-			cmdContext.setObjectContext(objContext);
-			Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
-			boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
-			List<String> innerCmdWords = null;
-			List<String> enterModeArgStrings = null;
-			if(enterModeCmd) {
-				@SuppressWarnings("unchecked")
-				EnterModeCommandDescriptor entModeCmdDescriptor = 
-				EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) cmdClass);
-				int numCmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass).length;
-				int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(lookupBasis);
-				enterModeArgStrings = lookupBasis.subList(numCmdWords, lookupBasis.size());
-				if(numEnterModeArgs <= enterModeArgStrings.size()) {
-					innerCmdWords = new LinkedList<String>(enterModeArgStrings.subList(numEnterModeArgs, enterModeArgStrings.size()));
-					enterModeArgStrings = new LinkedList<String>(enterModeArgStrings.subList(0, numEnterModeArgs));
-				}
-				//System.out.println("numEnterModeArgs: "+numEnterModeArgs+", innerCmdWords: "+innerCmdWords+", lookupBasis: "+lookupBasis);
+		Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
+		boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
+		List<String> innerCmdWords = null;
+		List<String> enterModeArgStrings = null;
+		if(enterModeCmd) {
+			@SuppressWarnings("unchecked")
+			EnterModeCommandDescriptor entModeCmdDescriptor = 
+			EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) cmdClass);
+			int numCmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass).length;
+			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(lookupBasis);
+			enterModeArgStrings = lookupBasis.subList(numCmdWords, lookupBasis.size());
+			if(numEnterModeArgs <= enterModeArgStrings.size()) {
+				innerCmdWords = new LinkedList<String>(enterModeArgStrings.subList(numEnterModeArgs, enterModeArgStrings.size()));
+				enterModeArgStrings = new LinkedList<String>(enterModeArgStrings.subList(0, numEnterModeArgs));
 			}
+			//System.out.println("numEnterModeArgs: "+numEnterModeArgs+", innerCmdWords: "+innerCmdWords+", lookupBasis: "+lookupBasis);
+		}
 
-			if(enterModeCmd && innerCmdWords != null) {
-				Command enterModeCommand = Console.buildCommand(cmdContext, cmdClass, enterModeArgStrings);
-				try {
-					enterModeCommand.execute(cmdContext);
-					return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true);
-				} finally {
-					cmdContext.popCommandMode();
-				}
-			} else {
-				List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, true, requireModeWrappable).
-						stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList());
-				if(suggestions.isEmpty()) {
-					return -1;
-				} else {
-					candidates.addAll(suggestions.stream().map(s -> s+" ").collect(Collectors.toList()));
-					return suggestionPos;
-				} 
+		if(enterModeCmd && innerCmdWords != null) {
+			Command enterModeCommand = Console.buildCommand(cmdContext, cmdClass, enterModeArgStrings);
+			try {
+				enterModeCommand.execute(cmdContext);
+				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true);
+			} finally {
+				cmdContext.popCommandMode();
 			}
-		} finally {
-			cmdContext.setObjectContext(null);
+		} else {
+			List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, true, requireModeWrappable).
+					stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList());
+			if(suggestions.isEmpty()) {
+				return -1;
+			} else {
+				candidates.addAll(suggestions.stream().map(s -> s+" ").collect(Collectors.toList()));
+				return suggestionPos;
+			} 
 		}
 	}
 

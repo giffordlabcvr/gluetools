@@ -2,21 +2,24 @@ package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
+import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 
 
 public class CommandContext {
 	
 	private GluetoolsEngine gluetoolsEngine;
-	private ObjectContext objectContext;
+	private List<ObjectContext> objectContextStack = new LinkedList<ObjectContext>();
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine) {
 		super();
@@ -29,11 +32,18 @@ public class CommandContext {
 	public void pushCommandMode(CommandMode commandMode) {
 		commandMode.setParentCommandMode(peekCommandMode());
 		commandModeStack.add(0, commandMode);
+		if(commandMode instanceof DbContextChangingMode) {
+			ServerRuntime serverRuntime = ((DbContextChangingMode) commandMode).getNewServerRuntime();
+			objectContextStack.add(0, GlueDataObject.createObjectContext(serverRuntime));
+		}
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 	
 	public CommandMode popCommandMode() {
 		CommandMode commandMode = commandModeStack.remove(0);
+		if(commandMode instanceof DbContextChangingMode) {
+			objectContextStack.remove(0);
+		}
 		commandMode.exit();
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 		return commandMode;
@@ -74,15 +84,10 @@ public class CommandContext {
 	}
 
 	public ObjectContext getObjectContext() {
-		return objectContext;
+		return objectContextStack.get(0);
 	}
 
-	/**
-	 * commands should not use this.
-	 */
-	public void setObjectContext(ObjectContext objectContext) {
-		this.objectContext = objectContext;
+	public void commit() {
+		getObjectContext().commitChanges();
 	}
-	
-	
 }

@@ -40,7 +40,8 @@ public class CreateSourceCommand extends ProjectModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), allowExisting, true);
+		GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), allowExisting);
+		cmdContext.commit();
 		return new CreateResult(Source.class, 1);
 	}
 

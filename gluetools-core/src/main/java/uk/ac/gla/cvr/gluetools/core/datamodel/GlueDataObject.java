@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,63 +16,13 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 
-// TODO Consider removing local cache and associated pkMap code / isLive code. A working system may be achievable by simply
-// allowing modules to commit after each command. Another possibility could be to use Cayenne's nested contexts.
 public abstract class GlueDataObject extends CayenneDataObject {
-
-	private static final String GLUE_DELETED = "glueDeleted";
-	private static final String GLUE_NEW = "glueNew";
-	private static final String GLUE_MODIFIED = "glueModified";
-	
-	private ObjectContext myContext;
-	private boolean live = false;
-	
-	private ObjectContext getMyContext() {
-		return myContext;
-	}
-
-	private void setMyContext(ObjectContext myContext) {
-		this.myContext = myContext;
-	}
-	
-	public boolean isLive() {
-		return live;
-	}
-
-	// should be set to true only after all relationships have been set up.
-	// before deleting, should be set to false.
-	public void setLive(boolean live) {
-		this.live = live;
-	}
 
 	public static ObjectContext createObjectContext(ServerRuntime serverRuntime) {
 		ObjectContext objContext = serverRuntime.getContext();
-		objContext.setUserProperty(GLUE_MODIFIED, new LinkedHashMap<CacheKey, GlueDataObject>());
-		objContext.setUserProperty(GLUE_NEW, new LinkedHashMap<CacheKey, GlueDataObject>());
-		objContext.setUserProperty(GLUE_DELETED, new LinkedHashMap<CacheKey, GlueDataObject>());
 		return objContext;
 	}
-	
-	private static <C extends GlueDataObject> C cacheGet(ObjectContext objContext, String mapName,
-			Class<C> objClass, Map<String, String> pkMap) {
-		@SuppressWarnings("unchecked")
-		Map<CacheKey, GlueDataObject> cache = (Map<CacheKey, GlueDataObject>) objContext.getUserProperty(mapName);
-		return objClass.cast(cache.get(new CacheKey(objClass, pkMap)));
-	}
 
-	private static <C extends GlueDataObject> void cachePut(ObjectContext objContext, String mapName, 
-			Map<String, String> pkMap, C object) {
-		@SuppressWarnings("unchecked")
-		Map<CacheKey, GlueDataObject> cache = (Map<CacheKey, GlueDataObject>) objContext.getUserProperty(mapName);
-		cache.put(new CacheKey(object.getClass(), pkMap), object);
-	}
-
-	private static <C extends GlueDataObject> void cacheRemove(ObjectContext objContext, String mapName, 
-			Map<String, String> pkMap, C object) {
-		@SuppressWarnings("unchecked")
-		Map<CacheKey, GlueDataObject> cache = (Map<CacheKey, GlueDataObject>) objContext.getUserProperty(mapName);
-		cache.remove(new CacheKey(object.getClass(), pkMap));
-	}
 
 	public abstract void setPKValues(Map <String, String> pkMap);
 
@@ -83,20 +32,6 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	
 	public static <C extends GlueDataObject> C lookup(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowNull) {
-		
-		C cacheNew = cacheGet(objContext, GLUE_NEW, objClass, pkMap);
-		if(cacheNew != null) {
-			return cacheNew;
-		}
-		C cacheModified = cacheGet(objContext, GLUE_MODIFIED, objClass, pkMap);
-		if(cacheModified != null) {
-			return cacheModified;
-		}
-		C cacheDeleted = cacheGet(objContext, GLUE_DELETED, objClass, pkMap);
-		if(cacheDeleted != null) {
-			return null;
-		}
-		
 		Expression qualifier = pkMapToExpression(pkMap);
 		return lookupFromDB(objContext, objClass, allowNull, qualifier);
 	}
@@ -117,8 +52,6 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			throw new DataModelException(Code.MULTIPLE_OBJECTS_FOUND, objClass.getSimpleName(), qualifier.toString());
 		}
 		C object = objClass.cast(results.get(0));
-		((GlueDataObject) object).setMyContext(objContext);
-		((GlueDataObject) object).setLive(true);
 		return object;
 	}
 
@@ -134,16 +67,12 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			boolean allowNull) {
 		C object = lookup(objContext, objClass, pkMap, allowNull);
 		if(object != null) {
-			((GlueDataObject) object).setLive(false);
 			try {
 				objContext.deleteObject(object);
 			} catch(DeleteDenyException dde) {
 				String relationship = dde.getRelationship();
 				throw new DataModelException(dde, Code.DELETE_DENIED, objClass.getSimpleName(), pkMap, relationship);
 			}
-			cacheRemove(objContext, GLUE_NEW, pkMap, object);
-			cacheRemove(objContext, GLUE_MODIFIED, pkMap, object);
-			cachePut(objContext, GLUE_DELETED, pkMap, object);
 			return new DeleteResult(objClass, 1);
 		} else {
 			return new DeleteResult(objClass, 0);
@@ -167,7 +96,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	}
 
 	public static <C extends GlueDataObject> C create(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
-			boolean allowExists, boolean setLive) {
+			boolean allowExists) {
 		C existing = lookup(objContext, objClass, pkMap, true);
 		if(existing != null) {
 			if(allowExists) {
@@ -177,14 +106,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			}
 		}
 		C newObject = objContext.newObject(objClass);
-		cacheRemove(objContext, GLUE_DELETED, pkMap, newObject);
-		cacheRemove(objContext, GLUE_MODIFIED, pkMap, newObject);
-		cachePut(objContext, GLUE_NEW, pkMap, newObject);
-		((GlueDataObject) newObject).setMyContext(objContext);
 		newObject.setPKValues(pkMap);
-		if(setLive) {
-			((GlueDataObject) newObject).setLive(true);
-		}
 		return newObject;
 	}
 	
@@ -196,59 +118,6 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		return readResult.toString();
 	}
 
-	private static class CacheKey {
-		private Class<? extends GlueDataObject> theClass;
-		private Map<String, String> pkMap;
-		public CacheKey(Class<? extends GlueDataObject> theClass,
-				Map<String, String> pkMap) {
-			super();
-			this.theClass = theClass;
-			this.pkMap = pkMap;
-		}
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((pkMap == null) ? 0 : pkMap.hashCode());
-			result = prime * result
-					+ ((theClass == null) ? 0 : theClass.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CacheKey other = (CacheKey) obj;
-			if (pkMap == null) {
-				if (other.pkMap != null)
-					return false;
-			} else if (!pkMap.equals(other.pkMap))
-				return false;
-			if (theClass == null) {
-				if (other.theClass != null)
-					return false;
-			} else if (!theClass.equals(other.theClass))
-				return false;
-			return true;
-		}
-		
-		
-	}
-
 	protected abstract Map<String, String> pkMap();
 	
-	@Override
-	public void writePropertyDirectly(String propName, Object val) {
-		super.writePropertyDirectly(propName, val);
-		if(isLive()) {
-			Map<String, String> pkMap = pkMap();
-			ObjectContext objContext = getMyContext();
-			cacheRemove(objContext, GLUE_NEW, pkMap, this);
-			cachePut(objContext, GLUE_MODIFIED, pkMap, this);
-		}
-	}
 }

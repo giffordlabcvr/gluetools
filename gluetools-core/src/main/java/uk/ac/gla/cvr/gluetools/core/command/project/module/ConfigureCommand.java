@@ -22,6 +22,7 @@ public abstract class ConfigureCommand<P extends ModulePlugin<P>> extends Module
 		module.setConfig(XmlUtils.prettyPrint(currentDocument));
 		// test that this was a valid update by building the modulePlugin again.
 		module.getModulePlugin(cmdContext.getGluetoolsEngine());
+		cmdContext.commit();
 		return CommandResult.OK;
 	}
 	

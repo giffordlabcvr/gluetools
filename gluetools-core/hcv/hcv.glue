@@ -1,5 +1,5 @@
-console set echo-cmd-json true
-console set cmd-result-format json
+# console set echo-cmd-json true
+# console set cmd-result-format json
 console change load-save-path hcv
 create project HCV "HCV analysis project"
 schema project HCV
@@ -51,7 +51,7 @@ project HCV
   create module ncbi-importer -f hcvNcbiImporter.xml
   module ncbi-importer
     show configuration
-#    import
+    import
 	exit
 	  
   create module gb-populator -f hcvGenbankXmlPopulator.xml

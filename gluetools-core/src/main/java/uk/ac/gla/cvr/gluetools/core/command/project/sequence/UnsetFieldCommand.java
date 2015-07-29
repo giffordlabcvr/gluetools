@@ -44,6 +44,7 @@ public class UnsetFieldCommand extends SequenceModeCommand {
 			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);
 		}
 		sequence.writeProperty(fieldName, null);
+		cmdContext.commit();
 		return CommandResult.OK;
 	}
 

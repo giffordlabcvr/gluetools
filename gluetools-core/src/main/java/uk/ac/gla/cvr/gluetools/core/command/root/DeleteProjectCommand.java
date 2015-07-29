@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -32,7 +33,9 @@ public class DeleteProjectCommand extends RootModeCommand {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project project = getProject(objContext, projectName);
 		ModelBuilder.deleteProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project);
-		return GlueDataObject.delete(objContext, Project.class, Project.pkMap(projectName));
+		DeleteResult result = GlueDataObject.delete(objContext, Project.class, Project.pkMap(projectName));
+		cmdContext.commit();
+		return result;
 	}
 
 	@CompleterClass

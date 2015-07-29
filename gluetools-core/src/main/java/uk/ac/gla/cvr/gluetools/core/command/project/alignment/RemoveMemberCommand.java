@@ -73,6 +73,7 @@ public class RemoveMemberCommand extends AlignmentModeCommand {
 		membersToDelete.forEach(member -> {
 			GlueDataObject.delete(objContext, AlignmentMember.class, member.pkMap());
 		});
+		cmdContext.commit();
 		return new DeleteResult(AlignmentMember.class, membersToDelete.size());
 	}
 
