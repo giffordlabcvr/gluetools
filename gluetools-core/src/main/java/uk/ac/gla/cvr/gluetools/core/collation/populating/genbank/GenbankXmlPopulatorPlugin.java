@@ -19,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -61,7 +62,13 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
 					Element showDataElem = CommandUsage.docElemForCmdClass(ShowOriginalDataCommand.class);
-					Document sequenceDataDoc = ((CommandResult) cmdContext.executeElem(showDataElem.getOwnerDocument().getDocumentElement())).getDocument();
+					OriginalDataResult originalDataResult = (OriginalDataResult) cmdContext.executeElem(showDataElem.getOwnerDocument().getDocumentElement());
+					Document sequenceDataDoc;
+					try {
+						sequenceDataDoc = XmlUtils.documentFromBytes(originalDataResult.getBase64Bytes());
+					} catch (Exception e) {
+						throw new RuntimeException("Bad GENBANK XML format: "+e.getMessage(), e);
+					}
 					rule.execute(cmdContext, sequenceDataDoc);
 				}
 			});

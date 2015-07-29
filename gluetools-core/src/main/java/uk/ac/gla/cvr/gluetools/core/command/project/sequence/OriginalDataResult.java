@@ -30,15 +30,26 @@ public class OriginalDataResult extends CommandResult {
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		StringBuffer buf = new StringBuffer();
-		String formatName = XmlUtils.getXPathString(getDocument(), "/originalDataResult/format/text()");
+		String formatName = getFormat();
 		buf.append("Format: ");
 		buf.append(formatName);
 		buf.append("\n");
-		String base64String = XmlUtils.getXPathString(getDocument(), "/originalDataResult/base64/text()");
-		byte[] originalData = Base64.getDecoder().decode(base64String);
+		byte[] originalData = getBase64Bytes();
 		SequenceFormat format = SequenceFormat.valueOf(formatName);
 		buf.append(format.originalDataAsString(originalData));
 		renderCtx.output(buf.toString());
+	}
+
+	public byte[] getBase64Bytes() {
+		return Base64.getDecoder().decode(getBase64String());
+	}
+
+	public String getBase64String() {
+		return XmlUtils.getXPathString(getDocument(), "/originalDataResult/base64/text()");
+	}
+
+	public String getFormat() {
+		return XmlUtils.getXPathString(getDocument(), "/originalDataResult/format/text()");
 	}
 	
 }
