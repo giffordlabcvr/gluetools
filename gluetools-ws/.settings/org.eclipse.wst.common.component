@@ -1,11 +1,65 @@
-<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name="gluetools-ws">
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <wb-resource deploy-path="/" source-path="/src/main/webapp"/>
-        <dependent-module archiveName="gluetools-core.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/gluetools-core/gluetools-core">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <property name="context-root" value="gluetools-ws"/>
-        <property name="java-output-path" value="/gluetools-ws/build/classes"/>
-    </wb-module>
+<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="1.5.0">
+	<wb-module deploy-name="gluetools-ws">
+		<property name="context-root" value="gluetools-ws"/>
+		<wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+		<wb-resource deploy-path="/" source-path="/src/main/webapp"/>
+		<property name="java-output-path" value="/gluetools-ws/build/classes"/>
+		<wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/java"/>
+		<wb-resource deploy-path="/" source-path="src/main/webapp"/>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/gluetools-core/gluetools-core">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet/2.19/1650ded636f994f82b975d2e6d147b752aba2fd9/jersey-container-servlet-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet-core/2.19/4da2f11fa267f6f6d0a7d0625b8ad24acaf12209/jersey-container-servlet-core-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-common/2.19/8f9cbcfa71d324d9004134a86c15a124fc22fabb/jersey-common-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-server/2.19/e8be95119e9cee86f9ddbc95827a023b65351a87/jersey-server-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2.external/javax.inject/2.4.0-b25/e0ce2f6a86fcbec80acbf0d3aca9e348be74e950/javax.inject-2.4.0-b25.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.annotation/javax.annotation-api/1.2/479c1e06db31c432330183f5cae684163f186146/javax.annotation-api-1.2.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.bundles.repackaged/jersey-guava/2.19/f0fd5ea29c2b6c614d9e7016a75fe7a01e4c9887/jersey-guava-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-api/2.4.0-b25/be7693579fcb1184455e06238c8652a4c2645d95/hk2-api-2.4.0-b25.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-locator/2.4.0-b25/89ee38141b06c712f0f3caa1ca08590ce80c71f6/hk2-locator-2.4.0-b25.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/osgi-resource-locator/1.0.1/4ed2b2d4738aed5786cfa64cba5a332779c4c708/osgi-resource-locator-1.0.1.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-client/2.19/b6bf1e6991be31e1067c6ac9672330c0a946116d/jersey-client-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.media/jersey-media-jaxb/2.19/c4b4a3de6e6ae85473316c9395eb5913bfe90d1f/jersey-media-jaxb-2.19.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/1.1.0.Final/8613ae82954779d518631e05daa73a6a954817d5/validation-api-1.1.0.Final.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-utils/2.4.0-b25/da0631bf28e14381c117779bb3c518f366813481/hk2-utils-2.4.0-b25.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2.external/aopalliance-repackaged/2.4.0-b25/3316675bccd4e0ca9e58c2bf150c6410bc98910a/aopalliance-repackaged-2.4.0-b25.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.javassist/javassist/3.18.1-GA/d9a09f7732226af26bf99f19e2cffe0ae219db5b/javassist-3.18.1-GA.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib//Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.inject/javax.inject/1/6975da39a7040257bd51d21a231b76c915872d38/javax.inject-1.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+	</wb-module>
 </project-modules>

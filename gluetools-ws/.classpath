@@ -6,18 +6,109 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer">
+	<classpathentry kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.servlet/javax.servlet-api/3.0.1/6bf0ebb7efd993e222fc1112377b5e92a13b38dd/javax.servlet-api-3.0.1.jar" sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.servlet/javax.servlet-api/3.0.1/1952f91d84016a39e31346c9d18bd8c9c4a128a/javax.servlet-api-3.0.1-sources.jar">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container" exported="true"/>
+	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="/gluetools-core" exported="true"/>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet/2.19/83a1e0713989e6f2cf62ddcfc7b8fa6a9b0d5620/jersey-container-servlet-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet/2.19/1650ded636f994f82b975d2e6d147b752aba2fd9/jersey-container-servlet-2.19.jar" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.ws.rs/javax.ws.rs-api/2.0.1/a20db7429fd8dfff74335ec867472b71c345049b/javax.ws.rs-api-2.0.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.ws.rs/javax.ws.rs-api/2.0.1/104e9c2b5583cfcfeac0402316221648d6d8ea6b/javax.ws.rs-api-2.0.1.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.servlet/javax.servlet-api/3.0.1/1952f91d84016a39e31346c9d18bd8c9c4a128a/javax.servlet-api-3.0.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.servlet/javax.servlet-api/3.0.1/6bf0ebb7efd993e222fc1112377b5e92a13b38dd/javax.servlet-api-3.0.1.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet-core/2.19/51655516a837480ebe6f85550f340ca28b9b7bbf/jersey-container-servlet-core-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet-core/2.19/4da2f11fa267f6f6d0a7d0625b8ad24acaf12209/jersey-container-servlet-core-2.19.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-common/2.19/a760a9c15c646bd3e8659bb7c430365a53ddfba2/jersey-common-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-common/2.19/8f9cbcfa71d324d9004134a86c15a124fc22fabb/jersey-common-2.19.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-server/2.19/99cf0e84354eb69b29e2cce46dedda9950915599/jersey-server-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-server/2.19/e8be95119e9cee86f9ddbc95827a023b65351a87/jersey-server-2.19.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2.external/javax.inject/2.4.0-b25/f9a0ec709db3d09e9b658d946ab71bb86ea0d997/javax.inject-2.4.0-b25-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2.external/javax.inject/2.4.0-b25/e0ce2f6a86fcbec80acbf0d3aca9e348be74e950/javax.inject-2.4.0-b25.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.annotation/javax.annotation-api/1.2/ad18a02db08eaee697f812e333f692fc51129e4a/javax.annotation-api-1.2-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.annotation/javax.annotation-api/1.2/479c1e06db31c432330183f5cae684163f186146/javax.annotation-api-1.2.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.bundles.repackaged/jersey-guava/2.19/f8cd62fbbe3b58ec92567831cdffd9c88fd6bc5c/jersey-guava-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.bundles.repackaged/jersey-guava/2.19/f0fd5ea29c2b6c614d9e7016a75fe7a01e4c9887/jersey-guava-2.19.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-api/2.4.0-b25/1e166b5690c8a90e86a05a6f745ff9fbce98c416/hk2-api-2.4.0-b25-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-api/2.4.0-b25/be7693579fcb1184455e06238c8652a4c2645d95/hk2-api-2.4.0-b25.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-locator/2.4.0-b25/133a6efa8757e54e05c40612099e0edcc7a66c6b/hk2-locator-2.4.0-b25-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-locator/2.4.0-b25/89ee38141b06c712f0f3caa1ca08590ce80c71f6/hk2-locator-2.4.0-b25.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/osgi-resource-locator/1.0.1/b5685f8eaa7d83351b185a82a92abcd1b8b87fc8/osgi-resource-locator-1.0.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/osgi-resource-locator/1.0.1/4ed2b2d4738aed5786cfa64cba5a332779c4c708/osgi-resource-locator-1.0.1.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-client/2.19/f8edee7f1248fcb0343010537096fb2f21928701/jersey-client-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.core/jersey-client/2.19/b6bf1e6991be31e1067c6ac9672330c0a946116d/jersey-client-2.19.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.media/jersey-media-jaxb/2.19/b97fbd4e6ef8148b5db163b31b831588c84e3ec4/jersey-media-jaxb-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.media/jersey-media-jaxb/2.19/c4b4a3de6e6ae85473316c9395eb5913bfe90d1f/jersey-media-jaxb-2.19.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/1.1.0.Final/7d49b53caed9bd81d172807c3e096d24f3c57090/validation-api-1.1.0.Final-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/1.1.0.Final/8613ae82954779d518631e05daa73a6a954817d5/validation-api-1.1.0.Final.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-utils/2.4.0-b25/d1033f5b42674a3d9e79e6ebfbe2a52c97335537/hk2-utils-2.4.0-b25-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2/hk2-utils/2.4.0-b25/da0631bf28e14381c117779bb3c518f366813481/hk2-utils-2.4.0-b25.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2.external/aopalliance-repackaged/2.4.0-b25/34ce1e4e658691a18b7175b7ca137e290d438165/aopalliance-repackaged-2.4.0-b25-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.hk2.external/aopalliance-repackaged/2.4.0-b25/3316675bccd4e0ca9e58c2bf150c6410bc98910a/aopalliance-repackaged-2.4.0-b25.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.javassist/javassist/3.18.1-GA/d8d089f3a8845cce22d3006e02ab1403dd73b5b6/javassist-3.18.1-GA-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.javassist/javassist/3.18.1-GA/d9a09f7732226af26bf99f19e2cffe0ae219db5b/javassist-3.18.1-GA.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.inject/javax.inject/1/a00123f261762a7c5e0ec916a2c7c8298d29c400/javax.inject-1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/javax.inject/javax.inject/1/6975da39a7040257bd51d21a231b76c915872d38/javax.inject-1.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
 </classpath>

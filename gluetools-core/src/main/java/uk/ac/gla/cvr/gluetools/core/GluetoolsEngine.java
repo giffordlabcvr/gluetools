@@ -1,12 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core;
 
+import java.io.File;
 import java.net.URL;
 import java.util.logging.Logger;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration.Vendor;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -19,31 +24,52 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueURLStreamHandlerFactory;
-import uk.ac.gla.cvr.gluetools.utils.Multiton;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import freemarker.template.Configuration;
 
 public class GluetoolsEngine implements Plugin {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
-	private static Multiton instances = new Multiton();
-	
-	private static Multiton.Creator<GluetoolsEngine> creator = new
-			Multiton.SuppliedCreator<>(GluetoolsEngine.class, GluetoolsEngine::new);
+	private static GluetoolsEngine instance;
 	
 	private String dbSchemaVersion;
 	
-	public static GluetoolsEngine getInstance() {
-		return instances.get(creator);
+	public static synchronized GluetoolsEngine initInstance(String configFilePath, boolean migrateSchema) {
+		if(instance != null) {
+			throw new GluetoolsEngineException(GluetoolsEngineException.Code.ENGINE_ALREADY_INITIALIZED);
+		}
+		instance = new GluetoolsEngine(configFilePath);
+		instance.init(migrateSchema);
+		return instance;
 	}
+
+	public static synchronized GluetoolsEngine getInstance() {
+		if(instance == null) {
+			throw new GluetoolsEngineException(GluetoolsEngineException.Code.ENGINE_NOT_INITIALIZED);
+		}
+		return instance;
+	}
+
 	
 	private Configuration freemarkerConfiguration;
 	private DatabaseConfiguration dbConfiguration = new DatabaseConfiguration();
 	private ServerRuntime rootServerRuntime;
 	
-	private GluetoolsEngine() {
+	private GluetoolsEngine(String configFilePath) {
 		freemarkerConfiguration = new Configuration();
 		URL.setURLStreamHandlerFactory(new GlueURLStreamHandlerFactory());
+		Document configDocument = null;
+		if(configFilePath != null) {
+			try {
+				configDocument = XmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
+			} catch(SAXException saxe) {
+				throw new ConsoleException(ConsoleException.Code.GLUE_CONFIG_XML_FORMAT_ERROR, saxe.getLocalizedMessage());
+			}
+		} else {
+			configDocument = XmlUtils.documentWithElement("gluetools").getOwnerDocument();
+		}
+		configure(createPluginConfigContext(), configDocument.getDocumentElement());
 	}
 	
 	public PluginConfigContext createPluginConfigContext() {
@@ -69,7 +95,7 @@ public class GluetoolsEngine implements Plugin {
 		return dbConfiguration;
 	}
 	
-	public void init(boolean migrateSchema) {
+	private void init(boolean migrateSchema) {
 		ServerRuntime metaRuntime = null;
 		try {
 			metaRuntime = ModelBuilder.createMetaRuntime(dbConfiguration);

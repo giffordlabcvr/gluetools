@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -17,9 +16,7 @@ import org.apache.cayenne.ObjectContext;
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
@@ -40,8 +37,8 @@ import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
@@ -289,19 +286,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			throw new RuntimeException(ioe);
 		}
 		this.out = new PrintWriter(reader.getOutput());
-		GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
-		Document configDocument = null;
-		if(configFilePath != null) {
-			try {
-				configDocument = XmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
-			} catch(SAXException saxe) {
-				throw new ConsoleException(ConsoleException.Code.GLUE_CONFIG_XML_FORMAT_ERROR, saxe.getLocalizedMessage());
-			}
-		} else {
-			configDocument = XmlUtils.documentWithElement("gluetools").getOwnerDocument();
-		}
-		gluetoolsEngine.configure(gluetoolsEngine.createPluginConfigContext(), configDocument.getDocumentElement());
-		gluetoolsEngine.init(this.migrateSchema);
+		GluetoolsEngine gluetoolsEngine = GluetoolsEngine.initInstance(configFilePath, this.migrateSchema);
 		this.commandContext = new ConsoleCommandContext(gluetoolsEngine);
 		commandContext.setCommandContextListener(this);
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));

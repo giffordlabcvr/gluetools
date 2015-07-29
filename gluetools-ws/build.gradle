@@ -1,5 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
+apply plugin: 'eclipse-wtp'
 apply plugin: 'war'
  
 repositories {
@@ -8,5 +8,7 @@ repositories {
  
 dependencies {
 	compile project(':gluetools-core')
-	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19' 
+	providedCompile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
+	providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
 }
