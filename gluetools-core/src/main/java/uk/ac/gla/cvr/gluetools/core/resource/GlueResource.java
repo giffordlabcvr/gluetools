@@ -17,7 +17,7 @@ public class GlueResource implements Resource {
 	@Override
 	public URL getURL() {
 		try {
-			return new URL("glue", "host", "/"+fileName);
+			return new URL("glue", "host", 9999, "/"+fileName, new GlueURLStreamHandler());
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}

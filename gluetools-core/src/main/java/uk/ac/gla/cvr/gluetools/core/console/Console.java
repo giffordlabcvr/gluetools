@@ -303,7 +303,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		while(!(commandContext.peekCommandMode() instanceof RootCommandMode)) {
 			commandContext.popCommandMode();
 		}
-		commandContext.popCommandMode();
+		GluetoolsEngine.shutdown();
 	}
 
 	private void runBatchFile(Object fileString) {

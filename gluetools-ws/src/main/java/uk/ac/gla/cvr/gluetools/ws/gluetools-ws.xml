@@ -3,4 +3,4 @@
 <Context>
     <Environment name="configFilePath" value="/Users/joshsinger/gitrepos/gluetools/gluetools-core/gluetools-config.xml" type="java.lang.String"/>
     <Environment name="migrateSchema" value="false" type="java.lang.Boolean"/>
-</Context
+</Context>

@@ -60,7 +60,7 @@ public abstract class CommandMode {
 		this.parentCommandMode = parentCommandMode;
 	}
 
-	void exit() {
+	public void exit() {
 		if(serverRuntime != null) {
 			serverRuntime.shutdown();
 		}

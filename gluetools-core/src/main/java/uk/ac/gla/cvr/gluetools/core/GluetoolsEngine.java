@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core;
 
 import java.io.File;
-import java.net.URL;
 import java.util.logging.Logger;
 
 import org.apache.cayenne.ObjectContext;
@@ -23,7 +22,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.resource.GlueURLStreamHandlerFactory;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import freemarker.template.Configuration;
 
@@ -58,7 +56,6 @@ public class GluetoolsEngine implements Plugin {
 	
 	private GluetoolsEngine(String configFilePath) {
 		freemarkerConfiguration = new Configuration();
-		URL.setURLStreamHandlerFactory(new GlueURLStreamHandlerFactory());
 		Document configDocument = null;
 		if(configFilePath != null) {
 			try {
@@ -132,5 +129,17 @@ public class GluetoolsEngine implements Plugin {
 		return dbSchemaVersion;
 	}
 
-
+	public synchronized static void shutdown() {
+		if(instance != null) {
+			instance.dispose();
+			instance = null;
+		}
+	}
+	
+	private void dispose() {
+		rootServerRuntime.shutdown();
+	}
+	
+	
+	
 }
