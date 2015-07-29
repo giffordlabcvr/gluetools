@@ -14,7 +14,7 @@ public class FeatureMode extends CommandMode {
 	private String featureName;
 	
 	public FeatureMode(CommandContext cmdContext, String featureName) {
-		super("feat-"+featureName, new FeatureModeCommandFactory());
+		super("feature/"+featureName+"/", new FeatureModeCommandFactory());
 		this.featureName = featureName;
 	}
 

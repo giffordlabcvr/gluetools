@@ -11,7 +11,7 @@ public class RootCommandMode extends CommandMode implements DbContextChangingMod
 	private ServerRuntime newServerRuntime;
 	
 	public RootCommandMode(ServerRuntime serverRuntime) {
-		super("GLUE", CommandFactory.get(RootCommandFactory.creator));
+		super("/", CommandFactory.get(RootCommandFactory.creator));
 		setNewServerRuntime(serverRuntime);
 	}
 

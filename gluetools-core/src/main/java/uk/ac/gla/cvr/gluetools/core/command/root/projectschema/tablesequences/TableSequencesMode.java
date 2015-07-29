@@ -16,7 +16,7 @@ public class TableSequencesMode extends CommandMode {
 	private Project project;
 	
 	public TableSequencesMode(CommandContext cmdContext, Project project) {
-		super("tab-SEQUENCES", CommandFactory.get(TableSequencesModeCommandFactory.creator));
+		super("table/SEQUENCES/", CommandFactory.get(TableSequencesModeCommandFactory.creator));
 		this.project = project;
 	}
 

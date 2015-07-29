@@ -27,7 +27,7 @@ public class CommandContext {
 	}
 
 	private List<CommandMode> commandModeStack = new ArrayList<CommandMode>();
-	private Optional<CommandContextListener> commandContextListener;
+	private Optional<CommandContextListener> commandContextListener = Optional.empty();
 	
 	public void pushCommandMode(CommandMode commandMode) {
 		commandMode.setParentCommandMode(peekCommandMode());
@@ -65,7 +65,11 @@ public class CommandContext {
 				commandModeStack.stream().
 				map(mode -> mode.getModeId()).collect(Collectors.toList());
 		Collections.reverse(modeIds);
-		return String.join("/", modeIds);
+		String path = String.join("", modeIds);
+		if(path.length() > 1 && path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+		return path;
 	}
 
 	

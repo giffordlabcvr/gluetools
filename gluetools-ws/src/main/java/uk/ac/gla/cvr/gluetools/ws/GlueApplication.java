@@ -21,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import com.mysql.jdbc.AbandonedConnectionCleanupThread;
 
 @WebListener
-@ApplicationPath("glue")
+@ApplicationPath("/")
 public class GlueApplication extends ResourceConfig implements ServletContextListener {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.ws");

@@ -28,7 +28,7 @@ public class MemberMode extends CommandMode implements InsideProjectMode {
 	}
 	
 	public MemberMode(Project project, String sourceName, String sequenceID) {
-		super("memb-"+sourceName+"-"+sequenceID, CommandFactory.get(MemberModeCommandFactory.creator));
+		super("member/"+sourceName+"/"+sequenceID+"/", CommandFactory.get(MemberModeCommandFactory.creator));
 		this.project = project;
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;

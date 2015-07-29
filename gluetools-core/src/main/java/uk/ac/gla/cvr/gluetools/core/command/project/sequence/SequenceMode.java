@@ -27,7 +27,7 @@ public class SequenceMode extends CommandMode implements InsideProjectMode {
 	}
 	
 	public SequenceMode(Project project, String sourceName, String sequenceID) {
-		super("seq-"+sourceName+"-"+sequenceID, CommandFactory.get(SequenceModeCommandFactory.creator));
+		super("sequence/"+sourceName+"/"+sequenceID+"/", CommandFactory.get(SequenceModeCommandFactory.creator));
 		this.project = project;
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;

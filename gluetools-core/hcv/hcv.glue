@@ -2,7 +2,7 @@
 # console set cmd-result-format json
 console change load-save-path hcv
 create project HCV "HCV analysis project"
-schema project HCV
+schema-project HCV
   table SEQUENCES
     create field GB_GI_NUMBER VARCHAR
     create field GB_PRIMARY_ACCESSION VARCHAR
@@ -75,7 +75,7 @@ project HCV
   list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
   exit
 
-schema project HCV
+schema-project HCV
   table SEQUENCES
     delete field GB_SUBTYPE
     create field GB_SUBTYPE VARCHAR 40

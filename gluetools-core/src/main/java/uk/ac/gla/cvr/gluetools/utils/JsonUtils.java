@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,11 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 
 import org.w3c.dom.Document;
@@ -161,4 +165,31 @@ public class JsonUtils {
 		return (Boolean) userData;
 	}
 
+	public static JsonObject stringToJsonObject(String string) {
+		return Json.createReader(new StringReader(string)).readObject();
+	}
+
+	public static void jsonObjectToElement(Element parentElem, JsonObject jsonObject) {
+		jsonObject.forEach((key, value) -> {
+			jsonValueToElement(parentElem, key, value);
+		});
+	}
+
+	private static void jsonValueToElement(Element parentElem, String key, JsonValue value) {
+		if(value instanceof JsonObject) {
+			Element childElem = XmlUtils.appendElement(parentElem, key);
+			jsonObjectToElement(childElem, (JsonObject) value);
+		} else if(value instanceof JsonArray) {
+			((JsonArray) value).forEach(item -> {
+				jsonValueToElement(parentElem, key, item);
+			});
+		} else if(value.getValueType() == ValueType.NULL){
+			Element elem = XmlUtils.appendElement(parentElem, key);
+			elem.setAttribute("isNull", "true");
+		} else {
+			XmlUtils.appendElementWithText(parentElem, key, value.toString());
+		}
+	}
+	
+	
 }

@@ -16,7 +16,7 @@ public class ProjectMode extends CommandMode implements InsideProjectMode, DbCon
 	private ServerRuntime newServerRuntime;
 	
 	public ProjectMode(CommandContext cmdContext, Project project) {
-		super("proj-"+project.getName(), CommandFactory.get(ProjectModeCommandFactory.creator));
+		super("project/"+project.getName()+"/", CommandFactory.get(ProjectModeCommandFactory.creator));
 		this.project = project;
 		setNewServerRuntime(ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project));
 	}

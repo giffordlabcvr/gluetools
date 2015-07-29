@@ -16,7 +16,7 @@ public class AlignmentMode extends CommandMode implements InsideProjectMode {
 	private Project project;
 	
 	public AlignmentMode(Project project, String alignmentName) {
-		super("almt-"+alignmentName, new AlignmentModeCommandFactory());
+		super("alignment/"+alignmentName+"/", new AlignmentModeCommandFactory());
 		this.alignmentName = alignmentName;
 		this.project = project;
 	}

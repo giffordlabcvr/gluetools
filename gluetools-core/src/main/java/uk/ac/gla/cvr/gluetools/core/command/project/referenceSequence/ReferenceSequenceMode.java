@@ -16,7 +16,7 @@ public class ReferenceSequenceMode extends CommandMode implements InsideProjectM
 	private Project project;
 	
 	public ReferenceSequenceMode(Project project, String refSeqName) {
-		super("ref-"+refSeqName, new ReferenceSequenceModeCommandFactory());
+		super("reference/"+refSeqName+"/", new ReferenceSequenceModeCommandFactory());
 		this.refSeqName = refSeqName;
 		this.project = project;
 	}

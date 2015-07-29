@@ -7,4 +7,8 @@ public class GlueApplicationException extends RuntimeException {
 		super(message, cause);
 	}
 
+	public GlueApplicationException(String message) {
+		super(message);
+	}
+
 }

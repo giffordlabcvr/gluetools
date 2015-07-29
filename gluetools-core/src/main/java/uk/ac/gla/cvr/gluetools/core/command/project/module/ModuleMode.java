@@ -14,7 +14,7 @@ public class ModuleMode extends CommandMode {
 	private String moduleName;
 	
 	public ModuleMode(CommandContext cmdContext, String moduleName) {
-		super("mod-"+moduleName, new ModuleModeCommandFactory(cmdContext, moduleName));
+		super("module/"+moduleName+"/", new ModuleModeCommandFactory(cmdContext, moduleName));
 		this.moduleName = moduleName;
 	}
 
