@@ -119,8 +119,9 @@ project HCV
       add segment 500 800 800 500
       remove segment 100 150 700 750
       list segment
-      
-    
+      exit
+    exit
+  create module randomMutations -f randomMutations.xml
     
 
   

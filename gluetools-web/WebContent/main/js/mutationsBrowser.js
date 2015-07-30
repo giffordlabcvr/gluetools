@@ -1,4 +1,4 @@
-var mutationsBrowser = angular.module('mutationsBrowser', ['angularTreeview', 'ui.bootstrap']);
+var mutationsBrowser = angular.module('mutationsBrowser', ['angularTreeview', 'ui.bootstrap', 'glueWS']);
 
 mutationsBrowser.factory('GenotypeSelection', function (){
 	return {
@@ -94,8 +94,8 @@ mutationsBrowser.controller('selectRegionCtrl',
 		} ]);
 
 mutationsBrowser.controller('mutationTableCtrl', 
-		[ '$scope', '$http', 'Mutations',
-		function($scope, $http, Mutations) {
+		[ '$scope', 'Mutations',
+		function($scope, Mutations) {
 			$scope.Mutations = Mutations;
 
 			$scope.aasPerRow = 20;
@@ -105,15 +105,16 @@ mutationsBrowser.controller('mutationTableCtrl',
 				if(newObj != oldObj) {
 					$scope.mutationRows = [];
 					var startIndex = 0;
-					while(startIndex < newObj.length) {
-						var rowLength = Math.min($scope.aasPerRow, newObj.length - startIndex);
+					var aaLocusList = newObj.mutationSet.aaLocus;
+					while(startIndex < aaLocusList.length) {
+						var rowLength = Math.min($scope.aasPerRow, aaLocusList.length - startIndex);
 						var mutationRow = {};
 						mutationRow.consensusIndices = [];
 						mutationRow.consensusAAs = [];
 						mutationRow.numIsolatesList = [];
 						mutationRow.mutations = [];
 						for(var columnIndex = startIndex; columnIndex < startIndex+rowLength; columnIndex++) {
-							var aa = newObj[columnIndex];
+							var aa = aaLocusList[columnIndex];
 							if((columnIndex+1) % 10 == 0) {
 								mutationRow.consensusIndices.push(columnIndex+1);
 							} else {
@@ -121,15 +122,19 @@ mutationsBrowser.controller('mutationTableCtrl',
 							}
 							mutationRow.consensusAAs.push(aa.consensusAA);
 							mutationRow.numIsolatesList.push(aa.numIsolates);
-							while(mutationRow.mutations.length < aa.mutations.length) {
-								var array = [];
-								for(var i = 0; i < rowLength; i++) { array.push({}); }
-								mutationRow.mutations.push(array);
+							if(aa.mutation) {
+								while(mutationRow.mutations.length < aa.mutation.length) {
+									var array = [];
+									for(var i = 0; i < rowLength; i++) { array.push({}); }
+									mutationRow.mutations.push(array);
+								}
 							}
-							for(var mutIndex = 0; mutIndex < aa.mutations.length; mutIndex++) {
-								mutationRow.mutations[mutIndex][columnIndex-startIndex] = {
-										"mutationAA": aa.mutations[mutIndex].mutationAA, 
-										"mutationPercent": toFixed(aa.mutations[mutIndex].isolatesPercent, 1)
+							if(aa.mutation) {
+								for(var mutIndex = 0; mutIndex < aa.mutation.length; mutIndex++) {
+									mutationRow.mutations[mutIndex][columnIndex-startIndex] = {
+											"mutationAA": aa.mutation[mutIndex].mutationAA, 
+											"mutationPercent": toFixed(aa.mutation[mutIndex].isolatesPercent, 1)
+									}
 								}
 							}
 						}
@@ -149,9 +154,9 @@ mutationsBrowser.controller('mutationTableCtrl',
 
 
 
-mutationsBrowser.controller('mutationsBrowserCtrl', [ '$scope', 
+mutationsBrowser.controller('mutationsBrowserCtrl', [ '$scope', 'glueWS', 
              'GenotypeSelection', 'RegionSelection', 'Mutations',
-function ($scope, GenotypeSelection, RegionSelection, Mutations) {
+function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations) {
 	$scope.GenotypeSelection = GenotypeSelection;
 	$scope.RegionSelection = RegionSelection;
 	$scope.Mutations = Mutations;
@@ -161,43 +166,20 @@ function ($scope, GenotypeSelection, RegionSelection, Mutations) {
 	$scope.regionSelectOpen = false;
 	
 	$scope.updateMutations = function() {
-		$scope.Mutations.setMutations($scope.generateRandomMutFreqs());
-		//console.log("Mutations: "+JSON.stringify($scope.Mutations.getMutations()));
+		glueWS.runGlueCommand('module/randomMutations', {"generate": {}}).
+		success(function(data, status, headers, config) {
+			  //console.log("HTTP POST response body: "+JSON.stringify(data));
+			  $scope.Mutations.setMutations(data);
+			  //console.log("Mutations: "+JSON.stringify($scope.Mutations.getMutations()));
+		  }).
+		  error(function(data, status, headers, config) {
+			  console.log("HTTP POST error: "+data);
+		  });
+		
+		
 	};
 	
 	
-	$scope.generateRandomMutFreqs = function() {
-		var aas = [];
-		var numAAs = 65;
-		var minNumIsolates = 4000;
-		var maxNumIsolates = 14000;
-		var mutationChance = 0.25;
-		for(var aaIndex = 0; aaIndex < numAAs; aaIndex++) {
-			var mutations = [];
-			var percentage = 49.9;
-			while(Math.random() < mutationChance) {
-				var mutPercentage = Math.random() * percentage;
-				if(mutPercentage > 1.0) {
-					mutations.push({
-						"mutationAA": $scope.randomAA(),
-						"isolatesPercent": mutPercentage
-					});
-					percentage = mutPercentage / 2.0;
-				}
-			}
-			aas.push({
-				"consensusAA": $scope.randomAA(),
-				"numIsolates": minNumIsolates+ Math.floor(Math.random() * (maxNumIsolates - minNumIsolates)),
-				"mutations": mutations
-			});
-		}
-		return aas;
-	}
-	
-	
-	$scope.randomAA = function() {
-		return 'ACDEFGHIKLMNOPQRSTUVWY'[Math.floor(Math.random() * 22)];
-	}
 	
 } ]);
 

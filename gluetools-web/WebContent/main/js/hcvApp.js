@@ -1,7 +1,8 @@
 var hcvApp = angular.module('hcvApp', [
   'ngRoute',
   'mutationsBrowser', 
-  'home'
+  'home',
+  'glueWS'
 ]);
 
 hcvApp.config(['$routeProvider',
