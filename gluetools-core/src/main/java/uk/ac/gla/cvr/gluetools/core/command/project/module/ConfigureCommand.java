@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 public abstract class ConfigureCommand<P extends ModulePlugin<P>> extends ModuleProvidedCommand<P> {
@@ -19,7 +19,7 @@ public abstract class ConfigureCommand<P extends ModulePlugin<P>> extends Module
 		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getModuleName()));
 		Document currentDocument = module.getConfigDoc();
 		updateDocument(cmdContext, currentDocument);
-		module.setConfig(XmlUtils.prettyPrint(currentDocument));
+		module.setConfig(GlueXmlUtils.prettyPrint(currentDocument));
 		// test that this was a valid update by building the modulePlugin again.
 		module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		cmdContext.commit();

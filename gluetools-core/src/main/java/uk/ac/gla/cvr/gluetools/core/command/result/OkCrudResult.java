@@ -3,8 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public abstract class OkCrudResult extends OkResult {
 
@@ -23,11 +23,11 @@ public abstract class OkCrudResult extends OkResult {
 			Class<? extends GlueDataObject> objectClass,
 			int number) {
 		super();
-		XmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
+		GlueXmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
 				OPERATION, operation.name(), JsonType.String);
-		XmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
+		GlueXmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
 				OBJECT_TYPE, objectClass.getSimpleName(), JsonType.String);
-		XmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
+		GlueXmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
 				NUMBER, Integer.toString(number), JsonType.Integer);
 	}
 
@@ -35,12 +35,12 @@ public abstract class OkCrudResult extends OkResult {
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		super.renderToConsoleAsText(renderCtx);
 		Element docElem = getDocument().getDocumentElement();
-		String number = XmlUtils.getXPathElement(docElem, NUMBER).getTextContent();
-		String objectTypeString = XmlUtils.getXPathElement(docElem, OBJECT_TYPE).getTextContent();
+		String number = GlueXmlUtils.getXPathElement(docElem, NUMBER).getTextContent();
+		String objectTypeString = GlueXmlUtils.getXPathElement(docElem, OBJECT_TYPE).getTextContent();
 		if(!number.equals("1")) {
 			objectTypeString+="s";
 		}
-		String operationString = XmlUtils.getXPathElement(docElem, OPERATION).
+		String operationString = GlueXmlUtils.getXPathElement(docElem, OPERATION).
 				getTextContent().toLowerCase()+"d";
 		renderCtx.output("("+number+" "+objectTypeString+" "+operationString+")");
 	}

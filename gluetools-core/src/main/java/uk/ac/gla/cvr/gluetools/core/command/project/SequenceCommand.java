@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -39,7 +38,7 @@ public class SequenceCommand extends ProjectModeCommand  {
 		GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
 				Sequence.pkMap(sourceName, sequenceID));
 		Project project = getProjectMode(cmdContext).getProject();
-		cmdContext.pushCommandMode(new SequenceMode(project, sourceName, sequenceID));
+		cmdContext.pushCommandMode(new SequenceMode(project, this, sourceName, sequenceID));
 		return CommandResult.OK;
 	}
 

@@ -21,4 +21,6 @@ public abstract class CommandUtils {
 			CommandContext cmdContext, Class<C> theClass, SelectQuery query) {
 		return runListCommand(cmdContext, theClass, query, null);
 	}
+
+	
 }

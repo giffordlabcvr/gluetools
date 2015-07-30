@@ -10,7 +10,7 @@ import org.w3c.dom.Node;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public abstract class NodeSelectorRule extends XmlPopulatorRule {
 
@@ -30,7 +30,7 @@ public abstract class NodeSelectorRule extends XmlPopulatorRule {
 	private List<Node> selectNodes(Node node) {
 		List<Node> selectedNodes;
 		try {
-			selectedNodes = XmlUtils.getXPathNodes(node, getXPathExpression());
+			selectedNodes = GlueXmlUtils.getXPathNodes(node, getXPathExpression());
 		} catch (Exception e) {
 			throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 		}
@@ -53,7 +53,7 @@ public abstract class NodeSelectorRule extends XmlPopulatorRule {
 	
 	private void configureChildRules(PluginConfigContext pluginConfigContext, Element configElem) {
 		XmlPopulatorRuleFactory populatorRuleFactory = getRuleFactory();
-		String alternateElemsXPath = XmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
+		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
 		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
 		childRules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}

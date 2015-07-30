@@ -26,10 +26,10 @@ public class CommandContext {
 		this.gluetoolsEngine = gluetoolsEngine;
 	}
 
-	private List<CommandMode> commandModeStack = new ArrayList<CommandMode>();
+	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
 	private Optional<CommandContextListener> commandContextListener = Optional.empty();
 	
-	public void pushCommandMode(CommandMode commandMode) {
+	public void pushCommandMode(CommandMode<?> commandMode) {
 		commandMode.setParentCommandMode(peekCommandMode());
 		commandModeStack.add(0, commandMode);
 		if(commandMode instanceof DbContextChangingMode) {
@@ -39,8 +39,8 @@ public class CommandContext {
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 	
-	public CommandMode popCommandMode() {
-		CommandMode commandMode = commandModeStack.remove(0);
+	public CommandMode<?> popCommandMode() {
+		CommandMode<?> commandMode = commandModeStack.remove(0);
 		if(commandMode instanceof DbContextChangingMode) {
 			objectContextStack.remove(0);
 		}
@@ -49,7 +49,7 @@ public class CommandContext {
 		return commandMode;
 	}
 	
-	public CommandMode peekCommandMode() {
+	public CommandMode<?> peekCommandMode() {
 		if(commandModeStack.isEmpty()) {
 			return null;
 		}
@@ -63,7 +63,7 @@ public class CommandContext {
 	public String getModePath() {
 		List<String> modeIds = 
 				commandModeStack.stream().
-				map(mode -> mode.getModeId()).collect(Collectors.toList());
+				map(mode -> mode.getRelativeModePath()).collect(Collectors.toList());
 		Collections.reverse(modeIds);
 		String path = String.join("", modeIds);
 		if(path.length() > 1 && path.endsWith("/")) {

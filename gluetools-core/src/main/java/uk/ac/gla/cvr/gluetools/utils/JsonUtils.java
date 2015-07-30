@@ -85,7 +85,7 @@ public class JsonUtils {
 	}
 
 	private static void childElemsToJson(JsonObjectBuilder childBuilder, Element element) {
-		List<Element> childElements = XmlUtils.findChildElements(element);
+		List<Element> childElements = GlueXmlUtils.findChildElements(element);
 		Map<String, List<Element>> arrayItems = new LinkedHashMap<String, List<Element>>();
 		childElements.forEach(childElem -> {
 			String childElemName = childElem.getNodeName();
@@ -177,17 +177,17 @@ public class JsonUtils {
 
 	private static void jsonValueToElement(Element parentElem, String key, JsonValue value) {
 		if(value instanceof JsonObject) {
-			Element childElem = XmlUtils.appendElement(parentElem, key);
+			Element childElem = GlueXmlUtils.appendElement(parentElem, key);
 			jsonObjectToElement(childElem, (JsonObject) value);
 		} else if(value instanceof JsonArray) {
 			((JsonArray) value).forEach(item -> {
 				jsonValueToElement(parentElem, key, item);
 			});
 		} else if(value.getValueType() == ValueType.NULL){
-			Element elem = XmlUtils.appendElement(parentElem, key);
+			Element elem = GlueXmlUtils.appendElement(parentElem, key);
 			elem.setAttribute("isNull", "true");
 		} else {
-			XmlUtils.appendElementWithText(parentElem, key, value.toString());
+			GlueXmlUtils.appendElementWithText(parentElem, key, value.toString());
 		}
 	}
 	

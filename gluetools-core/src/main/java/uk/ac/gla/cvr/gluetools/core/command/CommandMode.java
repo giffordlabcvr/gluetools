@@ -6,41 +6,52 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 
 
-public abstract class CommandMode {
+public abstract class CommandMode<C extends Command> {
 	
 	public static String CORE_DOMAIN_RESOURCE = "cayenne-gluecore-domain.xml";
 	public static String CORE_MAP_RESOURCE = "gluecore-map.map.xml";
 	
-	private CommandMode parentCommandMode;
+	private CommandMode<?> parentCommandMode;
 
 	
 	// TODO need to enhance this so that Console commands are only available 
 	// for a given mode when we are using the console.
 	
-	private String modeId;
+	private String relativeModePath;
 	
 	private CommandFactory commandFactory;
 
-	protected CommandMode(String modeId, CommandFactory commandFactory) {
-		setModeId(modeId);
+	protected CommandMode(CommandFactory commandFactory, C enterModeCommand, String... modeIds) {
+		setRelativeModePath(formRelativeModePath(enterModeCommand, modeIds));
 		setCommandFactory(commandFactory);
 	}
 
-	protected CommandMode(String modeId) {
-		setModeId(modeId);
+	protected CommandMode(C enterModeCommand, String... modeIds) {
+		setRelativeModePath(formRelativeModePath(enterModeCommand, modeIds));
 		setCommandFactory(CommandFactory.get(getClass().getAnnotation(CommandModeClass.class).commandFactoryClass()));
 	}
 	
-	public String getModeId() {
-		return modeId;
+	private static String formRelativeModePath(Command enterModeCommand, String... modeIds) {
+		if(enterModeCommand == null) {
+			return "/";
+		}
+		String firstCommandWord = CommandUsage.cmdWordsForCmdClass(enterModeCommand.getClass())[0];
+		if(modeIds.length == 0) {
+			return firstCommandWord+"/";
+		}
+		return firstCommandWord+"/"+String.join("/", modeIds)+"/";
+	}
+	
+	public String getRelativeModePath() {
+		return relativeModePath;
 	}
 
 	public CommandFactory getCommandFactory() {
 		return commandFactory;
 	}
 
-	private void setModeId(String modeId) {
-		this.modeId = modeId;
+	private void setRelativeModePath(String modeId) {
+		this.relativeModePath = modeId;
 	}
 
 	private void setCommandFactory(CommandFactory commandFactory) {
@@ -53,18 +64,18 @@ public abstract class CommandMode {
 	}
 
 	public ServerRuntime getServerRuntime() {
-		CommandMode parentCommandMode = getParentCommandMode();
+		CommandMode<?> parentCommandMode = getParentCommandMode();
 		if(parentCommandMode != null) {
 			return parentCommandMode.getServerRuntime();
 		}
 		return null;
 	}
 
-	protected CommandMode getParentCommandMode() {
+	protected CommandMode<?> getParentCommandMode() {
 		return parentCommandMode;
 	}
 
-	void setParentCommandMode(CommandMode parentCommandMode) {
+	void setParentCommandMode(CommandMode<?> parentCommandMode) {
 		this.parentCommandMode = parentCommandMode;
 	}
 

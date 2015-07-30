@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceSequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -36,7 +35,7 @@ public class ReferenceSequenceCommand extends ProjectModeCommand  {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		ReferenceSequence refSequence = GlueDataObject.lookup(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSeqName));
-		cmdContext.pushCommandMode(new ReferenceSequenceMode(getProjectMode(cmdContext).getProject(), refSequence.getName()));
+		cmdContext.pushCommandMode(new ReferenceSequenceMode(getProjectMode(cmdContext).getProject(), this, refSequence.getName()));
 		return CommandResult.OK;
 	}
 

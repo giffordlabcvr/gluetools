@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
@@ -38,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="textFilePopulator")
 public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePopulatorPlugin> {
@@ -144,9 +145,10 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		List<Map<String, String>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
 		for(Map<String, String> seqMap: sequenceMaps) {
 			ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-			String name = seqMap.get(Sequence.SOURCE_NAME_PATH);
+			String sourceName = seqMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
-			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), name, sequenceID));
+			// bit of a hack to use sequence command here.
+			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), new SequenceCommand(), sourceName, sequenceID));
 			try {
 				for(int i = 0; i < cellValues.length; i++) {
 					String cellText = cellValues[i];
@@ -184,7 +186,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 	public List<Map<String,String>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequenceCommand.class);
 		String identifyingExpString = identifyingExp.toString();
-		XmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, identifyingExpString);
+		GlueXmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, identifyingExpString);
 		@SuppressWarnings("unchecked")
 		ListResult listResult = (ListResult) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
 		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();

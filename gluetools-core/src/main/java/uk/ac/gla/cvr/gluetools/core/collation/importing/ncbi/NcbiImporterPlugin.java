@@ -43,7 +43,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
@@ -84,7 +84,7 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 			HttpUriRequest eSearchHttpRequest = createESearchRequest();
 			Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
 			checkForESearchErrors(eSearchResponseDoc);
-			return XmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()");
+			return GlueXmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()");
 		} catch (IOException e) {
 			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 		}
@@ -147,7 +147,7 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 			retrievedSequence.sequenceID = sequenceID;
 			Object individualFile = individualGBFiles.get(i);
 			if(individualFile instanceof Document) {
-				retrievedSequence.data = XmlUtils.prettyPrint((Document) individualFile);
+				retrievedSequence.data = GlueXmlUtils.prettyPrint((Document) individualFile);
 			}
 			retrievedSequences.add(retrievedSequence);
 			i++;
@@ -163,9 +163,9 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 
 
 	private List<Object> divideDocuments(Document parentDocument) {
-		List<Element> elems = XmlUtils.getXPathElements(parentDocument, "/*/*");
+		List<Element> elems = GlueXmlUtils.getXPathElements(parentDocument, "/*/*");
 		return elems.stream().map(elem -> {
-			Document subDoc = XmlUtils.newDocument();
+			Document subDoc = GlueXmlUtils.newDocument();
 			subDoc.appendChild(subDoc.importNode(elem, true));
 //			XmlUtils.prettyPrint(subDoc, System.out);
 //			System.out.println("--------------------------------------");
@@ -264,7 +264,7 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 		public Document consumeEntity(String requestName, HttpEntity entity)
 				 {
 			try {
-				return XmlUtils.documentFromStream(entity.getContent());
+				return GlueXmlUtils.documentFromStream(entity.getContent());
 			} catch (SAXException e) {
 				throw new NcbiImporterException(e, NcbiImporterException.Code.FORMATTING_ERROR, requestName, e.getLocalizedMessage());
 			} catch (IOException e) {

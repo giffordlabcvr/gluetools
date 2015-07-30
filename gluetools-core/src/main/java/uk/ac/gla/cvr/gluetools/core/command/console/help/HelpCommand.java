@@ -7,13 +7,12 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
-import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -38,7 +37,7 @@ public class HelpCommand extends ConsoleCommand {
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
 		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(cmdContext, commandWords);
 		if(helpLines.isEmpty()) {
-			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
+			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
 		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
 			return new HelpSpecificCommandResult(((SpecificCommandHelpLine) helpLines.get(0)).getCmdClass());
 		} else {

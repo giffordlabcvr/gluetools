@@ -10,6 +10,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
+
 @SuppressWarnings("serial")
 public abstract class GlueException extends RuntimeException {
 
@@ -113,6 +118,23 @@ public abstract class GlueException extends RuntimeException {
 	
 	public Object[] getErrorArgs() {
 		return errorArgs;
+	}
+
+	public JsonObject toJsonObject() {
+		JsonObjectBuilder detailBuilder = JsonUtils.jsonObjectBuilder();
+		detailBuilder.add("message", getMessage());
+		detailBuilder.add("code", getCode().name());
+		for(int i = 0; i < errorArgs.length; i++) {
+			detailBuilder.add(getCode().getArgNames()[i], errorArgs[i].toString());
+		}
+		Throwable cause = getCause();
+		if(cause instanceof GlueException) {
+			detailBuilder.add("cause", ((GlueException) cause).toJsonObject());
+		}
+		
+		JsonObjectBuilder builder = JsonUtils.jsonObjectBuilder();
+		builder.add(getClass().getSimpleName(), detailBuilder);
+		return builder.build();
 	}
 	
 }

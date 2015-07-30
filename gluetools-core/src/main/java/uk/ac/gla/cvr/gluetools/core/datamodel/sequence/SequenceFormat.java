@@ -10,7 +10,7 @@ import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaUtils;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public enum SequenceFormat {
 
@@ -20,19 +20,19 @@ public enum SequenceFormat {
 		public String nucleotidesAsString(byte[] data) {
 			Document document;
 			try {
-				document = XmlUtils.documentFromStream(new ByteArrayInputStream(data));
+				document = GlueXmlUtils.documentFromStream(new ByteArrayInputStream(data));
 			} catch (SAXException e) {
 				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, e.getMessage());
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			return XmlUtils.getXPathString(document, "/GBSeq/GBSeq_sequence/text()").replaceAll("\\s", "").toUpperCase();
+			return GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_sequence/text()").replaceAll("\\s", "").toUpperCase();
 		}
 
 		@Override
 		public String originalDataAsString(byte[] data) {
 			try {
-				return new String(XmlUtils.prettyPrint(XmlUtils.documentFromStream(new ByteArrayInputStream(data))));
+				return new String(GlueXmlUtils.prettyPrint(GlueXmlUtils.documentFromStream(new ByteArrayInputStream(data))));
 			} catch (SAXException e) {
 				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, e.getMessage());
 			} catch (IOException e) {

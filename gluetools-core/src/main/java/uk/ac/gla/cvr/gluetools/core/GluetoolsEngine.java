@@ -22,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
 
 public class GluetoolsEngine implements Plugin {
@@ -59,12 +59,12 @@ public class GluetoolsEngine implements Plugin {
 		Document configDocument = null;
 		if(configFilePath != null) {
 			try {
-				configDocument = XmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
+				configDocument = GlueXmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
 			} catch(SAXException saxe) {
 				throw new ConsoleException(ConsoleException.Code.GLUE_CONFIG_XML_FORMAT_ERROR, saxe.getLocalizedMessage());
 			}
 		} else {
-			configDocument = XmlUtils.documentWithElement("gluetools").getOwnerDocument();
+			configDocument = GlueXmlUtils.documentWithElement("gluetools").getOwnerDocument();
 		}
 		configure(createPluginConfigContext(), configDocument.getDocumentElement());
 	}

@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
@@ -34,9 +35,9 @@ import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
@@ -103,7 +104,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(commandContext, tokenStrings);
 		if(commandClass == null) {
-			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
+			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
 		}
 		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
 
@@ -114,7 +115,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			@SuppressWarnings("unchecked")
 			EnterModeCommandDescriptor entModeCmdDescriptor = 
 			EnterModeCommandDescriptor.getDescriptorForClass(commandClass);
-			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
+			int numEnterModeArgs = entModeCmdDescriptor.enterModeArgNames().length;
 			if(numEnterModeArgs < argStrings.size()) {
 				innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
 				argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
@@ -171,7 +172,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		} catch(PluginConfigException pce) {
 			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
 					pce.getErrorArgs().length >= 3) {
-				throw new ConsoleException(Code.ARGUMENT_FORMAT_ERROR,
+				throw new CommandException(CommandException.Code.ARGUMENT_FORMAT_ERROR,
 						pce.getErrorArgs()[0].toString(),
 						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
 			} else {
@@ -180,7 +181,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		}
 		if(!enterModeCmd && console != null) {
 			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
-				console.output(new String(XmlUtils.prettyPrint(command.getCmdElem().getOwnerDocument())));
+				console.output(new String(GlueXmlUtils.prettyPrint(command.getCmdElem().getOwnerDocument())));
 			}
 			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_JSON).equals("true")) {
 				console.output(JsonUtils.prettyPrint(JsonUtils.documentToJSonObjectBuilder(command.getCmdElem().getOwnerDocument()).build()));
@@ -195,7 +196,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		try {
 			docoptMap = new Docopt(docoptUsageSingleWord).withHelp(false).withExit(false).parse(argStrings);
 		} catch(DocoptExitException dee) {
-			throw new ConsoleException(Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, false).trim());
+			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, CommandUsage.docoptStringForCmdClass(commandClass, false).trim());
 		}
 		return docoptMap;
 	}
@@ -216,11 +217,11 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			}
 			if(value instanceof Collection<?>) {
 				((Collection <?>) value).forEach(item -> {
-					Element elem = (Element) XmlUtils.appendElementWithText(docElem, tagName, item.toString()).getParentNode();
+					Element elem = (Element) GlueXmlUtils.appendElementWithText(docElem, tagName, item.toString()).getParentNode();
 					JsonUtils.setJsonType(elem, JsonType.String, true);
 				});
 			} else {
-				Element elem = (Element) XmlUtils.appendElementWithText(docElem, tagName, value.toString()).getParentNode();
+				Element elem = (Element) GlueXmlUtils.appendElementWithText(docElem, tagName, value.toString()).getParentNode();
 				JsonUtils.setJsonType(elem, JsonType.String, false);
 			}
 		});

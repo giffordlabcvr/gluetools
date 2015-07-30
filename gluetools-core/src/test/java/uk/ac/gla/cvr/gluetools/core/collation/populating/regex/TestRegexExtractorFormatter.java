@@ -10,7 +10,7 @@ import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
 
 
@@ -54,7 +54,7 @@ public class TestRegexExtractorFormatter {
 	
 	private RegexExtractorFormatter loadTestFile(String testFile)
 			throws SAXException, IOException {
-		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream(testFile));
+		Document document = GlueXmlUtils.documentFromStream(getClass().getResourceAsStream(testFile));
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
 		RegexExtractorFormatter regexExtractorFormatter = 
 				PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class,

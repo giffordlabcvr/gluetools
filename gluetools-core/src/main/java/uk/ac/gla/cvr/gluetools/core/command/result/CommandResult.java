@@ -4,8 +4,8 @@ import javax.json.JsonObject;
 
 import org.w3c.dom.Document;
 
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class CommandResult {
 
@@ -43,7 +43,7 @@ public class CommandResult {
 
 	protected final void renderToConsoleAsXml(CommandResultRenderingContext renderCtx) {
 		Document document = getDocument();
-		byte[] docBytes = XmlUtils.prettyPrint(document);
+		byte[] docBytes = GlueXmlUtils.prettyPrint(document);
 		renderCtx.output(new String(docBytes));
 	}
 

@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class CommandUsage {
 	
@@ -136,10 +136,10 @@ public class CommandUsage {
 
 	public static Element docElemForCmdClass(Class<? extends Command> cmdClass) {
 		String[] cmdWords = cmdWordsForCmdClass(cmdClass);
-		Element elem = XmlUtils.documentWithElement(cmdWords[0]);
+		Element elem = GlueXmlUtils.documentWithElement(cmdWords[0]);
 		JsonUtils.setJsonType(elem, JsonType.Object, false);
 		for(int i = 1; i < cmdWords.length; i++) {
-			elem = XmlUtils.appendElement(elem, cmdWords[i]);
+			elem = GlueXmlUtils.appendElement(elem, cmdWords[i]);
 			JsonUtils.setJsonType(elem, JsonType.Object, false);
 		}
 		return elem;

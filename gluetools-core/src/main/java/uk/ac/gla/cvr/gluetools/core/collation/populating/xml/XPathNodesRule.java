@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="xPathNodes")
 public class XPathNodesRule extends NodeSelectorRule implements Plugin {
@@ -25,7 +25,7 @@ public class XPathNodesRule extends NodeSelectorRule implements Plugin {
 	protected void configureXPathExpression(Element configElem) {
 		String xPathExpressionExpression = "xPathExpression/text()";
 		String xPathExpressionString = PluginUtils.configureString(configElem, xPathExpressionExpression, true);
-		XPath xPathEngine = XmlUtils.createXPathEngine();
+		XPath xPathEngine = GlueXmlUtils.createXPathEngine();
 		try {
 			setXPathExpression(xPathEngine.compile(xPathExpressionString));
 		} catch (XPathExpressionException xpee) {

@@ -5,20 +5,21 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 @CommandModeClass(commandFactoryClass = SequenceModeCommandFactory.class)
-public class SequenceMode extends CommandMode implements InsideProjectMode {
+public class SequenceMode extends CommandMode<SequenceCommand> implements InsideProjectMode {
 
 	private Project project;
 	private String sourceName;
 	private String sequenceID;
 	
-	public SequenceMode(Project project, String sourceName, String sequenceID) {
-		super("sequence/"+sourceName+"/"+sequenceID+"/");
+	public SequenceMode(Project project, SequenceCommand command, String sourceName, String sequenceID) {
+		super(command, sourceName, sequenceID);
 		this.project = project;
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;
@@ -29,8 +30,8 @@ public class SequenceMode extends CommandMode implements InsideProjectMode {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(SequenceModeCommand.class.isAssignableFrom(cmdClass)) {
-			XmlUtils.appendElementWithText(elem, "sourceName", sourceName, JsonType.String);
-			XmlUtils.appendElementWithText(elem, "sequenceID", sequenceID, JsonType.String);
+			GlueXmlUtils.appendElementWithText(elem, "sourceName", sourceName, JsonType.String);
+			GlueXmlUtils.appendElementWithText(elem, "sequenceID", sequenceID, JsonType.String);
 		}
 	}
 	

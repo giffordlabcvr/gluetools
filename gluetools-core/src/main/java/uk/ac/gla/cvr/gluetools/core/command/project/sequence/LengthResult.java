@@ -5,9 +5,9 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class LengthResult extends CommandResult {
 
@@ -16,9 +16,9 @@ public class LengthResult extends CommandResult {
 	}
 
 	private static Document lengthResultDocument(int length) {
-		Element rootElem = XmlUtils.documentWithElement("lengthResult");
+		Element rootElem = GlueXmlUtils.documentWithElement("lengthResult");
 		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
-		XmlUtils.appendElementWithText(rootElem, "length", Integer.toString(length), JsonType.Integer);
+		GlueXmlUtils.appendElementWithText(rootElem, "length", Integer.toString(length), JsonType.Integer);
 		return rootElem.getOwnerDocument();
 	}
 
@@ -26,7 +26,7 @@ public class LengthResult extends CommandResult {
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Length: ");
-		buf.append(XmlUtils.getXPathString(getDocument(), "/lengthResult/length/text()"));
+		buf.append(GlueXmlUtils.getXPathString(getDocument(), "/lengthResult/length/text()"));
 		renderCtx.output(buf.toString());
 	}
 	

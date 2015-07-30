@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.NodeSelectorRule;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 
@@ -16,7 +16,7 @@ public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 	@Override
 	public final void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {
 		try {
-			setXPathExpression(XmlUtils.createXPathEngine().compile(xPathString));
+			setXPathExpression(GlueXmlUtils.createXPathEngine().compile(xPathString));
 		} catch (XPathExpressionException xpee) {
 			throw new RuntimeException(xpee);
 		}

@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 public abstract class SimpleConfigureCommand<P extends ModulePlugin<P>> extends ConfigureCommand<P> {
@@ -58,9 +58,9 @@ public abstract class SimpleConfigureCommand<P extends ModulePlugin<P>> extends 
 	
 	protected final void updateDocument(CommandContext cmdContext, Document modulePluginDoc) {
 		Element docElem = modulePluginDoc.getDocumentElement();
-		List<Element> elements = XmlUtils.findChildElements(docElem, propertyName);
+		List<Element> elements = GlueXmlUtils.findChildElements(docElem, propertyName);
 		elements.forEach(e -> docElem.removeChild(e));
-		XmlUtils.appendElementWithText(docElem, propertyName, propertyValue);
+		GlueXmlUtils.appendElementWithText(docElem, propertyName, propertyValue);
 	}
 	
 	@CompleterClass

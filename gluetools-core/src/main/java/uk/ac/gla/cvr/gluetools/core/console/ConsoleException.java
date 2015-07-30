@@ -8,9 +8,6 @@ public class ConsoleException extends GlueException {
 	
 		GLUE_CONFIG_XML_FORMAT_ERROR("errorText"),
 		SYNTAX_ERROR("errorPosition"),
-		UNKNOWN_COMMAND("unknownCommand", "commandModePath"), 
-		COMMAND_USAGE_ERROR("errorText"), 
-		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue"),
 		INVALID_PATH("invalidPath", "errorText"), 
 		FILE_NOT_FOUND("path"), 
 		NOT_A_FILE("path"), 

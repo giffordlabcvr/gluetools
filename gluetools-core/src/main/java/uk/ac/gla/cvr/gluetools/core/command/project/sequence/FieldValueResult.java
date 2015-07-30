@@ -7,9 +7,9 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class FieldValueResult extends CommandResult {
 
@@ -18,15 +18,15 @@ public class FieldValueResult extends CommandResult {
 	}
 
 	private static Document fieldValueResultDocument(String fieldName, String fieldValue) {
-		Element rootElem = XmlUtils.documentWithElement("fieldValueResult");
+		Element rootElem = GlueXmlUtils.documentWithElement("fieldValueResult");
 		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
-		XmlUtils.appendElementWithText(rootElem, "fieldName", fieldName, JsonType.String);
+		GlueXmlUtils.appendElementWithText(rootElem, "fieldName", fieldName, JsonType.String);
 		if(fieldValue == null) {
-			Element valueElem = XmlUtils.appendElement(rootElem, "value");
+			Element valueElem = GlueXmlUtils.appendElement(rootElem, "value");
 			valueElem.setAttribute("isNull", "true");
 			JsonUtils.setJsonType(valueElem, JsonType.Null, false);
 		} else {
-			XmlUtils.appendElementWithText(rootElem, "value", fieldValue, JsonType.String);
+			GlueXmlUtils.appendElementWithText(rootElem, "value", fieldValue, JsonType.String);
 		}
 		return rootElem.getOwnerDocument();
 	}
@@ -34,10 +34,10 @@ public class FieldValueResult extends CommandResult {
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		StringBuffer buf = new StringBuffer();
-		buf.append(XmlUtils.getXPathString(getDocument(), "/fieldValueResult/fieldName/text()"));
+		buf.append(GlueXmlUtils.getXPathString(getDocument(), "/fieldValueResult/fieldName/text()"));
 		buf.append(": ");
-		String valueIsNull = Optional.ofNullable(XmlUtils.getXPathString(getDocument(), "/fieldValueResult/value/@isNull")).orElse("false");
-		String valueString = XmlUtils.getXPathString(getDocument(), "/fieldValueResult/value/text()");
+		String valueIsNull = Optional.ofNullable(GlueXmlUtils.getXPathString(getDocument(), "/fieldValueResult/value/@isNull")).orElse("false");
+		String valueString = GlueXmlUtils.getXPathString(getDocument(), "/fieldValueResult/value/text()");
 		if(valueIsNull.equals("true")) {	
 			buf.append("-");
 		} else {

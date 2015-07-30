@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public abstract class SequencePopulatorPlugin<P extends ModulePlugin<P>> extends ModulePlugin<P> {
 
@@ -53,9 +53,9 @@ public abstract class SequencePopulatorPlugin<P extends ModulePlugin<P>> extends
 	public static void runSetFieldCommand(CommandContext cmdContext,
 			FieldPopulator fieldPopulator, String fieldValue) {
 		Element setFieldElem = CommandUsage.docElemForCmdClass(SetFieldCommand.class);
-		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName());
-		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_VALUE, fieldValue);
-		XmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.NO_OVERWRITE, "true");
+		GlueXmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName());
+		GlueXmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_VALUE, fieldValue);
+		GlueXmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.NO_OVERWRITE, "true");
 		cmdContext.executeElem(setFieldElem.getOwnerDocument().getDocumentElement());
 	}
 }

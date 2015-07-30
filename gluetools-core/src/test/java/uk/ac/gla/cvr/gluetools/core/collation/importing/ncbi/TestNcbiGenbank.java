@@ -10,14 +10,14 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterPlugin.
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
 
 public class TestNcbiGenbank {
 
 	//@Test
 	public void retrieveAllHcvIncludedAsXml() throws Exception {
-		Document document = XmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
+		Document document = GlueXmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
 		NcbiImporterPlugin ncbiImporter = (NcbiImporterPlugin) PluginFactory.get(ModulePluginFactory.creator).
 					createFromElement(pluginConfigContext, document.getDocumentElement());

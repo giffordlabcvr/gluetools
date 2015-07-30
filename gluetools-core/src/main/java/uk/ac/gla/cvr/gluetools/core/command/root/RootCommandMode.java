@@ -2,16 +2,17 @@ package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import org.apache.cayenne.configuration.server.ServerRuntime;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.DbContextChangingMode;
 
 @CommandModeClass(commandFactoryClass = RootCommandFactory.class)
-public class RootCommandMode extends CommandMode implements DbContextChangingMode {
+public class RootCommandMode extends CommandMode<Command> implements DbContextChangingMode {
 
 	private ServerRuntime newServerRuntime;
 	
 	public RootCommandMode(ServerRuntime serverRuntime) {
-		super("/");
+		super(null);
 		setNewServerRuntime(serverRuntime);
 	}
 

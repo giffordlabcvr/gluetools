@@ -45,8 +45,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils.XmlNamespaceContext;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils.XmlNamespaceContext;
 
 public class ModelBuilder {
 
@@ -111,7 +111,7 @@ public class ModelBuilder {
 		List<String> projectTableNames = new ArrayList<String>();
 		Document cayenneDomainDocument;
 		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_DOMAIN_RESOURCE)) {
-			cayenneDomainDocument = XmlUtils.documentFromStream(domainInputStream);
+			cayenneDomainDocument = GlueXmlUtils.documentFromStream(domainInputStream);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (SAXException e) {
@@ -120,28 +120,28 @@ public class ModelBuilder {
 		String projectDomainName = "cayenne-project-"+projectName+"-domain.xml";
 		String projectMapName = projectMapName(projectName);
 		Element domainElem = cayenneDomainDocument.getDocumentElement();
-		XmlUtils.findChildElements(domainElem, "map").get(0).setAttribute("name", projectMapName);
-		Element nodeElem = XmlUtils.findChildElements(domainElem, "node").get(0);
-		XmlUtils.findChildElements(nodeElem, "map-ref").get(0).setAttribute("name", projectMapName);
+		GlueXmlUtils.findChildElements(domainElem, "map").get(0).setAttribute("name", projectMapName);
+		Element nodeElem = GlueXmlUtils.findChildElements(domainElem, "node").get(0);
+		GlueXmlUtils.findChildElements(nodeElem, "map-ref").get(0).setAttribute("name", projectMapName);
 		
 		Document cayenneMapDocument;
 		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_MAP_RESOURCE)) {
-			cayenneMapDocument = XmlUtils.documentFromStream(domainInputStream);
+			cayenneMapDocument = GlueXmlUtils.documentFromStream(domainInputStream);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}
-		XPath xPath = XmlUtils.createXPathEngine();
-		XmlNamespaceContext namespaceContext = new XmlUtils.XmlNamespaceContext();
+		XPath xPath = GlueXmlUtils.createXPathEngine();
+		XmlNamespaceContext namespaceContext = new GlueXmlUtils.XmlNamespaceContext();
 		namespaceContext.addNamespace("cay", CAYENNE_NS);
 		xPath.setNamespaceContext(namespaceContext);
 		{
 			XPathExpression xPathExpression = 
-					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='SEQUENCE']");
-			Element sequenceTableElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='SEQUENCE']");
+			Element sequenceTableElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 			fields.forEach(f -> {
-				Element dbAttributeElem = XmlUtils.appendElementNS(sequenceTableElem, CAYENNE_NS, "db-attribute");
+				Element dbAttributeElem = GlueXmlUtils.appendElementNS(sequenceTableElem, CAYENNE_NS, "db-attribute");
 				dbAttributeElem.setAttribute("name", f.getName());
 				dbAttributeElem.setAttribute("type", f.getFieldType().cayenneType());
 				Optional.ofNullable(f.getMaxLength()).ifPresent(
@@ -150,10 +150,10 @@ public class ModelBuilder {
 		}
 		{
 			XPathExpression xPathExpression = 
-					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='Sequence']");
-			Element sequenceObjElem = (Element) XmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='Sequence']");
+			Element sequenceObjElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 			fields.forEach(f -> {
-				Element objAttributeElem = XmlUtils.appendElementNS(sequenceObjElem, CAYENNE_NS, "obj-attribute");
+				Element objAttributeElem = GlueXmlUtils.appendElementNS(sequenceObjElem, CAYENNE_NS, "obj-attribute");
 				objAttributeElem.setAttribute("name", f.getName());
 				objAttributeElem.setAttribute("db-attribute-path", f.getName());
 				objAttributeElem.setAttribute("type", f.getFieldType().javaType());
@@ -161,8 +161,8 @@ public class ModelBuilder {
 		}
 		{
 			XPathExpression xPathExpression = 
-					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship");
-			XmlUtils.getXPathNodes(cayenneMapDocument, xPathExpression).forEach(n -> {
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship");
+			GlueXmlUtils.getXPathNodes(cayenneMapDocument, xPathExpression).forEach(n -> {
 				Element dbRelationshipElem = (Element) n;
 				specializeAttribute(projectName, dbRelationshipElem, "source");
 				specializeAttribute(projectName, dbRelationshipElem, "target");
@@ -171,8 +171,8 @@ public class ModelBuilder {
 		}
 		{
 			XPathExpression xPathExpression = 
-					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity");
-			XmlUtils.getXPathNodes(cayenneMapDocument, xPathExpression).forEach(n -> {
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity");
+			GlueXmlUtils.getXPathNodes(cayenneMapDocument, xPathExpression).forEach(n -> {
 				Element dbEntityElem = (Element) n;
 				specializeAttribute(projectName, dbEntityElem, "name");
 				projectTableNames.add(dbEntityElem.getAttribute("name"));
@@ -181,8 +181,8 @@ public class ModelBuilder {
 
 		{
 			XPathExpression xPathExpression = 
-					XmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity");
-			XmlUtils.getXPathNodes(cayenneMapDocument, xPathExpression).forEach(n -> {
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity");
+			GlueXmlUtils.getXPathNodes(cayenneMapDocument, xPathExpression).forEach(n -> {
 				Element objEntityElem = (Element) n;
 				specializeAttribute(projectName, objEntityElem, "dbEntityName");
 				
@@ -190,8 +190,8 @@ public class ModelBuilder {
 		}
 
 		
-		GlueResourceMap.getInstance().put("/"+projectDomainName, XmlUtils.prettyPrint(cayenneDomainDocument));
-		GlueResourceMap.getInstance().put("/"+projectMapName+".map.xml", XmlUtils.prettyPrint(cayenneMapDocument));
+		GlueResourceMap.getInstance().put("/"+projectDomainName, GlueXmlUtils.prettyPrint(cayenneDomainDocument));
+		GlueResourceMap.getInstance().put("/"+projectMapName+".map.xml", GlueXmlUtils.prettyPrint(cayenneMapDocument));
 
 		// XmlUtils.prettyPrint(cayenneDomainDocument, System.out);
 		// XmlUtils.prettyPrint(cayenneMapDocument, System.out);

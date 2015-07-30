@@ -19,7 +19,7 @@ public abstract class ModuleProvidedCommand<P extends ModulePlugin<P>> extends M
 		@SuppressWarnings("unchecked")
 		P modulePlugin = (P) module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		if(this instanceof ProvidedProjectModeCommand) {
-			CommandMode moduleMode = cmdContext.popCommandMode();
+			CommandMode<?> moduleMode = cmdContext.popCommandMode();
 			// run the command in the next mode up (project mode)
 			try {
 				return execute(cmdContext, modulePlugin);

@@ -6,18 +6,19 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.core.command.root.ProjectSchemaCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 @CommandModeClass(commandFactoryClass = ProjectSchemaModeCommandFactory.class)
-public class ProjectSchemaMode extends CommandMode {
+public class ProjectSchemaMode extends CommandMode<ProjectSchemaCommand> {
 
 	
 	private Project project;
 	
-	public ProjectSchemaMode(CommandContext cmdContext, Project project) {
-		super("schema-project/"+project.getName()+"/");
+	public ProjectSchemaMode(CommandContext cmdContext, ProjectSchemaCommand command, Project project) {
+		super(command, project.getName());
 		this.project = project;
 	}
 
@@ -26,7 +27,7 @@ public class ProjectSchemaMode extends CommandMode {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(ProjectSchemaModeCommand.class.isAssignableFrom(cmdClass)) {
-			XmlUtils.appendElementWithText(elem, "projectName", project.getName(), JsonType.String);
+			GlueXmlUtils.appendElementWithText(elem, "projectName", project.getName(), JsonType.String);
 		}
 	}
 

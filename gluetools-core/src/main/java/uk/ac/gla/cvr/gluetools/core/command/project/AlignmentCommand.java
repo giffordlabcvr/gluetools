@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -36,7 +35,7 @@ public class AlignmentCommand extends ProjectModeCommand  {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Alignment alignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(alignmentName));
-		cmdContext.pushCommandMode(new AlignmentMode(getProjectMode(cmdContext).getProject(), alignment.getName()));
+		cmdContext.pushCommandMode(new AlignmentMode(getProjectMode(cmdContext).getProject(), this, alignment.getName()));
 		return CommandResult.OK;
 	}
 

@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
-public class XmlUtils {
+public class GlueXmlUtils {
 
 	public static Document documentFromStream(InputStream is) throws SAXException, IOException  {
 		DocumentBuilder dBuilder = getDocumentBuilder();

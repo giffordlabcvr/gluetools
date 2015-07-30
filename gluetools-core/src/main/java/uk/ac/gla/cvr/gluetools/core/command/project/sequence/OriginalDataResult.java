@@ -8,9 +8,9 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class OriginalDataResult extends CommandResult {
 
@@ -19,11 +19,11 @@ public class OriginalDataResult extends CommandResult {
 	}
 
 	private static Document originalDataResultDocument(SequenceFormat format, byte[] originalData) {
-		Element rootElem = XmlUtils.documentWithElement("originalDataResult");
+		Element rootElem = GlueXmlUtils.documentWithElement("originalDataResult");
 		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
-		XmlUtils.appendElementWithText(rootElem, "format", format.name(), JsonType.String);
+		GlueXmlUtils.appendElementWithText(rootElem, "format", format.name(), JsonType.String);
 		String base64String = new String(Base64.getEncoder().encode(originalData));
-		XmlUtils.appendElementWithText(rootElem, "base64", base64String, JsonType.String);
+		GlueXmlUtils.appendElementWithText(rootElem, "base64", base64String, JsonType.String);
 		return rootElem.getOwnerDocument();
 	}
 
@@ -45,11 +45,11 @@ public class OriginalDataResult extends CommandResult {
 	}
 
 	public String getBase64String() {
-		return XmlUtils.getXPathString(getDocument(), "/originalDataResult/base64/text()");
+		return GlueXmlUtils.getXPathString(getDocument(), "/originalDataResult/base64/text()");
 	}
 
 	public String getFormat() {
-		return XmlUtils.getXPathString(getDocument(), "/originalDataResult/format/text()");
+		return GlueXmlUtils.getXPathString(getDocument(), "/originalDataResult/format/text()");
 	}
 	
 }

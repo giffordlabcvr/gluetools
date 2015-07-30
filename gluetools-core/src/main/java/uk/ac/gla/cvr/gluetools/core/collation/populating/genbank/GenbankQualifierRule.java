@@ -10,7 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="gbQualifier")
 public class GenbankQualifierRule extends NodeSelectorRule {
@@ -22,7 +22,7 @@ public class GenbankQualifierRule extends NodeSelectorRule {
 		String qualifierName = PluginUtils.configureString(configElem, nameXPath, true);
 		String xPathString = "GBFeature_quals/GBQualifier[GBQualifier_name/text() = '"+qualifierName+"']/GBQualifier_value/text()";
 		try {
-			setXPathExpression(XmlUtils.createXPathEngine().compile(xPathString));
+			setXPathExpression(GlueXmlUtils.createXPathEngine().compile(xPathString));
 		} catch (XPathExpressionException xpee) {
 			throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, nameXPath, xpee.getLocalizedMessage(), qualifierName);
 		}

@@ -65,7 +65,7 @@ public class ConsoleCompleter implements Completer {
 	private int completeAux(List<CharSequence> candidates, int suggestionPos,
 			String prefix, List<String> lookupBasis, boolean requireModeWrappable) {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
-		CommandMode cmdMode = cmdContext.peekCommandMode();
+		CommandMode<?> cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
 		Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
 		boolean enterModeCmd = cmdClass != null && cmdClass.getAnnotation(EnterModeCommandClass.class) != null;
@@ -76,7 +76,7 @@ public class ConsoleCompleter implements Completer {
 			EnterModeCommandDescriptor entModeCmdDescriptor = 
 			EnterModeCommandDescriptor.getDescriptorForClass(cmdClass);
 			int numCmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass).length;
-			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(lookupBasis);
+			int numEnterModeArgs = entModeCmdDescriptor.enterModeArgNames().length;
 			enterModeArgStrings = lookupBasis.subList(numCmdWords, lookupBasis.size());
 			if(numEnterModeArgs <= enterModeArgStrings.size()) {
 				innerCmdWords = new LinkedList<String>(enterModeArgStrings.subList(numEnterModeArgs, enterModeArgStrings.size()));

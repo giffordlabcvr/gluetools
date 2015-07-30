@@ -15,7 +15,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
@@ -59,7 +59,7 @@ public class PluginUtils {
 
 
 	public static String configureStringProperty(Element configElem, String propertyName, boolean required) {
-		List<Element> propertyElems = XmlUtils.findChildElements(configElem, propertyName);
+		List<Element> propertyElems = GlueXmlUtils.findChildElements(configElem, propertyName);
 		if(propertyElems.isEmpty()) {
 			if(required) {
 				throw new PluginConfigException(Code.REQUIRED_PROPERTY_MISSING, propertyName);
@@ -80,7 +80,7 @@ public class PluginUtils {
 	
 	public static List<String> configureStringsProperty(Element configElem, String propertyName, 
 			Integer min, Integer max) {
-		List<Element> propertyElems = XmlUtils.findChildElements(configElem, propertyName);
+		List<Element> propertyElems = GlueXmlUtils.findChildElements(configElem, propertyName);
 		int size = propertyElems.size();
 		if(max != null && size > max) {
 			throw new PluginConfigException(Code.TOO_FEW_PROPERTY_VALUES, propertyName, size, max);
@@ -101,7 +101,7 @@ public class PluginUtils {
 	}
 	
 	public static String configureString(Element configElem, String xPathExpression, boolean required)  {
-		Node configuredNode = XmlUtils.getXPathNode(configElem, xPathExpression);
+		Node configuredNode = GlueXmlUtils.getXPathNode(configElem, xPathExpression);
 		if(required && configuredNode == null) {
 			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, xPathExpression);
 		}
@@ -109,7 +109,7 @@ public class PluginUtils {
 			return null;
 		}
 		setValidConfig(configElem, configuredNode);
-		return XmlUtils.getNodeText(configuredNode);
+		return GlueXmlUtils.getNodeText(configuredNode);
 	}
 
 	public static Integer configureIntProperty(Element configElem, String propertyName, int defaultValue)  {
@@ -163,7 +163,7 @@ public class PluginUtils {
 	}
 
 	public static Element findConfigElement(Element configElem, String xPathExpression, boolean required)  {
-		Element configSubElem = XmlUtils.getXPathElement(configElem, xPathExpression);
+		Element configSubElem = GlueXmlUtils.getXPathElement(configElem, xPathExpression);
 		if(configSubElem != null) {
 			setValidConfig(configElem, configSubElem);
 			return (Element) configSubElem;
@@ -179,7 +179,7 @@ public class PluginUtils {
 	}
 
 	public static List<Element> findConfigElements(Element configElem, String xPathExpression, Integer min, Integer max)  {
-		List<Element> configSubElems = XmlUtils.getXPathElements(configElem, xPathExpression);
+		List<Element> configSubElems = GlueXmlUtils.getXPathElements(configElem, xPathExpression);
 		int size = configSubElems.size();
 		if(max != null && size > max) {
 			throw new PluginConfigException(Code.TOO_MANY_CONFIG_ELEMENTS, configElem.getNodeName(), xPathExpression, size, max);
@@ -265,12 +265,12 @@ public class PluginUtils {
 	}
 
 	public static List<String> configureStrings(Element configElem, String xPathExpression, boolean required) {
-		List<Node> configuredNodes = XmlUtils.getXPathNodes(configElem, xPathExpression);
+		List<Node> configuredNodes = GlueXmlUtils.getXPathNodes(configElem, xPathExpression);
 		if(required && configuredNodes.isEmpty()) {
 			throw new PluginConfigException(Code.REQUIRED_CONFIG_MISSING, xPathExpression);
 		}
 		configuredNodes.forEach(c -> setValidConfig(configElem, c));
-		return configuredNodes.stream().map(c -> XmlUtils.getNodeText(c)).collect(Collectors.toList());
+		return configuredNodes.stream().map(c -> GlueXmlUtils.getNodeText(c)).collect(Collectors.toList());
 	}
 
 	public static void checkValidConfig(Element element) {

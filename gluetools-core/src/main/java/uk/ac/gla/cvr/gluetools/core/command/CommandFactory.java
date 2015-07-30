@@ -16,9 +16,9 @@ import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 import uk.ac.gla.cvr.gluetools.utils.Multiton.Creator;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO Plugins should be able to add their own commands.
 // TODO consider wrapping a CommandType around the Class<C extends Command>.
@@ -131,7 +131,7 @@ private static Multiton factories = new Multiton();
 			return treeNode.identifyCommandClass(commandWords);
 		}
 			
-		private Command commandFromElement(List<CommandMode> commandModeStack,
+		private Command commandFromElement(List<CommandMode<?>> commandModeStack,
 			PluginConfigContext pluginConfigContext, Element element) {
 			String nodeName = element.getNodeName();
 			if(cmdPluginFactory.containsElementName(nodeName)) {
@@ -147,7 +147,7 @@ private static Multiton factories = new Multiton();
 				if(treeNode == null) {
 					return null;
 				}
-				List<Element> childElements = XmlUtils.findChildElements(element);
+				List<Element> childElements = GlueXmlUtils.findChildElements(element);
 				if(childElements.size() != 1) {
 					return null;
 				} else {
@@ -221,13 +221,13 @@ private static Multiton factories = new Multiton();
 		}
 	}
 
-	public Command commandFromElement(CommandContext cmdContext, List<CommandMode> commandModeStack,
+	public Command commandFromElement(CommandContext cmdContext, List<CommandMode<?>> commandModeStack,
 			PluginConfigContext pluginConfigContext, Element element) {
 		refreshCommandTree(cmdContext);
 		return rootNode.commandFromElement(commandModeStack, pluginConfigContext, element);
 	}
 
-	public Class<? extends Command> identifyCommandClass(ConsoleCommandContext cmdContext, List<String> commandWords) {
+	public Class<? extends Command> identifyCommandClass(CommandContext cmdContext, List<String> commandWords) {
 		refreshCommandTree(cmdContext);
 		return rootNode.identifyCommandClass(new LinkedList<String>(commandWords));
 	}

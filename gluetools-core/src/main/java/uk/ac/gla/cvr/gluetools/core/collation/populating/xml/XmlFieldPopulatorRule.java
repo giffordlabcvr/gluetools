@@ -16,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="fieldPopulator")
 public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, FieldPopulator {
@@ -42,7 +42,7 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 	public void execute(CommandContext cmdContext, Node node) {
 		String selectedText;
 		try {
-			selectedText = XmlUtils.getNodeText(node);
+			selectedText = GlueXmlUtils.getNodeText(node);
 		} catch (Exception e) {
 			throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 		}

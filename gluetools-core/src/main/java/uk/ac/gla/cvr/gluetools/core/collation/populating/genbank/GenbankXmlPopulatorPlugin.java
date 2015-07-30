@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
@@ -30,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 @PluginClass(elemName="genbankXmlPopulator")
@@ -46,7 +47,7 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		XmlPopulatorRuleFactory populatorRuleFactory = PluginFactory.get(GenbankXmlPopulatorRuleFactory.creator);
-		String alternateElemsXPath = XmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
+		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
 		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 		addProvidedCmdClass(PopulateCommand.class);
@@ -56,8 +57,8 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 
 	private void populate(CommandContext cmdContext, String sourceName, String sequenceID, String format) {
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-		cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), 
-				sourceName, sequenceID));
+		// bit of a hack to use sequence command here.
+		cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), new SequenceCommand(), sourceName, sequenceID));
 		try {
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
@@ -65,7 +66,7 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 					OriginalDataResult originalDataResult = (OriginalDataResult) cmdContext.executeElem(showDataElem.getOwnerDocument().getDocumentElement());
 					Document sequenceDataDoc;
 					try {
-						sequenceDataDoc = XmlUtils.documentFromBytes(originalDataResult.getBase64Bytes());
+						sequenceDataDoc = GlueXmlUtils.documentFromBytes(originalDataResult.getBase64Bytes());
 					} catch (Exception e) {
 						throw new RuntimeException("Bad GENBANK XML format: "+e.getMessage(), e);
 					}
@@ -80,13 +81,13 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 	private CommandResult populate(CommandContext cmdContext) {
 		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequenceCommand.class);
 		getWhereClause().ifPresent(wc ->
-			XmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, wc.toString())
+			GlueXmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, wc.toString())
 		);
-		XmlUtils.appendElementWithText(listSequencesElem, 
+		GlueXmlUtils.appendElementWithText(listSequencesElem, 
 				ListSequenceCommand.FIELD_NAME, Sequence.SOURCE_NAME_PATH);
-		XmlUtils.appendElementWithText(listSequencesElem, 
+		GlueXmlUtils.appendElementWithText(listSequencesElem, 
 				ListSequenceCommand.FIELD_NAME, Sequence.SEQUENCE_ID_PROPERTY);
-		XmlUtils.appendElementWithText(listSequencesElem, 
+		GlueXmlUtils.appendElementWithText(listSequencesElem, 
 				ListSequenceCommand.FIELD_NAME, Sequence.FORMAT_PROPERTY);
 		ListResult listResult = (ListResult) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
 		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();

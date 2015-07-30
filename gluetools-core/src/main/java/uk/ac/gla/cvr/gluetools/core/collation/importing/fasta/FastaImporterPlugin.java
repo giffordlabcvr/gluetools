@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
@@ -82,7 +83,8 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 			createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
 			
 			ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), sourceName, id));
+			// bit of a hack to use sequence command here.
+			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), new SequenceCommand(), sourceName, id));
 			try {
 				seq.getUserCollection().forEach(obj -> {
 					FastaFieldParser.Result result = (Result) obj;

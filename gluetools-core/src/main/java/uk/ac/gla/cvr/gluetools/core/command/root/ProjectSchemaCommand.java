@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.ProjectSchemaMode;
@@ -35,7 +34,7 @@ public class ProjectSchemaCommand extends RootModeCommand  {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
-		cmdContext.pushCommandMode(new ProjectSchemaMode(cmdContext, project));
+		cmdContext.pushCommandMode(new ProjectSchemaMode(cmdContext, this, project));
 		return CommandResult.OK;
 	}
 	

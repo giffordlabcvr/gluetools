@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.FeatureMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -36,7 +35,7 @@ public class FeatureCommand extends ReferenceSequenceModeCommand  {
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Feature feature = GlueDataObject.lookup(objContext, Feature.class, Feature.pkMap(getRefSeqName(), featureName));
-		cmdContext.pushCommandMode(new FeatureMode(cmdContext, feature.getName()));
+		cmdContext.pushCommandMode(new FeatureMode(cmdContext, this, feature.getName()));
 		return CommandResult.OK;
 	}
 

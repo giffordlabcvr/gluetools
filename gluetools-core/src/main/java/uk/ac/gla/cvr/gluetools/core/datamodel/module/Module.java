@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @GlueDataClass(defaultListColumns = {_Module.NAME_PROPERTY})
 public class Module extends _Module {
@@ -63,7 +63,7 @@ public class Module extends _Module {
 	private Document buildConfigDoc() {
 		byte[] config = getConfig();
 		try {
-			return XmlUtils.documentFromStream(new ByteArrayInputStream(config));
+			return GlueXmlUtils.documentFromStream(new ByteArrayInputStream(config));
 		} catch (SAXException e) {
 			throw new PluginFactoryException(e, Code.PLUGIN_CONFIG_FORMAT_ERROR, e.getMessage());
 		} catch (IOException e) {

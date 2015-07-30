@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Logger;
 
 public abstract class EnterModeCommandDescriptor {
@@ -11,12 +10,11 @@ public abstract class EnterModeCommandDescriptor {
 	/**
 	 * Used to distinguish an EnterModeCommand's arguments from the words
 	 * of a command which may be executed within that mode, on the same command line.
-	 * Given all the arguments following the enter mode command's command words on the 
-	 * current command line, return the number of arguments at the beginning which 
-	 * belong to the EnterModeCommand.
+	 * Returns the number of arguments at the beginning which belong to the EnterModeCommand.
+	 * This must always be fixed for EnterMode commands.
 	 * @param commandWords
 	 */
-	public abstract int numEnterModeArgs(List<String> argStrings);
+	public abstract String[] enterModeArgNames();
 
 	public static EnterModeCommandDescriptor getDescriptorForClass(Class<? extends Command> enterModeCmdClass) {
 		Class<?> descriptorClass = Arrays.asList(enterModeCmdClass.getClasses()).stream().
@@ -34,16 +32,17 @@ public abstract class EnterModeCommandDescriptor {
 			String mainDocoptUsage = docoptUsages[0];
 			// main usage contains items indicating optional elements.
 			if(mainDocoptUsage.contains("[") || mainDocoptUsage.contains("]")) {
+				logger.warning(enterModeCmdClass.getSimpleName()+" has optional docopt, cannot be used as a mode changing command.");
 				return null;
 			}
 			// assumes space always separates arguments in main usage -- could relax this assumption if necessary.
-			int numArgs;
+			String[] argNames;
 			if(mainDocoptUsage.trim().length() == 0) {
-				numArgs = 0;
+				argNames = new String[]{};
 			} else {
-				numArgs = mainDocoptUsage.split(" ").length;
+				argNames = mainDocoptUsage.replaceAll("[<>]", "").split(" ");
 			}
-			return new FixedUsageEnterModeCommandDescriptor(numArgs);
+			return new FixedUsageEnterModeCommandDescriptor(argNames);
 		}
 	}
 	
@@ -51,14 +50,14 @@ public abstract class EnterModeCommandDescriptor {
 	 * Implementation used for mode commands with a fixed argument usage.
 	 */
 	public static class FixedUsageEnterModeCommandDescriptor extends EnterModeCommandDescriptor {
-		private int numWords;
+		private String[] argNames;
 
-		public FixedUsageEnterModeCommandDescriptor(int numWords) {
+		public FixedUsageEnterModeCommandDescriptor(String[] argNames) {
 			super();
-			this.numWords = numWords;
+			this.argNames = argNames;
 		}
 
 		@Override
-		public int numEnterModeArgs(List<String> commandWords) { return numWords; }
+		public String[] enterModeArgNames() { return argNames; }
 	}
 }
