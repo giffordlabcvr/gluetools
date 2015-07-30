@@ -6,7 +6,8 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -19,7 +20,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"alignment"},
 	docoptUsages={"<alignmentName>"},
 	description="Enter command mode for an alignment") 
-public class AlignmentCommand extends ProjectModeCommand implements EnterModeCommand {
+@EnterModeCommandClass(
+		commandModeClass = AlignmentMode.class)
+public class AlignmentCommand extends ProjectModeCommand  {
 
 	private String alignmentName;
 	

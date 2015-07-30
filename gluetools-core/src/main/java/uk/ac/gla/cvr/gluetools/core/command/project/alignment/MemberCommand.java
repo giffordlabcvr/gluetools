@@ -4,7 +4,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -18,7 +19,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"member"},
 	docoptUsages={"<sourceName> <sequenceID>"},
 	description="Enter command mode for an alignment member") 
-public class MemberCommand extends AlignmentModeCommand implements EnterModeCommand {
+@EnterModeCommandClass(
+		commandModeClass = MemberMode.class)
+public class MemberCommand extends AlignmentModeCommand  {
 
 	private String sourceName;
 	private String sequenceID;

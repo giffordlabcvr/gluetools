@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -105,7 +105,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(commandClass == null) {
 			throw new ConsoleException(Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), commandContext.getModePath());
 		}
-		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
+		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
 
 		String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
 		LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
@@ -113,7 +113,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(enterModeCmd) {
 			@SuppressWarnings("unchecked")
 			EnterModeCommandDescriptor entModeCmdDescriptor = 
-			EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) commandClass);
+			EnterModeCommandDescriptor.getDescriptorForClass(commandClass);
 			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(argStrings);
 			if(numEnterModeArgs < argStrings.size()) {
 				innerCmdWords = new LinkedList<String>(argStrings.subList(numEnterModeArgs, argStrings.size()));
@@ -137,7 +137,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 				commandContext.setRequireModeWrappable(false);
 				// case where innermost command is an enter mode command, stay in that mode.
 				// otherwise pop the mode.
-				if(innerCmdClass == null || !EnterModeCommand.class.isAssignableFrom(innerCmdClass)) {
+				if(innerCmdClass == null || innerCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
 					commandContext.popCommandMode();
 				}
 			}
@@ -164,7 +164,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
 		Element element = buildCommandElement(commandClass, docoptMap);
-		boolean enterModeCmd = EnterModeCommand.class.isAssignableFrom(commandClass);
+		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
 		Command command;
 		try {
 			command = commandContext.commandFromElement(element);

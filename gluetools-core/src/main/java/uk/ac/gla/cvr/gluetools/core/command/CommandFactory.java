@@ -53,7 +53,7 @@ private static Multiton factories = new Multiton();
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
-		if(EnterModeCommand.class.isAssignableFrom(cmdClass) && cmdUsage.docoptUsages().length != 1) {
+		if(cmdClass.getAnnotation(EnterModeCommandClass.class) != null && cmdUsage.docoptUsages().length != 1) {
 			throw new RuntimeException("EnterModeCommand must have exactly one docopt usage.");
 		}
 		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdUsage.commandWords())), cmdClass);

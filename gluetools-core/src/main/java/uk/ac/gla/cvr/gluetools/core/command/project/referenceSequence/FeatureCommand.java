@@ -6,7 +6,8 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.FeatureMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -18,8 +19,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"feature"},
 	docoptUsages={"<featureName>"},
-	description="Enter command mode for a feature") 
-public class FeatureCommand extends ReferenceSequenceModeCommand implements EnterModeCommand {
+	description="Enter command mode for a feature")
+@EnterModeCommandClass(
+		commandModeClass = FeatureMode.class)
+public class FeatureCommand extends ReferenceSequenceModeCommand  {
 
 	private String featureName;
 	

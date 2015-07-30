@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
@@ -68,13 +68,13 @@ public class ConsoleCompleter implements Completer {
 		CommandMode cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
 		Class<? extends Command> cmdClass = commandFactory.identifyCommandClass(cmdContext, lookupBasis);
-		boolean enterModeCmd = cmdClass != null && EnterModeCommand.class.isAssignableFrom(cmdClass);
+		boolean enterModeCmd = cmdClass != null && cmdClass.getAnnotation(EnterModeCommandClass.class) != null;
 		List<String> innerCmdWords = null;
 		List<String> enterModeArgStrings = null;
 		if(enterModeCmd) {
 			@SuppressWarnings("unchecked")
 			EnterModeCommandDescriptor entModeCmdDescriptor = 
-			EnterModeCommandDescriptor.getDescriptorForClass((Class<? extends EnterModeCommand>) cmdClass);
+			EnterModeCommandDescriptor.getDescriptorForClass(cmdClass);
 			int numCmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass).length;
 			int numEnterModeArgs = entModeCmdDescriptor.numEnterModeArgs(lookupBasis);
 			enterModeArgStrings = lookupBasis.subList(numCmdWords, lookupBasis.size());

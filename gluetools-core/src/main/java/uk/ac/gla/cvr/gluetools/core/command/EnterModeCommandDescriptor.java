@@ -18,7 +18,7 @@ public abstract class EnterModeCommandDescriptor {
 	 */
 	public abstract int numEnterModeArgs(List<String> argStrings);
 
-	public static EnterModeCommandDescriptor getDescriptorForClass(Class<? extends EnterModeCommand> enterModeCmdClass) {
+	public static EnterModeCommandDescriptor getDescriptorForClass(Class<? extends Command> enterModeCmdClass) {
 		Class<?> descriptorClass = Arrays.asList(enterModeCmdClass.getClasses()).stream().
 				filter(c -> c.getAnnotation(EnterModeCommandDescriptorClass.class) != null).findFirst().orElse(null);
 		if(descriptorClass != null) {
@@ -30,9 +30,7 @@ public abstract class EnterModeCommandDescriptor {
 				return null;
 			}
 		} else {
-			@SuppressWarnings("unchecked")
-			Class<? extends Command> cmdClass = (Class<? extends Command>) enterModeCmdClass;
-			String[] docoptUsages = CommandUsage.docoptUsagesForCmdClass(cmdClass);
+			String[] docoptUsages = CommandUsage.docoptUsagesForCmdClass((Class<? extends Command>) enterModeCmdClass);
 			String mainDocoptUsage = docoptUsages[0];
 			// main usage contains items indicating optional elements.
 			if(mainDocoptUsage.contains("[") || mainDocoptUsage.contains("]")) {
