@@ -5,14 +5,17 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+@CommandModeClass(commandFactoryClass = ModuleModeCommandFactory.class)
 public class ModuleMode extends CommandMode {
 
 	
 	private String moduleName;
 	
+	// dynamic command factory
 	public ModuleMode(CommandContext cmdContext, String moduleName) {
 		super("module/"+moduleName+"/", new ModuleModeCommandFactory(cmdContext, moduleName));
 		this.moduleName = moduleName;

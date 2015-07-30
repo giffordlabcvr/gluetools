@@ -3,13 +3,14 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+@CommandModeClass(commandFactoryClass = ReferenceSequenceModeCommandFactory.class)
 public class ReferenceSequenceMode extends CommandMode implements InsideProjectMode {
 
 	
@@ -17,7 +18,7 @@ public class ReferenceSequenceMode extends CommandMode implements InsideProjectM
 	private Project project;
 	
 	public ReferenceSequenceMode(Project project, String refSeqName) {
-		super("reference/"+refSeqName+"/", CommandFactory.get(ReferenceSequenceModeCommandFactory.creator));
+		super("reference/"+refSeqName+"/");
 		this.refSeqName = refSeqName;
 		this.project = project;
 	}

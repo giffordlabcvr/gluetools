@@ -4,19 +4,20 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
+@CommandModeClass(commandFactoryClass = ProjectSchemaModeCommandFactory.class)
 public class ProjectSchemaMode extends CommandMode {
 
 	
 	private Project project;
 	
 	public ProjectSchemaMode(CommandContext cmdContext, Project project) {
-		super("schema-project/"+project.getName()+"/", CommandFactory.get(ProjectSchemaModeCommandFactory.creator));
+		super("schema-project/"+project.getName()+"/");
 		this.project = project;
 	}
 

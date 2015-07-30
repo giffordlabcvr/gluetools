@@ -3,12 +3,13 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.DbContextChangingMode;
+import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
+@CommandModeClass(commandFactoryClass = ProjectModeCommandFactory.class)
 public class ProjectMode extends CommandMode implements InsideProjectMode, DbContextChangingMode {
 
 	
@@ -16,7 +17,7 @@ public class ProjectMode extends CommandMode implements InsideProjectMode, DbCon
 	private ServerRuntime newServerRuntime;
 	
 	public ProjectMode(CommandContext cmdContext, Project project) {
-		super("project/"+project.getName()+"/", CommandFactory.get(ProjectModeCommandFactory.creator));
+		super("project/"+project.getName()+"/");
 		this.project = project;
 		setNewServerRuntime(ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project));
 	}

@@ -3,6 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.command;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+
 
 public abstract class CommandMode {
 	
@@ -20,11 +22,15 @@ public abstract class CommandMode {
 	private CommandFactory commandFactory;
 
 	protected CommandMode(String modeId, CommandFactory commandFactory) {
-		super();
-		this.modeId = modeId;
-		this.commandFactory = commandFactory;
+		setModeId(modeId);
+		setCommandFactory(commandFactory);
 	}
 
+	protected CommandMode(String modeId) {
+		setModeId(modeId);
+		setCommandFactory(CommandFactory.get(getClass().getAnnotation(CommandModeClass.class).commandFactoryClass()));
+	}
+	
 	public String getModeId() {
 		return modeId;
 	}
@@ -32,6 +38,15 @@ public abstract class CommandMode {
 	public CommandFactory getCommandFactory() {
 		return commandFactory;
 	}
+
+	private void setModeId(String modeId) {
+		this.modeId = modeId;
+	}
+
+	private void setCommandFactory(CommandFactory commandFactory) {
+		this.commandFactory = commandFactory;
+	}
+
 
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass, Element elem) {
 		

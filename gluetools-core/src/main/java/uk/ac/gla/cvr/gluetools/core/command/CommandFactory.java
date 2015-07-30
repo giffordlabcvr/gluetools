@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
+import uk.ac.gla.cvr.gluetools.utils.Multiton.Creator;
 import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 // TODO Plugins should be able to add their own commands.
@@ -29,6 +30,16 @@ private static Multiton factories = new Multiton();
 	public static <F extends CommandFactory,
 		C extends Multiton.Creator<F>> F get(C creator) {
 		return factories.get(creator);
+	}
+
+	public static <F extends CommandFactory> F get(Class<F> commandFactoryClass) {
+		try {
+			@SuppressWarnings("unchecked")
+			Creator<F> creator = (Creator<F>) commandFactoryClass.getField("creator").get(null);
+			return get(creator);
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private CommandTreeNode rootNode;
