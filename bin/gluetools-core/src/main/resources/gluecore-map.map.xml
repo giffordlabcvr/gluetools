@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-map xmlns="http://cayenne.apache.org/schema/3.0/modelMap"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/3.0/modelMap http://cayenne.apache.org/schema/3.0/modelMap.xsd"
+	 project-version="6">
+	<property name="defaultPackage" value="uk.ac.gla.cvr.gluetools.core.datamodel"/>
+	<property name="defaultSuperclass" value="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject"/>
+	<db-entity name="FIELD">
+		<db-attribute name="MAXLENGTH" type="INTEGER"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="PROJECT" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="TYPE" type="VARCHAR" isMandatory="true" length="20"/>
+	</db-entity>
+	<db-entity name="PROJECT">
+		<db-attribute name="DESCRIPTION" type="VARCHAR" length="200"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
+	<obj-entity name="Field" className="uk.ac.gla.cvr.gluetools.core.datamodel.field.Field" dbEntityName="FIELD" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="maxLength" type="java.lang.Integer" db-attribute-path="MAXLENGTH"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+		<obj-attribute name="type" type="java.lang.String" db-attribute-path="TYPE"/>
+	</obj-entity>
+	<obj-entity name="Project" className="uk.ac.gla.cvr.gluetools.core.datamodel.project.Project" dbEntityName="PROJECT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+	</obj-entity>
+	<db-relationship name="project" source="FIELD" target="PROJECT" toMany="false">
+		<db-attribute-pair source="PROJECT" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="fields" source="PROJECT" target="FIELD" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="NAME" target="PROJECT"/>
+	</db-relationship>
+	<obj-relationship name="project" source="Field" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="fields" source="Project" target="Field" deleteRule="Cascade" db-relationship-path="fields"/>
+</data-map>

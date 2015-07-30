@@ -9,6 +9,9 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<ReferenceSequenceModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(ReferenceSequenceModeCommandFactory.class, ReferenceSequenceModeCommandFactory::new);
 
+	private ReferenceSequenceModeCommandFactory() {
+	}	
+
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();

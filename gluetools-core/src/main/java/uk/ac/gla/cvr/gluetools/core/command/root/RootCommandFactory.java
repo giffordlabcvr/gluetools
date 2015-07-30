@@ -8,7 +8,9 @@ public class RootCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<RootCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(RootCommandFactory.class, RootCommandFactory::new);
 
-	@Override
+	private RootCommandFactory() {
+	}	
+
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		registerCommandClass(ProjectCommand.class);

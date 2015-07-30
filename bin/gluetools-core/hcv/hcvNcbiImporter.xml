@@ -1,0 +1,6 @@
+<ncbiImporter>
+<eSearchTerm>"Hepatitis C"[Organism] AND 5000:20000[SLEN]</eSearchTerm>
+<sequenceFormat>GENBANK_XML</sequenceFormat>
+<eSearchRetMax>10</eSearchRetMax>
+<eFetchBatchSize>500</eFetchBatchSize>
+</ncbiImporter>

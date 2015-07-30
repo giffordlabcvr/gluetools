@@ -9,6 +9,9 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<AlignmentModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(AlignmentModeCommandFactory.class, AlignmentModeCommandFactory::new);
 
+	private AlignmentModeCommandFactory() {
+	}	
+	
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();

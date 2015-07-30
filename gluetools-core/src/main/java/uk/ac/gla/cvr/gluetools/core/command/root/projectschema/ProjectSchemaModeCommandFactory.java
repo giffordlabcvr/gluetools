@@ -9,6 +9,9 @@ public class ProjectSchemaModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<ProjectSchemaModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(ProjectSchemaModeCommandFactory.class, ProjectSchemaModeCommandFactory::new);
 
+	private ProjectSchemaModeCommandFactory() {
+	}	
+
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();

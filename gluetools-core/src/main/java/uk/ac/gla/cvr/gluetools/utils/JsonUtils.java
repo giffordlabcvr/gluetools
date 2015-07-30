@@ -14,9 +14,9 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
-import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 
 import org.w3c.dom.Document;

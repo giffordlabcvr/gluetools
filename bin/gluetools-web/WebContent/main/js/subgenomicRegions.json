@@ -1,0 +1,79 @@
+{
+	"id": "whole_genome",
+	"label": "Whole genome",
+	"children": 
+	[
+	 	{
+	 		"id": "five_prime_ntr",
+	 		"label": "5' NTR"
+	 	},
+	 	{
+	 		"id": "structural_proteins",
+	 		"label": "Structural proteins", 
+	 		"children": 
+	 		[
+	 		 	{
+	 		 		"id": "c",
+	 		 		"label": "C", 
+	 		 		"description": "Nucleocapsid"
+	 		 	},
+	 		 	{
+	 		 		"id": "e1",
+	 		 		"label": "E1", 
+	 		 		"description": "Envelope glycoprotein"
+	 		 	},
+	 		 	{
+	 		 		"id": "e2",
+	 		 		"label": "E2", 
+	 		 		"description": "Envelope glycoprotein"
+	 		 	}
+	 		]
+	 	},
+	 	{
+	 		"id": "nonstructural_proteins",
+	 		"label": "Nonstructural proteins",
+	 		"children": 
+	 		[
+	 		 	{
+	 		 		"id": "ns1",
+	 		 		"label": "NS1", 
+	 		 		"description": ""
+	 		 	},
+	 		 	{
+	 		 		"id": "ns2",
+	 		 		"label": "NS2", 
+	 		 		"description": "Transmembrane protein"
+	 		 	},
+	 		 	{
+	 		 		"id": "ns3",
+	 		 		"label": "NS3", 
+	 		 		"description": "Metalloprotease, Serine protease, RNA helicase"
+	 		 	},
+	 		 	{
+	 		 		"id": "ns4a",
+	 		 		"label": "NS4A", 
+	 		 		"description": "Cofactor"
+	 		 	},
+	 		 	{
+	 		 		"id": "ns4b",
+	 		 		"label": "NS4B", 
+	 		 		"description": "Cofactor"
+	 		 	},
+	 		 	{
+	 		 		"id": "ns5a",
+	 		 		"label": "NS5A", 
+	 		 		"description": "IFN-resistant protein"
+	 		 	},
+	 		 	{
+	 		 		"id": "ns5b",
+	 		 		"label": "NS5B", 
+	 		 		"description": "RNA polymerase"
+	 		 	}
+	 		]
+	 	},
+	 	{
+	 		"id": "three_prime_ntr",
+	 		"label": "3' NTR"
+	 	}
+	]
+}

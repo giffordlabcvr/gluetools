@@ -1,0 +1,78 @@
+<div ng-app="mutationsBrowser">
+<h2>Database mutation analysis</h2>
+
+Based on a subset of sequences in the database, show frequencies of amino-acid level mutations at different positions in the genome.
+
+<p></p>
+
+  <accordion close-others="oneAtATime">
+    <accordion-group is-open="genotypeSelectOpen">
+        <accordion-heading>
+            {{genotypeSelectHeading}} [{{GenotypeSelection.label}}]<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': genotypeSelectOpen, 'glyphicon-chevron-right': !genotypeSelectOpen}"></i>
+        </accordion-heading>
+	    <div ng-controller="selectGenotypeCtrl">
+			<div class="row">
+				<div class="col-xs-4">
+					<div data-angular-treeview="true" data-tree-id="genotypesTree"
+						data-tree-model="genotypes" data-default-selected-id="{{defaultSelectedId}}"
+						data-default-open-depth="{{defaultOpenDepth}}" data-node-id="id"
+						data-node-label="label" data-node-children="children"></div>
+				</div>
+				<div class="col-xs-4">
+					<h4>{{GenotypeSelection.label}}</h4>
+					<table ng-show="GenotypeSelection.showSequences" class="table table-bordered table-condensed">
+						<tr><td><b>Defining sequences</b></td></tr>
+						<tr ng-repeat="seqUrl in GenotypeSelection.sequences">
+							<td><a href="{{seqUrl.url}}" target="_blank">{{seqUrl.accession}}</a></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+    </accordion-group>
+    <accordion-group is-open="regionSelectOpen">
+        <accordion-heading>
+            {{regionSelectHeading}} [{{RegionSelection.label}}]<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': regionSelectOpen, 'glyphicon-chevron-right': !regionSelectOpen}"></i>
+        </accordion-heading>
+	    <div ng-controller="selectRegionCtrl">
+			<div class="row">
+				<div class="col-xs-4">
+					<div data-angular-treeview="true" data-tree-id="regionsTree"
+						data-tree-model="regions" data-default-selected-id="{{defaultSelectedId}}"
+						data-default-open-depth="{{defaultOpenDepth}}" data-node-id="id"
+						data-node-label="label" data-node-children="children"></div>
+				</div>
+				<div class="col-xs-4">
+					<h4>{{RegionSelection.label}}</h4>
+					{{RegionSelection.description}}
+				</div>
+			</div>
+		</div>
+    </accordion-group>
+  </accordion>
+  <h3>Mutation frequencies</h3>
+  <button type="button" class="btn btn-primary" ng-click="updateMutations()">Update</button>
+  <p>
+  <div ng-controller="mutationTableCtrl">
+	  <table class="table mutationTable">
+	  	<tbody ng-repeat="mutationRow in mutationRows track by $index">
+		  	<tr class="mutationTableConsensusIndex">
+		  		<td ng-repeat="consensusIndex in mutationRow.consensusIndices track by $index">{{consensusIndex}}</td>
+		  	</tr>
+		  	<tr class="mutationTableConsensusAA">
+		  		<td ng-repeat="consensusAA in mutationRow.consensusAAs track by $index">{{consensusAA}}</td>
+		  	</tr>
+		  	<tr class="mutationTableNumIsolates">
+		  		<td ng-repeat="numIsolates in mutationRow.numIsolatesList track by $index">({{numIsolates}})</td>
+		  	</tr>
+		  	<tr class="mutationAA" ng-repeat="mutationList in mutationRow.mutations track by $index">
+		  		<td ng-repeat="mutation in mutationList track by $index">{{mutation.mutationAA}}<sup>{{mutation.mutationPercent}}</sup></td>
+		  	</tr>
+		  	<tr>
+		  		<td ng-repeat="numIsolates in mutationRow.numIsolatesList track by $index">&nbsp;</td>
+		  	</tr>
+	  	</tbody>
+	  </table>
+  </div>
+  
+</div>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<domain project-version="6">
+	<map name="gluecore-map"/>
+
+	<node name="gluecore-node"
+		 factory="org.apache.cayenne.configuration.server.XMLPoolingDataSourceFactory"
+		 schema-update-strategy="uk.ac.gla.cvr.gluetools.core.datamodel.builder.GlueSchemaUpdateStrategy"
+		>
+		<map-ref name="gluecore-map"/>
+		<data-source>
+			<connectionPool min="1" max="1"/>
+		</data-source>
+	</node>
+</domain>

@@ -51,8 +51,8 @@ public class WsCmdContext extends CommandContext {
 		ProjectMode projectMode = new ProjectMode(this, project);
 		pushCommandMode(projectMode);
 		JsonObject jsonObject = JsonUtils.stringToJsonObject(commandString);
-		if(jsonObject.keySet().size() != 1) {
-			throw new GlueApplicationException("JSON for GLUE command must have exactly one key");
+		if(jsonObject.entrySet().size() != 1) {
+			throw new GlueApplicationException("JSON object for GLUE command must have exactly one key / value");
 		}
 		Map.Entry<String, JsonValue> singleEntry = jsonObject.entrySet().iterator().next();
 		String key = singleEntry.getKey();

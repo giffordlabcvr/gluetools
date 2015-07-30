@@ -12,17 +12,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
 
 import org.apache.commons.io.IOUtils;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;

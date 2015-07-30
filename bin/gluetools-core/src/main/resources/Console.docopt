@@ -1,0 +1,10 @@
+Usage: 
+  gluetools [-him] [-c <configFile>] [-f <file>]
+
+Options:
+  -h, --help                       Print usage and options information
+  -i, --interactive                Enter interactive mode after batch mode
+  -m, --migrate-schema             Migrate database schema if necessary
+  -f <file>, --batch-file <file>   Run commands in batch mode from a file
+  -c <file>, --config-file <file>  Configure gluetools from a file
+  

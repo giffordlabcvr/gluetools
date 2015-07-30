@@ -13,6 +13,9 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<ProjectModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(ProjectModeCommandFactory.class, ProjectModeCommandFactory::new);
 
+	private ProjectModeCommandFactory() {
+	}	
+
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();

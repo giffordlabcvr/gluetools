@@ -3,11 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class AlignmentMode extends CommandMode implements InsideProjectMode {
 
@@ -16,7 +17,7 @@ public class AlignmentMode extends CommandMode implements InsideProjectMode {
 	private Project project;
 	
 	public AlignmentMode(Project project, String alignmentName) {
-		super("alignment/"+alignmentName+"/", new AlignmentModeCommandFactory());
+		super("alignment/"+alignmentName+"/", CommandFactory.get(AlignmentModeCommandFactory.creator));
 		this.alignmentName = alignmentName;
 		this.project = project;
 	}

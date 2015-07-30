@@ -7,8 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class MemberMode extends CommandMode implements InsideProjectMode {
 

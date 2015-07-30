@@ -4,9 +4,10 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public class FeatureMode extends CommandMode {
 
@@ -14,7 +15,7 @@ public class FeatureMode extends CommandMode {
 	private String featureName;
 	
 	public FeatureMode(CommandContext cmdContext, String featureName) {
-		super("feature/"+featureName+"/", new FeatureModeCommandFactory());
+		super("feature/"+featureName+"/", CommandFactory.get(FeatureModeCommandFactory.creator));
 		this.featureName = featureName;
 	}
 

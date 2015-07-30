@@ -9,6 +9,9 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 	public static Multiton.Creator<MemberModeCommandFactory> creator = new
 			Multiton.SuppliedCreator<>(MemberModeCommandFactory.class, MemberModeCommandFactory::new);
 
+	private MemberModeCommandFactory() {
+	}	
+
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();

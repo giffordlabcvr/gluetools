@@ -382,7 +382,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	}
 
 	private void updatePrompt() {
-		reader.setPrompt("Model path: "+commandContext.getModePath()+"\nGLUE> ");
+		reader.setPrompt("Mode path: "+commandContext.getModePath()+"\nGLUE> ");
 	}
 
 	@Override

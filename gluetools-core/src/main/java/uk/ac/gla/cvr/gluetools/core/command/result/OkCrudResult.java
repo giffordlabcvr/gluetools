@@ -3,8 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+import uk.ac.gla.cvr.gluetools.utils.XmlUtils;
 
 public abstract class OkCrudResult extends OkResult {
 
