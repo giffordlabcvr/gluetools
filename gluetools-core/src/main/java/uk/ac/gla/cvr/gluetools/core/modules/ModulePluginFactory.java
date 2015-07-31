@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterPlugin;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaImporterPlugin;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterPlugin;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulatorPlugin;
@@ -17,6 +18,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		super();
 		registerPluginClass(NcbiImporterPlugin.class);
 		registerPluginClass(FastaImporterPlugin.class);
+		registerPluginClass(FastaExporterPlugin.class);
 		registerPluginClass(GenbankXmlPopulatorPlugin.class);
 		registerPluginClass(TextFilePopulatorPlugin.class);
 		registerPluginClass(RandomMutationsPlugin.class);

@@ -12,7 +12,10 @@ public class ConsoleException extends GlueException {
 		FILE_NOT_FOUND("path"), 
 		NOT_A_FILE("path"), 
 		FILE_NOT_READABLE("path"), 
+		FILE_NOT_WRITEABLE("path"), 
 		READ_ERROR("path", "errorTxt"),
+		WRITE_ERROR("path", "errorTxt"),
+		FILE_CREATION_ERROR("path", "errorTxt"),
 		COMMAND_NOT_WRAPPABLE("commandWords", "commandModePath");
 
 		private String[] argNames;

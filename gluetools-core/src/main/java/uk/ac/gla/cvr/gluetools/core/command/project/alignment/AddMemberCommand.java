@@ -10,6 +10,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -17,8 +18,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
@@ -44,16 +43,23 @@ public class AddMemberCommand extends AlignmentModeCommand {
 	public static final String ALL_SEQUENCES = "allSequences";
 	
 	private Optional<Expression> whereClause;
-	private Optional<Boolean> allSequences;
+	private Boolean allSequences;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-		allSequences = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALL_SEQUENCES, false));
-		if(!whereClause.isPresent() && !allSequences.isPresent()) {
-			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "either whereClause or allSequences must be specified");
+		allSequences = PluginUtils.configureBooleanProperty(configElem, ALL_SEQUENCES, true);
+		if(!whereClause.isPresent() && !allSequences) {
+			usageError();
 		}
+		if(whereClause.isPresent() && allSequences) {
+			usageError();
+		}
+	}
+
+	private void usageError() {
+		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Either whereClause or allSequences must be specified, but not both");
 	}
 
 	@Override

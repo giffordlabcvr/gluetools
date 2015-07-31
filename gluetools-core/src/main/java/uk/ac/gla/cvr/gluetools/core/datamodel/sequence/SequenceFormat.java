@@ -8,8 +8,8 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaUtils;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public enum SequenceFormat {

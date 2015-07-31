@@ -1,7 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.plugins;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -16,10 +19,30 @@ import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import freemarker.core.ParseException;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
 
+	public static Template configureFreemarkerTemplateProperty(PluginConfigContext pluginConfigContext, 
+			Element configElem, String propertyName, boolean required) {
+		String templateString = PluginUtils.configureStringProperty(configElem, propertyName, required);
+		Template template = null;
+		if(templateString != null) {
+			Configuration freemarkerConfiguration = pluginConfigContext.getFreemarkerConfiguration();
+			try {
+				template = new Template(UUID.randomUUID().toString(), new StringReader(templateString), freemarkerConfiguration);
+			} catch(ParseException pe) {
+				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, pe.getLocalizedMessage(), templateString);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} 
+		}
+		return template;
+	}
+	
 	public static Pattern configureRegexPatternProperty(Element configElem, String propertyName, boolean required) {
 		Pattern pattern;
 		String patternString = PluginUtils.configureStringProperty(configElem, propertyName, required);

@@ -747,7 +747,12 @@ project HCV
     
   create alignment H77 AL1
   alignment AL1
-    add member -allSequences 
+    add member --allSequences
+    exit
+    
+  create module fastaExporter -f hcvFastaExporter.xml
+  
+  module fastaExporter export --allSequences -f unaligned.fasta
 
 #  list sequence sequenceID GB_PRIMARY_ACCESSION GENOTYPE SUBTYPE
     

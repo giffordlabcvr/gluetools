@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,6 +65,40 @@ public class ConsoleCommandContext extends CommandContext {
 			throw new ConsoleException(e, Code.INVALID_PATH, path, e.getMessage());
 		}
 	}
+	
+	public void saveBytes(String file, byte[] bytes) {
+		File path = new File(file);
+		if(!path.isAbsolute()) {
+			path = new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH), file);
+		}
+		try {
+			path = path.getCanonicalFile();
+		} catch (IOException e) {
+			throw new ConsoleException(e, Code.INVALID_PATH, path, e.getMessage());
+		}
+		saveBytesToFile(path, bytes);
+	}
+	
+	public static void saveBytesToFile(File file, byte[] bytes) {
+		if(file.exists()) {
+			if(!file.canWrite()) {
+				throw new ConsoleException(Code.FILE_NOT_WRITEABLE, file);
+			}
+		} else {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				throw new ConsoleException(e, Code.FILE_CREATION_ERROR, file, e.getMessage());
+			} 
+		}
+		try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+			IOUtils.write(bytes, fileOutputStream);
+		} catch (IOException e) {
+			throw new ConsoleException(e, Code.WRITE_ERROR, file, e.getMessage());
+		}
+	}
+
+	
 
 	public byte[] loadBytes(String file) {
 		File path = new File(file);

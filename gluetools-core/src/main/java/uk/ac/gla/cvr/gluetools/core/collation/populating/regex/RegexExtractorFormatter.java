@@ -1,11 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.regex;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,11 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorExcepti
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import freemarker.core.ParseException;
-import freemarker.template.Configuration;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -42,19 +36,7 @@ public class RegexExtractorFormatter implements Plugin {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
 		matchPattern = Optional.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, "matchPattern", false));
-		String outputPatternXPathExpression = "outputPattern/text()";
-		String templateString = PluginUtils.configureString(configElem, outputPatternXPathExpression, false);
-		Configuration freemarkerConfiguration = pluginConfigContext.getFreemarkerConfiguration();
-		if(templateString != null) {
-			try {
-				// TODO plugins should have unique IDs we can use here?
-				outputTemplate = new Template(UUID.randomUUID().toString(), new StringReader(templateString), freemarkerConfiguration);
-			} catch(ParseException pe) {
-				throw new PluginConfigException(pe, Code.CONFIG_FORMAT_ERROR, outputPatternXPathExpression, pe.getLocalizedMessage(), templateString);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} 
-		}
+		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputPattern", false);
 	}
 	
 	@SuppressWarnings("rawtypes")
