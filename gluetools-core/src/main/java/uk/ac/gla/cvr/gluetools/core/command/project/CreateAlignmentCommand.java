@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -16,24 +17,24 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"create","alignment"}, 
-	docoptUsages={"<alignmentName> <refSeqName>"},
+	docoptUsages={"<refSeqName> <alignmentName>"},
 	description="Create a new alignment, based on a reference sequence", 
 	furtherHelp="An alignment is a proposed homology between certain segments of a reference sequence and certain segments"+
 	" in zero or more member sequences. The reference sequence must be specified when the alignment is created."+
 	" While a reference sequence is referred to by an alignment, the reference sequence may not be deleted.") 
 public class CreateAlignmentCommand extends ProjectModeCommand {
 
-	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String REF_SEQ_NAME = "refSeqName";
+	public static final String ALIGNMENT_NAME = "alignmentName";
 	
-	private String alignmentName;
 	private String refSeqName;
+	private String alignmentName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		refSeqName = PluginUtils.configureStringProperty(configElem, REF_SEQ_NAME, true);
+		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 	}
 
 	@Override
@@ -47,4 +48,6 @@ public class CreateAlignmentCommand extends ProjectModeCommand {
 		return new CreateResult(Alignment.class, 1);
 	}
 
+	@CompleterClass
+	public static class Completer extends RefSeqNameCompleter {}
 }

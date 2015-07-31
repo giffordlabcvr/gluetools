@@ -26,4 +26,6 @@ public abstract class AlignmentModeCommand extends Command {
 	protected AlignmentMode getAlignmentMode(CommandContext cmdContext) {
 		return (AlignmentMode) cmdContext.peekCommandMode();
 	}
+
+	
 }

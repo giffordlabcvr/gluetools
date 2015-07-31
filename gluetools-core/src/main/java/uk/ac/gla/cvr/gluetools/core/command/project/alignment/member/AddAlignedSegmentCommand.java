@@ -54,7 +54,7 @@ public class AddAlignedSegmentCommand extends MemberModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		if(refStart >= refEnd) {
+		if(refStart > refEnd) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_ENDPOINTS_REVERSED, 
 					getAlignmentName(), getSourceName(), getSequenceID(), Integer.toString(refStart), Integer.toString(refEnd));
 		}
@@ -75,8 +75,8 @@ public class AddAlignedSegmentCommand extends MemberModeCommand {
 					getAlignmentName(), getSourceName(), getSequenceID(), 
 					Integer.toString(membSeqLength), Integer.toString(memberStart), Integer.toString(memberEnd));
 		}
-		int refRegionLength = refEnd - refStart;
-		int membRegionLength = Math.abs(memberEnd - memberStart);
+		int refRegionLength = (refEnd - refStart)+1;
+		int membRegionLength = Math.abs(memberEnd - memberStart)+1;
 		if(membRegionLength != refRegionLength) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REGION_LENGTHS_NOT_EQUAL, 
 					getAlignmentName(), getSourceName(), getSequenceID(), 

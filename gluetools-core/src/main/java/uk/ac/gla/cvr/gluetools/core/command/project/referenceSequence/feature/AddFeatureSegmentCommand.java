@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Add a new segment of the reference sequence", 
 	furtherHelp="The segment includes the reference sequence nucleotide at <refStart> (numbered from 1) "+
 	"and subsequent nucleotides up to and including <refEnd>. "+
-	"The new segment's endpoints must satisfy 1 <= refStart < refEnd <= refSeqLength. "+
+	"The new segment's endpoints must satisfy 1 <= refStart <= refEnd <= refSeqLength. "+
 	"The new segment must not overlap any existing segment in the feature.") 
 public class AddFeatureSegmentCommand extends FeatureModeCommand {
 
@@ -43,7 +43,7 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 	@Override
 	public CommandResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		if(refStart >= refEnd) {
+		if(refStart > refEnd) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_ENDPOINTS_REVERSED, 
 					getRefSeqName(), getFeatureName(), Integer.toString(refStart), Integer.toString(refEnd));
 		}

@@ -31,10 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"If this query returns multiple or zero sequences, the command fails.\n"+
 	"Examples:\n"+
 	"  sequence -w \"GB_PRIMARY_ACCESSION = 'GR195721'\"\n"+
-	"  sequence mySource 12823121"
-
-		
-		)
+	"  sequence mySource 12823121")
 @EnterModeCommandClass(
 		commandModeClass = SequenceMode.class)
 public class SequenceCommand extends ProjectModeCommand  {

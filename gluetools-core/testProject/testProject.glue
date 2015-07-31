@@ -106,18 +106,18 @@ project TEST_PROJECT
       exit
 	exit
   
-  create alignment al1 ref1
-  create alignment al2 ref3
-  create alignment al3 ref3
+  create alignment ref1 al1
+  create alignment ref3 al2
+  create alignment ref3 al3
   delete alignment al2
   list alignment
   alignment al1
     add member -w "source.name = 'local'"
     member local Nim_161-0036_Ref
-      add segment 0 50 800 850
-      add segment 100 150 700 750
-      add segment 500 800 800 500
-      remove segment 100 150 700 750
+      add segment 1 50 801 850
+      add segment 101 150 701 750
+      add segment 501 800 800 501
+      remove segment 101 150 701 750
       list segment
       exit
     exit
