@@ -1,0 +1,175 @@
+<genbankXmlPopulator>
+	<gbPrimaryAccession>
+		<fieldPopulator fieldName="GB_PRIMARY_ACCESSION"/>
+	</gbPrimaryAccession>
+	<gbAccessionVersion>
+		<fieldPopulator fieldName="GB_ACCESSION_VERSION"/>
+	</gbAccessionVersion>
+	<gbLocus>
+		<fieldPopulator fieldName="GB_LOCUS"/>
+	</gbLocus>
+	<gbOtherID>
+		<fieldPopulator fieldName="GB_GI_NUMBER">
+			<matchPattern>gi\|(\d+)</matchPattern>
+			<outputPattern>${g1}</outputPattern>
+		</fieldPopulator>
+	</gbOtherID>
+	<gbTaxonomy>
+		<fieldPopulator fieldName="GB_TAXONOMY"/>
+	</gbTaxonomy>
+	<gbLength>
+		<fieldPopulator fieldName="GB_LENGTH"/>
+	</gbLength>
+	<gbUpdateDate>
+		<fieldPopulator fieldName="GB_UPDATE_DATE"/>
+	</gbUpdateDate>
+	<gbCreateDate>
+		<fieldPopulator fieldName="GB_CREATE_DATE"/>
+	</gbCreateDate>
+	<gbOrganism>
+		<fieldPopulator fieldName="GB_ORGANISM">
+			<valueConverter>
+				<matchPattern>.*Hepatitis C [vV]irus.*</matchPattern>
+				<outputPattern>Hepatitis C virus</outputPattern>
+			</valueConverter>
+		</fieldPopulator>
+		<fieldPopulator fieldName="GB_RECOMBINANT">
+				<matchPattern>[Rr]ecombinant</matchPattern>
+				<outputPattern>true</outputPattern>
+		</fieldPopulator>
+	</gbOrganism>
+	<gbDivision>
+		<fieldPopulator fieldName="GB_PATENT_RELATED">
+			<matchPattern>PAT</matchPattern>
+			<outputPattern>true</outputPattern>
+		</fieldPopulator>
+	</gbDivision>
+	<gbFeature key="source">
+		<gbQualifier name="isolate">
+			<fieldPopulator fieldName="GB_ISOLATE"/>
+		</gbQualifier>
+		<gbQualifier name="country">
+			<fieldPopulator fieldName="GB_COUNTRY">
+				<matchPattern>([A-Za-z ]+)(?::.*)?</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="host">
+			<fieldPopulator fieldName="GB_HOST">
+				<valueConverter>
+					<matchPattern>.*Homo [sS]apiens.*</matchPattern>
+					<outputPattern>Homo sapiens</outputPattern>
+				</valueConverter>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="note">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>genotype:?\s+([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>genotype:?\s+[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_RECOMBINANT">
+				<matchPattern>[Rr]ecombinant</matchPattern>
+				<outputPattern>true</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>subtype\s+([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>subtype\s+[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="genotype">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+
+	<!-- this rule will genotype about 70 odd sequences, not sure if it is valid. 
+		Had a look at ViPR (www.viprbrc.org), they are also treating serotype as 
+		genotype / subtype -->
+		<gbQualifier name="serotype">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+	
+		<gbQualifier name="type">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="subtype">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])[a-z]+</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="organism">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>subtype\s+([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>subtype\s+[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="strain">
+			<fieldPopulator fieldName="GB_GENOTYPE">
+				<matchPattern>([1-9])</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_SUBTYPE">
+				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
+				<outputPattern>${g1?lower_case}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_RECOMBINANT">
+				<matchPattern>[Rr]ecombinant</matchPattern>
+				<outputPattern>true</outputPattern>
+			</fieldPopulator>		
+			<fieldPopulator fieldName="GB_RECOMBINANT">
+				<matchPattern>RF</matchPattern>
+				<outputPattern>true</outputPattern>
+			</fieldPopulator>		
+		</gbQualifier>
+		<gbQualifier name="collection_date">
+			<fieldPopulator fieldName="GB_COLLECTION_MONTH_DAY">
+				<matchPattern>(\d{2})-[A-Za-z]{3}-\d{4}</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_COLLECTION_MONTH">
+				<matchPattern>\d{2}-([A-Za-z]{3})-\d{4}</matchPattern>
+				<outputPattern>${g1?upper_case}</outputPattern>
+			</fieldPopulator>
+			<fieldPopulator fieldName="GB_COLLECTION_YEAR">
+				<matchPattern>(\d{4})</matchPattern>
+				<outputPattern>${g1}</outputPattern>
+			</fieldPopulator>
+		</gbQualifier>
+	</gbFeature>
+</genbankXmlPopulator>

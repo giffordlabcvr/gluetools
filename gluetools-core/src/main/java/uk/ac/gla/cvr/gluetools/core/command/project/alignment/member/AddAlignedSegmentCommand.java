@@ -24,12 +24,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	furtherHelp=
 	"An aligned segment is a proposed homology between a contiguous region of the reference sequence "+
 	"and a contiguous region of the member sequence, where the two regions are of equal size. "+
-	"In both cases the region includes the nucleotide at the start point (numbered from 0) "+
-	"and subsequent nucleotides up to, but excluding the end point. "+
-	"The reference region endpoints must satisfy 0 <= refStart < refEnd <= refSeqLength. "+
+	"In both cases the region includes the nucleotide at the start point (numbered from 1) "+
+	"and subsequent nucleotides up to and including the end point. "+
+	"The reference region endpoints must satisfy 1 <= refStart < refEnd <= refSeqLength. "+
 	"Similarly, the member region endpoints must be within membSeqLength. "+
 	"It is permissible for memberStart > memberEnd. This indicates a homology in the reverse direction. "+
-	"In this case the member region includes the nucleotide at memberEnd, but excludes the nucleotide at memberStart.") 
+	"In this case the member region includes the nucleotide at memberEnd and the nucleotide at memberStart.") 
 public class AddAlignedSegmentCommand extends MemberModeCommand {
 
 	public static final String REF_START = "refStart";
@@ -62,15 +62,15 @@ public class AddAlignedSegmentCommand extends MemberModeCommand {
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
 		Sequence refSequence = almtMemb.getAlignment().getRefSequence().getSequence();
 		int refSeqLength = refSequence.getNucleotides().length();
-		if(refStart < 0 || refEnd > refSeqLength) {
+		if(refStart < 1 || refEnd > refSeqLength) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_OUT_OF_RANGE, 
 					getAlignmentName(), getSourceName(), getSequenceID(), 
 					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		Sequence membSequence = almtMemb.getSequence();
 		int membSeqLength = membSequence.getNucleotides().length();
-		if(memberStart < 0 || memberEnd > membSeqLength || 
-				memberEnd < 0 || memberStart > membSeqLength) {
+		if(memberStart < 1 || memberEnd > membSeqLength || 
+				memberEnd < 1 || memberStart > membSeqLength) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_MEMBER_REGION_OUT_OF_RANGE, 
 					getAlignmentName(), getSourceName(), getSequenceID(), 
 					Integer.toString(membSeqLength), Integer.toString(memberStart), Integer.toString(memberEnd));

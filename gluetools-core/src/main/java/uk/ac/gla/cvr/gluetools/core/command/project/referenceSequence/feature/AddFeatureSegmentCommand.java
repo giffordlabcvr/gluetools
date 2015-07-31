@@ -21,9 +21,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"add","segment"}, 
 	docoptUsages={"<refStart> <refEnd>"},
 	description="Add a new segment of the reference sequence", 
-	furtherHelp="The segment includes the reference sequence nucleotide at <refStart> (numbered from 0) "+
-	"and subsequent nucleotides up to, but excluding <refEnd>. "+
-	"The new segment's endpoints must satisfy 0 <= refStart < refEnd <= refSeqLength. "+
+	furtherHelp="The segment includes the reference sequence nucleotide at <refStart> (numbered from 1) "+
+	"and subsequent nucleotides up to and including <refEnd>. "+
+	"The new segment's endpoints must satisfy 1 <= refStart < refEnd <= refSeqLength. "+
 	"The new segment must not overlap any existing segment in the feature.") 
 public class AddFeatureSegmentCommand extends FeatureModeCommand {
 
@@ -51,7 +51,7 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 				Feature.pkMap(getRefSeqName(), getFeatureName()));
 		Sequence refSequence = feature.getReferenceSequence().getSequence();
 		int refSeqLength = refSequence.getNucleotides().length();
-		if(refStart < 0 || refEnd > refSeqLength) {
+		if(refStart < 1 || refEnd > refSeqLength) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OUT_OF_RANGE, 
 					getRefSeqName(), getFeatureName(), 
 					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
@@ -60,8 +60,8 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 		existingSegments.forEach(sgmt -> {
 			Integer existingRefSeqStart = sgmt.getRefStart();
 			Integer existingRefSeqEnd = sgmt.getRefEnd();
-			if( (refStart >= existingRefSeqStart && refStart < existingRefSeqEnd) ||
-				(refEnd > existingRefSeqStart && refEnd <= existingRefSeqEnd) ||
+			if( (refStart >= existingRefSeqStart && refStart <= existingRefSeqEnd) ||
+				(refEnd >= existingRefSeqStart && refEnd <= existingRefSeqEnd) ||
 				(refStart <= existingRefSeqStart && refEnd >= existingRefSeqEnd)
 			) {
 				throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OVERLAPS_EXISTING, 

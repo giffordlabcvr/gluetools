@@ -8,6 +8,7 @@ public class CommandException extends GlueException {
 		
 		UNKNOWN_COMMAND("unknownCommandText", "commandModePath"), 
 		COMMAND_USAGE_ERROR("errorText"), 
+		COMMAND_FAILED_ERROR("errorText"), 
 		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue");
 
 		private String[] argNames;

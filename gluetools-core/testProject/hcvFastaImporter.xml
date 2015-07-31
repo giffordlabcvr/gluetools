@@ -1,0 +1,65 @@
+<fastaImporter>
+	<idParser>
+		<!-- For the ID this matches everything before the first dot -->
+		<matchPattern>([^\.]+)\..*</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</idParser>
+	<fieldParser>
+		<fieldName>NIM_1</fieldName>
+		<matchPattern>(?:[^\.]+\.){1}([^\.]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>NIM_2</fieldName>
+		<nullRegex>x</nullRegex>
+		<matchPattern>(?:[^\.]+\.){2}([^\.]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+		<valueConverter>
+			<matchPattern>CN</matchPattern>
+			<outputPattern>China</outputPattern>
+		</valueConverter>
+		<valueConverter>
+			<matchPattern>US</matchPattern>
+			<outputPattern>USA</outputPattern>
+		</valueConverter>
+		<valueConverter>
+			<matchPattern>JP</matchPattern>
+			<outputPattern>Japan</outputPattern>
+		</valueConverter>
+		<valueConverter>
+			<matchPattern>DE</matchPattern>
+			<outputPattern>Germany</outputPattern>
+		</valueConverter>
+	</fieldParser>
+	<fieldParser>
+		<nullRegex>x</nullRegex>
+		<fieldName>NIM_3</fieldName>
+		<matchPattern>(?:[^\.]+\.){3}([^\.]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>NIM_4</fieldName>
+		<matchPattern>(?:[^\.]+\.){4}([^\.]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>NIM_5</fieldName>
+		<matchPattern>(?:[^\.]+\.){5}([^\.]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>NIM_6</fieldName>
+		<matchPattern>(?:[^\.]+\.){6}([^\.]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>NIM_7</fieldName>
+		<matchPattern>(?:[^\.]+\.){7}([^ ]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>NIM_8</fieldName>
+		<matchPattern> (.*)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+</fastaImporter>

@@ -1,0 +1,750 @@
+# console set echo-cmd-json true
+# console set cmd-result-format json
+console change load-save-path hcvProject
+create project HCV "HCV mutation analysis"
+schema-project HCV
+  table SEQUENCES
+    create field GB_GI_NUMBER VARCHAR
+    create field GB_PRIMARY_ACCESSION VARCHAR
+    create field GB_ACCESSION_VERSION VARCHAR
+    create field GB_LOCUS VARCHAR
+    create field GB_LENGTH INTEGER
+    create field GB_GENOTYPE VARCHAR
+    create field GB_SUBTYPE VARCHAR
+    create field GB_RECOMBINANT BOOLEAN
+    create field GB_PATENT_RELATED BOOLEAN
+    create field GB_ORGANISM VARCHAR
+    create field GB_ISOLATE VARCHAR
+    create field GB_TAXONOMY VARCHAR 200
+    create field GB_HOST VARCHAR 
+    create field GB_COUNTRY VARCHAR
+    create field GB_COLLECTION_YEAR INTEGER 
+    create field GB_COLLECTION_MONTH VARCHAR
+    create field GB_COLLECTION_MONTH_DAY INTEGER
+    create field GB_CREATE_DATE DATE
+    create field GB_UPDATE_DATE DATE
+    create field GENOTYPE VARCHAR
+    create field SUBTYPE VARCHAR
+    list field
+          exit
+        exit
+ 
+project HCV
+  create module ncbi-importer -f hcvNcbiImporter.xml
+  module ncbi-importer
+    show configuration
+    import
+	      exit
+	  
+  create module gb-populator -f hcvGenbankXmlPopulator.xml
+  module gb-populator
+    show configuration
+  	populate
+  	      exit
+
+  sequence -w "GB_PRIMARY_ACCESSION = 'AF009606'"
+    set field GENOTYPE 1
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'M62321'"
+    set field GENOTYPE 1
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'M67463'"
+    set field GENOTYPE 1
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HQ850279'"
+    set field GENOTYPE 1
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF407457'"
+    set field GENOTYPE 1
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D90208'"
+    set field GENOTYPE 1
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'M58335'"
+    set field GENOTYPE 1
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU781827'"
+    set field GENOTYPE 1
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU781828'"
+    set field GENOTYPE 1
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D14853'"
+    set field GENOTYPE 1
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AY051292'"
+    set field GENOTYPE 1
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AY651061'"
+    set field GENOTYPE 1
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439768'"
+    set field GENOTYPE 1
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC248194'"
+    set field GENOTYPE 1
+    set field SUBTYPE e
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AM910652'"
+    set field GENOTYPE 1
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC248198'"
+    set field GENOTYPE 1
+    set field SUBTYPE h
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC248199'"
+    set field GENOTYPE 1
+    set field SUBTYPE h
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439772'"
+    set field GENOTYPE 1
+    set field SUBTYPE i
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439773'"
+    set field GENOTYPE 1
+    set field SUBTYPE j
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC248193'"
+    set field GENOTYPE 1
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC248197'"
+    set field GENOTYPE 1
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC248196'"
+    set field GENOTYPE 1
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439778'"
+    set field GENOTYPE 1
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439782'"
+    set field GENOTYPE 1
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439781'"
+    set field GENOTYPE 1
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439775'"
+    set field GENOTYPE 1
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ439774'"
+    set field GENOTYPE 1
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D00944'"
+    set field GENOTYPE 2
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AB047639'"
+    set field GENOTYPE 2
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HQ639944'"
+    set field GENOTYPE 2
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D10988'"
+    set field GENOTYPE 2
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AB030907'"
+    set field GENOTYPE 2
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AB661388'"
+    set field GENOTYPE 2
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AB661382'"
+    set field GENOTYPE 2
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D50409'"
+    set field GENOTYPE 2
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227949'"
+    set field GENOTYPE 2
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735114'"
+    set field GENOTYPE 2
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735120'"
+    set field GENOTYPE 2
+    set field SUBTYPE e
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC844042'"
+    set field GENOTYPE 2
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC844050'"
+    set field GENOTYPE 2
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ155561'"
+    set field GENOTYPE 2
+    set field SUBTYPE i
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HM777358'"
+    set field GENOTYPE 2
+    set field SUBTYPE j
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735113'"
+    set field GENOTYPE 2
+    set field SUBTYPE j
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HM777359'"
+    set field GENOTYPE 2
+    set field SUBTYPE j
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AB031663'"
+    set field GENOTYPE 2
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227953'"
+    set field GENOTYPE 2
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735111'"
+    set field GENOTYPE 2
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227967'"
+    set field GENOTYPE 2
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FN666428'"
+    set field GENOTYPE 2
+    set field SUBTYPE q
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FN666429'"
+    set field GENOTYPE 2
+    set field SUBTYPE q
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735115'"
+    set field GENOTYPE 2
+    set field SUBTYPE r
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KC197238'"
+    set field GENOTYPE 2
+    set field SUBTYPE t
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735112'"
+    set field GENOTYPE 2
+    set field SUBTYPE u
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D17763'"
+    set field GENOTYPE 3
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D28917'"
+    set field GENOTYPE 3
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'X76918'"
+    set field GENOTYPE 3
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JN714194'"
+    set field GENOTYPE 3
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D49374'"
+    set field GENOTYPE 3
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JQ065709'"
+    set field GENOTYPE 3
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ470619'"
+    set field GENOTYPE 3
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ470618'"
+    set field GENOTYPE 3
+    set field SUBTYPE e
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227954'"
+    set field GENOTYPE 3
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735123'"
+    set field GENOTYPE 3
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735121'"
+    set field GENOTYPE 3
+    set field SUBTYPE h
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735126'"
+    set field GENOTYPE 3
+    set field SUBTYPE h
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ407092'"
+    set field GENOTYPE 3
+    set field SUBTYPE i
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227955'"
+    set field GENOTYPE 3
+    set field SUBTYPE i
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D63821'"
+    set field GENOTYPE 3
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735122'"
+    set field GENOTYPE 3
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'Y11604'"
+    set field GENOTYPE 4
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ988074'"
+    set field GENOTYPE 4
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ418789'"
+    set field GENOTYPE 4
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462435'"
+    set field GENOTYPE 4
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462436'"
+    set field GENOTYPE 4
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ418786'"
+    set field GENOTYPE 4
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462437'"
+    set field GENOTYPE 4
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU392172'"
+    set field GENOTYPE 4
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF589161'"
+    set field GENOTYPE 4
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU392175'"
+    set field GENOTYPE 4
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU392174'"
+    set field GENOTYPE 4
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462432'"
+    set field GENOTYPE 4
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227971'"
+    set field GENOTYPE 4
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227963'"
+    set field GENOTYPE 4
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU392173'"
+    set field GENOTYPE 4
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462438'"
+    set field GENOTYPE 4
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU392171'"
+    set field GENOTYPE 4
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ839870'"
+    set field GENOTYPE 4
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227957'"
+    set field GENOTYPE 4
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462433'"
+    set field GENOTYPE 4
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227972'"
+    set field GENOTYPE 4
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462441'"
+    set field GENOTYPE 4
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227970'"
+    set field GENOTYPE 4
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462440'"
+    set field GENOTYPE 4
+    set field SUBTYPE o
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227977'"
+    set field GENOTYPE 4
+    set field SUBTYPE o
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462431'"
+    set field GENOTYPE 4
+    set field SUBTYPE p
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462434'"
+    set field GENOTYPE 4
+    set field SUBTYPE q
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ462439'"
+    set field GENOTYPE 4
+    set field SUBTYPE r
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JF735136'"
+    set field GENOTYPE 4
+    set field SUBTYPE s
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227976'"
+    set field GENOTYPE 4
+    set field SUBTYPE r
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ839869'"
+    set field GENOTYPE 4
+    set field SUBTYPE t
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HQ537009'"
+    set field GENOTYPE 4
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227959'"
+    set field GENOTYPE 4
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HQ537008'"
+    set field GENOTYPE 4
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX227960'"
+    set field GENOTYPE 4
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ025855'"
+    set field GENOTYPE 4
+    set field SUBTYPE w
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'FJ025856'"
+    set field GENOTYPE 4
+    set field SUBTYPE w
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AF064490'"
+    set field GENOTYPE 5
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'Y13184'"
+    set field GENOTYPE 5
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'Y12083'"
+    set field GENOTYPE 6
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'AY859526'"
+    set field GENOTYPE 6
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'HQ639936'"
+    set field GENOTYPE 6
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246930'"
+    set field GENOTYPE 6
+    set field SUBTYPE a
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D84262'"
+    set field GENOTYPE 6
+    set field SUBTYPE b
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF424629'"
+    set field GENOTYPE 6
+    set field SUBTYPE c
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D84263'"
+    set field GENOTYPE 6
+    set field SUBTYPE d
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ314805'"
+    set field GENOTYPE 6
+    set field SUBTYPE e
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246932'"
+    set field GENOTYPE 6
+    set field SUBTYPE e
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246931'"
+    set field GENOTYPE 6
+    set field SUBTYPE e
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835760'"
+    set field GENOTYPE 6
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246936'"
+    set field GENOTYPE 6
+    set field SUBTYPE f
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D63822'"
+    set field GENOTYPE 6
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ314806'"
+    set field GENOTYPE 6
+    set field SUBTYPE g
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D84265'"
+    set field GENOTYPE 6
+    set field SUBTYPE h
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835770'"
+    set field GENOTYPE 6
+    set field SUBTYPE i
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835762'"
+    set field GENOTYPE 6
+    set field SUBTYPE i
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835769'"
+    set field GENOTYPE 6
+    set field SUBTYPE j
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835761'"
+    set field GENOTYPE 6
+    set field SUBTYPE j
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'D84264'"
+    set field GENOTYPE 6
+    set field SUBTYPE k
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF424628'"
+    set field GENOTYPE 6
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX183556'"
+    set field GENOTYPE 6
+    set field SUBTYPE l
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835767'"
+    set field GENOTYPE 6
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835766'"
+    set field GENOTYPE 6
+    set field SUBTYPE m
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ278894'"
+    set field GENOTYPE 6
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ835768'"
+    set field GENOTYPE 6
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246938'"
+    set field GENOTYPE 6
+    set field SUBTYPE n
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF424627'"
+    set field GENOTYPE 6
+    set field SUBTYPE o
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246934'"
+    set field GENOTYPE 6
+    set field SUBTYPE o
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF424626'"
+    set field GENOTYPE 6
+    set field SUBTYPE p
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF424625'"
+    set field GENOTYPE 6
+    set field SUBTYPE q
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU408328'"
+    set field GENOTYPE 6
+    set field SUBTYPE r
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU408329'"
+    set field GENOTYPE 6
+    set field SUBTYPE s
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF632071'"
+    set field GENOTYPE 6
+    set field SUBTYPE t
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246939'"
+    set field GENOTYPE 6
+    set field SUBTYPE t
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU246940'"
+    set field GENOTYPE 6
+    set field SUBTYPE u
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU158186'"
+    set field GENOTYPE 6
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU798760'"
+    set field GENOTYPE 6
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU798761'"
+    set field GENOTYPE 6
+    set field SUBTYPE v
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'DQ278892'"
+    set field GENOTYPE 6
+    set field SUBTYPE w
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU643834'"
+    set field GENOTYPE 6
+    set field SUBTYPE w
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU643836'"
+    set field GENOTYPE 6
+    set field SUBTYPE w
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU408330'"
+    set field GENOTYPE 6
+    set field SUBTYPE xa
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU408332'"
+    set field GENOTYPE 6
+    set field SUBTYPE xa
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EU408331'"
+    set field GENOTYPE 6
+    set field SUBTYPE xa
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX183552'"
+    set field GENOTYPE 6
+    set field SUBTYPE xb
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ567645'"
+    set field GENOTYPE 6
+    set field SUBTYPE xb
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KJ567651'"
+    set field GENOTYPE 6
+    set field SUBTYPE xc
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KM252789'"
+    set field GENOTYPE 6
+    set field SUBTYPE xd
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KM252790'"
+    set field GENOTYPE 6
+    set field SUBTYPE xd
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KM252791'"
+    set field GENOTYPE 6
+    set field SUBTYPE xd
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'JX183557'"
+    set field GENOTYPE 6
+    set field SUBTYPE xe
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'KM252792'"
+    set field GENOTYPE 6
+    set field SUBTYPE xe
+          exit
+  sequence -w "GB_PRIMARY_ACCESSION = 'EF108306'"
+    set field GENOTYPE 7
+    set field SUBTYPE a
+          exit
+
+  create reference H77 ncbi-nuccore 2316097
+  
+  reference H77
+  
+    create feature 5UTR
+    feature 5UTR
+      add segment 1 341
+            exit
+    create feature Core
+    feature Core
+      add segment 342 914
+            exit
+    create feature E1
+    feature E1
+      add segment 915 1490
+      exit
+    create feature E2
+    feature E2
+      add segment 1491 2579
+      exit
+    create feature p7
+    feature p7
+      add segment 2580 2768
+      exit
+    create feature NS2
+    feature NS2
+      add segment 2769 3419
+      exit
+    create feature NS3
+    feature NS3
+      add segment 3420 5312
+      exit
+    create feature NS4A
+    feature NS4A
+      add segment 5313 5474
+      exit
+    create feature NS4B
+    feature NS4B
+      add segment 5475 6257
+      exit
+    create feature NS5A
+    feature NS5A
+      add segment 6258 7601
+      exit
+    create feature NS5B
+    feature NS5B
+      add segment 7602 9377
+      exit
+    create feature 3UTR
+    feature 3UTR
+      add segment 9378 9620
+      exit
+
+#  list sequence sequenceID GB_PRIMARY_ACCESSION GENOTYPE SUBTYPE
+    
+
+  
