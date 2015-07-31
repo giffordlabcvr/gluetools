@@ -16,8 +16,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"show", "nucleotides"}, 
 	docoptUsages={"[-b <beginIndex>] [-e <endIndex>]"},
 	docoptOptions={
-		"  -b <idx>, --beginIndex <idx>  Start index of the subsequence (from 0, inclusive)\n"+
-		"  -e <idx>, --endIndex <idx>    End index of the subsequence (exclusive)"},
+		"-b <idx>, --beginIndex <idx>  Start index of the subsequence (from 1, inclusive)",
+		"-e <idx>, --endIndex <idx>    End index of the subsequence (inclusive)"},
 	description="Show nucleotides from the sequence",
 	furtherHelp="A subsequence is returned using nucleotide codes in FASTA format. If the beginIndex is omitted the subsequence starts at the beginning of the sequence. Similarly if the endIndex is omitted, the subsequence starts at the end of the sequence.") 
 public class ShowNucleotides extends SequenceModeCommand {
@@ -29,7 +29,7 @@ public class ShowNucleotides extends SequenceModeCommand {
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		beginIndex = PluginUtils.configureIntProperty(configElem, "beginIndex", 0);
+		beginIndex = PluginUtils.configureIntProperty(configElem, "beginIndex", 1);
 		endIndex = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "endIndex", false));
 	}
 
@@ -38,7 +38,7 @@ public class ShowNucleotides extends SequenceModeCommand {
 		Sequence sequence = lookupSequence(cmdContext);
 		String nucleotides = sequence.getNucleotides();
 		int end = endIndex.orElse(nucleotides.length());
-		return new NucleotidesResult(beginIndex, end, nucleotides.subSequence(beginIndex, end).toString());
+		return new NucleotidesResult(beginIndex, end, nucleotides.subSequence(beginIndex-1, end).toString());
 	}
 
 
