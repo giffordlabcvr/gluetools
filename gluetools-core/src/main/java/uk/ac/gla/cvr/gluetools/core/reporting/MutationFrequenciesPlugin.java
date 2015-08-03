@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
-import org.biojava.nbio.core.sequence.DNASequence;
+import org.biojava.nbio.core.sequence.RNASequence;
+import org.biojava.nbio.core.sequence.transcription.TranscriptionEngine;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -57,8 +58,10 @@ import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesPlugin> {
 
 	private String alignmentName;
+	private TranscriptionEngine transcriptionEngine;
 	
 	public MutationFrequenciesPlugin() {
+		transcriptionEngine = new TranscriptionEngine.Builder().initMet(false).build();
 		addProvidedCmdClass(GenerateCommand.class);
 	}
 
@@ -225,13 +228,11 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		GlueXmlUtils.appendElementWithText(sequenceElem, SequenceCommand.SEQUENCE_ID, seqSeqId);
 		cmdContext.executeElem(sequenceElem.getOwnerDocument().getDocumentElement());
 		try {
+			Element showNtElem = CommandUsage.docElemForCmdClass(ShowNucleotidesCommand.class);
+			NucleotidesResult ntResult = (NucleotidesResult) cmdContext.
+					executeElem(showNtElem.getOwnerDocument().getDocumentElement());
 			for(T segment : segments) {
-				Element showNtElem = CommandUsage.docElemForCmdClass(ShowNucleotidesCommand.class);
-				GlueXmlUtils.appendElementWithText(showNtElem, ShowNucleotidesCommand.BEGIN_INDEX, Integer.toString(getStart.apply(segment)));
-				GlueXmlUtils.appendElementWithText(showNtElem, ShowNucleotidesCommand.END_INDEX, Integer.toString(getEnd.apply(segment)));
-				NucleotidesResult ntResult = (NucleotidesResult) cmdContext.
-						executeElem(showNtElem.getOwnerDocument().getDocumentElement());
-				segment.nucleotides = ntResult.getNucleotides();
+				segment.nucleotides = SegmentUtils.subSeq(ntResult.getNucleotides(), getStart.apply(segment), getEnd.apply(segment));
 			}
 		} finally {
 			cmdContext.popCommandMode();
@@ -240,13 +241,21 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 
 	public CommandResult doGenerate(CommandContext cmdContext,
 			Optional<String> taxon, String feature) {
+		// long start = System.currentTimeMillis();
+		
+		// System.out.println("Start");
 		
 		AnalysisData analysisData = new AnalysisData();
 		
+		
 		getReferenceSeqData(cmdContext, feature, analysisData);
+
+		// System.out.println("P1:"+(System.currentTimeMillis()-start) % 10000);
+
 		
 		getMemberDatas(cmdContext, taxon, analysisData);
 		
+		// System.out.println("P2:"+(System.currentTimeMillis()-start) % 10000);
 		
 		Element rootElem = GlueXmlUtils.documentWithElement("mutationSet");
 		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
@@ -292,6 +301,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				aaStartIndex += 3;
 			}
 		}
+		// System.out.println("P3:"+(System.currentTimeMillis()-start) % 10000);
 		return new CommandResult(rootElem.getOwnerDocument());
 	}
 
@@ -312,7 +322,9 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		}
 		String aaString;
 		try {
-			aaString = new DNASequence(codon).getRNASequence().getProteinSequence().getSequenceAsString();
+			// appying the genbank rule which means T represents Uracil for RNA.
+			RNASequence rnaSequence = new RNASequence(codon.replaceAll("T", "U"));
+			aaString = rnaSequence.getProteinSequence(transcriptionEngine).getSequenceAsString();
 		} catch (CompoundNotFoundException e) {
 			throw new RuntimeException(e);
 		}
@@ -321,12 +333,16 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 
 	private void getMemberDatas(CommandContext cmdContext,
 			Optional<String> taxon, AnalysisData analysisData) {
+		
+		// long start = System.currentTimeMillis();
+		// System.out.println("P1 Start");
+		
 		Element almtCmdElem = CommandUsage.docElemForCmdClass(AlignmentCommand.class);
 		GlueXmlUtils.appendElementWithText(almtCmdElem, AlignmentCommand.ALIGNMENT_NAME, alignmentName);
 		cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
 		try {
 			Element listAlmtMembElem = CommandUsage.docElemForCmdClass(ListMemberCommand.class);
-			if(taxon.isPresent() && !taxon.equals("all")) {
+			if(taxon.isPresent() && !taxon.get().equals("all")) {
 				String taxonString = taxon.get();
 				Pattern pattern = Pattern.compile("(\\d)([a-z]*)");
 				Matcher matcher = pattern.matcher(taxonString);
@@ -344,6 +360,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				}
 				GlueXmlUtils.appendElementWithText(listAlmtMembElem, ListMemberCommand.WHERE_CLAUSE, whereClauseExpression.toString());
 			}
+			// System.out.println("P1a:"+(System.currentTimeMillis()-start) % 10000);
 
 			ListResult listAlmtMembResult = (ListResult) cmdContext.executeElem(listAlmtMembElem.getOwnerDocument().getDocumentElement());
 			List<Map<String, String>> membIdMaps = listAlmtMembResult.asListOfMaps();
@@ -406,26 +423,34 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		} finally {
 			cmdContext.popCommandMode();
 		}
+		// System.out.println("P1b:"+(System.currentTimeMillis()-start) % 10000);
 
+		Function<MemberSegment, Integer> getStart = new Function<MemberSegment, Integer>(){
+			@Override
+			public Integer apply(MemberSegment t) {
+				return t.memberStart;
+			}
+			
+		};
+		Function<MemberSegment, Integer> getEnd = new Function<MemberSegment, Integer>(){
+
+			@Override
+			public Integer apply(MemberSegment t) {
+				return t.memberEnd;
+			}
+			
+		};
+
+		
 		// now enter each member sequence and populate segment nucleotides.
 		for(MemberData memberData: analysisData.memberDatas) {
-			populateSegmentNTs(cmdContext, memberData.memberSegments, memberData.sourceName, memberData.sequenceID, 
-			new Function<MemberSegment, Integer>(){
-				@Override
-				public Integer apply(MemberSegment t) {
-					return t.memberStart;
-				}
-				
-			}, 
-			new Function<MemberSegment, Integer>(){
-
-				@Override
-				public Integer apply(MemberSegment t) {
-					return t.memberEnd;
-				}
-				
-			});
+			populateSegmentNTs(cmdContext, 
+					memberData.memberSegments, memberData.sourceName, memberData.sequenceID, 
+					getStart, getEnd);
 		}
+
+		// System.out.println("P1c:"+(System.currentTimeMillis()-start) % 10000);
+
 	}
 
 }

@@ -37,7 +37,7 @@ mutationsBrowser.controller('selectGenotypeCtrl',
 			$scope.GenotypeSelection = GenotypeSelection;
 
 			$scope.defaultOpenDepth = 1;
-			$scope.defaultSelectedId = "HCV";
+			$scope.defaultSelectedId = "all";
 			
 			$scope.genotypes = null
 		    $http.get('../main/js/hcvGenotypes.json')
