@@ -4,7 +4,7 @@
 	"children": 
 	[
 	 	{
-	 		"id": "five_prime_ntr",
+	 		"id": "5UTR",
 	 		"label": "5' NTR"
 	 	},
 	 	{
@@ -13,17 +13,17 @@
 	 		"children": 
 	 		[
 	 		 	{
-	 		 		"id": "c",
-	 		 		"label": "C", 
+	 		 		"id": "Core",
+	 		 		"label": "Core", 
 	 		 		"description": "Nucleocapsid"
 	 		 	},
 	 		 	{
-	 		 		"id": "e1",
+	 		 		"id": "E1",
 	 		 		"label": "E1", 
 	 		 		"description": "Envelope glycoprotein"
 	 		 	},
 	 		 	{
-	 		 		"id": "e2",
+	 		 		"id": "E2",
 	 		 		"label": "E2", 
 	 		 		"description": "Envelope glycoprotein"
 	 		 	}
@@ -35,44 +35,44 @@
 	 		"children": 
 	 		[
 	 		 	{
-	 		 		"id": "ns1",
-	 		 		"label": "NS1", 
+	 		 		"id": "p7",
+	 		 		"label": "p7", 
 	 		 		"description": ""
 	 		 	},
 	 		 	{
-	 		 		"id": "ns2",
+	 		 		"id": "NS2",
 	 		 		"label": "NS2", 
 	 		 		"description": "Transmembrane protein"
 	 		 	},
 	 		 	{
-	 		 		"id": "ns3",
+	 		 		"id": "NS3",
 	 		 		"label": "NS3", 
 	 		 		"description": "Metalloprotease, Serine protease, RNA helicase"
 	 		 	},
 	 		 	{
-	 		 		"id": "ns4a",
+	 		 		"id": "NS4A",
 	 		 		"label": "NS4A", 
 	 		 		"description": "Cofactor"
 	 		 	},
 	 		 	{
-	 		 		"id": "ns4b",
+	 		 		"id": "NS4B",
 	 		 		"label": "NS4B", 
 	 		 		"description": "Cofactor"
 	 		 	},
 	 		 	{
-	 		 		"id": "ns5a",
+	 		 		"id": "NS5A",
 	 		 		"label": "NS5A", 
 	 		 		"description": "IFN-resistant protein"
 	 		 	},
 	 		 	{
-	 		 		"id": "ns5b",
+	 		 		"id": "NS5B",
 	 		 		"label": "NS5B", 
 	 		 		"description": "RNA polymerase"
 	 		 	}
 	 		]
 	 	},
 	 	{
-	 		"id": "three_prime_ntr",
+	 		"id": "3UTR",
 	 		"label": "3' NTR"
 	 	}
 	]

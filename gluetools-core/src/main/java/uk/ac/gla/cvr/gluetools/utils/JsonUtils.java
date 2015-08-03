@@ -11,8 +11,10 @@ import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.JsonWriter;
@@ -186,6 +188,10 @@ public class JsonUtils {
 		} else if(value.getValueType() == ValueType.NULL){
 			Element elem = GlueXmlUtils.appendElement(parentElem, key);
 			elem.setAttribute("isNull", "true");
+		} else if(value instanceof JsonString) {
+			GlueXmlUtils.appendElementWithText(parentElem, key, ((JsonString) value).getChars().toString());
+		} else if(value instanceof JsonNumber) {
+			GlueXmlUtils.appendElementWithText(parentElem, key, ((JsonNumber) value).toString());
 		} else {
 			GlueXmlUtils.appendElementWithText(parentElem, key, value.toString());
 		}

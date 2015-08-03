@@ -166,14 +166,19 @@ function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations) {
 	$scope.regionSelectOpen = false;
 	
 	$scope.updateMutations = function() {
-		glueWS.runGlueCommand('module/randomMutations', {"generate": {}}).
+		var glueCommand = {"generate": {
+			"taxon":GenotypeSelection.id,
+			"feature":RegionSelection.id
+		}}
+		// console.log(JSON.stringify(glueCommand));
+		glueWS.runGlueCommand('module/mutationFrequencies', glueCommand).
 		success(function(data, status, headers, config) {
 			  //console.log("HTTP POST response body: "+JSON.stringify(data));
 			  $scope.Mutations.setMutations(data);
 			  //console.log("Mutations: "+JSON.stringify($scope.Mutations.getMutations()));
 		  }).
 		  error(function(data, status, headers, config) {
-			  console.log("HTTP POST error: "+data);
+			  console.log("HTTP POST error: "+JSON.stringify(data));
 		  });
 		
 		

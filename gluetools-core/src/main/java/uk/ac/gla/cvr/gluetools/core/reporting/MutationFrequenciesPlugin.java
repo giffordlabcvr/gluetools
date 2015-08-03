@@ -1,16 +1,20 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
+import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -44,6 +48,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
@@ -88,11 +94,6 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			return mutationFrequenciesPlugin.doGenerate(cmdContext, taxon, feature);
 		}
 
-		private String randomAA(Random random) {
-			String allAAs = "ACDEFGHIKLMNOPQRSTUVWY";
-			int index = random.nextInt(allAAs.length());
-			return allAAs.substring(index, index+1);
-		}
 	}
 	
 	private class ReferenceSegment extends SegmentUtils.Segment {
@@ -154,8 +155,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		// go into alignment and find reference sequence name
 		Element almtCmdElem = CommandUsage.docElemForCmdClass(AlignmentCommand.class);
 		GlueXmlUtils.appendElementWithText(almtCmdElem, AlignmentCommand.ALIGNMENT_NAME, alignmentName);
+		cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
 		try {
-			cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
 			Element showRefElement = CommandUsage.docElemForCmdClass(ShowReferenceSequenceCommand.class);
 			ShowReferenceResult showReferenceResult = (ShowReferenceResult) cmdContext.
 					executeElem(showRefElement.getOwnerDocument().getDocumentElement());
@@ -166,8 +167,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		// go into reference sequence and find feature segments.
 		Element refSeqElem = CommandUsage.docElemForCmdClass(ReferenceSequenceCommand.class);
 		GlueXmlUtils.appendElementWithText(refSeqElem, ReferenceSequenceCommand.REF_SEQ_NAME, refSeqName);
+		cmdContext.executeElem(refSeqElem.getOwnerDocument().getDocumentElement());
 		try {
-			cmdContext.executeElem(refSeqElem.getOwnerDocument().getDocumentElement());
 			Element showSeqElement = CommandUsage.docElemForCmdClass(ShowSequenceCommand.class);
 			ShowSequenceResult showSequenceResult = (ShowSequenceResult) cmdContext.
 					executeElem(showSeqElement.getOwnerDocument().getDocumentElement());
@@ -175,8 +176,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			analysisData.refSeqId = showSequenceResult.getSequenceID();
 			Element featureElem = CommandUsage.docElemForCmdClass(FeatureCommand.class);
 			GlueXmlUtils.appendElementWithText(featureElem, FeatureCommand.FEATURE_NAME, featureName);
+			cmdContext.executeElem(featureElem.getOwnerDocument().getDocumentElement());
 			try {
-				cmdContext.executeElem(featureElem.getOwnerDocument().getDocumentElement());
 				Element listFeatSegElem = CommandUsage.docElemForCmdClass(ListFeatureSegmentCommand.class);
 				ListResult listFeatResult = (ListResult) cmdContext.
 						executeElem(listFeatSegElem.getOwnerDocument().getDocumentElement());
@@ -222,8 +223,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		Element sequenceElem = CommandUsage.docElemForCmdClass(SequenceCommand.class);
 		GlueXmlUtils.appendElementWithText(sequenceElem, SequenceCommand.SOURCE_NAME, seqSourceName);
 		GlueXmlUtils.appendElementWithText(sequenceElem, SequenceCommand.SEQUENCE_ID, seqSeqId);
+		cmdContext.executeElem(sequenceElem.getOwnerDocument().getDocumentElement());
 		try {
-			cmdContext.executeElem(sequenceElem.getOwnerDocument().getDocumentElement());
 			for(T segment : segments) {
 				Element showNtElem = CommandUsage.docElemForCmdClass(ShowNucleotidesCommand.class);
 				GlueXmlUtils.appendElementWithText(showNtElem, ShowNucleotidesCommand.BEGIN_INDEX, Integer.toString(getStart.apply(segment)));
@@ -237,8 +238,6 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		}
 	}
 
-	
-
 	public CommandResult doGenerate(CommandContext cmdContext,
 			Optional<String> taxon, String feature) {
 		
@@ -246,55 +245,88 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		
 		getReferenceSeqData(cmdContext, feature, analysisData);
 		
-		System.out.println("Reference seq source name:"+analysisData.refSeqSourceName);
-		System.out.println("Reference seq ID:"+analysisData.refSeqId);
-		System.out.println("Feature segments:"+analysisData.referenceSegments);
-		
 		getMemberDatas(cmdContext, taxon, analysisData);
 		
-		for(MemberData memberData: analysisData.memberDatas) {
-			System.out.println(memberData);
-		}
 		
 		Element rootElem = GlueXmlUtils.documentWithElement("mutationSet");
-		/*
 		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
-		Random random = new Random();
-		int numAAs = 90;
-		int minNumIsolates = 4000;
-		int maxNumIsolates = 14000;
-		double mutationChance = 0.25;
-		for(int aaIndex = 0; aaIndex < numAAs; aaIndex++) {
-			Element aaLocusElem = GlueXmlUtils.appendElement(rootElem, "aaLocus");
-			JsonUtils.setJsonType(aaLocusElem, JsonType.Object, true);
-
-			GlueXmlUtils.appendElementWithText(aaLocusElem, "consensusAA", randomAA(random), JsonType.String);
-			GlueXmlUtils.appendElementWithText(aaLocusElem, "numIsolates", Integer.toString( (int) (
-					minNumIsolates + Math.floor(random.nextDouble() * (maxNumIsolates - minNumIsolates)))), JsonType.Integer);
-			
-			double percentage = 49.9;
-			while(random.nextDouble() < mutationChance) {
-				double mutPercentage = random.nextDouble() * percentage;
-				if(mutPercentage > 1.0) {
-					Element mutationElem = GlueXmlUtils.appendElement(aaLocusElem, "mutation");
-					JsonUtils.setJsonType(mutationElem, JsonType.Object, true);
-					GlueXmlUtils.appendElementWithText(mutationElem, "mutationAA", randomAA(random), JsonType.String);
-					GlueXmlUtils.appendElementWithText(mutationElem, "isolatesPercent", Double.toString(mutPercentage), JsonType.Double);
-					percentage = mutPercentage / 2.0;
+		for(ReferenceSegment refSeg : analysisData.referenceSegments) {
+			int aaStartIndex = refSeg.start;
+			while(aaStartIndex+2 <= refSeg.end) {
+				String referenceAaString = getCodonAtNtPosition(refSeg, aaStartIndex, false);
+				Element aaLocusElem = GlueXmlUtils.appendElement(rootElem, "aaLocus");
+				JsonUtils.setJsonType(aaLocusElem, JsonType.Object, true);
+				GlueXmlUtils.appendElementWithText(aaLocusElem, "consensusAA", referenceAaString, JsonType.String);
+				
+				int numIsolatesN = 0;
+				Map<String, Integer> mutationAaToNumIsolates = new LinkedHashMap<String, Integer>();
+				for(MemberData memberData : analysisData.memberDatas) {
+					for(MemberSegment memberSegment: memberData.memberSegments) {
+						String memberAaString = getCodonAtNtPosition(memberSegment, aaStartIndex, true);
+						if(memberAaString != null) {
+							numIsolatesN++;
+							if(!memberAaString.equals(referenceAaString)) {
+								Integer numMutations = mutationAaToNumIsolates.getOrDefault(memberAaString, 0);
+								mutationAaToNumIsolates.put(memberAaString, numMutations+1);
+							}
+						}
+					}
 				}
+				int numIsolates = numIsolatesN;
+				GlueXmlUtils.appendElementWithText(aaLocusElem, "numIsolates", Integer.toString(numIsolates), JsonType.Integer);
+
+				List<Entry<String, Integer>> sortedMutations = mutationAaToNumIsolates.entrySet().stream().sorted((o1, o2) -> 
+					(0 - Integer.compare(o1.getValue(), o2.getValue()))).collect(Collectors.toList());
+				
+				sortedMutations.forEach(mut -> {
+					String mutationAA = mut.getKey();
+					Integer numMutIsolates = mut.getValue();
+					double mutPercentage = 100 * ( numMutIsolates / (double) numIsolates ) ;
+					if(mutPercentage > 1.0) {
+						Element mutationElem = GlueXmlUtils.appendElement(aaLocusElem, "mutation");
+						JsonUtils.setJsonType(mutationElem, JsonType.Object, true);
+						GlueXmlUtils.appendElementWithText(mutationElem, "mutationAA", mutationAA, JsonType.String);
+						GlueXmlUtils.appendElementWithText(mutationElem, "isolatesPercent", Double.toString(mutPercentage), JsonType.Double);
+					}
+				});
+				aaStartIndex += 3;
 			}
-		}*/
+		}
 		return new CommandResult(rootElem.getOwnerDocument());
+	}
+
+	private String getCodonAtNtPosition(ReferenceSegment refSeg, int aaStartIndex, boolean allowAmbiguity) {
+		if(aaStartIndex < refSeg.start) {
+			return null;
+		}
+		if(aaStartIndex+2 > refSeg.end) {
+			return null;
+		}
+		String codon = SegmentUtils.subSeq(refSeg.nucleotides, (aaStartIndex-refSeg.start)+1, (aaStartIndex-refSeg.start)+3);
+		if(!codon.matches("[ACTG]{3}")) {
+			if(allowAmbiguity) {
+				return null;
+			} else {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Reference sequence NT ambiguity at ["+aaStartIndex+", "+(aaStartIndex+2)+"]");
+			}
+		}
+		String aaString;
+		try {
+			aaString = new DNASequence(codon).getRNASequence().getProteinSequence().getSequenceAsString();
+		} catch (CompoundNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		return aaString;
 	}
 
 	private void getMemberDatas(CommandContext cmdContext,
 			Optional<String> taxon, AnalysisData analysisData) {
 		Element almtCmdElem = CommandUsage.docElemForCmdClass(AlignmentCommand.class);
 		GlueXmlUtils.appendElementWithText(almtCmdElem, AlignmentCommand.ALIGNMENT_NAME, alignmentName);
+		cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
 		try {
-			cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
 			Element listAlmtMembElem = CommandUsage.docElemForCmdClass(ListMemberCommand.class);
-			if(taxon.isPresent()) {
+			if(taxon.isPresent() && !taxon.equals("all")) {
 				String taxonString = taxon.get();
 				Pattern pattern = Pattern.compile("(\\d)([a-z]*)");
 				Matcher matcher = pattern.matcher(taxonString);
@@ -324,8 +356,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				Element memberElem = CommandUsage.docElemForCmdClass(MemberCommand.class);
 				GlueXmlUtils.appendElementWithText(memberElem, MemberCommand.SOURCE_NAME, memberSourceName);
 				GlueXmlUtils.appendElementWithText(memberElem, MemberCommand.SEQUENCE_ID, memberSequenceId);
+				cmdContext.executeElem(memberElem.getOwnerDocument().getDocumentElement());
 				try {
-					cmdContext.executeElem(memberElem.getOwnerDocument().getDocumentElement());
 					
 					Element listAlignedSegmentElem = CommandUsage.docElemForCmdClass(ListAlignedSegmentCommand.class);
 					ListResult listAlignedSegResult = (ListResult) cmdContext.
