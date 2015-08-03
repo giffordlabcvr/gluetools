@@ -10,13 +10,15 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public abstract class AlignmentModeCommand extends Command {
 
+	public static final String ALIGNMENT_NAME = "alignmentName";
+
 
 	private String alignmentName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		alignmentName = PluginUtils.configureStringProperty(configElem, "alignmentName", true);
+		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 	}
 
 	protected String getAlignmentName() {

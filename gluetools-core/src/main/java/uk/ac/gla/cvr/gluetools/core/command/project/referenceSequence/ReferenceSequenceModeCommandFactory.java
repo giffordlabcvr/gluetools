@@ -20,6 +20,7 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteFeatureCommand.class);
 		registerCommandClass(ListFeatureCommand.class);
 		registerCommandClass(FeatureCommand.class);
+		registerCommandClass(ShowSequenceCommand.class);
 
 		registerCommandClass(ExitCommand.class);
 	}

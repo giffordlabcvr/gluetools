@@ -36,6 +36,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandModeClass = MemberMode.class)
 public class MemberCommand extends AlignmentModeCommand  {
 
+	public static final String SEQUENCE_ID = "sequenceID";
+	public static final String SOURCE_NAME = "sourceName";
 	private String sourceName;
 	private String sequenceID;
 	private Expression whereClause;
@@ -43,8 +45,8 @@ public class MemberCommand extends AlignmentModeCommand  {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", false);
-		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", false);
+		sourceName = PluginUtils.configureStringProperty(configElem, SOURCE_NAME, false);
+		sequenceID = PluginUtils.configureStringProperty(configElem, SEQUENCE_ID, false);
 		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, "whereClause", false);
 		
 		if(whereClause == null) {

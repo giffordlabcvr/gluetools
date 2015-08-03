@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 
 
 @CommandClass( 
@@ -19,9 +20,15 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-b <idx>, --beginIndex <idx>  Start index of the subsequence (from 1, inclusive)",
 		"-e <idx>, --endIndex <idx>    End index of the subsequence (inclusive)"},
 	description="Show nucleotides from the sequence",
-	furtherHelp="A subsequence is returned using nucleotide codes in FASTA format. If the beginIndex is omitted the subsequence starts at the beginning of the sequence. Similarly if the endIndex is omitted, the subsequence starts at the end of the sequence.") 
+	furtherHelp="A subsequence is returned using nucleotide codes in FASTA format. "+
+	"If the beginIndex is omitted the subsequence starts at the beginning of the sequence. "+
+			"Similarly if the endIndex is omitted, the subsequence starts at the end of the sequence. "+
+			"If both startIndex and endIndex are provided, then startIndex may be greater than endIndex. "+
+			"In this case the nucleotides are returned in descending order.") 
 public class ShowNucleotidesCommand extends SequenceModeCommand {
 
+	public static final String END_INDEX = "endIndex";
+	public static final String BEGIN_INDEX = "beginIndex";
 	private Integer beginIndex;
 	private Optional<Integer> endIndex;
 	
@@ -29,8 +36,8 @@ public class ShowNucleotidesCommand extends SequenceModeCommand {
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		beginIndex = PluginUtils.configureIntProperty(configElem, "beginIndex", 1);
-		endIndex = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "endIndex", false));
+		beginIndex = PluginUtils.configureIntProperty(configElem, BEGIN_INDEX, 1);
+		endIndex = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, END_INDEX, false));
 	}
 
 	@Override
@@ -38,7 +45,7 @@ public class ShowNucleotidesCommand extends SequenceModeCommand {
 		Sequence sequence = lookupSequence(cmdContext);
 		String nucleotides = sequence.getNucleotides();
 		int end = endIndex.orElse(nucleotides.length());
-		return new NucleotidesResult(beginIndex, end, nucleotides.subSequence(beginIndex-1, end).toString());
+		return new NucleotidesResult(beginIndex, end, SegmentUtils.subSeq(nucleotides, beginIndex, end));
 	}
 
 

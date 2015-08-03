@@ -23,12 +23,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandModeClass = ReferenceSequenceMode.class)
 public class ReferenceSequenceCommand extends ProjectModeCommand  {
 
+	public static final String REF_SEQ_NAME = "refSeqName";
 	private String refSeqName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		refSeqName = PluginUtils.configureStringProperty(configElem, "refSeqName", true);
+		refSeqName = PluginUtils.configureStringProperty(configElem, REF_SEQ_NAME, true);
 	}
 
 	@Override

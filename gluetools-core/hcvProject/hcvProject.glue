@@ -4785,7 +4785,12 @@ project HCV
       add segment 7581 9384 7585 9388
       exit
     exit
-    
+  
+  create module mutationFrequencies -f hcvMutationFrequencies.xml
+  
+  module mutationFrequencies
+  
+    generate -t 6 -f E1
 
 #  list sequence sequenceID GB_PRIMARY_ACCESSION GENOTYPE SUBTYPE
     

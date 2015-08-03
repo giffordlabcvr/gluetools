@@ -23,12 +23,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandModeClass = FeatureMode.class)
 public class FeatureCommand extends ReferenceSequenceModeCommand  {
 
+	public static final String FEATURE_NAME = "featureName";
 	private String featureName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
+		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 	}
 
 	@Override

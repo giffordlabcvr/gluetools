@@ -32,7 +32,9 @@ public class NucleotidesResult extends CommandResult {
 		buf.append("\n").append(GlueXmlUtils.getXPathString(getDocument(), "/nucleotidesResult/nucleotides/text()"));;
 		renderCtx.output(buf.toString());
 	}
-	
-	
+
+	public String getNucleotides() {
+		return GlueXmlUtils.getXPathString(getDocument(), "/nucleotidesResult/nucleotides/text()");
+	}
 	
 }
