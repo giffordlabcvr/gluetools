@@ -3,10 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.command.project.module;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class ModuleModeCommand extends Command {
+public abstract class ModuleModeCommand<R extends CommandResult> extends Command<R> {
 
 
 	private String moduleName;

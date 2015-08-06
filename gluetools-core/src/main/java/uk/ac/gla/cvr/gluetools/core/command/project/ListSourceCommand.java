@@ -5,7 +5,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 
 
@@ -13,10 +13,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 	commandWords={"list", "source"}, 
 	docoptUsages={""},
 	description="List sequence sources") 
-public class ListSourceCommand extends ProjectModeCommand {
+public class ListSourceCommand extends ProjectModeCommand<ListResult> {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public ListResult execute(CommandContext cmdContext) {
 		return CommandUtils.runListCommand(cmdContext, Source.class, new SelectQuery(Source.class));
 	}
 

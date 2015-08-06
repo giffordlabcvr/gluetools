@@ -5,7 +5,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -20,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Create a new reference sequence, based on a specific sequence", 
 	furtherHelp="A reference sequence object decorates a sequence with various nucleotide-related metadata."+
 	" While a sequence is a reference sequence, the sequence may not be deleted.") 
-public class CreateReferenceSequenceCommand extends ProjectModeCommand {
+public class CreateReferenceSequenceCommand extends ProjectModeCommand<CreateResult> {
 
 	public static final String REF_SEQ_NAME = "refSeqName";
 	public static final String SOURCE_NAME = "sourceName";
@@ -39,7 +38,7 @@ public class CreateReferenceSequenceCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Sequence sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
 				Sequence.pkMap(sourceName, sequenceID));

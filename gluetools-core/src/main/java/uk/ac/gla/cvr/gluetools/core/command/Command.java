@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 
-public abstract class Command implements Plugin {
+public abstract class Command<R extends CommandResult> implements Plugin {
 
 	private Element cmdElem;
 	
@@ -17,6 +17,6 @@ public abstract class Command implements Plugin {
 		this.cmdElem = cmdElem;
 	}
 
-	public abstract CommandResult execute(CommandContext cmdContext);
+	public abstract R execute(CommandContext cmdContext);
 	
 }

@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 
-
+@SuppressWarnings("rawtypes")
 public abstract class CommandMode<C extends Command> {
 	
 	public static String CORE_DOMAIN_RESOURCE = "cayenne-gluecore-domain.xml";
@@ -59,6 +59,7 @@ public abstract class CommandMode<C extends Command> {
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass, Element elem) {
 		
 	}

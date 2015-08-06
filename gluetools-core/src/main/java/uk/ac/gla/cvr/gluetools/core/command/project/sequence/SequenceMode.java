@@ -25,6 +25,7 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Inside
 		this.sequenceID = sequenceID;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

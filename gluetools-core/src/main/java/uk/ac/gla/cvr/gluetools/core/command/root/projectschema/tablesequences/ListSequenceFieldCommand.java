@@ -7,7 +7,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 
 
@@ -15,12 +15,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 	commandWords={"list", "field"},
 	docoptUsages={""},
 	description="List the fields in the table") 
-public class ListSequenceFieldCommand extends TableSequencesModeCommand {
+public class ListSequenceFieldCommand extends TableSequencesModeCommand<ListResult> {
 
 	
 	
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public ListResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, getProjectName());
 		return CommandUtils.runListCommand(cmdContext, Field.class, new SelectQuery(Field.class, exp));
 	}

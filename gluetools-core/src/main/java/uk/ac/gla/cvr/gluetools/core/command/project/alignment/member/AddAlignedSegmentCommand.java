@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AlignedSegmentException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
@@ -30,7 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"Similarly, the member region endpoints must be within membSeqLength. "+
 	"It is permissible for memberStart > memberEnd. This indicates a homology in the reverse direction. "+
 	"In this case the member region includes the nucleotide at memberEnd and the nucleotide at memberStart.") 
-public class AddAlignedSegmentCommand extends MemberModeCommand {
+public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
 
 	public static final String REF_START = "refStart";
 	public static final String REF_END = "refEnd";
@@ -52,7 +51,7 @@ public class AddAlignedSegmentCommand extends MemberModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		if(refStart > refEnd) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_ENDPOINTS_REVERSED, 

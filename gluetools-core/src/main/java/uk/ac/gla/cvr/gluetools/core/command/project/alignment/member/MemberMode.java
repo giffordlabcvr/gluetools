@@ -26,6 +26,7 @@ public class MemberMode extends CommandMode<MemberCommand> implements InsideProj
 		this.sequenceID = sequenceID;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

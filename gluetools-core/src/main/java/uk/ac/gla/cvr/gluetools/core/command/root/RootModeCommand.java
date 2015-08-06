@@ -10,18 +10,19 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
-public abstract class RootModeCommand extends Command {
+public abstract class RootModeCommand<R extends CommandResult> extends Command<R> {
 
 	protected Project getProject(ObjectContext objContext, String projectName) {
 		return GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
 	}
 	
+	@SuppressWarnings("rawtypes")
 	protected abstract static class ProjectNameCompleter extends CommandCompleter {
-
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			LinkedList<String> suggestions = new LinkedList<String>();

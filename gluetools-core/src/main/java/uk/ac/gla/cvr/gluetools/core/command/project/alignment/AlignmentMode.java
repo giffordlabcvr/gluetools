@@ -23,6 +23,7 @@ public class AlignmentMode extends CommandMode<AlignmentCommand> implements Insi
 		this.project = project;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

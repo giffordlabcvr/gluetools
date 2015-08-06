@@ -9,11 +9,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 
-public abstract class ModuleProvidedCommand<P extends ModulePlugin<P>> extends ModuleModeCommand {
+public abstract class ModuleProvidedCommand<R extends CommandResult, P extends ModulePlugin<P>> extends ModuleModeCommand<R> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public final CommandResult execute(CommandContext cmdContext) {
+	public final R execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getModuleName()));
 		@SuppressWarnings("unchecked")
@@ -31,6 +31,6 @@ public abstract class ModuleProvidedCommand<P extends ModulePlugin<P>> extends M
 		}
 	}
 
-	protected abstract CommandResult execute(CommandContext cmdContext, P modulePlugin) ;
+	protected abstract R execute(CommandContext cmdContext, P modulePlugin) ;
 	
 }

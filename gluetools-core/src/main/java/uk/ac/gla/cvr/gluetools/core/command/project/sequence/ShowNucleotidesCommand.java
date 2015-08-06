@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -25,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 			"Similarly if the endIndex is omitted, the subsequence starts at the end of the sequence. "+
 			"If both startIndex and endIndex are provided, then startIndex may be greater than endIndex. "+
 			"In this case the nucleotides are returned in descending order.") 
-public class ShowNucleotidesCommand extends SequenceModeCommand {
+public class ShowNucleotidesCommand extends SequenceModeCommand<NucleotidesResult> {
 
 	public static final String END_INDEX = "endIndex";
 	public static final String BEGIN_INDEX = "beginIndex";
@@ -41,7 +40,7 @@ public class ShowNucleotidesCommand extends SequenceModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public NucleotidesResult execute(CommandContext cmdContext) {
 		Sequence sequence = lookupSequence(cmdContext);
 		String nucleotides = sequence.getNucleotides();
 		int end = endIndex.orElse(nucleotides.length());

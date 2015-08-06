@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -34,7 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  sequence mySource 12823121")
 @EnterModeCommandClass(
 		commandModeClass = SequenceMode.class)
-public class SequenceCommand extends ProjectModeCommand  {
+public class SequenceCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String SEQUENCE_ID = "sequenceID";
 	public static final String SOURCE_NAME = "sourceName";
@@ -65,7 +66,7 @@ public class SequenceCommand extends ProjectModeCommand  {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		Sequence sequence;
 		if(whereClause == null) {
 			sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 

@@ -27,7 +27,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -72,7 +71,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 		addProvidedCmdClass(ConfigureImporterCommand.class);
 	}
 
-	public CommandResult doImport(ConsoleCommandContext cmdContext, String fileName) {
+	public CreateResult doImport(ConsoleCommandContext cmdContext, String fileName) {
 		byte[] fastaBytes = cmdContext.loadBytes(fileName);
 		HeaderParser headerParser = new HeaderParser();
 		Map<String, DNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, headerParser);
@@ -119,7 +118,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 				"-f <file>, --fileName <file>  FASTA file"},
 			description="Import sequences from a FASTA file", 
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
-	public static class ImportCommand extends ModuleProvidedCommand<FastaImporterPlugin> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, FastaImporterPlugin> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		
@@ -130,7 +129,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 		}
 		
 		@Override
-		protected CommandResult execute(CommandContext cmdContext, FastaImporterPlugin importerPlugin) {
+		protected CreateResult execute(CommandContext cmdContext, FastaImporterPlugin importerPlugin) {
 			return importerPlugin.doImport((ConsoleCommandContext) cmdContext, fileName);
 		}
 	}

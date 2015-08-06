@@ -74,7 +74,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 					"-f <feature>, --feature <feature>  Specify genome feature"
 			}
 	)
-	public static class GenerateCommand extends ModuleProvidedCommand<MutationFrequenciesPlugin> implements ProvidedProjectModeCommand {
+	public static class GenerateCommand extends ModuleProvidedCommand<MutationFrequenciesResult, MutationFrequenciesPlugin> implements ProvidedProjectModeCommand {
 		
 		private Optional<String> taxon;
 		private String feature;
@@ -88,7 +88,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		}
 
 		@Override
-		protected CommandResult execute(CommandContext cmdContext, MutationFrequenciesPlugin mutationFrequenciesPlugin) {
+		protected MutationFrequenciesResult execute(CommandContext cmdContext, MutationFrequenciesPlugin mutationFrequenciesPlugin) {
 			return mutationFrequenciesPlugin.doGenerate(cmdContext, taxon, feature);
 		}
 
@@ -153,7 +153,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		// go into alignment and find reference sequence name
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 			ShowReferenceResult showReferenceResult = 
-					(ShowReferenceResult) cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute();
+					cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute();
 			refSeqName = showReferenceResult.getReferenceName();
 		}
 		// go into reference sequence and find feature segments.
@@ -184,14 +184,14 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			List<T> segments, String seqSourceName, String seqSeqId,
 			Function<T, Integer> getStart, Function<T, Integer> getEnd) {
 		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", seqSourceName, seqSeqId)) {
-			NucleotidesResult ntResult = (NucleotidesResult) cmdContext.cmdBuilder(ShowNucleotidesCommand.class).execute();
+			NucleotidesResult ntResult = cmdContext.cmdBuilder(ShowNucleotidesCommand.class).execute();
 			for(T segment : segments) {
 				segment.nucleotides = SegmentUtils.subSeq(ntResult.getNucleotides(), getStart.apply(segment), getEnd.apply(segment));
 			}
 		}
 	}
 
-	public CommandResult doGenerate(CommandContext cmdContext,
+	public MutationFrequenciesResult doGenerate(CommandContext cmdContext,
 			Optional<String> taxon, String feature) {
 		// long start = System.currentTimeMillis();
 		
@@ -246,7 +246,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		// System.out.println("P1 Start");
 		
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			CommandBuilder<ListMemberCommand> listMemberBuilder = cmdContext.cmdBuilder(ListMemberCommand.class);
+			CommandBuilder<ListResult, ListMemberCommand> listMemberBuilder = cmdContext.cmdBuilder(ListMemberCommand.class);
 			if(taxon.isPresent() && !taxon.get().equals("all")) {
 				String taxonString = taxon.get();
 				Pattern pattern = Pattern.compile("(\\d)([a-z]*)");
@@ -267,7 +267,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			}
 			// System.out.println("P1a:"+(System.currentTimeMillis()-start) % 10000);
 
-			ListResult listAlmtMembResult = (ListResult) listMemberBuilder.execute();
+			ListResult listAlmtMembResult = listMemberBuilder.execute();
 			List<Map<String, String>> membIdMaps = listAlmtMembResult.asListOfMaps();
 			// enter each member and get overlapping segment coordinates.
 			for(Map<String, String> membIdMap: membIdMaps) {

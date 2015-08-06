@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.ProjectSchemaMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -21,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Enter command mode to manage a project's schema")
 @EnterModeCommandClass(
 		commandModeClass = ProjectSchemaMode.class)
-public class ProjectSchemaCommand extends RootModeCommand  {
+public class ProjectSchemaCommand extends RootModeCommand<OkResult>  {
 
 	private String projectName;
 	
@@ -31,7 +32,7 @@ public class ProjectSchemaCommand extends RootModeCommand  {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
 		cmdContext.pushCommandMode(new ProjectSchemaMode(cmdContext, this, project));

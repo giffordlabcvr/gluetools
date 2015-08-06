@@ -13,12 +13,13 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public abstract class ReferenceSequenceModeCommand extends Command {
+public abstract class ReferenceSequenceModeCommand<R extends CommandResult> extends Command<R> {
 
 
 	private String refSeqName;
@@ -33,6 +34,7 @@ public abstract class ReferenceSequenceModeCommand extends Command {
 		return refSeqName;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public abstract static class FeatureNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {

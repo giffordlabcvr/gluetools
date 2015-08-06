@@ -22,6 +22,8 @@ public class ModuleMode extends CommandMode<ModuleCommand> {
 		this.moduleName = moduleName;
 	}
 
+	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

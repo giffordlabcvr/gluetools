@@ -7,7 +7,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 
 
@@ -15,10 +15,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 	commandWords={"list", "feature"}, 
 	docoptUsages={""},
 	description="List the features of the reference sequence") 
-public class ListFeatureCommand extends ReferenceSequenceModeCommand {
+public class ListFeatureCommand extends ReferenceSequenceModeCommand<ListResult> {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public ListResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.matchExp(Feature.REF_SEQ_NAME_PATH, getRefSeqName());
 		return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class, exp));
 	}

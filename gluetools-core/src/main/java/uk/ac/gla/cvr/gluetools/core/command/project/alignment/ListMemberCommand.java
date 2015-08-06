@@ -12,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -37,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"  list member -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
 		"  list member sequenceID CUSTOM_FIELD"
 	) 
-public class ListMemberCommand extends AlignmentModeCommand {
+public class ListMemberCommand extends AlignmentModeCommand<ListResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -56,7 +55,7 @@ public class ListMemberCommand extends AlignmentModeCommand {
 
 	
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public ListResult execute(CommandContext cmdContext) {
 		getAlignmentMode(cmdContext).getProject().checkValidSequenceFieldNames(fieldNames);
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Alignment alignment = GlueDataObject.lookup(objContext, Alignment.class, 

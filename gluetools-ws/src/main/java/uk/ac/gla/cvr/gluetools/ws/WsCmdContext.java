@@ -37,6 +37,7 @@ public class WsCmdContext extends CommandContext {
 	}
 	
 	private List<String> enterModeCommandArgs = new LinkedList<String>();
+	@SuppressWarnings("rawtypes")
 	private Class<? extends Command> enterModeCommandClass;
 	private String fullPath = "/";
 	
@@ -50,6 +51,7 @@ public class WsCmdContext extends CommandContext {
 	@POST()
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@SuppressWarnings("rawtypes")
 	public String postAsCommand(String commandString) {
 		Element cmdDocElem = CommandFormatUtils.cmdDocElemFromJsonString(commandString);
 		Command command = commandFromElement(cmdDocElem);
@@ -61,6 +63,7 @@ public class WsCmdContext extends CommandContext {
 	
 	// sub mode URL navigation
 	@Path("/{urlPathSegment}")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object handle(@PathParam("urlPathSegment") String urlPathSegment) {
 		if(fullPath.equals("/")) {
 			fullPath = fullPath+urlPathSegment;
@@ -83,7 +86,7 @@ public class WsCmdContext extends CommandContext {
 				enterModeCommandArgs.add(urlPathSegment);
 			}
 			if(enterModeCommandArgs.size() == enterModeArgNames.length) {
-				CommandBuilder<?> cmdBuilder = cmdBuilder(enterModeCommandClass);
+				CommandBuilder cmdBuilder = cmdBuilder(enterModeCommandClass);
 				for(int i = 0; i < enterModeArgNames.length; i++) {
 					cmdBuilder.set(enterModeArgNames[i], enterModeCommandArgs.get(i));
 				}

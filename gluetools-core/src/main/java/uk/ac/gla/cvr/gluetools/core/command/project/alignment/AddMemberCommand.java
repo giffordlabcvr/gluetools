@@ -11,7 +11,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -37,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  add member -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
 	"  add member -w \"sequenceID = '3452467'\""
 ) 
-public class AddMemberCommand extends AlignmentModeCommand {
+public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_SEQUENCES = "allSequences";
@@ -63,7 +62,7 @@ public class AddMemberCommand extends AlignmentModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Alignment alignment = GlueDataObject.lookup(objContext, Alignment.class, 
 				Alignment.pkMap(getAlignmentName()));

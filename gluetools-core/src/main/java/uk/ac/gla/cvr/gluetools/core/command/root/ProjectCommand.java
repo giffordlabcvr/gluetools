@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -21,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Enter a project command mode")
 @EnterModeCommandClass(
 		commandModeClass = ProjectMode.class)
-public class ProjectCommand extends RootModeCommand  {
+public class ProjectCommand extends RootModeCommand<OkResult>  {
 
 	private String projectName;
 	
@@ -31,7 +32,7 @@ public class ProjectCommand extends RootModeCommand  {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName));
 		cmdContext.pushCommandMode(new ProjectMode(cmdContext, this, project));

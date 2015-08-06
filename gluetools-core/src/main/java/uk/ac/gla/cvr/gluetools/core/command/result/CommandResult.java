@@ -10,7 +10,7 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public abstract class CommandResult {
 
-	public static CommandResult OK = new OkResult();
+	public static OkResult OK = new OkResult();
 	
 	
 	private DocumentBuilder documentBuilder;

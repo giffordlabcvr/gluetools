@@ -7,7 +7,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 
 
@@ -15,10 +15,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 	commandWords={"list", "segment"}, 
 	docoptUsages={""},
 	description="List the reference sequence segments") 
-public class ListFeatureSegmentCommand extends FeatureModeCommand {
+public class ListFeatureSegmentCommand extends FeatureModeCommand<ListResult> {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public ListResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.matchExp(FeatureSegment.REF_SEQ_NAME_PATH, getRefSeqName());
 		exp = exp.andExp(ExpressionFactory.matchExp(FeatureSegment.FEATURE_NAME_PATH, getFeatureName()));
 		return CommandUtils.runListCommand(cmdContext, FeatureSegment.class, new SelectQuery(FeatureSegment.class, exp));

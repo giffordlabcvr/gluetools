@@ -5,7 +5,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 
-public class CommandBuilder<C extends Command> {
+public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 
 	private CommandContext cmdContext;
 	private DocumentBuilder documentBuilder;
@@ -24,32 +24,32 @@ public class CommandBuilder<C extends Command> {
 		}
 	}
 
-	public CommandBuilder<C> setInt(String name, int value) {
+	public CommandBuilder<R, C> setInt(String name, int value) {
 		cmdObjectBuilder.setInt(name, value);
 		return this;
 	}
 
-	public CommandBuilder<C> setBoolean(String name, boolean value) {
+	public CommandBuilder<R, C> setBoolean(String name, boolean value) {
 		cmdObjectBuilder.setBoolean(name, value);
 		return this;
 	}
 
-	public CommandBuilder<C> setDouble(String name, double value) {
+	public CommandBuilder<R, C> setDouble(String name, double value) {
 		cmdObjectBuilder.setDouble(name, value);
 		return this;
 	}
 
-	public CommandBuilder<C> setNull(String name) {
+	public CommandBuilder<R, C> setNull(String name) {
 		cmdObjectBuilder.setNull(name);
 		return this;
 	}
 
-	public CommandBuilder<C> setString(String name, String value) {
+	public CommandBuilder<R, C> setString(String name, String value) {
 		cmdObjectBuilder.setString(name, value);
 		return this;
 	}
 
-	public CommandBuilder<C> set(String name, Object value) {
+	public CommandBuilder<R, C> set(String name, Object value) {
 		cmdObjectBuilder.set(name, value);
 		return this;
 	}
@@ -93,7 +93,7 @@ public class CommandBuilder<C extends Command> {
 		public C build() {
 			return CommandBuilder.this.build();
 		}
-		public CommandResult execute() {
+		public R execute() {
 			return CommandBuilder.this.execute();
 		}
 
@@ -103,7 +103,7 @@ public class CommandBuilder<C extends Command> {
 		return cmdClass.cast(cmdContext.commandFromElement(documentBuilder.getXmlDocument().getDocumentElement()));
 	}
 
-	public CommandResult execute() {
+	public R execute() {
 		return build().execute(cmdContext);
 	}
 

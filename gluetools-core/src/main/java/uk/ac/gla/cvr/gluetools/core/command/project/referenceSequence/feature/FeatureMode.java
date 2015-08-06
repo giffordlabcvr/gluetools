@@ -21,6 +21,7 @@ public class FeatureMode extends CommandMode<FeatureCommand> {
 		this.featureName = featureName;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

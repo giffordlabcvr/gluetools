@@ -24,6 +24,7 @@ public class ReferenceSequenceMode extends CommandMode<ReferenceSequenceCommand>
 		this.project = project;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

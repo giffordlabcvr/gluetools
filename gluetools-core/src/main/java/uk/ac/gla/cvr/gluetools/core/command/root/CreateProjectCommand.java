@@ -8,7 +8,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
@@ -22,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<projectName> [<description>]"},
 	description="Create a new project",
 	furtherHelp="The project name must be a valid database identifier, e.g. MY_PROJECT_1") 
-public class CreateProjectCommand extends RootModeCommand {
+public class CreateProjectCommand extends RootModeCommand<CreateResult> {
 
 	private String projectName;
 	private Optional<String> description;
@@ -34,7 +33,7 @@ public class CreateProjectCommand extends RootModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Project newProject = GlueDataObject.create(objContext, Project.class, Project.pkMap(projectName), false);
 		description.ifPresent(newProject::setDescription);

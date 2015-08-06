@@ -38,7 +38,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -338,18 +339,19 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 		}
 	}
 
-	private CommandResult doImport(CommandContext cmdContext) {
+	private CreateResult doImport(CommandContext cmdContext) {
 		List<String> sequenceIDs = getSequenceIDs();
 		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
 		ensureSourceExists(cmdContext, sourceName);
-		
+		int sequencesCreated = 0;
 		for(RetrievedSequence sequence: sequences) {
 			String sequenceID = sequence.sequenceID;
 			SequenceFormat format = sequence.format;
 			byte[] sequenceData = sequence.data;
 			createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
+			sequencesCreated++;
 		}
-		return CommandResult.OK;
+		return new CreateResult(Sequence.class, sequencesCreated);
 	}
 	
 	
@@ -364,10 +366,10 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 			commandWords={"import"}, 
 			docoptUsages={""},
 			description="Import sequence data from NCBI into the project") 
-	public static class ImportCommand extends ModuleProvidedCommand<NcbiImporterPlugin> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, NcbiImporterPlugin> implements ProvidedProjectModeCommand {
 
 		@Override
-		protected CommandResult execute(CommandContext cmdContext, NcbiImporterPlugin importerPlugin) {
+		protected CreateResult execute(CommandContext cmdContext, NcbiImporterPlugin importerPlugin) {
 			return importerPlugin.doImport(cmdContext);
 		}
 		

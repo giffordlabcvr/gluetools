@@ -7,7 +7,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
@@ -20,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"delete", "field"}, 
 	docoptUsages={"<fieldName>"},
 	description="Delete a field from the table") 
-public class DeleteSequenceFieldCommand extends TableSequencesModeCommand {
+public class DeleteSequenceFieldCommand extends TableSequencesModeCommand<DeleteResult> {
 
 	private String fieldName;
 	
@@ -31,7 +30,7 @@ public class DeleteSequenceFieldCommand extends TableSequencesModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Map<String, String> pkMap = Field.pkMap(getProjectName(), fieldName);
 		Field field = GlueDataObject.lookup(objContext, Field.class, pkMap);

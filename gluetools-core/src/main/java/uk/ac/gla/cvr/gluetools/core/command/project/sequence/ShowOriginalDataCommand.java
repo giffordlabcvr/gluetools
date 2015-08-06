@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 
@@ -13,10 +12,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 	docoptOptions={""},
 	description="Show the original sequence data",
 	furtherHelp="Returns the data from which the sequence object was created, in its original format") 
-public class ShowOriginalDataCommand extends SequenceModeCommand {
+public class ShowOriginalDataCommand extends SequenceModeCommand<OriginalDataResult> {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OriginalDataResult execute(CommandContext cmdContext) {
 		Sequence sequence = lookupSequence(cmdContext);
 		return new OriginalDataResult(SequenceFormat.valueOf(sequence.getFormat()),
 				sequence.getOriginalData());

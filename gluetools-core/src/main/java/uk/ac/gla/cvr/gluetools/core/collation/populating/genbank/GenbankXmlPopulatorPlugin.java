@@ -13,7 +13,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -24,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -58,7 +58,7 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
-					OriginalDataResult originalDataResult = (OriginalDataResult) 
+					OriginalDataResult originalDataResult = 
 							cmdContext.cmdBuilder(ShowOriginalDataCommand.class).execute();
 					Document sequenceDataDoc;
 					try {
@@ -72,15 +72,15 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 		} 
 	}
 	
-	private CommandResult populate(CommandContext cmdContext) {
-		CommandBuilder<ListSequenceCommand> cmdBuilder = cmdContext.cmdBuilder(ListSequenceCommand.class);
+	private OkResult populate(CommandContext cmdContext) {
+		CommandBuilder<ListResult, ListSequenceCommand> cmdBuilder = cmdContext.cmdBuilder(ListSequenceCommand.class);
 		getWhereClause().ifPresent(wc ->
 			cmdBuilder.set(ListSequenceCommand.WHERE_CLAUSE, wc.toString())
 		);
 		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SOURCE_NAME_PATH);
 		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SEQUENCE_ID_PROPERTY);
 		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.FORMAT_PROPERTY);
-		ListResult listResult = (ListResult) cmdBuilder.execute();
+		ListResult listResult = cmdBuilder.execute();
 		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
 		
 		for(Map<String,String> sequenceMap: sequenceMaps) {
@@ -97,10 +97,10 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 			commandWords={"populate"}, 
 			docoptUsages={""},
 			description="Populate sequence field values based on Genbank XML") 
-	public static class PopulateCommand extends ModuleProvidedCommand<GenbankXmlPopulatorPlugin> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, GenbankXmlPopulatorPlugin> implements ProvidedProjectModeCommand {
 		
 		@Override
-		protected CommandResult execute(CommandContext cmdContext, GenbankXmlPopulatorPlugin populatorPlugin) {
+		protected OkResult execute(CommandContext cmdContext, GenbankXmlPopulatorPlugin populatorPlugin) {
 			return populatorPlugin.populate(cmdContext);
 		}
 		

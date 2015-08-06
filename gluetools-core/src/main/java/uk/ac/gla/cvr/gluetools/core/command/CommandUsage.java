@@ -4,12 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.w3c.dom.Element;
-
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
-
+@SuppressWarnings("rawtypes")
 public class CommandUsage {
 	
 	private String[] commandWords;
@@ -68,6 +63,7 @@ public class CommandUsage {
 		return modeWrappable;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static CommandUsage commandUsageForCmdClass(Class<? extends Command> cmdClass) {
 		CommandClass cmdClassAnno = cmdClass.getAnnotation(CommandClass.class);
 		if(cmdClassAnno != null) {

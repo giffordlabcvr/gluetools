@@ -6,6 +6,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 
+@SuppressWarnings("rawtypes")
 public class SpecificCommandHelpLine extends HelpLine {
 
 	private Class<? extends Command> cmdClass;

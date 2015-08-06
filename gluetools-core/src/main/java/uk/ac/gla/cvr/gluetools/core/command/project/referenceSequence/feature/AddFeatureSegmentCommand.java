@@ -8,7 +8,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.FeatureSegmentException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -25,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"and subsequent nucleotides up to and including <refEnd>. "+
 	"The new segment's endpoints must satisfy 1 <= refStart <= refEnd <= refSeqLength. "+
 	"The new segment must not overlap any existing segment in the feature.") 
-public class AddFeatureSegmentCommand extends FeatureModeCommand {
+public class AddFeatureSegmentCommand extends FeatureModeCommand<CreateResult> {
 
 	public static final String REF_START = "refStart";
 	public static final String REF_END = "refEnd";
@@ -41,7 +40,7 @@ public class AddFeatureSegmentCommand extends FeatureModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		if(refStart > refEnd) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_ENDPOINTS_REVERSED, 

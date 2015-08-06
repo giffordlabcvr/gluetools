@@ -41,10 +41,12 @@ public abstract class SimpleConfigureCommand<P extends ModulePlugin<P>> extends 
 		propertyValue = PluginUtils.configureStringProperty(configElem, "propertyValue", true);
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static List<String> availablePropertyNames(Class<? extends Command> cmdClass) {
 		return Arrays.asList(cmdClass.getAnnotation(SimpleConfigureCommandClass.class).propertyNames());
 	}
 
+	@SuppressWarnings("rawtypes")
 	@CommandUsageGeneratorClass
 	public static class ConfigureCommandUsageGenerator extends CommandUsageGenerator {
 		@Override
@@ -63,6 +65,7 @@ public abstract class SimpleConfigureCommand<P extends ModulePlugin<P>> extends 
 		GlueXmlUtils.appendElementWithText(docElem, propertyName, propertyValue);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@CompleterClass
 	public static class PropertyNameCompleter extends CommandCompleter {
 		@Override

@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -22,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	furtherHelp="An alignment is a proposed homology between certain segments of a reference sequence and certain segments"+
 	" in zero or more member sequences. The reference sequence must be specified when the alignment is created."+
 	" While a reference sequence is referred to by an alignment, the reference sequence may not be deleted.") 
-public class CreateAlignmentCommand extends ProjectModeCommand {
+public class CreateAlignmentCommand extends ProjectModeCommand<CreateResult> {
 
 	public static final String REF_SEQ_NAME = "refSeqName";
 	public static final String ALIGNMENT_NAME = "alignmentName";
@@ -38,7 +37,7 @@ public class CreateAlignmentCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		ReferenceSequence refSequence = GlueDataObject.lookup(cmdContext.getObjectContext(), ReferenceSequence.class, 
 				ReferenceSequence.pkMap(refSeqName));

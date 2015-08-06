@@ -11,10 +11,11 @@ import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class ConsoleOptionCommand extends ConsoleCommand {
+public abstract class ConsoleOptionCommand<R extends CommandResult> extends ConsoleCommand<R> {
 
 	private ConsoleOption consoleOption;
 
@@ -39,6 +40,7 @@ public abstract class ConsoleOptionCommand extends ConsoleCommand {
 		throw new ConsoleOptionException(Code.NO_SUCH_OPTION, optionName);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public abstract static class OptionNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {

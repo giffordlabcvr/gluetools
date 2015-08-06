@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -48,7 +47,7 @@ public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
 		addProvidedCmdClass(ConfigureExporterCommand.class);
 	}
 
-	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, Expression whereClause) {
+	public OkResult doExport(ConsoleCommandContext cmdContext, String fileName, Expression whereClause) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		SelectQuery selectQuery = null;
 		if(whereClause != null) {
@@ -99,7 +98,7 @@ public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
 			    "-a, --allSequences                             Export all project sequences"},
 			description="Export sequences to a FASTA file", 
 			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-	public static class ExportCommand extends ModuleProvidedCommand<FastaExporterPlugin> implements ProvidedProjectModeCommand {
+	public static class ExportCommand extends ModuleProvidedCommand<OkResult, FastaExporterPlugin> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		private Expression whereClause;
@@ -124,7 +123,7 @@ public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
 		}
 		
 		@Override
-		protected CommandResult execute(CommandContext cmdContext, FastaExporterPlugin importerPlugin) {
+		protected OkResult execute(CommandContext cmdContext, FastaExporterPlugin importerPlugin) {
 			return importerPlugin.doExport((ConsoleCommandContext) cmdContext, fileName, whereClause);
 		}
 	}

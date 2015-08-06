@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -19,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<alignmentName>"},
 	description="Delete an alignment", 
 	furtherHelp="Deletion of an alignment does not cause the deletion of its reference or member sequences.") 
-public class DeleteAlignmentCommand extends ProjectModeCommand {
+public class DeleteAlignmentCommand extends ProjectModeCommand<DeleteResult> {
 
 	private String alignmentName;
 	
@@ -30,7 +29,7 @@ public class DeleteAlignmentCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		DeleteResult result = GlueDataObject.delete(objContext, Alignment.class, Alignment.pkMap(alignmentName));
 		cmdContext.commit();

@@ -10,7 +10,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -38,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  remove member -w \"sequenceID = '3452467'\"\n"+
 	"Note: removing a sequence from the alignment does not delete it from the project."
 ) 
-public class RemoveMemberCommand extends AlignmentModeCommand {
+public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
@@ -58,7 +57,7 @@ public class RemoveMemberCommand extends AlignmentModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Alignment alignment = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, 
 				Alignment.pkMap(getAlignmentName()));

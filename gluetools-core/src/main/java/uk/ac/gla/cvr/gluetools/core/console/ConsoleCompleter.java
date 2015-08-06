@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
 
+@SuppressWarnings("rawtypes")
 public class ConsoleCompleter implements Completer {
 
 	private ConsoleCommandContext cmdContext;

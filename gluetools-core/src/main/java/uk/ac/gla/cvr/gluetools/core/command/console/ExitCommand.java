@@ -4,6 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 
 
@@ -12,10 +13,10 @@ import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 	docoptUsages={""},
 	description="Exit current command mode", 
 	modeWrappable=false) 
-public class ExitCommand extends Command {
+public class ExitCommand extends Command<OkResult> {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		if(!(cmdContext.peekCommandMode() instanceof RootCommandMode)) {
 			cmdContext.popCommandMode();
 		}

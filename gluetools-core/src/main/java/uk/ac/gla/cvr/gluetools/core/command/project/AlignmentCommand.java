@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -21,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Enter command mode for an alignment") 
 @EnterModeCommandClass(
 		commandModeClass = AlignmentMode.class)
-public class AlignmentCommand extends ProjectModeCommand  {
+public class AlignmentCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	private String alignmentName;
@@ -33,7 +34,7 @@ public class AlignmentCommand extends ProjectModeCommand  {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Alignment alignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(alignmentName));
 		cmdContext.pushCommandMode(new AlignmentMode(getProjectMode(cmdContext).getProject(), this, alignment.getName()));

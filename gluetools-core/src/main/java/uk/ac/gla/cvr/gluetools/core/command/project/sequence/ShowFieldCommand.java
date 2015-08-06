@@ -8,7 +8,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.FieldCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -21,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"show", "field"}, 
 	docoptUsages={"<fieldName>"},
 	description="Show a field value for the sequence") 
-public class ShowFieldCommand extends SequenceModeCommand {
+public class ShowFieldCommand extends SequenceModeCommand<FieldValueResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	
@@ -35,7 +34,7 @@ public class ShowFieldCommand extends SequenceModeCommand {
 
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public FieldValueResult execute(CommandContext cmdContext) {
 		Project project = getSequenceMode(cmdContext).getProject();
 		List<String> customFieldNames = project.getCustomSequenceFieldNames();
 		Sequence sequence = lookupSequence(cmdContext);

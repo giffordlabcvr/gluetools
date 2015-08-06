@@ -7,8 +7,10 @@ public abstract class CommandUsageGenerator {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
+	@SuppressWarnings("rawtypes")
 	public abstract CommandUsage generateUsage(Class<? extends Command> cmdClass);
 
+	@SuppressWarnings("rawtypes")
 	public static CommandUsageGenerator commandUsageGeneratorForCmdClass(Class<? extends Command> cmdClass) {
 		Class<?> commandUsageGeneratorClass = Arrays.asList(cmdClass.getClasses()).stream().
 				filter(c -> c.getAnnotation(CommandUsageGeneratorClass.class) != null).findFirst().orElse(null);

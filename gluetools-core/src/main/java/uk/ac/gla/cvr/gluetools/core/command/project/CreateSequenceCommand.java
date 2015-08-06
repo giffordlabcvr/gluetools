@@ -8,7 +8,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -30,7 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-f <file>, --fileName <file>  File containing the sequence data", 
 		"--base64 <data>  Sequence data encoded as Base64"},
 	description="Create a new sequence") 
-public class CreateSequenceCommand extends ProjectModeCommand {
+public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 
 	public static final String SOURCE_NAME = "sourceName";
 	public static final String SEQUENCE_ID = "sequenceID";
@@ -65,7 +64,7 @@ public class CreateSequenceCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Sequence sequence = GlueDataObject.create(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
 		Source source = GlueDataObject.lookup(objContext, Source.class, Source.pkMap(sourceName));

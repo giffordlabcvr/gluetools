@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -19,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<refSequenceName>"},
 	description="Delete a reference sequence", 
 	furtherHelp="Deletion of a reference sequence does not cause the deletion of its sequence.") 
-public class DeleteReferenceSequenceCommand extends ProjectModeCommand {
+public class DeleteReferenceSequenceCommand extends ProjectModeCommand<DeleteResult> {
 
 	private String refSequenceName;
 	
@@ -30,7 +29,7 @@ public class DeleteReferenceSequenceCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSequenceName));
 		cmdContext.commit();

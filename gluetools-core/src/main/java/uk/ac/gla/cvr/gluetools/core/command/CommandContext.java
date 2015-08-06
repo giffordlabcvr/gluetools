@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 
 
@@ -39,6 +40,7 @@ public class CommandContext {
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ModeCloser pushCommandMode(String... words) {
 		String enterModeCommandWord = words[0];
 		Class<? extends Command> enterModeCmdClass = 
@@ -50,7 +52,7 @@ public class CommandContext {
 		if(enterModeCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
 			throw new CommandException(Code.NOT_A_MODE_COMMAND, String.join(" ", words), getModePath());
 		}
-		CommandBuilder<?> cmdBuilder = cmdBuilder(enterModeCmdClass);
+		CommandBuilder cmdBuilder = cmdBuilder(enterModeCmdClass);
 		for(int i = 0; i < enterModeArgNames.length; i++) {
 			cmdBuilder.set(enterModeArgNames[i], words[i+1]);
 		}
@@ -104,7 +106,7 @@ public class CommandContext {
 		return gluetoolsEngine;
 	}
 	
-	public Command commandFromElement(Element element) {
+	public Command<?> commandFromElement(Element element) {
 		CommandFactory commandFactory = peekCommandMode().getCommandFactory();
 		return commandFactory.commandFromElement(this, commandModeStack, gluetoolsEngine.createPluginConfigContext(), element);
 	}
@@ -117,8 +119,8 @@ public class CommandContext {
 		getObjectContext().commitChanges();
 	}
 	
-	public <C extends Command> CommandBuilder<C> cmdBuilder(Class<C> cmdClass) {
-		return new CommandBuilder<C>(this, cmdClass);
+	public <R extends CommandResult, C extends Command<R>> CommandBuilder<R, C> cmdBuilder(Class<C> cmdClass) {
+		return new CommandBuilder<R, C>(this, cmdClass);
 	}
 	
 }

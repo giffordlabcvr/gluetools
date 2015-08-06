@@ -22,6 +22,7 @@ public class TableSequencesMode extends CommandMode<TableSequencesCommand> {
 		this.project = project;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

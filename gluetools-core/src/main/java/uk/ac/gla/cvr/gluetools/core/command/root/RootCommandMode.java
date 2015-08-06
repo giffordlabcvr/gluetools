@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.DbContextChangingMode;
 
 @CommandModeClass(commandFactoryClass = RootCommandFactory.class)
+@SuppressWarnings("rawtypes")
 public class RootCommandMode extends CommandMode<Command> implements DbContextChangingMode {
 
 	private ServerRuntime newServerRuntime;

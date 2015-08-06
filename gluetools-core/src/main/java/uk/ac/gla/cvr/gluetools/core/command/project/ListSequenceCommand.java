@@ -14,7 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -35,7 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  list sequence -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
 	"  list sequence sequenceID CUSTOM_FIELD"
 ) 
-public class ListSequenceCommand extends ProjectModeCommand {
+public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -53,7 +53,7 @@ public class ListSequenceCommand extends ProjectModeCommand {
 	}
 	
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public ListResult execute(CommandContext cmdContext) {
 		SelectQuery selectQuery;
 		if(whereClause.isPresent()) {
 			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
@@ -65,6 +65,7 @@ public class ListSequenceCommand extends ProjectModeCommand {
 		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@CompleterClass
 	public static class ListSequencesFieldCompleter extends FieldCompleter {
 		@Override

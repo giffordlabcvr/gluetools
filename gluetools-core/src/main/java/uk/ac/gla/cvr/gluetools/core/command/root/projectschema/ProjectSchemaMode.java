@@ -22,6 +22,7 @@ public class ProjectSchemaMode extends CommandMode<ProjectSchemaCommand> {
 		this.project = project;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {

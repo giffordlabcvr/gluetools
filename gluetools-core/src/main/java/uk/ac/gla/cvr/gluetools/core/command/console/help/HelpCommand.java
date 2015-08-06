@@ -12,17 +12,18 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
+@SuppressWarnings("rawtypes")
 @CommandClass(
 	commandWords={"help"},
 	docoptUsages={"[<commandWord> ...]"},
 	description="Command help, based on a word sequence"
 ) 
-public class HelpCommand extends ConsoleCommand {
+public class HelpCommand extends ConsoleCommand<ConsoleCommandResult> {
 
 	private List<String> commandWords;
 
@@ -33,7 +34,7 @@ public class HelpCommand extends ConsoleCommand {
 
 	
 	@Override
-	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
+	protected ConsoleCommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
 		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(cmdContext, commandWords);
 		if(helpLines.isEmpty()) {

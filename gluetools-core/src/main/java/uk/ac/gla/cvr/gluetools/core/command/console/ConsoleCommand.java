@@ -4,12 +4,12 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 
-public abstract class ConsoleCommand extends Command {
+public abstract class ConsoleCommand<R extends CommandResult> extends Command<R> {
 
 	@Override
-	public final CommandResult execute(CommandContext cmdContext) {
+	public final R execute(CommandContext cmdContext) {
 		return executeOnConsole((ConsoleCommandContext) cmdContext);
 	}
 
-	protected abstract CommandResult executeOnConsole(ConsoleCommandContext cmdContext);
+	protected abstract R executeOnConsole(ConsoleCommandContext cmdContext);
 }

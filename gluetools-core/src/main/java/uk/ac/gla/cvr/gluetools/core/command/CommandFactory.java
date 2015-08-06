@@ -21,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.utils.Multiton;
 import uk.ac.gla.cvr.gluetools.utils.Multiton.Creator;
 
 // TODO Plugins should be able to add their own commands.
-// TODO consider wrapping a CommandType around the Class<C extends Command>.
+// TODO consider wrapping a CommandType around the Class<? extends Command>.
 // cmdType should be used wherever cmdClass is now. This should allow more dynamic specification of command types.
 public abstract class CommandFactory {
 
@@ -50,6 +50,7 @@ private static Multiton factories = new Multiton();
 	}
 	
 
+	@SuppressWarnings("rawtypes")
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
@@ -67,6 +68,7 @@ private static Multiton factories = new Multiton();
 			List<HelpLine> helpLines = new ArrayList<HelpLine>();
 			if(commandWords.size() == 1) {
 				String finalWord = commandWords.get(0);
+				@SuppressWarnings("rawtypes")
 				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
 				if(cmdClass != null) {
 					if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
@@ -98,6 +100,7 @@ private static Multiton factories = new Multiton();
 			return helpLines;
 		}
 		
+		@SuppressWarnings("rawtypes")
 		private void registerCommandClass(List<String> commandWords, Class<? extends Command> cmdClass) {
 			if(CommandUsage.modeWrappableForCmdClass(cmdClass)) {
 				modeWrappable = true;
@@ -114,6 +117,7 @@ private static Multiton factories = new Multiton();
 			}
 		}
 		
+		@SuppressWarnings("rawtypes")
 		private Class<? extends Command> identifyCommandClass(List<String> commandWords) {
 			if(commandWords.isEmpty()) { return null; }
 			String firstWord = commandWords.remove(0);
@@ -128,6 +132,7 @@ private static Multiton factories = new Multiton();
 			return treeNode.identifyCommandClass(commandWords);
 		}
 			
+		@SuppressWarnings("rawtypes")
 		private Command commandFromElement(List<CommandMode<?>> commandModeStack,
 			PluginConfigContext pluginConfigContext, Element element) {
 			String nodeName = element.getNodeName();
@@ -167,6 +172,7 @@ private static Multiton factories = new Multiton();
 			
 		}
 
+		@SuppressWarnings("rawtypes")
 		public List<String> getCommandWordSuggestions(ConsoleCommandContext cmdContext, 
 				LinkedList<String> commandWords, 
 				boolean commandCompleters,
@@ -212,18 +218,21 @@ private static Multiton factories = new Multiton();
 
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private class CommandPluginFactory extends PluginFactory<Command> {
 		public void registerCommandClass(String finalWord, Class<? extends Command> cmdClass) {
 			this.registerPluginClass(finalWord, cmdClass);
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	public Command commandFromElement(CommandContext cmdContext, List<CommandMode<?>> commandModeStack,
 			PluginConfigContext pluginConfigContext, Element element) {
 		refreshCommandTree(cmdContext);
 		return rootNode.commandFromElement(commandModeStack, pluginConfigContext, element);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public Class<? extends Command> identifyCommandClass(CommandContext cmdContext, List<String> commandWords) {
 		refreshCommandTree(cmdContext);
 		return rootNode.identifyCommandClass(new LinkedList<String>(commandWords));

@@ -12,14 +12,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin {
 	
 	
-	private List<Class<? extends ModuleProvidedCommand<?>>> providedCmdClasses = 
-			new ArrayList<Class<? extends ModuleProvidedCommand<?>>>();
+	@SuppressWarnings("rawtypes")
+	private List<Class<? extends ModuleProvidedCommand>> providedCmdClasses = 
+			new ArrayList<Class<? extends ModuleProvidedCommand>>();
 	
-	protected void addProvidedCmdClass(Class<? extends ModuleProvidedCommand<P>> providedCmdClass) {
+	protected void addProvidedCmdClass(Class<? extends ModuleProvidedCommand<?, P>> providedCmdClass) {
 		providedCmdClasses.add(providedCmdClass);
 	}
 	
-	public List<Class<? extends ModuleProvidedCommand<?>>> getProvidedCommandClasses() {
+	@SuppressWarnings("rawtypes")
+	public List<Class<? extends ModuleProvidedCommand>> getProvidedCommandClasses() {
 		return providedCmdClasses;
 	}
 	

@@ -12,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -23,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptUsages = {"<optionName> <optionValue>"}, 
 		modeWrappable = false,
 		description = "Set a console option's value")
-public class ConsoleSetOptionCommand extends ConsoleOptionCommand {
+public class ConsoleSetOptionCommand extends ConsoleOptionCommand<OkResult> {
 	
 	private String optionValue;
 	
@@ -42,12 +41,13 @@ public class ConsoleSetOptionCommand extends ConsoleOptionCommand {
 	}
 	
 	@Override
-	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
+	protected OkResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		cmdContext.setOptionValue(getConsoleOption(), optionValue);
 		return new OkResult();
 	}
 	
 	@CompleterClass
+	@SuppressWarnings("rawtypes")
 	public static class Completer extends OptionNameCompleter {
 
 		@Override

@@ -71,7 +71,8 @@ public class Module extends _Module {
 		}
 	}
 	
-	public List<Class<? extends ModuleProvidedCommand<?>>> getProvidedCommandClasses(GluetoolsEngine gluetoolsEngine) {
+	@SuppressWarnings("rawtypes")
+	public List<Class<? extends ModuleProvidedCommand>> getProvidedCommandClasses(GluetoolsEngine gluetoolsEngine) {
 		return getModulePlugin(gluetoolsEngine).getProvidedCommandClasses();
 	}
 

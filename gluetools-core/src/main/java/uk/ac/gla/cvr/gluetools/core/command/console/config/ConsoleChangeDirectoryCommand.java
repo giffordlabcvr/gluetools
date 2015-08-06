@@ -6,7 +6,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -17,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		modeWrappable = false,
 		description = "Change the path for loading and saving file",
 		furtherHelp = "An absolute <path> replaces the load-save-path option value. A relative <path> updates the path relative to its current value")
-public class ConsoleChangeDirectoryCommand extends ConsoleCommand {
+public class ConsoleChangeDirectoryCommand extends ConsoleCommand<SimpleConsoleCommandResult> {
 
 	private String path;
 	
@@ -27,7 +26,7 @@ public class ConsoleChangeDirectoryCommand extends ConsoleCommand {
 	}
 
 	@Override
-	protected CommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
+	protected SimpleConsoleCommandResult executeOnConsole(ConsoleCommandContext cmdContext) {
 		cmdContext.updateLoadSavePath(path);
 		final String path = cmdContext.getLoadSavePath().getAbsolutePath();
 		return new SimpleConsoleCommandResult(path);

@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -17,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<sourceName> <sequenceID>"},
 	docoptOptions={},
 	description="Delete a sequence") 
-public class DeleteSequenceCommand extends ProjectModeCommand {
+public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 
 	private String sourceName;
 	private String sequenceID;
@@ -30,7 +29,7 @@ public class DeleteSequenceCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public DeleteResult execute(CommandContext cmdContext) {
 		DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), 
 				Sequence.class, Sequence.pkMap(sourceName, sequenceID));
 		cmdContext.commit();

@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.FieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -30,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	furtherHelp=
 		"If --noOverwrite is used, and the field already has a non-null value, no update will take place. "+
 		"By default the command will overwrite any existing value.") 
-public class SetFieldCommand extends SequenceModeCommand {
+public class SetFieldCommand extends SequenceModeCommand<OkResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String FIELD_VALUE = "fieldValue";
@@ -50,7 +51,7 @@ public class SetFieldCommand extends SequenceModeCommand {
 
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		Project project = getSequenceMode(cmdContext).getProject();
 		List<String> customFieldNames = project.getCustomSequenceFieldNames();
 		Sequence sequence = lookupSequence(cmdContext);
@@ -69,6 +70,7 @@ public class SetFieldCommand extends SequenceModeCommand {
 		return CommandResult.OK;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@CompleterClass
 	public static class Completer extends FieldCompleter {
 		@Override

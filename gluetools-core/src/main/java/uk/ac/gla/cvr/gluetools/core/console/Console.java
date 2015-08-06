@@ -15,13 +15,13 @@ import jline.console.ConsoleReader;
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
-import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder.CommandArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -30,7 +30,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
-import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder.CommandArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
@@ -40,7 +39,6 @@ import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 // TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
@@ -52,6 +50,7 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 // TODO implement toggle for whether output should be echoed in batch mode.
 // TODO history should be stored in the DB.
 // TODO in batch mode, exceptions should go to stderr.
+@SuppressWarnings("rawtypes")
 public class Console implements CommandContextListener, CommandResultRenderingContext
 {
 	private PrintWriter out;
@@ -167,7 +166,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		Map<String, Object> docoptMap;
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
-		CommandBuilder<?> commandBuilder = buildCommandElement(console.commandContext, commandClass, docoptMap);
+		CommandBuilder<?, ?> commandBuilder = buildCommandElement(console.commandContext, commandClass, docoptMap);
 		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
 		Command command;
 		try {
@@ -204,8 +203,9 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		return docoptMap;
 	}
 
-	private static CommandBuilder<?> buildCommandElement(CommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> docoptMap) {
-		CommandBuilder<?> cmdBuilder = cmdContext.cmdBuilder(cmdClass);
+	@SuppressWarnings("unchecked")
+	private static CommandBuilder<?, ?> buildCommandElement(CommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> docoptMap) {
+		CommandBuilder cmdBuilder = cmdContext.cmdBuilder(cmdClass);
 		docoptMap.forEach((key, value) -> {
 			if(value == null) { return; }
 			String tagName;

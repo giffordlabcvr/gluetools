@@ -4,10 +4,11 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class ProjectSchemaModeCommand extends Command {
+public abstract class ProjectSchemaModeCommand<R extends CommandResult> extends Command<R> {
 
 	private String projectName;
 	

@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
@@ -21,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<name> -f <file>"},
 	docoptOptions={"-f <file>, --fileName <file>  Module configuration file"},
 	description="Create a new module") 
-public class CreateModuleCommand extends ProjectModeCommand {
+public class CreateModuleCommand extends ProjectModeCommand<CreateResult> {
 
 	private String name;
 	private String fileName;
@@ -34,7 +33,7 @@ public class CreateModuleCommand extends ProjectModeCommand {
 	}
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Module module = GlueDataObject.create(objContext, Module.class, Module.pkMap(name), false);
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;

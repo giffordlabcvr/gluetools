@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureComman
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -77,7 +78,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 	}
 
 	
-	private CommandResult populate(ConsoleCommandContext cmdContext, String fileName) {
+	private OkResult populate(ConsoleCommandContext cmdContext, String fileName) {
 		byte[] fileBytes = cmdContext.loadBytes(fileName);
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
@@ -176,7 +177,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 
 
 	public List<Map<String,String>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
-		ListResult listResult = (ListResult) cmdContext.cmdBuilder(ListSequenceCommand.class).
+		ListResult listResult = cmdContext.cmdBuilder(ListSequenceCommand.class).
 			set(ListSequenceCommand.WHERE_CLAUSE, identifyingExp.toString()).
 			execute();
 		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
@@ -196,7 +197,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 				"-f <file>, --fileName <file>  Text file with field values"},
 			description="Populate sequence field values based on a text file", 
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
-	public static class PopulateCommand extends ModuleProvidedCommand<TextFilePopulatorPlugin> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulatorPlugin> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		
@@ -207,7 +208,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		}
 		
 		@Override
-		protected CommandResult execute(CommandContext cmdContext, TextFilePopulatorPlugin populatorPlugin) {
+		protected OkResult execute(CommandContext cmdContext, TextFilePopulatorPlugin populatorPlugin) {
 			return populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName);
 		}
 		

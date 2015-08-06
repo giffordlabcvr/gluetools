@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+@SuppressWarnings("rawtypes")
 public abstract class EnterModeCommandDescriptor {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");

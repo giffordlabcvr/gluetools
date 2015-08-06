@@ -4,6 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences.TableSequencesMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
@@ -14,10 +15,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 	description="Enter command mode to manage the SEQUENCES table")
 @EnterModeCommandClass(
 		commandModeClass = TableSequencesMode.class)
-public class TableSequencesCommand extends ProjectSchemaModeCommand  {
+public class TableSequencesCommand extends ProjectSchemaModeCommand<OkResult>  {
 
 	@Override
-	public CommandResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		Project project = getProjectSchemaMode(cmdContext).getProject();
 		cmdContext.pushCommandMode(new TableSequencesMode(cmdContext, project, this, "SEQUENCES"));
 		return CommandResult.OK;

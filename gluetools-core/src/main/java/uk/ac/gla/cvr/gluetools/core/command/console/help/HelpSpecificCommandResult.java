@@ -4,6 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 
+@SuppressWarnings("rawtypes")
 public class HelpSpecificCommandResult extends ConsoleCommandResult {
 
 	public HelpSpecificCommandResult(Class<? extends Command> cmdClass) {

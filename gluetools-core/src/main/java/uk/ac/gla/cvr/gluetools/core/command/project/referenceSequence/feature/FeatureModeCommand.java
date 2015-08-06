@@ -2,11 +2,12 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceSequenceModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public abstract class FeatureModeCommand extends ReferenceSequenceModeCommand {
+public abstract class FeatureModeCommand<R extends CommandResult> extends ReferenceSequenceModeCommand<R> {
 
 
 	private String featureName;
