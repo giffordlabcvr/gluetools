@@ -8,8 +8,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.command.root.ProjectSchemaCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 @CommandModeClass(commandFactoryClass = ProjectSchemaModeCommandFactory.class)
 public class ProjectSchemaMode extends CommandMode<ProjectSchemaCommand> {
@@ -28,7 +26,7 @@ public class ProjectSchemaMode extends CommandMode<ProjectSchemaCommand> {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(ProjectSchemaModeCommand.class.isAssignableFrom(cmdClass)) {
-			GlueXmlUtils.appendElementWithText(elem, "projectName", project.getName(), JsonType.String);
+			appendModeConfigToElem(elem, "projectName", project.getName());
 		}
 	}
 

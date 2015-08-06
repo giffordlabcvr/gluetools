@@ -8,8 +8,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.MemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 @CommandModeClass(commandFactoryClass = MemberModeCommandFactory.class)
 public class MemberMode extends CommandMode<MemberCommand> implements InsideProjectMode {
@@ -32,8 +30,8 @@ public class MemberMode extends CommandMode<MemberCommand> implements InsideProj
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(MemberModeCommand.class.isAssignableFrom(cmdClass)) {
-			GlueXmlUtils.appendElementWithText(elem, "sourceName", sourceName, JsonType.String);
-			GlueXmlUtils.appendElementWithText(elem, "sequenceID", sequenceID, JsonType.String);
+			appendModeConfigToElem(elem, "sourceName", sourceName);
+			appendModeConfigToElem(elem, "sequenceID", sequenceID);
 		}
 	}
 	

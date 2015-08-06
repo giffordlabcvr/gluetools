@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public abstract class OkCrudResult extends OkResult {
 
@@ -23,12 +22,9 @@ public abstract class OkCrudResult extends OkResult {
 			Class<? extends GlueDataObject> objectClass,
 			int number) {
 		super();
-		GlueXmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
-				OPERATION, operation.name(), JsonType.String);
-		GlueXmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
-				OBJECT_TYPE, objectClass.getSimpleName(), JsonType.String);
-		GlueXmlUtils.appendElementWithText(getDocument().getDocumentElement(), 
-				NUMBER, Integer.toString(number), JsonType.Integer);
+		getDocumentBuilder().set(OPERATION, operation.name());
+		getDocumentBuilder().set(OBJECT_TYPE, objectClass.getSimpleName());
+		getDocumentBuilder().set(NUMBER, number);
 	}
 
 	@Override

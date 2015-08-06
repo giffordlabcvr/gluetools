@@ -7,8 +7,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.ModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 @CommandModeClass(commandFactoryClass = ModuleModeCommandFactory.class)
 public class ModuleMode extends CommandMode<ModuleCommand> {
@@ -29,7 +27,7 @@ public class ModuleMode extends CommandMode<ModuleCommand> {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(ModuleModeCommand.class.isAssignableFrom(cmdClass)) {
-			GlueXmlUtils.appendElementWithText(elem, "moduleName", moduleName, JsonType.String);
+			appendModeConfigToElem(elem, "moduleName", moduleName);
 		}
 	}
 

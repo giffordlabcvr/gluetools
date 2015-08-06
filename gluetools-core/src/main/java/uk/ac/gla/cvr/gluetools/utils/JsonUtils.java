@@ -215,5 +215,21 @@ public class JsonUtils {
 			throw new RuntimeException("Element "+elem.getNodeName()+" cannot be cast to an object");
 		}
 	}
+
+	public static JsonType jsonTypeFromObject(Object value) {
+		if(value == null) {
+			return JsonType.Null;
+		} else if (value instanceof Double) {
+			return JsonType.Double;
+		} else if (value instanceof Integer) {
+			return JsonType.Integer;
+		} else if (value instanceof Boolean) {
+			return JsonType.Boolean;
+		} else if (value instanceof String) {
+			return JsonType.String;
+		} else {
+			throw new RuntimeException("Object "+value+" is not a simple type");
+		}
+	}
 	
 }
