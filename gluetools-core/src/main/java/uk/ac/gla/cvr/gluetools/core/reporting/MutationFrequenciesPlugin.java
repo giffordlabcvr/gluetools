@@ -18,12 +18,12 @@ import org.biojava.nbio.core.sequence.RNASequence;
 import org.biojava.nbio.core.sequence.transcription.TranscriptionEngine;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
@@ -41,13 +41,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
@@ -154,22 +152,19 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		String refSeqName;
 		// go into alignment and find reference sequence name
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			Element showRefElement = CommandUsage.docElemForCmdClass(ShowReferenceSequenceCommand.class);
-			ShowReferenceResult showReferenceResult = (ShowReferenceResult) cmdContext.
-					executeElem(showRefElement.getOwnerDocument().getDocumentElement());
+			ShowReferenceResult showReferenceResult = 
+					(ShowReferenceResult) cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute();
 			refSeqName = showReferenceResult.getReferenceName();
 		}
 		// go into reference sequence and find feature segments.
 		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refSeqName)) {
-			Element showSeqElement = CommandUsage.docElemForCmdClass(ShowSequenceCommand.class);
-			ShowSequenceResult showSequenceResult = (ShowSequenceResult) cmdContext.
-					executeElem(showSeqElement.getOwnerDocument().getDocumentElement());
+			ShowSequenceResult showSequenceResult = 
+					(ShowSequenceResult) cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
 			analysisData.refSeqSourceName = showSequenceResult.getSourceName();
 			analysisData.refSeqId = showSequenceResult.getSequenceID();
 			try (ModeCloser featureMode = cmdContext.pushCommandMode("feature", featureName)) {
-				Element listFeatSegElem = CommandUsage.docElemForCmdClass(ListFeatureSegmentCommand.class);
 				ListResult listFeatResult = (ListResult) cmdContext.
-						executeElem(listFeatSegElem.getOwnerDocument().getDocumentElement());
+						cmdBuilder(ListFeatureSegmentCommand.class).execute();
 				listFeatResult.asListOfMaps().forEach(featSeg -> {
 					int refStart = Integer.parseInt(featSeg.get(FeatureSegment.REF_START_PROPERTY));
 					int refEnd = Integer.parseInt(featSeg.get(FeatureSegment.REF_END_PROPERTY));
@@ -189,9 +184,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			List<T> segments, String seqSourceName, String seqSeqId,
 			Function<T, Integer> getStart, Function<T, Integer> getEnd) {
 		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", seqSourceName, seqSeqId)) {
-			Element showNtElem = CommandUsage.docElemForCmdClass(ShowNucleotidesCommand.class);
-			NucleotidesResult ntResult = (NucleotidesResult) cmdContext.
-					executeElem(showNtElem.getOwnerDocument().getDocumentElement());
+			NucleotidesResult ntResult = (NucleotidesResult) cmdContext.cmdBuilder(ShowNucleotidesCommand.class).execute();
 			for(T segment : segments) {
 				segment.nucleotides = SegmentUtils.subSeq(ntResult.getNucleotides(), getStart.apply(segment), getEnd.apply(segment));
 			}
@@ -253,7 +246,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		// System.out.println("P1 Start");
 		
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			Element listAlmtMembElem = CommandUsage.docElemForCmdClass(ListMemberCommand.class);
+			CommandBuilder<ListMemberCommand> listMemberBuilder = cmdContext.cmdBuilder(ListMemberCommand.class);
 			if(taxon.isPresent() && !taxon.get().equals("all")) {
 				String taxonString = taxon.get();
 				Pattern pattern = Pattern.compile("(\\d)([a-z]*)");
@@ -270,11 +263,11 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				if(subtype.trim().length() != 0) {
 					whereClauseExpression = whereClauseExpression.andExp(ExpressionFactory.matchExp("SUBTYPE", subtype));
 				}
-				GlueXmlUtils.appendElementWithText(listAlmtMembElem, ListMemberCommand.WHERE_CLAUSE, whereClauseExpression.toString());
+				listMemberBuilder.set(ListMemberCommand.WHERE_CLAUSE, whereClauseExpression.toString());
 			}
 			// System.out.println("P1a:"+(System.currentTimeMillis()-start) % 10000);
 
-			ListResult listAlmtMembResult = (ListResult) cmdContext.executeElem(listAlmtMembElem.getOwnerDocument().getDocumentElement());
+			ListResult listAlmtMembResult = (ListResult) listMemberBuilder.execute();
 			List<Map<String, String>> membIdMaps = listAlmtMembResult.asListOfMaps();
 			// enter each member and get overlapping segment coordinates.
 			for(Map<String, String> membIdMap: membIdMaps) {
@@ -284,9 +277,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				analysisData.memberDatas.add(memberData);
 				try (ModeCloser memberMode = 
 						cmdContext.pushCommandMode("member", memberSourceName, memberSequenceId)) {
-					Element listAlignedSegmentElem = CommandUsage.docElemForCmdClass(ListAlignedSegmentCommand.class);
 					ListResult listAlignedSegResult = (ListResult) cmdContext.
-							executeElem(listAlignedSegmentElem.getOwnerDocument().getDocumentElement());
+							cmdBuilder(ListAlignedSegmentCommand.class).execute();
 					listAlignedSegResult.asListOfMaps().forEach(alignedSeg -> {
 						int alnRefStart = Integer.parseInt(alignedSeg.get(AlignedSegment.REF_START_PROPERTY));
 						int alnRefEnd = Integer.parseInt(alignedSeg.get(AlignedSegment.REF_END_PROPERTY));

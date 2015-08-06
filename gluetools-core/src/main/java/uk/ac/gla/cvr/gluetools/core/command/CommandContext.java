@@ -13,9 +13,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 public class CommandContext {
@@ -52,12 +50,11 @@ public class CommandContext {
 		if(enterModeCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
 			throw new CommandException(Code.NOT_A_MODE_COMMAND, String.join(" ", words), getModePath());
 		}
-		Element cmdElem = GlueXmlUtils.documentWithElement(enterModeCommandWord);
+		CommandBuilder<?> cmdBuilder = cmdBuilder(enterModeCmdClass);
 		for(int i = 0; i < enterModeArgNames.length; i++) {
-			GlueXmlUtils.appendElementWithText(cmdElem, enterModeArgNames[i], words[i+1]);
+			cmdBuilder.set(enterModeArgNames[i], words[i+1]);
 		}
-		Command enterModeCommand = commandFromElement(cmdElem);
-		enterModeCommand.execute(this);
+		cmdBuilder.execute();
 		return new ModeCloser();
 	}
 	
@@ -112,10 +109,6 @@ public class CommandContext {
 		return commandFactory.commandFromElement(this, commandModeStack, gluetoolsEngine.createPluginConfigContext(), element);
 	}
 
-	public CommandResult executeElem(Element elem) {
-		return commandFromElement(elem).execute(this);
-	}
-
 	public ObjectContext getObjectContext() {
 		return objectContextStack.get(0);
 	}
@@ -123,4 +116,9 @@ public class CommandContext {
 	public void commit() {
 		getObjectContext().commitChanges();
 	}
+	
+	public <C extends Command> CommandBuilder<C> cmdBuilder(Class<C> cmdClass) {
+		return new CommandBuilder<C>(this, cmdClass);
+	}
+	
 }

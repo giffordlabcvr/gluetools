@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -57,8 +58,8 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
-					Element showDataElem = CommandUsage.docElemForCmdClass(ShowOriginalDataCommand.class);
-					OriginalDataResult originalDataResult = (OriginalDataResult) cmdContext.executeElem(showDataElem.getOwnerDocument().getDocumentElement());
+					OriginalDataResult originalDataResult = (OriginalDataResult) 
+							cmdContext.cmdBuilder(ShowOriginalDataCommand.class).execute();
 					Document sequenceDataDoc;
 					try {
 						sequenceDataDoc = GlueXmlUtils.documentFromBytes(originalDataResult.getBase64Bytes());
@@ -72,17 +73,14 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 	}
 	
 	private CommandResult populate(CommandContext cmdContext) {
-		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequenceCommand.class);
+		CommandBuilder<ListSequenceCommand> cmdBuilder = cmdContext.cmdBuilder(ListSequenceCommand.class);
 		getWhereClause().ifPresent(wc ->
-			GlueXmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, wc.toString())
+			cmdBuilder.set(ListSequenceCommand.WHERE_CLAUSE, wc.toString())
 		);
-		GlueXmlUtils.appendElementWithText(listSequencesElem, 
-				ListSequenceCommand.FIELD_NAME, Sequence.SOURCE_NAME_PATH);
-		GlueXmlUtils.appendElementWithText(listSequencesElem, 
-				ListSequenceCommand.FIELD_NAME, Sequence.SEQUENCE_ID_PROPERTY);
-		GlueXmlUtils.appendElementWithText(listSequencesElem, 
-				ListSequenceCommand.FIELD_NAME, Sequence.FORMAT_PROPERTY);
-		ListResult listResult = (ListResult) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
+		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SOURCE_NAME_PATH);
+		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SEQUENCE_ID_PROPERTY);
+		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.FORMAT_PROPERTY);
+		ListResult listResult = (ListResult) cmdBuilder.execute();
 		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
 		
 		for(Map<String,String> sequenceMap: sequenceMaps) {

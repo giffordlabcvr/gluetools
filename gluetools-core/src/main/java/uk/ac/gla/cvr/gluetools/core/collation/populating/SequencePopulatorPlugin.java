@@ -52,10 +52,10 @@ public abstract class SequencePopulatorPlugin<P extends ModulePlugin<P>> extends
 
 	public static void runSetFieldCommand(CommandContext cmdContext,
 			FieldPopulator fieldPopulator, String fieldValue) {
-		Element setFieldElem = CommandUsage.docElemForCmdClass(SetFieldCommand.class);
-		GlueXmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName());
-		GlueXmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.FIELD_VALUE, fieldValue);
-		GlueXmlUtils.appendElementWithText(setFieldElem, SetFieldCommand.NO_OVERWRITE, "true");
-		cmdContext.executeElem(setFieldElem.getOwnerDocument().getDocumentElement());
+		cmdContext.cmdBuilder(SetFieldCommand.class).
+			set(SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName()).
+			set(SetFieldCommand.FIELD_VALUE, fieldValue).
+			set(SetFieldCommand.NO_OVERWRITE, "true").
+			execute();
 	}
 }

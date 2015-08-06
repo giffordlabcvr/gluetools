@@ -133,18 +133,5 @@ public class CommandUsage {
 	public static boolean modeWrappableForCmdClass(Class<? extends Command> cmdClass) {
 		return commandUsageForCmdClass(cmdClass).modeWrappable();
 	}
-
-	public static Element docElemForCmdClass(Class<? extends Command> cmdClass) {
-		String[] cmdWords = cmdWordsForCmdClass(cmdClass);
-		Element elem = GlueXmlUtils.documentWithElement(cmdWords[0]);
-		JsonUtils.setJsonType(elem, JsonType.Object, false);
-		for(int i = 1; i < cmdWords.length; i++) {
-			elem = GlueXmlUtils.appendElement(elem, cmdWords[i]);
-			JsonUtils.setJsonType(elem, JsonType.Object, false);
-		}
-		return elem;
-	}
-
-
 	
 }

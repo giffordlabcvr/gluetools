@@ -21,6 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
@@ -28,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder.CommandArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
@@ -164,11 +167,11 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		Map<String, Object> docoptMap;
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
-		Element element = buildCommandElement(commandClass, docoptMap);
+		CommandBuilder<?> commandBuilder = buildCommandElement(console.commandContext, commandClass, docoptMap);
 		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
 		Command command;
 		try {
-			command = commandContext.commandFromElement(element);
+			command = commandBuilder.build();
 		} catch(PluginConfigException pce) {
 			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
 					pce.getErrorArgs().length >= 3) {
@@ -201,8 +204,8 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		return docoptMap;
 	}
 
-	private static Element buildCommandElement(Class<? extends Command> commandClass, Map<String, Object> docoptMap) {
-		Element docElem = CommandUsage.docElemForCmdClass(commandClass);
+	private static CommandBuilder<?> buildCommandElement(CommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> docoptMap) {
+		CommandBuilder<?> cmdBuilder = cmdContext.cmdBuilder(cmdClass);
 		docoptMap.forEach((key, value) -> {
 			if(value == null) { return; }
 			String tagName;
@@ -216,16 +219,16 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 				tagName = key;
 			}
 			if(value instanceof Collection<?>) {
+				@SuppressWarnings("rawtypes")
+				CommandArrayBuilder arrayBuilder = cmdBuilder.setArray(tagName);
 				((Collection <?>) value).forEach(item -> {
-					Element elem = (Element) GlueXmlUtils.appendElementWithText(docElem, tagName, item.toString()).getParentNode();
-					JsonUtils.setJsonType(elem, JsonType.String, true);
+					arrayBuilder.add(item.toString());
 				});
 			} else {
-				Element elem = (Element) GlueXmlUtils.appendElementWithText(docElem, tagName, value.toString()).getParentNode();
-				JsonUtils.setJsonType(elem, JsonType.String, false);
+				cmdBuilder.set(tagName, value.toString());
 			}
 		});
-		return docElem.getOwnerDocument().getDocumentElement();
+		return cmdBuilder;
 	}
 
 	public static void main(String[] args) {

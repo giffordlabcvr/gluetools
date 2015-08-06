@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
@@ -38,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="textFilePopulator")
 public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePopulatorPlugin> {
@@ -178,17 +176,15 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 
 
 	public List<Map<String,String>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
-		Element listSequencesElem = CommandUsage.docElemForCmdClass(ListSequenceCommand.class);
-		String identifyingExpString = identifyingExp.toString();
-		GlueXmlUtils.appendElementWithText(listSequencesElem, ListSequenceCommand.WHERE_CLAUSE, identifyingExpString);
-		@SuppressWarnings("unchecked")
-		ListResult listResult = (ListResult) cmdContext.executeElem(listSequencesElem.getOwnerDocument().getDocumentElement());
+		ListResult listResult = (ListResult) cmdContext.cmdBuilder(ListSequenceCommand.class).
+			set(ListSequenceCommand.WHERE_CLAUSE, identifyingExp.toString()).
+			execute();
 		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
 		if(sequenceMaps.size() == 0 && !skipMissing) {
-			throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SEQUENCE_FOUND, identifyingExpString);
+			throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SEQUENCE_FOUND, identifyingExp.toString());
 		}
 		if(sequenceMaps.size() > 1 && !updateMultiple) {
-			throw new TextFilePopulatorException(TextFilePopulatorException.Code.MULTIPLE_SEQUENCES_FOUND, identifyingExpString);
+			throw new TextFilePopulatorException(TextFilePopulatorException.Code.MULTIPLE_SEQUENCES_FOUND, identifyingExp.toString());
 		}
 		return sequenceMaps;
 	}

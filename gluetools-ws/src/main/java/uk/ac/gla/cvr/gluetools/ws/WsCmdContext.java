@@ -17,6 +17,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFormatUtils;
@@ -25,7 +26,6 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public class WsCmdContext extends CommandContext {
 
@@ -36,7 +36,6 @@ public class WsCmdContext extends CommandContext {
 		pushCommandMode(rootCommandMode);
 	}
 	
-	private String enterModeCommandWord = null;
 	private List<String> enterModeCommandArgs = new LinkedList<String>();
 	private Class<? extends Command> enterModeCommandClass;
 	private String fullPath = "/";
@@ -68,11 +67,10 @@ public class WsCmdContext extends CommandContext {
 		} else {
 			fullPath = fullPath+"/"+urlPathSegment;
 		}
-		if(enterModeCommandWord == null) {
+		if(enterModeCommandClass == null) {
 			CommandMode<?> commandMode = peekCommandMode();
 			Class<? extends Command> cmdClass = commandMode.getCommandFactory().identifyCommandClass(this, Collections.singletonList(urlPathSegment));
 			if(cmdClass.getAnnotation(EnterModeCommandClass.class) != null) {
-				enterModeCommandWord = urlPathSegment;
 				enterModeCommandClass = cmdClass;
 				return this;
 			} else {
@@ -85,17 +83,15 @@ public class WsCmdContext extends CommandContext {
 				enterModeCommandArgs.add(urlPathSegment);
 			}
 			if(enterModeCommandArgs.size() == enterModeArgNames.length) {
-				Element cmdElem = GlueXmlUtils.documentWithElement(enterModeCommandWord);
+				CommandBuilder<?> cmdBuilder = cmdBuilder(enterModeCommandClass);
 				for(int i = 0; i < enterModeArgNames.length; i++) {
-					GlueXmlUtils.appendElementWithText(cmdElem, enterModeArgNames[i], enterModeCommandArgs.get(i));
+					cmdBuilder.set(enterModeArgNames[i], enterModeCommandArgs.get(i));
 				}
-				Command enterModeCommand = commandFromElement(cmdElem);
 				enterModeCommandArgs.clear();
-				enterModeCommandWord = null;
 				enterModeCommandClass = null;
 				// run enter mode command
 				try {
-					enterModeCommand.execute(this);
+					cmdBuilder.execute();
 				} catch(DataModelException dme) {
 					if(dme.getCode() == DataModelException.Code.OBJECT_NOT_FOUND) {
 						throw new NotFoundException(dme);
