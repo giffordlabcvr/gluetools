@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
@@ -144,12 +145,9 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		
 		List<Map<String, String>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
 		for(Map<String, String> seqMap: sequenceMaps) {
-			ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 			String sourceName = seqMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
-			// bit of a hack to use sequence command here.
-			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), new SequenceCommand(), sourceName, sequenceID));
-			try {
+			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 				for(int i = 0; i < cellValues.length; i++) {
 					String cellText = cellValues[i];
 					TextFilePopulatorColumn populatorColumn = populatorContext.positionToColumn.get(i);
@@ -157,8 +155,6 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 						populatorColumn.processCellText(populatorContext, cellText);
 					}
 				}
-			} finally {
-				cmdContext.popCommandMode();
 			}
 		}
 

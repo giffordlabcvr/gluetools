@@ -20,15 +20,13 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -83,16 +81,11 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 			String seqString = ">"+id+"\n"+seq.getSequenceAsString()+"\n";
 			createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
 			
-			ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-			// bit of a hack to use sequence command here.
-			cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), new SequenceCommand(), sourceName, id));
-			try {
+			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, id);){
 				seq.getUserCollection().forEach(obj -> {
 					FastaFieldParser.Result result = (Result) obj;
 					SequencePopulatorPlugin.runSetFieldCommand(cmdContext, result.getFieldPopulator(), result.getFieldValue());
 				});
-			} finally {
-				cmdContext.popCommandMode();
 			}
 		});
 		return new CreateResult(Sequence.class, idToSequence.keySet().size());

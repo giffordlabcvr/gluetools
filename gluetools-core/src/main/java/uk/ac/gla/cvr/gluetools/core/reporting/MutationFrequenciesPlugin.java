@@ -20,20 +20,16 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
-import uk.ac.gla.cvr.gluetools.core.command.project.AlignmentCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.ReferenceSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.MemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.FeatureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.ListFeatureSegmentCommand;
@@ -156,31 +152,20 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			AnalysisData analysisData) {
 		String refSeqName;
 		// go into alignment and find reference sequence name
-		Element almtCmdElem = CommandUsage.docElemForCmdClass(AlignmentCommand.class);
-		GlueXmlUtils.appendElementWithText(almtCmdElem, AlignmentCommand.ALIGNMENT_NAME, alignmentName);
-		cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
-		try {
+		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 			Element showRefElement = CommandUsage.docElemForCmdClass(ShowReferenceSequenceCommand.class);
 			ShowReferenceResult showReferenceResult = (ShowReferenceResult) cmdContext.
 					executeElem(showRefElement.getOwnerDocument().getDocumentElement());
 			refSeqName = showReferenceResult.getReferenceName();
-		} finally {
-			cmdContext.popCommandMode();
 		}
 		// go into reference sequence and find feature segments.
-		Element refSeqElem = CommandUsage.docElemForCmdClass(ReferenceSequenceCommand.class);
-		GlueXmlUtils.appendElementWithText(refSeqElem, ReferenceSequenceCommand.REF_SEQ_NAME, refSeqName);
-		cmdContext.executeElem(refSeqElem.getOwnerDocument().getDocumentElement());
-		try {
+		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refSeqName)) {
 			Element showSeqElement = CommandUsage.docElemForCmdClass(ShowSequenceCommand.class);
 			ShowSequenceResult showSequenceResult = (ShowSequenceResult) cmdContext.
 					executeElem(showSeqElement.getOwnerDocument().getDocumentElement());
 			analysisData.refSeqSourceName = showSequenceResult.getSourceName();
 			analysisData.refSeqId = showSequenceResult.getSequenceID();
-			Element featureElem = CommandUsage.docElemForCmdClass(FeatureCommand.class);
-			GlueXmlUtils.appendElementWithText(featureElem, FeatureCommand.FEATURE_NAME, featureName);
-			cmdContext.executeElem(featureElem.getOwnerDocument().getDocumentElement());
-			try {
+			try (ModeCloser featureMode = cmdContext.pushCommandMode("feature", featureName)) {
 				Element listFeatSegElem = CommandUsage.docElemForCmdClass(ListFeatureSegmentCommand.class);
 				ListResult listFeatResult = (ListResult) cmdContext.
 						executeElem(listFeatSegElem.getOwnerDocument().getDocumentElement());
@@ -189,53 +174,26 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 					int refEnd = Integer.parseInt(featSeg.get(FeatureSegment.REF_END_PROPERTY));
 					analysisData.referenceSegments.add(new ReferenceSegment(refStart, refEnd));
 				});
-			} finally {
-				cmdContext.popCommandMode();
 			}
-		} finally {
-			cmdContext.popCommandMode();
 		}
 		// go into reference sequence sequence and find segment nucleotides.
-		
-		String seqSourceName = analysisData.refSeqSourceName;
-		String seqSeqId = analysisData.refSeqId;
-		
-		populateSegmentNTs(cmdContext, analysisData.referenceSegments, seqSourceName, seqSeqId, new Function<ReferenceSegment, Integer>(){
-			@Override
-			public Integer apply(ReferenceSegment t) {
-				return t.start;
-			}
-			
-		}, 
-		new Function<ReferenceSegment, Integer>(){
-
-			@Override
-			public Integer apply(ReferenceSegment t) {
-				return t.end;
-			}
-			
-		});
+		populateSegmentNTs(cmdContext, 
+				analysisData.referenceSegments, analysisData.refSeqSourceName, analysisData.refSeqId, 
+				t -> t.start, t -> t.end);
 
 		
 	}
 
 	private <T extends ReferenceSegment> void populateSegmentNTs(CommandContext cmdContext,
-			List<T> segments, String seqSourceName,
-			String seqSeqId,
+			List<T> segments, String seqSourceName, String seqSeqId,
 			Function<T, Integer> getStart, Function<T, Integer> getEnd) {
-		Element sequenceElem = CommandUsage.docElemForCmdClass(SequenceCommand.class);
-		GlueXmlUtils.appendElementWithText(sequenceElem, SequenceCommand.SOURCE_NAME, seqSourceName);
-		GlueXmlUtils.appendElementWithText(sequenceElem, SequenceCommand.SEQUENCE_ID, seqSeqId);
-		cmdContext.executeElem(sequenceElem.getOwnerDocument().getDocumentElement());
-		try {
+		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", seqSourceName, seqSeqId)) {
 			Element showNtElem = CommandUsage.docElemForCmdClass(ShowNucleotidesCommand.class);
 			NucleotidesResult ntResult = (NucleotidesResult) cmdContext.
 					executeElem(showNtElem.getOwnerDocument().getDocumentElement());
 			for(T segment : segments) {
 				segment.nucleotides = SegmentUtils.subSeq(ntResult.getNucleotides(), getStart.apply(segment), getEnd.apply(segment));
 			}
-		} finally {
-			cmdContext.popCommandMode();
 		}
 	}
 
@@ -337,10 +295,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		// long start = System.currentTimeMillis();
 		// System.out.println("P1 Start");
 		
-		Element almtCmdElem = CommandUsage.docElemForCmdClass(AlignmentCommand.class);
-		GlueXmlUtils.appendElementWithText(almtCmdElem, AlignmentCommand.ALIGNMENT_NAME, alignmentName);
-		cmdContext.executeElem(almtCmdElem.getOwnerDocument().getDocumentElement());
-		try {
+		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 			Element listAlmtMembElem = CommandUsage.docElemForCmdClass(ListMemberCommand.class);
 			if(taxon.isPresent() && !taxon.get().equals("all")) {
 				String taxonString = taxon.get();
@@ -370,12 +325,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				String memberSequenceId = membIdMap.get(Sequence.SEQUENCE_ID_PROPERTY);
 				MemberData memberData = new MemberData(memberSourceName, memberSequenceId);
 				analysisData.memberDatas.add(memberData);
-				Element memberElem = CommandUsage.docElemForCmdClass(MemberCommand.class);
-				GlueXmlUtils.appendElementWithText(memberElem, MemberCommand.SOURCE_NAME, memberSourceName);
-				GlueXmlUtils.appendElementWithText(memberElem, MemberCommand.SEQUENCE_ID, memberSequenceId);
-				cmdContext.executeElem(memberElem.getOwnerDocument().getDocumentElement());
-				try {
-					
+				try (ModeCloser memberMode = 
+						cmdContext.pushCommandMode("member", memberSourceName, memberSequenceId)) {
 					Element listAlignedSegmentElem = CommandUsage.docElemForCmdClass(ListAlignedSegmentCommand.class);
 					ListResult listAlignedSegResult = (ListResult) cmdContext.
 							executeElem(listAlignedSegmentElem.getOwnerDocument().getDocumentElement());
@@ -411,42 +362,16 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 										overlapMembStart, overlapMembEnd));
 							}
 						}
-
 					});
-					
-				} finally {
-					cmdContext.popCommandMode();
-				}			
-				
-				
+				} 			
 			}
-		} finally {
-			cmdContext.popCommandMode();
-		}
+		} 
 		// System.out.println("P1b:"+(System.currentTimeMillis()-start) % 10000);
-
-		Function<MemberSegment, Integer> getStart = new Function<MemberSegment, Integer>(){
-			@Override
-			public Integer apply(MemberSegment t) {
-				return t.memberStart;
-			}
-			
-		};
-		Function<MemberSegment, Integer> getEnd = new Function<MemberSegment, Integer>(){
-
-			@Override
-			public Integer apply(MemberSegment t) {
-				return t.memberEnd;
-			}
-			
-		};
-
-		
 		// now enter each member sequence and populate segment nucleotides.
 		for(MemberData memberData: analysisData.memberDatas) {
 			populateSegmentNTs(cmdContext, 
 					memberData.memberSegments, memberData.sourceName, memberData.sequenceID, 
-					getStart, getEnd);
+					t -> t.memberStart, t -> t.memberEnd);
 		}
 
 		// System.out.println("P1c:"+(System.currentTimeMillis()-start) % 10000);

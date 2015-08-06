@@ -89,11 +89,11 @@ public class WsCmdContext extends CommandContext {
 				for(int i = 0; i < enterModeArgNames.length; i++) {
 					GlueXmlUtils.appendElementWithText(cmdElem, enterModeArgNames[i], enterModeCommandArgs.get(i));
 				}
+				Command enterModeCommand = commandFromElement(cmdElem);
 				enterModeCommandArgs.clear();
 				enterModeCommandWord = null;
 				enterModeCommandClass = null;
 				// run enter mode command
-				Command enterModeCommand = commandFromElement(cmdElem);
 				try {
 					enterModeCommand.execute(this);
 				} catch(DataModelException dme) {

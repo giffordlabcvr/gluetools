@@ -121,7 +121,6 @@ project TEST_PROJECT
       list segment
       exit
     exit
-  create module randomMutations -f randomMutations.xml
     
 
   

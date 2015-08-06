@@ -12,8 +12,10 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 public class CommandContext {
@@ -37,6 +39,33 @@ public class CommandContext {
 			objectContextStack.add(0, GlueDataObject.createObjectContext(serverRuntime));
 		}
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
+	}
+
+	public ModeCloser pushCommandMode(String... words) {
+		String enterModeCommandWord = words[0];
+		Class<? extends Command> enterModeCmdClass = 
+				peekCommandMode().getCommandFactory().identifyCommandClass(this, 
+				Collections.singletonList(enterModeCommandWord));
+		EnterModeCommandDescriptor enterModeCommandDescriptor = 
+				EnterModeCommandDescriptor.getDescriptorForClass(enterModeCmdClass);
+		String[] enterModeArgNames = enterModeCommandDescriptor.enterModeArgNames();
+		if(enterModeCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
+			throw new CommandException(Code.NOT_A_MODE_COMMAND, String.join(" ", words), getModePath());
+		}
+		Element cmdElem = GlueXmlUtils.documentWithElement(enterModeCommandWord);
+		for(int i = 0; i < enterModeArgNames.length; i++) {
+			GlueXmlUtils.appendElementWithText(cmdElem, enterModeArgNames[i], words[i+1]);
+		}
+		Command enterModeCommand = commandFromElement(cmdElem);
+		enterModeCommand.execute(this);
+		return new ModeCloser();
+	}
+	
+	public class ModeCloser implements AutoCloseable {
+		@Override
+		public void close() {
+			popCommandMode();
+		}
 	}
 	
 	public CommandMode<?> popCommandMode() {

@@ -11,17 +11,15 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
@@ -56,10 +54,7 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 	}
 
 	private void populate(CommandContext cmdContext, String sourceName, String sequenceID, String format) {
-		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-		// bit of a hack to use sequence command here.
-		cmdContext.pushCommandMode(new SequenceMode(projectMode.getProject(), new SequenceCommand(), sourceName, sequenceID));
-		try {
+		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
 					Element showDataElem = CommandUsage.docElemForCmdClass(ShowOriginalDataCommand.class);
@@ -73,9 +68,7 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 					rule.execute(cmdContext, sequenceDataDoc);
 				}
 			});
-		} finally {
-			cmdContext.popCommandMode();
-		}
+		} 
 	}
 	
 	private CommandResult populate(CommandContext cmdContext) {
