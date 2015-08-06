@@ -4,29 +4,38 @@ import javax.json.JsonObject;
 
 import org.w3c.dom.Document;
 
+import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
-public class CommandResult {
+public abstract class CommandResult {
 
 	public static CommandResult OK = new OkResult();
 	
 	
-	private Document document;
+	private DocumentBuilder documentBuilder;
+
+	private Document xmlDocument;
 	private JsonObject jsonObject;
 
-	public CommandResult(Document document) {
-		super();
-		this.document = document;
+	protected CommandResult(String rootObjectName) {
+		this.documentBuilder = new DocumentBuilder(rootObjectName);
+	}
+	
+	protected DocumentBuilder getDocumentBuilder() {
+		return documentBuilder;
 	}
 
 	public Document getDocument() {
-		return document;
+		if(xmlDocument == null) {
+			xmlDocument = documentBuilder.getXmlDocument();
+		}
+		return xmlDocument;
 	}
 	
 	public JsonObject getJsonObject() {
 		if(jsonObject == null) {
-			jsonObject = JsonUtils.documentToJSonObjectBuilder(document).build();
+			jsonObject = documentBuilder.getJsonObject();
 		}
 		return jsonObject;
 	}
@@ -52,7 +61,7 @@ public class CommandResult {
 		renderCtx.output(JsonUtils.prettyPrint(jsonObject));
 	}
 
-	
+	// default implementation
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		renderToConsoleAsXml(renderCtx);
 	}

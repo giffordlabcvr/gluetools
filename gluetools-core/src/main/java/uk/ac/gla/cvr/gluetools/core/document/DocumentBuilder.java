@@ -1,9 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import javax.json.JsonObject;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public class DocumentBuilder extends ObjectBuilder {
 
@@ -20,8 +23,12 @@ public class DocumentBuilder extends ObjectBuilder {
 	}
 
 	
-	public Document getDocument() {
+	public Document getXmlDocument() {
 		return getElement().getOwnerDocument();
+	}
+
+	public JsonObject getJsonObject() {
+		return JsonUtils.documentToJSonObjectBuilder(getXmlDocument()).build();
 	}
 
 }

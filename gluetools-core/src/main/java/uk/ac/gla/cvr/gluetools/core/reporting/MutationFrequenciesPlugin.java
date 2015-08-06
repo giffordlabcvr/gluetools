@@ -40,13 +40,14 @@ import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
@@ -215,52 +216,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		
 		// System.out.println("P2:"+(System.currentTimeMillis()-start) % 10000);
 		
-		Element rootElem = GlueXmlUtils.documentWithElement("mutationSet");
-		JsonUtils.setJsonType(rootElem, JsonType.Object, false);
-		for(ReferenceSegment refSeg : analysisData.referenceSegments) {
-			int aaStartIndex = refSeg.start;
-			while(aaStartIndex+2 <= refSeg.end) {
-				String referenceAaString = getCodonAtNtPosition(refSeg, aaStartIndex, false);
-				Element aaLocusElem = GlueXmlUtils.appendElement(rootElem, "aaLocus");
-				JsonUtils.setJsonType(aaLocusElem, JsonType.Object, true);
-				GlueXmlUtils.appendElementWithText(aaLocusElem, "consensusAA", referenceAaString, JsonType.String);
-				
-				int numIsolatesN = 0;
-				Map<String, Integer> mutationAaToNumIsolates = new LinkedHashMap<String, Integer>();
-				for(MemberData memberData : analysisData.memberDatas) {
-					for(MemberSegment memberSegment: memberData.memberSegments) {
-						String memberAaString = getCodonAtNtPosition(memberSegment, aaStartIndex, true);
-						if(memberAaString != null) {
-							numIsolatesN++;
-							if(!memberAaString.equals(referenceAaString)) {
-								Integer numMutations = mutationAaToNumIsolates.getOrDefault(memberAaString, 0);
-								mutationAaToNumIsolates.put(memberAaString, numMutations+1);
-							}
-						}
-					}
-				}
-				int numIsolates = numIsolatesN;
-				GlueXmlUtils.appendElementWithText(aaLocusElem, "numIsolates", Integer.toString(numIsolates), JsonType.Integer);
-
-				List<Entry<String, Integer>> sortedMutations = mutationAaToNumIsolates.entrySet().stream().sorted((o1, o2) -> 
-					(0 - Integer.compare(o1.getValue(), o2.getValue()))).collect(Collectors.toList());
-				
-				sortedMutations.forEach(mut -> {
-					String mutationAA = mut.getKey();
-					Integer numMutIsolates = mut.getValue();
-					double mutPercentage = 100 * ( numMutIsolates / (double) numIsolates ) ;
-					if(mutPercentage > 1.0) {
-						Element mutationElem = GlueXmlUtils.appendElement(aaLocusElem, "mutation");
-						JsonUtils.setJsonType(mutationElem, JsonType.Object, true);
-						GlueXmlUtils.appendElementWithText(mutationElem, "mutationAA", mutationAA, JsonType.String);
-						GlueXmlUtils.appendElementWithText(mutationElem, "isolatesPercent", Double.toString(mutPercentage), JsonType.Double);
-					}
-				});
-				aaStartIndex += 3;
-			}
-		}
 		// System.out.println("P3:"+(System.currentTimeMillis()-start) % 10000);
-		return new CommandResult(rootElem.getOwnerDocument());
+		return new MutationFrequenciesResult(analysisData);
 	}
 
 	private String getCodonAtNtPosition(ReferenceSegment refSeg, int aaStartIndex, boolean allowAmbiguity) {
@@ -378,4 +335,54 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 
 	}
 
+	public class MutationFrequenciesResult extends CommandResult {
+
+		protected MutationFrequenciesResult(AnalysisData analysisData) {
+			super("mutationSet");
+			ArrayBuilder aaLocusArrayBuilder = getDocumentBuilder().setArray("aaLocus");
+			for(ReferenceSegment refSeg : analysisData.referenceSegments) {
+				int aaStartIndex = refSeg.start;
+				while(aaStartIndex+2 <= refSeg.end) {
+					String referenceAaString = getCodonAtNtPosition(refSeg, aaStartIndex, false);
+					int numIsolatesN = 0;
+					Map<String, Integer> mutationAaToNumIsolates = new LinkedHashMap<String, Integer>();
+					for(MemberData memberData : analysisData.memberDatas) {
+						for(MemberSegment memberSegment: memberData.memberSegments) {
+							String memberAaString = getCodonAtNtPosition(memberSegment, aaStartIndex, true);
+							if(memberAaString != null) {
+								numIsolatesN++;
+								if(!memberAaString.equals(referenceAaString)) {
+									Integer numMutations = mutationAaToNumIsolates.getOrDefault(memberAaString, 0);
+									mutationAaToNumIsolates.put(memberAaString, numMutations+1);
+								}
+							}
+						}
+					}
+					int numIsolates = numIsolatesN;
+					ObjectBuilder aaLocusObjectBuilder = 
+							aaLocusArrayBuilder.addObject()
+								.setString("consensusAA", referenceAaString)
+								.setInt("numIsolates", numIsolates);
+
+					List<Entry<String, Integer>> sortedMutations = mutationAaToNumIsolates.entrySet().stream().sorted((o1, o2) -> 
+						(0 - Integer.compare(o1.getValue(), o2.getValue()))).collect(Collectors.toList());
+					
+					ArrayBuilder mutationsBuilder = aaLocusObjectBuilder.setArray("mutation");
+					sortedMutations.forEach(mut -> {
+						String mutationAA = mut.getKey();
+						Integer numMutIsolates = mut.getValue();
+						double mutPercentage = 100 * ( numMutIsolates / (double) numIsolates ) ;
+						if(mutPercentage > 1.0) {
+							mutationsBuilder.addObject()
+								.setString("mutationAA", mutationAA)
+								.setDouble("isolatesPercent", mutPercentage);
+						}
+					});
+					aaStartIndex += 3;
+				}
+			}
+		}
+		
+	}
+	
 }

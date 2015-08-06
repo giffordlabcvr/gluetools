@@ -6,13 +6,14 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
@@ -38,32 +39,22 @@ public class ListResult extends CommandResult {
 	public static final String OBJECT_TYPE = "objectType";
 
 	public <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results, List<String> columns) {
-		super(GlueXmlUtils.documentWithElement(LIST_RESULT).getOwnerDocument());
+		super(LIST_RESULT);
+		DocumentBuilder builder = getDocumentBuilder();
 		if(columns == null) {
 			columns = Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListColumns());
 		}
-		Element docElem = getDocument().getDocumentElement();
-		JsonUtils.setJsonType(docElem, JsonType.Object, false);	
-		GlueXmlUtils.appendElementWithText(docElem, 
-				OBJECT_TYPE, objectClass.getSimpleName(), JsonType.String);
+		builder.set(OBJECT_TYPE, objectClass.getSimpleName());
+		ArrayBuilder columnsArrayBuilder = builder.setArray(COLUMN);
 		for(String column: columns) {
-			Element elem = (Element) GlueXmlUtils.appendElementWithText(docElem, COLUMN, column).getParentNode();
-			JsonUtils.setJsonType(elem, JsonType.String, true);
+			columnsArrayBuilder.add(column);
 		}
+		ArrayBuilder objectArrayBuilder = builder.setArray(OBJECT);
 		for(D object: results) {
-			Element rowElem = GlueXmlUtils.appendElement(docElem, OBJECT);
-			JsonUtils.setJsonType(rowElem, JsonType.Object, true);	
+			ArrayBuilder valueArrayBuilder = objectArrayBuilder.addObject().setArray(VALUE);
 			for(String column: columns) {
 				Object columnValue = object.readNestedProperty(column);
-				if(columnValue == null) {
-					Element valueElem = GlueXmlUtils.appendElement(rowElem, VALUE);
-					valueElem.setAttribute(IS_NULL, "true");
-					JsonUtils.setJsonType(valueElem, JsonType.Null, true);
-				} else {
-					String valueText = columnValue.toString();
-					Element elem = (Element) GlueXmlUtils.appendElementWithText(rowElem, VALUE, valueText).getParentNode();
-					JsonUtils.setJsonType(elem, JsonType.String, true);
-				}
+				valueArrayBuilder.add(columnValue);
 			}
 		}
 	}
@@ -92,7 +83,7 @@ public class ListResult extends CommandResult {
 				List<Element> valueElems = GlueXmlUtils.findChildElements(objElem, VALUE);
 				valueElems.forEach(valueElem -> {
 					String cString;
-					if(Optional.ofNullable(valueElem.getAttribute(IS_NULL)).orElse("false").equals("true")) {
+					if(JsonUtils.getJsonType(valueElem) == JsonType.Null) {
 						cString = "-";
 					} else {
 						cString = valueElem.getTextContent();
@@ -116,7 +107,7 @@ public class ListResult extends CommandResult {
 		int index = headers.indexOf(columnName)+1; // XPath indices start from 1
 		List<Element> valueElems = GlueXmlUtils.getXPathElements(docElem, OBJECT+"/value["+index+"]");
 		return valueElems.stream().map(elem -> {
-			if(Optional.ofNullable(elem.getAttribute(IS_NULL)).orElse("false").equals("true")) {
+			if(JsonUtils.getJsonType(elem) == JsonType.Null) {
 				return null;
 			} else {
 				return elem.getTextContent();
@@ -137,7 +128,7 @@ public class ListResult extends CommandResult {
 			for(int i = 0; i < headers.size(); i++) {
 				String header = headers.get(i);
 				Element valueElem = valueElems.get(i);
-				if(Optional.ofNullable(valueElem.getAttribute(IS_NULL)).orElse("false").equals("true")) {
+				if(JsonUtils.getJsonType(valueElem) == JsonType.Null) {
 					map.put(header, null);
 				} else {
 					map.put(header, valueElem.getTextContent());
