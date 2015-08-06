@@ -81,12 +81,12 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SEQUENCE_ID_PROPERTY);
 		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.FORMAT_PROPERTY);
 		ListResult listResult = cmdBuilder.execute();
-		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
+		List<Map<String,Object>> sequenceMaps = listResult.asListOfMaps();
 		
-		for(Map<String,String> sequenceMap: sequenceMaps) {
-			String sourceName = sequenceMap.get(Sequence.SOURCE_NAME_PATH);
-			String sequenceID = sequenceMap.get(Sequence.SEQUENCE_ID_PROPERTY);
-			String format = sequenceMap.get(Sequence.FORMAT_PROPERTY);
+		for(Map<String,Object> sequenceMap: sequenceMaps) {
+			String sourceName = (String) sequenceMap.get(Sequence.SOURCE_NAME_PATH);
+			String sequenceID = (String) sequenceMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+			String format = (String) sequenceMap.get(Sequence.FORMAT_PROPERTY);
 			populate(cmdContext, sourceName, sequenceID, format);
 		}
 		return CommandResult.OK;

@@ -116,23 +116,19 @@ public class ListResult extends CommandResult {
 	}
 
 
-	public List<Map<String, String>> asListOfMaps() {
+	public List<Map<String, Object>> asListOfMaps() {
 		Element docElem = getDocument().getDocumentElement();
 		List<String> headers = GlueXmlUtils.findChildElements(docElem, COLUMN).stream().
 				map(Element::getTextContent).collect(Collectors.toList());
 		List<Element> objElems = GlueXmlUtils.findChildElements(docElem, OBJECT);
-		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
+		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 		for(Element objElem: objElems) {
-			Map<String, String> map = new LinkedHashMap<String, String>();
+			Map<String, Object> map = new LinkedHashMap<String, Object>();
 			List<Element> valueElems = GlueXmlUtils.findChildElements(objElem, VALUE);
 			for(int i = 0; i < headers.size(); i++) {
 				String header = headers.get(i);
 				Element valueElem = valueElems.get(i);
-				if(JsonUtils.getJsonType(valueElem) == JsonType.Null) {
-					map.put(header, null);
-				} else {
-					map.put(header, valueElem.getTextContent());
-				}
+				map.put(header, JsonUtils.elementToObject(valueElem));
 			}
 			results.add(map);
 		}

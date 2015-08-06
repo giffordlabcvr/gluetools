@@ -140,10 +140,10 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		Expression identifyingExp = idExpressions.subList(1, idExpressions.size()).
 				stream().reduce(idExpressions.get(0), Expression::andExp);
 		
-		List<Map<String, String>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
-		for(Map<String, String> seqMap: sequenceMaps) {
-			String sourceName = seqMap.get(Sequence.SOURCE_NAME_PATH);
-			String sequenceID = seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+		List<Map<String, Object>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
+		for(Map<String, Object> seqMap: sequenceMaps) {
+			String sourceName = (String) seqMap.get(Sequence.SOURCE_NAME_PATH);
+			String sequenceID = (String) seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
 			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 				for(int i = 0; i < cellValues.length; i++) {
 					String cellText = cellValues[i];
@@ -176,11 +176,11 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 	}
 
 
-	public List<Map<String,String>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
+	public List<Map<String,Object>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
 		ListResult listResult = cmdContext.cmdBuilder(ListSequenceCommand.class).
 			set(ListSequenceCommand.WHERE_CLAUSE, identifyingExp.toString()).
 			execute();
-		List<Map<String,String>> sequenceMaps = listResult.asListOfMaps();
+		List<Map<String,Object>> sequenceMaps = listResult.asListOfMaps();
 		if(sequenceMaps.size() == 0 && !skipMissing) {
 			throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SEQUENCE_FOUND, identifyingExp.toString());
 		}

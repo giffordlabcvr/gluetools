@@ -166,8 +166,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 				ListResult listFeatResult = (ListResult) cmdContext.
 						cmdBuilder(ListFeatureSegmentCommand.class).execute();
 				listFeatResult.asListOfMaps().forEach(featSeg -> {
-					int refStart = Integer.parseInt(featSeg.get(FeatureSegment.REF_START_PROPERTY));
-					int refEnd = Integer.parseInt(featSeg.get(FeatureSegment.REF_END_PROPERTY));
+					int refStart = (Integer) featSeg.get(FeatureSegment.REF_START_PROPERTY);
+					int refEnd = (Integer) featSeg.get(FeatureSegment.REF_END_PROPERTY);
 					analysisData.referenceSegments.add(new ReferenceSegment(refStart, refEnd));
 				});
 			}
@@ -248,42 +248,26 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 			CommandBuilder<ListResult, ListMemberCommand> listMemberBuilder = cmdContext.cmdBuilder(ListMemberCommand.class);
 			if(taxon.isPresent() && !taxon.get().equals("all")) {
-				String taxonString = taxon.get();
-				Pattern pattern = Pattern.compile("(\\d)([a-z]*)");
-				Matcher matcher = pattern.matcher(taxonString);
-				if(!matcher.find()) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Invalid taxon: "+taxonString);
-				}
-				String genotype = matcher.group(1);
-				String subtype = "";
-				if(matcher.groupCount() > 1) {
-					subtype = matcher.group(2);
-				}
-				Expression whereClauseExpression = ExpressionFactory.matchExp("GENOTYPE", genotype);
-				if(subtype.trim().length() != 0) {
-					whereClauseExpression = whereClauseExpression.andExp(ExpressionFactory.matchExp("SUBTYPE", subtype));
-				}
+				Expression whereClauseExpression = whereClauseFromTaxon(taxon.get());
 				listMemberBuilder.set(ListMemberCommand.WHERE_CLAUSE, whereClauseExpression.toString());
 			}
 			// System.out.println("P1a:"+(System.currentTimeMillis()-start) % 10000);
 
 			ListResult listAlmtMembResult = listMemberBuilder.execute();
-			List<Map<String, String>> membIdMaps = listAlmtMembResult.asListOfMaps();
+			List<Map<String, Object>> membIdMaps = listAlmtMembResult.asListOfMaps();
 			// enter each member and get overlapping segment coordinates.
-			for(Map<String, String> membIdMap: membIdMaps) {
-				String memberSourceName = membIdMap.get(Sequence.SOURCE_NAME_PATH);
-				String memberSequenceId = membIdMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+			for(Map<String, Object> membIdMap: membIdMaps) {
+				String memberSourceName = (String) membIdMap.get(Sequence.SOURCE_NAME_PATH);
+				String memberSequenceId = (String) membIdMap.get(Sequence.SEQUENCE_ID_PROPERTY);
 				MemberData memberData = new MemberData(memberSourceName, memberSequenceId);
 				analysisData.memberDatas.add(memberData);
-				try (ModeCloser memberMode = 
-						cmdContext.pushCommandMode("member", memberSourceName, memberSequenceId)) {
-					ListResult listAlignedSegResult = (ListResult) cmdContext.
-							cmdBuilder(ListAlignedSegmentCommand.class).execute();
+				try (ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSequenceId)) {
+					ListResult listAlignedSegResult = cmdContext.cmdBuilder(ListAlignedSegmentCommand.class).execute();
 					listAlignedSegResult.asListOfMaps().forEach(alignedSeg -> {
-						int alnRefStart = Integer.parseInt(alignedSeg.get(AlignedSegment.REF_START_PROPERTY));
-						int alnRefEnd = Integer.parseInt(alignedSeg.get(AlignedSegment.REF_END_PROPERTY));
-						int alnMembStart = Integer.parseInt(alignedSeg.get(AlignedSegment.MEMBER_START_PROPERTY));
-						int alnMembEnd = Integer.parseInt(alignedSeg.get(AlignedSegment.MEMBER_END_PROPERTY));
+						int alnRefStart = (Integer) alignedSeg.get(AlignedSegment.REF_START_PROPERTY);
+						int alnRefEnd = (Integer) alignedSeg.get(AlignedSegment.REF_END_PROPERTY);
+						int alnMembStart = (Integer) alignedSeg.get(AlignedSegment.MEMBER_START_PROPERTY);
+						int alnMembEnd = (Integer) alignedSeg.get(AlignedSegment.MEMBER_END_PROPERTY);
 						
 						for(ReferenceSegment refSeg: analysisData.referenceSegments) {
 							// find overlap with ref segment and aligned segment in ref coordinates.
@@ -325,6 +309,24 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 
 		// System.out.println("P1c:"+(System.currentTimeMillis()-start) % 10000);
 
+	}
+
+	public Expression whereClauseFromTaxon(String taxonString) {
+		Pattern pattern = Pattern.compile("(\\d)([a-z]*)");
+		Matcher matcher = pattern.matcher(taxonString);
+		if(!matcher.find()) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Invalid taxon: "+taxonString);
+		}
+		String genotype = matcher.group(1);
+		String subtype = "";
+		if(matcher.groupCount() > 1) {
+			subtype = matcher.group(2);
+		}
+		Expression whereClauseExpression = ExpressionFactory.matchExp("GENOTYPE", genotype);
+		if(subtype.trim().length() != 0) {
+			whereClauseExpression = whereClauseExpression.andExp(ExpressionFactory.matchExp("SUBTYPE", subtype));
+		}
+		return whereClauseExpression;
 	}
 
 	public class MutationFrequenciesResult extends CommandResult {

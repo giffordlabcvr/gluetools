@@ -197,5 +197,23 @@ public class JsonUtils {
 		}
 	}
 	
+	public static Object elementToObject(Element elem) {
+		JsonType jsonType = getJsonType(elem);
+		switch(jsonType) {
+		case Double:
+			return Double.parseDouble(elem.getTextContent());
+		case Integer:
+			return Integer.parseInt(elem.getTextContent());
+		case Boolean:
+			return Boolean.parseBoolean(elem.getTextContent());
+		case String:
+			return elem.getTextContent();
+		case Null:
+			return null;
+		default:
+			// maybe it could be a map?
+			throw new RuntimeException("Element "+elem.getNodeName()+" cannot be cast to an object");
+		}
+	}
 	
 }
