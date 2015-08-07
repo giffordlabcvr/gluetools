@@ -19,7 +19,7 @@ public abstract class CommandUtils {
 
 	public static <C extends GlueDataObject> ListResult runListCommand(
 			CommandContext cmdContext, Class<C> theClass, SelectQuery query) {
-		return runListCommand(cmdContext, theClass, query, null);
+		return runListCommand(cmdContext, theClass, query);
 	}
 
 	

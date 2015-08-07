@@ -31,4 +31,5 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 	}
 
 	
+	
 }

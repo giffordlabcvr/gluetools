@@ -6,7 +6,7 @@ import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
@@ -34,7 +34,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 @PluginClass(elemName="genbankXmlPopulator")
-public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXmlPopulatorPlugin> {
+public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> {
 
 	private List<XmlPopulatorRule> rules;
 	
@@ -97,10 +97,10 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 			commandWords={"populate"}, 
 			docoptUsages={""},
 			description="Populate sequence field values based on Genbank XML") 
-	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, GenbankXmlPopulatorPlugin> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
 		
 		@Override
-		protected OkResult execute(CommandContext cmdContext, GenbankXmlPopulatorPlugin populatorPlugin) {
+		protected OkResult execute(CommandContext cmdContext, GenbankXmlPopulator populatorPlugin) {
 			return populatorPlugin.populate(cmdContext);
 		}
 		
@@ -110,13 +110,13 @@ public class GenbankXmlPopulatorPlugin extends SequencePopulatorPlugin<GenbankXm
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
 			description="Show the current configuration of this populator") 
-	public static class ShowPopulatorCommand extends ShowConfigCommand<GenbankXmlPopulatorPlugin> {}
+	public static class ShowPopulatorCommand extends ShowConfigCommand<GenbankXmlPopulator> {}
 	
 	
 	@SimpleConfigureCommandClass(
 			propertyNames={"whereClause"}
 	)
-	public static class ConfigurePopulatorCommand extends SimpleConfigureCommand<GenbankXmlPopulatorPlugin> {}
+	public static class ConfigurePopulatorCommand extends SimpleConfigureCommand<GenbankXmlPopulator> {}
 
 	
 }

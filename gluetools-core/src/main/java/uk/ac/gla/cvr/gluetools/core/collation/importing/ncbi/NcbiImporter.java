@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
@@ -48,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 // TODO importer plugin should only fetch sequence the source does not already have.
 @PluginClass(elemName="ncbiImporter")
-public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
+public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	
 	private String sourceName;
@@ -366,10 +366,10 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 			commandWords={"import"}, 
 			docoptUsages={""},
 			description="Import sequence data from NCBI into the project") 
-	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, NcbiImporterPlugin> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, NcbiImporter> implements ProvidedProjectModeCommand {
 
 		@Override
-		protected CreateResult execute(CommandContext cmdContext, NcbiImporterPlugin importerPlugin) {
+		protected CreateResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doImport(cmdContext);
 		}
 		
@@ -379,13 +379,13 @@ public class NcbiImporterPlugin extends ImporterPlugin<NcbiImporterPlugin> {
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
 			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<NcbiImporterPlugin> {}
+	public static class ShowImporterCommand extends ShowConfigCommand<NcbiImporter> {}
 
 	@SimpleConfigureCommandClass(
 			propertyNames={"sourceName", "database", "eSearchTerm", 
 					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize"}
 	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporterPlugin> {}
+	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporter> {}
 
 
 }

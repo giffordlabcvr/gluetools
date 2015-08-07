@@ -38,8 +38,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowNucleotidesComm
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -49,13 +49,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
-@PluginClass(elemName="mutationFrequencies")
-public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesPlugin> {
+@PluginClass(elemName="mutationFrequenciesReporter")
+public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {
 
 	private String alignmentName;
 	private TranscriptionEngine transcriptionEngine;
 	
-	public MutationFrequenciesPlugin() {
+	public MutationFrequenciesReporter() {
 		transcriptionEngine = new TranscriptionEngine.Builder().initMet(false).build();
 		addProvidedCmdClass(GenerateCommand.class);
 	}
@@ -74,7 +74,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 					"-f <feature>, --feature <feature>  Specify genome feature"
 			}
 	)
-	public static class GenerateCommand extends ModuleProvidedCommand<MutationFrequenciesResult, MutationFrequenciesPlugin> implements ProvidedProjectModeCommand {
+	public static class GenerateCommand extends ModuleProvidedCommand<MutationFrequenciesResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 		
 		private Optional<String> taxon;
 		private String feature;
@@ -88,7 +88,7 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		}
 
 		@Override
-		protected MutationFrequenciesResult execute(CommandContext cmdContext, MutationFrequenciesPlugin mutationFrequenciesPlugin) {
+		protected MutationFrequenciesResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
 			return mutationFrequenciesPlugin.doGenerate(cmdContext, taxon, feature);
 		}
 
@@ -257,8 +257,8 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 			List<Map<String, Object>> membIdMaps = listAlmtMembResult.asListOfMaps();
 			// enter each member and get overlapping segment coordinates.
 			for(Map<String, Object> membIdMap: membIdMaps) {
-				String memberSourceName = (String) membIdMap.get(Sequence.SOURCE_NAME_PATH);
-				String memberSequenceId = (String) membIdMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+				String memberSourceName = (String) membIdMap.get(AlignmentMember.SOURCE_NAME_PATH);
+				String memberSequenceId = (String) membIdMap.get(AlignmentMember.SEQUENCE_ID_PATH);
 				MemberData memberData = new MemberData(memberSourceName, memberSequenceId);
 				analysisData.memberDatas.add(memberData);
 				try (ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSequenceId)) {
@@ -322,9 +322,9 @@ public class MutationFrequenciesPlugin extends ModulePlugin<MutationFrequenciesP
 		if(matcher.groupCount() > 1) {
 			subtype = matcher.group(2);
 		}
-		Expression whereClauseExpression = ExpressionFactory.matchExp("GENOTYPE", genotype);
+		Expression whereClauseExpression = ExpressionFactory.matchExp(AlignmentMember.SEQUENCE_PROPERTY+".GENOTYPE", genotype);
 		if(subtype.trim().length() != 0) {
-			whereClauseExpression = whereClauseExpression.andExp(ExpressionFactory.matchExp("SUBTYPE", subtype));
+			whereClauseExpression = whereClauseExpression.andExp(ExpressionFactory.matchExp(AlignmentMember.SEQUENCE_PROPERTY+".SUBTYPE", subtype));
 		}
 		return whereClauseExpression;
 	}

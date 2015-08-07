@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.plugins;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -26,6 +27,19 @@ import freemarker.template.Template;
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
 
+	
+	public static byte[] configureBase64BytesProperty(Element configElem, String propertyName, boolean required) {
+		String base64String = PluginUtils.configureStringProperty(configElem, propertyName, required);
+		if(base64String == null) {
+			return null;
+		}
+		try {
+			return Base64.getDecoder().decode(base64String);
+		} catch(IllegalArgumentException pe) {
+			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, pe.getLocalizedMessage(), base64String);
+		}
+	}
+	
 	public static Template configureFreemarkerTemplateProperty(PluginConfigContext pluginConfigContext, 
 			Element configElem, String propertyName, boolean required) {
 		String templateString = PluginUtils.configureStringProperty(configElem, propertyName, required);

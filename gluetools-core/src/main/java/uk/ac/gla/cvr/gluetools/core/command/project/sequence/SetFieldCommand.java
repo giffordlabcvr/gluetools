@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.FieldCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.project.SequenceFieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
@@ -72,7 +72,7 @@ public class SetFieldCommand extends SequenceModeCommand<OkResult> {
 
 	@SuppressWarnings("rawtypes")
 	@CompleterClass
-	public static class Completer extends FieldCompleter {
+	public static class Completer extends SequenceFieldCompleter {
 		@Override
 		public List<String> completionSuggestions(
 				ConsoleCommandContext cmdContext,

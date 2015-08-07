@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.w3c.dom.Document;
 
-import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterPlugin.RetrievedSequence;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporter.RetrievedSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -19,7 +19,7 @@ public class TestNcbiGenbank {
 	public void retrieveAllHcvIncludedAsXml() throws Exception {
 		Document document = GlueXmlUtils.documentFromStream(getClass().getResourceAsStream("testRetrieveAllHcvIncludedAsXml.xml"));
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
-		NcbiImporterPlugin ncbiImporter = (NcbiImporterPlugin) PluginFactory.get(ModulePluginFactory.creator).
+		NcbiImporter ncbiImporter = (NcbiImporter) PluginFactory.get(ModulePluginFactory.creator).
 					createFromElement(pluginConfigContext, document.getDocumentElement());
 		List<String> sequenceIDs = ncbiImporter.getSequenceIDs();
 		List<RetrievedSequence> retrievedSequences = ncbiImporter.retrieveSequences(sequenceIDs);

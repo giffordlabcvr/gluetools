@@ -15,23 +15,24 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"delete", "reference"}, 
-	docoptUsages={"<refSequenceName>"},
+	docoptUsages={"<referenceName>"},
 	description="Delete a reference sequence", 
 	furtherHelp="Deletion of a reference sequence does not cause the deletion of its sequence.") 
 public class DeleteReferenceSequenceCommand extends ProjectModeCommand<DeleteResult> {
 
-	private String refSequenceName;
+	public static final String REFERENCE_NAME = "referenceName";
+	private String referenceName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		refSequenceName = PluginUtils.configureStringProperty(configElem, "refSequenceName", true);
+		referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
 	}
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSequenceName));
+		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName));
 		cmdContext.commit();
 		return result;
 	}

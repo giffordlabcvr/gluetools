@@ -122,5 +122,9 @@ project TEST_PROJECT
       exit
     exit
     
+  create module blast-aligner -f hcvBlastAligner.xml
+  module blast-aligner
+    show configuration
+  	exit
 
   

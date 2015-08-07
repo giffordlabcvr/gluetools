@@ -53,7 +53,7 @@ public class AlignedSegment extends _AlignedSegment {
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(
 				getAlignmentMember().getSequence().getSource().getName(), 
 				getAlignmentMember().getSequence().getSequenceID(),

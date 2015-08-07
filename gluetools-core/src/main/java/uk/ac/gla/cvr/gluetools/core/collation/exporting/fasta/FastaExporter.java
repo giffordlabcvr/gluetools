@@ -33,7 +33,7 @@ import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="fastaExporter")
-public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
+public class FastaExporter extends ModulePlugin<FastaExporter> {
 
 	private Template idTemplate;
 
@@ -98,7 +98,7 @@ public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
 			    "-a, --allSequences                             Export all project sequences"},
 			description="Export sequences to a FASTA file", 
 			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-	public static class ExportCommand extends ModuleProvidedCommand<OkResult, FastaExporterPlugin> implements ProvidedProjectModeCommand {
+	public static class ExportCommand extends ModuleProvidedCommand<OkResult, FastaExporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		private Expression whereClause;
@@ -123,7 +123,7 @@ public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
 		}
 		
 		@Override
-		protected OkResult execute(CommandContext cmdContext, FastaExporterPlugin importerPlugin) {
+		protected OkResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
 			return importerPlugin.doExport((ConsoleCommandContext) cmdContext, fileName, whereClause);
 		}
 	}
@@ -132,12 +132,12 @@ public class FastaExporterPlugin extends ModulePlugin<FastaExporterPlugin> {
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
 			description="Show the current configuration of this exporter") 
-	public static class ShowExporterCommand extends ShowConfigCommand<FastaExporterPlugin> {}
+	public static class ShowExporterCommand extends ShowConfigCommand<FastaExporter> {}
 
 	@SimpleConfigureCommandClass(
 			propertyNames={"idTemplate"}
 	)
-	public static class ConfigureExporterCommand extends SimpleConfigureCommand<FastaExporterPlugin> {}
+	public static class ConfigureExporterCommand extends SimpleConfigureCommand<FastaExporter> {}
 
 
 }

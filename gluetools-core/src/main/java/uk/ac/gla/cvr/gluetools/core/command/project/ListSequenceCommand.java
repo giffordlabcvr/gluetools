@@ -61,13 +61,17 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 			selectQuery = new SelectQuery(Sequence.class);
 		}
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkValidSequenceFieldNames(fieldNames);
-		return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
+		if(fieldNames == null) {
+			return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery);
+		} else {
+			project.checkValidSequenceFieldNames(fieldNames);
+			return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	@CompleterClass
-	public static class ListSequencesFieldCompleter extends FieldCompleter {
+	public static class ListSequencesFieldCompleter extends SequenceFieldCompleter {
 		@Override
 		public List<String> completionSuggestions(
 				ConsoleCommandContext cmdContext,

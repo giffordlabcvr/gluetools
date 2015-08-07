@@ -7,11 +7,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 
 @GlueDataClass(defaultListColumns = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
@@ -53,10 +54,32 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new SequenceException(Code.INVALID_FIELD, f, validFieldNamesList);
+					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validFieldNamesList);
 				}
 			});
 		}
 	}
 
+	
+	public void checkValidMemberFieldNames(List<String> fieldNames) {
+		List<String> validMemberFieldsList = getValidMemberFields();
+		Set<String> validMemberFields = new LinkedHashSet<String>(validMemberFieldsList);
+		if(fieldNames != null) {
+			fieldNames.forEach(f-> {
+				if(!validMemberFields.contains(f)) {
+					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validMemberFieldsList);
+				}
+			});
+		}
+
+	}
+
+	public List<String> getValidMemberFields() {
+		List<String> validMemberFieldsList = getAllSequenceFieldNames().stream().
+			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList());
+		return validMemberFieldsList;
+	}
+
+	
+	
 }

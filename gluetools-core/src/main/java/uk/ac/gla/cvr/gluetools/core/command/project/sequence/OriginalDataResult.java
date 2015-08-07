@@ -20,7 +20,7 @@ public class OriginalDataResult extends CommandResult {
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		StringBuffer buf = new StringBuffer();
-		String formatName = getFormat();
+		String formatName = getFormatString();
 		buf.append("Format: ");
 		buf.append(formatName);
 		buf.append("\n");
@@ -38,8 +38,11 @@ public class OriginalDataResult extends CommandResult {
 		return GlueXmlUtils.getXPathString(getDocument(), "/originalDataResult/base64/text()");
 	}
 
-	public String getFormat() {
+	public String getFormatString() {
 		return GlueXmlUtils.getXPathString(getDocument(), "/originalDataResult/format/text()");
 	}
 	
+	public SequenceFormat getFormat() {
+		return SequenceFormat.valueOf(getFormatString());
+	}
 }

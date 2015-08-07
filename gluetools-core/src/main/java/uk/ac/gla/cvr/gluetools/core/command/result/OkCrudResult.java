@@ -41,5 +41,7 @@ public abstract class OkCrudResult extends OkResult {
 		renderCtx.output("("+number+" "+objectTypeString+" "+operationString+")");
 	}
 	
-	
+	public int getNumber() {
+		return Integer.parseInt(GlueXmlUtils.getXPathString(getDocument().getDocumentElement(), NUMBER+"/text()"));
+	}
 }

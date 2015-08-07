@@ -15,7 +15,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="textFilePopulator")
-public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePopulatorPlugin> {
+public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	private static final String SKIP_MISSING = "skipMissing";
 	private static final String UPDATE_MULTIPLE = "updateMultiple";
@@ -130,7 +130,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 			identifierColumns.stream().map(col -> {
 				int j = populatorContext.columnToPosition.get(col);
 				String processedCellValue = 
-						SequencePopulatorPlugin.runFieldPopulator(col, cellValues[j]);
+						SequencePopulator.runFieldPopulator(col, cellValues[j]);
 				if(processedCellValue == null) {
 					throw new TextFilePopulatorException(TextFilePopulatorException.Code.NULL_IDENTIFIER, col.getFieldName());
 				}
@@ -197,7 +197,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 				"-f <file>, --fileName <file>  Text file with field values"},
 			description="Populate sequence field values based on a text file", 
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
-	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulatorPlugin> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		
@@ -208,7 +208,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 		}
 		
 		@Override
-		protected OkResult execute(CommandContext cmdContext, TextFilePopulatorPlugin populatorPlugin) {
+		protected OkResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
 			return populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName);
 		}
 		
@@ -218,7 +218,7 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
 			description="Show the current configuration of this populator") 
-	public static class ShowPopulatorCommand extends ShowConfigCommand<TextFilePopulatorPlugin> {}
+	public static class ShowPopulatorCommand extends ShowConfigCommand<TextFilePopulator> {}
 	
 	
 	@SimpleConfigureCommandClass(
@@ -227,6 +227,6 @@ public class TextFilePopulatorPlugin extends SequencePopulatorPlugin<TextFilePop
 					UPDATE_MULTIPLE, 
 					COLUMN_DELIMITER_REGEX}
 	)
-	public static class ConfigurePopulatorCommand extends SimpleConfigureCommand<TextFilePopulatorPlugin> {}
+	public static class ConfigurePopulatorCommand extends SimpleConfigureCommand<TextFilePopulator> {}
 
 }

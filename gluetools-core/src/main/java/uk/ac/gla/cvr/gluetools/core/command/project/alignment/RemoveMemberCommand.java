@@ -75,5 +75,6 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 		cmdContext.commit();
 		return new DeleteResult(AlignmentMember.class, membersToDelete.size());
 	}
+	
 
 }

@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @SuppressWarnings("rawtypes")
-public class FieldCompleter extends CommandCompleter {
+public class SequenceFieldCompleter extends CommandCompleter {
 	@Override
 	public List<String> completionSuggestions(
 			ConsoleCommandContext cmdContext,

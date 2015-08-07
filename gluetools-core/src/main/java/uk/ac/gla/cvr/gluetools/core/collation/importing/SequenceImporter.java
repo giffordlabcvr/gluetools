@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.CreateSourceCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 
-public abstract class ImporterPlugin<P extends ImporterPlugin<P>> extends ModulePlugin<P> {
+public abstract class SequenceImporter<P extends SequenceImporter<P>> extends ModulePlugin<P> {
 
 	protected final void ensureSourceExists(CommandContext cmdContext, String sourceName) {
 		cmdContext.cmdBuilder(CreateSourceCommand.class).

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -34,7 +34,7 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	}
 
 	public Optional<Result> parseField(String inputText) {
-		String fieldValue = SequencePopulatorPlugin.runFieldPopulator(this, inputText);
+		String fieldValue = SequencePopulator.runFieldPopulator(this, inputText);
 		if(fieldValue != null) {
 			return Optional.of(new Result(this, fieldValue));
 		} else {

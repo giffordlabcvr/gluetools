@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class SequencePopulatorPlugin<P extends ModulePlugin<P>> extends ModulePlugin<P> {
+public abstract class SequencePopulator<P extends ModulePlugin<P>> extends ModulePlugin<P> {
 
 	public static final String WHERE_CLAUSE = "whereClause";
 	private Optional<Expression> whereClause;

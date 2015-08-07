@@ -13,10 +13,10 @@ import org.biojava.nbio.core.sequence.compound.NucleotideCompound;
 import org.biojava.nbio.core.sequence.io.template.SequenceHeaderParserInterface;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.importing.ImporterPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaFieldParser.Result;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulatorPlugin;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -37,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaImporter")
-public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> implements FieldPopulator {
+public class FastaImporter extends SequenceImporter<FastaImporter> implements FieldPopulator {
 
 	private Pattern nullRegex = null;
 	private RegexExtractorFormatter mainExtractor = null;
@@ -83,7 +83,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, id);){
 				seq.getUserCollection().forEach(obj -> {
 					FastaFieldParser.Result result = (Result) obj;
-					SequencePopulatorPlugin.runSetFieldCommand(cmdContext, result.getFieldPopulator(), result.getFieldValue());
+					SequencePopulator.runSetFieldCommand(cmdContext, result.getFieldPopulator(), result.getFieldValue());
 				});
 			}
 		});
@@ -95,7 +95,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 
 		@Override
 		public void parseHeader(String header, DNASequence sequence) {
-			String finalID = SequencePopulatorPlugin.runFieldPopulator(FastaImporterPlugin.this, header);
+			String finalID = SequencePopulator.runFieldPopulator(FastaImporter.this, header);
 			if(finalID == null) {
 				throw new FastaImporterException(FastaImporterException.Code.NULL_IDENTIFIER, header);
 			}
@@ -118,7 +118,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 				"-f <file>, --fileName <file>  FASTA file"},
 			description="Import sequences from a FASTA file", 
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
-	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, FastaImporterPlugin> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, FastaImporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		
@@ -129,7 +129,7 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 		}
 		
 		@Override
-		protected CreateResult execute(CommandContext cmdContext, FastaImporterPlugin importerPlugin) {
+		protected CreateResult execute(CommandContext cmdContext, FastaImporter importerPlugin) {
 			return importerPlugin.doImport((ConsoleCommandContext) cmdContext, fileName);
 		}
 	}
@@ -139,12 +139,12 @@ public class FastaImporterPlugin extends ImporterPlugin<FastaImporterPlugin> imp
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
 			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<FastaImporterPlugin> {}
+	public static class ShowImporterCommand extends ShowConfigCommand<FastaImporter> {}
 
 	@SimpleConfigureCommandClass(
 			propertyNames={"sourceName"}
 	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<FastaImporterPlugin> {}
+	public static class ConfigureImporterCommand extends SimpleConfigureCommand<FastaImporter> {}
 
 	@Override
 	public RegexExtractorFormatter getMainExtractor() {
