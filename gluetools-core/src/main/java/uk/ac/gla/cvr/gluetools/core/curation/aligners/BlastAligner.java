@@ -43,7 +43,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 			Random random = new java.util.Random();
 			List<AlignedSegment> alignedSegments = new ArrayList<AlignedSegment>();
 			{
-				int seglength = random.nextInt(100);
+				int seglength = random.nextInt(99)+1;
 				int refStart = random.nextInt(referenceNucleotides.length()-seglength)+1;
 				int refEnd = refStart + seglength - 1;
 				int queryStart = random.nextInt(queryNucleotides.length()-seglength)+1;

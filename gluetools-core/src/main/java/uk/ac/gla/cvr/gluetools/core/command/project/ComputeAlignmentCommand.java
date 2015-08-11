@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AddAlignedSegmentCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ClearAlignedSegmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.RemoveAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
@@ -36,7 +36,6 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -135,7 +134,9 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		int numAddedSegments = 0;
 		try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 			try(ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSeqId)) {
-				numRemovedSegments = cmdContext.cmdBuilder(ClearAlignedSegmentCommand.class).execute().getNumber();
+				numRemovedSegments = cmdContext.cmdBuilder(RemoveAlignedSegmentCommand.class)
+						.set(RemoveAlignedSegmentCommand.ALL_SEGMENTS, true)
+						.execute().getNumber();
 				for(AlignerResult.AlignedSegment alignedSegment: alignerResult.getAlignedSegments()) {
 					CreateResult addSegResult = cmdContext.cmdBuilder(AddAlignedSegmentCommand.class)
 					.set(AddAlignedSegmentCommand.REF_START, alignedSegment.getRefStart())

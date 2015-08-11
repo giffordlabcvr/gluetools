@@ -51,7 +51,7 @@ public class ObjectBuilder {
 			return setDouble(name, ((Double) value).doubleValue());
 		} else if(value instanceof Integer) {
 			return setInt(name, ((Integer) value).intValue());
-		} else if(value instanceof Double) {
+		} else if(value instanceof Boolean) {
 			return setBoolean(name, ((Boolean) value).booleanValue());
 		} else if(value instanceof String) {
 			return setString(name, ((String) value));

@@ -18,7 +18,6 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AddAlignedSegmentCommand.class);
 		registerCommandClass(RemoveAlignedSegmentCommand.class);
 		registerCommandClass(ListAlignedSegmentCommand.class);
-		registerCommandClass(ClearAlignedSegmentCommand.class);
 		
 		registerCommandClass(ExitCommand.class);
 	}
