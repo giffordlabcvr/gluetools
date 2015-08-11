@@ -166,7 +166,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		Map<String, Object> docoptMap;
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
-		CommandBuilder<?, ?> commandBuilder = buildCommandElement(console.commandContext, commandClass, docoptMap);
+		CommandBuilder<?, ?> commandBuilder = buildCommandElement(commandContext, commandClass, docoptMap);
 		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
 		Command command;
 		try {

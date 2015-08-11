@@ -1,9 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -13,27 +20,69 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"delete","sequence"}, 
-	docoptUsages={"<sourceName> <sequenceID>"},
-	docoptOptions={},
-	description="Delete a sequence") 
+	docoptUsages={"<sourceName> <sequenceID>", 
+			"-w <whereClause>",
+			"-a"},
+	docoptOptions={"-w <whereClause>, --whereClause <whereClause>  Qualify which sequences should be deleted", 
+			"-a, --allSequences  Delete all sequences" },
+	description="Delete one or more sequences", 
+	furtherHelp="If <allSequences> or <whereClause> is used, reference sequences will not be deleted.") 
 public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 
-	private String sourceName;
-	private String sequenceID;
+	private Optional<String> sourceName;
+	private Optional<String> sequenceID;
+	private Boolean allSequences;
+	private Optional<Expression> whereClause;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", true);
-		sequenceID = PluginUtils.configureStringProperty(configElem, "sequenceID", true);
+		sourceName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "sourceName", false));
+		sequenceID = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "sequenceID", false));
+		allSequences = PluginUtils.configureBooleanProperty(configElem, "allSequences", true);
+		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, "whereClause", false));
+		if( !(
+				(sourceName.isPresent() && sequenceID.isPresent() && !allSequences && !whereClause.isPresent()) || 
+				(!sourceName.isPresent() && !sequenceID.isPresent() && allSequences && !whereClause.isPresent()) || 
+				(!sourceName.isPresent() && !sequenceID.isPresent() && !allSequences && whereClause.isPresent()) 
+				)) {
+			usageError();
+		}
+		
 	}
 
+	private void usageError() {
+		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Either whereClause or allSequences or both sourceName and sequenceID must be specified");
+	}
+	
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), 
-				Sequence.class, Sequence.pkMap(sourceName, sequenceID));
-		cmdContext.commit();
-		return result;
+		if(sourceName.isPresent()) {
+			DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), 
+					Sequence.class, Sequence.pkMap(sourceName.get(), sequenceID.get()));
+			cmdContext.commit();
+			return result; 
+		} else {
+			SelectQuery selectQuery = null;
+			if(whereClause.isPresent()) {
+				selectQuery = new SelectQuery(Sequence.class, whereClause.get());
+			} else {
+				selectQuery = new SelectQuery(Sequence.class);
+			}
+			List<Sequence> sequencesToDelete = 
+					GlueDataObject.query(cmdContext.getObjectContext(), Sequence.class, selectQuery);
+			// filter out reference sequences
+			sequencesToDelete = sequencesToDelete.stream()
+					.filter(seq -> seq.getReferenceSequences().isEmpty())
+					.collect(Collectors.toList());
+			int numDeleted = 0;
+			for(Sequence seqToDelete: sequencesToDelete) {
+				DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, seqToDelete.pkMap());
+				numDeleted = numDeleted+result.getNumber();
+			}
+			cmdContext.commit();
+			return new DeleteResult(Sequence.class, numDeleted);
+		}
 	}
 
 

@@ -2,19 +2,25 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AddAlignedSegmentCommand;
@@ -24,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequen
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
@@ -43,9 +50,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"compute", "alignment"}, 
 		description = "Align member segments using an aligner module", 
 		docoptUsages = {"<alignmentName> <alignerModuleName> [-w <whereClause>]"}, 
-		docoptOptions = {"-w, --whereClause   Qualify which members will be re-aligned"},
-		furtherHelp = "Computes the aligned segments of certain members of the specified alignment, using a given aligner module."+
-		" Example: compute alignment AL1 blast-aligner -w \"sequence.GENOTYPE = '4'\""
+		docoptOptions = {"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned"},
+		furtherHelp = "Computes the aligned segments of certain members of the specified alignment, using a given aligner module. "+
+		"If <whereClause> is not specified, all members of the alignment are re-aligned."+
+		" Example: compute alignment AL1 blastAligner -w \"sequence.GENOTYPE = 4\""
 )
 public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignmentCommand.ComputeAlignmentResult> {
 
@@ -59,7 +67,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		configure(pluginConfigContext, configElem);
+		super.configure(pluginConfigContext, configElem);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
 		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
@@ -84,11 +92,11 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	}
 
 
-	private List<Map<String, Object>> getAllAlignResults(
+	private <R extends AlignerResult, C extends Command<R>> List<Map<String, Object>> getAllAlignResults(
 			CommandContext cmdContext, List<Map<String, Object>> memberIDs,
 			String refSeqFormatString, String refSeqBase64String) {
 		// get the align command's class for the module.
-		Class<? extends Command<? extends AlignerResult>> alignCommandClass = getAlignCommandClass(cmdContext);
+		Class<C> alignCommandClass = getAlignCommandClass(cmdContext);
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
 		for(Map<String, Object> memberIDmap: memberIDs) {
 			Map<String, Object> memberResultMap = getMemberAlignResults(
@@ -99,11 +107,11 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	}
 
 
-	private Map<String, Object> getMemberAlignResults(
+	private <R extends AlignerResult, C extends Command<R>> Map<String, Object> getMemberAlignResults(
 			CommandContext cmdContext,
 			String refSeqFormatString,
 			String refSeqBase64String,
-			Class<? extends Command<? extends AlignerResult>> alignCommandClass,
+			Class<C> alignCommandClass,
 			Map<String, Object> memberIDmap) {
 		// enter the relevant sequence mode to get the member sequence original data
 		String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
@@ -112,7 +120,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		String memberSeqFormatString = memberSeqOriginalData.getFormatString();
 		String memberSeqBase64String = memberSeqOriginalData.getBase64String();
 		// run the aligner on the reference and member sequence original data.
-		AlignerResult alignerResult;
+		R alignerResult;
 		try(ModeCloser moduleMode = cmdContext.pushCommandMode("module", alignerModuleName)) {
 			alignerResult = cmdContext.cmdBuilder(alignCommandClass)
 				.set(AlignCommand.REFERENCE_FORMAT, refSeqFormatString)
@@ -180,12 +188,14 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 
 	private List<Map<String, Object>> getMemberSequenceIdMaps(CommandContext cmdContext) {
 		try (ModeCloser refMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			return cmdContext.cmdBuilder(ListMemberCommand.class)
-				.set(ListMemberCommand.WHERE_CLAUSE, whereClause.toString())
-				.setArray(ListMemberCommand.FIELD_NAME)
-					.add(AlignmentMember.SOURCE_NAME_PATH)
-					.add(AlignmentMember.SEQUENCE_ID_PATH)
-			.execute().asListOfMaps();
+			CommandBuilder<ListResult, ListMemberCommand> cmdBuilder = cmdContext.cmdBuilder(ListMemberCommand.class);
+			if(whereClause != null) {
+				cmdBuilder.set(ListMemberCommand.WHERE_CLAUSE, whereClause.toString());
+			}
+			return cmdBuilder.setArray(ListMemberCommand.FIELD_NAME)
+				.add(AlignmentMember.SOURCE_NAME_PATH)
+				.add(AlignmentMember.SEQUENCE_ID_PATH)
+				.execute().asListOfMaps();
 		}
 	}
 
@@ -197,7 +207,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	}
 
 
-	private Class<? extends Command<? extends AlignerResult>> getAlignCommandClass(
+	private <R extends AlignerResult, C extends Command<R>> Class<C> getAlignCommandClass(
 			CommandContext cmdContext) {
 		// Look up the module by name, check it is an aligner, and get its align command class.
 		Module module = GlueDataObject.lookup(cmdContext.getObjectContext(), Module.class, Module.pkMap(alignerModuleName));
@@ -205,8 +215,9 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		if(!(modulePlugin instanceof Aligner<?, ?>)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Module "+alignerModuleName+" is not an aligner");
 		}
-		Class<? extends Command<? extends AlignerResult>> alignCommandClass = 
-				((Aligner<?,?>) modulePlugin).getAlignCommandClass();
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		Class<C> alignCommandClass = 
+				((Aligner) modulePlugin).getAlignCommandClass();
 		return alignCommandClass;
 	}
 	
@@ -217,12 +228,36 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		protected ComputeAlignmentResult(List<Map<String, Object>> listOfMaps) {
 			super("updateAlignmentResult",  
 					Arrays.asList(
-							AlignedSegment.MEMBER_SOURCE_NAME_PATH, 
-							AlignedSegment.MEMBER_SEQUENCE_ID_PATH, 
+							AlignmentMember.SOURCE_NAME_PATH, 
+							AlignmentMember.SEQUENCE_ID_PATH, 
 							REMOVED_SEGMENTS,
 							ADDED_SEGMENTS),
 					listOfMaps);
 		}
-
 	}
+	
+	
+	@CompleterClass
+	public static class Completer extends AlignmentNameCompleter {
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public List<String> completionSuggestions(
+				ConsoleCommandContext cmdContext,
+				Class<? extends Command> cmdClass, List<String> argStrings) {
+			if(argStrings.isEmpty()) {
+				return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+			} else if(argStrings.size() == 1) {
+				return CommandUtils.runListCommand(cmdContext, Module.class, new SelectQuery(Module.class)).
+						getColumnValues(Module.NAME_PROPERTY);
+			} else { 
+				return Collections.emptyList();
+			}
+		}
+		
+		
+		
+	}
+
+	
 }

@@ -46,7 +46,7 @@ public class Sequence extends _Sequence {
 	}	
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getSource().getName(), getSequenceID());
 	}
 

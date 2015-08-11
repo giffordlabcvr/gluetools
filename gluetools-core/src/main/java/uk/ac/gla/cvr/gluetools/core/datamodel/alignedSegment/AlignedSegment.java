@@ -34,9 +34,9 @@ public class AlignedSegment extends _AlignedSegment {
 			String memberSourceName, String memberSequenceID,
 			int refStart, int refEnd, int memberStart, int memberEnd) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
+		idMap.put(ALIGNMENT_NAME_PATH, alignmentName);
 		idMap.put(MEMBER_SOURCE_NAME_PATH, memberSourceName);
 		idMap.put(MEMBER_SEQUENCE_ID_PATH, memberSequenceID);
-		idMap.put(ALIGNMENT_NAME_PATH, alignmentName);
 		idMap.put(REF_START_PROPERTY, Integer.toString(refStart));
 		idMap.put(REF_END_PROPERTY, Integer.toString(refEnd));
 		idMap.put(MEMBER_START_PROPERTY, Integer.toString(memberStart));
@@ -55,9 +55,9 @@ public class AlignedSegment extends _AlignedSegment {
 	@Override
 	public Map<String, String> pkMap() {
 		return pkMap(
+				getAlignmentMember().getAlignment().getName(),
 				getAlignmentMember().getSequence().getSource().getName(), 
 				getAlignmentMember().getSequence().getSequenceID(),
-				getAlignmentMember().getAlignment().getName(),
 				getRefStart(), 
 				getRefEnd(), 
 				getMemberStart(), 

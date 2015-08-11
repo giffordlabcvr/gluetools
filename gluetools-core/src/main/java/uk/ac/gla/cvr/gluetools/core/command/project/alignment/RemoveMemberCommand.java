@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,7 +68,7 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 			Expression whereClauseExp = whereClause.get();
 			membersToDelete = members.stream().filter(m -> whereClauseExp.match(m.getSequence())).collect(Collectors.toList());
 		} else {
-			membersToDelete = members;
+			membersToDelete = new ArrayList<AlignmentMember>(members);
 		}
 		membersToDelete.forEach(member -> {
 			GlueDataObject.delete(objContext, AlignmentMember.class, member.pkMap());

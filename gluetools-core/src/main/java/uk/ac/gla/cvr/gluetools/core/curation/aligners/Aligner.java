@@ -26,7 +26,8 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 			"The <referenceFormat> and <queryFormat> arguments specify the data format of the reference and query sequences, "+
 			"the sequence data bytes are supplied in Base64 binary encoding as the <referenceBase64> and <queryBase64> arguments.";
 	
-	public abstract class AlignCommand extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
+	public static abstract class AlignCommand<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> 
+		extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
 
 		public static final String REFERENCE_FORMAT = "referenceFormat";
 		public static final String REFERENCE_BASE64 = "referenceBase64";
@@ -64,11 +65,12 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 		}
 
 	}
-	public abstract Class<? extends Aligner<?, ?>.AlignCommand> getAlignCommandClass();
+	@SuppressWarnings("rawtypes")
+	public abstract Class<? extends Aligner.AlignCommand> getAlignCommandClass();
 	
 	public abstract static class AlignerResult extends CommandResult {
 
-		public class AlignedSegment {
+		public static class AlignedSegment {
 			private int refStart, refEnd, queryStart, queryEnd;
 
 			public AlignedSegment(int refStart, int refEnd, int queryStart,

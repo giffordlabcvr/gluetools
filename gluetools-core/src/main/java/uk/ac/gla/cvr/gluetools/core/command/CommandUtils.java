@@ -19,7 +19,9 @@ public abstract class CommandUtils {
 
 	public static <C extends GlueDataObject> ListResult runListCommand(
 			CommandContext cmdContext, Class<C> theClass, SelectQuery query) {
-		return runListCommand(cmdContext, theClass, query);
+		ObjectContext objContext = cmdContext.getObjectContext();
+		List<C> resultDataObjects = GlueDataObject.query(objContext, theClass, query);
+		return new ListResult(theClass, resultDataObjects);
 	}
 
 	
