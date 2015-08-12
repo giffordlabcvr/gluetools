@@ -4,9 +4,9 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 @SuppressWarnings("rawtypes")
 public abstract class CommandMode<C extends Command> {
@@ -89,10 +89,10 @@ public abstract class CommandMode<C extends Command> {
 	protected void appendModeConfigToElem(Element elem, String name, Object value) {
 		if(value == null) {
 			Element newElem = GlueXmlUtils.appendElement(elem, name);
-			JsonUtils.setJsonType(newElem, JsonType.Null, false);
+			GlueTypeUtils.setGlueType(newElem, GlueTypeUtils.GlueType.Null, false);
 		} else {
 			Element newElem = (Element) GlueXmlUtils.appendElementWithText(elem, name, value.toString()).getParentNode();
-			JsonUtils.setJsonType(newElem, JsonUtils.jsonTypeFromObject(value), false);
+			GlueTypeUtils.setGlueType(newElem, GlueTypeUtils.glueTypeFromObject(value), false);
 		}
 	}
 

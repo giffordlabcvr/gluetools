@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.cayenne.exp.Expression;
@@ -38,13 +37,12 @@ public abstract class ReferenceSequenceModeCommand<R extends CommandResult> exte
 	public abstract static class FeatureNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
 				Expression exp = ExpressionFactory.matchExp(Feature.REF_SEQ_NAME_PATH, getRefSeqMode(cmdContext).getRefSeqName());
-				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class, exp)).
-						getColumnValues(Feature.NAME_PROPERTY));
+				return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class, exp)).
+						getColumnValues(Feature.NAME_PROPERTY);
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 	}
 

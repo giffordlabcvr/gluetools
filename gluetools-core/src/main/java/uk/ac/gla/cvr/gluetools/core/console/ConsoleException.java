@@ -6,7 +6,6 @@ public class ConsoleException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 	
-		GLUE_CONFIG_XML_FORMAT_ERROR("errorText"),
 		SYNTAX_ERROR("errorPosition"),
 		INVALID_PATH("invalidPath", "errorText"), 
 		FILE_NOT_FOUND("path"), 

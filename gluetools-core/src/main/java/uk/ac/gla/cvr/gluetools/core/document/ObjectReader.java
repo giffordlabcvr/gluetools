@@ -7,9 +7,9 @@ import java.util.Set;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class ObjectReader {
 
@@ -17,8 +17,8 @@ public class ObjectReader {
 
 	public ObjectReader(Element element) {
 		super();
-		JsonType jsonType = JsonUtils.getJsonType(element);
-		if(jsonType != JsonType.Object) {
+		GlueTypeUtils.GlueType glueType = GlueTypeUtils.getGlueType(element);
+		if(glueType != GlueTypeUtils.GlueType.Object) {
 			throw new RuntimeException("Element is not of type Object");
 		}
 		this.element = element;
@@ -32,8 +32,8 @@ public class ObjectReader {
 		return new LinkedList<String>(fieldNamesSet);
 	}
 	
-	public JsonType getFieldType(String name) {
-		return JsonUtils.getJsonType(getFieldElement(name));
+	public GlueTypeUtils.GlueType getFieldType(String name) {
+		return GlueTypeUtils.getGlueType(getFieldElement(name));
 	}
 
 	private Element getFieldElement(String name) {
@@ -43,7 +43,7 @@ public class ObjectReader {
 		}
 		if(childElems.size() == 1) {
 			Element childElem = childElems.get(0);
-			if(JsonUtils.isJsonArray(childElem)) {
+			if(GlueTypeUtils.isGlueArray(childElem)) {
 				throw new RuntimeException("Field "+name+" is an array rather than an Object");
 			}
 			return childElem;
@@ -57,7 +57,7 @@ public class ObjectReader {
 	}
 	
 	public Object value(String name) {
-		return JsonUtils.elementToObject(element);
+		return GlueTypeUtils.elementToObject(getFieldElement(name));
 	}
 	
 	public Boolean booleanValue(String name) {
@@ -79,7 +79,7 @@ public class ObjectReader {
 	public ArrayReader getArray(String name) {
 		List<Element> childElems = GlueXmlUtils.findChildElements(element, name);
 		for(Element childElem : childElems) {
-			if(!JsonUtils.isJsonArray(childElem)) {
+			if(!GlueTypeUtils.isGlueArray(childElem)) {
 				throw new RuntimeException("Field "+name+" is not an array");
 			}
 		}

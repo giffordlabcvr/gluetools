@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -14,11 +13,10 @@ public class SequenceFieldCompleter extends CommandCompleter {
 	public List<String> completionSuggestions(
 			ConsoleCommandContext cmdContext,
 			Class<? extends Command> cmdClass, List<String> argStrings) {
-		List<String> suggestions = new ArrayList<String>();
 		if(argStrings.size() == 0) {
-			suggestions.addAll(getCustomFieldNames(cmdContext));
+			return getCustomFieldNames(cmdContext);
 		}
-		return suggestions;
+		return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 	}
 
 	protected List<String> getCustomFieldNames(ConsoleCommandContext cmdContext) {

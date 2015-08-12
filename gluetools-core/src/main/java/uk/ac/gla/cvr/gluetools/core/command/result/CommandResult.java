@@ -32,7 +32,7 @@ public abstract class CommandResult {
 		if(documentReader == null) {
 			documentReader = new DocumentReader(getDocument());
 		}
-		return getDocumentReader();
+		return documentReader;
 	}
 
 	public Document getDocument() {

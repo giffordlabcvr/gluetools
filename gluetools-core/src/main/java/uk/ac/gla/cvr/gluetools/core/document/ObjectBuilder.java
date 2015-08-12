@@ -3,9 +3,9 @@ package uk.ac.gla.cvr.gluetools.core.document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class ObjectBuilder {
 
@@ -14,7 +14,7 @@ public class ObjectBuilder {
 	ObjectBuilder(Element parentElement, boolean isArray) {
 		super();
 		this.parentElement = parentElement;
-		JsonUtils.setJsonType(parentElement, JsonType.Object, isArray);
+		GlueTypeUtils.setGlueType(parentElement, GlueTypeUtils.GlueType.Object, isArray);
 	}
 
 	Element getElement() {
@@ -22,25 +22,25 @@ public class ObjectBuilder {
 	}
 	
 	public ObjectBuilder setInt(String name, int value) {
-		return setSimpleProperty(name, Integer.toString(value), JsonType.Integer);
+		return setSimpleProperty(name, Integer.toString(value), GlueTypeUtils.GlueType.Integer);
 	}
 
 	public ObjectBuilder setBoolean(String name, boolean value) {
-		return setSimpleProperty(name, Boolean.toString(value), JsonType.Boolean);
+		return setSimpleProperty(name, Boolean.toString(value), GlueTypeUtils.GlueType.Boolean);
 	}
 
 	public ObjectBuilder setDouble(String name, double value) {
-		return setSimpleProperty(name, Double.toString(value), JsonType.Double);
+		return setSimpleProperty(name, Double.toString(value), GlueTypeUtils.GlueType.Double);
 	}
 
 	public ObjectBuilder setNull(String name) {
 		Element elem = GlueXmlUtils.appendElement(getElement(), name);
-		JsonUtils.setJsonType(elem, JsonType.Null, false);
+		GlueTypeUtils.setGlueType(elem, GlueTypeUtils.GlueType.Null, false);
 		return this;
 	}
 
 	public ObjectBuilder setString(String name, String value) {
-		return setSimpleProperty(name, value, JsonType.String);
+		return setSimpleProperty(name, value, GlueTypeUtils.GlueType.String);
 	}
 
 	
@@ -71,9 +71,9 @@ public class ObjectBuilder {
 	}
 
 	
-	private ObjectBuilder setSimpleProperty(String name, String string, JsonType type) {
+	private ObjectBuilder setSimpleProperty(String name, String string, GlueTypeUtils.GlueType type) {
 		Node textNode = GlueXmlUtils.appendElementWithText(getElement(), name, string);
-		JsonUtils.setJsonType((Element) textNode.getParentNode(), type, false);
+		GlueTypeUtils.setGlueType((Element) textNode.getParentNode(), type, false);
 		return this;
 	}
 

@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -71,11 +70,10 @@ public abstract class SimpleConfigureCommand<P extends ModulePlugin<P>> extends 
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, 
 				Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
-				suggestions.addAll(availablePropertyNames(cmdClass));
+				return availablePropertyNames(cmdClass);
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 	}
 }

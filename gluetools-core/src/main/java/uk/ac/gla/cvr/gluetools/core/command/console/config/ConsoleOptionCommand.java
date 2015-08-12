@@ -44,13 +44,14 @@ public abstract class ConsoleOptionCommand<R extends CommandResult> extends Cons
 	public abstract static class OptionNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
+				LinkedList<String> suggestions = new LinkedList<String>();
 				for(ConsoleOption consoleOption : ConsoleOption.values()) {
 					suggestions.add(consoleOption.getName());
 				}
+				return suggestions;
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 	}
 	

@@ -5,4 +5,11 @@
 		<vendor>MySQL</vendor>
 		<jdbcUrl>jdbc:mysql://localhost:3306/GLUE_TOOLS</jdbcUrl>	
 	</database>
+	<properties>
+		<property>
+			<name>gluetools.core.programs.blast.executable.path</name>
+			<value>foo</value>
+		</property>
+	
+	</properties>
 </gluetools>

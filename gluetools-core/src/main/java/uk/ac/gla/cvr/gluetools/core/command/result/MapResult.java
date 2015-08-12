@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
@@ -22,15 +23,15 @@ public class MapResult extends CommandResult {
 		for(String fieldName: documentReader.getFieldNames()) {
 			Object value = documentReader.value(fieldName);
 			if(value == null) {
-				renderCtx.output("  "+fieldName+": "+value);
-			} else {
 				renderCtx.output("  "+fieldName+": -");
+			} else {
+				renderCtx.output("  "+fieldName+": "+value);
 			}
 		}
 	}
 	
 	protected static class MapBuilder {
-		private Map<String, Object> map;
+		private Map<String, Object> map = new LinkedHashMap<String, Object>();
 		public MapBuilder put(String string, Object object) {
 			map.put(string, object);
 			return this;

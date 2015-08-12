@@ -13,7 +13,7 @@ public class PluginConfigException extends GlueException {
 		CONFIG_FORMAT_ERROR("xPath", "errorTxt", "value"),
 		UNKNOWN_CONFIG_ELEMENT("xPath"), 
 		UNKNOWN_CONFIG_ATTRIBUTE("xPath"), 
-		REQUIRED_PROPERTY_MISSING("propertyName"), 
+		REQUIRED_PROPERTY_MISSING("elementName", "propertyName"), 
 		PROPERTY_FORMAT_ERROR("propertyName", "errorTxt", "value"), 
 		MULTIPLE_PROPERTY_SETTINGS("propertyName"),
 		TOO_MANY_PROPERTY_VALUES("propertyName", "numFound", "maximum"), 

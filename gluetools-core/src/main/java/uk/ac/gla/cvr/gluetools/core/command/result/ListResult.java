@@ -7,11 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 // TODO -- default list command for web interface should return only IDs
 // TODO -- some kind of pagination for list commands.

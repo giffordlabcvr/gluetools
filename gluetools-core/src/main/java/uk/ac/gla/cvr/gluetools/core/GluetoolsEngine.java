@@ -13,7 +13,6 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration.Vendor;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
-import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.GlueSchemaUpdateStrategy;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
@@ -63,12 +62,16 @@ public class GluetoolsEngine implements Plugin {
 			try {
 				configDocument = GlueXmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
 			} catch(SAXException saxe) {
-				throw new ConsoleException(ConsoleException.Code.GLUE_CONFIG_XML_FORMAT_ERROR, saxe.getLocalizedMessage());
+				throw new GluetoolsEngineException(GluetoolsEngineException.Code.CONFIG_INVALID_XML, configFilePath, saxe.getLocalizedMessage());
 			}
 		} else {
 			configDocument = GlueXmlUtils.documentWithElement("gluetools").getOwnerDocument();
 		}
-		configure(createPluginConfigContext(), configDocument.getDocumentElement());
+		try {
+			configure(createPluginConfigContext(), configDocument.getDocumentElement());
+		} catch(GlueException glueEx) {
+			throw new GluetoolsEngineException(glueEx, GluetoolsEngineException.Code.CONFIG_ERROR, configFilePath, glueEx.getLocalizedMessage());
+		}
 	}
 	
 	public PluginConfigContext createPluginConfigContext() {

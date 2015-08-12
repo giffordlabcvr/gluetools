@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.Arrays;
 
+import uk.ac.gla.cvr.gluetools.core.command.config.ConfigShowPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleChangeDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleHelpOptionCommand;
@@ -24,6 +25,9 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(ConsoleSetOptionCommand.class);
 		registerCommandClass(ConsoleUnsetOptionCommand.class);
 		registerCommandClass(ConsoleHelpOptionCommand.class);
+
+		addGroupHelp(Arrays.asList("config"), "Manage engine configuration");
+		registerCommandClass(ConfigShowPropertyCommand.class);
 	}
 
 }

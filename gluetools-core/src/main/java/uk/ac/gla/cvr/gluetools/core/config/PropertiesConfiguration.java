@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.config;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,7 @@ public class PropertiesConfiguration implements Plugin {
 		private String name;
 		private String value;
 		@Override
-		public void configure(PluginConfigContext pluginConfigContext,
-				Element configElem) {
+		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			Plugin.super.configure(pluginConfigContext, configElem);
 			name = PluginUtils.configureStringProperty(configElem, "name", true);
 			value = PluginUtils.configureStringProperty(configElem, "value", true);
@@ -30,7 +30,7 @@ public class PropertiesConfiguration implements Plugin {
 		public String getValue() {
 			return value;
 		}
-	}
+	} 
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -38,9 +38,22 @@ public class PropertiesConfiguration implements Plugin {
 		List<Element> propertyElems = PluginUtils.findConfigElements(configElem, "property");
 		propertyElems.forEach(elem -> {
 			PropertyConfig propertyConfig = new PropertyConfig();
-			propertyConfig.configure(pluginConfigContext, configElem);
+			propertyConfig.configure(pluginConfigContext, elem);
 			properties.put(propertyConfig.getName(), propertyConfig);
 		});
 	}
 
+	public List<String> getAllPropertyNames() {
+		return new ArrayList<String>(properties.keySet());
+	}
+	
+	public String getPropertyValue(String propertyName) {
+		PropertyConfig propertyConfig = properties.get(propertyName);
+		if(propertyConfig != null) {
+			return propertyConfig.getValue();
+		} else {
+			return null;
+		}
+	}
+	
 }

@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 
 public class ArrayReader {
 
@@ -16,8 +16,8 @@ public class ArrayReader {
 		this.elements = elements;
 	}
 	
-	public JsonType getItemType(int i) {
-		return JsonUtils.getJsonType(getItemElement(i));
+	public GlueTypeUtils.GlueType getItemType(int i) {
+		return GlueTypeUtils.getGlueType(getItemElement(i));
 	}
 
 	private Element getItemElement(int i) {
@@ -25,7 +25,7 @@ public class ArrayReader {
 	}
 	
 	public Object value(int i) {
-		return JsonUtils.elementToObject(getItemElement(i));
+		return GlueTypeUtils.elementToObject(getItemElement(i));
 	}
 	
 	public Boolean booleanValue(int i) {

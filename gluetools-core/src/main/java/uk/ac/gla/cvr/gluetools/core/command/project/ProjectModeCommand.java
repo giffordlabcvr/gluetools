@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.cayenne.query.SelectQuery;
@@ -28,12 +27,11 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 	public abstract static class ModuleNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
-				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Module.class, new SelectQuery(Module.class)).
-						getColumnValues(Module.NAME_PROPERTY));
+				return CommandUtils.runListCommand(cmdContext, Module.class, new SelectQuery(Module.class)).
+						getColumnValues(Module.NAME_PROPERTY);
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 	}
 
@@ -41,12 +39,11 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 	public abstract static class AlignmentNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
-				suggestions.addAll(CommandUtils.runListCommand(cmdContext, Alignment.class, new SelectQuery(Alignment.class)).
-						getColumnValues(Alignment.NAME_PROPERTY));
+				return CommandUtils.runListCommand(cmdContext, Alignment.class, new SelectQuery(Alignment.class)).
+						getColumnValues(Alignment.NAME_PROPERTY);
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 	}
 
@@ -54,12 +51,11 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 	public abstract static class RefSeqNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
-				suggestions.addAll(CommandUtils.runListCommand(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class)).
-						getColumnValues(ReferenceSequence.NAME_PROPERTY));
+				CommandUtils.runListCommand(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class)).
+						getColumnValues(ReferenceSequence.NAME_PROPERTY);
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 	}
 

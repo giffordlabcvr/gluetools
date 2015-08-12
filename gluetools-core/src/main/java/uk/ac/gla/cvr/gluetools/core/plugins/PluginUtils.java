@@ -19,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.core.ParseException;
 import freemarker.template.Configuration;
@@ -99,7 +100,7 @@ public class PluginUtils {
 		List<Element> propertyElems = GlueXmlUtils.findChildElements(configElem, propertyName);
 		if(propertyElems.isEmpty()) {
 			if(required) {
-				throw new PluginConfigException(Code.REQUIRED_PROPERTY_MISSING, propertyName);
+				throw new PluginConfigException(Code.REQUIRED_PROPERTY_MISSING, configElem.getNodeName(), propertyName);
 			} else {
 				return null;
 			}
@@ -330,8 +331,11 @@ public class PluginUtils {
 		for(int j = 0; j < attributes.getLength(); j++) {
 			Node node = attributes.item(j);
 			if(node instanceof Attr) {
-				if(!PluginUtils.isValidConfig(node)) {
-					throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ATTRIBUTE, xPathBase+"@"+node.getNodeName());
+				String nodeName = node.getNodeName();
+				if(!nodeName.equals(GlueTypeUtils.GLUE_TYPE_ATTRIBUTE)) {
+					if(!PluginUtils.isValidConfig(node)) {
+						throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ATTRIBUTE, xPathBase+"@"+nodeName);
+					}
 				}
 			}
 		}

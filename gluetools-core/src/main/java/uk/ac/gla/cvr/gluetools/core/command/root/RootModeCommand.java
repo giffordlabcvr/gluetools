@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.root;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.cayenne.ObjectContext;
@@ -25,12 +24,11 @@ public abstract class RootModeCommand<R extends CommandResult> extends Command<R
 	protected abstract static class ProjectNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			LinkedList<String> suggestions = new LinkedList<String>();
 			if(argStrings.isEmpty()) {
 				ListResult listCmdResult = CommandUtils.runListCommand(cmdContext, Project.class, new SelectQuery(Project.class));
-				suggestions.addAll(listCmdResult.getColumnValues(Project.NAME_PROPERTY));
+				return listCmdResult.getColumnValues(Project.NAME_PROPERTY);
 			}
-			return suggestions;
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}
 		
 	}

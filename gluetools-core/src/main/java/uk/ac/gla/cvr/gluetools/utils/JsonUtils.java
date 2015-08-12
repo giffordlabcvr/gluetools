@@ -27,18 +27,6 @@ import org.w3c.dom.Element;
 
 public class JsonUtils {
 
-	private static final String XML_TO_JSON_TYPE_PROPERTY = "uk.ac.gla.cvr.gluetools.xmlToJSonType";
-	private static final String XML_TO_JSON_IS_ARRAY_PROPERTY = "uk.ac.gla.cvr.gluetools.xmlToJSonIsArray";
-	
-	public enum JsonType {
-		Object, 
-		Integer,
-		Double,
-		String,
-		Boolean,
-		Null
-	}
-	
 	public static JsonObject newObject() {
 		return jsonObjectBuilder().build();
 	}
@@ -60,9 +48,9 @@ public class JsonUtils {
 
 	private static void elementToJSon(JsonObjectBuilder parentBuilder, Element element) {
 		String elemName = element.getNodeName();
-		JsonType jsonType = getJsonType(element);
-		if(jsonType == null) { throw new RuntimeException("Element: "+elemName+" has no JSON type"); }
-		switch(jsonType) {
+		GlueTypeUtils.GlueType glueType = GlueTypeUtils.getGlueType(element);
+		if(glueType == null) { throw new RuntimeException("Element: "+elemName+" has no GLUE type"); }
+		switch(glueType) {
 		case Object:
 			JsonObjectBuilder childBuilder = jsonObjectBuilder();
 			childElemsToJson(childBuilder, element);
@@ -91,7 +79,7 @@ public class JsonUtils {
 		Map<String, List<Element>> arrayItems = new LinkedHashMap<String, List<Element>>();
 		childElements.forEach(childElem -> {
 			String childElemName = childElem.getNodeName();
-			Boolean isJsonArray = isJsonArray(childElem);
+			Boolean isJsonArray = GlueTypeUtils.isGlueArray(childElem);
 			if(isJsonArray) {
 				List<Element> arrayElems = arrayItems.getOrDefault(childElemName, new ArrayList<Element>());
 				arrayElems.add(childElem);
@@ -110,9 +98,9 @@ public class JsonUtils {
 	}
 	
 	private static void elementToJSon(JsonArrayBuilder parentBuilder, Element element) {
-		JsonType jsonType = getJsonType(element);
-		if(jsonType == null) { throw new RuntimeException("Element: "+element.getNodeName()+" has no JSON type"); }
-		switch(jsonType) {
+		GlueTypeUtils.GlueType glueType = GlueTypeUtils.getGlueType(element);
+		if(glueType == null) { throw new RuntimeException("Element: "+element.getNodeName()+" has no JSON type"); }
+		switch(glueType) {
 		case Object:
 			JsonObjectBuilder childBuilder = jsonObjectBuilder();
 			childElemsToJson(childBuilder, element);
@@ -146,27 +134,6 @@ public class JsonUtils {
         return sw.toString();
    }
 
-	public static void setJsonType(Element elem, JsonType jsonType, boolean isArray) {
-		elem.setUserData(XML_TO_JSON_TYPE_PROPERTY, jsonType, null);
-		elem.setUserData(XML_TO_JSON_IS_ARRAY_PROPERTY, isArray, null);
-	}
-
-	public static JsonType getJsonType(Element elem) {
-		Object userData = elem.getUserData(XML_TO_JSON_TYPE_PROPERTY);
-		if(userData == null) {
-			throw new RuntimeException("Element "+elem.getNodeName()+" has no JSON type.");
-		}
-		return (JsonType) userData;
-	}
-
-	public static boolean isJsonArray(Element elem) {
-		Object userData = elem.getUserData(XML_TO_JSON_IS_ARRAY_PROPERTY);
-		if(userData == null) {
-			throw new RuntimeException("Element "+elem.getNodeName()+" has no JSON array boolean.");
-		}
-		return (Boolean) userData;
-	}
-
 	public static JsonObject stringToJsonObject(String string) {
 		return Json.createReader(new StringReader(string)).readObject();
 	}
@@ -194,41 +161,6 @@ public class JsonUtils {
 			GlueXmlUtils.appendElementWithText(parentElem, key, ((JsonNumber) value).toString());
 		} else {
 			GlueXmlUtils.appendElementWithText(parentElem, key, value.toString());
-		}
-	}
-	
-	public static Object elementToObject(Element elem) {
-		JsonType jsonType = getJsonType(elem);
-		switch(jsonType) {
-		case Double:
-			return Double.parseDouble(elem.getTextContent());
-		case Integer:
-			return Integer.parseInt(elem.getTextContent());
-		case Boolean:
-			return Boolean.parseBoolean(elem.getTextContent());
-		case String:
-			return elem.getTextContent();
-		case Null:
-			return null;
-		default:
-			// maybe it could be a map?
-			throw new RuntimeException("Element "+elem.getNodeName()+" cannot be cast to an object");
-		}
-	}
-
-	public static JsonType jsonTypeFromObject(Object value) {
-		if(value == null) {
-			return JsonType.Null;
-		} else if (value instanceof Double) {
-			return JsonType.Double;
-		} else if (value instanceof Integer) {
-			return JsonType.Integer;
-		} else if (value instanceof Boolean) {
-			return JsonType.Boolean;
-		} else if (value instanceof String) {
-			return JsonType.String;
-		} else {
-			throw new RuntimeException("Object "+value+" is not a simple type");
 		}
 	}
 	

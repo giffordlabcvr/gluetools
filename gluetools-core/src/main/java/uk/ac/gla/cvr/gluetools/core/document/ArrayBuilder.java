@@ -3,9 +3,9 @@ package uk.ac.gla.cvr.gluetools.core.document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils.JsonType;
 
 public class ArrayBuilder {
 
@@ -19,20 +19,20 @@ public class ArrayBuilder {
 	}
 	
 	public ArrayBuilder addInt(int value) {
-		return add(Integer.toString(value), JsonType.Integer);
+		return add(Integer.toString(value), GlueTypeUtils.GlueType.Integer);
 	}
 
 	public ArrayBuilder addBoolean(boolean value) {
-		return add(Boolean.toString(value), JsonType.Boolean);
+		return add(Boolean.toString(value), GlueTypeUtils.GlueType.Boolean);
 	}
 
 	public ArrayBuilder addDouble(double value) {
-		return add(Double.toString(value), JsonType.Double);
+		return add(Double.toString(value), GlueTypeUtils.GlueType.Double);
 	}
 
 	public ArrayBuilder addNull() {
 		Element elem = GlueXmlUtils.appendElement(parentElement, name);
-		JsonUtils.setJsonType(elem, JsonType.Null, true);
+		GlueTypeUtils.setGlueType(elem, GlueTypeUtils.GlueType.Null, true);
 		return this;
 	}
 
@@ -42,7 +42,7 @@ public class ArrayBuilder {
 	}
 
 	public ArrayBuilder addString(String value) {
-		return add(value, JsonType.String);
+		return add(value, GlueTypeUtils.GlueType.String);
 	}
 
 	public ArrayBuilder add(Object value) {
@@ -61,9 +61,9 @@ public class ArrayBuilder {
 		}
 	}
 	
-	private ArrayBuilder add(String string, JsonType type) {
+	private ArrayBuilder add(String string, GlueTypeUtils.GlueType type) {
 		Node textNode = GlueXmlUtils.appendElementWithText(parentElement, name, string);
-		JsonUtils.setJsonType((Element) textNode.getParentNode(), type, true);
+		GlueTypeUtils.setGlueType((Element) textNode.getParentNode(), type, true);
 		return this;
 	}
 

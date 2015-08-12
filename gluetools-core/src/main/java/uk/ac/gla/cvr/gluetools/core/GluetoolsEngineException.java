@@ -6,7 +6,9 @@ public class GluetoolsEngineException extends GlueException {
 	public enum Code implements GlueErrorCode {
 
 		ENGINE_ALREADY_INITIALIZED(), 
-		ENGINE_NOT_INITIALIZED();
+		ENGINE_NOT_INITIALIZED(),
+		CONFIG_INVALID_XML("configFilePath", "errorTxt"),
+		CONFIG_ERROR("configFilePath", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
