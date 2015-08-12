@@ -5,7 +5,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @SuppressWarnings("rawtypes")

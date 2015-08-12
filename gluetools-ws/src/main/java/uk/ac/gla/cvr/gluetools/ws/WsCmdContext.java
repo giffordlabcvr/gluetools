@@ -26,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 
 public class WsCmdContext extends CommandContext {
 
@@ -53,7 +54,8 @@ public class WsCmdContext extends CommandContext {
 	@Produces(MediaType.APPLICATION_JSON)
 	@SuppressWarnings("rawtypes")
 	public String postAsCommand(String commandString) {
-		Element cmdDocElem = CommandFormatUtils.cmdDocElemFromJsonString(commandString);
+		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
+		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Command command = commandFromElement(cmdDocElem);
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);

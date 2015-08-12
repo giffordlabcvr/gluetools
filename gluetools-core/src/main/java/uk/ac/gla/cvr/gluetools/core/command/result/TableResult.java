@@ -21,7 +21,6 @@ import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
 
 public class TableResult extends CommandResult {
 
-	public static final String IS_NULL = "isNull";
 	public static final String VALUE = "value";
 	public static final String ROW = "row";
 	public static final String COLUMN = "column";

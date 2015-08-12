@@ -5,7 +5,6 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 
 public class ArrayReader {
 

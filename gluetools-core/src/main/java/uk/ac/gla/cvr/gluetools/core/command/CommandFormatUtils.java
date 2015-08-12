@@ -5,14 +5,12 @@ import java.util.Map;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.w3c.dom.Element;
-
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public class CommandFormatUtils {
 
-	public static Element cmdDocElemFromJsonString(String commandString) {
+	public static DocumentBuilder documentBuilderFromJsonString(String commandString) {
 		JsonObject jsonObject;
 		try {
 			jsonObject = JsonUtils.stringToJsonObject(commandString);
@@ -28,9 +26,9 @@ public class CommandFormatUtils {
 		if(!(jsonValue instanceof JsonObject)) {
 			throw new CommandFormatException(CommandFormatException.Code.GLUE_COMMAND_JSON_VALUE_NOT_OBJECT);
 		}
-		Element cmdDocElem = GlueXmlUtils.documentWithElement(key);
-		JsonUtils.jsonObjectToElement(cmdDocElem, (JsonObject) jsonValue);
-		return cmdDocElem;
+		DocumentBuilder docBuilder = new DocumentBuilder(key);
+		JsonUtils.buildObjectFromJson(docBuilder, (JsonObject) jsonValue);
+		return docBuilder;
 	}
 
 	

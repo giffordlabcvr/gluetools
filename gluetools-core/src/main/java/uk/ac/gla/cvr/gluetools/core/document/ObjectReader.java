@@ -8,7 +8,6 @@ import java.util.Set;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public class ObjectReader {

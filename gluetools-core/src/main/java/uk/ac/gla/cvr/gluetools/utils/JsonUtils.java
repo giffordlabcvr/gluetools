@@ -24,6 +24,9 @@ import javax.json.stream.JsonGenerator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+
 
 public class JsonUtils {
 
@@ -138,29 +141,60 @@ public class JsonUtils {
 		return Json.createReader(new StringReader(string)).readObject();
 	}
 
-	public static void jsonObjectToElement(Element parentElem, JsonObject jsonObject) {
+	public static void buildObjectFromJson(ObjectBuilder objectBuilder, JsonObject jsonObject) {
 		jsonObject.forEach((key, value) -> {
-			jsonValueToElement(parentElem, key, value);
+			buildChildObjectFromJson(objectBuilder, key, value);
 		});
 	}
 
-	private static void jsonValueToElement(Element parentElem, String key, JsonValue value) {
+	private static void buildChildObjectFromJson(ObjectBuilder parentObjBuilder, String key, JsonValue value) {
 		if(value instanceof JsonObject) {
-			Element childElem = GlueXmlUtils.appendElement(parentElem, key);
-			jsonObjectToElement(childElem, (JsonObject) value);
+			ObjectBuilder childObjBuilder = parentObjBuilder.setObject(key);
+			buildObjectFromJson(childObjBuilder, (JsonObject) value);
 		} else if(value instanceof JsonArray) {
+			ArrayBuilder arrayBuilder = parentObjBuilder.setArray(key);
 			((JsonArray) value).forEach(item -> {
-				jsonValueToElement(parentElem, key, item);
+				buildArrayItemFromJson(arrayBuilder, item);
 			});
 		} else if(value.getValueType() == ValueType.NULL){
-			Element elem = GlueXmlUtils.appendElement(parentElem, key);
-			elem.setAttribute("isNull", "true");
+			parentObjBuilder.setNull(key);
 		} else if(value instanceof JsonString) {
-			GlueXmlUtils.appendElementWithText(parentElem, key, ((JsonString) value).getChars().toString());
+			parentObjBuilder.setString(key, ((JsonString) value).getChars().toString());
+		} else if(value.toString().equals("true") || value.toString().equals("false")) {
+			parentObjBuilder.setBoolean(key, Boolean.parseBoolean(value.toString()));
 		} else if(value instanceof JsonNumber) {
-			GlueXmlUtils.appendElementWithText(parentElem, key, ((JsonNumber) value).toString());
+			JsonNumber jsonNumber = (JsonNumber) value;
+			if(jsonNumber.isIntegral()) {
+				parentObjBuilder.setInt(key, jsonNumber.intValue());
+			} else {
+				parentObjBuilder.setDouble(key, jsonNumber.doubleValue());
+			}
 		} else {
-			GlueXmlUtils.appendElementWithText(parentElem, key, value.toString());
+			throw new RuntimeException("Unable to handle JsonValue: "+value);
+		}
+	}
+
+	private static void buildArrayItemFromJson(ArrayBuilder arrayBuilder, JsonValue item) {
+		if(item instanceof JsonObject) {
+			ObjectBuilder childObjBuilder = arrayBuilder.addObject();
+			buildObjectFromJson(childObjBuilder, (JsonObject) item);
+		} else if(item instanceof JsonArray) {
+			throw new RuntimeException("Unable to handle Json arrays within arrays");
+		} else if(item.getValueType() == ValueType.NULL){
+			arrayBuilder.addNull();
+		} else if(item instanceof JsonString) {
+			arrayBuilder.addString(((JsonString) item).getChars().toString());
+		} else if(item.toString().equals("true") || item.toString().equals("false")) {
+			arrayBuilder.addBoolean(Boolean.parseBoolean(item.toString()));
+		} else if(item instanceof JsonNumber) {
+			JsonNumber jsonNumber = (JsonNumber) item;
+			if(jsonNumber.isIntegral()) {
+				arrayBuilder.addInt(jsonNumber.intValue());
+			} else {
+				arrayBuilder.addDouble(jsonNumber.doubleValue());
+			}
+		} else {
+			throw new RuntimeException("Unable to handle JsonValue: "+item);
 		}
 	}
 	
