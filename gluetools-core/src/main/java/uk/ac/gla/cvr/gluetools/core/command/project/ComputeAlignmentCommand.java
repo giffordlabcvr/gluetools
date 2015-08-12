@@ -25,8 +25,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AddAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.RemoveAlignedSegmentCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -80,26 +78,21 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		// enter the alignment command mode to get the member ID maps selected by the where clause
 		List<Map<String, Object>> memberIDs = getMemberSequenceIdMaps(cmdContext);
 		// get the original data for the reference sequence
-		OriginalDataResult refSeqOriginalData = getReferenceSeqOriginalData(cmdContext, refName);
-		String refSeqFormatString = refSeqOriginalData.getFormatString();
-		String refSeqBase64String = refSeqOriginalData.getBase64String();
-
 		// modify the aligned segments and generate alignment results results for each selected member.
 		List<Map<String, Object>> resultListOfMaps = getAllAlignResults(
-				cmdContext, memberIDs, refSeqFormatString, refSeqBase64String);
+				cmdContext, memberIDs, refName);
 		return new ComputeAlignmentResult(resultListOfMaps);
 	}
 
 
 	private <R extends AlignerResult, C extends Command<R>> List<Map<String, Object>> getAllAlignResults(
-			CommandContext cmdContext, List<Map<String, Object>> memberIDs,
-			String refSeqFormatString, String refSeqBase64String) {
+			CommandContext cmdContext, List<Map<String, Object>> memberIDs, String refName) {
 		// get the align command's class for the module.
 		Class<C> alignCommandClass = getAlignCommandClass(cmdContext);
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
 		for(Map<String, Object> memberIDmap: memberIDs) {
 			Map<String, Object> memberResultMap = getMemberAlignResults(
-					cmdContext, refSeqFormatString, refSeqBase64String, alignCommandClass, memberIDmap);
+					cmdContext, refName, alignCommandClass, memberIDmap);
 			resultListOfMaps.add(memberResultMap);
 		}
 		return resultListOfMaps;
@@ -108,8 +101,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 
 	private <R extends AlignerResult, C extends Command<R>> Map<String, Object> getMemberAlignResults(
 			CommandContext cmdContext,
-			String refSeqFormatString,
-			String refSeqBase64String,
+			String refName,
 			Class<C> alignCommandClass,
 			Map<String, Object> memberIDmap) {
 		// enter the relevant sequence mode to get the member sequence original data
@@ -122,8 +114,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		R alignerResult;
 		try(ModeCloser moduleMode = cmdContext.pushCommandMode("module", alignerModuleName)) {
 			alignerResult = cmdContext.cmdBuilder(alignCommandClass)
-				.set(AlignCommand.REFERENCE_FORMAT, refSeqFormatString)
-				.set(AlignCommand.REFERENCE_BASE64, refSeqBase64String)
+				.set(AlignCommand.REFERENCE_NAME, refName)
 				.set(AlignCommand.QUERY_FORMAT, memberSeqFormatString)
 				.set(AlignCommand.QUERY_BASE64, memberSeqBase64String)
 				.execute();
@@ -163,15 +154,6 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		return memberResultMap;
 	}
 
-
-	private OriginalDataResult getReferenceSeqOriginalData(
-			CommandContext cmdContext, String refName) {
-		// enter the reference command mode to get the reference sourceName and sequence ID.
-		ShowSequenceResult showSequenceResult = getReferenceSequenceResult(cmdContext, refName);
-		return getOriginalData(cmdContext, showSequenceResult.getSourceName(), showSequenceResult.getSequenceID());
-	}
-
-
 	private OriginalDataResult getOriginalData(CommandContext cmdContext, String sourceName, String seqId) {
 		// enter the sequence command mode to get the sequence original data.
 		try (ModeCloser refSeqMode = cmdContext.pushCommandMode("sequence", sourceName, seqId)) {
@@ -179,12 +161,6 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		}
 	}
 
-
-	private ShowSequenceResult getReferenceSequenceResult(CommandContext cmdContext, String refName) {
-		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refName)) {
-			return cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
-		}
-	}
 
 
 	private List<Map<String, Object>> getMemberSequenceIdMaps(CommandContext cmdContext) {

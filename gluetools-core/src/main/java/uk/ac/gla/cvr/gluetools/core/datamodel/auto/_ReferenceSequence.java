@@ -15,12 +15,21 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
  */
 public abstract class _ReferenceSequence extends GlueDataObject {
 
+    public static final String CREATION_TIME_PROPERTY = "creationTime";
     public static final String NAME_PROPERTY = "name";
     public static final String ALIGNMENTS_PROPERTY = "alignments";
     public static final String FEATURES_PROPERTY = "features";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
     public static final String NAME_PK_COLUMN = "NAME";
+
+    public void setCreationTime(long creationTime) {
+        writeProperty(CREATION_TIME_PROPERTY, creationTime);
+    }
+    public long getCreationTime() {
+        Object value = readProperty(CREATION_TIME_PROPERTY);
+        return (value != null) ? (Long) value : 0;
+    }
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);

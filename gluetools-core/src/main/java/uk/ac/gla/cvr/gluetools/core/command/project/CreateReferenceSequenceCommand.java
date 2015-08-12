@@ -45,6 +45,7 @@ public class CreateReferenceSequenceCommand extends ProjectModeCommand<CreateRes
 		ReferenceSequence refSequence = GlueDataObject.create(objContext, ReferenceSequence.class, 
 				ReferenceSequence.pkMap(refSeqName), false);
 		refSequence.setSequence(sequence);
+		refSequence.setCreationTime(System.currentTimeMillis());
 		cmdContext.commit();
 		return new CreateResult(ReferenceSequence.class, 1);
 	}

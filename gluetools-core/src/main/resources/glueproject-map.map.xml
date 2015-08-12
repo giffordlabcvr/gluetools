@@ -37,9 +37,12 @@
 	</db-entity>
 	<db-entity name="MODULE">
 		<db-attribute name="CONFIG" type="BLOB" isMandatory="true"/>
+		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="REFERENCE_SEQUENCE">
+		<db-attribute name="CREATION_TIME" type="BIGINT" isMandatory="true"/>
+		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="SEQUENCE" type="VARCHAR" isMandatory="true" length="50"/>
 		<db-attribute name="SOURCE" type="VARCHAR" isMandatory="true" length="50"/>
@@ -78,6 +81,7 @@
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
 	<obj-entity name="ReferenceSequence" className="uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence" dbEntityName="REFERENCE_SEQUENCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="creationTime" type="long" db-attribute-path="CREATION_TIME"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
 	<obj-entity name="Sequence" className="uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence" dbEntityName="SEQUENCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">

@@ -20,7 +20,7 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 	
 	public static final String ALIGN_COMMAND_WORD = "align";
-	public static final String ALIGN_COMMAND_DOCOPT_USAGE = "<referenceFormat> <referenceBase64> <queryFormat> <queryBase64>";
+	public static final String ALIGN_COMMAND_DOCOPT_USAGE = "<referenceName> <queryFormat> <queryBase64>";
 	public static final String ALIGN_COMMAND_DOCOPT_OPTIONS = "";
 	public static final String ALIGN_COMMAND_FURTHER_HELP = 
 			"The <referenceFormat> and <queryFormat> arguments specify the data format of the reference and query sequences, "+
@@ -29,21 +29,18 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 	public static abstract class AlignCommand<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> 
 		extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
 
-		public static final String REFERENCE_FORMAT = "referenceFormat";
-		public static final String REFERENCE_BASE64 = "referenceBase64";
+		public static final String REFERENCE_NAME = "referenceName";
 		public static final String QUERY_FORMAT = "queryFormat";
 		public static final String QUERY_BASE64 = "queryBase64";
 
-		private SequenceFormat referenceSequenceFormat;
-		private byte[] referenceSequenceBytes;
+		private String referenceName;
 		private SequenceFormat querySequenceFormat;
 		private byte[] querySequenceBytes;
 		
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
-			referenceSequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, configElem, REFERENCE_FORMAT, true);
-			referenceSequenceBytes= PluginUtils.configureBase64BytesProperty(configElem, REFERENCE_BASE64, true);
+			referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
 			querySequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, configElem, QUERY_FORMAT, true);
 			querySequenceBytes= PluginUtils.configureBase64BytesProperty(configElem, QUERY_BASE64, true);
 		}
@@ -56,12 +53,8 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 			return querySequenceFormat;
 		}
 		
-		protected SequenceFormat getReferenceSequenceFormat() {
-			return referenceSequenceFormat;
-		}
-
-		protected byte[] getReferenceSequenceBytes() {
-			return referenceSequenceBytes;
+		protected String getReferenceName() {
+			return referenceName;
 		}
 
 	}
