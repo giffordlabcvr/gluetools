@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.dataconnection;
+package uk.ac.gla.cvr.gluetools.core.config;
 
 import java.util.Optional;
 

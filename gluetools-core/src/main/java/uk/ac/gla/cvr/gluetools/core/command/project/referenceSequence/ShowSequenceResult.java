@@ -1,25 +1,22 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 
-public class ShowSequenceResult extends CommandResult {
+public class ShowSequenceResult extends MapResult {
 
 	public ShowSequenceResult(String sourceName, String sequenceID) {
-		super("showSequenceResult");
-		getDocumentBuilder()
-			.setString("sourceName", sourceName)
-			.setString("sequenceID", sequenceID);
+		super("showSequenceResult", mapBuilder()
+			.put("sourceName", sourceName)
+			.put("sequenceID", sequenceID));
 	}
 
 	public String getSourceName() {
-		return GlueXmlUtils.getXPathString(getDocument(), "/showSequenceResult/sourceName/text()");
+		return getDocumentReader().stringValue("sourceName");
 	}
 
 	public String getSequenceID() {
-		return GlueXmlUtils.getXPathString(getDocument(), "/showSequenceResult/sequenceID/text()");
+		return getDocumentReader().stringValue("sequenceID");
 	}
 
-	
 	
 }

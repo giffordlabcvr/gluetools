@@ -2,19 +2,16 @@ package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
 import java.util.Base64;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-public class OriginalDataResult extends CommandResult {
+public class OriginalDataResult extends MapResult {
 
 	public OriginalDataResult(SequenceFormat format, byte[] originalData) {
-		super("originalDataResult");
-		DocumentBuilder builder = getDocumentBuilder();
-		builder.setString("format", format.name());
-		builder.setString("base64", new String(Base64.getEncoder().encode(originalData)));
+		super("originalDataResult", mapBuilder()
+				.put("format", format.name())
+				.put("base64", new String(Base64.getEncoder().encode(originalData))));
 	}
 
 	@Override
@@ -35,11 +32,11 @@ public class OriginalDataResult extends CommandResult {
 	}
 
 	public String getBase64String() {
-		return GlueXmlUtils.getXPathString(getDocument(), "/originalDataResult/base64/text()");
+		return getDocumentReader().stringValue("base64");
 	}
 
 	public String getFormatString() {
-		return GlueXmlUtils.getXPathString(getDocument(), "/originalDataResult/format/text()");
+		return getDocumentReader().stringValue("format");
 	}
 	
 	public SequenceFormat getFormat() {

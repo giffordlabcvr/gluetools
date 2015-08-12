@@ -1,7 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.curation.aligners;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -10,11 +10,11 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> extends ModulePlugin<P> {
 
@@ -92,29 +92,30 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 			ArrayBuilder arrayBuilder = getDocumentBuilder().setArray("alignedSegment");
 			for(AlignedSegment segment: alignedSegments) {
 				arrayBuilder.addObject()
-					.set("refStart", segment.getRefStart())
-					.set("refEnd", segment.getRefEnd())
-					.set("queryStart", segment.getQueryStart())
-					.set("queryEnd", segment.getQueryEnd());
+				.set("refStart", segment.getRefStart())
+				.set("refEnd", segment.getRefEnd())
+				.set("queryStart", segment.getQueryStart())
+				.set("queryEnd", segment.getQueryEnd());
 			}
 		}
 
 		public List<AlignedSegment> getAlignedSegments() {
-			List<Element> alignedSegmentElems = 
-					GlueXmlUtils.findChildElements(getDocument().getDocumentElement(), "alignedSegment");
-			return alignedSegmentElems.stream().map(elem -> 
-				new AlignedSegment(
-						// boilerplate hell! need to sort this out at some point!
-						(Integer) JsonUtils.elementToObject(GlueXmlUtils.findChildElements(elem, "refStart").get(0)),
-						(Integer) JsonUtils.elementToObject(GlueXmlUtils.findChildElements(elem, "refEnd").get(0)),
-						(Integer) JsonUtils.elementToObject(GlueXmlUtils.findChildElements(elem, "queryStart").get(0)),
-						(Integer) JsonUtils.elementToObject(GlueXmlUtils.findChildElements(elem, "queryEnd").get(0)))
-			).collect(Collectors.toList());
+			ArrayReader alignedSegmentsReader = 
+					getDocumentReader().getArray("alignedSegment");
+			List<AlignedSegment> segments = new ArrayList<AlignedSegment>();
+			for(int i = 0; i < alignedSegmentsReader.size(); i++) {
+				ObjectReader objectReader = alignedSegmentsReader.getObject(i);
+				segments.add(new AlignedSegment(
+						objectReader.intValue("refStart"),
+						objectReader.intValue("refEnd"),
+						objectReader.intValue("queryStart"),
+						objectReader.intValue("queryEnd")));
+
+			}
+			return segments;
 		}
-		
 	}
 
 
-	
-	
+
 }

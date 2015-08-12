@@ -10,9 +10,10 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
+import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration.Vendor;
+import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
-import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration;
-import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration.Vendor;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.GlueSchemaUpdateStrategy;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
@@ -52,6 +53,7 @@ public class GluetoolsEngine implements Plugin {
 	
 	private Configuration freemarkerConfiguration;
 	private DatabaseConfiguration dbConfiguration = new DatabaseConfiguration();
+	private PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
 	private ServerRuntime rootServerRuntime;
 	
 	private GluetoolsEngine(String configFilePath) {
@@ -85,11 +87,18 @@ public class GluetoolsEngine implements Plugin {
 			logger.warning("The GLUE database is in-memory Apache Derby. "+
 				"Changes will not be persisted beyond the lifetime of this GLUE instance.");
 		}
-
+		Element propertiesConfigElem = PluginUtils.findConfigElement(configElem, "properties");
+		if(propertiesConfigElem != null) {
+			propertiesConfiguration.configure(pluginConfigContext, propertiesConfigElem);
+		}
 	}
 
 	public DatabaseConfiguration getDbConfiguration() {
 		return dbConfiguration;
+	}
+	
+	public PropertiesConfiguration getPropertiesConfiguration() {
+		return propertiesConfiguration;
 	}
 	
 	private void init(boolean migrateSchema) {

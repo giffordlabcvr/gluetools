@@ -37,8 +37,7 @@ public class ListResult extends TableResult {
 		List<String> columnHeaders = super.getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps();
 		super.renderToStringWriter(stringWriter, columnHeaders, listOfMaps);
-		Element docElem = getDocument().getDocumentElement();
-		String objectType = GlueXmlUtils.getXPathElement(docElem, OBJECT_TYPE).getTextContent();
+		String objectType = getDocumentReader().stringValue(OBJECT_TYPE);
 		renderCtx.output(stringWriter.toString()+objectType+"s found: "+listOfMaps.size());
 	}
 

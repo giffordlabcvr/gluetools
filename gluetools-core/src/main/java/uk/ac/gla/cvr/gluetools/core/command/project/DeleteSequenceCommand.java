@@ -26,7 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptOptions={"-w <whereClause>, --whereClause <whereClause>  Qualify which sequences should be deleted", 
 			"-a, --allSequences  Delete all sequences" },
 	description="Delete one or more sequences", 
-	furtherHelp="If <allSequences> or <whereClause> is used, reference sequences will not be deleted.") 
+	furtherHelp="If <allSequences> or <whereClause> is used, there will be no attempt to delete reference sequences.") 
 public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 
 	private Optional<String> sourceName;

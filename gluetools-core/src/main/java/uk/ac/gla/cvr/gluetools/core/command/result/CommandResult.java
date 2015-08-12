@@ -5,6 +5,7 @@ import javax.json.JsonObject;
 import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
@@ -14,6 +15,7 @@ public abstract class CommandResult {
 	
 	
 	private DocumentBuilder documentBuilder;
+	private DocumentReader documentReader;
 
 	private Document xmlDocument;
 	private JsonObject jsonObject;
@@ -24,6 +26,13 @@ public abstract class CommandResult {
 	
 	protected DocumentBuilder getDocumentBuilder() {
 		return documentBuilder;
+	}
+	
+	protected DocumentReader getDocumentReader() {
+		if(documentReader == null) {
+			documentReader = new DocumentReader(getDocument());
+		}
+		return getDocumentReader();
 	}
 
 	public Document getDocument() {

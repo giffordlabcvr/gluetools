@@ -1,19 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.command.console;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 
-public class ConsoleCommandResult extends CommandResult {
+public class ConsoleCommandResult extends MapResult {
 
 	public ConsoleCommandResult(String text) {
-		super("consoleCommandResult");
-		getDocumentBuilder().set("resultText", text);
+		super("consoleCommandResult", mapBuilder().put("resultText", text));
 	}
 	
 	@Override
 	protected final void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
-		renderCtx.output(GlueXmlUtils.getXPathString(getDocument(), "/consoleCommandResult/resultText/text()"));
+		renderCtx.output(getDocumentReader().stringValue("resultText"));
 	}
 	
 }

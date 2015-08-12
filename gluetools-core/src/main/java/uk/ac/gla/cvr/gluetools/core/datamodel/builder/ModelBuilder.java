@@ -37,7 +37,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import uk.ac.gla.cvr.gluetools.core.dataconnection.DatabaseConfiguration;
+import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;

@@ -1,8 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public abstract class OkCrudResult extends OkResult {
@@ -21,27 +20,26 @@ public abstract class OkCrudResult extends OkResult {
 			Operation operation,
 			Class<? extends GlueDataObject> objectClass,
 			int number) {
-		super();
-		getDocumentBuilder().set(OPERATION, operation.name());
-		getDocumentBuilder().set(OBJECT_TYPE, objectClass.getSimpleName());
-		getDocumentBuilder().set(NUMBER, number);
+		super(mapBuilder()
+				.put(OPERATION, operation.name())
+				.put(OBJECT_TYPE, objectClass.getSimpleName())
+				.put(NUMBER, number));
 	}
 
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		super.renderToConsoleAsText(renderCtx);
-		Element docElem = getDocument().getDocumentElement();
-		String number = GlueXmlUtils.getXPathElement(docElem, NUMBER).getTextContent();
-		String objectTypeString = GlueXmlUtils.getXPathElement(docElem, OBJECT_TYPE).getTextContent();
+		DocumentReader documentReader = getDocumentReader();
+		String number = documentReader.stringValue(NUMBER);
+		String objectTypeString = documentReader.stringValue(OBJECT_TYPE);
 		if(!number.equals("1")) {
 			objectTypeString+="s";
 		}
-		String operationString = GlueXmlUtils.getXPathElement(docElem, OPERATION).
-				getTextContent().toLowerCase()+"d";
+		String operationString = documentReader.stringValue(OPERATION).toLowerCase()+"d";
 		renderCtx.output("("+number+" "+objectTypeString+" "+operationString+")");
 	}
 	
 	public int getNumber() {
-		return Integer.parseInt(GlueXmlUtils.getXPathString(getDocument().getDocumentElement(), NUMBER+"/text()"));
+		return getDocumentReader().intValue(NUMBER);
 	}
 }

@@ -1,12 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
 
-public class OkResult extends CommandResult {
+public class OkResult extends MapResult {
 
 	private static final String OK_RESULT = "okResult";
 
 	public OkResult() {
-		super(OK_RESULT);
+		this(mapBuilder());
+	}
+
+	protected OkResult(MapBuilder mapBuilder) {
+		super(OK_RESULT, mapBuilder);
 	}
 
 	@Override

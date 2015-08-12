@@ -1,17 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 
-public class ShowReferenceResult extends CommandResult {
+public class ShowReferenceResult extends MapResult {
 
 	public ShowReferenceResult(String referenceName) {
-		super("showReferenceResult");
-		getDocumentBuilder().setString("referenceName", referenceName);
+		super("showReferenceResult", mapBuilder().put("referenceName", referenceName));
 	}
 
 	public String getReferenceName() {
-		return GlueXmlUtils.getXPathString(getDocument(), "/showReferenceResult/referenceName/text()");
+		return getDocumentReader().stringValue("referenceName");
 	}
 	
 }
