@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.curation.aligners;
+package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
@@ -6,7 +6,8 @@ public class BlastAlignerException extends GlueException {
 
 public enum Code implements GlueErrorCode {
 		
-		BLAST_OUTPUT_FORMAT_ERROR("errorText");
+		BLAST_OUTPUT_FORMAT_ERROR("errorText"),
+		BLAST_ALIGNER_UNHANDLED_CASE("refSeqId", "querySeqId", "caseDescription");
 
 		private String[] argNames;
 		private Code(String... argNames) {

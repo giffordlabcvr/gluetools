@@ -4788,13 +4788,13 @@ project HCV
   
   create module mutationFrequencies -f hcvMutationFrequencies.xml
   
-  module mutationFrequencies
-  
-    generate -t 6 -f E1
-    exit
-
-  create module blastAligner -f hcvBlastAligner.xml
-#  list sequence sequenceID GB_PRIMARY_ACCESSION GENOTYPE SUBTYPE
-    
+#  module mutationFrequencies
+#  
+#    generate -t 6 -f E1
+#    exit
+#
+#  create module blastAligner -f hcvBlastAligner.xml
+#
+#  compute alignment AL1 blastAligner    
 
   

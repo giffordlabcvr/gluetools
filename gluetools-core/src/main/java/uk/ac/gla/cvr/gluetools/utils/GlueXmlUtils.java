@@ -137,11 +137,6 @@ public class GlueXmlUtils {
 		prettyPrint(document, out, 4);
 	}
 	
-	public static List<Element> getXPathElements(Node startNode, String xPathExpression) {
-		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
-		return nodeListToElems(resultNodeList);
-	}
-
 	public static List<Element> nodeListToElems(NodeList resultNodeList) {
 		List<Element> elems = new ArrayList<Element>();
 		for(int i = 0; i < resultNodeList.getLength(); i++) {
@@ -160,6 +155,18 @@ public class GlueXmlUtils {
 		return nodeListToNodes(resultNodeList);
 	}
 
+	public static List<Element> getXPathElements(Node startNode, XPathExpression xPathExpression) {
+		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		return nodeListToElems(resultNodeList);
+	}
+	
+	public static List<Element> getXPathElements(Node startNode, String xPathExpression) {
+		NodeList resultNodeList = (NodeList) runXPath(startNode, xPathExpression, XPathConstants.NODESET);
+		return nodeListToElems(resultNodeList);
+	}
+
+
+	
 	private static List<Node> nodeListToNodes(NodeList resultNodeList) {
 		List<Node> nodes = new ArrayList<Node>();
 		for(int i = 0; i < resultNodeList.getLength(); i++) {
@@ -176,6 +183,10 @@ public class GlueXmlUtils {
 			strings.add(((Text) node).getWholeText());
 		}
 		return strings;
+	}
+
+	public static Element getXPathElement(Node startNode, XPathExpression xPathExpression) {
+		return (Element) runXPath(startNode, xPathExpression, XPathConstants.NODE);
 	}
 
 	public static Element getXPathElement(Node startNode, String xPathExpression) {
@@ -206,6 +217,23 @@ public class GlueXmlUtils {
 		} else {
 			throw new RuntimeException("Unable to get text value from Node of type: "+node.getClass().getCanonicalName());
 		}
+	}
+
+	
+	public static Integer getXPathInt(Node startNode, XPathExpression xPathExpression) {
+		String xPathString = getXPathString(startNode, xPathExpression);
+		if(xPathString == null) {
+			return null;
+		}
+		return Integer.parseInt(xPathString);
+	}
+
+	public static Double getXPathDouble(Node startNode, XPathExpression xPathExpression) {
+		String xPathString = getXPathString(startNode, xPathExpression);
+		if(xPathString == null) {
+			return null;
+		}
+		return Double.parseDouble(xPathString);
 	}
 
 	public static String getXPathString(Node startNode, XPathExpression xPathExpression) {
@@ -261,6 +289,27 @@ public class GlueXmlUtils {
 		}
 	}
 
+	// WARNING! this could get confused if the XML start pattern was embedded e.g. in a CDATA section.
+	public static List<Document> documentsFromBytes(byte[] bytes) throws SAXException, IOException {
+		List<Document> documents = new ArrayList<Document>();
+		byte[] xmlStartPattern = "<?xml".getBytes();
+		int startIndex = 0;
+		int nextStartIndex;
+		do {
+			nextStartIndex = ByteScanningUtils.indexOf(bytes, xmlStartPattern, startIndex+1);
+			int length;
+			if(nextStartIndex == -1) { 
+				length = bytes.length - startIndex;
+			} else {
+				length = nextStartIndex - startIndex;
+			}
+			ByteArrayInputStream bais = new ByteArrayInputStream(bytes, startIndex, length);
+			documents.add(documentFromStream(bais));
+			startIndex = nextStartIndex;
+		} while(nextStartIndex != -1);
+		return documents;
+	}
+	
 	public static XPathExpression compileXPathExpression(XPath xPath, String expressionString) {
 		try {
 			return xPath.compile(expressionString);

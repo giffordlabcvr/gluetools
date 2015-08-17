@@ -33,9 +33,11 @@ import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -79,8 +81,8 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		List<Map<String, Object>> memberIDs = getMemberSequenceIdMaps(cmdContext);
 		// get the original data for the reference sequence
 		// modify the aligned segments and generate alignment results results for each selected member.
-		List<Map<String, Object>> resultListOfMaps = getAllAlignResults(
-				cmdContext, memberIDs, refName);
+		List<Map<String, Object>> resultListOfMaps = 
+				getAllAlignResults(cmdContext, memberIDs, refName);
 		return new ComputeAlignmentResult(resultListOfMaps);
 	}
 
@@ -89,36 +91,58 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 			CommandContext cmdContext, List<Map<String, Object>> memberIDs, String refName) {
 		// get the align command's class for the module.
 		Class<C> alignCommandClass = getAlignCommandClass(cmdContext);
+		String membersFasta = getMembersFasta(cmdContext, memberIDs);
+		R alignerResult = getAlignerResult(cmdContext, alignCommandClass, refName, membersFasta);
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
+		Map<String, List<AlignedSegment>> fastaIdToAlignedSegments = alignerResult.getFastaIdToAlignedSegments();
 		for(Map<String, Object> memberIDmap: memberIDs) {
-			Map<String, Object> memberResultMap = getMemberAlignResults(
-					cmdContext, refName, alignCommandClass, memberIDmap);
+			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
+			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
+			String memberFastaId = constructFastaId(memberSourceName, memberSeqId);
+			List<AlignedSegment> memberAlignedSegments = fastaIdToAlignedSegments.get(memberFastaId);
+			Map<String, Object> memberResultMap = applyMemberAlignedSegments(cmdContext, 
+					memberSourceName, memberSeqId, memberAlignedSegments);
 			resultListOfMaps.add(memberResultMap);
 		}
 		return resultListOfMaps;
 	}
 
-
-	private <R extends AlignerResult, C extends Command<R>> Map<String, Object> getMemberAlignResults(
-			CommandContext cmdContext,
-			String refName,
-			Class<C> alignCommandClass,
-			Map<String, Object> memberIDmap) {
-		// enter the relevant sequence mode to get the member sequence original data
-		String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
-		String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
-		OriginalDataResult memberSeqOriginalData = getOriginalData(cmdContext, memberSourceName, memberSeqId);
-		String memberSeqFormatString = memberSeqOriginalData.getFormatString();
-		String memberSeqBase64String = memberSeqOriginalData.getBase64String();
-		// run the aligner on the reference and member sequence original data.
+	private <R extends AlignerResult, C extends Command<R>> R getAlignerResult(
+			CommandContext cmdContext, Class<C> alignCommandClass, String refName, String membersFasta) {
 		R alignerResult;
 		try(ModeCloser moduleMode = cmdContext.pushCommandMode("module", alignerModuleName)) {
 			alignerResult = cmdContext.cmdBuilder(alignCommandClass)
 				.set(AlignCommand.REFERENCE_NAME, refName)
-				.set(AlignCommand.QUERY_FORMAT, memberSeqFormatString)
-				.set(AlignCommand.QUERY_BASE64, memberSeqBase64String)
+				.set(AlignCommand.QUERY_FASTA, membersFasta)
 				.execute();
 		}
+		return alignerResult;
+	}
+	
+	
+	private String getMembersFasta(CommandContext cmdContext, List<Map<String, Object>> memberIDs) {
+		StringBuffer buf = new StringBuffer();
+		for(Map<String, Object> memberIDmap: memberIDs) {
+			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
+			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
+			OriginalDataResult memberSeqOriginalData = getOriginalData(cmdContext, memberSourceName, memberSeqId);
+			SequenceFormat memberSeqFormat = memberSeqOriginalData.getFormat();
+			String nucleotides = memberSeqFormat.nucleotidesAsString(memberSeqOriginalData.getBase64Bytes());
+			buf.append(">").append(constructFastaId(memberSourceName, memberSeqId)).append("\n");
+			buf.append(nucleotides).append("\n");
+		}
+		return buf.toString();
+	}
+
+	private String constructFastaId(String sourceName, String sequenceID) {
+		return sourceName+"."+sequenceID;
+	}
+	
+	private Map<String, Object> applyMemberAlignedSegments(
+			CommandContext cmdContext,
+			String memberSourceName,
+			String memberSeqId,
+			List<AlignerResult.AlignedSegment> memberAlignedSegments) {
 		// enter the relevant alignment member mode, delete the existing aligned segments, and add new segments
 		// according to the aligner result.
 		int numRemovedSegments = 0;
@@ -128,7 +152,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 				numRemovedSegments = cmdContext.cmdBuilder(RemoveAlignedSegmentCommand.class)
 						.set(RemoveAlignedSegmentCommand.ALL_SEGMENTS, true)
 						.execute().getNumber();
-				for(AlignerResult.AlignedSegment alignedSegment: alignerResult.getAlignedSegments()) {
+				for(AlignerResult.AlignedSegment alignedSegment: memberAlignedSegments) {
 					CreateResult addSegResult = cmdContext.cmdBuilder(AddAlignedSegmentCommand.class)
 					.set(AddAlignedSegmentCommand.REF_START, alignedSegment.getRefStart())
 					.set(AddAlignedSegmentCommand.REF_END, alignedSegment.getRefEnd())

@@ -26,6 +26,10 @@ public class SegmentUtils {
 		return seq.substring(position-1, position);
 	}
 
+	public static char ntChar(String seq, int position) {
+		return seq.charAt(position-1);
+	}
+
 	public static String subSeq(String seq, int start, int end) {
 		if(start <= end) {
 			return seq.substring(start-1, end);

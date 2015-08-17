@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
@@ -83,7 +84,7 @@ public class GluetoolsEngine implements Plugin {
 		Plugin.super.configure(pluginConfigContext, configElem);
 		Element dbConfigElem = PluginUtils.findConfigElement(configElem, "database");
 		if(dbConfigElem != null) {
-			dbConfiguration.configure(pluginConfigContext, dbConfigElem);
+			PluginFactory.configurePlugin(pluginConfigContext, dbConfigElem, dbConfiguration);
 		}
 		if(dbConfiguration.getVendor() == Vendor.ApacheDerby &&
 				dbConfiguration.getJdbcUrl().contains(":memory:")) {
@@ -92,7 +93,7 @@ public class GluetoolsEngine implements Plugin {
 		}
 		Element propertiesConfigElem = PluginUtils.findConfigElement(configElem, "properties");
 		if(propertiesConfigElem != null) {
-			propertiesConfiguration.configure(pluginConfigContext, propertiesConfigElem);
+			PluginFactory.configurePlugin(pluginConfigContext, propertiesConfigElem, propertiesConfiguration);
 		}
 	}
 

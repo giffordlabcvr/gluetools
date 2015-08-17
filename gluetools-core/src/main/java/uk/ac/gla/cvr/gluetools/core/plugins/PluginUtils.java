@@ -158,15 +158,89 @@ public class PluginUtils {
 		return configured;
 	}
 	
-	public static Integer configureIntProperty(Element configElem, String propertyName, boolean required)  {
+	
+	public static Integer configureIntProperty(Element configElem, String propertyName, 
+			Integer minValue, boolean minInclusive, 
+			Integer maxValue, boolean maxInclusive,
+			boolean required)  {
 		String configuredString = configureStringProperty(configElem, propertyName, required);
 		if(configuredString == null) { return null; }
+		Integer result = null;
 		try {
-			return Integer.parseInt(configuredString);
+			result = Integer.parseInt(configuredString);
 		} catch(NumberFormatException nfe) {
 			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, "Not an integer", configuredString);
 		}
+		if(result != null) {
+			if(minValue != null) {
+				if(minInclusive && result < minValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<", minValue);
+				} else if(result <= minValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<=", minValue);
+				}
+			}
+			if(maxValue != null) {
+				if(maxInclusive && result > maxValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
+				} else if(result <= maxValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">=", maxValue);
+				}
+			}
+		}
+		
+		return result;
 	}
+
+	
+	public static Integer configureIntProperty(Element configElem, String propertyName, boolean required)  {
+		return configureIntProperty(configElem, propertyName, null, false, null, false, required);
+	}
+	
+	
+	public static Double configureDoubleProperty(Element configElem, String propertyName, double defaultValue)  {
+		Double configured = configureDoubleProperty(configElem, propertyName, false);
+		if(configured == null) {
+			return defaultValue;
+		}
+		return configured;
+	}
+
+	public static Double configureDoubleProperty(Element configElem, String propertyName, boolean required)  {
+		return configureDoubleProperty(configElem, propertyName, null, false, null, false, required);
+	}
+	
+	public static Double configureDoubleProperty(Element configElem, String propertyName, 
+			Double minValue, boolean minInclusive, 
+			Double maxValue, boolean maxInclusive,
+			boolean required)  {
+		String configuredString = configureStringProperty(configElem, propertyName, required);
+		if(configuredString == null) { return null; }
+		Double result = null;
+		try {
+			result = Double.parseDouble(configuredString);
+		} catch(NumberFormatException nfe) {
+			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, "Not a double", configuredString);
+		}
+		if(result != null) {
+			if(minValue != null) {
+				if(minInclusive && result < minValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<", minValue);
+				} else if(result <= minValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<=", minValue);
+				}
+			}
+			if(maxValue != null) {
+				if(maxInclusive && result > maxValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
+				} else if(result <= maxValue) {
+					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">=", maxValue);
+				}
+			}
+		}
+		
+		return result;
+	}
+	
 
 
 	public static Boolean configureBooleanProperty(Element configElem, String propertyName, boolean required)  {

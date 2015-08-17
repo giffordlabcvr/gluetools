@@ -61,7 +61,7 @@ public class PluginFactory<P extends Plugin> {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
 		P plugin = instantiatePlugin(element, pluginClass);
-		configurePluginStatic(pluginConfigContext, element, plugin);
+		configurePlugin(pluginConfigContext, element, plugin);
 		return plugin;
 	}
 
@@ -86,14 +86,14 @@ public class PluginFactory<P extends Plugin> {
 	public static <Q extends Plugin> List<Q> createPlugins(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, List<Element> elements) {
 		return elements.stream().map(e -> {
 			Q plugin = instantiatePluginStatic(pluginClass, e);
-			configurePluginStatic(pluginConfigContext, e, plugin);
+			configurePlugin(pluginConfigContext, e, plugin);
 			return plugin;
 		}).collect(Collectors.toList());
 	}
 	
 	public static <Q extends Plugin> Q createPlugin(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, Element element) {
 		Q plugin = instantiatePluginStatic(pluginClass, element);
-		configurePluginStatic(pluginConfigContext, element, plugin);
+		configurePlugin(pluginConfigContext, element, plugin);
 		return plugin;
 	}
 
@@ -109,7 +109,7 @@ public class PluginFactory<P extends Plugin> {
 		return plugin;
 	}
 
-	private static <Q extends Plugin> void configurePluginStatic(
+	public static <Q extends Plugin> void configurePlugin(
 			PluginConfigContext pluginConfigContext, Element element, Q plugin) {
 		plugin.configure(pluginConfigContext, element);
 		PluginUtils.checkValidConfig(element);

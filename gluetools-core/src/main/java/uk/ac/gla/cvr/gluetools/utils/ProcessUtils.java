@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ProcessUtils {
@@ -37,17 +38,21 @@ public class ProcessUtils {
 			return exitCode;
 		}
 	}
+
+	public static ProcessResult runProcess(byte[] inputByteArray, List<String> commandWords) {
+		return runProcess(inputByteArray, commandWords.toArray(new String[]{}));
+	}
 	
-	public static ProcessResult runProcess(byte[] inputByteArray, String... command) {
-		if(command.length == 0) {
+	public static ProcessResult runProcess(byte[] inputByteArray, String... commandWords) {
+		if(commandWords.length == 0) {
 			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, "<noCommand>", 
 					"No command words supplied");
 		}
-		if(command[0] == null) {
+		if(commandWords[0] == null) {
 			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, "<noCommand>", 
 					"First command word was null");
 		}
-		ProcessBuilder processBuilder = new ProcessBuilder(command);
+		ProcessBuilder processBuilder = new ProcessBuilder(commandWords);
 		Process process = null;
 		ByteArrayInputStream inputBytes = new ByteArrayInputStream(inputByteArray);
 		ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
@@ -58,7 +63,7 @@ public class ProcessUtils {
 				process = processBuilder.start();
 			} catch(IOException ioe1) {
 				throw new ProcessUtilsException(ioe1, 
-						ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, command[0], 
+						ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, commandWords[0], 
 						ioe1.getLocalizedMessage());
 			}
 			OutputStream processStdIn = process.getOutputStream();
@@ -79,7 +84,7 @@ public class ProcessUtils {
 			while(drainBytes(processStdErr, drainBuffer, errorBytes) > 0){};
 		} catch(IOException ioe2) {
 			throw new ProcessUtilsException(ioe2, 
-					ProcessUtilsException.Code.PROCESS_IO_ERROR, command[0], 
+					ProcessUtilsException.Code.PROCESS_IO_ERROR, commandWords[0], 
 					ioe2.getLocalizedMessage());
 		} finally {
 			if(process != null && process.isAlive()) {
