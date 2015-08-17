@@ -19,7 +19,7 @@ public class BlastResultBuilder {
 		private XPathExpression search = xpathExp(xPathEngine, "/b:BlastOutput2/b:report/b:Report/b:results/b:Results/b:search/b:Search");
 		private XPathExpression queryTitleText = xpathExp(xPathEngine, "b:query-title/text()");
 		private XPathExpression hitHits = xpathExp(xPathEngine, "b:hits/b:Hit");
-		private XPathExpression descriptionTitleText = xpathExp(xPathEngine, "b:description/b:title/text()");
+		private XPathExpression descriptionHitDescrTitleText = xpathExp(xPathEngine, "b:description/b:HitDescr/b:title/text()");
 		private XPathExpression hspsHsp = xpathExp(xPathEngine, "b:hsps/b:Hsp");
 
 		private XPathExpression bitScoreText = xpathExp(xPathEngine, "b:bit-score/text()");
@@ -38,6 +38,7 @@ public class BlastResultBuilder {
 	}
 	
 	public static BlastResult blastResultFromDocument(BlastXPath xPath, Document blastDoc) {
+		GlueXmlUtils.prettyPrint(blastDoc, System.out);
 		BlastResult blastResult = new BlastResult();
 		Element searchElem = GlueXmlUtils.getXPathElement(blastDoc, xPath.search);
 		blastResult.setQueryFastaId(GlueXmlUtils.getXPathString(searchElem, xPath.queryTitleText));
@@ -45,7 +46,7 @@ public class BlastResultBuilder {
 		for(Element hitElem: hitElems) {
 			BlastHit blastHit = new BlastHit(blastResult);
 			blastResult.addHit(blastHit);
-			blastHit.setReferenceName(GlueXmlUtils.getXPathString(hitElem, xPath.descriptionTitleText));
+			blastHit.setReferenceName(GlueXmlUtils.getXPathString(hitElem, xPath.descriptionHitDescrTitleText));
 			List<Element> hspElems = GlueXmlUtils.getXPathElements(hitElem, xPath.hspsHsp);
 			for(Element hspElem : hspElems) {
 				BlastHsp blastHsp = new BlastHsp(blastHit);

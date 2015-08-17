@@ -1,0 +1,23 @@
+<fastaImporter>
+	<sourceName>stopHcvCvr</sourceName>
+	<idParser>
+		<!-- For the ID this matches the area between two underscores -->
+		<matchPattern>_([^_]+)_</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</idParser>
+	<fieldParser>
+		<!-- For the enrichment method this matches the region before the first underscore -->
+		<fieldName>ENRICHMENT_METHOD</fieldName>
+		<matchPattern>^([^_]+)_</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+		<valueConverter>
+			<matchPattern>Nim</matchPattern>
+			<outputPattern>NimbleGen</outputPattern>
+		</valueConverter>
+	</fieldParser>
+	<fieldParser>
+		<fieldName>ASSEMBLY_REFERENCE</fieldName>
+		<matchPattern>(Ref\S+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+</fastaImporter>

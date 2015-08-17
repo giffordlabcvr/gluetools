@@ -25,6 +25,8 @@ schema-project HCV
     create field GB_UPDATE_DATE DATE
     create field GENOTYPE VARCHAR
     create field SUBTYPE VARCHAR
+    create field ASSEMBLY_REFERENCE VARCHAR
+    create field ENRICHMENT_METHOD VARCHAR
     list field
           exit
         exit
@@ -4788,13 +4790,20 @@ project HCV
   
   create module mutationFrequencies -f hcvMutationFrequencies.xml
   
+  create module fastaImporter -f hcvFastaImporter.xml
+  
+  module fastaImporter import -f stopHcvNimble.fasta
+  
 #  module mutationFrequencies
 #  
 #    generate -t 6 -f E1
 #    exit
 #
-#  create module blastAligner -f hcvBlastAligner.xml
-#
-#  compute alignment AL1 blastAligner    
+
+   create module blastAligner -f hcvBlastAligner.xml
+
+   alignment AL1 add member -w "source.name = 'stopHcvCvr'"
+
+   compute alignment AL1 blastAligner -w "sequence.source.name = 'stopHcvCvr'"
 
   
