@@ -1,19 +1,26 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -31,7 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"The optional whereClause allows a member to be specified via its field values.\n"+
 	"If this query returns multiple or zero members, the command fails.\n"+
 	"Examples:\n"+
-	"  member -w \"GB_PRIMARY_ACCESSION = 'GR195721'\"\n"+
+	"  member -w \"sequence.GB_PRIMARY_ACCESSION = 'GR195721'\"\n"+
 	"  member mySource 12823121") 
 @EnterModeCommandClass(
 		commandModeClass = MemberMode.class)
@@ -62,7 +69,8 @@ public class MemberCommand extends AlignmentModeCommand<OkResult>  {
 	}
 
 	private void usageError() {
-		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Either whereClause or both sourceName and sequenceID must be specified");
+		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, 
+				"Either whereClause or both sourceName and sequenceID must be specified");
 	}
 	
 	@Override
@@ -72,20 +80,48 @@ public class MemberCommand extends AlignmentModeCommand<OkResult>  {
 			sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
 					Sequence.pkMap(sourceName, sequenceID));
 		} else {
-			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause);
-			List<Sequence> sequences = GlueDataObject.query(cmdContext.getObjectContext(), Sequence.class, selectQuery);
-			int numSeqs = sequences.size();
-			if(numSeqs == 1) {
-				sequence = sequences.get(0);
-			} else if(numSeqs == 0) {
-				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Query returned no sequences.");
+			Expression exp = whereClause.andExp(ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName()));
+			SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, exp);
+			List<AlignmentMember> members = GlueDataObject.query(cmdContext.getObjectContext(), AlignmentMember.class, selectQuery);
+			int numMembers = members.size();
+			if(numMembers == 1) {
+				sequence = members.get(0).getSequence();
+			} else if(numMembers == 0) {
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Query returned no members.");
 			} else {
-				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Query returned multiple sequences.");
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Query returned multiple members.");
 			} 
 		}
 		Project project = getAlignmentMode(cmdContext).getProject();
 		cmdContext.pushCommandMode(new MemberMode(project, this, sequence.getSource().getName(), sequence.getSequenceID()));
 		return CommandResult.OK;
 	}
+	
+	
+	
+	@CompleterClass
+	public static class Completer extends AlignmentModeCompleter {
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public List<String> completionSuggestions(
+				ConsoleCommandContext cmdContext,
+				Class<? extends Command> cmdClass, List<String> argStrings) {
+			if(argStrings.isEmpty()) {
+				return getMemberSources(cmdContext);
+			} else {
+				String arg0 = argStrings.get(0);
+				if(argStrings.size() == 1 &&
+						!Arrays.asList("-w", "--whereClause").contains(arg0)) {
+					Alignment almt = getAlignment(cmdContext);
+					return getMemberSequenceIDs(arg0, almt);
+				}
+			}
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+		}
+
+	}
+
+	
 
 }

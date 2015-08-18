@@ -751,7 +751,7 @@ project HCV
   alignment AL_MASTER
     add member --allSequences
 
-    member -w "GB_PRIMARY_ACCESSION = 'AF009606'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AF009606'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -776,7 +776,7 @@ project HCV
       add segment 7578 9605 7578 9605
       add segment 9606 9646 9606 9646
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'M62321'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'M62321'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -799,7 +799,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7578 9401 7578 9401
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'M67463'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'M67463'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -823,7 +823,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7578 9416 7578 9416
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HQ850279'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HQ850279'"
       add segment 152 197 1 46
       add segment 198 206 47 55
       add segment 207 1043 56 892
@@ -846,7 +846,7 @@ project HCV
       add segment 7545 7577 7394 7426
       add segment 7578 9342 7427 9191
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF407457'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF407457'"
       add segment 198 206 1 9
       add segment 207 1043 11 847
       add segment 1044 1499 848 1303
@@ -867,7 +867,7 @@ project HCV
       add segment 7545 7577 7349 7381
       add segment 7578 9482 7382 9286
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D90208'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D90208'"
       add segment 13 197 1 185
       add segment 198 206 186 194
       add segment 207 1043 195 1031
@@ -889,7 +889,7 @@ project HCV
       add segment 7545 7577 7533 7565
       add segment 7581 9428 7566 9413
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'M58335'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'M58335'"
       add segment 10 10 1 1
       add segment 11 197 2 188
       add segment 198 206 189 197
@@ -912,7 +912,7 @@ project HCV
       add segment 7545 7577 7536 7568
       add segment 7581 9428 7569 9416
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU781827'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU781827'"
       add segment 21 23 1 3
       add segment 25 26 4 5
       add segment 30 32 6 8
@@ -938,7 +938,7 @@ project HCV
       add segment 7572 7577 7543 7548
       add segment 7578 9442 7549 9413
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU781828'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU781828'"
       add segment 38 197 1 160
       add segment 198 206 161 169
       add segment 207 1043 170 1006
@@ -961,7 +961,7 @@ project HCV
       add segment 7572 7577 7532 7537
       add segment 7578 9399 7538 9359
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D14853'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D14853'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -984,7 +984,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7578 9487 7578 9487
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AY051292'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AY051292'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1008,7 +1008,7 @@ project HCV
       add segment 7578 9381 7578 9381
       add segment 9383 9441 9383 9441
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AY651061'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AY651061'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1031,7 +1031,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7578 9441 7578 9441
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439768'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439768'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1055,7 +1055,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7581 9454 7578 9451
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC248194'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC248194'"
       add segment 1 10 1 10
       add segment 11 25 11 25
       add segment 27 197 26 196
@@ -1080,7 +1080,7 @@ project HCV
       add segment 7545 7577 7556 7588
       add segment 7578 9411 7589 9422
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AM910652'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AM910652'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -1104,7 +1104,7 @@ project HCV
       add segment 7578 9448 7562 9432
       add segment 9525 9582 9433 9490
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC248198'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC248198'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1127,7 +1127,7 @@ project HCV
       add segment 7545 7577 7551 7583
       add segment 7581 9418 7584 9421
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC248199'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC248199'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1150,7 +1150,7 @@ project HCV
       add segment 7545 7577 7551 7583
       add segment 7581 9417 7584 9420
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439772'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439772'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1174,7 +1174,7 @@ project HCV
       add segment 7545 7577 7557 7589
       add segment 7581 9412 7590 9421
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439773'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439773'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1198,7 +1198,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7581 9413 7581 9413
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC248193'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC248193'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1222,7 +1222,7 @@ project HCV
       add segment 7545 7577 7564 7596
       add segment 7578 9411 7597 9430
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC248197'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC248197'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1246,7 +1246,7 @@ project HCV
       add segment 7545 7577 7567 7599
       add segment 7578 9411 7600 9433
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC248196'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC248196'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1270,7 +1270,7 @@ project HCV
       add segment 7545 7577 7564 7596
       add segment 7578 9409 7597 9428
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439778'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439778'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1294,7 +1294,7 @@ project HCV
       add segment 7545 7577 7548 7580
       add segment 7581 9445 7584 9448
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439782'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439782'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1318,7 +1318,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7581 9448 7581 9448
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439781'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439781'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1342,7 +1342,7 @@ project HCV
       add segment 7545 7577 7546 7578
       add segment 7581 9446 7582 9447
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439775'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439775'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1366,7 +1366,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7581 9411 7581 9411
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ439774'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ439774'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1390,7 +1390,7 @@ project HCV
       add segment 7545 7577 7545 7577
       add segment 7581 9446 7581 9446
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D00944'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D00944'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1414,7 +1414,7 @@ project HCV
       add segment 7545 7571 7616 7642
       add segment 7578 9524 7643 9589
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AB047639'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AB047639'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1440,7 +1440,7 @@ project HCV
       add segment 9493 9605 9525 9637
       add segment 9606 9646 9638 9678
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HQ639944'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HQ639944'"
       add segment 66 197 1 132
       add segment 198 206 133 141
       add segment 207 1043 142 978
@@ -1463,7 +1463,7 @@ project HCV
       add segment 7545 7571 7552 7578
       add segment 7578 9391 7579 9392
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D10988'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D10988'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1487,7 +1487,7 @@ project HCV
       add segment 7545 7571 7617 7643
       add segment 7578 9445 7644 9511
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AB030907'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AB030907'"
       add segment 1 10 1 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1513,7 +1513,7 @@ project HCV
       add segment 9497 9605 9505 9613
       add segment 9606 9646 9614 9654
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AB661388'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AB661388'"
       add segment 342 1043 1 702
       add segment 1044 1499 703 1158
       add segment 1500 1667 1159 1326
@@ -1534,7 +1534,7 @@ project HCV
       add segment 7545 7571 7276 7302
       add segment 7578 9377 7303 9102
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AB661382'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AB661382'"
       add segment 342 1043 1 702
       add segment 1044 1499 703 1158
       add segment 1500 1667 1159 1326
@@ -1555,7 +1555,7 @@ project HCV
       add segment 7545 7571 7276 7302
       add segment 7578 9377 7303 9102
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D50409'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D50409'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1580,7 +1580,7 @@ project HCV
       add segment 7578 9386 7655 9463
       add segment 9388 9437 9464 9513
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227949'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227949'"
       add segment 79 196 1 118
       add segment 202 204 119 121
       add segment 208 1043 122 957
@@ -1603,7 +1603,7 @@ project HCV
       add segment 7545 7571 7564 7590
       add segment 7578 9282 7591 9295
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735114'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735114'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1627,7 +1627,7 @@ project HCV
       add segment 7545 7571 7616 7642
       add segment 7578 9443 7643 9508
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735120'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735120'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1652,7 +1652,7 @@ project HCV
       add segment 7578 9465 7859 9746
       add segment 9509 9587 9747 9825
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC844042'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC844042'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1676,7 +1676,7 @@ project HCV
       add segment 7545 7571 7616 7642
       add segment 7578 9407 7643 9472
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC844050'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC844050'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1700,7 +1700,7 @@ project HCV
       add segment 7545 7571 7616 7642
       add segment 7578 9405 7643 9470
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ155561'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ155561'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -1733,7 +1733,7 @@ project HCV
       add segment 9328 9329 9360 9361
       add segment 9331 9339 9362 9370
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HM777358'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HM777358'"
       add segment 82 197 1 116
       add segment 198 206 117 125
       add segment 207 1043 126 962
@@ -1756,7 +1756,7 @@ project HCV
       add segment 7545 7571 7536 7562
       add segment 7578 9127 7563 9112
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735113'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735113'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1780,7 +1780,7 @@ project HCV
       add segment 7545 7571 7616 7642
       add segment 7578 9444 7643 9509
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HM777359'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HM777359'"
       add segment 82 197 1 116
       add segment 198 206 117 125
       add segment 207 1043 126 962
@@ -1803,7 +1803,7 @@ project HCV
       add segment 7545 7571 7536 7562
       add segment 7578 9398 7563 9383
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AB031663'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AB031663'"
       add segment 1 8 3 10
       add segment 11 197 11 197
       add segment 198 206 198 206
@@ -1827,7 +1827,7 @@ project HCV
       add segment 7545 7571 7617 7643
       add segment 7578 9422 7644 9488
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227953'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227953'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 128 964
@@ -1850,7 +1850,7 @@ project HCV
       add segment 7545 7571 7538 7564
       add segment 7578 9393 7565 9380
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735111'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735111'"
       add segment 1 8 2 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1875,7 +1875,7 @@ project HCV
       add segment 7578 9470 7646 9538
       add segment 9508 9587 9539 9618
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227967'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227967'"
       add segment 79 197 1 119
       add segment 198 206 120 128
       add segment 207 1043 129 965
@@ -1898,7 +1898,7 @@ project HCV
       add segment 7545 7571 7542 7568
       add segment 7578 9392 7569 9383
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FN666428'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FN666428'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -1923,7 +1923,7 @@ project HCV
       add segment 9518 9605 9465 9552
       add segment 9606 9618 9554 9566
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FN666429'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FN666429'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -1946,7 +1946,7 @@ project HCV
       add segment 7545 7571 7589 7615
       add segment 7578 9360 7616 9398
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735115'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735115'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -1970,7 +1970,7 @@ project HCV
       add segment 7545 7571 7616 7642
       add segment 7578 9447 7643 9512
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KC197238'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KC197238'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -1995,7 +1995,7 @@ project HCV
       add segment 9513 9605 9517 9609
       add segment 9606 9611 9611 9616
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735112'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735112'"
       add segment 1 9 1 9
       add segment 11 197 10 196
       add segment 198 206 197 205
@@ -2019,7 +2019,7 @@ project HCV
       add segment 7545 7571 7628 7654
       add segment 7578 9443 7655 9520
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D17763'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D17763'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2044,7 +2044,7 @@ project HCV
       add segment 7545 7574 7576 7605
       add segment 7578 9428 7606 9456
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D28917'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D28917'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2069,7 +2069,7 @@ project HCV
       add segment 7545 7574 7576 7605
       add segment 7578 9426 7606 9454
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'X76918'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'X76918'"
       add segment 44 197 1 154
       add segment 198 206 155 163
       add segment 207 1043 164 1000
@@ -2092,7 +2092,7 @@ project HCV
       add segment 7545 7574 7535 7564
       add segment 7578 9403 7565 9390
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JN714194'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JN714194'"
       add segment 1 9 5 13
       add segment 11 14 14 17
       add segment 16 197 18 199
@@ -2117,7 +2117,7 @@ project HCV
       add segment 7545 7574 7580 7609
       add segment 7578 9397 7610 9429
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D49374'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D49374'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2142,7 +2142,7 @@ project HCV
       add segment 7545 7574 7582 7611
       add segment 7578 9410 7612 9444
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JQ065709'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JQ065709'"
       add segment 28 197 1 170
       add segment 198 206 171 179
       add segment 207 1043 180 1016
@@ -2165,7 +2165,7 @@ project HCV
       add segment 7545 7574 7554 7583
       add segment 7578 9377 7584 9383
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ470619'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ470619'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2190,7 +2190,7 @@ project HCV
       add segment 7545 7577 7577 7609
       add segment 7581 9429 7610 9458
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ470618'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ470618'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2215,7 +2215,7 @@ project HCV
       add segment 7545 7577 7576 7608
       add segment 7581 9430 7609 9458
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227954'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227954'"
       add segment 78 197 1 120
       add segment 198 206 121 129
       add segment 207 1043 130 966
@@ -2238,7 +2238,7 @@ project HCV
       add segment 7545 7574 7504 7533
       add segment 7578 9397 7534 9353
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735123'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735123'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2265,7 +2265,7 @@ project HCV
       add segment 9507 9605 9495 9593
       add segment 9606 9646 9594 9634
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735121'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735121'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2291,7 +2291,7 @@ project HCV
       add segment 7578 9480 7600 9502
       add segment 9511 9587 9503 9579
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735126'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735126'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2318,7 +2318,7 @@ project HCV
       add segment 9508 9604 9495 9591
       add segment 9606 9646 9593 9633
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ407092'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ407092'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2343,7 +2343,7 @@ project HCV
       add segment 7545 7574 7577 7606
       add segment 7578 9404 7607 9433
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227955'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227955'"
       add segment 78 197 1 120
       add segment 198 206 121 129
       add segment 207 1043 131 967
@@ -2367,7 +2367,7 @@ project HCV
       add segment 7545 7574 7502 7531
       add segment 7578 9398 7532 9352
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D63821'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D63821'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2392,7 +2392,7 @@ project HCV
       add segment 7545 7571 7573 7599
       add segment 7578 9428 7600 9450
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735122'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735122'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 197 14 195
@@ -2419,7 +2419,7 @@ project HCV
       add segment 9509 9605 9523 9619
       add segment 9606 9646 9620 9660
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'Y11604'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'Y11604'"
       add segment 63 197 1 135
       add segment 198 206 136 144
       add segment 207 1043 145 981
@@ -2445,7 +2445,7 @@ project HCV
       add segment 7545 7568 7483 7506
       add segment 7578 9426 7507 9355
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ988074'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ988074'"
       add segment 83 197 1 115
       add segment 198 206 116 124
       add segment 207 1043 125 961
@@ -2470,7 +2470,7 @@ project HCV
       add segment 7545 7568 7460 7483
       add segment 7578 9148 7484 9054
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ418789'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ418789'"
       add segment 81 197 1 117
       add segment 198 206 118 126
       add segment 207 1043 127 963
@@ -2495,7 +2495,7 @@ project HCV
       add segment 7545 7568 7465 7488
       add segment 7578 9384 7489 9295
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462435'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462435'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2521,7 +2521,7 @@ project HCV
       add segment 7545 7568 7553 7576
       add segment 7578 9441 7577 9440
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462436'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462436'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2548,7 +2548,7 @@ project HCV
       add segment 7545 7568 7586 7609
       add segment 7578 9436 7610 9468
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ418786'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ418786'"
       add segment 108 197 1 90
       add segment 198 206 91 99
       add segment 207 1043 100 936
@@ -2574,7 +2574,7 @@ project HCV
       add segment 7545 7568 7435 7458
       add segment 7578 9392 7459 9273
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462437'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462437'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2600,7 +2600,7 @@ project HCV
       add segment 7545 7568 7538 7561
       add segment 7578 9104 7562 9088
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU392172'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU392172'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 128 964
@@ -2626,7 +2626,7 @@ project HCV
       add segment 7545 7568 7460 7483
       add segment 7578 9393 7484 9299
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF589161'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF589161'"
       add segment 68 197 1 130
       add segment 198 206 131 139
       add segment 207 1043 140 976
@@ -2651,7 +2651,7 @@ project HCV
       add segment 7545 7568 7484 7507
       add segment 7578 9374 7508 9304
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU392175'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU392175'"
       add segment 81 197 1 117
       add segment 198 206 118 126
       add segment 207 1043 127 963
@@ -2676,7 +2676,7 @@ project HCV
       add segment 7545 7568 7468 7491
       add segment 7578 9383 7492 9297
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU392174'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU392174'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 128 964
@@ -2701,7 +2701,7 @@ project HCV
       add segment 7545 7568 7469 7492
       add segment 7578 9383 7493 9298
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462432'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462432'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2727,7 +2727,7 @@ project HCV
       add segment 7545 7568 7545 7568
       add segment 7578 9444 7569 9435
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227971'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227971'"
       add segment 212 1043 1 832
       add segment 1044 1499 833 1288
       add segment 1500 1667 1289 1456
@@ -2749,7 +2749,7 @@ project HCV
       add segment 7545 7568 7334 7357
       add segment 7578 9394 7358 9174
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227963'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227963'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 129 965
@@ -2773,7 +2773,7 @@ project HCV
       add segment 7545 7568 7464 7487
       add segment 7578 9404 7488 9314
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU392173'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU392173'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 129 965
@@ -2797,7 +2797,7 @@ project HCV
       add segment 7545 7568 7476 7499
       add segment 7578 9390 7500 9312
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462438'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462438'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2823,7 +2823,7 @@ project HCV
       add segment 7545 7568 7554 7577
       add segment 7578 9438 7578 9438
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU392171'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU392171'"
       add segment 117 197 1 81
       add segment 198 206 82 90
       add segment 207 1043 92 928
@@ -2847,7 +2847,7 @@ project HCV
       add segment 7545 7568 7439 7462
       add segment 7578 9396 7463 9281
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ839870'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ839870'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2874,7 +2874,7 @@ project HCV
       add segment 7545 7568 7538 7561
       add segment 7578 9404 7562 9388
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227957'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227957'"
       add segment 82 197 1 116
       add segment 198 206 117 125
       add segment 207 1043 126 962
@@ -2899,7 +2899,7 @@ project HCV
       add segment 7545 7568 7467 7490
       add segment 7578 9404 7491 9317
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462433'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462433'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2926,7 +2926,7 @@ project HCV
       add segment 7545 7568 7539 7562
       add segment 7578 9440 7563 9425
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227972'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227972'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 129 965
@@ -2951,7 +2951,7 @@ project HCV
       add segment 7545 7568 7461 7484
       add segment 7578 9398 7485 9305
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462441'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462441'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -2978,7 +2978,7 @@ project HCV
       add segment 7545 7568 7544 7567
       add segment 7578 9445 7568 9435
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227970'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227970'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 128 964
@@ -3003,7 +3003,7 @@ project HCV
       add segment 7545 7568 7463 7486
       add segment 7578 9392 7487 9301
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462440'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462440'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -3033,7 +3033,7 @@ project HCV
       add segment 7545 7568 7536 7559
       add segment 7578 9440 7560 9422
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227977'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227977'"
       add segment 95 197 1 103
       add segment 198 206 104 112
       add segment 207 1043 114 950
@@ -3058,7 +3058,7 @@ project HCV
       add segment 7545 7568 7446 7469
       add segment 7578 9394 7470 9286
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462431'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462431'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -3085,7 +3085,7 @@ project HCV
       add segment 7545 7568 7541 7564
       add segment 7578 9488 7565 9475
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462434'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462434'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -3112,7 +3112,7 @@ project HCV
       add segment 7545 7577 7542 7574
       add segment 7578 9436 7575 9433
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ462439'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ462439'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -3138,7 +3138,7 @@ project HCV
       add segment 7545 7568 7553 7576
       add segment 7578 9441 7577 9440
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JF735136'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JF735136'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -3166,7 +3166,7 @@ project HCV
       add segment 7545 7568 7539 7562
       add segment 7578 9441 7563 9426
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227976'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227976'"
       add segment 80 197 1 118
       add segment 198 206 119 127
       add segment 207 1043 128 964
@@ -3190,7 +3190,7 @@ project HCV
       add segment 7545 7568 7478 7501
       add segment 7578 9395 7502 9319
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ839869'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ839869'"
       add segment 1 10 1 10
       add segment 11 11 11 11
       add segment 13 197 12 196
@@ -3216,7 +3216,7 @@ project HCV
       add segment 7545 7568 7541 7564
       add segment 7578 9501 7565 9488
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HQ537009'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HQ537009'"
       add segment 87 197 1 111
       add segment 198 206 112 120
       add segment 207 1043 122 958
@@ -3241,7 +3241,7 @@ project HCV
       add segment 7545 7568 7460 7483
       add segment 7578 9271 7484 9177
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227959'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227959'"
       add segment 70 197 1 128
       add segment 198 206 129 137
       add segment 207 1043 139 975
@@ -3265,7 +3265,7 @@ project HCV
       add segment 7545 7568 7474 7497
       add segment 7578 9403 7498 9323
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HQ537008'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HQ537008'"
       add segment 87 197 1 111
       add segment 198 206 112 120
       add segment 207 1043 122 958
@@ -3290,7 +3290,7 @@ project HCV
       add segment 7545 7568 7457 7480
       add segment 7578 9271 7481 9174
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX227960'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX227960'"
       add segment 117 197 1 81
       add segment 198 206 82 90
       add segment 207 1043 92 928
@@ -3316,7 +3316,7 @@ project HCV
       add segment 7545 7568 7421 7444
       add segment 7578 9403 7445 9270
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ025855'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ025855'"
       add segment 152 197 1 46
       add segment 198 206 47 55
       add segment 207 1043 56 892
@@ -3340,7 +3340,7 @@ project HCV
       add segment 7545 7568 7403 7426
       add segment 7578 9393 7427 9242
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'FJ025856'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'FJ025856'"
       add segment 152 197 1 46
       add segment 198 206 47 55
       add segment 207 1043 56 892
@@ -3364,7 +3364,7 @@ project HCV
       add segment 7545 7568 7403 7426
       add segment 7578 9422 7427 9271
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AF064490'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AF064490'"
       add segment 96 197 1 102
       add segment 198 206 103 111
       add segment 207 1043 112 948
@@ -3388,7 +3388,7 @@ project HCV
       add segment 7545 7568 7468 7491
       add segment 7578 9494 7492 9408
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'Y13184'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'Y13184'"
       add segment 63 197 1 135
       add segment 198 206 136 144
       add segment 207 1043 145 981
@@ -3412,7 +3412,7 @@ project HCV
       add segment 7545 7568 7501 7524
       add segment 7578 9396 7525 9343
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'Y12083'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'Y12083'"
       add segment 62 197 1 136
       add segment 198 206 139 147
       add segment 207 1043 149 985
@@ -3435,7 +3435,7 @@ project HCV
       add segment 7545 7568 7517 7540
       add segment 7578 9377 7541 9340
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'AY859526'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'AY859526'"
       add segment 47 197 1 151
       add segment 198 206 152 160
       add segment 207 1043 161 997
@@ -3458,7 +3458,7 @@ project HCV
       add segment 7545 7568 7532 7555
       add segment 7578 9377 7556 9355
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'HQ639936'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'HQ639936'"
       add segment 66 197 1 132
       add segment 198 206 135 143
       add segment 207 1043 145 981
@@ -3481,7 +3481,7 @@ project HCV
       add segment 7545 7568 7516 7539
       add segment 7578 9353 7540 9315
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246930'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246930'"
       add segment 29 197 1 169
       add segment 198 206 172 180
       add segment 207 1043 182 1018
@@ -3504,7 +3504,7 @@ project HCV
       add segment 7545 7568 7553 7576
       add segment 7578 9377 7577 9376
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D84262'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D84262'"
       add segment 1 9 1 9
       add segment 11 14 11 14
       add segment 16 34 15 33
@@ -3532,7 +3532,7 @@ project HCV
       add segment 9514 9605 9496 9587
       add segment 9606 9646 9588 9628
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF424629'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF424629'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3558,7 +3558,7 @@ project HCV
       add segment 7545 7571 7561 7587
       add segment 7578 9449 7588 9459
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D84263'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D84263'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3586,7 +3586,7 @@ project HCV
       add segment 9512 9605 9481 9574
       add segment 9606 9646 9575 9615
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ314805'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ314805'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3613,7 +3613,7 @@ project HCV
       add segment 7545 7577 7569 7601
       add segment 7578 9438 7608 9468
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246932'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246932'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -3637,7 +3637,7 @@ project HCV
       add segment 7545 7577 7544 7576
       add segment 7578 9377 7583 9382
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246931'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246931'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -3661,7 +3661,7 @@ project HCV
       add segment 7545 7571 7544 7570
       add segment 7578 9377 7571 9370
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835760'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835760'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3687,7 +3687,7 @@ project HCV
       add segment 7545 7577 7560 7592
       add segment 7578 9436 7596 9454
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246936'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246936'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -3710,7 +3710,7 @@ project HCV
       add segment 7545 7577 7535 7567
       add segment 7578 9377 7571 9370
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D63822'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D63822'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3736,7 +3736,7 @@ project HCV
       add segment 7545 7571 7581 7607
       add segment 7578 9431 7608 9461
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ314806'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ314806'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3762,7 +3762,7 @@ project HCV
       add segment 7545 7571 7581 7607
       add segment 7578 9432 7608 9462
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D84265'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D84265'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3792,7 +3792,7 @@ project HCV
       add segment 9606 9622 9582 9598
       add segment 9624 9646 9599 9621
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835770'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835770'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3819,7 +3819,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9435 7590 9447
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835762'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835762'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3846,7 +3846,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9446 7590 9458
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835769'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835769'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3873,7 +3873,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9442 7590 9454
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835761'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835761'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3900,7 +3900,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9430 7590 9442
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'D84264'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'D84264'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3929,7 +3929,7 @@ project HCV
       add segment 9515 9605 9470 9560
       add segment 9606 9646 9561 9601
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF424628'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF424628'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3956,7 +3956,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9441 7590 9453
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX183556'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX183556'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -3983,7 +3983,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9401 7590 9413
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835767'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835767'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4010,7 +4010,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9432 7590 9444
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835766'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835766'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4037,7 +4037,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9437 7590 9449
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ278894'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ278894'"
       add segment 1 9 4 12
       add segment 11 14 14 17
       add segment 16 34 18 36
@@ -4064,7 +4064,7 @@ project HCV
       add segment 7545 7571 7564 7590
       add segment 7578 9428 7591 9441
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ835768'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ835768'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 35 14 33
@@ -4090,7 +4090,7 @@ project HCV
       add segment 7545 7571 7560 7586
       add segment 7578 9438 7587 9447
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246938'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246938'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -4114,7 +4114,7 @@ project HCV
       add segment 7545 7571 7535 7561
       add segment 7578 9377 7562 9361
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF424627'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF424627'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4140,7 +4140,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9438 7590 9450
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246934'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246934'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -4163,7 +4163,7 @@ project HCV
       add segment 7545 7571 7538 7564
       add segment 7578 9377 7565 9364
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF424626'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF424626'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4189,7 +4189,7 @@ project HCV
       add segment 7545 7571 7564 7590
       add segment 7578 9440 7591 9453
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF424625'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF424625'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4215,7 +4215,7 @@ project HCV
       add segment 7545 7571 7564 7590
       add segment 7581 9453 7591 9463
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU408328'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU408328'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4241,7 +4241,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9437 7590 9449
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU408329'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU408329'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4268,7 +4268,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9461 7590 9473
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF632071'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF632071'"
       add segment 18 197 1 180
       add segment 198 206 181 189
       add segment 207 1043 190 1026
@@ -4291,7 +4291,7 @@ project HCV
       add segment 7545 7571 7549 7575
       add segment 7578 9408 7576 9406
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246939'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246939'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -4314,7 +4314,7 @@ project HCV
       add segment 7545 7571 7538 7564
       add segment 7578 9377 7565 9364
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU246940'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU246940'"
       add segment 29 197 1 169
       add segment 198 206 170 178
       add segment 207 1043 179 1015
@@ -4338,7 +4338,7 @@ project HCV
       add segment 7545 7571 7541 7567
       add segment 7578 9377 7568 9367
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU158186'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU158186'"
       add segment 35 197 1 163
       add segment 198 206 164 172
       add segment 207 1043 173 1009
@@ -4362,7 +4362,7 @@ project HCV
       add segment 7545 7568 7535 7558
       add segment 7578 9448 7559 9429
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU798760'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU798760'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4388,7 +4388,7 @@ project HCV
       add segment 7545 7568 7566 7589
       add segment 7578 9449 7590 9461
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU798761'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU798761'"
       add segment 35 197 1 163
       add segment 198 206 164 172
       add segment 207 1043 173 1009
@@ -4411,7 +4411,7 @@ project HCV
       add segment 7545 7568 7535 7558
       add segment 7578 9448 7559 9429
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'DQ278892'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'DQ278892'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4437,7 +4437,7 @@ project HCV
       add segment 7545 7568 7573 7596
       add segment 7578 9429 7597 9448
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU643834'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU643834'"
       add segment 277 1043 1 767
       add segment 1044 1499 768 1223
       add segment 1500 1667 1224 1391
@@ -4458,7 +4458,7 @@ project HCV
       add segment 7545 7571 7299 7325
       add segment 7578 9399 7326 9147
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU643836'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU643836'"
       add segment 277 1043 1 767
       add segment 1044 1499 768 1223
       add segment 1503 1667 1224 1388
@@ -4479,7 +4479,7 @@ project HCV
       add segment 7545 7571 7296 7322
       add segment 7578 9399 7323 9144
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU408330'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU408330'"
       add segment 35 197 1 163
       add segment 198 206 164 172
       add segment 207 1043 173 1009
@@ -4502,7 +4502,7 @@ project HCV
       add segment 7545 7571 7550 7576
       add segment 7578 9452 7577 9451
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU408332'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU408332'"
       add segment 35 197 1 163
       add segment 198 206 164 172
       add segment 207 1043 173 1009
@@ -4525,7 +4525,7 @@ project HCV
       add segment 7545 7571 7550 7576
       add segment 7578 9444 7577 9443
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EU408331'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EU408331'"
       add segment 35 197 1 163
       add segment 198 206 164 172
       add segment 207 1043 173 1009
@@ -4548,7 +4548,7 @@ project HCV
       add segment 7545 7571 7550 7576
       add segment 7578 9471 7577 9470
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX183552'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX183552'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4576,7 +4576,7 @@ project HCV
       add segment 7578 9464 7590 9476
       add segment 9511 9567 9477 9533
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ567645'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ567645'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4603,7 +4603,7 @@ project HCV
       add segment 7545 7571 7563 7589
       add segment 7578 9389 7590 9401
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KJ567651'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KJ567651'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4629,7 +4629,7 @@ project HCV
       add segment 7545 7571 7581 7607
       add segment 7578 9412 7608 9442
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KM252789'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KM252789'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4655,7 +4655,7 @@ project HCV
       add segment 7545 7571 7578 7604
       add segment 7581 9408 7605 9432
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KM252790'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KM252790'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4681,7 +4681,7 @@ project HCV
       add segment 7545 7571 7581 7607
       add segment 7581 9408 7608 9435
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KM252791'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KM252791'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4707,7 +4707,7 @@ project HCV
       add segment 7545 7571 7581 7607
       add segment 7581 9407 7608 9434
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'JX183557'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'JX183557'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4734,7 +4734,7 @@ project HCV
       add segment 7545 7571 7566 7592
       add segment 7578 9445 7593 9460
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'KM252792'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'KM252792'"
       add segment 1 9 1 9
       add segment 11 14 10 13
       add segment 16 34 14 32
@@ -4761,7 +4761,7 @@ project HCV
       add segment 7545 7571 7566 7592
       add segment 7578 9386 7593 9401
       exit
-    member -w "GB_PRIMARY_ACCESSION = 'EF108306'"
+    member -w "sequence.GB_PRIMARY_ACCESSION = 'EF108306'"
       add segment 34 197 32 195
       add segment 198 206 196 204
       add segment 207 1043 205 1041
@@ -4804,42 +4804,49 @@ project HCV
 
     create reference REF_1b ncbi-nuccore 212675094
     create alignment REF_1b AL_1b
+    alignment AL_1b set parent AL_MASTER
     alignment AL_1b add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '1' and SUBTYPE = 'b'"
     compute alignment AL_1b blastAligner 
     alignment AL_1b show statistics
 
     create reference REF_1a ncbi-nuccore 149395111
     create alignment REF_1a AL_1a
+    alignment AL_1a set parent AL_MASTER
     alignment AL_1a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '1' and SUBTYPE = 'a'"
     compute alignment AL_1a blastAligner 
     alignment AL_1a show statistics
 
     create reference REF_4a ncbi-nuccore 119331259
     create alignment REF_4a AL_4a
+    alignment AL_4a set parent AL_MASTER
     alignment AL_4a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '4' and SUBTYPE = 'a'"
     compute alignment AL_4a blastAligner 
     alignment AL_4a show statistics
 
     create reference REF_4d ncbi-nuccore 171221549
     create alignment REF_4d AL_4d
+    alignment AL_4d set parent AL_MASTER
     alignment AL_4d add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '4' and SUBTYPE = 'd'"
     compute alignment AL_4d blastAligner 
     alignment AL_4d show statistics
 
     create reference REF_3a ncbi-nuccore 375127704
     create alignment REF_3a AL_3a
+    alignment AL_3a set parent AL_MASTER
     alignment AL_3a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '3' and SUBTYPE = 'a'"
     compute alignment AL_3a blastAligner 
     alignment AL_3a show statistics
 
     create reference REF_2a ncbi-nuccore 13122261
     create alignment REF_2a AL_2a
+    alignment AL_2a set parent AL_MASTER
     alignment AL_2a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '2' and SUBTYPE = 'a'"
     compute alignment AL_2a blastAligner 
     alignment AL_2a show statistics
 
     create reference REF_2b ncbi-nuccore 221608
     create alignment REF_2b AL_2b
+    alignment AL_2b set parent AL_MASTER
     alignment AL_2b add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '2' and SUBTYPE = 'b'"
     compute alignment AL_2b blastAligner 
     alignment AL_2b show statistics
