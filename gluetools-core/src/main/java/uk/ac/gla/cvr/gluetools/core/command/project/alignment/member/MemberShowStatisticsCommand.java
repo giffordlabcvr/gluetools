@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,8 +23,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"show", "statistics"}, 
-		docoptUsages={"<memberStatistic>..."},
-		description="Show statistics for this member") 
+		docoptUsages={"[<memberStatistic>...]"},
+		description="Show statistics for this member", 
+		furtherHelp="If no specific memberStatistics are supplied, all possible statistics are calculated") 
 public class MemberShowStatisticsCommand extends MemberModeCommand<MemberShowStatisticsCommand.MemberStatisticsResult> {
 
 	private List<AlignmentMember.MemberStatistic> memberStatistics;
@@ -36,6 +38,9 @@ public class MemberShowStatisticsCommand extends MemberModeCommand<MemberShowSta
 		memberStatistics = memberStatElems.stream().
 				map(elem -> PluginUtils.configureEnum(AlignmentMember.MemberStatistic.class, elem, "text()", true))
 				.collect(Collectors.toList());
+		if(memberStatistics.isEmpty()) {
+			memberStatistics = Arrays.asList(AlignmentMember.MemberStatistic.values());
+		}
 	}
 
 

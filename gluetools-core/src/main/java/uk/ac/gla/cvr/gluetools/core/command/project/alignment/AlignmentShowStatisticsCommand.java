@@ -24,8 +24,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"show", "statistics"}, 
-		docoptUsages={"<memberStatistic>..."},
-		description="Show statistics for the alignment's members") 
+		docoptUsages={"[<memberStatistic>...]"},
+		description="Show statistics for the alignment's members", 
+		furtherHelp="If no specific memberStatistics are supplied, all possible statistics are calculated") 
 public class AlignmentShowStatisticsCommand extends AlignmentModeCommand<AlignmentShowStatisticsCommand.AlignmentCoverageResult> {
 
 	private List<AlignmentMember.MemberStatistic> memberStatistics;
@@ -38,6 +39,9 @@ public class AlignmentShowStatisticsCommand extends AlignmentModeCommand<Alignme
 		memberStatistics = coverageStatElems.stream().
 				map(elem -> PluginUtils.configureEnum(AlignmentMember.MemberStatistic.class, elem, "text()", true))
 				.collect(Collectors.toList());
+		if(memberStatistics.isEmpty()) {
+			memberStatistics = Arrays.asList(AlignmentMember.MemberStatistic.values());
+		}
 		
 	}
 
