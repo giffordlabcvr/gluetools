@@ -5,6 +5,16 @@
 		<matchPattern>_([^_]+)_</matchPattern>
 		<outputPattern>${g1}</outputPattern>
 	</idParser>
+		<fieldParser>
+		<fieldName>GENOTYPE</fieldName>
+		<matchPattern>(?:[^\.]+\.)(\d+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
+		<fieldParser>
+		<fieldName>SUBTYPE</fieldName>
+		<matchPattern>(?:[^\.]+\.)\d+([a-z]+)</matchPattern>
+		<outputPattern>${g1}</outputPattern>
+	</fieldParser>
 	<fieldParser>
 		<!-- For the enrichment method this matches the region before the first underscore -->
 		<fieldName>ENRICHMENT_METHOD</fieldName>

@@ -1,9 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
@@ -12,6 +14,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 @GlueDataClass(defaultListColumns = {AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
 public class AlignmentMember extends _AlignmentMember {
 	
+	public enum MemberStatistic {
+		referenceNtCoveragePercent,
+		memberNtCoveragePercent
+	}
+
 	public static final String ALIGNMENT_NAME_PATH = 
 			_AlignmentMember.ALIGNMENT_PROPERTY+"."+_Alignment.NAME_PROPERTY;
 
@@ -41,6 +48,42 @@ public class AlignmentMember extends _AlignmentMember {
 				getAlignment().getName(),
 				getSequence().getSource().getName(), 
 				getSequence().getSequenceID());
+	}
+	
+	
+	public Map<String, Object> getStatistics(List<AlignmentMember.MemberStatistic> statistics) {
+		Map<String, Object> results = new LinkedHashMap<String, Object>();
+		if(statistics.contains(AlignmentMember.MemberStatistic.referenceNtCoveragePercent)) {
+			results.put(AlignmentMember.MemberStatistic.referenceNtCoveragePercent.name(), getReferenceNtCoveragePercent());
+		}
+		if(statistics.contains(AlignmentMember.MemberStatistic.memberNtCoveragePercent)) {
+			results.put(AlignmentMember.MemberStatistic.memberNtCoveragePercent.name(), getMemberNtCoveragePercent());
+		}
+
+		return results;
+	}
+
+	private double getMemberNtCoveragePercent() {
+		int memberLength = getSequence().getNucleotides().length();
+		List<AlignedSegment> alignedSegments = getAlignedSegments();
+		int memberNTs = 0;
+		for(AlignedSegment segment: alignedSegments) {
+			memberNTs += 1+ Math.abs(segment.getMemberStart() - segment.getMemberEnd());
+		}
+		double memberNtPercent = 100.0 * memberNTs / memberLength;
+		return memberNtPercent;
+	}
+
+	private double getReferenceNtCoveragePercent() {
+		int referenceLength = getAlignment().getRefSequence().
+				getSequence().getNucleotides().length();
+		List<AlignedSegment> alignedSegments = getAlignedSegments();
+		int referenceNTs = 0;
+		for(AlignedSegment segment: alignedSegments) {
+			referenceNTs += 1+ Math.abs(segment.getRefStart() - segment.getRefEnd());
+		}
+		double referenceNtPercent = 100.0 * referenceNTs / referenceLength;
+		return referenceNtPercent;
 	}
 
 }

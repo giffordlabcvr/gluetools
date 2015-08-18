@@ -38,7 +38,6 @@ public class BlastResultBuilder {
 	}
 	
 	public static BlastResult blastResultFromDocument(BlastXPath xPath, Document blastDoc) {
-		GlueXmlUtils.prettyPrint(blastDoc, System.out);
 		BlastResult blastResult = new BlastResult();
 		Element searchElem = GlueXmlUtils.getXPathElement(blastDoc, xPath.search);
 		blastResult.setQueryFastaId(GlueXmlUtils.getXPathString(searchElem, xPath.queryTitleText));

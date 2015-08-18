@@ -12,9 +12,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 
 
 @CommandClass(
-	commandWords={"list", "segment"}, 
-	docoptUsages={""},
-	description="List the aligned segments") 
+		commandWords={"list", "segment"}, 
+		docoptUsages={""},
+		description="List the aligned segments") 
 public class ListAlignedSegmentCommand extends MemberModeCommand<ListResult> {
 
 	@Override

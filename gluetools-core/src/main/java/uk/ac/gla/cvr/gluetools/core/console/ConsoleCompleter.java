@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.TokenType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 
 @SuppressWarnings("rawtypes")
 public class ConsoleCompleter implements Completer {
@@ -88,11 +89,22 @@ public class ConsoleCompleter implements Completer {
 
 		if(enterModeCmd && innerCmdWords != null) {
 			Command enterModeCommand = Console.buildCommand(cmdContext, cmdClass, enterModeArgStrings);
+			boolean enterModeSucceded = false;
 			try {
 				enterModeCommand.execute(cmdContext);
+				enterModeSucceded = true;
 				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true);
+			} catch(DataModelException dme) {
+				if(dme.getCode() == DataModelException.Code.OBJECT_NOT_FOUND) {
+					// enter mode command failed because we were unable to look up the object.
+					return -1;
+				} else {
+					throw dme;
+				}
 			} finally {
-				cmdContext.popCommandMode();
+				if(enterModeSucceded) {
+					cmdContext.popCommandMode();
+				}
 			}
 		} else {
 			List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, true, requireModeWrappable).

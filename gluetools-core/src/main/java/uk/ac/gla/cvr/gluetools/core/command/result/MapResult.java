@@ -9,9 +9,13 @@ import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 public class MapResult extends CommandResult {
 
 	public MapResult(String rootObjectName, MapBuilder mapBuilder) {
+		this(rootObjectName, mapBuilder.build());
+	}
+
+	public MapResult(String rootObjectName, Map<String, Object> map) {
 		super(rootObjectName);
 		DocumentBuilder documentBuilder = getDocumentBuilder();
-		mapBuilder.build().forEach((name, value) -> {
+		map.forEach((name, value) -> {
 			documentBuilder.set(name, value);
 		});
 	}
@@ -45,5 +49,12 @@ public class MapResult extends CommandResult {
 		return new MapBuilder();
 	}
 	
-	
+	public Map<String, Object> asMap() {
+		Map<String, Object> map = new LinkedHashMap<String, Object>();
+		DocumentReader documentReader = getDocumentReader();
+		for(String fieldName : documentReader.getFieldNames()) {
+			map.put(fieldName, documentReader.value(fieldName));
+		}
+		return map;
+	}
 }

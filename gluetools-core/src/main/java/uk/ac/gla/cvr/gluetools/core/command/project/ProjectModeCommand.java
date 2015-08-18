@@ -52,7 +52,7 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			if(argStrings.isEmpty()) {
-				CommandUtils.runListCommand(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class)).
+				return CommandUtils.runListCommand(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class)).
 						getColumnValues(ReferenceSequence.NAME_PROPERTY);
 			}
 			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
