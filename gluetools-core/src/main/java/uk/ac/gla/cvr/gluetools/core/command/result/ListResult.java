@@ -1,9 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +22,7 @@ public class ListResult extends TableResult {
 	}	
 	
 	public <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results, List<String> propertyPaths) {
-		super(LIST_RESULT, propertyPaths, rowDataFromResults(results, propertyPaths));
+		super(LIST_RESULT, propertyPaths, listOfMapsFromDataObjects(results, propertyPaths));
 		getDocumentBuilder().set(OBJECT_TYPE, objectClass.getSimpleName());
 	}
 
@@ -44,18 +42,6 @@ public class ListResult extends TableResult {
 		return Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListColumns());
 	}
 	
-	private static <D extends GlueDataObject> List<Map<String, Object>> rowDataFromResults(
-			List<D> results, List<String> propertyPaths) {
-		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
-		for(D object: results) {
-			Map<String, Object> map = new LinkedHashMap<String, Object>();
-			for(String propertyPath: propertyPaths) {
-				map.put(propertyPath, object.readNestedProperty(propertyPath));
-			}
-			listOfMaps.add(map);
-		}
-		return listOfMaps;
-	}
 	
 
 }

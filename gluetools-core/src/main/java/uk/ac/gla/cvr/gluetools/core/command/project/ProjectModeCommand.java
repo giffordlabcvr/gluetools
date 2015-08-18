@@ -1,7 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -10,6 +12,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -40,8 +44,9 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			if(argStrings.isEmpty()) {
-				return CommandUtils.runListCommand(cmdContext, Alignment.class, new SelectQuery(Alignment.class)).
-						getColumnValues(Alignment.NAME_PROPERTY);
+				ObjectContext objContext = cmdContext.getObjectContext();
+				List<Alignment> alignments = GlueDataObject.query(objContext, Alignment.class, new SelectQuery(Alignment.class));
+				return alignments.stream().map(Alignment::getName).collect(Collectors.toList());
 			}
 			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}

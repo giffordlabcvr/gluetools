@@ -16,7 +16,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -47,8 +46,7 @@ public class AlignmentShowStatisticsCommand extends AlignmentModeCommand<Alignme
 
 	@Override
 	public AlignmentCoverageResult execute(CommandContext cmdContext) {
-		Alignment alignment = GlueDataObject.lookup(cmdContext.getObjectContext(), 
-				Alignment.class, Alignment.pkMap(getAlignmentName()));
+		Alignment alignment = lookupAlignment(cmdContext);
 		List<AlignmentMember> members = alignment.getMembers();
 		List<Map<String, Object>> rows = members.stream()
 				.map(memb -> {

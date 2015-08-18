@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
@@ -141,6 +142,17 @@ public class TableResult extends CommandResult {
 			textTable.finishExporting();
 		} 
 	}
+
+	public static <D extends GlueDataObject> List<Map<String, Object>> listOfMapsFromDataObjects(
+			List<D> results, List<String> propertyPaths) {
+		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
+		for(D object: results) {
+			listOfMaps.add(MapResult.mapFromDataObject(propertyPaths, object));
+		}
+		return listOfMaps;
+	}
+
+	
 
 
 }

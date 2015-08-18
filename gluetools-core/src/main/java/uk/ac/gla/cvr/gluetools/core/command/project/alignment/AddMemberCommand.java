@@ -64,8 +64,7 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Alignment alignment = GlueDataObject.lookup(objContext, Alignment.class, 
-				Alignment.pkMap(getAlignmentName()));
+		Alignment alignment = lookupAlignment(cmdContext);
 		SelectQuery selectQuery;
 		if(whereClause.isPresent()) {
 			selectQuery = new SelectQuery(Sequence.class, whereClause.get());

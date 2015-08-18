@@ -17,6 +17,7 @@
 	<db-entity name="ALIGNMENT">
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="PARENT_NAME" type="VARCHAR" length="50"/>
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="ALIGNMENT_MEMBER">
@@ -97,8 +98,14 @@
 		<db-attribute-pair source="SEQUENCE" target="SEQUENCE"/>
 		<db-attribute-pair source="SOURCE" target="SOURCE"/>
 	</db-relationship>
+	<db-relationship name="children" source="ALIGNMENT" target="ALIGNMENT" toMany="true">
+		<db-attribute-pair source="NAME" target="PARENT_NAME"/>
+	</db-relationship>
 	<db-relationship name="members" source="ALIGNMENT" target="ALIGNMENT_MEMBER" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="ALIGNMENT"/>
+	</db-relationship>
+	<db-relationship name="parent" source="ALIGNMENT" target="ALIGNMENT" toMany="false">
+		<db-attribute-pair source="PARENT_NAME" target="NAME"/>
 	</db-relationship>
 	<db-relationship name="refSequence" source="ALIGNMENT" target="REFERENCE_SEQUENCE" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="NAME"/>
@@ -151,7 +158,9 @@
 		<db-attribute-pair source="NAME" target="SOURCE"/>
 	</db-relationship>
 	<obj-relationship name="alignmentMember" source="AlignedSegment" target="AlignmentMember" deleteRule="Nullify" db-relationship-path="alignmentMember"/>
+	<obj-relationship name="children" source="Alignment" target="Alignment" deleteRule="Nullify" db-relationship-path="children"/>
 	<obj-relationship name="members" source="Alignment" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="members"/>
+	<obj-relationship name="parent" source="Alignment" target="Alignment" deleteRule="Nullify" db-relationship-path="parent"/>
 	<obj-relationship name="refSequence" source="Alignment" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="refSequence"/>
 	<obj-relationship name="alignedSegments" source="AlignmentMember" target="AlignedSegment" deleteRule="Cascade" db-relationship-path="alignedSegments"/>
 	<obj-relationship name="alignment" source="AlignmentMember" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>

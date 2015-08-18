@@ -25,7 +25,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
@@ -152,7 +151,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		String refSeqName;
 		// go into alignment and find reference sequence name
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			ShowReferenceResult showReferenceResult = 
+			ShowReferenceSequenceCommand.ShowReferenceResult showReferenceResult = 
 					cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute();
 			refSeqName = showReferenceResult.getReferenceName();
 		}

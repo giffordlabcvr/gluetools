@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.auto;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 
@@ -16,7 +17,9 @@ public abstract class _Alignment extends GlueDataObject {
 
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String NAME_PROPERTY = "name";
+    public static final String CHILDREN_PROPERTY = "children";
     public static final String MEMBERS_PROPERTY = "members";
+    public static final String PARENT_PROPERTY = "parent";
     public static final String REF_SEQUENCE_PROPERTY = "refSequence";
 
     public static final String NAME_PK_COLUMN = "NAME";
@@ -35,6 +38,18 @@ public abstract class _Alignment extends GlueDataObject {
         return (String)readProperty(NAME_PROPERTY);
     }
 
+    public void addToChildren(Alignment obj) {
+        addToManyTarget(CHILDREN_PROPERTY, obj, true);
+    }
+    public void removeFromChildren(Alignment obj) {
+        removeToManyTarget(CHILDREN_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<Alignment> getChildren() {
+        return (List<Alignment>)readProperty(CHILDREN_PROPERTY);
+    }
+
+
     public void addToMembers(AlignmentMember obj) {
         addToManyTarget(MEMBERS_PROPERTY, obj, true);
     }
@@ -44,6 +59,15 @@ public abstract class _Alignment extends GlueDataObject {
     @SuppressWarnings("unchecked")
     public List<AlignmentMember> getMembers() {
         return (List<AlignmentMember>)readProperty(MEMBERS_PROPERTY);
+    }
+
+
+    public void setParent(Alignment parent) {
+        setToOneTarget(PARENT_PROPERTY, parent, true);
+    }
+
+    public Alignment getParent() {
+        return (Alignment)readProperty(PARENT_PROPERTY);
     }
 
 

@@ -1,8 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 
@@ -54,6 +56,15 @@ public class MapResult extends CommandResult {
 		DocumentReader documentReader = getDocumentReader();
 		for(String fieldName : documentReader.getFieldNames()) {
 			map.put(fieldName, documentReader.value(fieldName));
+		}
+		return map;
+	}
+	
+	public static <D extends GlueDataObject> Map<String, Object> mapFromDataObject(
+			List<String> propertyPaths, D object) {
+		Map<String, Object> map = new LinkedHashMap<String, Object>();
+		for(String propertyPath: propertyPaths) {
+			map.put(propertyPath, object.readNestedProperty(propertyPath));
 		}
 		return map;
 	}

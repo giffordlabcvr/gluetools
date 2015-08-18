@@ -1,13 +1,13 @@
-package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
+package uk.ac.gla.cvr.gluetools.core.datamodel.alignment;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class BlastAlignerException extends GlueException {
+public class AlignmentException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		BLAST_OUTPUT_FORMAT_ERROR("errorText"),
-		BLAST_ALIGNER_UNHANDLED_CASE("refSeqId", "querySeqId", "caseDescription");
+		PARENT_RELATIONSHIP_LOOP("alignmentNames"),
+		REFERENCE_NOT_MEMBER_OF_PARENT("alignmentName", "parentAlignmentName", "referenceName");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -17,16 +17,16 @@ public class BlastAlignerException extends GlueException {
 		public String[] getArgNames() {
 			return argNames;
 		}
-
 	}
-	
-	public BlastAlignerException(Code code, Object... errorArgs) {
+
+	public AlignmentException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public BlastAlignerException(Throwable cause, Code code,
+	public AlignmentException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}
+
 	
 }
