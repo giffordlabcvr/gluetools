@@ -39,7 +39,7 @@ schema-project TEST_PROJECT
  
 project TEST_PROJECT
   create source local
-  create sequence local file1 GENBANK_XML -f sequence.xml
+  import sequence local file1 GENBANK_XML sequence.xml
 
   sequence local file1
     set field GB_HOST "a creature"
@@ -48,25 +48,25 @@ project TEST_PROJECT
     
   list sequence GB_HOST
   
-  create module ncbi-importer -f hcvNcbiImporter.xml
+  import module ncbi-importer hcvNcbiImporter.xml
   module ncbi-importer
     show configuration
     import
 	exit
 	  
-  create module gb-populator -f hcvGenbankXmlPopulator.xml
+  import module gb-populator hcvGenbankXmlPopulator.xml
   module gb-populator
     show configuration
   	populate
   	exit
 
-  create module fasta-importer -f hcvFastaImporter.xml
+  import module fasta-importer hcvFastaImporter.xml
   module fasta-importer
     show configuration
     import -f fastaExample.fa
 	exit
   	
-  create module textfile-populator -f hcvTextFilePopulator.xml
+  import module textfile-populator hcvTextFilePopulator.xml
   module textfile-populator
     show configuration
   	populate -f fieldValues.txt
@@ -122,7 +122,7 @@ project TEST_PROJECT
       exit
     exit
     
-#  create module blast-aligner -f hcvBlastAligner.xml
+#  import module blast-aligner hcvBlastAligner.xml
 #  module blast-aligner
 #    show configuration
 #  	exit

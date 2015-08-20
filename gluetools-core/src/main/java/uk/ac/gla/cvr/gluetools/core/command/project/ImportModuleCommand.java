@@ -16,11 +16,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"create","module"}, 
-	docoptUsages={"<name> -f <file>"},
-	docoptOptions={"-f <file>, --fileName <file>  Module configuration file"},
-	description="Create a new module") 
-public class CreateModuleCommand extends ProjectModeCommand<CreateResult> {
+	commandWords={"import","module"}, 
+	docoptUsages={"<name> <fileName>"},
+	description="Create a new module, importing its config from a file") 
+public class ImportModuleCommand extends ProjectModeCommand<CreateResult> {
 
 	private String name;
 	private String fileName;

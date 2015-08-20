@@ -38,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -91,14 +92,14 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 			CommandContext cmdContext, List<Map<String, Object>> memberIDs, String refName) {
 		// get the align command's class for the module.
 		Class<C> alignCommandClass = getAlignCommandClass(cmdContext);
-		String membersFasta = getMembersFasta(cmdContext, memberIDs);
-		R alignerResult = getAlignerResult(cmdContext, alignCommandClass, refName, membersFasta);
+		Map<String,String> queryIdToNucleotides = getMembersNtMap(cmdContext, memberIDs);
+		R alignerResult = getAlignerResult(cmdContext, alignCommandClass, refName, queryIdToNucleotides);
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
 		Map<String, List<AlignedSegment>> fastaIdToAlignedSegments = alignerResult.getFastaIdToAlignedSegments();
 		for(Map<String, Object> memberIDmap: memberIDs) {
 			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
 			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
-			String memberFastaId = constructFastaId(memberSourceName, memberSeqId);
+			String memberFastaId = constructQueryId(memberSourceName, memberSeqId);
 			List<AlignedSegment> memberAlignedSegments = fastaIdToAlignedSegments.get(memberFastaId);
 			Map<String, Object> memberResultMap = applyMemberAlignedSegments(cmdContext, 
 					memberSourceName, memberSeqId, memberAlignedSegments);
@@ -108,33 +109,41 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	}
 
 	private <R extends AlignerResult, C extends Command<R>> R getAlignerResult(
-			CommandContext cmdContext, Class<C> alignCommandClass, String refName, String membersFasta) {
+			CommandContext cmdContext, Class<C> alignCommandClass, 
+			String refName, Map<String, String> queryIdToNucleotides) {
 		R alignerResult;
 		try(ModeCloser moduleMode = cmdContext.pushCommandMode("module", alignerModuleName)) {
-			alignerResult = cmdContext.cmdBuilder(alignCommandClass)
-				.set(AlignCommand.REFERENCE_NAME, refName)
-				.set(AlignCommand.QUERY_FASTA, membersFasta)
-				.execute();
+			CommandBuilder<R, C> alignCmdBuilder = cmdContext.cmdBuilder(alignCommandClass)
+				.set(AlignCommand.REFERENCE_NAME, refName);
+			ArrayBuilder seqArrayBuilder = alignCmdBuilder
+				.setArray(AlignCommand.SEQUENCE);
+			queryIdToNucleotides.forEach((queryId, nts) ->
+			{
+				seqArrayBuilder.addObject()
+					.set(AlignCommand.QUERY_ID, queryId)
+					.set(AlignCommand.NUCLEOTIDES, nts);
+			});
+			alignerResult = alignCmdBuilder.execute();
 		}
 		return alignerResult;
 	}
 	
 	
-	private String getMembersFasta(CommandContext cmdContext, List<Map<String, Object>> memberIDs) {
-		StringBuffer buf = new StringBuffer();
+	private Map<String, String> getMembersNtMap(CommandContext cmdContext, List<Map<String, Object>> memberIDs) {
+		Map<String, String> queryIdToNucleotides = new LinkedHashMap<String, String>();
 		for(Map<String, Object> memberIDmap: memberIDs) {
 			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
 			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
 			OriginalDataResult memberSeqOriginalData = getOriginalData(cmdContext, memberSourceName, memberSeqId);
 			SequenceFormat memberSeqFormat = memberSeqOriginalData.getFormat();
 			String nucleotides = memberSeqFormat.nucleotidesAsString(memberSeqOriginalData.getBase64Bytes());
-			buf.append(">").append(constructFastaId(memberSourceName, memberSeqId)).append("\n");
-			buf.append(nucleotides).append("\n");
+			String queryId = constructQueryId(memberSourceName, memberSeqId);
+			queryIdToNucleotides.put(queryId, nucleotides);
 		}
-		return buf.toString();
+		return queryIdToNucleotides;
 	}
 
-	private String constructFastaId(String sourceName, String sequenceID) {
+	private String constructQueryId(String sourceName, String sequenceID) {
 		return sourceName+"."+sequenceID;
 	}
 	
@@ -193,10 +202,10 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 			if(whereClause != null) {
 				cmdBuilder.set(ListMemberCommand.WHERE_CLAUSE, whereClause.toString());
 			}
-			return cmdBuilder.setArray(ListMemberCommand.FIELD_NAME)
+			cmdBuilder.setArray(ListMemberCommand.FIELD_NAME)
 				.add(AlignmentMember.SOURCE_NAME_PATH)
-				.add(AlignmentMember.SEQUENCE_ID_PATH)
-				.execute().asListOfMaps();
+				.add(AlignmentMember.SEQUENCE_ID_PATH);
+			return cmdBuilder.execute().asListOfMaps();
 		}
 	}
 

@@ -32,13 +32,13 @@ schema-project HCV
         exit
  
 project HCV
-  create module ncbi-importer -f hcvNcbiImporter.xml
+  import module ncbi-importer hcvNcbiImporter.xml
   module ncbi-importer
     show configuration
     import
 	      exit
 	  
-  create module gb-populator -f hcvGenbankXmlPopulator.xml
+  import module gb-populator hcvGenbankXmlPopulator.xml
   module gb-populator
     show configuration
   	populate
@@ -4788,9 +4788,9 @@ project HCV
       exit
     exit
   
-  create module mutationFrequencies -f hcvMutationFrequencies.xml
+  import module mutationFrequencies hcvMutationFrequencies.xml
   
-  create module fastaImporter -f hcvFastaImporter.xml
+  import module fastaImporter hcvFastaImporter.xml
   
   module fastaImporter import -f stopHcvNimble.fasta
   
@@ -4800,7 +4800,7 @@ project HCV
 #    exit
 #
 
-    create module blastAligner -f hcvBlastAligner.xml
+    import module blastAligner hcvBlastAligner.xml
 
     create reference REF_1b ncbi-nuccore 212675094
     create alignment REF_1b AL_1b

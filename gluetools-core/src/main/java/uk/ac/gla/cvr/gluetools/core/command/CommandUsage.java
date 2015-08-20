@@ -13,6 +13,7 @@ public class CommandUsage {
 	private String[] docoptOptions = {};
 	private String furtherHelp = "";
 	private boolean modeWrappable = true;
+	private String[] metaTags = {};
 	
 	public CommandUsage(String[] commandWords, String[] docoptUsages, String description) {
 		super();
@@ -23,11 +24,13 @@ public class CommandUsage {
 
 	public CommandUsage(String[] commandWords, String[] docoptUsages,
 			String description, String[] docoptOptions, String furtherHelp,
-			boolean modeWrappable) {
+			boolean modeWrappable, 
+			String[] metaTags) {
 		this(commandWords, docoptUsages, description);
 		this.docoptOptions = docoptOptions;
 		this.furtherHelp = furtherHelp;
 		this.modeWrappable = modeWrappable;
+		this.metaTags = metaTags;
 	}
 	
 	private CommandUsage(CommandClass cmdClassAnno) {
@@ -36,7 +39,8 @@ public class CommandUsage {
 				cmdClassAnno.description(), 
 				cmdClassAnno.docoptOptions(), 
 				cmdClassAnno.furtherHelp(), 
-				cmdClassAnno.modeWrappable());
+				cmdClassAnno.modeWrappable(),
+				cmdClassAnno.metaTags());
 	}
 	
 	public String[] commandWords() {
@@ -61,6 +65,10 @@ public class CommandUsage {
 
 	public boolean modeWrappable() {
 		return modeWrappable;
+	}
+	
+	public boolean hasMetaTag(String metaTag) {
+		return Arrays.asList(metaTags).contains(metaTag);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -129,5 +137,9 @@ public class CommandUsage {
 	public static boolean modeWrappableForCmdClass(Class<? extends Command> cmdClass) {
 		return commandUsageForCmdClass(cmdClass).modeWrappable();
 	}
-	
+
+	public static boolean hasMetaTagForCmdClass(Class<? extends Command> cmdClass, String metaTag) {
+		return commandUsageForCmdClass(cmdClass).hasMetaTag(metaTag);
+	}
+
 }

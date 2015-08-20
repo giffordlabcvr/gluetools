@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -15,24 +16,24 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"create", "sequence"}, 
+	commandWords={"import", "sequence"}, 
 	docoptUsages={
-		"<sourceName> <sequenceID> <format> <originalData>"
+		"<sourceName> <sequenceID> <format> <fileName>"
 	}, 
-	docoptOptions={
-		"--base64 <data>  Sequence data encoded as Base64"},
-	description="Create a new sequence") 
-public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
+	furtherHelp=
+		"The <fileName> names the file containing the sequence data",
+	description="Import a new sequence from a file") 
+public class ImportSequenceCommand extends ProjectModeCommand<CreateResult> {
 
 	public static final String SOURCE_NAME = "sourceName";
 	public static final String SEQUENCE_ID = "sequenceID";
 	public static final String FORMAT = "format";
-	public static final String ORIGINAL_DATA = "originalData";
+	public static final String FILE_NAME = "fileName";
 
 	private String sourceName;
 	private String sequenceID;
 	private SequenceFormat format;
-	private byte[] originalData;
+	private String fileName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -40,7 +41,7 @@ public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 		sourceName = PluginUtils.configureStringProperty(configElem, SOURCE_NAME, true);
 		sequenceID = PluginUtils.configureStringProperty(configElem, SEQUENCE_ID, true);
 		format = PluginUtils.configureEnumProperty(SequenceFormat.class, configElem, FORMAT, true);
-		originalData = PluginUtils.configureBase64BytesProperty(configElem, ORIGINAL_DATA, true);
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 	}
 
 	@Override
@@ -50,8 +51,9 @@ public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 		Source source = GlueDataObject.lookup(objContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
-		format.nucleotidesAsString(originalData); // check for format errors here.
-		sequence.setOriginalData(originalData);
+		byte[] sequenceData = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
+		format.nucleotidesAsString(sequenceData); // check for format errors here.
+		sequence.setOriginalData(sequenceData);
 		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);
 	}

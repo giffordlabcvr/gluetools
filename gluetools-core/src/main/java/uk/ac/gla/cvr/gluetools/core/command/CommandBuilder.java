@@ -54,51 +54,10 @@ public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 		return this;
 	}
 
-	public CommandArrayBuilder setArray(String name) {
-		ArrayBuilder arrayBuilder = cmdObjectBuilder.setArray(name);
-		return new CommandArrayBuilder(arrayBuilder);
+	public ArrayBuilder setArray(String name) {
+		return cmdObjectBuilder.setArray(name);
 	}
 	
-	public class CommandArrayBuilder {
-		private ArrayBuilder arrayBuilder;
-		
-		public CommandArrayBuilder(ArrayBuilder arrayBuilder) {
-			this.arrayBuilder = arrayBuilder;
-		}
-		
-		public CommandArrayBuilder addInt(int value) {
-			arrayBuilder.addInt(value);
-			return this;
-		}
-		public CommandArrayBuilder addBoolean(boolean value) {
-			arrayBuilder.addBoolean(value);
-			return this;
-		}
-		public CommandArrayBuilder addDouble(double value) {
-			arrayBuilder.addDouble(value);
-			return this;
-		}
-		public CommandArrayBuilder addNull() {
-			arrayBuilder.addNull();
-			return this;
-		}
-		public CommandArrayBuilder addString(String value) {
-			arrayBuilder.addString(value);
-			return this;
-		}
-		public CommandArrayBuilder add(Object value) {
-			arrayBuilder.add(value);
-			return this;
-		}
-		public C build() {
-			return CommandBuilder.this.build();
-		}
-		public R execute() {
-			return CommandBuilder.this.execute();
-		}
-
-	}
-
 	public C build() {
 		return cmdClass.cast(cmdContext.commandFromElement(documentBuilder.getXmlDocument().getDocumentElement()));
 	}

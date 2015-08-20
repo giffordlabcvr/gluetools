@@ -19,9 +19,9 @@ import org.docopt.DocoptExitException;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
-import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder.CommandArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -36,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
@@ -163,6 +164,10 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			Class<? extends Command> commandClass,
 			List<String> argStrings,
 			Console console) {
+		if(CommandUsage.hasMetaTagForCmdClass(commandClass, CmdMeta.inputIsComplex)) {
+			String commandWords = String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass));
+			throw new ConsoleException(Code.COMMAND_HAS_COMPLEX_INPUT, commandWords);
+		}
 		Map<String, Object> docoptMap;
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
@@ -220,7 +225,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			}
 			if(value instanceof Collection<?>) {
 				@SuppressWarnings("rawtypes")
-				CommandArrayBuilder arrayBuilder = cmdBuilder.setArray(tagName);
+				ArrayBuilder arrayBuilder = cmdBuilder.setArray(tagName);
 				((Collection <?>) value).forEach(item -> {
 					arrayBuilder.add(item.toString());
 				});

@@ -55,7 +55,7 @@ public class BlastRunner implements Plugin {
 
 	
 	@SuppressWarnings("rawtypes")
-	public List<BlastResult> executeBlast(CommandContext cmdContext, String refName, String queryFasta) {
+	public List<BlastResult> executeBlast(CommandContext cmdContext, String refName, byte[] fastaBytes) {
 		SingleReferenceDB refDB = BlastRefSeqDB.getInstance().ensureSingleReferenceDB(cmdContext, refName);
 		refDB.readLock().lock();
 		ProcessResult blastProcessResult;
@@ -75,7 +75,7 @@ public class BlastRunner implements Plugin {
 				commandWords.add(numericOption.getValue().toString());
 			}
 			// run blast based on the ref DB.
-			blastProcessResult = ProcessUtils.runProcess(queryFasta.getBytes(), commandWords); 
+			blastProcessResult = ProcessUtils.runProcess(fastaBytes, commandWords); 
 		} finally {
 			refDB.readLock().unlock();
 		}

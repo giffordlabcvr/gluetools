@@ -8,10 +8,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
@@ -27,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHspComparator;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="blastAligner")
 public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, BlastAligner> {
@@ -57,21 +61,34 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 	@CommandClass(
 			commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
 			description = "Align sequence data to a reference using BLAST", 
-			docoptUsages = { Aligner.ALIGN_COMMAND_DOCOPT_USAGE }, 
-			docoptOptions = { Aligner.ALIGN_COMMAND_DOCOPT_OPTION1, Aligner.ALIGN_COMMAND_DOCOPT_OPTION2 }
-	)
+			docoptUsages = {}, 
+			metaTags = { CmdMeta.inputIsComplex },
+			furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
+			)
 	public static class BlastAlignCommand extends Aligner.AlignCommand<BlastAligner.BlastAlignerResult, BlastAligner> {
 
 		@Override
 		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			String refName = getReferenceName();
-			String queryFasta = getQueryFasta();
-			return modulePlugin.doBlastAlign(cmdContext, refName, queryFasta);
+			return modulePlugin.doBlastAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides());
 		}
-
-	
 	}
 
+	@CommandClass(
+			commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
+			description = "Align sequence file to a reference using BLAST", 
+			docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
+			metaTags = { CmdMeta.consoleOnly },
+			furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
+			)
+	public static class BlastFileAlignCommand extends Aligner.FileAlignCommand<BlastAligner.BlastAlignerResult, BlastAligner> {
+
+		@Override
+		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
+			return modulePlugin.doBlastAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
+		}
+	}
+
+	
 	public static class BlastAlignerResult extends Aligner.AlignerResult {
 		public BlastAlignerResult(Map<String, List<AlignedSegment>> fastaIdToAlignedSegments) {
 			super("blastAlignerResult", fastaIdToAlignedSegments);
@@ -96,8 +113,9 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 		return BlastAlignCommand.class;
 	}
 
-	public BlastAlignerResult doBlastAlign(CommandContext cmdContext, String refName, String queryFasta) {
-		List<BlastResult> blastResults = blastRunner.executeBlast(cmdContext, refName, queryFasta);
+	public BlastAlignerResult doBlastAlign(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
+		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
+		List<BlastResult> blastResults = blastRunner.executeBlast(cmdContext, refName, fastaBytes);
 		Map<String, List<AlignedSegment>> fastaIdToAlignedSegments = blastResultsToAlignedSegmentsMap(refName, blastResults);
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}

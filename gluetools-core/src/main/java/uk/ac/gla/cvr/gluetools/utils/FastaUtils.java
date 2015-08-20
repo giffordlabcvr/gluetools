@@ -42,4 +42,11 @@ public class FastaUtils {
 			sequence.setAccession(new AccessionID(header));
 		}
 	}
+
+	public static byte[] mapToFasta(Map<String, DNASequence> sequenceIdToNucleotides) {
+		final StringBuffer buf = new StringBuffer();
+		sequenceIdToNucleotides.forEach((seqId, nts) -> 
+			buf.append(">").append(seqId).append("\n").append(nts.toString()).append("\n"));
+		return buf.toString().getBytes();
+	}
 }

@@ -5,8 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -17,38 +19,56 @@ import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> extends ModulePlugin<P> {
 
-	
 	public static final String ALIGN_COMMAND_WORD = "align";
-	public static final String ALIGN_COMMAND_DOCOPT_USAGE = "-r <referenceName> -q <queryFasta>";
-	public static final String ALIGN_COMMAND_DOCOPT_OPTION1 = 
-		"-r, --referenceName  Reference sequence name";
-	public static final String ALIGN_COMMAND_DOCOPT_OPTION2 = 
-		"-q, --queryFasta  Query sequence FASTA data";
+	public static final boolean ALIGN_COMMAND_IS_INPUT_COMPLEX = true;
 	public static final String ALIGN_COMMAND_FURTHER_HELP = 
-			"The <referenceName> argument specifies the name of a reference sequence, "+
-			"the sequence data is supplied in FASTA as <queryFasta>.";
+		"Example JSON input:\n"+
+			"{\n"+
+			"  align: {\n"+
+			"    referenceName: \"REF_328\",\n"+
+			"    sequence: [\n"+
+			"      {\n"+
+			"        queryId: \"QuerySeq1\",\n"+
+			"        nucleotides: \"ATCGACGCAGCGACGACGACTACGGGCGCCATCGACTACGACTAT\"\n"+
+			"      },\n"+
+			"      {\n"+
+			"        queryId: \"QuerySeq2\",\n"+
+			"        nucleotides: \"GCTGCGTGTGCAGACGAGGCTGACTAGCTAGACTAGACCCGCATC\"\n"+
+			"      }\n"+
+			"    ]\n"+
+			"  }\n"+
+			"}";
 	
 	public static abstract class AlignCommand<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> 
 		extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
 
 		public static final String REFERENCE_NAME = "referenceName";
-		public static final String QUERY_FASTA = "queryFasta";
+		public static final String SEQUENCE = "sequence";
+		public static final String QUERY_ID = "queryId";
+		public static final String NUCLEOTIDES = "nucleotides";
 
 		private String referenceName;
-		private String queryFasta;
+		private Map<String,DNASequence> queryIdToNucleotides;
 		
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
 			referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
-			queryFasta = PluginUtils.configureStringProperty(configElem, QUERY_FASTA, true);
+			List<Element> sequenceElems = PluginUtils.findConfigElements(configElem, SEQUENCE, null, null);
+			this.queryIdToNucleotides = new LinkedHashMap<String, DNASequence>();
+			for(Element sequenceElem: sequenceElems) {
+				String queryId = PluginUtils.configureStringProperty(sequenceElem, QUERY_ID, true);
+				DNASequence nucleotides = PluginUtils.parseNucleotidesProperty(sequenceElem, NUCLEOTIDES, true);
+				queryIdToNucleotides.put(queryId, nucleotides);
+			}
 		}
 	
-		protected String getQueryFasta() {
-			return queryFasta;
+		protected Map<String, DNASequence> getQueryIdToNucleotides() {
+			return queryIdToNucleotides;
 		}
 		
 		protected String getReferenceName() {
@@ -56,6 +76,44 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 		}
 
 	}
+	
+	public static final String FILE_ALIGN_COMMAND_WORD = "file-align";
+	public static final String FILE_ALIGN_COMMAND_DOCOPT_USAGE = 
+			"<referenceName> <sequenceFileName>";
+	public static final String FILE_ALIGN_COMMAND_FURTHER_HELP = 
+		"The file must be in FASTA format";
+
+	
+	public static abstract class FileAlignCommand<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> 
+	extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
+
+	public static final String REFERENCE_NAME = "referenceName";
+	public static final String SEQUENCE_FILE_NAME = "sequenceFileName";
+
+	private String referenceName;
+	private String sequenceFileName;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		sequenceFileName = PluginUtils.configureStringProperty(configElem, SEQUENCE_FILE_NAME, true);
+		
+	}
+
+	protected Map<String, DNASequence> getQueryIdToNucleotides(ConsoleCommandContext consoleCmdContext) {
+		byte[] sequenceFileBytes = consoleCmdContext.loadBytes(sequenceFileName);
+		return FastaUtils.parseFasta(sequenceFileBytes);
+	}
+	
+	protected String getReferenceName() {
+		return referenceName;
+	}
+
+}
+
+	
+	
 	@SuppressWarnings("rawtypes")
 	public abstract Class<? extends Aligner.AlignCommand> getAlignCommandClass();
 	

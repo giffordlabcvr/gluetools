@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
+import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
+import org.biojava.nbio.core.sequence.DNASequence;
+import org.biojava.nbio.core.sequence.compound.AmbiguityDNACompoundSet;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -72,6 +75,23 @@ public class PluginUtils {
 		}
 		return pattern;
 	}
+	
+	
+	public static DNASequence parseNucleotidesProperty(Element configElem, String propertyName, boolean required) {
+		String ntsString = PluginUtils.configureStringProperty(configElem, propertyName, required);
+		DNASequence dnaSequence = null;
+		if(ntsString != null) {
+			try {
+				dnaSequence = new DNASequence(ntsString, AmbiguityDNACompoundSet.getDNACompoundSet());
+			} catch (CompoundNotFoundException cnfe) {
+				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, 
+						propertyName, cnfe.getLocalizedMessage(), ntsString);
+			}
+		}
+		return dnaSequence;
+	}
+
+	
 	
 	public static Expression configureCayenneExpressionProperty(Element configElem, String propertyName, boolean required) {
 		String expressionString = PluginUtils.configureStringProperty(configElem, propertyName, required);
