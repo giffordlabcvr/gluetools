@@ -12,6 +12,8 @@ public class CmdMeta {
 		inputIsComplex = "inputIsComplex",
 		// command may only be executed via the console
 		consoleOnly = "consoleOnly",
+		// command may only be executed via the web API
+		webApiOnly = "webApiOnly",
 		// command may not be executed in a single line within a mode.
 		nonModeWrappable = "nonModeWrappable";
 }

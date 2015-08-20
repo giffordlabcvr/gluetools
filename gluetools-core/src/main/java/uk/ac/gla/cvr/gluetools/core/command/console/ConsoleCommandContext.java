@@ -10,7 +10,11 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
@@ -20,7 +24,7 @@ public class ConsoleCommandContext extends CommandContext {
 	private Map<ConsoleOption, String> optionToValue = new LinkedHashMap<ConsoleOption, String>();
 	
 	public ConsoleCommandContext(GluetoolsEngine gluetoolsEngine) {
-		super(gluetoolsEngine);
+		super(gluetoolsEngine, "the GLUE console");
 	}
 
 	private boolean finished = false;
@@ -136,6 +140,27 @@ public class ConsoleCommandContext extends CommandContext {
 
 	public void setRequireModeWrappable(boolean requireModeWrappable) {
 		this.requireModeWrappable = requireModeWrappable;
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void checkCommmandIsExecutable(Class<? extends Command> cmdClass) {
+		super.checkCommmandIsExecutable(cmdClass);
+		if(CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.webApiOnly)) {
+			throw new CommandException(CommandException.Code.NOT_EXECUTABLE_IN_CONTEXT, 
+					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
+							getDescription());
+		}
+		if(CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.inputIsComplex)) {
+			String commandWords = String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass));
+			throw new ConsoleException(Code.COMMAND_HAS_COMPLEX_INPUT, commandWords);
+		}
+		if(requireModeWrappable && CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable)) {
+			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
+					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), getModePath());
+		}
+
+
 	}
 
 	

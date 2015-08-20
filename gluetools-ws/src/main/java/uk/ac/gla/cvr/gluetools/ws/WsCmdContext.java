@@ -16,12 +16,15 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFormatUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
@@ -31,7 +34,7 @@ import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 public class WsCmdContext extends CommandContext {
 
 	public WsCmdContext(GluetoolsEngine gluetoolsEngine) {
-		super(gluetoolsEngine);
+		super(gluetoolsEngine, "the GLUE web API");
 		ServerRuntime rootServerRuntime = gluetoolsEngine.getRootServerRuntime();
 		RootCommandMode rootCommandMode = new RootCommandMode(rootServerRuntime);
 		pushCommandMode(rootCommandMode);
@@ -56,6 +59,10 @@ public class WsCmdContext extends CommandContext {
 	public String postAsCommand(String commandString) {
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
+		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
+		if(cmdClass != null) {
+			checkCommmandIsExecutable(cmdClass);
+		}
 		Command command = commandFromElement(cmdDocElem);
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
@@ -108,6 +115,17 @@ public class WsCmdContext extends CommandContext {
 			}
 		}
 		
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void checkCommmandIsExecutable(Class<? extends Command> cmdClass) {
+		super.checkCommmandIsExecutable(cmdClass);
+		if(CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.consoleOnly)) {
+			throw new CommandException(Code.NOT_EXECUTABLE_IN_CONTEXT, 
+					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
+					getDescription());
+		}
 	}
 	
 	

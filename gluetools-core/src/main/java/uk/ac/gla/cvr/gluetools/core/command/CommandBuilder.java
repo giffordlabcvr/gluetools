@@ -16,6 +16,7 @@ public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 		super();
 		this.cmdContext = cmdContext;
 		this.cmdClass = cmdClass;
+		cmdContext.checkCommmandIsExecutable(cmdClass);
 		String[] cmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass);
 		documentBuilder = new DocumentBuilder(cmdWords[0]);
 		cmdObjectBuilder = documentBuilder;
@@ -62,8 +63,12 @@ public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 		return cmdClass.cast(cmdContext.commandFromElement(documentBuilder.getXmlDocument().getDocumentElement()));
 	}
 
+	@SuppressWarnings("rawtypes")
 	public R execute() {
-		return build().execute(cmdContext);
+		C command = build();
+		Class<? extends Command> cmdClass = command.getClass();
+		cmdContext.checkCommmandIsExecutable(cmdClass);
+		return command.execute(cmdContext);
 	}
 
 	

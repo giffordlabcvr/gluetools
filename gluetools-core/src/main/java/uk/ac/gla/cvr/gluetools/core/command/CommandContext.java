@@ -15,16 +15,19 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 public class CommandContext {
 	
 	private GluetoolsEngine gluetoolsEngine;
 	private List<ObjectContext> objectContextStack = new LinkedList<ObjectContext>();
+	private String description;
 	
-	public CommandContext(GluetoolsEngine gluetoolsEngine) {
+	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
 		this.gluetoolsEngine = gluetoolsEngine;
+		this.description = description;
 	}
 
 	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
@@ -38,6 +41,10 @@ public class CommandContext {
 			objectContextStack.add(0, GlueDataObject.createObjectContext(serverRuntime));
 		}
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
+	}
+
+	public String getDescription() {
+		return description;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -106,6 +113,23 @@ public class CommandContext {
 		return gluetoolsEngine;
 	}
 	
+	
+	@SuppressWarnings("rawtypes")
+	public Class<? extends Command> commandClassFromElement(Element element) {
+		Element current = element;
+		List<String> elNames = new LinkedList<String>();
+		while(current != null) {
+			elNames.add(current.getNodeName());
+			List<Element> childElems = GlueXmlUtils.findChildElements(current);
+			if(!childElems.isEmpty()) {
+				current = childElems.get(0);
+			} else {
+				current = null;
+			}
+		}
+		return peekCommandMode().getCommandFactory().identifyCommandClass(this, elNames);
+	}
+	
 	public Command<?> commandFromElement(Element element) {
 		CommandFactory commandFactory = peekCommandMode().getCommandFactory();
 		return commandFactory.commandFromElement(this, commandModeStack, gluetoolsEngine.createPluginConfigContext(), element);
@@ -121,6 +145,10 @@ public class CommandContext {
 	
 	public <R extends CommandResult, C extends Command<R>> CommandBuilder<R, C> cmdBuilder(Class<C> cmdClass) {
 		return new CommandBuilder<R, C>(this, cmdClass);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public void checkCommmandIsExecutable(Class<? extends Command> cmdClass) {
 	}
 	
 }

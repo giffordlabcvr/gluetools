@@ -19,7 +19,6 @@ import org.docopt.DocoptExitException;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -124,10 +123,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 				argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
 			}
 		}
-		if(requireModeWrappable && CommandUsage.hasMetaTagForCmdClass(commandClass, CmdMeta.nonModeWrappable)) {
-			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
-					String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
-		}
+		commandContext.checkCommmandIsExecutable(commandClass);
 		Command command = buildCommand(commandContext, commandClass, argStrings, this);
 		// combine enter-mode command with inner commands.
 		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
@@ -164,10 +160,6 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			Class<? extends Command> commandClass,
 			List<String> argStrings,
 			Console console) {
-		if(CommandUsage.hasMetaTagForCmdClass(commandClass, CmdMeta.inputIsComplex)) {
-			String commandWords = String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass));
-			throw new ConsoleException(Code.COMMAND_HAS_COMPLEX_INPUT, commandWords);
-		}
 		Map<String, Object> docoptMap;
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
