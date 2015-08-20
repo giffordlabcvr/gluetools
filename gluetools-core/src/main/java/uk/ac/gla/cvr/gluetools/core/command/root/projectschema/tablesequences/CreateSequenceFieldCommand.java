@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -19,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create", "field"}, 
 	docoptUsages={"<fieldName> <type> [<maxLength>]"},
 	description="Create a new field in the table",
+	metaTags={CmdMeta.updatesDatabase},
 	furtherHelp="The field name must be a valid database identifier, e.g. MY_FIELD_1") 
 public class CreateSequenceFieldCommand extends TableSequencesModeCommand<CreateResult> {
 

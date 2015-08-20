@@ -118,7 +118,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 			docoptOptions={
 				"-f <file>, --fileName <file>  FASTA file"},
 			description="Import sequences from a FASTA file", 
-			metaTags = { CmdMeta.consoleOnly },
+			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
 	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, FastaImporter> implements ProvidedProjectModeCommand {
 

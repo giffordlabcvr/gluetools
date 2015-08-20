@@ -9,6 +9,7 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -23,6 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<refStart> <refEnd> <memberStart> <memberEnd>", 
 			"-a"},
 	docoptOptions={"-a, --allSegments  Remove all segments"},
+	metaTags={CmdMeta.updatesDatabase},
 	description="Remove a specific aligned segment or all of them", 
 	furtherHelp="") 
 public class RemoveAlignedSegmentCommand extends MemberModeCommand<DeleteResult> {

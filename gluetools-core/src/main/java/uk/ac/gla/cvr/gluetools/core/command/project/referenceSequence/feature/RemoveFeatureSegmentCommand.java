@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
@@ -14,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"remove", "segment"}, 
 	docoptUsages={"<refStart> <refEnd>"},
+	metaTags={CmdMeta.updatesDatabase},
 	description="Remove a segment of the reference sequence", 
 	furtherHelp="") 
 public class RemoveFeatureSegmentCommand extends FeatureModeCommand<DeleteResult> {

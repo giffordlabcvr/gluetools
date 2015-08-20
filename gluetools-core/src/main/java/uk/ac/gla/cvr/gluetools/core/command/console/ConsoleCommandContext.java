@@ -151,10 +151,6 @@ public class ConsoleCommandContext extends CommandContext {
 					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
 							getDescription());
 		}
-		if(CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.inputIsComplex)) {
-			String commandWords = String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass));
-			throw new ConsoleException(Code.COMMAND_HAS_COMPLEX_INPUT, commandWords);
-		}
 		if(requireModeWrappable && CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable)) {
 			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
 					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), getModePath());

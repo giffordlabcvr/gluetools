@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 @CommandClass( 
 		commandWords = {"console","help"},
 		docoptUsages = {"<optionName>"}, 
-		metaTags = { CmdMeta.nonModeWrappable },
+		metaTags = { CmdMeta.nonModeWrappable, CmdMeta.consoleOnly },
 		description = "Show help for a specific console option")
 public class ConsoleHelpOptionCommand extends ConsoleOptionCommand<SimpleConsoleCommandResult> {
 

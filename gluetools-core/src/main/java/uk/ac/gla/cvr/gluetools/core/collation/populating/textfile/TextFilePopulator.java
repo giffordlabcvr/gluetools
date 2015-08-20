@@ -197,7 +197,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			docoptOptions={
 				"-f <file>, --fileName <file>  Text file with field values"},
 			description="Populate sequence field values based on a text file", 
-			metaTags = { CmdMeta.consoleOnly },
+			metaTags = { CmdMeta.consoleOnly , CmdMeta.updatesDatabase},
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
 	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 

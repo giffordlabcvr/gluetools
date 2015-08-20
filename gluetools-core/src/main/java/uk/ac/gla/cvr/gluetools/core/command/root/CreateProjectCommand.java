@@ -6,6 +6,7 @@ import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -20,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create", "project"}, 
 	docoptUsages={"<projectName> [<description>]"},
 	description="Create a new project",
+	metaTags={CmdMeta.updatesDatabase},
 	furtherHelp="The project name must be a valid database identifier, e.g. MY_PROJECT_1") 
 public class CreateProjectCommand extends RootModeCommand<CreateResult> {
 

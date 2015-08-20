@@ -8,6 +8,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -23,6 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<sourceName> <sequenceID>", 
 			"-w <whereClause>",
 			"-a"},
+	metaTags={CmdMeta.updatesDatabase},
 	docoptOptions={"-w <whereClause>, --whereClause <whereClause>  Qualify which sequences should be deleted", 
 			"-a, --allSequences  Delete all sequences" },
 	description="Delete one or more sequences", 

@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -19,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={
 		"<sourceName> <sequenceID> <format> <originalData>"
 	}, 
+	metaTags={CmdMeta.updatesDatabase},
 	docoptOptions={
 		"--base64 <data>  Sequence data encoded as Base64"},
 	description="Create a new sequence") 

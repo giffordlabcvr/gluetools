@@ -31,6 +31,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
@@ -365,6 +366,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	@CommandClass( 
 			commandWords={"import"}, 
 			docoptUsages={""},
+			metaTags={CmdMeta.updatesDatabase},
 			description="Import sequence data from NCBI into the project") 
 	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, NcbiImporter> implements ProvidedProjectModeCommand {
 

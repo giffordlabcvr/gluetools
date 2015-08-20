@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -27,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"set", "field"}, 
 	docoptUsages={"[-n] <fieldName> <fieldValue>"},
 	docoptOptions={"-n, --noOverwrite  Do not overwrite an existing value"},
+	metaTags={CmdMeta.updatesDatabase},
 	description="Set a field value for the sequence", 
 	furtherHelp=
 		"If --noOverwrite is used, and the field already has a non-null value, no update will take place. "+

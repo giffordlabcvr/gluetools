@@ -11,6 +11,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -51,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		description = "Align member segments using an aligner module", 
 		docoptUsages = {"<alignmentName> <alignerModuleName> [-w <whereClause>]"}, 
 		docoptOptions = {"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned"},
+		metaTags={CmdMeta.updatesDatabase},
 		furtherHelp = "Computes the aligned segments of certain members of the specified alignment, using a given aligner module. "+
 		"If <whereClause> is not specified, all members of the alignment are re-aligned."+
 		" Example: compute alignment AL1 blastAligner -w \"sequence.GENOTYPE = 4\""

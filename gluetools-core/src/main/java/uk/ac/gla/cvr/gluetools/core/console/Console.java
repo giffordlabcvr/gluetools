@@ -19,6 +19,7 @@ import org.docopt.DocoptExitException;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -124,6 +125,10 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			}
 		}
 		commandContext.checkCommmandIsExecutable(commandClass);
+		if(CommandUsage.hasMetaTagForCmdClass(commandClass, CmdMeta.inputIsComplex)) {
+			String cmdWords = String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass));
+			throw new ConsoleException(Code.COMMAND_HAS_COMPLEX_INPUT, cmdWords);
+		}
 		Command command = buildCommand(commandContext, commandClass, argStrings, this);
 		// combine enter-mode command with inner commands.
 		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {

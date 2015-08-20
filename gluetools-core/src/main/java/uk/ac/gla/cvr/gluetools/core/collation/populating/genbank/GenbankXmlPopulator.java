@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -96,6 +97,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 	@CommandClass( 
 			commandWords={"populate"}, 
 			docoptUsages={""},
+			metaTags={CmdMeta.updatesDatabase},
 			description="Populate sequence field values based on Genbank XML") 
 	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
 		

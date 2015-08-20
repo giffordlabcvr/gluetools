@@ -55,6 +55,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 		addProvidedCmdClass(ShowAlignerCommand.class);
 		addProvidedCmdClass(ConfigureAlignerCommand.class);
 		addProvidedCmdClass(BlastAlignCommand.class);
+		addProvidedCmdClass(BlastFileAlignCommand.class);
 	}
 	
 	
@@ -62,7 +63,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 			commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
 			description = "Align sequence data to a reference using BLAST", 
 			docoptUsages = {}, 
-			metaTags = { CmdMeta.inputIsComplex },
+			metaTags={  CmdMeta.inputIsComplex },
 			furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
 			)
 	public static class BlastAlignCommand extends Aligner.AlignCommand<BlastAligner.BlastAlignerResult, BlastAligner> {
@@ -77,7 +78,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 			commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
 			description = "Align sequence file to a reference using BLAST", 
 			docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
-			metaTags = { CmdMeta.consoleOnly },
+			metaTags = {  CmdMeta.consoleOnly },
 			furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
 			)
 	public static class BlastFileAlignCommand extends Aligner.FileAlignCommand<BlastAligner.BlastAlignerResult, BlastAligner> {

@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -18,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create","alignment"}, 
 	docoptUsages={"<refSeqName> <alignmentName>"},
 	description="Create a new alignment, based on a reference sequence", 
+	metaTags={CmdMeta.updatesDatabase},
 	furtherHelp="An alignment is a proposed homology between certain segments of a reference sequence and certain segments"+
 	" in zero or more member sequences. The reference sequence must be specified when the alignment is created."+
 	" While a reference sequence is referred to by an alignment, the reference sequence may not be deleted.") 

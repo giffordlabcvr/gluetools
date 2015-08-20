@@ -126,6 +126,11 @@ public class WsCmdContext extends CommandContext {
 					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
 					getDescription());
 		}
+		if(CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.updatesDatabase)) {
+			throw new CommandException(Code.NOT_EXECUTABLE_IN_CONTEXT, 
+					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
+					getDescription());
+		}
 	}
 	
 	

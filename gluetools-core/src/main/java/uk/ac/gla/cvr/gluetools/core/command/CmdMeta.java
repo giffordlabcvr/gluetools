@@ -14,6 +14,8 @@ public class CmdMeta {
 		consoleOnly = "consoleOnly",
 		// command may only be executed via the web API
 		webApiOnly = "webApiOnly",
+		// command makes updates to the database
+		updatesDatabase = "updatesDatabase",
 		// command may not be executed in a single line within a mode.
 		nonModeWrappable = "nonModeWrappable";
 }

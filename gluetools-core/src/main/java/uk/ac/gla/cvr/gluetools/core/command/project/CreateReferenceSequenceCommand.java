@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -17,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create","reference"}, 
 	docoptUsages={"<refSeqName> <sourceName> <sequenceID>"},
 	description="Create a new reference sequence, based on a specific sequence", 
+	metaTags={CmdMeta.updatesDatabase},
 	furtherHelp="A reference sequence object decorates a sequence with various nucleotide-related metadata."+
 	" While a sequence is a reference sequence, the sequence may not be deleted.") 
 public class CreateReferenceSequenceCommand extends ProjectModeCommand<CreateResult> {

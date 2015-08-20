@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
@@ -18,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"delete", "field"}, 
 	docoptUsages={"<fieldName>"},
+	metaTags={CmdMeta.updatesDatabase},
 	description="Delete a field from the table") 
 public class DeleteSequenceFieldCommand extends TableSequencesModeCommand<DeleteResult> {
 

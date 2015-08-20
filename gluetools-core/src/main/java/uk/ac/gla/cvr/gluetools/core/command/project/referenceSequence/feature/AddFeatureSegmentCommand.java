@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.FeatureSegmentException.Code;
@@ -19,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"add","segment"}, 
 	docoptUsages={"<refStart> <refEnd>"},
+	metaTags={CmdMeta.updatesDatabase},
 	description="Add a new segment of the reference sequence", 
 	furtherHelp="The segment includes the reference sequence nucleotide at <refStart> (numbered from 1) "+
 	"and subsequent nucleotides up to and including <refEnd>. "+

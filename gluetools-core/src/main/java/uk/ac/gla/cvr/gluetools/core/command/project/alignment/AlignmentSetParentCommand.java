@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -16,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"set", "parent"},
 		docoptUsages={"<parentAlignmentName>"},
+		metaTags={CmdMeta.updatesDatabase},
 		description="Specify the parent for this alignment",
 		furtherHelp="The reference sequence of this alignment must be a member of the parent alignment. "+
 				"\nLoops arising from alignment parent relationships are not allowed."

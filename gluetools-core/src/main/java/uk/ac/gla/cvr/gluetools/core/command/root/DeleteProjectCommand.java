@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.root;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -17,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"delete", "project"},
 	docoptUsages={"<projectName>"},
+	metaTags={CmdMeta.updatesDatabase},
 	description="Delete a project") 
 public class DeleteProjectCommand extends RootModeCommand<DeleteResult> {
 
