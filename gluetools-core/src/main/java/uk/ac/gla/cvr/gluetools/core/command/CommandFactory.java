@@ -71,7 +71,7 @@ private static Multiton factories = new Multiton();
 				@SuppressWarnings("rawtypes")
 				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
 				if(cmdClass != null) {
-					if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
+					if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
 						helpLines.add(new SpecificCommandHelpLine(cmdClass));
 					}
 				}
@@ -84,7 +84,7 @@ private static Multiton factories = new Multiton();
 				} else { 
 					childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false, requireModeWrappable)));
 					cmdPluginFactory.getRegisteredClasses().forEach(c -> { 
-						if(CommandUsage.modeWrappableForCmdClass(c) || !requireModeWrappable) {
+						if(!CommandUsage.hasMetaTagForCmdClass(c, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
 							helpLines.add(new SpecificCommandHelpLine(c));
 						}
 					});
@@ -102,7 +102,7 @@ private static Multiton factories = new Multiton();
 		
 		@SuppressWarnings("rawtypes")
 		private void registerCommandClass(List<String> commandWords, Class<? extends Command> cmdClass) {
-			if(CommandUsage.modeWrappableForCmdClass(cmdClass)) {
+			if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable)) {
 				modeWrappable = true;
 			}
 			if(commandWords.size() == 1) {
@@ -188,7 +188,7 @@ private static Multiton factories = new Multiton();
 				Set<String> elementNames = cmdPluginFactory.getElementNames();
 				for(String elementName: elementNames) {
 					Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(elementName);
-					if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
+					if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
 						suggestions.add(elementName);
 					}
 				}
@@ -201,7 +201,7 @@ private static Multiton factories = new Multiton();
 					if(cmdClass != null && commandCompleters) {
 						CommandCompleter cmdCompleter = CommandCompleter.commandCompleterForCmdClass(cmdClass);
 						if(cmdCompleter != null) {
-							if(CommandUsage.modeWrappableForCmdClass(cmdClass) || !requireModeWrappable) {
+							if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
 								return cmdCompleter.completionSuggestions(cmdContext, cmdClass, commandWords);
 							}
 						}

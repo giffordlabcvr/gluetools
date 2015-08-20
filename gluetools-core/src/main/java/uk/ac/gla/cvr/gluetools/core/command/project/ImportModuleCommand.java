@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -18,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"import","module"}, 
 	docoptUsages={"<name> <fileName>"},
+	metaTags = { CmdMeta.consoleOnly },
 	description="Create a new module, importing its config from a file") 
 public class ImportModuleCommand extends ProjectModeCommand<CreateResult> {
 

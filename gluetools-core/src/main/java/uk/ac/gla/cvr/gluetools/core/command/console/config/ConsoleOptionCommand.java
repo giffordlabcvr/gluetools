@@ -8,14 +8,13 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class ConsoleOptionCommand<R extends CommandResult> extends ConsoleCommand<R> {
+public abstract class ConsoleOptionCommand<R extends CommandResult> extends Command<R> {
 
 	private ConsoleOption consoleOption;
 

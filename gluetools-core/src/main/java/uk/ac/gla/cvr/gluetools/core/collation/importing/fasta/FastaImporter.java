@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaFieldParser.R
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -117,6 +118,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 			docoptOptions={
 				"-f <file>, --fileName <file>  FASTA file"},
 			description="Import sequences from a FASTA file", 
+			metaTags = { CmdMeta.consoleOnly },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
 	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, FastaImporter> implements ProvidedProjectModeCommand {
 

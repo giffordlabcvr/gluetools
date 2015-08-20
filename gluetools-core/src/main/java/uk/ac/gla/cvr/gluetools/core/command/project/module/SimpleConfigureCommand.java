@@ -53,7 +53,7 @@ public abstract class SimpleConfigureCommand<P extends ModulePlugin<P>> extends 
 			SimpleConfigureCommandClass cfgCmdClassAnno = cmdClass.getAnnotation(SimpleConfigureCommandClass.class);
 			return new CommandUsage(new String[]{"configure"}, 
 					new String[]{"<propertyName> <propertyValue>"}, cfgCmdClassAnno.description(), 
-					new String[]{}, "Available property names: "+String.join(", ",cfgCmdClassAnno.propertyNames()), true, 
+					new String[]{}, "Available property names: "+String.join(", ",cfgCmdClassAnno.propertyNames()), 
 					new String[]{});
 		}
 	}

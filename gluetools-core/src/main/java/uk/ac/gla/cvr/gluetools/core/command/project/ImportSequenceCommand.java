@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -20,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={
 		"<sourceName> <sequenceID> <format> <fileName>"
 	}, 
+	metaTags = { CmdMeta.consoleOnly },
 	furtherHelp=
 		"The <fileName> names the file containing the sequence data",
 	description="Import a new sequence from a file") 

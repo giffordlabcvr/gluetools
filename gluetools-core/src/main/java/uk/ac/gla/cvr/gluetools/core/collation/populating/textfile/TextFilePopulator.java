@@ -16,6 +16,7 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -196,6 +197,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			docoptOptions={
 				"-f <file>, --fileName <file>  Text file with field values"},
 			description="Populate sequence field values based on a text file", 
+			metaTags = { CmdMeta.consoleOnly },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
 	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 

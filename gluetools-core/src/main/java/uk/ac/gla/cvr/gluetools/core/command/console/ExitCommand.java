@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.console;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -11,8 +12,8 @@ import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 @CommandClass( 
 	commandWords={"exit"},
 	docoptUsages={""},
-	description="Exit current command mode", 
-	modeWrappable=false) 
+	metaTags = { CmdMeta.consoleOnly, CmdMeta.nonModeWrappable },
+	description="Exit current command mode") 
 public class ExitCommand extends Command<OkResult> {
 
 	@Override

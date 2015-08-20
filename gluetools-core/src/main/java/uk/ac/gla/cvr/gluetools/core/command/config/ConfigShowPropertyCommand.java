@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
@@ -20,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords = {"config","show"},
 		docoptUsages = {"<propertyName>"}, 
-		modeWrappable = false,
+		metaTags = { CmdMeta.nonModeWrappable },
 		description = "Show the value of a configuration property")
 public class ConfigShowPropertyCommand extends Command<ConfigPropertyResult> {
 

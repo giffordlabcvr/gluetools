@@ -11,5 +11,7 @@ public class CmdMeta {
 		// not from the command line.
 		inputIsComplex = "inputIsComplex",
 		// command may only be executed via the console
-		consoleOnly = "consoleOnly";
+		consoleOnly = "consoleOnly",
+		// command may not be executed in a single line within a mode.
+		nonModeWrappable = "nonModeWrappable";
 }

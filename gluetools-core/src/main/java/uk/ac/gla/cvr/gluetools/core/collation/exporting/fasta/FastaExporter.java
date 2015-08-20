@@ -9,6 +9,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -96,6 +97,7 @@ public class FastaExporter extends ModulePlugin<FastaExporter> {
 				"-f <file>, --fileName <file>                   FASTA file",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
 			    "-a, --allSequences                             Export all project sequences"},
+			metaTags = { CmdMeta.consoleOnly },
 			description="Export sequences to a FASTA file", 
 			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
 	public static class ExportCommand extends ModuleProvidedCommand<OkResult, FastaExporter> implements ProvidedProjectModeCommand {

@@ -124,7 +124,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 				argStrings = new LinkedList<String>(argStrings.subList(0, numEnterModeArgs));
 			}
 		}
-		if(requireModeWrappable && !CommandUsage.modeWrappableForCmdClass(commandClass)) {
+		if(requireModeWrappable && CommandUsage.hasMetaTagForCmdClass(commandClass, CmdMeta.nonModeWrappable)) {
 			throw new ConsoleException(Code.COMMAND_NOT_WRAPPABLE, 
 					String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass)), commandContext.getModePath());
 		}

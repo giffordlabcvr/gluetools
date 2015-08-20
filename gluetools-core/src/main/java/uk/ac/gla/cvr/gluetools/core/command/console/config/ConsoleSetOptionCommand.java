@@ -6,8 +6,10 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -20,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords = {"console","set"},
 		docoptUsages = {"<optionName> <optionValue>"}, 
-		modeWrappable = false,
+		metaTags = { CmdMeta.consoleOnly, CmdMeta.nonModeWrappable },
 		description = "Set a console option's value")
 public class ConsoleSetOptionCommand extends ConsoleOptionCommand<OkResult> {
 	
@@ -41,8 +43,9 @@ public class ConsoleSetOptionCommand extends ConsoleOptionCommand<OkResult> {
 	}
 	
 	@Override
-	protected OkResult executeOnConsole(ConsoleCommandContext cmdContext) {
-		cmdContext.setOptionValue(getConsoleOption(), optionValue);
+	public OkResult execute(CommandContext cmdContext) {
+		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
+		consoleCommandContext.setOptionValue(getConsoleOption(), optionValue);
 		return new OkResult();
 	}
 	
