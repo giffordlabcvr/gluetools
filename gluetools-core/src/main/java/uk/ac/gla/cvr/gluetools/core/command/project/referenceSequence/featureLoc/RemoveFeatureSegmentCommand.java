@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	metaTags={CmdMeta.updatesDatabase},
 	description="Remove a segment of the reference sequence", 
 	furtherHelp="") 
-public class RemoveFeatureSegmentCommand extends FeatureModeCommand<DeleteResult> {
+public class RemoveFeatureSegmentCommand extends FeatureLocModeCommand<DeleteResult> {
 
 	public static final String REF_START = "refStart";
 	public static final String REF_END = "refEnd";

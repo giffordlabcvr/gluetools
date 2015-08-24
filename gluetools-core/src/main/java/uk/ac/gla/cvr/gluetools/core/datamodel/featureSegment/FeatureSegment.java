@@ -4,19 +4,20 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
-import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 
 @GlueDataClass(defaultListColumns = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY})
 public class FeatureSegment extends _FeatureSegment {
 	
 	public static final String REF_SEQ_NAME_PATH = 
-			_FeatureSegment.FEATURE_PROPERTY+"."+_Feature.REFERENCE_SEQUENCE_PROPERTY+"."+
+			_FeatureSegment.FEATURE_LOCATION_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+
 					_ReferenceSequence.NAME_PROPERTY;
 
 	public static final String FEATURE_NAME_PATH = 
-			_FeatureSegment.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
+			_FeatureSegment.FEATURE_LOCATION_PROPERTY+"."+FeatureLocation.FEATURE_NAME_PATH;
 
 
 	
@@ -39,8 +40,8 @@ public class FeatureSegment extends _FeatureSegment {
 	@Override
 	protected Map<String, String> pkMap() {
 		return pkMap(
-				getFeature().getReferenceSequence().getName(), 
-				getFeature().getName(),
+				getFeatureLocation().getReferenceSequence().getName(), 
+				getFeatureLocation().getFeature().getName(),
 				getRefStart(), 
 				getRefEnd());
 	}

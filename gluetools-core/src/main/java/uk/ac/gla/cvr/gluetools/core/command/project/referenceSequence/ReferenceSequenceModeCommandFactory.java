@@ -16,10 +16,10 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 
-		registerCommandClass(CreateFeatureCommand.class);
-		registerCommandClass(DeleteFeatureCommand.class);
-		registerCommandClass(ListFeatureCommand.class);
-		registerCommandClass(FeatureCommand.class);
+		registerCommandClass(AddFeatureLocCommand.class);
+		registerCommandClass(RemoveFeatureLocation.class);
+		registerCommandClass(ListFeatureLocCommand.class);
+		registerCommandClass(FeatureLocCommand.class);
 		registerCommandClass(ShowSequenceCommand.class);
 		registerCommandClass(ShowCreationTimeCommand.class);
 

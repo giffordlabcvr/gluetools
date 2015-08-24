@@ -31,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature.ListFeatureSegmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.ListFeatureSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.NucleotidesResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowNucleotidesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -155,13 +155,13 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 					cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute();
 			refSeqName = showReferenceResult.getReferenceName();
 		}
-		// go into reference sequence and find feature segments.
+		// go into reference sequence and find feature-location segments.
 		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refSeqName)) {
 			ShowSequenceResult showSequenceResult = 
 					(ShowSequenceResult) cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
 			analysisData.refSeqSourceName = showSequenceResult.getSourceName();
 			analysisData.refSeqId = showSequenceResult.getSequenceID();
-			try (ModeCloser featureMode = cmdContext.pushCommandMode("feature", featureName)) {
+			try (ModeCloser featureMode = cmdContext.pushCommandMode("feature-location", featureName)) {
 				ListResult listFeatResult = (ListResult) cmdContext.
 						cmdBuilder(ListFeatureSegmentCommand.class).execute();
 				listFeatResult.asListOfMaps().forEach(featSeg -> {

@@ -1,0 +1,21 @@
+console change load-save-path testProject
+create project TEST_PROJECT "GLUE test project"
+project TEST_PROJECT
+  create source local
+  import sequence local file1 GENBANK_XML sequence.xml
+  import sequence local file2 GENBANK_XML sequence.xml
+
+  create feature GENE_1 "some gene"
+  list feature
+
+  create reference ref1 local file1
+  list reference
+
+#  create alignment ref1 AL1 
+#  alignment AL1
+#    add member local file2
+#    exit
+
+  reference ref1
+    create feature-location GENE_1
+  

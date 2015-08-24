@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -38,9 +38,9 @@ public abstract class ReferenceSequenceModeCommand<R extends CommandResult> exte
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			if(argStrings.isEmpty()) {
-				Expression exp = ExpressionFactory.matchExp(Feature.REF_SEQ_NAME_PATH, getRefSeqMode(cmdContext).getRefSeqName());
-				return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class, exp)).
-						getColumnValues(Feature.NAME_PROPERTY);
+				Expression exp = ExpressionFactory.matchExp(FeatureLocation.REF_SEQ_NAME_PATH, getRefSeqMode(cmdContext).getRefSeqName());
+				return CommandUtils.runListCommand(cmdContext, FeatureLocation.class, new SelectQuery(FeatureLocation.class, exp)).
+						getColumnValues(FeatureLocation.FEATURE_NAME_PATH);
 			}
 			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
 		}

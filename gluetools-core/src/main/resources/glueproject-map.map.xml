@@ -28,12 +28,16 @@
 	<db-entity name="FEATURE">
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
+	</db-entity>
+	<db-entity name="FEATURE_LOCATION">
+		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="FEATURE_SEGMENT">
-		<db-attribute name="ALIGNMENT" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_END" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_START" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
 	</db-entity>
 	<db-entity name="MODULE">
@@ -72,6 +76,9 @@
 	<obj-entity name="Feature" className="uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature" dbEntityName="FEATURE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
+	</obj-entity>
+	<obj-entity name="FeatureLocation" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation" dbEntityName="FEATURE_LOCATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 	</obj-entity>
 	<obj-entity name="FeatureSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment" dbEntityName="FEATURE_SEGMENT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>
@@ -122,21 +129,27 @@
 		<db-attribute-pair source="SEQUENCE" target="SEQUENCE_ID"/>
 		<db-attribute-pair source="SOURCE" target="SOURCE"/>
 	</db-relationship>
-	<db-relationship name="referenceSequence" source="FEATURE" target="REFERENCE_SEQUENCE" toMany="false">
+	<db-relationship name="featureLocations" source="FEATURE" target="FEATURE_LOCATION" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="NAME" target="FEATURE"/>
+	</db-relationship>
+	<db-relationship name="feature" source="FEATURE_LOCATION" target="FEATURE" toMany="false">
+		<db-attribute-pair source="FEATURE" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="referenceSequence" source="FEATURE_LOCATION" target="REFERENCE_SEQUENCE" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="NAME"/>
 	</db-relationship>
-	<db-relationship name="segments" source="FEATURE" target="FEATURE_SEGMENT" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="NAME" target="FEATURE"/>
-		<db-attribute-pair source="REF_SEQUENCE" target="ALIGNMENT"/>
+	<db-relationship name="segments" source="FEATURE_LOCATION" target="FEATURE_SEGMENT" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
 	</db-relationship>
-	<db-relationship name="feature" source="FEATURE_SEGMENT" target="FEATURE" toMany="false">
-		<db-attribute-pair source="FEATURE" target="NAME"/>
-		<db-attribute-pair source="ALIGNMENT" target="REF_SEQUENCE"/>
+	<db-relationship name="featureLocation" source="FEATURE_SEGMENT" target="FEATURE_LOCATION" toMany="false">
+		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
 	</db-relationship>
 	<db-relationship name="alignmentsWhereRefSequence" source="REFERENCE_SEQUENCE" target="ALIGNMENT" toMany="true">
 		<db-attribute-pair source="NAME" target="REF_SEQUENCE"/>
 	</db-relationship>
-	<db-relationship name="features" source="REFERENCE_SEQUENCE" target="FEATURE" toDependentPK="true" toMany="true">
+	<db-relationship name="featureLocations" source="REFERENCE_SEQUENCE" target="FEATURE_LOCATION" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="REF_SEQUENCE"/>
 	</db-relationship>
 	<db-relationship name="sequence" source="REFERENCE_SEQUENCE" target="SEQUENCE" toMany="false">
@@ -165,11 +178,13 @@
 	<obj-relationship name="alignedSegments" source="AlignmentMember" target="AlignedSegment" deleteRule="Cascade" db-relationship-path="alignedSegments"/>
 	<obj-relationship name="alignment" source="AlignmentMember" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>
 	<obj-relationship name="sequence" source="AlignmentMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
-	<obj-relationship name="referenceSequence" source="Feature" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="referenceSequence"/>
-	<obj-relationship name="segments" source="Feature" target="FeatureSegment" deleteRule="Cascade" db-relationship-path="segments"/>
-	<obj-relationship name="feature" source="FeatureSegment" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
+	<obj-relationship name="featureLocations" source="Feature" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="featureLocations"/>
+	<obj-relationship name="feature" source="FeatureLocation" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
+	<obj-relationship name="referenceSequence" source="FeatureLocation" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="referenceSequence"/>
+	<obj-relationship name="segments" source="FeatureLocation" target="FeatureSegment" deleteRule="Cascade" db-relationship-path="segments"/>
+	<obj-relationship name="featureLocation" source="FeatureSegment" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLocation"/>
 	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignmentsWhereRefSequence"/>
-	<obj-relationship name="features" source="ReferenceSequence" target="Feature" deleteRule="Cascade" db-relationship-path="features"/>
+	<obj-relationship name="featureLocations" source="ReferenceSequence" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="featureLocations"/>
 	<obj-relationship name="sequence" source="ReferenceSequence" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="alignmentMemberships" source="Sequence" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="alignmentsWhereMember"/>
 	<obj-relationship name="referenceSequences" source="Sequence" target="ReferenceSequence" deleteRule="Deny" db-relationship-path="referenceSequences"/>

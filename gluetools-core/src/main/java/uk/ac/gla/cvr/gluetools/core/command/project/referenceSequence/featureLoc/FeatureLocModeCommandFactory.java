@@ -1,15 +1,15 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-public class FeatureModeCommandFactory extends BaseCommandFactory {
+public class FeatureLocModeCommandFactory extends BaseCommandFactory {
 
-	public static Multiton.Creator<FeatureModeCommandFactory> creator = new
-			Multiton.SuppliedCreator<>(FeatureModeCommandFactory.class, FeatureModeCommandFactory::new);
+	public static Multiton.Creator<FeatureLocModeCommandFactory> creator = new
+			Multiton.SuppliedCreator<>(FeatureLocModeCommandFactory.class, FeatureLocModeCommandFactory::new);
 
-	private FeatureModeCommandFactory() {
+	private FeatureLocModeCommandFactory() {
 	}	
 
 	@Override

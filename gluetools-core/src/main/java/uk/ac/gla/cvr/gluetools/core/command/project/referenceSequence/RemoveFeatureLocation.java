@@ -9,17 +9,17 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"delete", "feature"}, 
+	commandWords={"remove", "feature-location"}, 
 	docoptUsages={"<featureName>"},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Delete a reference sequence feature") 
-public class DeleteFeatureCommand extends ReferenceSequenceModeCommand<DeleteResult> {
+	description="Remove a feature location") 
+public class RemoveFeatureLocation extends ReferenceSequenceModeCommand<DeleteResult> {
 
 	private String featureName;
 	
@@ -32,7 +32,7 @@ public class DeleteFeatureCommand extends ReferenceSequenceModeCommand<DeleteRes
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, Feature.class, Feature.pkMap(getRefSeqName(), featureName));
+		DeleteResult result = GlueDataObject.delete(objContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), featureName));
 		cmdContext.commit();
 		return result;
 	}

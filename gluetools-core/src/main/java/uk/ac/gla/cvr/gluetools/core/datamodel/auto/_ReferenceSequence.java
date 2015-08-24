@@ -4,7 +4,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 /**
@@ -18,7 +18,7 @@ public abstract class _ReferenceSequence extends GlueDataObject {
     public static final String CREATION_TIME_PROPERTY = "creationTime";
     public static final String NAME_PROPERTY = "name";
     public static final String ALIGNMENTS_PROPERTY = "alignments";
-    public static final String FEATURES_PROPERTY = "features";
+    public static final String FEATURE_LOCATIONS_PROPERTY = "featureLocations";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
     public static final String NAME_PK_COLUMN = "NAME";
@@ -50,15 +50,15 @@ public abstract class _ReferenceSequence extends GlueDataObject {
     }
 
 
-    public void addToFeatures(Feature obj) {
-        addToManyTarget(FEATURES_PROPERTY, obj, true);
+    public void addToFeatureLocations(FeatureLocation obj) {
+        addToManyTarget(FEATURE_LOCATIONS_PROPERTY, obj, true);
     }
-    public void removeFromFeatures(Feature obj) {
-        removeToManyTarget(FEATURES_PROPERTY, obj, true);
+    public void removeFromFeatureLocations(FeatureLocation obj) {
+        removeToManyTarget(FEATURE_LOCATIONS_PROPERTY, obj, true);
     }
     @SuppressWarnings("unchecked")
-    public List<Feature> getFeatures() {
-        return (List<Feature>)readProperty(FEATURES_PROPERTY);
+    public List<FeatureLocation> getFeatureLocations() {
+        return (List<FeatureLocation>)readProperty(FEATURE_LOCATIONS_PROPERTY);
     }
 
 

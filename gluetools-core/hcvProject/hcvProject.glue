@@ -695,54 +695,68 @@ project HCV
 
   create reference H77 ncbi-nuccore 2316097
   
+  create feature 5UTR
+  create feature Core
+  create feature E1
+  create feature E2
+  create feature p7
+  create feature NS2
+  create feature NS3
+  create feature NS4A
+  create feature NS4B
+  create feature NS5A
+  create feature NS5B
+  create feature 3UTR
+  
+  
   reference H77
   
-    create feature 5UTR
-    feature 5UTR
+    add feature-location 5UTR
+    feature-location 5UTR
       add segment 1 341
             exit
-    create feature Core
-    feature Core
+    add feature-location Core
+    feature-location Core
       add segment 342 914
             exit
-    create feature E1
-    feature E1
+    add feature-location E1
+    feature-location E1
       add segment 915 1490
       exit
-    create feature E2
-    feature E2
+    add feature-location E2
+    feature-location E2
       add segment 1491 2579
       exit
-    create feature p7
-    feature p7
+    add feature-location p7
+    feature-location p7
       add segment 2580 2768
       exit
-    create feature NS2
-    feature NS2
+    add feature-location NS2
+    feature-location NS2
       add segment 2769 3419
       exit
-    create feature NS3
-    feature NS3
+    add feature-location NS3
+    feature-location NS3
       add segment 3420 5312
       exit
-    create feature NS4A
-    feature NS4A
+    add feature-location NS4A
+    feature-location NS4A
       add segment 5313 5474
       exit
-    create feature NS4B
-    feature NS4B
+    add feature-location NS4B
+    feature-location NS4B
       add segment 5475 6257
       exit
-    create feature NS5A
-    feature NS5A
+    add feature-location NS5A
+    feature-location NS5A
       add segment 6258 7601
       exit
-    create feature NS5B
-    feature NS5B
+    add feature-location NS5B
+    feature-location NS5B
       add segment 7602 9377
       exit
-    create feature 3UTR
-    feature 3UTR
+    add feature-location 3UTR
+    feature-location 3UTR
       add segment 9378 9620
       exit
     exit
@@ -4793,12 +4807,7 @@ project HCV
   import module fastaImporter hcvFastaImporter.xml
   
   module fastaImporter import -f stopHcvNimble.fasta
-  
-#  module mutationFrequencies
-#  
-#    generate -t 6 -f E1
-#    exit
-#
+
 
     import module blastAligner hcvBlastAligner.xml
 
@@ -4851,4 +4860,9 @@ project HCV
     compute alignment AL_2b blastAligner 
     alignment AL_2b show statistics
 
+  
+  module mutationFrequencies
+  
+    generate -t 6 -f E1
+    exit
   

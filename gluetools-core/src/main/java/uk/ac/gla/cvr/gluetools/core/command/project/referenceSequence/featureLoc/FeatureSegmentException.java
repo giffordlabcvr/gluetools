@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 

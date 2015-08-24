@@ -83,6 +83,12 @@ schema-project TEST_PROJECT
   exit
   
 project TEST_PROJECT
+
+  create feature GENE_1 "some gene"
+  create feature GENE_2 "some other gene"
+  create feature GENE_3 "yet another gene"
+  delete feature GENE_2
+
   list sequence sequenceID GB_GENOTYPE GB_SUBTYPE
   list sequence sequenceID NIM_1 NIM_2 NIM_4 NIM_5 NIM_8 CUSTOM_FIELD_X CUSTOM_FIELD_Y
   create reference ref1 local file1
@@ -91,13 +97,12 @@ project TEST_PROJECT
   delete reference ref2
   list reference
 
+
   reference ref1
-    create feature GENE_1 "some gene"
-    create feature GENE_2 "some other gene"
-    create feature GENE_3 "yet another gene"
-    delete feature GENE_2
-    list feature
-    feature GENE_1
+    add feature-location GENE_1
+    add feature-location GENE_3
+    list feature-location
+    feature-location GENE_1
       add segment 20 50
       add segment 60 80
       add segment 90 100
@@ -127,4 +132,8 @@ project TEST_PROJECT
 #    show configuration
 #  	exit
 
+  
+
+    
+  
   

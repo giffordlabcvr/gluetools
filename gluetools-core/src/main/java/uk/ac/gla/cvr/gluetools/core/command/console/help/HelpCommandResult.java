@@ -18,7 +18,7 @@ public class HelpCommandResult extends ConsoleCommandResult {
 			helpLines.stream().forEach(h -> {
 				String commandWords = String.join(" ", h.getCommandWords());
 				if(h instanceof GroupHelpLine) { commandWords += " ..."; }
-				formatter.format("  %-22s - %-53s\n", commandWords, h.getDescription());
+				formatter.format("  %-23s - %-52s\n", commandWords, h.getDescription());
 			});
 		}
 		buf.append("\nFor more detailed help, use: help <commandWord>...\n");

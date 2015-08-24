@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 	commandWords={"list", "segment"}, 
 	docoptUsages={""},
 	description="List the reference sequence segments") 
-public class ListFeatureSegmentCommand extends FeatureModeCommand<ListResult> {
+public class ListFeatureSegmentCommand extends FeatureLocModeCommand<ListResult> {
 
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
