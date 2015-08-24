@@ -109,7 +109,7 @@ public class TableResult extends CommandResult {
 		return headers;
 	}
 
-	public void renderToStringWriter(StringWriter stringWriter,
+	public static void renderToStringWriter(StringWriter stringWriter,
 			List<String> headers, List<Map<String, Object>> listOfMaps) {
 		int numFound = listOfMaps.size();
 		if(numFound > 0) {

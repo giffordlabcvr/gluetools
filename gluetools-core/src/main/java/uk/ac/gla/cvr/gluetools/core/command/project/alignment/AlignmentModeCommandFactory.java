@@ -27,6 +27,7 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentUnsetParentCommand.class);
 		registerCommandClass(AlignmentListChildrenCommand.class);
 		registerCommandClass(AlignmentShowParentCommand.class);
+		registerCommandClass(AlignmentShowAncestorsCommand.class);
 
 		
 		registerCommandClass(ExitCommand.class);

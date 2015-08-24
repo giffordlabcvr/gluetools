@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand.ListAlignedSegmentResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
@@ -261,12 +262,12 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				MemberData memberData = new MemberData(memberSourceName, memberSequenceId);
 				analysisData.memberDatas.add(memberData);
 				try (ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSequenceId)) {
-					ListResult listAlignedSegResult = cmdContext.cmdBuilder(ListAlignedSegmentCommand.class).execute();
-					listAlignedSegResult.asListOfMaps().forEach(alignedSeg -> {
-						int alnRefStart = (Integer) alignedSeg.get(AlignedSegment.REF_START_PROPERTY);
-						int alnRefEnd = (Integer) alignedSeg.get(AlignedSegment.REF_END_PROPERTY);
-						int alnMembStart = (Integer) alignedSeg.get(AlignedSegment.MEMBER_START_PROPERTY);
-						int alnMembEnd = (Integer) alignedSeg.get(AlignedSegment.MEMBER_END_PROPERTY);
+					ListAlignedSegmentResult listAlignedSegResult = cmdContext.cmdBuilder(ListAlignedSegmentCommand.class).execute();
+					listAlignedSegResult.asQueryAlignedSegments().forEach(alignedSeg -> {
+						int alnRefStart = alignedSeg.getRefStart();
+						int alnRefEnd = alignedSeg.getRefEnd();
+						int alnMembStart = alignedSeg.getQueryStart();
+						int alnMembEnd = alignedSeg.getQueryEnd();
 						
 						for(ReferenceSegment refSeg: analysisData.referenceSegments) {
 							// find overlap with ref segment and aligned segment in ref coordinates.

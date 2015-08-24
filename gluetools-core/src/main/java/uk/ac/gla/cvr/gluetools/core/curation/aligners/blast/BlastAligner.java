@@ -18,8 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -91,7 +91,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 
 	
 	public static class BlastAlignerResult extends Aligner.AlignerResult {
-		public BlastAlignerResult(Map<String, List<AlignedSegment>> fastaIdToAlignedSegments) {
+		public BlastAlignerResult(Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments) {
 			super("blastAlignerResult", fastaIdToAlignedSegments);
 		}
 
@@ -117,12 +117,12 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 	public BlastAlignerResult doBlastAlign(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
 		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
 		List<BlastResult> blastResults = blastRunner.executeBlast(cmdContext, refName, fastaBytes);
-		Map<String, List<AlignedSegment>> fastaIdToAlignedSegments = blastResultsToAlignedSegmentsMap(refName, blastResults);
+		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = blastResultsToAlignedSegmentsMap(refName, blastResults);
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}
 
-	public Map<String, List<AlignedSegment>> blastResultsToAlignedSegmentsMap(String refName, List<BlastResult> blastResults) {
-		LinkedHashMap<String, List<AlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<AlignedSegment>>();
+	public Map<String, List<QueryAlignedSegment>> blastResultsToAlignedSegmentsMap(String refName, List<BlastResult> blastResults) {
+		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
 		for(BlastResult blastResult: blastResults) {
 			String queryFastaId = blastResult.getQueryFastaId();
 			// find hits on the specified reference
@@ -152,7 +152,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 			// merge/rationalise the segments;
 			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
 			// store merged segments against the query fasta ID.
-			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<AlignedSegment>(mergedSegments));
+			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
 		}
 		return fastaIdToAlignedSegments;
 	}

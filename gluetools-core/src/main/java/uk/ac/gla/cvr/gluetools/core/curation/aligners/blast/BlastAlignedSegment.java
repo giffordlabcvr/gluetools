@@ -2,10 +2,10 @@ package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
 
 import java.util.function.Function;
 
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
 
-public class BlastAlignedSegment extends AlignedSegment {
+public class BlastAlignedSegment extends QueryAlignedSegment {
 
 	private BlastHsp hsp;
 	public BlastAlignedSegment(int refStart, int refEnd, int queryStart, int queryEnd,

@@ -46,7 +46,7 @@ public class ArrayReader {
 	public ObjectReader getObject(int i) {
 		return new ObjectReader(getItemElement(i));
 	}
-
+	
 	public int size() {
 		return elements.size();
 	}
