@@ -4865,4 +4865,9 @@ project HCV
   
     generate -t 6 -f E1
     exit
+
+
+  create source sam2consensus
+  
+  import sequence sam2consensus 1a_example SAM2CONSENSUS "sam2consensus/1a_example.s2c"
   

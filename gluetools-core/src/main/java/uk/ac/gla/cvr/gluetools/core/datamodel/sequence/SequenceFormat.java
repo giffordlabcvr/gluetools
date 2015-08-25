@@ -11,6 +11,7 @@ import org.xml.sax.SAXException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.Sam2ConsensusFile;
 
 public enum SequenceFormat {
 
@@ -58,8 +59,30 @@ public enum SequenceFormat {
 		public String originalDataAsString(byte[] data) {
 			return new String(data);
 		}
-	};
+	},
 
+	SAM2CONSENSUS {
+
+		@Override
+		public String nucleotidesAsString(byte[] data) {
+			ByteArrayInputStream bais = new ByteArrayInputStream(data);
+			Sam2ConsensusFile sam2ConsensusFile = new Sam2ConsensusFile();
+			try {
+				sam2ConsensusFile.parse(bais);
+			} catch (IOException e) {
+				// should not happen.
+				throw new RuntimeException(e);
+			}
+			return sam2ConsensusFile.getNucleotides();
+		}
+
+		@Override
+		public String originalDataAsString(byte[] data) {
+			return new String(data);
+		}
+		
+	};
+	
 	public abstract String nucleotidesAsString(byte[] data);
 
 	public abstract String originalDataAsString(byte[] data);

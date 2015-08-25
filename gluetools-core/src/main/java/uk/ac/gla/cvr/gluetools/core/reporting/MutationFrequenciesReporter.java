@@ -37,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.NucleotidesResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowNucleotidesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
