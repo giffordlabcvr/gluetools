@@ -21,7 +21,7 @@ public class BlastAlignedSegment extends QueryAlignedSegment {
 	 * which is returned
 	 * This segment is then modified to be the remaining part.
 	 */
-	public BlastAlignedSegment truncateLeft(int length) {
+	public BlastAlignedSegment truncateLeftBlast(int length) {
 		checkTruncateLength(length);
 		BlastAlignedSegment leftSegment = new BlastAlignedSegment(
 				getRefStart(), 
@@ -34,18 +34,13 @@ public class BlastAlignedSegment extends QueryAlignedSegment {
 		return leftSegment;
 	}
 	
-	private void checkTruncateLength(int length) {
-		if(length <= 0 || length > getRefEnd() - getRefStart()) {
-			throw new IllegalArgumentException("Illegal length argument: "+
-		length+": should be between "+1+" and "+(getRefEnd() - getRefStart())+" inclusive" );
-		}
-	}
+	
 	/**
 	 * Split the segment into two parts, a new right part of length <length>
 	 * which is returned.
 	 * This segment is then modified to be the remaining part.
 	 */
-	public BlastAlignedSegment truncateRight(int length) {
+	public BlastAlignedSegment truncateRightBlast(int length) {
 		checkTruncateLength(length);
 		BlastAlignedSegment rightSegment = new BlastAlignedSegment(
 				getRefEnd()-length+1, 
@@ -125,7 +120,7 @@ public class BlastAlignedSegment extends QueryAlignedSegment {
 					/*    [ existing ---
 					 * [   new   ---
 					 */
-					truncatedNewSegments.add(newSegments.getFirst().truncateLeft(existingStart - newStart));
+					truncatedNewSegments.add(newSegments.getFirst().truncateLeftBlast(existingStart - newStart));
 					if(existingEnd < newEnd) {
 						/*    [3 existing 6]
 						 * [1   new          9]

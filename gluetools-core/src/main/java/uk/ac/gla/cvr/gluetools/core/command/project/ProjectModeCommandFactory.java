@@ -24,7 +24,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteAlignmentCommand.class);
 		registerCommandClass(ListAlignmentCommand.class);
 		registerCommandClass(ComputeAlignmentCommand.class);
-
+		registerCommandClass(TranslateSegmentsCommand.class);
 		registerCommandClass(CreateSourceCommand.class);
 		registerCommandClass(DeleteSourceCommand.class);
 		registerCommandClass(ListSourceCommand.class);

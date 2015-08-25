@@ -1,10 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -13,8 +13,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
@@ -23,20 +21,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"translate", "segments"}, 
-		description = "Translate segments between alignments", 
+		description = "Translate segments between references", 
 		docoptUsages = {}, 
 		metaTags={CmdMeta.inputIsComplex},
-		furtherHelp = "Given a set of segments relating a query sequence Q to the reference R1 of a given alignment A1, "+
-				"translate these segments so that they relate Q to a different reference R2, where R2 is the reference "+
-				"sequence of some alignment A2 which is an ancestor of A1. \n"+
+		furtherHelp = "Given a set of segments relating a query sequence Q to a reference R1, "+
+				"and another set of segments relating R1 to a reference R2, produce a set of segments "+
+				"relating Q to R2. \n"+
 				"Example JSON input:\n"+
 				"{\n"+
 				"  translate: {\n"+
 				"  {\n"+
 				"    segments: {\n"+
-				"      fromAlignmentName: \"A1\",\n"+
-				"      toAlignmentName: \"A2\",\n"+
-				"      queryAlignedSegment: [\n"+
+				"      queryToRef1Segment: [\n"+
 				"        {\n"+
 				"          refStart: 49,\n"+
 				"          refEnd: 90,\n"+
@@ -48,6 +44,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"          refEnd: 155,\n"+
 				"          queryStart: 94,\n"+
 				"          queryEnd: 145\n"+
+				"        } ],\n"+
+				"      ref1ToRef2Segment: [\n"+
+				"        {\n"+
+				"          refStart: 49,\n"+
+				"          refEnd: 70,\n"+
+				"          queryStart: 19,\n"+
+				"          queryEnd: 40\n"+
+				"        },\n"+
+				"        {\n"+
+				"          refStart: 104,\n"+
+				"          refEnd: 155,\n"+
+				"          queryStart: 54,\n"+
+				"          queryEnd: 105\n"+
 				"        } ]\n"+
 				"      }\n"+
 				"    }\n"+
@@ -57,42 +66,39 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class TranslateSegmentsCommand extends Command<TranslateSegmentsCommand.TransformSegmentsResult> {
 
 
-	private String fromAlignmentName;
-	private String toAlignmentName;
-	private List<QueryAlignedSegment> inputSegments;
+	private LinkedList<QueryAlignedSegment> queryToRef1Segments;
+	private LinkedList<QueryAlignedSegment> ref1ToRef2Segments;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fromAlignmentName = PluginUtils.configureStringProperty(configElem, "fromAlignmentName", true);
-		toAlignmentName = PluginUtils.configureStringProperty(configElem, "toAlignmentName", true);
-		List<Element> inputSegmentElems = PluginUtils.findConfigElements(configElem, "queryAlignedSegment");
-		inputSegments = inputSegmentElems.stream()
+		List<Element> queryToRef1SegmentElems = PluginUtils.findConfigElements(configElem, "queryToRef1Segment");
+		queryToRef1Segments = new LinkedList<QueryAlignedSegment>(queryToRef1SegmentElems.stream()
 				.map(elem -> new QueryAlignedSegment(new ObjectReader(elem)))
-				.collect(Collectors.toList());
+				.collect(Collectors.toList()));
+		List<Element> ref1ToRef2SegmentElems = PluginUtils.findConfigElements(configElem, "ref1ToRef2Segment");
+		ref1ToRef2Segments = new LinkedList<QueryAlignedSegment>(ref1ToRef2SegmentElems.stream()
+				.map(elem -> new QueryAlignedSegment(new ObjectReader(elem)))
+				.collect(Collectors.toList()));
 	}
 
 	@Override
 	public TransformSegmentsResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Alignment fromAlignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(fromAlignmentName));
-		Alignment toAlignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(toAlignmentName));
-		
-		return null;
+		return new TransformSegmentsResult(QueryAlignedSegment.translateSegments(queryToRef1Segments, ref1ToRef2Segments));
 	}
-
+	
 	public static class TransformSegmentsResult extends CommandResult {
 
 		protected TransformSegmentsResult(List<QueryAlignedSegment> resultSegments) {
 			super("transformSegmentsResult");
-			ArrayBuilder resultSegmentArrayBuilder = getDocumentBuilder().setArray("queryAlignedSegment");
+			ArrayBuilder resultSegmentArrayBuilder = getDocumentBuilder().setArray("queryToRef2Segments");
 			for(QueryAlignedSegment resultSegment: resultSegments) {
 				resultSegment.toDocument(resultSegmentArrayBuilder.addObject());
 			}
 		}
 		
 		public List<QueryAlignedSegment> getResultSegments() {
-			ArrayReader arrayReader = getDocumentReader().getArray("queryAlignedSegment");
+			ArrayReader arrayReader = getDocumentReader().getArray("queryToRef2Segments");
 			List<QueryAlignedSegment> resultSegments = new ArrayList<QueryAlignedSegment>();
 			for(int i = 0; i < arrayReader.size(); i++) {
 				resultSegments.add(new QueryAlignedSegment(arrayReader.getObject(i)));
