@@ -1,9 +1,9 @@
 'use strict';
 
-var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', ['angularFileUpload']);
+var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', ['angularFileUpload', 'glueWS']);
 
 
-submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'FileUploader', function($scope, FileUploader) {
+submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', function($scope, glueWS, FileUploader) {
 	$scope.pageTitle = "Submit sequences for analysis";
 	$scope.pageExplanation = "Submit sequences for analysis of mutations at the amino-acid level.";
 
@@ -12,12 +12,17 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'F
 	$scope.browseAndSelectHeader = "Or browse and select multiple files";
 	$scope.selectFilesButtonText = "Select files";
 
-    var uploader = $scope.uploader = new FileUploader({
-        url: 'upload.php'
-    });
+	console.log("init submitSequencesAnalysis controller");
 
-    // FILTERS
+	var uploader = $scope.uploader = new FileUploader({});
 
+	glueWS.addProjectUrlListener( {
+		reportProjectURL: function(projectURL) {
+		    $scope.uploader.url = projectURL+"/module/submitSequencesAnalysis";
+		    console.info('uploader', uploader);
+		}
+	});
+	
     uploader.filters.push({
         name: 'customFilter',
         fn: function(item /*{File|FileLikeObject}*/, options) {
@@ -60,9 +65,7 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'F
     uploader.onCompleteAll = function() {
         console.info('onCompleteAll');
     };
-
-    console.info('uploader', uploader);
-
+	
 	
 }]);
 

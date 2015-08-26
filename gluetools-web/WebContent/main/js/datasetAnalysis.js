@@ -166,6 +166,8 @@ function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations) {
 	$scope.regionSelectHeading = "Select genome region";  
 	$scope.regionSelectOpen = false;
 	
+	//console.log("init datasetAnalysis controller");
+	
 	$scope.updateMutations = function() {
 		var glueCommand = {"generate": {
 			"taxon":GenotypeSelection.id,
