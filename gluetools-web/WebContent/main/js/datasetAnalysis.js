@@ -1,6 +1,6 @@
-var mutationsBrowser = angular.module('mutationsBrowser', ['angularTreeview', 'ui.bootstrap', 'glueWS']);
+var datasetAnalysis = angular.module('datasetAnalysis', ['angularTreeview', 'ui.bootstrap', 'glueWS']);
 
-mutationsBrowser.factory('GenotypeSelection', function (){
+datasetAnalysis.factory('GenotypeSelection', function (){
 	return {
 		id: "",
 		label: "",
@@ -9,7 +9,7 @@ mutationsBrowser.factory('GenotypeSelection', function (){
 	};
 });
 
-mutationsBrowser.factory('RegionSelection', function (){
+datasetAnalysis.factory('RegionSelection', function (){
 	return {
 		id: "",
 		label: "", 
@@ -17,7 +17,7 @@ mutationsBrowser.factory('RegionSelection', function (){
 	};
 });
 
-mutationsBrowser.factory('Mutations', function (){
+datasetAnalysis.factory('Mutations', function (){
 	var mutations = [];
 	return {
 		getMutations: function() {
@@ -30,8 +30,7 @@ mutationsBrowser.factory('Mutations', function (){
 });
 
 
-
-mutationsBrowser.controller('selectGenotypeCtrl', 
+datasetAnalysis.controller('selectGenotypeCtrl', 
 		[ '$scope', '$http', 'GenotypeSelection',
 		function($scope, $http, GenotypeSelection) {
 			$scope.GenotypeSelection = GenotypeSelection;
@@ -64,7 +63,7 @@ mutationsBrowser.controller('selectGenotypeCtrl',
 		} ]);
 
 
-mutationsBrowser.controller('selectRegionCtrl', 
+datasetAnalysis.controller('selectRegionCtrl', 
 		[ '$scope', '$http', 'RegionSelection',
 		function($scope, $http, RegionSelection) {
 			$scope.RegionSelection = RegionSelection;
@@ -93,7 +92,7 @@ mutationsBrowser.controller('selectRegionCtrl',
 
 		} ]);
 
-mutationsBrowser.controller('mutationTableCtrl', 
+datasetAnalysis.controller('mutationTableCtrl', 
 		[ '$scope', 'Mutations',
 		function($scope, Mutations) {
 			$scope.Mutations = Mutations;
@@ -154,9 +153,11 @@ mutationsBrowser.controller('mutationTableCtrl',
 
 
 
-mutationsBrowser.controller('mutationsBrowserCtrl', [ '$scope', 'glueWS', 
+datasetAnalysis.controller('datasetAnalysisCtrl', [ '$scope', 'glueWS', 
              'GenotypeSelection', 'RegionSelection', 'Mutations',
 function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations) {
+	$scope.pageTitle = "Dataset analysis";
+	$scope.pageExplanation = "Based on a subset of sequences in the database, show frequencies of amino-acid level mutations at different positions in the genome.";
 	$scope.GenotypeSelection = GenotypeSelection;
 	$scope.RegionSelection = RegionSelection;
 	$scope.Mutations = Mutations;

@@ -49,3 +49,16 @@ body {
 	font-weight: bold;
 	color: #ff0000;
 }
+
+.my-drop-zone { 
+	border: dotted 3px lightgray; 
+}
+
+.nv-file-over { 
+	border: dotted 3px red; 
+} 
+/* Default class applied to drop zones on over */
+.another-file-over-class { 
+	border: dotted 3px green; 
+}
+

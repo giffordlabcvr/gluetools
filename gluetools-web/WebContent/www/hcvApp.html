@@ -4,12 +4,14 @@
 	<script type="text/javascript" src="../angular/angular.js"></script>
 	<script type="text/javascript" src="../angular/angular-route.min.js"></script>
 	<script type="text/javascript" src="../angular.treeview/angular.treeview.js"></script>
+	<script type="text/javascript" src="../angular-file-upload/angular-file-upload.min.js"></script>
 	<script type="text/javascript" src="../underscore/underscore-min.js"></script>
 	<script type="text/javascript" src="../ui-bootstrap/ui-bootstrap.js"></script>
 
 	<script type="text/javascript" src="../main/js/hcvApp.js"></script>
 	<script type="text/javascript" src="../main/js/glueWS.js"></script>
-	<script type="text/javascript" src="../main/js/mutationsBrowser.js"></script>
+	<script type="text/javascript" src="../main/js/datasetAnalysis.js"></script>
+	<script type="text/javascript" src="../main/js/submitSequencesAnalysis.js"></script>
 	<script type="text/javascript" src="../main/js/home.js"></script>
 	<script type="text/javascript" src="../main/js/utils.js"></script>
 	
@@ -40,11 +42,12 @@
 	    <div class="collapse navbar-collapse" ng-class="!navCollapsed && 'in'">
 	    
 	      <ul class="nav navbar-nav">
-	        <li><a href="#home">Home</a></li>
+	        <li><a href="#home">{{homeMenuTitle}}</a></li>
 	        <li class="dropdown" dropdown>
-	          <a href="#" dropdown-toggle class="dropdown-toggle" data-toggle="dropdown">Analysis <b class="caret"></b></a>
+	          <a href="#" dropdown-toggle class="dropdown-toggle" data-toggle="dropdown">{{analysisMenuTitle}} <b class="caret"></b></a>
 	          <ul class="dropdown-menu" role="menu">
-	            <li><a href="#mutationsBrowser">Dataset mutation analysis</a></li>
+	            <li><a href="#datasetAnalysis">{{datasetAnalysisMenuTitle}}</a></li>
+	            <li><a href="#submitSequencesAnalysis">{{submitSequencesAnalysisMenuTitle}}</a></li>
 	          </ul>
 	        </li>
 	        
