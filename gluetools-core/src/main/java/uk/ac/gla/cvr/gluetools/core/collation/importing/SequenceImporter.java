@@ -23,7 +23,7 @@ public abstract class SequenceImporter<P extends SequenceImporter<P>> extends Mo
 			set(CreateSequenceCommand.SOURCE_NAME, sourceName).
 			set(CreateSequenceCommand.SEQUENCE_ID, sequenceID).
 			set(CreateSequenceCommand.FORMAT, format.name()).
-			set(CreateSequenceCommand.ORIGINAL_DATA, new String(Base64.getEncoder().encode(sequenceData))).
+			set(CreateSequenceCommand.BASE64, new String(Base64.getEncoder().encode(sequenceData))).
 			execute();
 	}
 }

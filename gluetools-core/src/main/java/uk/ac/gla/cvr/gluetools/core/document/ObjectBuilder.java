@@ -10,7 +10,7 @@ public class ObjectBuilder {
 
 	private Element parentElement;
 
-	ObjectBuilder(Element parentElement, boolean isArray) {
+	public ObjectBuilder(Element parentElement, boolean isArray) {
 		super();
 		this.parentElement = parentElement;
 		GlueTypeUtils.setGlueType(parentElement, GlueTypeUtils.GlueType.Object, isArray);

@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.ws;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +16,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.cayenne.configuration.server.ServerRuntime;
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
@@ -30,6 +35,8 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public class WsCmdContext extends CommandContext {
 
@@ -69,6 +76,42 @@ public class WsCmdContext extends CommandContext {
 		}
 		return command.execute(this).getJsonObject().toString();
 	}
+	
+	@POST()
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.APPLICATION_JSON)
+	@SuppressWarnings({ "rawtypes" })
+	public String postAsCommandMultipart(
+			@FormDataParam("file") InputStream fileInputStream,
+			@FormDataParam("command") String commandString) {
+		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
+		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
+		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
+		String[] cmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass);
+		if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.consumesBinary)) {
+			throw new CommandException(CommandException.Code.COMMAND_DOES_NOT_CONSUME_BINARY, 
+					String.join(" ", cmdWords));
+		}
+		byte[] fileBytes;
+		try {
+			fileBytes = IOUtils.toByteArray(fileInputStream);
+		} catch(IOException ioe) {
+			throw new CommandException(ioe, CommandException.Code.COMMAND_BINARY_INPUT_IO_ERROR, cmdWords, ioe.getLocalizedMessage());
+		}
+		Element currentElem = cmdDocElem;
+		for(int i = 1; i < cmdWords.length; i ++) {
+			currentElem = GlueXmlUtils.findChildElements(currentElem, cmdWords[i]).get(0);
+		}
+		ObjectBuilder objectBuilder = new ObjectBuilder(currentElem, false);
+		String fileBase64 = new String(Base64.getEncoder().encode(fileBytes));
+		objectBuilder.set(Command.BINARY_INPUT_PROPERTY, fileBase64);
+		Command command = commandFromElement(cmdDocElem);
+		if(command == null) {
+			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
+		}
+		return command.execute(this).getJsonObject().toString();
+	}
+	
 	
 	// sub mode URL navigation
 	@Path("/{urlPathSegment}")

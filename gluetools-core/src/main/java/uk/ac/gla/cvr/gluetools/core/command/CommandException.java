@@ -10,8 +10,10 @@ public class CommandException extends GlueException {
 		NOT_A_MODE_COMMAND("commandText", "commandModePath"), 
 		COMMAND_USAGE_ERROR("errorText"), 
 		COMMAND_FAILED_ERROR("errorText"), 
+		COMMAND_DOES_NOT_CONSUME_BINARY("commandWords"), 
 		NOT_EXECUTABLE_IN_CONTEXT("commandWords", "contextDescription"), 
-		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue");
+		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue"), 
+		COMMAND_BINARY_INPUT_IO_ERROR("commandWords", "errorText");
 
 		private String[] argNames;
 		private Code(String... argNames) {

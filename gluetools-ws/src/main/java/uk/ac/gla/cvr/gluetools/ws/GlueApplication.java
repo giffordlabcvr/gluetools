@@ -14,6 +14,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import javax.ws.rs.ApplicationPath;
 
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
@@ -30,6 +31,7 @@ public class GlueApplication extends ResourceConfig implements ServletContextLis
 		super();
     	registerInstances(new GlueRequestHandler());
     	registerInstances(new GlueExceptionHandler());
+    	register(MultiPartFeature.class);
 	}
 
 	@Override

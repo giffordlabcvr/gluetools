@@ -66,12 +66,19 @@
 									<option value="Ref_1a">Ref_1a</option>
 									<option value="Ref_1b">Ref_1b</option>
 							</select></td>
-							<td class="text-center"><span ng-show="item.isSuccess"><i
-									class="glyphicon glyphicon-ok"></i></span> <span
-								ng-show="item.isCancel"><i
-									class="glyphicon glyphicon-ban-circle"></i></span> <span
-								ng-show="item.isError"><i
-									class="glyphicon glyphicon-remove"></i></span></td>
+							<td class="text-center">
+								<span ng-show="item.isSuccess">
+									<i class="glyphicon glyphicon-ok"></i>
+								</span> 
+								<span ng-show="item.isCancel">
+									<i class="glyphicon glyphicon-ban-circle"></i>
+								</span>
+								<span ng-show="item.isUploading">
+									<i class="glyphicon glyphicon-transfer"></i>
+								</span>
+								<span ng-show="item.isError">
+									<i class="glyphicon glyphicon-remove"></i>
+								</span></td>
 							<td nowrap>
 								<button type="button" class="btn btn-success btn-xs"
 									ng-click="item.upload()"

@@ -18,7 +18,7 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'g
 
 	glueWS.addProjectUrlListener( {
 		reportProjectURL: function(projectURL) {
-		    $scope.uploader.url = projectURL+"/module/submitSequencesAnalysis";
+		    $scope.uploader.url = projectURL+"/module/mutationFrequencies";
 		    console.info('uploader', uploader);
 		}
 	});
@@ -42,6 +42,16 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'g
         console.info('onAfterAddingAll', addedFileItems);
     };
     uploader.onBeforeUploadItem = function(item) {
+		var commandObject = {
+			"transient": {
+				analysis: {
+					referenceName: item.reference,
+					sequenceFormat: item.format
+				}
+			}
+		};
+    	item.formData = [{command: JSON.stringify(commandObject)}];
+        console.info('formData', JSON.stringify(item.formData));
         console.info('onBeforeUploadItem', item);
     };
     uploader.onProgressItem = function(fileItem, progress) {

@@ -19,7 +19,6 @@ import org.biojava.nbio.core.sequence.transcription.TranscriptionEngine;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -28,8 +27,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand.ListAlignedSegmentResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.ListFeatureSegmentCommand;
@@ -39,12 +36,14 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.TransientAnalysisCommand.TransientAnalysisResult;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
@@ -57,6 +56,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	public MutationFrequenciesReporter() {
 		transcriptionEngine = new TranscriptionEngine.Builder().initMet(false).build();
 		addProvidedCmdClass(GenerateCommand.class);
+		addProvidedCmdClass(TransientAnalysisCommand.class);
 	}
 
 	@Override
@@ -64,35 +64,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		alignmentName = PluginUtils.configureStringProperty(configElem, "alignmentName", true);
 	}
 
-	@CommandClass(
-			commandWords="generate", 
-			description = "Analyse mutations for a given taxon/feature", 
-			docoptUsages = { "[-t <taxon>] -f <feature>" }, 
-			docoptOptions = {
-					"-t <taxon>, --taxon <taxon>        Restrict analysis by taxon",
-					"-f <feature>, --feature <feature>  Specify genome feature"
-			}
-	)
-	public static class GenerateCommand extends ModuleProvidedCommand<MutationFrequenciesResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
-		
-		private Optional<String> taxon;
-		private String feature;
-		
-		@Override
-		public void configure(PluginConfigContext pluginConfigContext,
-				Element configElem) {
-			super.configure(pluginConfigContext, configElem);
-			taxon = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "taxon", false));
-			feature = PluginUtils.configureStringProperty(configElem, "feature", true);
-		}
-
-		@Override
-		protected MutationFrequenciesResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-			return mutationFrequenciesPlugin.doGenerate(cmdContext, taxon, feature);
-		}
-
-	}
-	
 	private class ReferenceSegment extends SegmentUtils.Segment {
 		public ReferenceSegment(int start, int end) {
 			super(start, end);
@@ -376,6 +347,15 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			}
 		}
 		
+	}
+
+
+
+
+	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
+			byte[] sequenceData, SequenceFormat sequenceFormat,
+			String referenceName) {
+		return new TransientAnalysisResult(sequenceFormat.nucleotidesAsString(sequenceData), referenceName);
 	}
 	
 }
