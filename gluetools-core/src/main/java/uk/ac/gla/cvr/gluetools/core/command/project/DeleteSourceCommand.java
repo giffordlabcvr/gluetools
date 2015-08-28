@@ -31,7 +31,7 @@ public class DeleteSourceCommand extends ProjectModeCommand<DeleteResult> {
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, Source.class, Source.pkMap(sourceName));
+		DeleteResult result = GlueDataObject.delete(objContext, Source.class, Source.pkMap(sourceName), true);
 		cmdContext.commit();
 		return result;
 	}

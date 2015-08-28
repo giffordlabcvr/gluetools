@@ -16,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 public abstract class _Sequence extends GlueDataObject {
 
     public static final String FORMAT_PROPERTY = "format";
-    public static final String ORIGINAL_DATA_PROPERTY = "originalData";
+    public static final String PACKED_DATA_PROPERTY = "packedData";
     public static final String SEQUENCE_ID_PROPERTY = "sequenceID";
     public static final String ALIGNMENT_MEMBERSHIPS_PROPERTY = "alignmentMemberships";
     public static final String REFERENCE_SEQUENCES_PROPERTY = "referenceSequences";
@@ -32,11 +32,11 @@ public abstract class _Sequence extends GlueDataObject {
         return (String)readProperty(FORMAT_PROPERTY);
     }
 
-    public void setOriginalData(byte[] originalData) {
-        writeProperty(ORIGINAL_DATA_PROPERTY, originalData);
+    public void setPackedData(byte[] packedData) {
+        writeProperty(PACKED_DATA_PROPERTY, packedData);
     }
-    public byte[] getOriginalData() {
-        return (byte[])readProperty(ORIGINAL_DATA_PROPERTY);
+    public byte[] getPackedData() {
+        return (byte[])readProperty(PACKED_DATA_PROPERTY);
     }
 
     public void setSequenceID(String sequenceID) {

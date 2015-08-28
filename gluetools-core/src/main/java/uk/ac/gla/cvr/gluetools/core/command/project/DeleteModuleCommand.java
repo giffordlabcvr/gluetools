@@ -32,7 +32,7 @@ public class DeleteModuleCommand extends ProjectModeCommand<DeleteResult> {
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, Module.class, Module.pkMap(moduleName));
+		DeleteResult result = GlueDataObject.delete(objContext, Module.class, Module.pkMap(moduleName), true);
 		cmdContext.commit();
 		return result;
 	}

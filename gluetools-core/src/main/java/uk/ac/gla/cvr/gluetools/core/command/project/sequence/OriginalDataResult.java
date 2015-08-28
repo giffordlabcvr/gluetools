@@ -22,8 +22,7 @@ public class OriginalDataResult extends MapResult {
 		buf.append(formatName);
 		buf.append("\n");
 		byte[] originalData = getBase64Bytes();
-		SequenceFormat format = SequenceFormat.valueOf(formatName);
-		buf.append(format.originalDataAsString(originalData));
+		buf.append(new String(originalData));
 		renderCtx.output(buf.toString());
 	}
 

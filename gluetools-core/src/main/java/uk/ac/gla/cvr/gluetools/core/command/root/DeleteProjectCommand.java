@@ -32,9 +32,12 @@ public class DeleteProjectCommand extends RootModeCommand<DeleteResult> {
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Project project = getProject(objContext, projectName);
+		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(projectName), true);
+		if(project == null) {
+			return new DeleteResult(Project.class, 0);
+		}
 		ModelBuilder.deleteProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project);
-		DeleteResult result = GlueDataObject.delete(objContext, Project.class, Project.pkMap(projectName));
+		DeleteResult result = GlueDataObject.delete(objContext, Project.class, Project.pkMap(projectName), true);
 		cmdContext.commit();
 		return result;
 	}

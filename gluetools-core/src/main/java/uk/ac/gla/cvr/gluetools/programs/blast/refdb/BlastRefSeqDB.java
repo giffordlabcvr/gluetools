@@ -19,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequen
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
@@ -118,7 +119,9 @@ public class BlastRefSeqDB {
 		OriginalDataResult refSeqOriginalData = getReferenceSeqOriginalData(cmdContext, refName);
 		SequenceFormat refSeqFormat = refSeqOriginalData.getFormat();
 		byte[] refSeqBytes = refSeqOriginalData.getBase64Bytes();
-		return refSeqFormat.nucleotidesAsString(refSeqBytes);
+		AbstractSequenceObject refSeqObject = refSeqFormat.sequenceObject();
+		refSeqObject.fromOriginalData(refSeqBytes);
+		return refSeqObject.getNucleotides();
 	}
 
 	private OriginalDataResult getReferenceSeqOriginalData(

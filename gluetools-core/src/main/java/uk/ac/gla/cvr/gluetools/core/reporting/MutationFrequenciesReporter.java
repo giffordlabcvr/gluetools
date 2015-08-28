@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.biojava.nbio.core.sequence.RNASequence;
 import org.biojava.nbio.core.sequence.transcription.TranscriptionEngine;
 import org.w3c.dom.Element;
@@ -36,6 +38,9 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -43,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.TransientAnalysisCommand.TransientAnalysisResult;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
@@ -352,10 +357,60 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 
 
-	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
-			byte[] sequenceData, SequenceFormat sequenceFormat,
-			String referenceName) {
-		return new TransientAnalysisResult(sequenceFormat.nucleotidesAsString(sequenceData), referenceName);
+	public List<SequenceResult> doTransientAnalysis(CommandContext cmdContext,
+			byte[] sequenceData, Boolean headerDetect, Optional<String> referenceName) {
+		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
+		List<AbstractSequenceObject> seqObjects;
+		if(format == SequenceFormat.FASTA) {
+			Map<String, DNASequence> fastaMap = FastaUtils.parseFasta(sequenceData);
+			seqObjects = fastaMap.entrySet().stream()
+					.map(ent -> new FastaSequenceObject(ent.getKey(), ent.getValue().toString()))
+					.collect(Collectors.toList());
+		} else {
+			AbstractSequenceObject seqObj = format.sequenceObject();
+			seqObj.fromOriginalData(sequenceData);
+			seqObjects = Collections.singletonList(seqObj);
+		}
+		String foundReference = referenceName.orElse("headerDetectRefName");
+		List<SequenceResult> sequenceResults = seqObjects.stream()
+				.map(seqObj -> new SequenceResult("submittedData", seqObj.getHeader(), format, foundReference))
+				.collect(Collectors.toList());
+		return sequenceResults;
 	}
+	
+
+	public class SequenceResult {
+		private String sourceName;
+		private String sequenceID;
+		private SequenceFormat sequenceFormat;
+		private String referenceName;
+		
+		public SequenceResult(String sourceName, String sequenceID,
+				SequenceFormat sequenceFormat, String referenceName) {
+			super();
+			this.sourceName = sourceName;
+			this.sequenceID = sequenceID;
+			this.sequenceFormat = sequenceFormat;
+			this.referenceName = referenceName;
+		}
+
+		public String getSourceName() {
+			return sourceName;
+		}
+
+		public String getSequenceID() {
+			return sequenceID;
+		}
+
+		public SequenceFormat getSequenceFormat() {
+			return sequenceFormat;
+		}
+
+		public String getReferenceName() {
+			return referenceName;
+		}
+		
+	}
+
 	
 }

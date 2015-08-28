@@ -45,8 +45,30 @@ public class FastaUtils {
 
 	public static byte[] mapToFasta(Map<String, DNASequence> sequenceIdToNucleotides) {
 		final StringBuffer buf = new StringBuffer();
-		sequenceIdToNucleotides.forEach((seqId, nts) -> 
-			buf.append(">").append(seqId).append("\n").append(nts.toString()).append("\n"));
+		sequenceIdToNucleotides.forEach((seqId, dnaSequence) -> 
+			buf.append(seqIdNtsPairToFasta(seqId, dnaSequence.toString())));
 		return buf.toString().getBytes();
 	}
+	
+	
+	public static String seqIdNtsPairToFasta(String seqId, String ntsString) {
+		final StringBuffer buf = new StringBuffer();
+		buf.append(">").append(seqId).append("\n");
+		int start = 0;
+		int blockLen = 70;
+		while(start + blockLen < ntsString.length()) {
+			buf.append(ntsString.substring(start, start+blockLen));
+			buf.append("\n");
+			start = start+blockLen;
+		}
+		if(start < ntsString.length()) {
+			buf.append(ntsString.substring(start));
+			buf.append("\n");
+		}
+		return buf.toString();
+		
+	}
+	
+	
+	
 }

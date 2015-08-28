@@ -33,7 +33,7 @@ public class DeleteAlignmentCommand extends ProjectModeCommand<DeleteResult> {
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, Alignment.class, Alignment.pkMap(alignmentName));
+		DeleteResult result = GlueDataObject.delete(objContext, Alignment.class, Alignment.pkMap(alignmentName), true);
 		cmdContext.commit();
 		return result;
 	}

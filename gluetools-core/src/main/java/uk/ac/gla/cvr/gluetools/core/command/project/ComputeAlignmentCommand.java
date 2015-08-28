@@ -31,13 +31,14 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCom
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -138,7 +139,10 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
 			OriginalDataResult memberSeqOriginalData = getOriginalData(cmdContext, memberSourceName, memberSeqId);
 			SequenceFormat memberSeqFormat = memberSeqOriginalData.getFormat();
-			String nucleotides = memberSeqFormat.nucleotidesAsString(memberSeqOriginalData.getBase64Bytes());
+			byte[] base64Bytes = memberSeqOriginalData.getBase64Bytes();
+			AbstractSequenceObject memberSeqObject = memberSeqFormat.sequenceObject();
+			memberSeqObject.fromOriginalData(base64Bytes);
+			String nucleotides = memberSeqObject.getNucleotides();
 			String queryId = constructQueryId(memberSourceName, memberSeqId);
 			queryIdToNucleotides.put(queryId, nucleotides);
 		}

@@ -51,7 +51,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext.getObjectContext(), FeatureLocation.class, 
 				FeatureLocation.pkMap(getRefSeqName(), getFeatureName()));
 		Sequence refSequence = featureLoc.getReferenceSequence().getSequence();
-		int refSeqLength = refSequence.getNucleotides().length();
+		int refSeqLength = refSequence.getSequenceObject().getNucleotides().length();
 		if(refStart < 1 || refEnd > refSeqLength) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OUT_OF_RANGE, 
 					getRefSeqName(), getFeatureName(), 

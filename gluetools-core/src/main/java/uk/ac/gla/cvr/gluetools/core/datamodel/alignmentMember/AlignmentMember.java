@@ -64,7 +64,7 @@ public class AlignmentMember extends _AlignmentMember {
 	}
 
 	private double getMemberNtCoveragePercent() {
-		int memberLength = getSequence().getNucleotides().length();
+		int memberLength = getSequence().getSequenceObject().getNucleotides().length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		int memberNTs = 0;
 		for(AlignedSegment segment: alignedSegments) {
@@ -76,7 +76,7 @@ public class AlignmentMember extends _AlignmentMember {
 
 	private double getReferenceNtCoveragePercent() {
 		int referenceLength = getAlignment().getRefSequence().
-				getSequence().getNucleotides().length();
+				getSequence().getSequenceObject().getNucleotides().length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		int referenceNTs = 0;
 		for(AlignedSegment segment: alignedSegments) {

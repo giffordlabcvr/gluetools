@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ncbiImporter>
+    <sequenceFormat>GENBANK_XML</sequenceFormat>
+    <eSearchTerm>"NC_004102"[Primary Accession]</eSearchTerm>
+    <eFetchBatchSize>500</eFetchBatchSize>
+</ncbiImporter>

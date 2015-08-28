@@ -37,7 +37,7 @@ public class DeleteSequenceFieldCommand extends TableSequencesModeCommand<Delete
 		Map<String, String> pkMap = Field.pkMap(getProjectName(), fieldName);
 		Field field = GlueDataObject.lookup(objContext, Field.class, pkMap);
 		ModelBuilder.deleteSequenceColumnFromModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), field.getProject(), field);
-		DeleteResult result = GlueDataObject.delete(objContext, Field.class, pkMap);
+		DeleteResult result = GlueDataObject.delete(objContext, Field.class, pkMap, true);
 		cmdContext.commit();
 		return result;
 	}

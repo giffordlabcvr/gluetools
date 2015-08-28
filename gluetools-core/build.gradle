@@ -1,8 +1,28 @@
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
+apply plugin: 'org.hidetake.ssh'
 
 sourceCompatibility = 1.8
 version = '1.0'
+
+remotes {
+  gluehome {
+    host = 'gluehome.cvr.gla.ac.uk'
+    user = 'js460b'
+    identity = file('/Users/joshsinger/.ssh/gluehome_id_rsa')
+  }
+}
+
+buildscript {
+  repositories {
+    // for ssh-deploy stuff
+    jcenter()
+  }
+  dependencies {
+    classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
+  }
+}
+
 
 jar {
     manifest {
@@ -23,6 +43,48 @@ task jarAll(type: Jar) {
     with jar
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
+
+
+// config for Glue which tells it where to find its database. 
+task deployGlueConfig {
+  ext.glueConfigFile = new File(projectDir, '/gluetools-config-gluehome.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfig.touchfile')
+  inputs.file glueConfigFile
+  outputs.file glueConfigTouchfile
+  doLast {
+	  println "Uploading "+glueConfigFile.name
+	  ssh.run {
+	    session(remotes.gluehome) {
+	      execute 'sudo -n mkdir -p /opt/gluehome'
+	      execute 'sudo -n chmod a+rw /opt/gluehome'
+	      put from: glueConfigFile, into: '/opt/gluehome'
+	    }
+	  }
+	  glueConfigTouchfile.delete()
+	  glueConfigTouchfile.createNewFile()
+  }
+}
+
+// gluetools core jar. 
+task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
+  ext.jarFile = new File(buildDir, '/libs/'+project.name+"-all-"+version+'.jar')
+  ext.deployJarTouchfile = new File(buildDir, '/deployJar.touchfile')
+  inputs.file jarFile
+  outputs.file deployJarTouchfile
+  doLast {
+	  println "Uploading "+jarFile.name
+	  ssh.run {
+	    session(remotes.gluehome) {
+	      execute 'sudo -n mkdir -p /opt/gluehome'
+	      execute 'sudo -n chmod a+rw /opt/gluehome'
+	      put from: jarFile, into: '/opt/gluehome'
+	    }
+	  }
+	  deployJarTouchfile.delete()
+	  deployJarTouchfile.createNewFile()
+  }
+}
+
 
 repositories {
     mavenCentral()

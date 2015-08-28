@@ -37,7 +37,7 @@ public class RemoveFeatureSegmentCommand extends FeatureLocModeCommand<DeleteRes
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		DeleteResult result = GlueDataObject.delete(objContext, FeatureSegment.class, 
-				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd));
+				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd), true);
 		cmdContext.commit();
 		return result;
 	}

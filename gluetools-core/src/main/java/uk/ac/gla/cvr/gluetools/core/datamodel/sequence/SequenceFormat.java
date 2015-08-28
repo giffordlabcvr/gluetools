@@ -1,89 +1,75 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Map;
-
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.Sam2ConsensusFile;
+import uk.ac.gla.cvr.gluetools.utils.ByteScanningUtils;
 
 public enum SequenceFormat {
 
-
-	GENBANK_XML {
+	// this MUST come before FASTA, so that it detection from bytes happens correctly.
+	SAM2CONSENSUS_EXTENDED("SAM2CONSENSUS extended", null) {
 		@Override
-		public String nucleotidesAsString(byte[] data) {
-			Document document;
-			try {
-				document = GlueXmlUtils.documentFromStream(new ByteArrayInputStream(data));
-			} catch (SAXException e) {
-				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, e.getMessage());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-			return GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_sequence/text()").replaceAll("\\s", "").toUpperCase();
+		public boolean detectFromBytes(byte[] data) {
+			return data.length > 0 &&
+					data[0] == (byte) '>' &&
+					ByteScanningUtils.indexOf(data, "Position,".getBytes(), 0) > 0;
 		}
-
 		@Override
-		public String originalDataAsString(byte[] data) {
-			try {
-				return new String(GlueXmlUtils.prettyPrint(GlueXmlUtils.documentFromStream(new ByteArrayInputStream(data))));
-			} catch (SAXException e) {
-				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, e.getMessage());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}, 
-	
-	FASTA {
-		@Override
-		public String nucleotidesAsString(byte[] data) {
-			Map<String, DNASequence> fastaMap = FastaUtils.parseFasta(data);
-			if(fastaMap.size() == 0) {
-				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Zero sequences found in FASTA string");
-			}
-			if(fastaMap.size() > 1) {
-				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Multiple sequences found in FASTA string");
-			}
-			return fastaMap.values().iterator().next().getSequenceAsString();
-		}
-
-		@Override
-		public String originalDataAsString(byte[] data) {
-			return new String(data);
+		public AbstractSequenceObject sequenceObject() {
+			return new Sam2ConsensusSequenceObject();
 		}
 	},
 
-	SAM2CONSENSUS {
-
+	FASTA("FASTA nucleic acid", "https://en.wikipedia.org/wiki/FASTA_format") {
 		@Override
-		public String nucleotidesAsString(byte[] data) {
-			ByteArrayInputStream bais = new ByteArrayInputStream(data);
-			Sam2ConsensusFile sam2ConsensusFile = new Sam2ConsensusFile();
-			try {
-				sam2ConsensusFile.parse(bais);
-			} catch (IOException e) {
-				// should not happen.
-				throw new RuntimeException(e);
-			}
-			return sam2ConsensusFile.getNucleotides();
+		public boolean detectFromBytes(byte[] data) {
+			return data.length > 0 &&
+					data[0] == (byte) '>';
 		}
-
 		@Override
-		public String originalDataAsString(byte[] data) {
-			return new String(data);
+		public AbstractSequenceObject sequenceObject() {
+			return new FastaSequenceObject();
 		}
-		
-	};
+	},
 	
-	public abstract String nucleotidesAsString(byte[] data);
+	GENBANK_XML("Genbank GBSeq XML", "http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/asn_spec/gbseq.asn.html") {
+		@Override
+		public boolean detectFromBytes(byte[] data) {
+			return ByteScanningUtils.indexOf(data, "<GBSeq>".getBytes(), 0) >= 0;
+		}
+		@Override
+		public AbstractSequenceObject sequenceObject() {
+			return new GenbankXmlSequenceObject();
+		}
+	}; 
 
-	public abstract String originalDataAsString(byte[] data);
+
+
+
+	private String displayName;
+	private String formatURL;
+	
+	private SequenceFormat(String displayName, String formatURL) {
+		this.displayName = displayName;
+		this.formatURL = formatURL;
+	}
+	
+	public String getDisplayName() {
+		return displayName;
+	}
+	public String getFormatURL() {
+		return formatURL;
+	}
+	public abstract AbstractSequenceObject sequenceObject();
+	
+	public abstract boolean detectFromBytes(byte[] data);
+	
+	public static SequenceFormat detectFormatFromBytes(byte[] sequenceData) {
+		for(SequenceFormat seqFormat : SequenceFormat.values()) {
+			if(seqFormat.detectFromBytes(sequenceData)) {
+				return seqFormat;
+			}
+		}
+		throw new SequenceException(SequenceException.Code.UNABLE_TO_DETERMINE_SEQUENCE_FORMAT);
+	}
+
+	
 }

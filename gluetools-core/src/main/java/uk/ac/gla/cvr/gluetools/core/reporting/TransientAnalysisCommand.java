@@ -1,23 +1,31 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.SequenceResult;
 
 @CommandClass(
 		commandWords={"transient", "analysis"}, 
 		description = "Analyse mutations for binary sequence data", 
-		docoptUsages = { "-b <data> <sequenceFormat> <referenceName>" }, 
+		docoptUsages = { "-b <data> (-h | <referenceName>)" }, 
 		docoptOptions = {
+				"-h, --headerDetect          Guess reference from sequence header",
 				"-b <data>, --base64 <data>  Sequence binary data"
 		},
 		metaTags = { CmdMeta.consumesBinary }
@@ -26,37 +34,55 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAnalysisCommand.TransientAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 	
 
-	public static final String SEQUENCE_FORMAT = "sequenceFormat";
+	public static final String HEADER_DETECT = "headerDetect";
 	public static final String REFERENCE_NAME = "referenceName";
 	public static final String BASE_64 = Command.BINARY_INPUT_PROPERTY;
 	
-	private String referenceName;
-	private SequenceFormat sequenceFormat;
+	private Optional<String> referenceName;
+	private Boolean headerDetect;
 	private byte[] sequenceData;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, configElem, SEQUENCE_FORMAT, true);
-		referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		headerDetect = PluginUtils.configureBooleanProperty(configElem, HEADER_DETECT, true);
+		referenceName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, false));
 		sequenceData = PluginUtils.configureBase64BytesProperty(configElem, BASE_64, true);
+		if(!( 
+				(referenceName.isPresent() && !headerDetect) || 
+				(!referenceName.isPresent() && headerDetect)  
+			)) {
+			usageError();
+		}
+	}
+
+	private void usageError() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <referenceName> or <headerDetect> must be specified, but not both");
 	}
 
 	@Override
 	protected TransientAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-		return mutationFrequenciesPlugin.doTransientAnalysis(cmdContext, sequenceData, sequenceFormat, referenceName);
+		return new TransientAnalysisResult(mutationFrequenciesPlugin.
+				doTransientAnalysis(cmdContext, sequenceData, headerDetect, referenceName));
 	}
 
 	public static class TransientAnalysisResult extends CommandResult {
 
-		protected TransientAnalysisResult(String nucleotides, String referenceName) {
+		protected TransientAnalysisResult(List<SequenceResult> sequenceResults) {
 			super("transientAnalysisResult");
-			getDocumentBuilder().set("nucleotides", nucleotides);
-			getDocumentBuilder().set("referenceName", referenceName);
+			ArrayBuilder sequenceResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
+			for(SequenceResult seqResult: sequenceResults) {
+				ObjectBuilder seqResObjBuilder = sequenceResultArrayBuilder.addObject();
+				seqResObjBuilder.set("sourceName", seqResult.getSourceName());
+				seqResObjBuilder.set("sequenceID", seqResult.getSequenceID());
+				seqResObjBuilder.set("sequenceFormat", seqResult.getSequenceFormat().name());
+				seqResObjBuilder.set("referenceName", seqResult.getReferenceName());
+			}
 		}
 		
 	}
+
 
 	
 }

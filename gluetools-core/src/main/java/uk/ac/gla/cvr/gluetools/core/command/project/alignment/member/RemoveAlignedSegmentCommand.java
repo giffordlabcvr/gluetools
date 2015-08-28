@@ -72,7 +72,7 @@ public class RemoveAlignedSegmentCommand extends MemberModeCommand<DeleteResult>
 					new SelectQuery(AlignedSegment.class, allMemberSegments));
 			int numDeleted = 0;
 			for(AlignedSegment segment: segmentsToDelete) {
-				DeleteResult result = GlueDataObject.delete(objContext, AlignedSegment.class, segment.pkMap());
+				DeleteResult result = GlueDataObject.delete(objContext, AlignedSegment.class, segment.pkMap(), true);
 				numDeleted = numDeleted+result.getNumber();
 			}
 			cmdContext.commit();
@@ -83,7 +83,7 @@ public class RemoveAlignedSegmentCommand extends MemberModeCommand<DeleteResult>
 							refStart.get(), 
 							refEnd.get(), 
 							memberStart.get(), 
-							memberEnd.get()));
+							memberEnd.get()), true);
 			cmdContext.commit();
 			return result;
 		}

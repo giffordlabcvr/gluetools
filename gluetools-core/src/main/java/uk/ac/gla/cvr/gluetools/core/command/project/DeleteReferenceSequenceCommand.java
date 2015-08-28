@@ -34,7 +34,7 @@ public class DeleteReferenceSequenceCommand extends ProjectModeCommand<DeleteRes
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName));
+		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
 		cmdContext.commit();
 		return result;
 	}

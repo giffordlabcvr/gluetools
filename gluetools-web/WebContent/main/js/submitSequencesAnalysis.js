@@ -1,9 +1,10 @@
 'use strict';
 
-var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', ['angularFileUpload', 'glueWS']);
+var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', ['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main']);
 
 
-submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', function($scope, glueWS, FileUploader) {
+submitSequencesAnalysis
+.controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', function($scope, glueWS, FileUploader, dialogs) {
 	$scope.pageTitle = "Submit sequences for analysis";
 	$scope.pageExplanation = "Submit sequences for analysis of mutations at the amino-acid level.";
 
@@ -11,7 +12,16 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'g
 	$scope.dropZoneText = "Drag sequence files here";
 	$scope.browseAndSelectHeader = "Or browse and select multiple files";
 	$scope.selectFilesButtonText = "Select files";
+	$scope.autoDetectFormat = "Auto-detect"
+	$scope.headerDetectReference = "Header-detect"
 
+	$scope.sequenceFormats = [];
+	$scope.referenceNames = [];
+
+	$scope.showSupportedFormats = function() {
+		dialogs.create('dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
+	}
+	
 	console.log("init submitSequencesAnalysis controller");
 
 	var uploader = $scope.uploader = new FileUploader({});
@@ -19,6 +29,29 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'g
 	glueWS.addProjectUrlListener( {
 		reportProjectURL: function(projectURL) {
 		    $scope.uploader.url = projectURL+"/module/mutationFrequencies";
+		    
+		    glueWS.runGlueCommand("", {
+		    	list: { format : { sequence: {} } }
+		    }).success(function(data, status, headers, config) {
+				  console.info('result', data);
+				  $scope.sequenceFormats = tableResultAsObjectList(data);
+				  console.info('sequenceFormats', $scope.sequenceFormats);
+			}).
+			error(function(data, status, headers, config) {
+				  console.log("command error for \"list format sequence\" : "+JSON.stringify(data));
+			});
+
+		    glueWS.runGlueCommand("", {
+		    	list: { reference: {} }
+		    }).success(function(data, status, headers, config) {
+				  console.info('result', data);
+				  $scope.referenceNames = tableResultGetColumn(data, "name");
+				  console.info('referenceNames', $scope.referenceNames);
+			}).
+			error(function(data, status, headers, config) {
+				  console.log("command error for \"list reference\" : "+JSON.stringify(data));
+			});
+
 		    console.info('uploader', uploader);
 		}
 	});
@@ -42,14 +75,26 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'g
         console.info('onAfterAddingAll', addedFileItems);
     };
     uploader.onBeforeUploadItem = function(item) {
-		var commandObject = {
-			"transient": {
-				analysis: {
-					referenceName: item.reference,
-					sequenceFormat: item.format
-				}
-			}
-		};
+		var commandObject;
+		if(item.reference == $scope.headerDetectReference) {
+			commandObject = {
+					"transient": {
+						analysis: {
+							headerDetect: true
+						}
+					}
+				};
+			
+		} else {
+			commandObject = {
+					"transient": {
+						analysis: {
+							referenceName: item.reference,
+							headerDetect: false
+						}
+					}
+				};
+		}
     	item.formData = [{command: JSON.stringify(commandObject)}];
         console.info('formData', JSON.stringify(item.formData));
         console.info('onBeforeUploadItem', item);
@@ -75,9 +120,14 @@ submitSequencesAnalysis.controller('submitSequencesAnalysisCtrl', [ '$scope', 'g
     uploader.onCompleteAll = function() {
         console.info('onCompleteAll');
     };
-	
-	
-}]);
+}])
+.controller('seqFmtDialogCtrl',function($scope,$modalInstance,data){
+		$scope.sequenceFormats = data;
+		
+		$scope.dismiss = function(){
+			$modalInstance.dismiss('Dismissed');
+		}; 
+});
 
 
 

@@ -53,7 +53,6 @@ public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 		Source source = GlueDataObject.lookup(objContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
-		format.nucleotidesAsString(originalData); // check for format errors here.
 		sequence.setOriginalData(originalData);
 		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);

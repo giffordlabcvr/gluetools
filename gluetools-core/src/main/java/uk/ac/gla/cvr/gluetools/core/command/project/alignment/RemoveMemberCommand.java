@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,8 +95,13 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 			List<AlignmentMember> members = alignment.getMembers();
 			membersToDelete = new ArrayList<AlignmentMember>(members);
 		} else {
-			membersToDelete = Arrays.asList(GlueDataObject.lookup(objContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(getAlignmentName(), sourceName.get(), sequenceID.get())));
+			AlignmentMember almtMember = GlueDataObject.lookup(objContext, AlignmentMember.class, 
+					AlignmentMember.pkMap(getAlignmentName(), sourceName.get(), sequenceID.get()), true);
+			if(almtMember != null) {
+				membersToDelete = Arrays.asList(almtMember);
+			} else {
+				membersToDelete = Collections.emptyList();
+			}
 		}
 		membersToDelete.forEach(member -> {
 			List<ReferenceSequence> referenceSequences = member.getSequence().getReferenceSequences();
@@ -108,7 +114,7 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 					}
 				}
 			}
-			GlueDataObject.delete(objContext, AlignmentMember.class, member.pkMap());
+			GlueDataObject.delete(objContext, AlignmentMember.class, member.pkMap(), true);
 			
 		});
 		cmdContext.commit();

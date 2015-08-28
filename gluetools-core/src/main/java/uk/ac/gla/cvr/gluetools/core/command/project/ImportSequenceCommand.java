@@ -54,7 +54,6 @@ public class ImportSequenceCommand extends ProjectModeCommand<CreateResult> {
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
 		byte[] sequenceData = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
-		format.nucleotidesAsString(sequenceData); // check for format errors here.
 		sequence.setOriginalData(sequenceData);
 		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);

@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -81,8 +82,7 @@ public class FastaExporter extends ModulePlugin<FastaExporter> {
 				}
 				fastaId = result.toString();
 			}
-			stringBuffer.append(">").append(fastaId).append("\n");
-			stringBuffer.append(seq.getNucleotides()).append("\n");
+			stringBuffer.append(FastaUtils.seqIdNtsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides()));
 		});
 		cmdContext.saveBytes(fileName, stringBuffer.toString().getBytes());
 		return new OkResult();

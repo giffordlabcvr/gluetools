@@ -1,0 +1,37 @@
+{
+  "name": "angular-dialog-service",
+  "description": "A service to handle common dialog types in a web application.  Built on top of Angular-Bootstrap's modal",
+  "version": "5.2.8",
+  "keywords": ["angular","dialog","modal","service"],
+  "authors": [
+    {
+      "name": "Michael Conroy",
+      "email": "michael.e.conroy@gmail.com",
+      "homepage": "http://michaeleconroy.blogspot.com/"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/m-e-conroy/angular-dialog-service"
+  },
+  "main": [
+    "./dist/dialogs.min.css",
+    "./index.js"
+  ],
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-bump": "^0.3.1",
+    "gulp-concat": "^2.4.1",
+    "gulp-header": "^1.2.2",
+    "gulp-jshint": "^1.8.4",
+    "gulp-minify": "0.0.3",
+    "gulp-minify-css": "^0.3.10",
+    "gulp-rename": "^1.2.0",
+    "gulp-util": "^3.0.5",
+    "gulp-wrap": "^0.3.0"
+  },
+  "licenses": [{
+    "type": "MIT",
+    "url": "http://www.opensource.org/licenses/MIT"
+  }]
+}

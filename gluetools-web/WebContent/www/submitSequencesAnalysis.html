@@ -1,3 +1,5 @@
+
+
 <!-- 1. nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
 <div ng-app="submitSequencesAnalysis">
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
@@ -5,7 +7,9 @@
 		{{pageExplanation}}
 	
 		<div>
-			<h3>{{selectFilesHeader}}</h3>
+			<h3>{{selectFilesHeader}}</h3> 
+			<a ng-click="showSupportedFormats()">Supported sequence file formats <i class="glyphicon glyphicon-link"></i></a>
+			<p></p>			
 			<div class="row">
 				<div class="col-md-6">
 					<div ng-show="uploader.isHTML5">
@@ -40,7 +44,7 @@
 							<th width="50%">File</th>
 							<th ng-show="uploader.isHTML5">Size</th>
 							<!-- <th ng-show="uploader.isHTML5">Progress</th> -->
-							<th>Format</th>
+							<!-- <th>Format</th> -->
 							<th>Reference</th>
 							<th>Status</th>
 							<th>Actions</th>
@@ -56,15 +60,14 @@
 	                                        <div class="progress-bar" role="progressbar" ng-style="{ 'width': item.progress + '%' }"></div>
 	                                    </div>
 	                                </td> -->
-							<td><select name="singleSelect" ng-model="item.format">
-									<option value="">Select format</option>
-									<option value="FASTA">FASTA</option>
-									<option value="SAM2CONSENSUS">SAM2CONSENSUS</option>
+							<!--  <td><select name="singleSelect" ng-model="item.format">
+									<option value="">{{autoDetectFormat}}</option>
+									<option ng-repeat="seqFormat in sequenceFormats" value="{{seqFormat}}">{{seqFormat}}</option>
 							</select></td>
+							-->
 							<td><select name="singleSelect" ng-model="item.reference">
-									<option value="">Select reference</option>
-									<option value="Ref_1a">Ref_1a</option>
-									<option value="Ref_1b">Ref_1b</option>
+									<option value="{{headerDetectReference}}">{{headerDetectReference}}</option>
+									<option ng-repeat="refName in referenceNames" value="{{refName}}">{{refName}}</option>
 							</select></td>
 							<td class="text-center">
 								<span ng-show="item.isSuccess">
@@ -85,13 +88,13 @@
 									ng-disabled="item.isReady || item.isUploading || item.isSuccess">
 									<span class="glyphicon glyphicon-upload"></span> Submit
 								</button>
-								<button type="button" class="btn btn-warning btn-xs"
+							<!-- 	<button type="button" class="btn btn-warning btn-xs"
 									ng-click="item.cancel()" ng-disabled="!item.isUploading">
 									<span class="glyphicon glyphicon-ban-circle"></span> Cancel
-								</button>
+								</button>  -->
 								<button type="button" class="btn btn-primary btn-xs"
-									ng-click="item.viewAnalysis()" ng-disabled="!item.isSuccess">
-									<span class="glyphicon glyphicon-list"></span> View analysis
+									ng-click="item.addAnalysis()" ng-disabled="!item.isSuccess">
+									<span class="glyphicon glyphicon-list"></span> Analysis
 								</button>
 								<button type="button" class="btn btn-danger btn-xs"
 									ng-click="item.remove()">
@@ -116,10 +119,10 @@
 						ng-disabled="!uploader.getNotUploadedItems().length">
 						<span class="glyphicon glyphicon-upload"></span> Submit all
 					</button>
-					<button type="button" class="btn btn-warning btn-s"
+					<!-- <button type="button" class="btn btn-warning btn-s"
 						ng-click="uploader.cancelAll()" ng-disabled="!uploader.isUploading">
 						<span class="glyphicon glyphicon-ban-circle"></span> Cancel all
-					</button>
+					</button>  -->
 					<button type="button" class="btn btn-danger btn-s"
 						ng-click="uploader.clearQueue()"
 						ng-disabled="!uploader.queue.length">

@@ -1,21 +1,26 @@
-package uk.ac.gla.cvr.gluetools.utils;
+package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jline.internal.InputStreamReader;
+
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.biojava.nbio.core.sequence.compound.AmbiguityDNACompoundSet;
 
-import jline.internal.InputStreamReader;
-import uk.ac.gla.cvr.gluetools.utils.Sam2ConsensusException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-public class Sam2ConsensusFile {
+public class Sam2ConsensusSequenceObject extends AbstractSequenceObject {
+
+	public Sam2ConsensusSequenceObject() {
+		super(SequenceFormat.SAM2CONSENSUS_EXTENDED);
+	}
 
 	private String header;
 	private String nucleotides;
@@ -52,19 +57,20 @@ public class Sam2ConsensusFile {
 	}
 
 	@SuppressWarnings("resource")
-	public void parse(InputStream inputStream) throws IOException {
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+	@Override
+	public void fromOriginalData(byte[] originalData) {
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(originalData)));
 		LinkedList<String> lines = new LinkedList<String>(bufferedReader.lines().collect(Collectors.toList()));
 		if(lines.isEmpty()) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "No header line");
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "No header line");
 		}
 		String headerLine = lines.removeFirst();
 		if(!headerLine.startsWith(">")) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "First line did not start with '>'");
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "First line did not start with '>'");
 		}
 		this.header = headerLine.replaceFirst(">", "").trim();
 		if(this.header.length() == 0) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Empty header");
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Empty header");
 		}
 		String line = null;
 		StringBuffer ntBuf = new StringBuffer();
@@ -80,15 +86,15 @@ public class Sam2ConsensusFile {
 		}
 		this.nucleotides = ntBuf.toString();
 		if(nucleotides.isEmpty()) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "No nucleotides found");
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "No nucleotides found");
 		}
 		try {
 			new DNASequence(nucleotides, AmbiguityDNACompoundSet.getDNACompoundSet());
 		} catch (CompoundNotFoundException e) {
-			throw new Sam2ConsensusException(e, Code.FORMAT_ERROR, "Nucleotides error: "+e.getLocalizedMessage());
+			throw new SequenceException(e, Code.SEQUENCE_FORMAT_ERROR, "Nucleotides error: "+e.getLocalizedMessage());
 		}
 		if(!columnHeadersLineFound) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "No column headers found");
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "No column headers found");
 		}
 		String[] columnHeaders = line.split(",");
 		String[] expectedColumnHeaders = { "Position", "Consensus", "A", "T",
@@ -96,11 +102,11 @@ public class Sam2ConsensusFile {
 				"A Qual", "T Qual", "G Qual", "C Qual", "", "Coverage", "",
 				"Entropy"};
 		if (columnHeaders.length != expectedColumnHeaders.length) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Expected "+expectedColumnHeaders.length+" column headers, found "+columnHeaders.length);
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Expected "+expectedColumnHeaders.length+" column headers, found "+columnHeaders.length);
 		}
 		for(int i = 0; i < columnHeaders.length; i++) {
 			if(!columnHeaders[i].equals(expectedColumnHeaders[i])) {
-				throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Expected column header "+expectedColumnHeaders[i]+", found "+columnHeaders[i]);
+				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Expected column header "+expectedColumnHeaders[i]+", found "+columnHeaders[i]);
 			}
 		}
 		int expectedPosition = 0;
@@ -110,11 +116,11 @@ public class Sam2ConsensusFile {
 			line = lines.removeFirst();
 			String[] cells = line.split(",");
 			if(cells.length != columnHeaders.length) {
-				throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Position "+expectedPosition+", expected "+columnHeaders.length+" cells, found "+cells.length);
+				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Position "+expectedPosition+", expected "+columnHeaders.length+" cells, found "+cells.length);
 			}
 			int position = getInt(cells, columnHeaders, 0, expectedPosition);
 			if(position != expectedPosition) {
-				throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Expected position "+expectedPosition+", found "+position);
+				throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Expected position "+expectedPosition+", found "+position);
 			}
 			NtLocation ntLocation = new NtLocation();
 			ntLocation.set(LocationField.consensus, getChar(cells, expectedColumnHeaders, 1, expectedPosition));
@@ -137,7 +143,7 @@ public class Sam2ConsensusFile {
 			ntLocations.add(ntLocation);
 		}
 		if(ntLocations.size() != nucleotides.length()) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Expected "+nucleotides.length()+" position lines but found "+ntLocations.size());
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Expected "+nucleotides.length()+" position lines but found "+ntLocations.size());
 		}
 		this.ntLocations = ntLocations.toArray(new NtLocation[]{});
 	}
@@ -146,7 +152,7 @@ public class Sam2ConsensusFile {
 		try {
 			return Double.parseDouble(cells[columnIndex]);
 		} catch(NumberFormatException nfe) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Position "+expectedPosition+", column "+
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Position "+expectedPosition+", column "+
 					columnHeaders[columnIndex]+", expected floating point number, found: \""+cells[columnIndex]+"\"");
 		}
 	}
@@ -155,29 +161,59 @@ public class Sam2ConsensusFile {
 		try {
 			return Integer.parseInt(cells[columnIndex]);
 		} catch(NumberFormatException nfe) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Position "+expectedPosition+", column "+
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Position "+expectedPosition+", column "+
 					columnHeaders[columnIndex]+", expected integer, found: \""+cells[columnIndex]+"\"");
 		}
 	}
 
 	private String getChar(String[] cells, String[] columnHeaders, int columnIndex, int expectedPosition) {
 		if(cells[columnIndex].length() != 1) {
-			throw new Sam2ConsensusException(Code.FORMAT_ERROR, "Position "+expectedPosition+", column "+
+			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Position "+expectedPosition+", column "+
 					columnHeaders[columnIndex]+", expected single character, found: \""+cells[columnIndex]+"\"");
 		}
 		return cells[columnIndex];
 	}
 
+	@Override
 	public String getHeader() {
 		return header;
 	}
 
+	@Override
 	public String getNucleotides() {
 		return nucleotides;
 	}
 
 	public Object getLocationFieldValue(int position, LocationField field) {
 		return ntLocations[position-1].get(field);
+	}
+
+	@Override
+	public byte[] toOriginalData() {
+		StringBuffer buf = new StringBuffer();
+		buf.append(FastaUtils.seqIdNtsPairToFasta(header, nucleotides));
+		buf.append("Position,Consensus,A,T,G,C,N,,A Freq,T Freq,G Freq,C Freq,N Freq,,A Qual,T Qual,G Qual,C Qual,,Coverage,,Entropy\n");
+		for(int i = 0; i < ntLocations.length; i++) {
+			buf.append(i+1).append(",");
+			buf.append(ntLocations[i].get(LocationField.consensus)).append(",");
+			buf.append(ntLocations[i].get(LocationField.a)).append(",");
+			buf.append(ntLocations[i].get(LocationField.t)).append(",");
+			buf.append(ntLocations[i].get(LocationField.g)).append(",");
+			buf.append(ntLocations[i].get(LocationField.c)).append(",");
+			buf.append(ntLocations[i].get(LocationField.n)).append(",,");
+			buf.append(ntLocations[i].get(LocationField.aFreq)).append(",");
+			buf.append(ntLocations[i].get(LocationField.tFreq)).append(",");
+			buf.append(ntLocations[i].get(LocationField.gFreq)).append(",");
+			buf.append(ntLocations[i].get(LocationField.cFreq)).append(",");
+			buf.append(ntLocations[i].get(LocationField.nFreq)).append(",,");
+			buf.append(ntLocations[i].get(LocationField.aQual)).append(",");
+			buf.append(ntLocations[i].get(LocationField.tQual)).append(",");
+			buf.append(ntLocations[i].get(LocationField.gQual)).append(",");
+			buf.append(ntLocations[i].get(LocationField.cQual)).append(",,");
+			buf.append(ntLocations[i].get(LocationField.coverage)).append(",,");
+			buf.append(ntLocations[i].get(LocationField.entropy)).append("\n");
+		}
+		return buf.toString().getBytes();
 	}
 
 

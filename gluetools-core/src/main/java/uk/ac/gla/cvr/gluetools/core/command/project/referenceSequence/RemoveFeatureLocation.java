@@ -32,7 +32,7 @@ public class RemoveFeatureLocation extends ReferenceSequenceModeCommand<DeleteRe
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), featureName));
+		DeleteResult result = GlueDataObject.delete(objContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), featureName), true);
 		cmdContext.commit();
 		return result;
 	}

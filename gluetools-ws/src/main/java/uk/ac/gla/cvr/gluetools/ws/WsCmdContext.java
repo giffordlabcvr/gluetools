@@ -125,6 +125,9 @@ public class WsCmdContext extends CommandContext {
 		if(enterModeCommandClass == null) {
 			CommandMode<?> commandMode = peekCommandMode();
 			Class<? extends Command> cmdClass = commandMode.getCommandFactory().identifyCommandClass(this, Collections.singletonList(urlPathSegment));
+			if(cmdClass == null) {
+				throw new CommandException(CommandException.Code.UNKNOWN_MODE_PATH, fullPath);
+			}
 			if(cmdClass.getAnnotation(EnterModeCommandClass.class) != null) {
 				enterModeCommandClass = cmdClass;
 				return this;

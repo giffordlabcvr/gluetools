@@ -42,7 +42,7 @@ public class ShowNucleotidesCommand extends SequenceModeCommand<NucleotidesResul
 	@Override
 	public NucleotidesResult execute(CommandContext cmdContext) {
 		Sequence sequence = lookupSequence(cmdContext);
-		String nucleotides = sequence.getNucleotides();
+		String nucleotides = sequence.getSequenceObject().getNucleotides();
 		int end = endIndex.orElse(nucleotides.length());
 		return new NucleotidesResult(beginIndex, end, SegmentUtils.subSeq(nucleotides, beginIndex, end));
 	}

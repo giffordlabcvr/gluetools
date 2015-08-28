@@ -61,7 +61,7 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 	public DeleteResult execute(CommandContext cmdContext) {
 		if(sourceName.isPresent()) {
 			DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), 
-					Sequence.class, Sequence.pkMap(sourceName.get(), sequenceID.get()));
+					Sequence.class, Sequence.pkMap(sourceName.get(), sequenceID.get()), true);
 			cmdContext.commit();
 			return result; 
 		} else {
@@ -79,7 +79,7 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 					.collect(Collectors.toList());
 			int numDeleted = 0;
 			for(Sequence seqToDelete: sequencesToDelete) {
-				DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, seqToDelete.pkMap());
+				DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, seqToDelete.pkMap(), true);
 				numDeleted = numDeleted+result.getNumber();
 			}
 			cmdContext.commit();

@@ -91,10 +91,6 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		}).collect(Collectors.toList());
 	}
 	
-	public static <C extends GlueDataObject> DeleteResult delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
-		return delete(objContext, objClass, pkMap, false);
-	}
-
 	public static <C extends GlueDataObject> C create(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowExists) {
 		C existing = lookup(objContext, objClass, pkMap, true);

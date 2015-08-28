@@ -34,7 +34,7 @@ public class DeleteFeatureCommand extends ProjectModeCommand<DeleteResult> {
 	public DeleteResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		DeleteResult result = 
-				GlueDataObject.delete(objContext, Feature.class, Feature.pkMap(featureName));
+				GlueDataObject.delete(objContext, Feature.class, Feature.pkMap(featureName), true);
 		cmdContext.commit();
 		return result;
 	}

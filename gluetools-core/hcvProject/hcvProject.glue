@@ -1,3 +1,5 @@
+delete project HCV
+
 # console set echo-cmd-json true
 # console set cmd-result-format json
 console change load-save-path hcvProject
@@ -4869,5 +4871,5 @@ project HCV
 
   create source sam2consensus
   
-  import sequence sam2consensus 1a_example SAM2CONSENSUS "sam2consensus/1a_example.s2c"
+  import sequence sam2consensus 1a_example SAM2CONSENSUS_EXTENDED "sam2consensus/1a_example.s2c"
   

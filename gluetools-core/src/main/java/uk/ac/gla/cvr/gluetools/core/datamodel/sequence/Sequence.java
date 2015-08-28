@@ -15,7 +15,7 @@ public class Sequence extends _Sequence {
 
 	public static final String SOURCE_NAME_PATH = _Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY;
 	private SequenceFormat sequenceFormat;
-	private String nucleotides;
+	private AbstractSequenceObject sequenceObject;
 	
 	public static Map<String, String> pkMap(String sourceName, String sequenceID) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
@@ -50,11 +50,28 @@ public class Sequence extends _Sequence {
 		return pkMap(getSource().getName(), getSequenceID());
 	}
 
-	public String getNucleotides() {
-		if(nucleotides == null) {
-			nucleotides = getSequenceFormat().nucleotidesAsString(getOriginalData());
+	public AbstractSequenceObject getSequenceObject() {
+		if(sequenceObject == null) {
+			sequenceObject = buildSequenceObject();
 		}
-		return nucleotides;
+		return sequenceObject;
+	}
+
+	private AbstractSequenceObject buildSequenceObject() {
+		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject();
+		sequenceObject.fromPackedData(super.getPackedData());
+		return sequenceObject;
+	}
+	
+	public byte[] getOriginalData() {
+		return getSequenceObject().toOriginalData();
+	}
+	
+	public void setOriginalData(byte[] originalData) {
+		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject();
+		sequenceObject.fromOriginalData(originalData);
+		super.setPackedData(sequenceObject.toPackedData());
+		this.sequenceObject = sequenceObject;
 	}
 	
 }
