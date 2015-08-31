@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.project.ListReferenceSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListAlignmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
@@ -37,12 +37,11 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.NucleotidesResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowNucleotidesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -360,10 +359,10 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 
 	public void doTransientAnalysis(CommandContext cmdContext,
-			Boolean headerDetect, Optional<String> referenceName, ArrayBuilder sequenceResultArrayBuilder, 
+			Boolean headerDetect, Optional<String> alignmentName, ArrayBuilder sequenceResultArrayBuilder, 
 			byte[] sequenceData) {
 		List<AbstractSequenceObject> seqObjects = seqObjectsFromSeqData(sequenceData);
-		AnalysisContext analysisCtx = new AnalysisContext(cmdContext, referenceName, headerDetect);
+		AnalysisContext analysisCtx = new AnalysisContext(cmdContext, alignmentName, headerDetect);
 		seqObjects.forEach(seqObj -> {
 			ObjectBuilder seqResultObjBuilder = sequenceResultArrayBuilder.addObject();
 			analyseSingleSequence(analysisCtx, seqResultObjBuilder, "submittedData", seqObj.getHeader(), seqObj);
@@ -393,53 +392,55 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			AbstractSequenceObject seqObj) {
 		seqResultObjBuilder.setString("sourceName", source);
 		seqResultObjBuilder.setString("sequenceID", sequenceID);
-		String referenceName = establishReference(analysisCtx, seqObj.getHeader());
-		seqResultObjBuilder.setString("referenceName", referenceName);
+		String initialAlignmentName = establishInitialAlignment(analysisCtx, seqObj.getHeader());
+		seqResultObjBuilder.setString("initialAlignmentName", initialAlignmentName);
+		
+		
 	}
 	
-	private String establishReference(AnalysisContext analysisCtx, String header) {
+	private String establishInitialAlignment(AnalysisContext analysisCtx, String header) {
 		if(analysisCtx.headerDetect) {
-			return detectReferenceNameFromHeader(analysisCtx, header);
+			return detectAlignmentNameFromHeader(analysisCtx, header);
 		} else {
-			return analysisCtx.refName.get();
+			return analysisCtx.alignmentName.get();
 		}
 	}
 
-	private String detectReferenceNameFromHeader(AnalysisContext analysisCtx, String header) {
-		Map<String, String> refSearchStringToRefName = analysisCtx.getRefSearchStringToRefName();
-		for(Entry<String, String> entry: refSearchStringToRefName.entrySet()) {
+	private String detectAlignmentNameFromHeader(AnalysisContext analysisCtx, String header) {
+		Map<String, String> almtSearchStringToAlmtName = analysisCtx.getAlmtSearchStringToAlmtName();
+		for(Entry<String, String> entry: almtSearchStringToAlmtName.entrySet()) {
 			if(header.contains(entry.getKey())) {
 				return entry.getValue();
 			}
 		}
-		throw new MutationFrequenciesException(MutationFrequenciesException.Code.UNABLE_TO_DETECT_REFERENCE, header);
+		throw new MutationFrequenciesException(MutationFrequenciesException.Code.UNABLE_TO_DETECT_ALIGNMENT_NAME, header);
 	}
 
 	
 	private static class AnalysisContext {
 		private CommandContext cmdContext;
-		private Optional<String> refName;
+		private Optional<String> alignmentName;
 		private Boolean headerDetect;
-		private Map<String, String> refSearchStringToRefName;
+		private Map<String, String> almtSearchStringToAlmtName;
 		
-		public AnalysisContext(CommandContext cmdContext, Optional<String> refName, Boolean headerDetect) {
+		public AnalysisContext(CommandContext cmdContext, Optional<String> alignmentName, Boolean headerDetect) {
 			super();
 			this.cmdContext = cmdContext;
-			this.refName = refName;
+			this.alignmentName = alignmentName;
 			this.headerDetect = headerDetect;
 		}
 
-		public Map<String, String> getRefSearchStringToRefName() {
-			if(refSearchStringToRefName == null) {
-				refSearchStringToRefName = new LinkedHashMap<String, String>();
-				List<String> allRefNames = cmdContext.cmdBuilder(ListReferenceSequenceCommand.class).execute().getColumnValues(ReferenceSequence.NAME_PROPERTY);
-				allRefNames.forEach(refName -> {
-					if(refName.startsWith("REF_")) {
-						refSearchStringToRefName.put(refName.replaceFirst("REF_", ""), refName);
+		public Map<String, String> getAlmtSearchStringToAlmtName() {
+			if(almtSearchStringToAlmtName == null) {
+				almtSearchStringToAlmtName = new LinkedHashMap<String, String>();
+				List<String> allRefNames = cmdContext.cmdBuilder(ListAlignmentCommand.class).execute().getColumnValues(Alignment.NAME_PROPERTY);
+				allRefNames.forEach(almtName -> {
+					if(almtName.startsWith("AL_")) {
+						almtSearchStringToAlmtName.put(almtName.replaceFirst("AL_", ""), almtName);
 					}
 				});
 			}
-			return refSearchStringToRefName;
+			return almtSearchStringToAlmtName;
 		}
 		
 		

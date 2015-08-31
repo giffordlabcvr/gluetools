@@ -32,10 +32,10 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 	
 
 	public static final String HEADER_DETECT = "headerDetect";
-	public static final String REFERENCE_NAME = "referenceName";
+	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String BASE_64 = Command.BINARY_INPUT_PROPERTY;
 	
-	private Optional<String> referenceName;
+	private Optional<String> alignmentName;
 	private Boolean headerDetect;
 	private byte[] sequenceData;
 	
@@ -44,11 +44,11 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		headerDetect = PluginUtils.configureBooleanProperty(configElem, HEADER_DETECT, true);
-		referenceName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, false));
+		alignmentName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, false));
 		sequenceData = PluginUtils.configureBase64BytesProperty(configElem, BASE_64, true);
 		if(!( 
-				(referenceName.isPresent() && !headerDetect) || 
-				(!referenceName.isPresent() && headerDetect)  
+				(alignmentName.isPresent() && !headerDetect) || 
+				(!alignmentName.isPresent() && headerDetect)  
 			)) {
 			usageError();
 		}
@@ -60,7 +60,7 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 
 	@Override
 	protected TransientAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-		return new TransientAnalysisResult(mutationFrequenciesPlugin, cmdContext, sequenceData, headerDetect, referenceName);
+		return new TransientAnalysisResult(mutationFrequenciesPlugin, cmdContext, sequenceData, headerDetect, alignmentName);
 	}
 
 	public static class TransientAnalysisResult extends CommandResult {
@@ -69,10 +69,10 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 				CommandContext cmdContext, 
 				byte[] sequenceData, 
 				Boolean headerDetect, 
-				Optional<String> referenceName) {
+				Optional<String> alignmentName) {
 			super("transientAnalysisResult");
 			ArrayBuilder sequenceResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
-			mutationFrequenciesReporter.doTransientAnalysis(cmdContext, headerDetect, referenceName, sequenceResultArrayBuilder,
+			mutationFrequenciesReporter.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceResultArrayBuilder,
 					sequenceData);
 		}
 		

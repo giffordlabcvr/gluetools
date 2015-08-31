@@ -13,10 +13,10 @@ submitSequencesAnalysis
 	$scope.browseAndSelectHeader = "Or browse and select multiple files";
 	$scope.selectFilesButtonText = "Select files";
 	$scope.autoDetectFormat = "Auto-detect"
-	$scope.headerDetectReference = "Header-detect"
+	$scope.headerDetectAlmtName = "Header-detect"
 
 	$scope.sequenceFormats = [];
-	$scope.referenceNames = [];
+	$scope.alignmentNames = [];
 
 	$scope.showSupportedFormats = function() {
 		dialogs.create('dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
@@ -40,13 +40,13 @@ submitSequencesAnalysis
 			error(glueWS.raiseErrorDialog(dialogs, "listing sequence formats"));
 
 		    glueWS.runGlueCommand("", {
-		    	list: { reference: {} }
+		    	list: { alignment: {} }
 		    }).success(function(data, status, headers, config) {
 				  console.info('result', data);
-				  $scope.referenceNames = tableResultGetColumn(data, "name");
-				  console.info('referenceNames', $scope.referenceNames);
+				  $scope.alignmentNames = tableResultGetColumn(data, "name");
+				  console.info('alignmentNames', $scope.alignmentNames);
 			}).
-			error(glueWS.raiseErrorDialog(dialogs, "listing reference sequences"));
+			error(glueWS.raiseErrorDialog(dialogs, "listing alignments"));
 		    console.info('uploader', uploader);
 		}
 	});
@@ -64,7 +64,7 @@ submitSequencesAnalysis
         console.info('onWhenAddingFileFailed', item, filter, options);
     };
     uploader.onAfterAddingFile = function(fileItem) {
-        fileItem.reference = $scope.headerDetectReference;
+        fileItem.alignmentName = $scope.headerDetectAlmtName;
         console.info('onAfterAddingFile', fileItem);
     };
     uploader.onAfterAddingAll = function(addedFileItems) {
@@ -72,7 +72,7 @@ submitSequencesAnalysis
     };
     uploader.onBeforeUploadItem = function(item) {
 		var commandObject;
-		if(item.reference == $scope.headerDetectReference) {
+		if(item.alignmentName == $scope.headerDetectAlmtName) {
 			commandObject = {
 					"transient": {
 						analysis: {
@@ -85,7 +85,7 @@ submitSequencesAnalysis
 			commandObject = {
 					"transient": {
 						analysis: {
-							referenceName: item.reference,
+							alignmentName: item.alignmentName,
 							headerDetect: false
 						}
 					}

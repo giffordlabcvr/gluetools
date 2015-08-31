@@ -45,7 +45,7 @@
 							<th ng-show="uploader.isHTML5">Size</th>
 							<!-- <th ng-show="uploader.isHTML5">Progress</th> -->
 							<!-- <th>Format</th> -->
-							<th>Reference</th>
+							<th>Alignment</th>
 							<th>Status</th>
 							<th>Actions</th>
 						</tr>
@@ -65,10 +65,10 @@
 									<option ng-repeat="seqFormat in sequenceFormats" value="{{seqFormat}}">{{seqFormat}}</option>
 							</select></td>
 							-->
-							<td><select name="singleSelect" ng-model="item.reference" 
+							<td><select name="singleSelect" ng-model="item.alignmentName" 
 								ng-disabled="item.isUploading || item.isSuccess">
-									<option value="{{headerDetectReference}}" selected="selected">{{headerDetectReference}}</option>
-									<option ng-repeat="refName in referenceNames" value="{{refName}}">{{refName}}</option>
+									<option value="{{headerDetectAlmtName}}" selected="selected">{{headerDetectAlmtName}}</option>
+									<option ng-repeat="almtName in alignmentNames" value="{{almtName}}">{{almtName}}</option>
 							</select></td>
 							<td class="text-center">
 								<span ng-show="item.isSuccess">

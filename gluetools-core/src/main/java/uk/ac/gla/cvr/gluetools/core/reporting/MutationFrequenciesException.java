@@ -7,7 +7,7 @@ public class MutationFrequenciesException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		UNABLE_TO_DETECT_REFERENCE("header");
+		UNABLE_TO_DETECT_ALIGNMENT_NAME("header");
 
 		private String[] argNames;
 		private Code(String... argNames) {
