@@ -85,6 +85,28 @@ task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
   }
 }
 
+// HCV project 
+task deployHcvProject(dependsOn: ['deployJar']) {
+  ext.jarFileName = project.name+"-all-"+version+'.jar'
+  ext.hcvProjectDir = new File(projectDir, 'hcvProject')
+  ext.deployHcvProjectTouchfile = new File(buildDir, '/deployHcvProject.touchfile')
+  inputs.dir hcvProjectDir
+  outputs.file deployHcvProjectTouchfile
+  doLast {
+	  println "Uploading GLUE project: "+hcvProjectDir.name
+	  ssh.run {
+	    session(remotes.gluehome) {
+	      execute 'rm -rf /opt/gluehome/hcvProject'
+	      put from: hcvProjectDir, into: '/opt/gluehome'
+	      execute 'cd /opt/gluehome ; java -jar '+jarFileName+' -c gluetools-config-gluehome.xml -f hcvProject/hcvProject.glue'
+	    }
+	  }
+	  deployHcvProjectTouchfile.delete()
+	  deployHcvProjectTouchfile.createNewFile()
+  }
+}
+
+
 
 repositories {
     mavenCentral()

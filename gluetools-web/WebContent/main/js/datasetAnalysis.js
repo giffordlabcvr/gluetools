@@ -1,4 +1,4 @@
-var datasetAnalysis = angular.module('datasetAnalysis', ['angularTreeview', 'ui.bootstrap', 'glueWS']);
+var datasetAnalysis = angular.module('datasetAnalysis', ['angularTreeview', 'ui.bootstrap', 'glueWS','dialogs.main']);
 
 datasetAnalysis.factory('GenotypeSelection', function (){
 	return {
@@ -154,8 +154,8 @@ datasetAnalysis.controller('mutationTableCtrl',
 
 
 datasetAnalysis.controller('datasetAnalysisCtrl', [ '$scope', 'glueWS', 
-             'GenotypeSelection', 'RegionSelection', 'Mutations',
-function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations) {
+             'GenotypeSelection', 'RegionSelection', 'Mutations','dialogs',
+function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations, dialogs) {
 	$scope.pageTitle = "Dataset analysis";
 	$scope.pageExplanation = "Based on a subset of sequences in the database, show frequencies of amino-acid level mutations at different positions in the genome.";
 	$scope.GenotypeSelection = GenotypeSelection;
@@ -180,9 +180,7 @@ function ($scope, glueWS, GenotypeSelection, RegionSelection, Mutations) {
 			  $scope.Mutations.setMutations(data);
 			  //console.log("Mutations: "+JSON.stringify($scope.Mutations.getMutations()));
 		  }).
-		  error(function(data, status, headers, config) {
-			  console.log("HTTP POST error: "+JSON.stringify(data));
-		  });
+		  error(glueWS.raiseErrorDialog(dialogs, "computing dataset analysis"));
 		
 		
 	};

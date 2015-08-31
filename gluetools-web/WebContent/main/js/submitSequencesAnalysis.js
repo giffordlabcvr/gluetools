@@ -37,9 +37,7 @@ submitSequencesAnalysis
 				  $scope.sequenceFormats = tableResultAsObjectList(data);
 				  console.info('sequenceFormats', $scope.sequenceFormats);
 			}).
-			error(function(data, status, headers, config) {
-				  console.log("command error for \"list format sequence\" : "+JSON.stringify(data));
-			});
+			error(glueWS.raiseErrorDialog(dialogs, "listing sequence formats"));
 
 		    glueWS.runGlueCommand("", {
 		    	list: { reference: {} }
@@ -48,10 +46,7 @@ submitSequencesAnalysis
 				  $scope.referenceNames = tableResultGetColumn(data, "name");
 				  console.info('referenceNames', $scope.referenceNames);
 			}).
-			error(function(data, status, headers, config) {
-				  console.log("command error for \"list reference\" : "+JSON.stringify(data));
-			});
-
+			error(glueWS.raiseErrorDialog(dialogs, "listing reference sequences"));
 		    console.info('uploader', uploader);
 		}
 	});
@@ -69,6 +64,7 @@ submitSequencesAnalysis
         console.info('onWhenAddingFileFailed', item, filter, options);
     };
     uploader.onAfterAddingFile = function(fileItem) {
+        fileItem.reference = $scope.headerDetectReference;
         console.info('onAfterAddingFile', fileItem);
     };
     uploader.onAfterAddingAll = function(addedFileItems) {
@@ -110,6 +106,8 @@ submitSequencesAnalysis
     };
     uploader.onErrorItem = function(fileItem, response, status, headers) {
         console.info('onErrorItem', fileItem, response, status, headers);
+        var errorFn = glueWS.raiseErrorDialog(dialogs, "processing sequence file \""+fileItem.file.name+"\"");
+        errorFn(response, status, headers, {});
     };
     uploader.onCancelItem = function(fileItem, response, status, headers) {
         console.info('onCancelItem', fileItem, response, status, headers);
@@ -122,11 +120,11 @@ submitSequencesAnalysis
     };
 }])
 .controller('seqFmtDialogCtrl',function($scope,$modalInstance,data){
-		$scope.sequenceFormats = data;
-		
-		$scope.dismiss = function(){
-			$modalInstance.dismiss('Dismissed');
-		}; 
+	$scope.sequenceFormats = data;
+	
+	$scope.dismiss = function(){
+		$modalInstance.dismiss('Dismissed');
+	}; 
 });
 
 

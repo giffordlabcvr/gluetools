@@ -1,0 +1,51 @@
+apply plugin: 'war'
+
+apply plugin: 'org.hidetake.ssh'
+
+remotes {
+  gluehome {
+    host = 'gluehome.cvr.gla.ac.uk'
+    user = 'js460b'
+    identity = file('/Users/joshsinger/.ssh/gluehome_id_rsa')
+  }
+}
+
+buildscript {
+  repositories {
+    // for ssh-deploy stuff
+    jcenter()
+  }
+  dependencies {
+    classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
+  }
+}
+
+war {
+	webAppDirName = 'WebContent'
+}
+
+
+
+task deployWebAppWar(dependsOn: ['war']) {
+  ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web.war')
+  ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWar.touchfile')
+  inputs.file glueWebAppWarFile
+  outputs.file glueWebAppWarTouchfile
+  doLast {
+	  println "Uploading "+glueWebAppWarFile.name
+	  ssh.run {
+	    session(remotes.gluehome) {
+	      put from: glueWebAppWarFile.absolutePath, into: '/tmp/gluetools-web.war'
+	      execute 'sudo -n systemctl stop tomcat'
+	      execute 'sudo -n rm -rf /usr/share/tomcat/webapps/gluetools-web'
+	      execute 'sudo -n rm -rf /usr/share/tomcat/webapps/gluetools-web.war'
+	      execute 'sudo -n mv /tmp/gluetools-web.war /usr/share/tomcat/webapps'
+	      execute 'sudo -n systemctl start tomcat'
+	    }
+	  }
+	  glueWebAppWarTouchfile.delete()
+	  glueWebAppWarTouchfile.createNewFile()
+  }
+}
+
+

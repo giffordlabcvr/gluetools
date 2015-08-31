@@ -65,8 +65,9 @@
 									<option ng-repeat="seqFormat in sequenceFormats" value="{{seqFormat}}">{{seqFormat}}</option>
 							</select></td>
 							-->
-							<td><select name="singleSelect" ng-model="item.reference">
-									<option value="{{headerDetectReference}}">{{headerDetectReference}}</option>
+							<td><select name="singleSelect" ng-model="item.reference" 
+								ng-disabled="item.isUploading || item.isSuccess">
+									<option value="{{headerDetectReference}}" selected="selected">{{headerDetectReference}}</option>
 									<option ng-repeat="refName in referenceNames" value="{{refName}}">{{refName}}</option>
 							</select></td>
 							<td class="text-center">

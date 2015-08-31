@@ -1,0 +1,26 @@
+<div class="modal-header dialog-header-error">
+	<h4 class="modal-title">
+		{{error.title}}
+	</h4>
+</div>
+<div class="modal-body">
+	<div>
+	{{error.bodyHeadline}}
+	</div>
+	<p></p>
+	<div class="lead">
+	{{error.glueMessage}}
+	</div>
+	<h4>Details</h4>
+	<div class="small" ng-show="error.showItems">
+		<table style="width:40%" class="table table-condensed table-bordered">
+			<tr ng-repeat="item in error.items">
+				<td><b>{{item.name}}</b></td>
+				<td>{{item.value}}</td>
+			</tr>
+		</table>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" ng-click="dismiss()">OK</button>
+</div>

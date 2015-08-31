@@ -25,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
@@ -38,6 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -357,8 +359,20 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 
 
-	public List<SequenceResult> doTransientAnalysis(CommandContext cmdContext,
-			byte[] sequenceData, Boolean headerDetect, Optional<String> referenceName) {
+	public void doTransientAnalysis(CommandContext cmdContext,
+			Boolean headerDetect, Optional<String> referenceName, ArrayBuilder sequenceResultArrayBuilder, 
+			byte[] sequenceData) {
+		List<AbstractSequenceObject> seqObjects = seqObjectsFromSeqData(sequenceData);
+		AnalysisContext analysisCtx = new AnalysisContext(cmdContext, referenceName, headerDetect);
+		seqObjects.forEach(seqObj -> {
+			ObjectBuilder seqResultObjBuilder = sequenceResultArrayBuilder.addObject();
+			analyseSingleSequence(analysisCtx, seqResultObjBuilder, "submittedData", seqObj.getHeader(), seqObj);
+		});
+	}
+
+
+	public List<AbstractSequenceObject> seqObjectsFromSeqData(
+			byte[] sequenceData) {
 		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
 		List<AbstractSequenceObject> seqObjects;
 		if(format == SequenceFormat.FASTA) {
@@ -371,46 +385,64 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			seqObj.fromOriginalData(sequenceData);
 			seqObjects = Collections.singletonList(seqObj);
 		}
-		String foundReference = referenceName.orElse("headerDetectRefName");
-		List<SequenceResult> sequenceResults = seqObjects.stream()
-				.map(seqObj -> new SequenceResult("submittedData", seqObj.getHeader(), format, foundReference))
-				.collect(Collectors.toList());
-		return sequenceResults;
+		return seqObjects;
 	}
 	
-
-	public class SequenceResult {
-		private String sourceName;
-		private String sequenceID;
-		private SequenceFormat sequenceFormat;
-		private String referenceName;
-		
-		public SequenceResult(String sourceName, String sequenceID,
-				SequenceFormat sequenceFormat, String referenceName) {
-			super();
-			this.sourceName = sourceName;
-			this.sequenceID = sequenceID;
-			this.sequenceFormat = sequenceFormat;
-			this.referenceName = referenceName;
+	private void analyseSingleSequence(AnalysisContext analysisCtx,
+			ObjectBuilder seqResultObjBuilder, String source, String sequenceID,
+			AbstractSequenceObject seqObj) {
+		seqResultObjBuilder.setString("sourceName", source);
+		seqResultObjBuilder.setString("sequenceID", sequenceID);
+		String referenceName = establishReference(analysisCtx, seqObj.getHeader());
+		seqResultObjBuilder.setString("referenceName", referenceName);
+	}
+	
+	private String establishReference(AnalysisContext analysisCtx, String header) {
+		if(analysisCtx.headerDetect) {
+			return detectReferenceNameFromHeader(analysisCtx, header);
+		} else {
+			return analysisCtx.refName.get();
 		}
-
-		public String getSourceName() {
-			return sourceName;
-		}
-
-		public String getSequenceID() {
-			return sequenceID;
-		}
-
-		public SequenceFormat getSequenceFormat() {
-			return sequenceFormat;
-		}
-
-		public String getReferenceName() {
-			return referenceName;
-		}
-		
 	}
 
+	private String detectReferenceNameFromHeader(AnalysisContext analysisCtx, String header) {
+		Map<String, String> refSearchStringToRefName = analysisCtx.getRefSearchStringToRefName();
+		for(Entry<String, String> entry: refSearchStringToRefName.entrySet()) {
+			if(header.contains(entry.getKey())) {
+				return entry.getValue();
+			}
+		}
+		throw new MutationFrequenciesException(MutationFrequenciesException.Code.UNABLE_TO_DETECT_REFERENCE, header);
+	}
+
+	
+	private static class AnalysisContext {
+		private CommandContext cmdContext;
+		private Optional<String> refName;
+		private Boolean headerDetect;
+		private Map<String, String> refSearchStringToRefName;
+		
+		public AnalysisContext(CommandContext cmdContext, Optional<String> refName, Boolean headerDetect) {
+			super();
+			this.cmdContext = cmdContext;
+			this.refName = refName;
+			this.headerDetect = headerDetect;
+		}
+
+		public Map<String, String> getRefSearchStringToRefName() {
+			if(refSearchStringToRefName == null) {
+				refSearchStringToRefName = new LinkedHashMap<String, String>();
+				List<String> allRefNames = cmdContext.cmdBuilder(ListReferenceSequenceCommand.class).execute().getColumnValues(ReferenceSequence.NAME_PROPERTY);
+				allRefNames.forEach(refName -> {
+					if(refName.startsWith("REF_")) {
+						refSearchStringToRefName.put(refName.replaceFirst("REF_", ""), refName);
+					}
+				});
+			}
+			return refSearchStringToRefName;
+		}
+		
+		
+	}
 	
 }

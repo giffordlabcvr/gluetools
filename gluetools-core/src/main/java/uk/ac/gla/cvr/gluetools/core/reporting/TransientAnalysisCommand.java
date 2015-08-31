@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.w3c.dom.Element;
@@ -15,10 +14,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.SequenceResult;
 
 @CommandClass(
 		commandWords={"transient", "analysis"}, 
@@ -63,22 +60,20 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 
 	@Override
 	protected TransientAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-		return new TransientAnalysisResult(mutationFrequenciesPlugin.
-				doTransientAnalysis(cmdContext, sequenceData, headerDetect, referenceName));
+		return new TransientAnalysisResult(mutationFrequenciesPlugin, cmdContext, sequenceData, headerDetect, referenceName);
 	}
 
 	public static class TransientAnalysisResult extends CommandResult {
 
-		protected TransientAnalysisResult(List<SequenceResult> sequenceResults) {
+		protected TransientAnalysisResult(MutationFrequenciesReporter mutationFrequenciesReporter, 
+				CommandContext cmdContext, 
+				byte[] sequenceData, 
+				Boolean headerDetect, 
+				Optional<String> referenceName) {
 			super("transientAnalysisResult");
 			ArrayBuilder sequenceResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
-			for(SequenceResult seqResult: sequenceResults) {
-				ObjectBuilder seqResObjBuilder = sequenceResultArrayBuilder.addObject();
-				seqResObjBuilder.set("sourceName", seqResult.getSourceName());
-				seqResObjBuilder.set("sequenceID", seqResult.getSequenceID());
-				seqResObjBuilder.set("sequenceFormat", seqResult.getSequenceFormat().name());
-				seqResObjBuilder.set("referenceName", seqResult.getReferenceName());
-			}
+			mutationFrequenciesReporter.doTransientAnalysis(cmdContext, headerDetect, referenceName, sequenceResultArrayBuilder,
+					sequenceData);
 		}
 		
 	}
