@@ -5,11 +5,23 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.function.Function;
 
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public class QueryAlignedSegment {
+public class QueryAlignedSegment implements Plugin, IQueryAlignedSegment {
+	
+	public static final String REF_START = "refStart";
+	public static final String REF_END = "refEnd";
+	public static final String QUERY_START = "queryStart";
+	public static final String QUERY_END = "queryEnd";
+
 	private int refStart, refEnd, queryStart, queryEnd;
 
 	public QueryAlignedSegment(int refStart, int refEnd, int queryStart, int queryEnd) {
@@ -20,31 +32,49 @@ public class QueryAlignedSegment {
 		this.queryEnd = queryEnd;
 	}
 	public QueryAlignedSegment(ObjectReader objectReader) {
-		this(objectReader.intValue("refStart"),
-				objectReader.intValue("refEnd"),
-				objectReader.intValue("queryStart"),
-				objectReader.intValue("queryEnd"));
+		this(objectReader.intValue(REF_START),
+				objectReader.intValue(REF_END),
+				objectReader.intValue(QUERY_START),
+				objectReader.intValue(QUERY_END));
 	}
 	
-	public int getRefStart() {
+	public QueryAlignedSegment(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		configure(pluginConfigContext, configElem);
+	}
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		setRefStart(PluginUtils.configureIntProperty(configElem, REF_START, true));
+		setRefEnd(PluginUtils.configureIntProperty(configElem, REF_END, true));
+		setQueryStart(PluginUtils.configureIntProperty(configElem, QUERY_START, true));
+		setQueryEnd(PluginUtils.configureIntProperty(configElem, QUERY_END, true));
+	}
+	
+	@Override
+	public Integer getRefStart() {
 		return refStart;
 	}
 	public void setRefStart(int refStart) {
 		this.refStart = refStart;
 	}
-	public int getRefEnd() {
+	@Override
+	public Integer getRefEnd() {
 		return refEnd;
 	}
 	public void setRefEnd(int refEnd) {
 		this.refEnd = refEnd;
 	}
-	public int getQueryStart() {
+	@Override
+	public Integer getQueryStart() {
 		return queryStart;
 	}
 	public void setQueryStart(int queryStart) {
 		this.queryStart = queryStart;
 	}
-	public int getQueryEnd() {
+	@Override
+	public Integer getQueryEnd() {
 		return queryEnd;
 	}
 	public void setQueryEnd(int queryEnd) {
@@ -111,10 +141,10 @@ public class QueryAlignedSegment {
 
 	public void toDocument(ObjectBuilder builder) {
 		builder
-			.set("refStart", getRefStart())
-			.set("refEnd", getRefEnd())
-			.set("queryStart", getQueryStart())
-			.set("queryEnd", getQueryEnd());
+			.set(REF_START, getRefStart())
+			.set(REF_END, getRefEnd())
+			.set(QUERY_START, getQueryStart())
+			.set(QUERY_END, getQueryEnd());
 	}
 	
 	private static class SegmentStartComparator implements Comparator<QueryAlignedSegment> {
@@ -177,7 +207,7 @@ public class QueryAlignedSegment {
 						int newSegLength = ( queryToRef1NextEnd - queryToRef1NextStart ) + 1;
 						ref1ToRef2Segments.getFirst().truncateLeft(newSegLength);
 						// System.out.println("TRUNCATE Ref1-Ref2");
-						QueryAlignedSegment removed = queryToRef1Segments.removeFirst();
+						IQueryAlignedSegment removed = queryToRef1Segments.removeFirst();
 						// System.out.println("DELETE Query-Ref1");
 						int queryStart = removed.getQueryStart();
 						QueryAlignedSegment newSeg = new QueryAlignedSegment(
@@ -190,7 +220,7 @@ public class QueryAlignedSegment {
 						int queryStart = queryToRef1Segments.getFirst().getQueryStart();
 						queryToRef1Segments.getFirst().truncateLeft(newSegLength);
 						// System.out.println("TRUNCATE Query-Ref1");
-						QueryAlignedSegment removed = ref1ToRef2Segments.removeFirst();
+						IQueryAlignedSegment removed = ref1ToRef2Segments.removeFirst();
 						// System.out.println("DELETE Ref1-Ref2");
 						int ref2Start = removed.getRefStart();
 						QueryAlignedSegment newSeg = new QueryAlignedSegment(
@@ -200,8 +230,8 @@ public class QueryAlignedSegment {
 						queryToRef2Segments.add(newSeg);
 					} else {
 						// both start and end line up.
-						QueryAlignedSegment removed1 = queryToRef1Segments.removeFirst();
-						QueryAlignedSegment removed2 = ref1ToRef2Segments.removeFirst();
+						IQueryAlignedSegment removed1 = queryToRef1Segments.removeFirst();
+						IQueryAlignedSegment removed2 = ref1ToRef2Segments.removeFirst();
 						// System.out.println("DELETE Query-Ref1");
 						// System.out.println("DELETE Ref1-Ref2");
 						QueryAlignedSegment newSeg = new QueryAlignedSegment(
@@ -225,6 +255,5 @@ public class QueryAlignedSegment {
 		}
 		return getStart.apply(alignedSegments.getFirst());
 	}
-	
 	
 }

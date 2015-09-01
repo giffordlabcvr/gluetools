@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.w3c.dom.Element;
@@ -14,8 +15,10 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.SequenceResult;
 
 @CommandClass(
 		commandWords={"transient", "analysis"}, 
@@ -60,20 +63,19 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 
 	@Override
 	protected TransientAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-		return new TransientAnalysisResult(mutationFrequenciesPlugin, cmdContext, sequenceData, headerDetect, alignmentName);
+		List<SequenceResult> seqResults = mutationFrequenciesPlugin.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceData);
+		return new TransientAnalysisResult(seqResults);
 	}
 
 	public static class TransientAnalysisResult extends CommandResult {
 
-		protected TransientAnalysisResult(MutationFrequenciesReporter mutationFrequenciesReporter, 
-				CommandContext cmdContext, 
-				byte[] sequenceData, 
-				Boolean headerDetect, 
-				Optional<String> alignmentName) {
+		protected TransientAnalysisResult(List<SequenceResult> seqResults) {
 			super("transientAnalysisResult");
-			ArrayBuilder sequenceResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
-			mutationFrequenciesReporter.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceResultArrayBuilder,
-					sequenceData);
+			ArrayBuilder seqResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
+			for(SequenceResult seqResult: seqResults) {
+				ObjectBuilder seqResultObj = seqResultArrayBuilder.addObject();
+				seqResult.toDocument(seqResultObj);
+			}
 		}
 		
 	}

@@ -26,6 +26,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListAlignmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.TranslateSegmentsCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.TranslateSegmentsCommand.TranslateSegmentsResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowAncestorsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
@@ -34,12 +37,19 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequen
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.ListFeatureSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.NucleotidesResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceShowLengthCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowNucleotidesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.IQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -57,6 +67,7 @@ import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {
 
 	private String alignmentName;
+	private String alignerModuleName;
 	private TranscriptionEngine transcriptionEngine;
 	
 	public MutationFrequenciesReporter() {
@@ -68,6 +79,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		alignmentName = PluginUtils.configureStringProperty(configElem, "alignmentName", true);
+		alignerModuleName = PluginUtils.configureStringProperty(configElem, "alignerModuleName", true);
 	}
 
 	private class ReferenceSegment extends SegmentUtils.Segment {
@@ -358,18 +370,224 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 
 
-	public void doTransientAnalysis(CommandContext cmdContext,
-			Boolean headerDetect, Optional<String> alignmentName, ArrayBuilder sequenceResultArrayBuilder, 
+	public List<SequenceResult> doTransientAnalysis(CommandContext cmdContext,
+			Boolean headerDetect, Optional<String> alignmentName, 
 			byte[] sequenceData) {
+		AnalysisContext analysisCtx = new AnalysisContext(cmdContext);
 		List<AbstractSequenceObject> seqObjects = seqObjectsFromSeqData(sequenceData);
-		AnalysisContext analysisCtx = new AnalysisContext(cmdContext, alignmentName, headerDetect);
+		List<SequenceResult> seqResults = new ArrayList<SequenceResult>();
 		seqObjects.forEach(seqObj -> {
-			ObjectBuilder seqResultObjBuilder = sequenceResultArrayBuilder.addObject();
-			analyseSingleSequence(analysisCtx, seqResultObjBuilder, "submittedData", seqObj.getHeader(), seqObj);
+			String header = seqObj.getHeader();
+			String initialAlignmentName;
+			if(headerDetect) {
+				initialAlignmentName = detectAlignmentNameFromHeader(analysisCtx, header);
+			} else {
+				initialAlignmentName = alignmentName.get();
+			}
+			seqResults.add(new SequenceResult(analysisCtx, "submittedData", header, initialAlignmentName, seqObj));
 		});
+		
+		// initialize the alignment analysis chain for each sequence
+		seqResults.forEach(seqResult -> initSeqAlmtAnalyses(seqResult));
+		
+		// group sequence results by the name of the reference seq of the initial alignment.
+		Map<String, List<SequenceResult>> refNameToSeqResults = 
+				seqResults.stream().collect(Collectors.groupingBy(seqResult -> seqResult.almtAnalysisChain.get(0).referenceName));
+		
+		// for each list of sequences which have the same reference, align them to that reference.
+		// this produces seqToRefAlignedSegments for the first alignment analysis object in the chain.
+		refNameToSeqResults.forEach((refName, refSeqResults) -> {
+			initSeqToRefAlignedSegments(cmdContext, refName, refSeqResults);
+		});
+		// fill in seqToRefAlignedSegments for the rest of the chain.
+		seqResults.forEach(seqResult -> propagateAlignedSegments(seqResult));
+		return seqResults;
 	}
 
+	// by using the "translate segments" command, we can fill in seqToRefAlignedSegments for the rest of the chain.
+	private void propagateAlignedSegments(SequenceResult seqResult) {
+		AlignmentAnalysis currentAlmtAnalysis = seqResult.almtAnalysisChain.get(0);
+		for(AlignmentAnalysis parentAlmtAnalysis : seqResult.almtAnalysisChain.subList(1, seqResult.almtAnalysisChain.size())) {
+			CommandBuilder<TranslateSegmentsResult, TranslateSegmentsCommand> cmdBuilder = 
+					seqResult.analysisContext.cmdContext.cmdBuilder(TranslateSegmentsCommand.class);
+			ArrayBuilder queryToRef1Array = cmdBuilder.setArray(TranslateSegmentsCommand.QUERY_TO_REF1_SEGMENT);
+			currentAlmtAnalysis.seqToRefAlignedSegments.forEach(seg -> seg.toDocument(queryToRef1Array.addObject()));
+			ArrayBuilder ref1ToRef2Array = cmdBuilder.setArray(TranslateSegmentsCommand.REF1_TO_REF2_SEGMENT);
+			currentAlmtAnalysis.refToParentAlignedSegments.forEach(seg -> seg.toDocument(ref1ToRef2Array.addObject()));
+			parentAlmtAnalysis.seqToRefAlignedSegments = cmdBuilder.execute().getResultSegments();
+			parentAlmtAnalysis.sequenceLength = currentAlmtAnalysis.sequenceLength;
+			parentAlmtAnalysis.seqToRefQueryCoverage = 
+					IQueryAlignedSegment.getQueryNtCoveragePercent(parentAlmtAnalysis.seqToRefAlignedSegments, 
+							parentAlmtAnalysis.sequenceLength);
+			parentAlmtAnalysis.seqToRefReferenceCoverage = 
+					IQueryAlignedSegment.getReferenceNtCoveragePercent(parentAlmtAnalysis.seqToRefAlignedSegments, 
+							parentAlmtAnalysis.referenceLength);
+			
+			currentAlmtAnalysis = parentAlmtAnalysis;
+		} 
+		
+		
+	}
 
+	// Given a reference seq and a list of seqResults where this is the ref sequence of their initial alignment
+	// run the aligner to produce QueryAlignedSegments aligning each seqObj with its initial reference.
+	private <R extends Aligner.AlignerResult, A extends Aligner<R,A>> void initSeqToRefAlignedSegments(CommandContext cmdContext,
+			String refName, List<SequenceResult> seqResults) {
+		Module alignerModule = GlueDataObject.lookup(cmdContext.getObjectContext(), 
+				Module.class, Module.pkMap(alignerModuleName));
+		@SuppressWarnings("unchecked")
+		Aligner<R,A> aligner = (Aligner<R, A>) alignerModule.getModulePlugin(cmdContext.getGluetoolsEngine());
+		try(ModeCloser moduleModeCloser = cmdContext.pushCommandMode("module", alignerModuleName)) {
+			@SuppressWarnings("unchecked")
+			CommandBuilder<R, ? extends AlignCommand<R,A>> cmdBuilder = cmdContext.cmdBuilder(aligner.getAlignCommandClass());
+			ArrayBuilder seqArrayBuilder = cmdBuilder.
+				set(AlignCommand.REFERENCE_NAME	, refName).
+				setArray(AlignCommand.SEQUENCE);
+			seqResults.forEach(seqResult -> {
+				ObjectBuilder seqObjBuilder = seqArrayBuilder.addObject();
+				seqObjBuilder.set(AlignCommand.QUERY_ID, constructQueryID(seqResult.sourceName, seqResult.sequenceID));
+				String seqNucleotides = seqResult.seqObj.getNucleotides();
+				seqResult.almtAnalysisChain.get(0).sequenceLength = seqNucleotides.length();
+				seqObjBuilder.set(AlignCommand.NUCLEOTIDES, seqNucleotides);
+			});
+			R alignerResult = cmdBuilder.execute();
+			Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = alignerResult.getQueryIdToAlignedSegments();
+			seqResults.forEach(seqResult -> {
+				AlignmentAnalysis initialAlmtAnalysis = seqResult.almtAnalysisChain.get(0);
+				initialAlmtAnalysis.seqToRefAlignedSegments = 
+						queryIdToAlignedSegments.get(constructQueryID(seqResult.sourceName, seqResult.sequenceID));
+				initialAlmtAnalysis.seqToRefQueryCoverage = 
+						IQueryAlignedSegment.getQueryNtCoveragePercent(initialAlmtAnalysis.seqToRefAlignedSegments, 
+								initialAlmtAnalysis.sequenceLength);
+				initialAlmtAnalysis.seqToRefReferenceCoverage = 
+						IQueryAlignedSegment.getReferenceNtCoveragePercent(initialAlmtAnalysis.seqToRefAlignedSegments, 
+								initialAlmtAnalysis.referenceLength);
+			});
+		}
+	}
+
+	private String constructQueryID(String sourceName, String sequenceID) {
+		return sourceName+"."+sequenceID;
+	}
+	
+	/*
+	 * Set up the chain of alignment analysis objects for the sequence results.
+	 * The start of this chain is the initial alignment, the chain then follows that alignment's ancestors.
+	 */
+	private void initSeqAlmtAnalyses(SequenceResult seqResult) {
+		String currentAlmtName = seqResult.initialAlignmentName;
+		List<Map<String, Object>> ancestorListOfMaps = seqResult.analysisContext.getAlignmentAncestorsResult(currentAlmtName);
+		AlignmentAnalysis initialAlmtAnalysis = new AlignmentAnalysis();
+		AlignmentAnalysis currentAlmtAnalysis = initialAlmtAnalysis;
+		AlignmentAnalysis prevAlmtAnalysis = null;
+		for(Map<String, Object> ancestorMap: ancestorListOfMaps) {
+			currentAlmtAnalysis.alignmentName = (String) ancestorMap.get(Alignment.NAME_PROPERTY);
+			currentAlmtAnalysis.referenceName = (String) ancestorMap.get(Alignment.REF_SEQ_NAME_PATH);
+			currentAlmtAnalysis.referenceLength = seqResult.analysisContext.getRefLength(currentAlmtAnalysis.referenceName);
+			seqResult.almtAnalysisChain.add(currentAlmtAnalysis);
+			if(prevAlmtAnalysis != null) {
+				prevAlmtAnalysis.refToParentAlignedSegments = 
+						seqResult.analysisContext.getRefToParentAlignedSegments(
+									prevAlmtAnalysis.alignmentName, 
+									prevAlmtAnalysis.referenceName, 
+									currentAlmtAnalysis.alignmentName);
+			}
+			prevAlmtAnalysis = currentAlmtAnalysis;
+			currentAlmtAnalysis = new AlignmentAnalysis();
+		}
+		
+	}
+
+	// Analysis results for a single sequence.
+	public static class SequenceResult {
+		private AnalysisContext analysisContext;
+		private String sourceName;
+		private String sequenceID;
+		private String initialAlignmentName;
+		private AbstractSequenceObject seqObj;
+		
+		// this is the "analysis chain", indicating analysis of the sequence for a path of alignments
+		// through the alignment tree.
+		// in future there might be different starting points for different features, e.g. in the case of 
+		// recombinants or segmented genomes.
+		private List<AlignmentAnalysis> almtAnalysisChain = new ArrayList<AlignmentAnalysis>();
+		
+		public SequenceResult(AnalysisContext analysisContext, String sourceName, String sequenceID,
+				String initialAlignmentName, AbstractSequenceObject seqObj) {
+			super();
+			this.analysisContext = analysisContext;
+			this.sourceName = sourceName;
+			this.sequenceID = sequenceID;
+			this.initialAlignmentName = initialAlignmentName;
+			this.seqObj = seqObj;
+		}
+
+		public void toDocument(ObjectBuilder seqResultObj) {
+			seqResultObj.setString("sourceName", sourceName);
+			seqResultObj.setString("sequenceID", sequenceID);
+			seqResultObj.setString("initialAlignmentName", initialAlignmentName);
+			ArrayBuilder almtChainArray = seqResultObj.setArray("alignmentAnalysis");
+			for(AlignmentAnalysis almtAnalysis: almtAnalysisChain) {
+				almtAnalysis.toDocument(almtChainArray.addObject());
+			}
+		}
+		
+	}
+
+	// Analysis result for a single sequence with respect to a given alignment, specified by alignmentName.
+	// seqToRefAlignedSegments gives the aligned segments which map the nucleotides of seqObj above to the
+	// reference sequence of the alignment.
+	// If the alignment's reference sequence defines feature locations, those mapped nucleotides of seqObj are compared
+	// with those of the reference at those feature locations, and the results are given in seqFeatureLocResults
+	// The alignment may have a parent. If so, refToParentAlignedSegments is non-null.
+	// The aligned segments which map this alignment's reference to the parent's
+	// reference are given in refToParentAlignedSegments and analysis of the sequence with respect to the 
+	// parent alignment is given in parentAlignmentAnalysis.
+	private static class AlignmentAnalysis {
+		private String alignmentName;
+		private String referenceName;
+		private int referenceLength;
+		private int sequenceLength;
+		private List<QueryAlignedSegment> seqToRefAlignedSegments;
+		private double seqToRefQueryCoverage;
+		private double seqToRefReferenceCoverage;
+		private List<QueryAlignedSegment> refToParentAlignedSegments;
+		private List<SequenceFeatureLocationResult> seqFeatureLocResults;
+		
+		public void toDocument(ObjectBuilder seqAlmtAnalysisObj) {
+			seqAlmtAnalysisObj.set("alignmentName", alignmentName);
+			seqAlmtAnalysisObj.set("referenceName", referenceName);
+			seqAlmtAnalysisObj.set("referenceLength", referenceLength);
+			seqAlmtAnalysisObj.set("sequenceLength", sequenceLength);
+			seqAlmtAnalysisObj.set("seqToRefQueryCoverage", seqToRefQueryCoverage);
+			seqAlmtAnalysisObj.set("seqToRefReferenceCoverage", seqToRefReferenceCoverage);
+			ArrayBuilder seqToRefAlignedSegArray = seqAlmtAnalysisObj.setArray("seqToRefAlignedSegment");
+			for(QueryAlignedSegment seqToRefAlignedSegment: seqToRefAlignedSegments) {
+				seqToRefAlignedSegment.toDocument(seqToRefAlignedSegArray.addObject());
+			}
+			if(refToParentAlignedSegments != null) {
+				ArrayBuilder refToParentAlignedSegArray = seqAlmtAnalysisObj.setArray("refToParentAlignedSegments");
+				for(QueryAlignedSegment refToParentAlignedSegment: refToParentAlignedSegments) {
+					refToParentAlignedSegment.toDocument(refToParentAlignedSegArray.addObject());
+				}
+			} 
+			ArrayBuilder seqFeatureLocResultArray = seqAlmtAnalysisObj.setArray("sequenceFeatureLocation");
+			/*for(SequenceFeatureLocationResult seqFeatureLocResult: seqFeatureLocResults) {
+				seqFeatureLocResult.toDocument(seqFeatureLocResultArray.addObject());
+			}*/
+			
+
+		}
+	}
+
+	private static class SequenceFeatureLocationResult {
+		private String featureName;
+
+		public void toDocument(ObjectBuilder seqFeatureLocObj) {
+			seqFeatureLocObj.set("featureName", featureName);
+		}
+	}
+	
 	public List<AbstractSequenceObject> seqObjectsFromSeqData(
 			byte[] sequenceData) {
 		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
@@ -387,24 +605,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		return seqObjects;
 	}
 	
-	private void analyseSingleSequence(AnalysisContext analysisCtx,
-			ObjectBuilder seqResultObjBuilder, String source, String sequenceID,
-			AbstractSequenceObject seqObj) {
-		seqResultObjBuilder.setString("sourceName", source);
-		seqResultObjBuilder.setString("sequenceID", sequenceID);
-		String initialAlignmentName = establishInitialAlignment(analysisCtx, seqObj.getHeader());
-		seqResultObjBuilder.setString("initialAlignmentName", initialAlignmentName);
-		
-		
-	}
-	
-	private String establishInitialAlignment(AnalysisContext analysisCtx, String header) {
-		if(analysisCtx.headerDetect) {
-			return detectAlignmentNameFromHeader(analysisCtx, header);
-		} else {
-			return analysisCtx.alignmentName.get();
-		}
-	}
 
 	private String detectAlignmentNameFromHeader(AnalysisContext analysisCtx, String header) {
 		Map<String, String> almtSearchStringToAlmtName = analysisCtx.getAlmtSearchStringToAlmtName();
@@ -419,15 +619,38 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	
 	private static class AnalysisContext {
 		private CommandContext cmdContext;
-		private Optional<String> alignmentName;
-		private Boolean headerDetect;
 		private Map<String, String> almtSearchStringToAlmtName;
 		
-		public AnalysisContext(CommandContext cmdContext, Optional<String> alignmentName, Boolean headerDetect) {
+		private Map<String, List<Map<String,Object>>> almtNameToAncestorsListOfMaps = new LinkedHashMap<String, List<Map<String,Object>>>();
+		
+		private Map<String, List<QueryAlignedSegment>> almtNameToRefParentAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
+		
+		private Map<String, Integer> refNameToLength = new LinkedHashMap<String, Integer>();
+		
+		public AnalysisContext(CommandContext cmdContext) {
 			super();
 			this.cmdContext = cmdContext;
-			this.alignmentName = alignmentName;
-			this.headerDetect = headerDetect;
+		}
+
+		public List<QueryAlignedSegment> getRefToParentAlignedSegments(String alignmentName, String referenceName, String parentAlignmentName) {
+			List<QueryAlignedSegment> refToParentAlignedSegments = almtNameToRefParentAlignedSegments.get(alignmentName);
+			if(refToParentAlignedSegments == null) {
+				String refSourceName;
+				String refSequenceID;
+				try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
+					ShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
+					refSourceName = refShowSeqResult.getSourceName();
+					refSequenceID = refShowSeqResult.getSequenceID();
+				}
+				try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", parentAlignmentName)) {
+					try(ModeCloser memberMode = cmdContext.pushCommandMode("member", refSourceName, refSequenceID)) {
+						refToParentAlignedSegments = 
+								cmdContext.cmdBuilder(ListAlignedSegmentCommand.class).execute().asQueryAlignedSegments();
+					}
+				}
+				almtNameToRefParentAlignedSegments.put(alignmentName, refToParentAlignedSegments);
+			}
+			return refToParentAlignedSegments;
 		}
 
 		public Map<String, String> getAlmtSearchStringToAlmtName() {
@@ -441,6 +664,35 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				});
 			}
 			return almtSearchStringToAlmtName;
+		}
+
+		public List<Map<String,Object>> getAlignmentAncestorsResult(String alignmentName) {
+			List<Map<String,Object>> ancestorsListOfMaps = almtNameToAncestorsListOfMaps.get(alignmentName);
+			if(ancestorsListOfMaps == null) {
+				try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
+					ancestorsListOfMaps = cmdContext.cmdBuilder(AlignmentShowAncestorsCommand.class).execute().asListOfMaps();
+				}
+				almtNameToAncestorsListOfMaps.put(alignmentName, ancestorsListOfMaps);
+			}
+			return ancestorsListOfMaps;
+		}
+		
+		public Integer getRefLength(String referenceName) {
+			Integer refLength = refNameToLength.get(referenceName);
+			if(refLength == null) {
+				String refSourceName;
+				String refSequenceID;
+				try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
+					ShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
+					refSourceName = refShowSeqResult.getSourceName();
+					refSequenceID = refShowSeqResult.getSequenceID();
+				}
+				try(ModeCloser seqMode = cmdContext.pushCommandMode("sequence", refSourceName, refSequenceID)) {
+					refLength = cmdContext.cmdBuilder(SequenceShowLengthCommand.class).execute().getLength();
+				}
+				refNameToLength.put(referenceName, refLength);
+			}
+			return refLength;
 		}
 		
 		

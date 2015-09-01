@@ -19,7 +19,7 @@ public class SequenceModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(UnsetFieldCommand.class);
 		registerCommandClass(ShowFieldCommand.class);
 		registerCommandClass(ShowOriginalDataCommand.class);
-		registerCommandClass(ShowLength.class);
+		registerCommandClass(SequenceShowLengthCommand.class);
 		registerCommandClass(ShowNucleotidesCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}

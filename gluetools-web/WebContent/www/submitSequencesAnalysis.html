@@ -94,7 +94,7 @@
 									<span class="glyphicon glyphicon-ban-circle"></span> Cancel
 								</button>  -->
 								<button type="button" class="btn btn-primary btn-xs"
-									ng-click="item.addAnalysis()" ng-disabled="!item.isSuccess">
+									ng-click="showAnalysisResults(item)" ng-disabled="!item.isSuccess">
 									<span class="glyphicon glyphicon-list"></span> Analysis
 								</button>
 								<button type="button" class="btn btn-danger btn-xs"
@@ -133,10 +133,23 @@
 	
 			</div>
 	
-			<div>
-				<h3>Anaylsis results</h3>
-	
-	
+			<div ng-show="analysisResults">
+				<h3>Anaylsis: {{analysisResults.file.name}}</h3>
+				<div ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult">
+					<h5>{{sequenceResult.sequenceID}}</h5>
+					<table class="table table-condensed table-bordered">
+						<th>Alignment</th>
+						<th>Reference</th>
+						<th>Query coverage</th>
+						<th>Reference coverage</th>
+						<tr ng-repeat="alignmentAnalysis in sequenceResult.alignmentAnalysis">
+							<td>{{alignmentAnalysis.alignmentName}}</td>
+							<td>{{alignmentAnalysis.referenceName}}</td>
+							<td>{{toFixed(alignmentAnalysis.seqToRefQueryCoverage,2)}}%</td>
+							<td>{{toFixed(alignmentAnalysis.seqToRefReferenceCoverage,2)}}%</td>
+						</tr>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>

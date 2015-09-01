@@ -3,6 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.IQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
@@ -15,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 		_AlignedSegment.REF_END_PROPERTY, 
 		_AlignedSegment.MEMBER_START_PROPERTY, 
 		_AlignedSegment.MEMBER_END_PROPERTY})
-public class AlignedSegment extends _AlignedSegment {
+public class AlignedSegment extends _AlignedSegment implements IQueryAlignedSegment {
 
 	public static final String MEMBER_SOURCE_NAME_PATH = 
 			_AlignedSegment.ALIGNMENT_MEMBER_PROPERTY+"."+_AlignmentMember.SEQUENCE_PROPERTY+"."+
@@ -63,4 +65,22 @@ public class AlignedSegment extends _AlignedSegment {
 				getMemberStart(), 
 				getMemberEnd());
 	}
+	
+	public IQueryAlignedSegment asQueryAlignedSegment() {
+		return new QueryAlignedSegment(getRefStart(), getRefEnd(), getMemberStart(), getMemberEnd());
+	}
+
+
+
+	@Override
+	public Integer getQueryStart() {
+		return getMemberStart();
+	}
+
+	@Override
+	public Integer getQueryEnd() {
+		return getMemberEnd();
+	}
+	
+	
 }

@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
@@ -66,24 +67,14 @@ public class AlignmentMember extends _AlignmentMember {
 	private double getMemberNtCoveragePercent() {
 		int memberLength = getSequence().getSequenceObject().getNucleotides().length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
-		int memberNTs = 0;
-		for(AlignedSegment segment: alignedSegments) {
-			memberNTs += 1+ Math.abs(segment.getMemberStart() - segment.getMemberEnd());
-		}
-		double memberNtPercent = 100.0 * memberNTs / memberLength;
-		return memberNtPercent;
+		return IQueryAlignedSegment.getQueryNtCoveragePercent(alignedSegments, memberLength);
 	}
 
 	private double getReferenceNtCoveragePercent() {
 		int referenceLength = getAlignment().getRefSequence().
 				getSequence().getSequenceObject().getNucleotides().length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
-		int referenceNTs = 0;
-		for(AlignedSegment segment: alignedSegments) {
-			referenceNTs += 1+ Math.abs(segment.getRefStart() - segment.getRefEnd());
-		}
-		double referenceNtPercent = 100.0 * referenceNTs / referenceLength;
-		return referenceNtPercent;
+		return IQueryAlignedSegment.getReferenceNtCoveragePercent(alignedSegments, referenceLength);
 	}
 
 }

@@ -22,6 +22,16 @@ submitSequencesAnalysis
 		dialogs.create('dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
 	}
 	
+	$scope.showAnalysisResults = function(item) {
+		console.log("show analysis : ", item);
+		console.log("resultArray : ", item.transientAnalysisResult.sequenceResult);
+		$scope.analysisResults = item;
+	}
+	
+	$scope.toFixed = function(dbl, prec) {
+		return toFixed(dbl, prec);
+	}
+	
 	console.log("init submitSequencesAnalysis controller");
 
 	var uploader = $scope.uploader = new FileUploader({});
@@ -103,6 +113,7 @@ submitSequencesAnalysis
     };
     uploader.onSuccessItem = function(fileItem, response, status, headers) {
         console.info('onSuccessItem', fileItem, response, status, headers);
+        fileItem.transientAnalysisResult = response.transientAnalysisResult;
     };
     uploader.onErrorItem = function(fileItem, response, status, headers) {
         console.info('onErrorItem', fileItem, response, status, headers);

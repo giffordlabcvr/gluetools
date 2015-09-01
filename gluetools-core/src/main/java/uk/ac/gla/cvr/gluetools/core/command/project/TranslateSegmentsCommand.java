@@ -63,34 +63,37 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"  }\n"+
 				"}"
 )
-public class TranslateSegmentsCommand extends Command<TranslateSegmentsCommand.TransformSegmentsResult> {
+public class TranslateSegmentsCommand extends Command<TranslateSegmentsCommand.TranslateSegmentsResult> {
 
 
+	public static final String QUERY_TO_REF1_SEGMENT = "queryToRef1Segment";
+	public static final String REF1_TO_REF2_SEGMENT = "ref1ToRef2Segment";
+	
 	private LinkedList<QueryAlignedSegment> queryToRef1Segments;
 	private LinkedList<QueryAlignedSegment> ref1ToRef2Segments;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		List<Element> queryToRef1SegmentElems = PluginUtils.findConfigElements(configElem, "queryToRef1Segment");
+		List<Element> queryToRef1SegmentElems = PluginUtils.findConfigElements(configElem, QUERY_TO_REF1_SEGMENT);
 		queryToRef1Segments = new LinkedList<QueryAlignedSegment>(queryToRef1SegmentElems.stream()
-				.map(elem -> new QueryAlignedSegment(new ObjectReader(elem)))
+				.map(elem -> new QueryAlignedSegment(pluginConfigContext, elem))
 				.collect(Collectors.toList()));
-		List<Element> ref1ToRef2SegmentElems = PluginUtils.findConfigElements(configElem, "ref1ToRef2Segment");
+		List<Element> ref1ToRef2SegmentElems = PluginUtils.findConfigElements(configElem, REF1_TO_REF2_SEGMENT);
 		ref1ToRef2Segments = new LinkedList<QueryAlignedSegment>(ref1ToRef2SegmentElems.stream()
-				.map(elem -> new QueryAlignedSegment(new ObjectReader(elem)))
+				.map(elem -> new QueryAlignedSegment(pluginConfigContext, elem))
 				.collect(Collectors.toList()));
 	}
 
 	@Override
-	public TransformSegmentsResult execute(CommandContext cmdContext) {
-		return new TransformSegmentsResult(QueryAlignedSegment.translateSegments(queryToRef1Segments, ref1ToRef2Segments));
+	public TranslateSegmentsResult execute(CommandContext cmdContext) {
+		return new TranslateSegmentsResult(QueryAlignedSegment.translateSegments(queryToRef1Segments, ref1ToRef2Segments));
 	}
 	
-	public static class TransformSegmentsResult extends CommandResult {
+	public static class TranslateSegmentsResult extends CommandResult {
 
-		protected TransformSegmentsResult(List<QueryAlignedSegment> resultSegments) {
-			super("transformSegmentsResult");
+		protected TranslateSegmentsResult(List<QueryAlignedSegment> resultSegments) {
+			super("translateSegmentsResult");
 			ArrayBuilder resultSegmentArrayBuilder = getDocumentBuilder().setArray("queryToRef2Segments");
 			for(QueryAlignedSegment resultSegment: resultSegments) {
 				resultSegment.toDocument(resultSegmentArrayBuilder.addObject());

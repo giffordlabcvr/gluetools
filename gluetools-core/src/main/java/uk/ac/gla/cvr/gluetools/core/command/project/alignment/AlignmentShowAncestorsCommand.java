@@ -2,8 +2,9 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,14 +47,14 @@ public class AlignmentShowAncestorsCommand extends AlignmentModeCommand<Alignmen
 				.map(name -> GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(name)))
 				.orElse(null);
 		List<Alignment> ancestors = new ArrayList<Alignment>();
-		Alignment currentAlmt = thisAlmt.getParent();
-		while(currentAlmt != null) {
+		Alignment currentAlmt = thisAlmt;
+		do {
 			ancestors.add(currentAlmt);
 			if(toAlmt != null && currentAlmt.getName().equals(toAlmt.getName())) {
 				break;
 			}
 			currentAlmt = currentAlmt.getParent();
-		}
+		} while(currentAlmt != null);
 		return new ShowAlignmentAncestorsResult(ancestors);
 	}
 
@@ -61,9 +62,14 @@ public class AlignmentShowAncestorsCommand extends AlignmentModeCommand<Alignmen
 	public static class ShowAlignmentAncestorsResult extends TableResult {
 
 		public ShowAlignmentAncestorsResult(List<Alignment> ancestorAlignments) {
-			super("showAlignmentAncestors", Arrays.asList(Alignment.NAME_PROPERTY), 
+			super("showAlignmentAncestors", Arrays.asList(Alignment.NAME_PROPERTY, Alignment.REF_SEQ_NAME_PATH), 
 					ancestorAlignments.stream()
-					.map(almt -> Collections.singletonMap(Alignment.NAME_PROPERTY, (Object) almt.getName()))
+					.map(almt -> {
+						Map<String, Object> map = new LinkedHashMap<String, Object>();
+						map.put(Alignment.NAME_PROPERTY, almt.getName());
+						map.put(Alignment.REF_SEQ_NAME_PATH, almt.getRefSequence().getName());
+						return map;
+					})
 					.collect(Collectors.toList()));
 		}
 

@@ -119,12 +119,12 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 	
 	public abstract static class AlignerResult extends CommandResult {
 
-		protected AlignerResult(String rootObjectName, Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments) {
+		protected AlignerResult(String rootObjectName, Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments) {
 			super(rootObjectName);
 			ArrayBuilder sequenceArrayBuilder = getDocumentBuilder().setArray("sequence");
-			fastaIdToAlignedSegments.forEach((fastaId, alignedSegments) -> {
+			queryIdToAlignedSegments.forEach((queryId, alignedSegments) -> {
 				ObjectBuilder sequenceObjectBuilder = sequenceArrayBuilder.addObject();
-				sequenceObjectBuilder.set("fastaId", fastaId);
+				sequenceObjectBuilder.set("queryId", queryId);
 				ArrayBuilder alignedSegmentArrayBuilder = sequenceObjectBuilder.setArray("alignedSegment");
 				for(QueryAlignedSegment segment: alignedSegments) {
 					ObjectBuilder alignedSegmentObjectBuilder = alignedSegmentArrayBuilder.addObject();
@@ -133,13 +133,13 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 			});
 		}
 
-		public Map<String, List<QueryAlignedSegment>> getFastaIdToAlignedSegments() {
-			Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = 
+		public Map<String, List<QueryAlignedSegment>> getQueryIdToAlignedSegments() {
+			Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = 
 					new LinkedHashMap<String, List<QueryAlignedSegment>>();
 			ArrayReader sequencesReader = getDocumentReader().getArray("sequence");
 			for(int i = 0 ; i < sequencesReader.size(); i++) {
 				ObjectReader sequenceObjectReader = sequencesReader.getObject(i);
-				String fastaId = sequenceObjectReader.stringValue("fastaId");
+				String queryId = sequenceObjectReader.stringValue("queryId");
 				ArrayReader alignedSegmentsReader = 
 						sequenceObjectReader.getArray("alignedSegment");
 				List<QueryAlignedSegment> segments = new ArrayList<QueryAlignedSegment>();
@@ -148,9 +148,9 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 					segments.add(new QueryAlignedSegment(objectReader));
 
 				}
-				fastaIdToAlignedSegments.put(fastaId, segments);
+				queryIdToAlignedSegments.put(queryId, segments);
 			}
-			return fastaIdToAlignedSegments;
+			return queryIdToAlignedSegments;
 		}
 	}
 
