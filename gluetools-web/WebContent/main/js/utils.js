@@ -11,3 +11,7 @@ function toFixed(value, precision) {
     }
     return result;
 }
+
+function addUtilsToScope($scope) {
+	$scope.toFixed = function(v,p) { return toFixed(v,p); }
+}

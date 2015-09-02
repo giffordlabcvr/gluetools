@@ -28,9 +28,23 @@ submitSequencesAnalysis
 		$scope.analysisResults = item;
 	}
 	
-	$scope.toFixed = function(dbl, prec) {
-		return toFixed(dbl, prec);
+	$scope.showAlignmentDetails = function(sequenceResult) {
+		dialogs.create('dialogs/alignmentDetails.html','alignmentDetailsCtrl',sequenceResult,{});
 	}
+	
+	$scope.removeAll = function() {
+		$scope.uploader.clearQueue();
+		$scope.analysisResults = null;
+	}
+
+	$scope.removeItem = function(item) {
+		if($scope.analysisResults == item) {
+			$scope.analysisResults = null;
+		}
+		item.remove();
+	}
+
+	addUtilsToScope($scope);
 	
 	console.log("init submitSequencesAnalysis controller");
 
@@ -132,6 +146,14 @@ submitSequencesAnalysis
 }])
 .controller('seqFmtDialogCtrl',function($scope,$modalInstance,data){
 	$scope.sequenceFormats = data;
+	
+	$scope.dismiss = function(){
+		$modalInstance.dismiss('Dismissed');
+	}; 
+})
+.controller('alignmentDetailsCtrl',function($scope,$modalInstance,data){
+	$scope.sequenceResult = data;
+	addUtilsToScope($scope);
 	
 	$scope.dismiss = function(){
 		$modalInstance.dismiss('Dismissed');

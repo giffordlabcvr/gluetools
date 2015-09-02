@@ -98,7 +98,7 @@
 									<span class="glyphicon glyphicon-list"></span> Analysis
 								</button>
 								<button type="button" class="btn btn-danger btn-xs"
-									ng-click="item.remove()">
+									ng-click="removeItem(item)">
 									<span class="glyphicon glyphicon-trash"></span> Remove
 								</button>
 							</td>
@@ -125,7 +125,7 @@
 						<span class="glyphicon glyphicon-ban-circle"></span> Cancel all
 					</button>  -->
 					<button type="button" class="btn btn-danger btn-s"
-						ng-click="uploader.clearQueue()"
+						ng-click="removeAll()"
 						ng-disabled="!uploader.queue.length">
 						<span class="glyphicon glyphicon-trash"></span> Remove all
 					</button>
@@ -137,18 +137,7 @@
 				<h3>Anaylsis: {{analysisResults.file.name}}</h3>
 				<div ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult">
 					<h5>{{sequenceResult.sequenceID}}</h5>
-					<table class="table table-condensed table-bordered">
-						<th>Alignment</th>
-						<th>Reference</th>
-						<th>Query coverage</th>
-						<th>Reference coverage</th>
-						<tr ng-repeat="alignmentAnalysis in sequenceResult.alignmentAnalysis">
-							<td>{{alignmentAnalysis.alignmentName}}</td>
-							<td>{{alignmentAnalysis.referenceName}}</td>
-							<td>{{toFixed(alignmentAnalysis.seqToRefQueryCoverage,2)}}%</td>
-							<td>{{toFixed(alignmentAnalysis.seqToRefReferenceCoverage,2)}}%</td>
-						</tr>
-					</table>
+					<a ng-click="showAlignmentDetails(sequenceResult)">Alignment details <i class="glyphicon glyphicon-link"></i></a>
 				</div>
 			</div>
 		</div>

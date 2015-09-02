@@ -1,0 +1,28 @@
+<div class="modal-header">
+	<h4 class="modal-title">
+		Query sequence: {{sequenceResult.sequenceID}}
+	</h4>
+	<h4 class="modal-title">
+		Alignment details
+	</h4>
+</div>
+<div class="modal-body">
+	The query sequence (NT length {{sequenceResult.alignmentAnalysis[0].sequenceLength}}) was aligned against the following reference sequences in turn.
+	
+	<p></p>
+	<table class="table table-condensed table-bordered">
+		<th>Reference sequence</th>
+		<th>Alignment</th>
+		<th>Query NT coverage</th>
+		<th>Reference NT coverage</th>
+		<tr ng-repeat="alignmentAnalysis in sequenceResult.alignmentAnalysis">
+			<td>{{alignmentAnalysis.referenceName}} (NT length {{alignmentAnalysis.referenceLength}})</td>
+			<td>{{alignmentAnalysis.alignmentName}}</td>
+			<td>{{toFixed(alignmentAnalysis.seqToRefQueryCoverage,2)}}%</td>
+			<td>{{toFixed(alignmentAnalysis.seqToRefReferenceCoverage,2)}}%</td>
+		</tr>
+	</table>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="dismiss()">OK</button>
+</div>

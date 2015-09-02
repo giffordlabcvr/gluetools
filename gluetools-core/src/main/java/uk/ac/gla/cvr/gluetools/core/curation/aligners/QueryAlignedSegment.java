@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;

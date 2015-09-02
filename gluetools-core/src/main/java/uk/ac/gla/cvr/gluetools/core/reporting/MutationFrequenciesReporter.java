@@ -401,7 +401,14 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		});
 		// fill in seqToRefAlignedSegments for the rest of the chain.
 		seqResults.forEach(seqResult -> propagateAlignedSegments(seqResult));
+		
+		seqResults.forEach(seqResult -> generateFeatureLocationResults(seqResult));
 		return seqResults;
+	}
+
+	private void generateFeatureLocationResults(SequenceResult seqResult) {
+		for(AlignmentAnalysis alignmentAnalysis : seqResult.almtAnalysisChain) {
+		}
 	}
 
 	// by using the "translate segments" command, we can fill in seqToRefAlignedSegments for the rest of the chain.
