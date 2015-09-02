@@ -12,10 +12,10 @@ import java.util.logging.Logger;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowCreationTimeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowCreationTimeResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowCreationTimeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowCreationTimeCommand.ReferenceShowCreationTimeResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand.ReferenceShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
@@ -127,7 +127,7 @@ public class BlastRefSeqDB {
 	private OriginalDataResult getReferenceSeqOriginalData(
 			CommandContext cmdContext, String refName) {
 		// enter the reference command mode to get the reference sourceName and sequence ID.
-		ShowSequenceResult showSequenceResult = getReferenceSequenceResult(cmdContext, refName);
+		ReferenceShowSequenceResult showSequenceResult = getReferenceSequenceResult(cmdContext, refName);
 		return getOriginalData(cmdContext, showSequenceResult.getSourceName(), showSequenceResult.getSequenceID());
 	}
 
@@ -139,15 +139,15 @@ public class BlastRefSeqDB {
 		}
 	}
 
-	private ShowSequenceResult getReferenceSequenceResult(CommandContext cmdContext, String refName) {
+	private ReferenceShowSequenceResult getReferenceSequenceResult(CommandContext cmdContext, String refName) {
 		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refName)) {
-			return cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
+			return cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
 		}
 	}
 
-	private ShowCreationTimeResult getReferenceCreationTimeResult(CommandContext cmdContext, String refName) {
+	private ReferenceShowCreationTimeResult getReferenceCreationTimeResult(CommandContext cmdContext, String refName) {
 		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refName)) {
-			return cmdContext.cmdBuilder(ShowCreationTimeCommand.class).execute();
+			return cmdContext.cmdBuilder(ReferenceShowCreationTimeCommand.class).execute();
 		}
 	}
 

@@ -12,9 +12,9 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 
 @CommandClass(

@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 
@@ -51,6 +52,20 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	public abstract static class FeatureNameCompleter extends CommandCompleter {
+		@Override
+		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
+			if(argStrings.isEmpty()) {
+				ObjectContext objContext = cmdContext.getObjectContext();
+				List<Feature> feature = GlueDataObject.query(objContext, Feature.class, new SelectQuery(Feature.class));
+				return feature.stream().map(Feature::getName).collect(Collectors.toList());
+			}
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+		}
+	}
+
+	
 	@SuppressWarnings("rawtypes")
 	public abstract static class RefSeqNameCompleter extends CommandCompleter {
 		@Override

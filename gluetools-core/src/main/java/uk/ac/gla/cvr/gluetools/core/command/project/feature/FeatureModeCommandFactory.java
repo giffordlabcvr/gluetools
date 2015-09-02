@@ -16,6 +16,16 @@ public class FeatureModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 
+		registerCommandClass(FeatureSetParentCommand.class);
+		registerCommandClass(FeatureUnsetParentCommand.class);
+		registerCommandClass(FeatureShowParentCommand.class);
+		registerCommandClass(FeatureShowTranscriptionTypeCommand.class);
+
+		registerCommandClass(VariationCommand.class);
+		registerCommandClass(CreateVariationCommand.class);
+		registerCommandClass(DeleteVariationCommand.class);
+		registerCommandClass(ListVariationCommand.class);
+
 		registerCommandClass(ExitCommand.class);
 	}
 	

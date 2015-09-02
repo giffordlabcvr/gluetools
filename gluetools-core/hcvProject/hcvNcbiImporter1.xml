@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ncbiImporter>
+    <sequenceFormat>GENBANK_XML</sequenceFormat>
+    <eSearchTerm>"AF009606"[Primary Accession] OR "M62321"[Primary Accession] OR "M67463"[Primary Accession] OR "HQ850279"[Primary Accession] OR "EF407457"[Primary Accession] OR "D90208"[Primary Accession] OR "M58335"[Primary Accession] OR "EU781827"[Primary Accession] OR "EU781828"[Primary Accession] OR "D14853"[Primary Accession] OR "AY051292"[Primary Accession] OR "AY651061"[Primary Accession] OR "KJ439768"[Primary Accession] OR "KC248194"[Primary Accession] OR "AM910652"[Primary Accession] OR "KC248198"[Primary Accession] OR "KC248199"[Primary Accession] OR "KJ439772"[Primary Accession] OR "KJ439773"[Primary Accession] OR "KC248193"[Primary Accession] OR "KC248197"[Primary Accession] OR "KC248196"[Primary Accession] OR "KJ439778"[Primary Accession] OR "KJ439782"[Primary Accession] OR "KJ439781"[Primary Accession] OR "KJ439775"[Primary Accession] OR "KJ439774"[Primary Accession] OR "D00944"[Primary Accession] OR "AB047639"[Primary Accession] OR "HQ639944"[Primary Accession] OR "D10988"[Primary Accession] OR "AB030907"[Primary Accession] OR "AB661388"[Primary Accession] OR "AB661382"[Primary Accession] OR "D50409"[Primary Accession] OR "JX227949"[Primary Accession]</eSearchTerm>
+    <eFetchBatchSize>500</eFetchBatchSize>
+</ncbiImporter>

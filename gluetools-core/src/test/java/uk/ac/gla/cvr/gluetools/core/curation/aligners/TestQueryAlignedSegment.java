@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+
 public class TestQueryAlignedSegment {
 
 	

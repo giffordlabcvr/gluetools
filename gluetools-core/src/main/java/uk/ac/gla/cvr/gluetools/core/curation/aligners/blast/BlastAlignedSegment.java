@@ -2,7 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
 
 import java.util.function.Function;
 
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
 
 public class BlastAlignedSegment extends QueryAlignedSegment {

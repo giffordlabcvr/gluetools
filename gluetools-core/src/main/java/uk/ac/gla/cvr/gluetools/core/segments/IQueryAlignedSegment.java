@@ -1,16 +1,12 @@
-package uk.ac.gla.cvr.gluetools.core.curation.aligners;
+package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.List;
 
-public interface IQueryAlignedSegment {
+public interface IQueryAlignedSegment extends IReferenceSegment {
 
-	public abstract Integer getRefStart();
+	public Integer getQueryStart();
 
-	public abstract Integer getRefEnd();
-
-	public abstract Integer getQueryStart();
-
-	public abstract Integer getQueryEnd();
+	public Integer getQueryEnd();
 
 	public static double getQueryNtCoveragePercent(List<? extends IQueryAlignedSegment> alignedSegments, int queryLength) {
 		int queryNTs = 0;

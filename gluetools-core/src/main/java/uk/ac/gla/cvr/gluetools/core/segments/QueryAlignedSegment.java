@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.curation.aligners;
+package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,57 +14,37 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public class QueryAlignedSegment implements Plugin, IQueryAlignedSegment {
+public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQueryAlignedSegment {
 	
-	public static final String REF_START = "refStart";
-	public static final String REF_END = "refEnd";
 	public static final String QUERY_START = "queryStart";
 	public static final String QUERY_END = "queryEnd";
 
-	private int refStart, refEnd, queryStart, queryEnd;
+	private int queryStart, queryEnd;
 
 	public QueryAlignedSegment(int refStart, int refEnd, int queryStart, int queryEnd) {
-		super();
-		this.refStart = refStart;
-		this.refEnd = refEnd;
+		super(refStart, refEnd);
 		this.queryStart = queryStart;
 		this.queryEnd = queryEnd;
 	}
 	public QueryAlignedSegment(ObjectReader objectReader) {
-		this(objectReader.intValue(REF_START),
-				objectReader.intValue(REF_END),
-				objectReader.intValue(QUERY_START),
-				objectReader.intValue(QUERY_END));
+		super(objectReader);
+		this.queryStart = objectReader.intValue(QUERY_START);
+		this.queryEnd = objectReader.intValue(QUERY_END);
 	}
 	
-	public QueryAlignedSegment(PluginConfigContext pluginConfigContext,
-			Element configElem) {
+	public QueryAlignedSegment(PluginConfigContext pluginConfigContext, Element configElem) {
+		super();
 		configure(pluginConfigContext, configElem);
 	}
 	
 	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
-		setRefStart(PluginUtils.configureIntProperty(configElem, REF_START, true));
-		setRefEnd(PluginUtils.configureIntProperty(configElem, REF_END, true));
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
 		setQueryStart(PluginUtils.configureIntProperty(configElem, QUERY_START, true));
 		setQueryEnd(PluginUtils.configureIntProperty(configElem, QUERY_END, true));
 	}
 	
-	@Override
-	public Integer getRefStart() {
-		return refStart;
-	}
-	public void setRefStart(int refStart) {
-		this.refStart = refStart;
-	}
-	@Override
-	public Integer getRefEnd() {
-		return refEnd;
-	}
-	public void setRefEnd(int refEnd) {
-		this.refEnd = refEnd;
-	}
+	
 	@Override
 	public Integer getQueryStart() {
 		return queryStart;
@@ -81,21 +61,13 @@ public class QueryAlignedSegment implements Plugin, IQueryAlignedSegment {
 	}
 	
 	public void truncateLeft(int length) {
-		checkTruncateLength(length);
+		super.truncateLeft(length);
 		queryStart+=length;
-		refStart+=length;
 	}
 	
-	protected void checkTruncateLength(int length) {
-		if(length <= 0 || length > getRefEnd() - getRefStart()) {
-			throw new IllegalArgumentException("Illegal length argument: "+
-		length+": should be between "+1+" and "+(getRefEnd() - getRefStart())+" inclusive" );
-		}
-	}
-
 	public String toString() { return
-		"Ref: ["+getRefStart()+", "+getRefEnd()+"] "+
-				"<-> Query: ["+getQueryStart()+", "+getQueryEnd()+"]";
+		super.toString() +
+				" <-> Query: ["+getQueryStart()+", "+getQueryEnd()+"]";
 	}
 	
 	/**
@@ -105,7 +77,7 @@ public class QueryAlignedSegment implements Plugin, IQueryAlignedSegment {
 	 * in this case the segments can easily be merged.
 	 */
 	public boolean isAlignedTo(QueryAlignedSegment other) {
-		return queryStart - refStart == other.queryStart - other.refStart;
+		return queryStart - getRefStart() == other.queryStart - other.getRefStart();
 	}
 	
 	@Override
@@ -114,8 +86,8 @@ public class QueryAlignedSegment implements Plugin, IQueryAlignedSegment {
 		int result = 1;
 		result = prime * result + queryEnd;
 		result = prime * result + queryStart;
-		result = prime * result + refEnd;
-		result = prime * result + refStart;
+		result = prime * result + getRefEnd();
+		result = prime * result + getRefStart();
 		return result;
 	}
 	@Override
@@ -131,17 +103,16 @@ public class QueryAlignedSegment implements Plugin, IQueryAlignedSegment {
 			return false;
 		if (queryStart != other.queryStart)
 			return false;
-		if (refEnd != other.refEnd)
+		if (getRefEnd() != other.getRefEnd())
 			return false;
-		if (refStart != other.refStart)
+		if (getRefStart() != other.getRefStart())
 			return false;
 		return true;
 	}
 
 	public void toDocument(ObjectBuilder builder) {
+		super.toDocument(builder);
 		builder
-			.set(REF_START, getRefStart())
-			.set(REF_END, getRefEnd())
 			.set(QUERY_START, getQueryStart())
 			.set(QUERY_END, getQueryEnd());
 	}

@@ -28,6 +28,7 @@
 	<db-entity name="FEATURE">
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="PARENT_NAME" type="VARCHAR" length="50"/>
 		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
 	</db-entity>
 	<db-entity name="FEATURE_LOCATION">
@@ -60,6 +61,12 @@
 	</db-entity>
 	<db-entity name="SOURCE">
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
+	<db-entity name="VARIATION">
+		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
+		<db-attribute name="FEATURE_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="REGEX" type="VARCHAR" isMandatory="true" length="1000"/>
 	</db-entity>
 	<obj-entity name="AlignedSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment" dbEntityName="ALIGNED_SEGMENT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="memberEnd" type="java.lang.Integer" db-attribute-path="MEMBER_END"/>
@@ -100,6 +107,11 @@
 	<obj-entity name="Source" className="uk.ac.gla.cvr.gluetools.core.datamodel.source.Source" dbEntityName="SOURCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
+	<obj-entity name="Variation" className="uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation" dbEntityName="VARIATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="REGEX"/>
+	</obj-entity>
 	<db-relationship name="alignmentMember" source="ALIGNED_SEGMENT" target="ALIGNMENT_MEMBER" toMany="false">
 		<db-attribute-pair source="ALIGNMENT" target="ALIGNMENT"/>
 		<db-attribute-pair source="SEQUENCE" target="SEQUENCE"/>
@@ -129,8 +141,17 @@
 		<db-attribute-pair source="SEQUENCE" target="SEQUENCE_ID"/>
 		<db-attribute-pair source="SOURCE" target="SOURCE"/>
 	</db-relationship>
+	<db-relationship name="children" source="FEATURE" target="FEATURE" toMany="true">
+		<db-attribute-pair source="NAME" target="PARENT_NAME"/>
+	</db-relationship>
 	<db-relationship name="featureLocations" source="FEATURE" target="FEATURE_LOCATION" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="FEATURE"/>
+	</db-relationship>
+	<db-relationship name="parent" source="FEATURE" target="FEATURE" toMany="false">
+		<db-attribute-pair source="PARENT_NAME" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="variations" source="FEATURE" target="VARIATION" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="NAME" target="FEATURE_NAME"/>
 	</db-relationship>
 	<db-relationship name="feature" source="FEATURE_LOCATION" target="FEATURE" toMany="false">
 		<db-attribute-pair source="FEATURE" target="NAME"/>
@@ -170,6 +191,9 @@
 	<db-relationship name="sequences" source="SOURCE" target="SEQUENCE" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="SOURCE"/>
 	</db-relationship>
+	<db-relationship name="feature" source="VARIATION" target="FEATURE" toMany="false">
+		<db-attribute-pair source="FEATURE_NAME" target="NAME"/>
+	</db-relationship>
 	<obj-relationship name="alignmentMember" source="AlignedSegment" target="AlignmentMember" deleteRule="Nullify" db-relationship-path="alignmentMember"/>
 	<obj-relationship name="children" source="Alignment" target="Alignment" deleteRule="Nullify" db-relationship-path="children"/>
 	<obj-relationship name="members" source="Alignment" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="members"/>
@@ -178,7 +202,10 @@
 	<obj-relationship name="alignedSegments" source="AlignmentMember" target="AlignedSegment" deleteRule="Cascade" db-relationship-path="alignedSegments"/>
 	<obj-relationship name="alignment" source="AlignmentMember" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>
 	<obj-relationship name="sequence" source="AlignmentMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
+	<obj-relationship name="children" source="Feature" target="Feature" deleteRule="Nullify" db-relationship-path="children"/>
 	<obj-relationship name="featureLocations" source="Feature" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="featureLocations"/>
+	<obj-relationship name="parent" source="Feature" target="Feature" deleteRule="Nullify" db-relationship-path="parent"/>
+	<obj-relationship name="variations" source="Feature" target="Variation" deleteRule="Cascade" db-relationship-path="variations"/>
 	<obj-relationship name="feature" source="FeatureLocation" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 	<obj-relationship name="referenceSequence" source="FeatureLocation" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="referenceSequence"/>
 	<obj-relationship name="segments" source="FeatureLocation" target="FeatureSegment" deleteRule="Cascade" db-relationship-path="segments"/>
@@ -190,4 +217,5 @@
 	<obj-relationship name="referenceSequences" source="Sequence" target="ReferenceSequence" deleteRule="Deny" db-relationship-path="referenceSequences"/>
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
 	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
+	<obj-relationship name="feature" source="Variation" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 </data-map>

@@ -34,11 +34,17 @@ schema-project HCV
         exit
  
 project HCV
-  import module ncbi-importer hcvNcbiImporter.xml
-  module ncbi-importer
-    show configuration
-    import
-	      exit
+  import module ncbi-importer-1 hcvNcbiImporter1.xml
+  module ncbi-importer-1 import
+
+  import module ncbi-importer-2 hcvNcbiImporter2.xml
+  module ncbi-importer-2 import
+
+  import module ncbi-importer-3 hcvNcbiImporter3.xml
+  module ncbi-importer-3 import
+
+  import module ncbi-importer-4 hcvNcbiImporter4.xml
+  module ncbi-importer-4 import
 	  
   import module gb-populator hcvGenbankXmlPopulator.xml
   module gb-populator
@@ -697,19 +703,85 @@ project HCV
 
   create reference H77 ncbi-nuccore 2316097
   
-  create feature 5UTR
-  create feature Core
-  create feature E1
-  create feature E2
-  create feature p7
-  create feature NS2
-  create feature NS3
-  create feature NS4A
-  create feature NS4B
-  create feature NS5A
-  create feature NS5B
-  create feature 3UTR
+  create feature whole_genome
+    create feature 5UTR -p whole_genome
+    create feature structural_proteins -p whole_genome
+      create feature Core -t AMINO_ACID -p structural_proteins
+      create feature E1 -t AMINO_ACID -p structural_proteins
+      create feature E2 -t AMINO_ACID -p structural_proteins
+    create feature non_structural_proteins -p whole_genome
+      create feature p7 -t AMINO_ACID -p non_structural_proteins
+      create feature NS2 -t AMINO_ACID -p non_structural_proteins
+      create feature NS3 -t AMINO_ACID -p non_structural_proteins
+        create feature NS3_drg_rst_h77_codon_36 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_43 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_54 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_80 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_122 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_132 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_155 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_156 -t AMINO_ACID -p NS3
+        create feature NS3_drg_rst_h77_codon_168 -t AMINO_ACID -p NS3
+      create feature NS4A -t AMINO_ACID -p non_structural_proteins
+      create feature NS4B -t AMINO_ACID -p non_structural_proteins
+      create feature NS5A -t AMINO_ACID -p non_structural_proteins
+        create feature NS5A_drg_rst_h77_codon_28 -t AMINO_ACID -p NS5A
+        create feature NS5A_drg_rst_h77_codon_30 -t AMINO_ACID -p NS5A
+        create feature NS5A_drg_rst_h77_codon_31 -t AMINO_ACID -p NS5A
+        create feature NS5A_drg_rst_h77_codon_93 -t AMINO_ACID -p NS5A
+      create feature NS5B -t AMINO_ACID -p non_structural_proteins
+        create feature NS5B_drg_rst_h77_codon_282 -t AMINO_ACID -p NS5B
+        create feature NS5B_drg_rst_h77_codon_316 -t AMINO_ACID -p NS5B
+        create feature NS5B_drg_rst_h77_codon_419 -t AMINO_ACID -p NS5B
+    create feature 3UTR -p whole_genome
   
+
+  feature NS3_drg_rst_h77_codon_36
+    create variation drug_resistance "[AMGI]"
+	exit
+  feature NS3_drg_rst_h77_codon_43 
+    create variation drug_resistance "[S]"
+	exit
+  feature NS3_drg_rst_h77_codon_54 
+    create variation drug_resistance "[ACGS]"
+	exit
+  feature NS3_drg_rst_h77_codon_80 
+    create variation drug_resistance "[KR]"
+	exit
+  feature NS3_drg_rst_h77_codon_122 
+    create variation drug_resistance "[AGR]"
+	exit
+  feature NS3_drg_rst_h77_codon_132 
+    create variation drug_resistance "[V]"
+	exit
+  feature NS3_drg_rst_h77_codon_155 
+    create variation drug_resistance "[KTGMQ]"
+	exit
+  feature NS3_drg_rst_h77_codon_156 
+    create variation drug_resistance "[FNSTV]"
+	exit
+  feature NS3_drg_rst_h77_codon_168 
+    create variation drug_resistance "[NAEHVGY]"
+	exit
+  feature NS5A_drg_rst_h77_codon_28 
+    create variation drug_resistance "[T]"
+	exit
+  feature NS5A_drg_rst_h77_codon_30 
+    create variation drug_resistance "[EHR]"
+	exit
+  feature NS5A_drg_rst_h77_codon_31 
+    create variation drug_resistance "[MV]"
+	exit
+  feature NS5A_drg_rst_h77_codon_93 
+    create variation drug_resistance "[CHN]"
+	exit
+  feature NS5B_drg_rst_h77_codon_282 
+    create variation drug_resistance "[T]"
+	exit
+  feature NS5B_drg_rst_h77_codon_316 
+	exit
+  feature NS5B_drg_rst_h77_codon_419 
+	exit
   
   reference H77
   

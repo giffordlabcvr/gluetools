@@ -8,9 +8,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 
 @GlueDataClass(defaultListColumns = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY})
-public class FeatureSegment extends _FeatureSegment {
+public class FeatureSegment extends _FeatureSegment implements IReferenceSegment {
 	
 	public static final String REF_SEQ_NAME_PATH = 
 			_FeatureSegment.FEATURE_LOCATION_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+

@@ -33,8 +33,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand.ListAlignedSegmentResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ShowSequenceResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand.ReferenceShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.ListFeatureSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.NucleotidesResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceShowLengthCommand;
@@ -43,8 +43,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.IQueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -59,6 +57,8 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
@@ -146,8 +146,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		}
 		// go into reference sequence and find feature-location segments.
 		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refSeqName)) {
-			ShowSequenceResult showSequenceResult = 
-					(ShowSequenceResult) cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
+			ReferenceShowSequenceResult showSequenceResult = 
+					(ReferenceShowSequenceResult) cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
 			analysisData.refSeqSourceName = showSequenceResult.getSourceName();
 			analysisData.refSeqId = showSequenceResult.getSequenceID();
 			try (ModeCloser featureMode = cmdContext.pushCommandMode("feature-location", featureName)) {
@@ -645,7 +645,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				String refSourceName;
 				String refSequenceID;
 				try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
-					ShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
+					ReferenceShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
 					refSourceName = refShowSeqResult.getSourceName();
 					refSequenceID = refShowSeqResult.getSequenceID();
 				}
@@ -690,7 +690,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				String refSourceName;
 				String refSequenceID;
 				try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
-					ShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ShowSequenceCommand.class).execute();
+					ReferenceShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
 					refSourceName = refShowSeqResult.getSourceName();
 					refSequenceID = refShowSeqResult.getSequenceID();
 				}
