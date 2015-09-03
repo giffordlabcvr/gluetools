@@ -37,7 +37,9 @@ public class FeatureLocCommand extends ReferenceSequenceModeCommand<OkResult>  {
 	public OkResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		FeatureLocation featureLoc = GlueDataObject.lookup(objContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), featureName));
-		cmdContext.pushCommandMode(new FeatureLocMode(cmdContext, this, featureLoc.getFeature().getName()));
+		cmdContext.pushCommandMode(new FeatureLocMode(getRefSeqMode(cmdContext).getProject(), this, 
+				featureLoc.getReferenceSequence().getName(),
+				featureLoc.getFeature().getName()));
 		return CommandResult.OK;
 	}
 

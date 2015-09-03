@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -7,7 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.feature.variation.VariationMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -22,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Enter command mode for a feature variation")
 @EnterModeCommandClass(
 		commandModeClass = VariationMode.class)
-public class VariationCommand extends FeatureModeCommand<OkResult>  {
+public class VariationCommand extends FeatureLocModeCommand<OkResult>  {
 
 	public static final String VARIATION_NAME = "variationName";
 	private String variationName;
@@ -36,8 +36,10 @@ public class VariationCommand extends FeatureModeCommand<OkResult>  {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Variation variation = GlueDataObject.lookup(objContext, Variation.class, Variation.pkMap(getFeatureName(), variationName));
-		cmdContext.pushCommandMode(new VariationMode(getFeatureMode(cmdContext).getProject(), this, getFeatureName(), variation.getName()));
+		Variation variation = GlueDataObject.lookup(objContext, Variation.class, 
+				Variation.pkMap(getRefSeqName(), getFeatureName(), variationName));
+		cmdContext.pushCommandMode(new VariationMode(
+				getFeatureLocMode(cmdContext).getProject(), this, getRefSeqName(), getFeatureName(), variation.getName()));
 		return CommandResult.OK;
 	}
 

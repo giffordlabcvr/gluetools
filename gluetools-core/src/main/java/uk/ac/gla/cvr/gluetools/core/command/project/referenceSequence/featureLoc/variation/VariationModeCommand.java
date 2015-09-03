@@ -1,9 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.feature.variation;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.feature.FeatureModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public abstract class VariationModeCommand<R extends CommandResult> extends FeatureModeCommand<R> {
+public abstract class VariationModeCommand<R extends CommandResult> extends FeatureLocModeCommand<R> {
 
 
 	private String variationName;
@@ -34,7 +34,7 @@ public abstract class VariationModeCommand<R extends CommandResult> extends Feat
 
 	protected Variation lookupVariation(CommandContext cmdContext) {
 		return GlueDataObject.lookup(cmdContext.getObjectContext(), Variation.class, 
-				Variation.pkMap(getFeatureName(), getVariationName()));
+				Variation.pkMap(getRefSeqName(), getFeatureName(), getVariationName()));
 	}
 
 

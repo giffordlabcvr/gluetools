@@ -888,52 +888,6 @@ project HCV
     create feature 3UTR -p whole_genome
   
 
-  feature NS3_DR_h77_codon_36
-    create variation -t AMINO_ACID drug_resistance "[AMGI]"
-	exit
-  feature NS3_DR_h77_codon_43 
-    create variation -t AMINO_ACID drug_resistance "[S]"
-	exit
-  feature NS3_DR_h77_codon_54 
-    create variation -t AMINO_ACID drug_resistance "[ACGS]"
-	exit
-  feature NS3_DR_h77_codon_80 
-    create variation -t AMINO_ACID drug_resistance "[KR]"
-	exit
-  feature NS3_DR_h77_codon_122 
-    create variation -t AMINO_ACID drug_resistance "[AGR]"
-	exit
-  feature NS3_DR_h77_codon_132 
-    create variation -t AMINO_ACID drug_resistance "[V]"
-	exit
-  feature NS3_DR_h77_codon_155 
-    create variation -t AMINO_ACID drug_resistance "[KTGMQ]"
-	exit
-  feature NS3_DR_h77_codon_156 
-    create variation -t AMINO_ACID drug_resistance "[FNSTV]"
-	exit
-  feature NS3_DR_h77_codon_168 
-    create variation -t AMINO_ACID drug_resistance "[NAEHVGY]"
-	exit
-  feature NS5A_DR_h77_codon_28 
-    create variation -t AMINO_ACID drug_resistance "[T]"
-	exit
-  feature NS5A_DR_h77_codon_30 
-    create variation -t AMINO_ACID drug_resistance "[EHR]"
-	exit
-  feature NS5A_DR_h77_codon_31 
-    create variation -t AMINO_ACID drug_resistance "[MV]"
-	exit
-  feature NS5A_DR_h77_codon_93 
-    create variation -t AMINO_ACID drug_resistance "[CHN]"
-	exit
-  feature NS5B_DR_h77_codon_282 
-    create variation -t AMINO_ACID drug_resistance "[T]"
-	exit
-  feature NS5B_DR_h77_codon_316 
-	exit
-  feature NS5B_DR_h77_codon_419 
-	exit
   
   reference H77
     add feature-location 5UTR
@@ -973,37 +927,46 @@ project HCV
     add feature-location NS3_DR_h77_codon_36
     feature-location NS3_DR_h77_codon_36	
       add segment 3525 3527
+      create variation -t AMINO_ACID drug_resistance "[AMGI]"
       exit
     add feature-location NS3_DR_h77_codon_43
     feature-location NS3_DR_h77_codon_43 
+	  create variation -t AMINO_ACID drug_resistance "[S]"
       add segment 3546 3548
       exit
     add feature-location NS3_DR_h77_codon_54
     feature-location NS3_DR_h77_codon_54 
+      create variation -t AMINO_ACID drug_resistance "[ACGS]"
       add segment 3579 3581
       exit
     add feature-location NS3_DR_h77_codon_80
-    feature-location NS3_DR_h77_codon_80 
+    feature-location NS3_DR_h77_codon_80
+      create variation -t AMINO_ACID drug_resistance "[KR]"
       add segment 3657 3659
       exit
     add feature-location NS3_DR_h77_codon_122
     feature-location NS3_DR_h77_codon_122 
+      create variation -t AMINO_ACID drug_resistance "[AGR]"
       add segment 3783 3785
       exit
     add feature-location NS3_DR_h77_codon_132
-    feature-location NS3_DR_h77_codon_132 
+    feature-location NS3_DR_h77_codon_132
+      create variation -t AMINO_ACID drug_resistance "[V]"
       add segment 3813 3815
       exit
     add feature-location NS3_DR_h77_codon_155
-    feature-location NS3_DR_h77_codon_155 
+    feature-location NS3_DR_h77_codon_155
+      create variation -t AMINO_ACID drug_resistance "[KTGMQ]" 
       add segment 3882 3884
       exit
     add feature-location NS3_DR_h77_codon_156
-    feature-location NS3_DR_h77_codon_156 
+    feature-location NS3_DR_h77_codon_156
+      create variation -t AMINO_ACID drug_resistance "[FNSTV]"
       add segment 3885 3887
       exit
     add feature-location NS3_DR_h77_codon_168
-    feature-location NS3_DR_h77_codon_168 
+    feature-location NS3_DR_h77_codon_168
+      create variation -t AMINO_ACID drug_resistance "[NAEHVGY]"
       add segment 3921 3923
       exit
 
@@ -1022,19 +985,23 @@ project HCV
       add segment 6258 7601
       exit
     add feature-location NS5A_DR_h77_codon_28
-    feature-location NS5A_DR_h77_codon_28 
+    feature-location NS5A_DR_h77_codon_28
+      create variation -t AMINO_ACID drug_resistance "[T]"
       add segment 6339 6341
       exit
     add feature-location NS5A_DR_h77_codon_30
-    feature-location NS5A_DR_h77_codon_30 
+    feature-location NS5A_DR_h77_codon_30
+      create variation -t AMINO_ACID drug_resistance "[EHR]"
       add segment 6345 6347
       exit
     add feature-location NS5A_DR_h77_codon_31
-    feature-location NS5A_DR_h77_codon_31 
+    feature-location NS5A_DR_h77_codon_31
+      create variation -t AMINO_ACID drug_resistance "[MV]"
       add segment 6348 6350
       exit
     add feature-location NS5A_DR_h77_codon_93
-    feature-location NS5A_DR_h77_codon_93 
+    feature-location NS5A_DR_h77_codon_93
+      create variation -t AMINO_ACID drug_resistance "[CHN]"
       add segment 6534 6536
       exit
 
@@ -1043,7 +1010,8 @@ project HCV
       add segment 7602 9377
       exit
     add feature-location NS5B_DR_h77_codon_282
-    feature-location NS5B_DR_h77_codon_282 
+    feature-location NS5B_DR_h77_codon_282
+      create variation -t AMINO_ACID drug_resistance "[T]"
       add segment 8445 8447
       exit
     add feature-location NS5B_DR_h77_codon_316
@@ -1061,6 +1029,9 @@ project HCV
       exit
 
     exit  
+
+
+  
     
   create alignment H77 AL_MASTER
   alignment AL_MASTER
@@ -5103,11 +5074,10 @@ project HCV
       exit
     exit
   
-  import module mutationFrequencies hcvMutationFrequencies.xml
+    import module mutationFrequencies hcvMutationFrequencies.xml
   
-  import module fastaImporter hcvFastaImporter.xml
-  
-  module fastaImporter import -f stopHcvNimble.fasta
+    # import module fastaImporter hcvFastaImporter.xml  
+    # module fastaImporter import -f stopHcvNimble.fasta
 
 
     import module blastAligner hcvBlastAligner.xml
@@ -5167,8 +5137,5 @@ project HCV
     generate -t 6 -f E1
     exit
 
-
-  create source sam2consensus
-  
-  import sequence sam2consensus 1a_example SAM2CONSENSUS_EXTENDED "sam2consensus/1a_example.s2c"
-  
+  # delete source stopHcvCvr
+	  

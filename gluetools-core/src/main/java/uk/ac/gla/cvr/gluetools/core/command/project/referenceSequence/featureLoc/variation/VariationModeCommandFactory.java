@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.feature.variation;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;

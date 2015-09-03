@@ -116,7 +116,12 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 
 	public BlastAlignerResult doBlastAlign(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
 		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
-		List<BlastResult> blastResults = blastRunner.executeBlast(cmdContext, refName, fastaBytes);
+		List<BlastResult> blastResults;
+		if(fastaBytes.length == 0) {
+			blastResults = Collections.emptyList();
+		} else {
+			blastResults = blastRunner.executeBlast(cmdContext, refName, fastaBytes);
+		}
 		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = blastResultsToAlignedSegmentsMap(refName, blastResults);
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}

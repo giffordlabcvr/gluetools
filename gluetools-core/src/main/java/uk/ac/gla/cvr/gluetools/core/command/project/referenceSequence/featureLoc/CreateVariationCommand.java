@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -24,8 +24,8 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 	docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Create a new feature variation", 
-	furtherHelp="A variation is a regular expression defining a known motif which may occur at a feature location.") 
-public class CreateVariationCommand extends FeatureModeCommand<CreateResult> {
+	furtherHelp="A variation is a regular expression defining a known motif which may occur at this feature location.") 
+public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
 	public static final String VARIATON_NAME = "variationName";
 	public static final String TRANSCRIPTION_TYPE = "transcriptionType";
@@ -51,10 +51,12 @@ public class CreateVariationCommand extends FeatureModeCommand<CreateResult> {
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Feature feature = lookupFeature(cmdContext);
+		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
 		Variation variation = GlueDataObject.create(objContext, 
-				Variation.class, Variation.pkMap(getFeatureName(), variationName), false);
-		variation.setFeature(feature);
+				Variation.class, Variation.pkMap(
+						featureLoc.getReferenceSequence().getName(), 
+						featureLoc.getFeature().getName(), variationName), false);
+		variation.setFeatureLoc(featureLoc);
 		variation.setTranscriptionType(transcriptionFormat.name());
 		variation.setRegex(regex.pattern());
 		description.ifPresent(d -> {variation.setDescription(d);});
