@@ -59,9 +59,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils.Segment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.utils.SegmentUtils.Segment;
 
 @PluginClass(elemName="mutationFrequenciesReporter")
 public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {

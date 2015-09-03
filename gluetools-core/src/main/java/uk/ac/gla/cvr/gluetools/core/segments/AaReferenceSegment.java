@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaReferenceSegment {
+public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaReferenceSegment, Cloneable {
 	
 	public static final String AMINO_ACIDS = "aminoAcids";
 
@@ -47,6 +47,17 @@ public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaR
 		super.truncateLeft(length);
 		setAminoAcids(getAminoAcids().subSequence(length, getAminoAcids().length()));
 	}
+
+	public void truncateRight(int length) {
+		super.truncateRight(length);
+		setAminoAcids(getAminoAcids().subSequence(0, getAminoAcids().length() - length));
+	}
+
+	public AaReferenceSegment clone() {
+		return new AaReferenceSegment(getRefStart(), getRefEnd(), aminoAcids);
+	}
+
+	
 	
 	public String toString() { return
 		super.toString() +

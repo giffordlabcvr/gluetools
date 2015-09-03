@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtReferenceSegment {
+public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtReferenceSegment, Cloneable {
 	
 	public static final String NUCLEOTIDES = "nucleotides";
 
@@ -43,10 +43,21 @@ public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtR
 	public void setNucleotides(CharSequence nucleotides) {
 		this.nucleotides = nucleotides;
 	}
+
 	public void truncateLeft(int length) {
 		super.truncateLeft(length);
 		setNucleotides(getNucleotides().subSequence(length, getNucleotides().length()));
 	}
+
+	public void truncateRight(int length) {
+		super.truncateRight(length);
+		setNucleotides(getNucleotides().subSequence(0, getNucleotides().length() - length));
+	}
+
+	public NtReferenceSegment clone() {
+		return new NtReferenceSegment(getRefStart(), getRefEnd(), nucleotides);
+	}
+
 	
 	public String toString() { return
 		super.toString() +

@@ -2,7 +2,7 @@ package uk.ac.gla.cvr.gluetools.programs.blast;
 
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastSegmentList;
-import uk.ac.gla.cvr.gluetools.utils.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
 public class BlastHsp {
 

@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.utils;
+package uk.ac.gla.cvr.gluetools.core.segments;
 
 public class SegmentUtils {
 

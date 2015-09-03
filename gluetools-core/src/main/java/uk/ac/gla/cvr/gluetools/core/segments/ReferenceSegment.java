@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public class ReferenceSegment implements Plugin, IReferenceSegment {
+public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 
 	
 	public static final String REF_START = "refStart";
@@ -52,6 +52,7 @@ public class ReferenceSegment implements Plugin, IReferenceSegment {
 	public Integer getRefEnd() {
 		return refEnd;
 	}
+	
 	public void setRefEnd(int refEnd) {
 		this.refEnd = refEnd;
 	}
@@ -60,12 +61,22 @@ public class ReferenceSegment implements Plugin, IReferenceSegment {
 		checkTruncateLength(length);
 		refStart+=length;
 	}
+
+	public void truncateRight(int length) {
+		checkTruncateLength(length);
+		refEnd-=length;
+	}
+
 	
 	protected void checkTruncateLength(int length) {
-		if(length <= 0 || length > getRefEnd() - getRefStart()) {
+		if(length <= 0 || length > ( getCurrentLength() - 1 )) {
 			throw new IllegalArgumentException("Illegal length argument: "+
-		length+": should be between "+1+" and "+(getRefEnd() - getRefStart())+" inclusive" );
+		length+": should be between "+1+" and "+getCurrentLength()+" inclusive" );
 		}
+	}
+	
+	public int getCurrentLength() {
+		return 1+(getRefEnd() - getRefStart());
 	}
 
 	public String toString() { return
@@ -102,4 +113,35 @@ public class ReferenceSegment implements Plugin, IReferenceSegment {
 			.set(REF_END, getRefEnd());
 	}
 	
+	public ReferenceSegment clone() {
+		return new ReferenceSegment(refStart, refEnd);
+	}
+	
+	/**
+	 * Split a segment into two parts, a new left part of length <length>
+	 * which is returned
+	 * This supplied segment is then modified to be the remaining part.
+	 */
+	public static <A extends ReferenceSegment> A truncateLeftSplit(A segment, int length) {
+		@SuppressWarnings("unchecked")
+		A newSegment = (A) segment.clone();
+		int currentLength = segment.getCurrentLength();
+		segment.truncateLeft(length);
+		newSegment.truncateRight(currentLength-length);
+		return newSegment;
+	}
+	
+	/**
+	 * Split a segment into two parts, a new right part of length <length>
+	 * which is returned.
+	 * The supplied segment is modified to be the remaining part.
+	 */
+	public static <A extends ReferenceSegment> A truncateRightSplit(A segment, int length) {
+		@SuppressWarnings("unchecked")
+		A newSegment = (A) segment.clone();
+		int currentLength = segment.getCurrentLength();
+		segment.truncateRight(length);
+		newSegment.truncateLeft(currentLength-length);
+		return newSegment;
+	}
 }

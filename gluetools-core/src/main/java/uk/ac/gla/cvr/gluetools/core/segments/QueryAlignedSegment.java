@@ -14,7 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQueryAlignedSegment {
+public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQueryAlignedSegment, Cloneable {
 	
 	public static final String QUERY_START = "queryStart";
 	public static final String QUERY_END = "queryEnd";
@@ -62,9 +62,14 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 	
 	public void truncateLeft(int length) {
 		super.truncateLeft(length);
-		queryStart+=length;
+		queryStart += length;
 	}
-	
+
+	public void truncateRight(int length) {
+		super.truncateRight(length);
+		queryEnd -= length;
+	}
+
 	public String toString() { return
 		super.toString() +
 				" <-> Query: ["+getQueryStart()+", "+getQueryEnd()+"]";
@@ -225,5 +230,10 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		}
 		return getStart.apply(alignedSegments.getFirst());
 	}
+	
+	public QueryAlignedSegment clone() {
+		return new QueryAlignedSegment(getRefStart(), getRefEnd(), queryStart, queryEnd);
+	}
+
 	
 }

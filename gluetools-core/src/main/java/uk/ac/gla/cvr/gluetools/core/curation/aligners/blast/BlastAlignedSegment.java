@@ -3,9 +3,10 @@ package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
 import java.util.function.Function;
 
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
 
-public class BlastAlignedSegment extends QueryAlignedSegment {
+public class BlastAlignedSegment extends QueryAlignedSegment implements Cloneable {
 
 	private BlastHsp hsp;
 	public BlastAlignedSegment(int refStart, int refEnd, int queryStart, int queryEnd,
@@ -16,43 +17,6 @@ public class BlastAlignedSegment extends QueryAlignedSegment {
 	public BlastHsp getHsp() {
 		return hsp;
 	}
-	/**
-	 * Split the segment into two parts, a new left part of length <length>
-	 * which is returned
-	 * This segment is then modified to be the remaining part.
-	 */
-	public BlastAlignedSegment truncateLeftBlast(int length) {
-		checkTruncateLength(length);
-		BlastAlignedSegment leftSegment = new BlastAlignedSegment(
-				getRefStart(), 
-				getRefStart()+length-1, 
-				getQueryStart(), 
-				getQueryStart()+length-1, 
-				getHsp());
-		setRefStart(getRefStart()+length); 
-		setQueryStart(getQueryStart()+length);
-		return leftSegment;
-	}
-	
-	
-	/**
-	 * Split the segment into two parts, a new right part of length <length>
-	 * which is returned.
-	 * This segment is then modified to be the remaining part.
-	 */
-	public BlastAlignedSegment truncateRightBlast(int length) {
-		checkTruncateLength(length);
-		BlastAlignedSegment rightSegment = new BlastAlignedSegment(
-				getRefEnd()-length+1, 
-				getRefEnd(), 
-				getQueryEnd()-length+1, 
-				getQueryEnd(), 
-				getHsp());
-		setRefEnd(getRefEnd()-length); 
-		setQueryEnd(getQueryEnd()-length);
-		return rightSegment;
-	}
-	
 	/*
 	 * remove parts of new segments which overlap existing segments.
 	 */
@@ -120,7 +84,8 @@ public class BlastAlignedSegment extends QueryAlignedSegment {
 					/*    [ existing ---
 					 * [   new   ---
 					 */
-					truncatedNewSegments.add(newSegments.getFirst().truncateLeftBlast(existingStart - newStart));
+					BlastAlignedSegment newSegment = ReferenceSegment.truncateLeftSplit(newSegments.getFirst(), existingStart - newStart);
+					truncatedNewSegments.add(newSegment);
 					if(existingEnd < newEnd) {
 						/*    [3 existing 6]
 						 * [1   new          9]
@@ -149,7 +114,9 @@ public class BlastAlignedSegment extends QueryAlignedSegment {
 	}
 
 	
-	
+	public BlastAlignedSegment clone() {
+		return new BlastAlignedSegment(getRefStart(), getRefEnd(), getQueryStart(), getQueryEnd(), getHsp());
+	}
 	
 	
 }
