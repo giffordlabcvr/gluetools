@@ -2,7 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.transcription;
 
 public enum TranscriptionFormat {
 
-	NONE,
+	NUCLEOTIDE,
 	AMINO_ACID
 	
 }

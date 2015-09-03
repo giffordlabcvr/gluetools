@@ -53,6 +53,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentCommand.class);
 		
 		registerCommandClass(ListFormatSequenceCommand.class);
+		registerCommandClass(ExportSequenceCommand.class);
 
 		
 		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");

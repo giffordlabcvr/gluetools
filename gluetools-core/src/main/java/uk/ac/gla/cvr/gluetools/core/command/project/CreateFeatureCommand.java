@@ -45,7 +45,7 @@ public class CreateFeatureCommand extends ProjectModeCommand<CreateResult> {
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DESCRIPTION, false));
 		transcriptionFormat = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(TranscriptionFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
-				orElse(TranscriptionFormat.NONE);
+				orElse(TranscriptionFormat.NUCLEOTIDE);
 	}
 
 	@Override

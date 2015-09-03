@@ -34,17 +34,169 @@ schema-project HCV
         exit
  
 project HCV
-  import module ncbi-importer-1 hcvNcbiImporter1.xml
-  module ncbi-importer-1 import
-
-  import module ncbi-importer-2 hcvNcbiImporter2.xml
-  module ncbi-importer-2 import
-
-  import module ncbi-importer-3 hcvNcbiImporter3.xml
-  module ncbi-importer-3 import
-
-  import module ncbi-importer-4 hcvNcbiImporter4.xml
-  module ncbi-importer-4 import
+  create source ncbi-nuccore
+  import sequence ncbi-nuccore 113720385 GENBANK_XML "ncbi-nuccore/113720385.xml"
+  import sequence ncbi-nuccore 113720387 GENBANK_XML "ncbi-nuccore/113720387.xml"
+  import sequence ncbi-nuccore 113720389 GENBANK_XML "ncbi-nuccore/113720389.xml"
+  import sequence ncbi-nuccore 113720397 GENBANK_XML "ncbi-nuccore/113720397.xml"
+  import sequence ncbi-nuccore 113720399 GENBANK_XML "ncbi-nuccore/113720399.xml"
+  import sequence ncbi-nuccore 113720401 GENBANK_XML "ncbi-nuccore/113720401.xml"
+  import sequence ncbi-nuccore 113720403 GENBANK_XML "ncbi-nuccore/113720403.xml"
+  import sequence ncbi-nuccore 113720405 GENBANK_XML "ncbi-nuccore/113720405.xml"
+  import sequence ncbi-nuccore 1183030 GENBANK_XML "ncbi-nuccore/1183030.xml"
+  import sequence ncbi-nuccore 1183032 GENBANK_XML "ncbi-nuccore/1183032.xml"
+  import sequence ncbi-nuccore 119331259 GENBANK_XML "ncbi-nuccore/119331259.xml"
+  import sequence ncbi-nuccore 13122261 GENBANK_XML "ncbi-nuccore/13122261.xml"
+  import sequence ncbi-nuccore 145687733 GENBANK_XML "ncbi-nuccore/145687733.xml"
+  import sequence ncbi-nuccore 145687735 GENBANK_XML "ncbi-nuccore/145687735.xml"
+  import sequence ncbi-nuccore 145687737 GENBANK_XML "ncbi-nuccore/145687737.xml"
+  import sequence ncbi-nuccore 145687739 GENBANK_XML "ncbi-nuccore/145687739.xml"
+  import sequence ncbi-nuccore 145687741 GENBANK_XML "ncbi-nuccore/145687741.xml"
+  import sequence ncbi-nuccore 1483141 GENBANK_XML "ncbi-nuccore/1483141.xml"
+  import sequence ncbi-nuccore 149395111 GENBANK_XML "ncbi-nuccore/149395111.xml"
+  import sequence ncbi-nuccore 15422182 GENBANK_XML "ncbi-nuccore/15422182.xml"
+  import sequence ncbi-nuccore 156469740 GENBANK_XML "ncbi-nuccore/156469740.xml"
+  import sequence ncbi-nuccore 156960162 GENBANK_XML "ncbi-nuccore/156960162.xml"
+  import sequence ncbi-nuccore 161898754 GENBANK_XML "ncbi-nuccore/161898754.xml"
+  import sequence ncbi-nuccore 161898756 GENBANK_XML "ncbi-nuccore/161898756.xml"
+  import sequence ncbi-nuccore 161898758 GENBANK_XML "ncbi-nuccore/161898758.xml"
+  import sequence ncbi-nuccore 161898762 GENBANK_XML "ncbi-nuccore/161898762.xml"
+  import sequence ncbi-nuccore 161898766 GENBANK_XML "ncbi-nuccore/161898766.xml"
+  import sequence ncbi-nuccore 161898770 GENBANK_XML "ncbi-nuccore/161898770.xml"
+  import sequence ncbi-nuccore 161898772 GENBANK_XML "ncbi-nuccore/161898772.xml"
+  import sequence ncbi-nuccore 161898774 GENBANK_XML "ncbi-nuccore/161898774.xml"
+  import sequence ncbi-nuccore 171221546 GENBANK_XML "ncbi-nuccore/171221546.xml"
+  import sequence ncbi-nuccore 171221549 GENBANK_XML "ncbi-nuccore/171221549.xml"
+  import sequence ncbi-nuccore 171221561 GENBANK_XML "ncbi-nuccore/171221561.xml"
+  import sequence ncbi-nuccore 171221573 GENBANK_XML "ncbi-nuccore/171221573.xml"
+  import sequence ncbi-nuccore 171221581 GENBANK_XML "ncbi-nuccore/171221581.xml"
+  import sequence ncbi-nuccore 186461118 GENBANK_XML "ncbi-nuccore/186461118.xml"
+  import sequence ncbi-nuccore 186461120 GENBANK_XML "ncbi-nuccore/186461120.xml"
+  import sequence ncbi-nuccore 186461122 GENBANK_XML "ncbi-nuccore/186461122.xml"
+  import sequence ncbi-nuccore 186461124 GENBANK_XML "ncbi-nuccore/186461124.xml"
+  import sequence ncbi-nuccore 187948694 GENBANK_XML "ncbi-nuccore/187948694.xml"
+  import sequence ncbi-nuccore 191174856 GENBANK_XML "ncbi-nuccore/191174856.xml"
+  import sequence ncbi-nuccore 193073230 GENBANK_XML "ncbi-nuccore/193073230.xml"
+  import sequence ncbi-nuccore 209887238 GENBANK_XML "ncbi-nuccore/209887238.xml"
+  import sequence ncbi-nuccore 209887240 GENBANK_XML "ncbi-nuccore/209887240.xml"
+  import sequence ncbi-nuccore 212675094 GENBANK_XML "ncbi-nuccore/212675094.xml"
+  import sequence ncbi-nuccore 212675096 GENBANK_XML "ncbi-nuccore/212675096.xml"
+  import sequence ncbi-nuccore 213390645 GENBANK_XML "ncbi-nuccore/213390645.xml"
+  import sequence ncbi-nuccore 213390649 GENBANK_XML "ncbi-nuccore/213390649.xml"
+  import sequence ncbi-nuccore 219964673 GENBANK_XML "ncbi-nuccore/219964673.xml"
+  import sequence ncbi-nuccore 219964675 GENBANK_XML "ncbi-nuccore/219964675.xml"
+  import sequence ncbi-nuccore 221608 GENBANK_XML "ncbi-nuccore/221608.xml"
+  import sequence ncbi-nuccore 221610 GENBANK_XML "ncbi-nuccore/221610.xml"
+  import sequence ncbi-nuccore 221650 GENBANK_XML "ncbi-nuccore/221650.xml"
+  import sequence ncbi-nuccore 2252489 GENBANK_XML "ncbi-nuccore/2252489.xml"
+  import sequence ncbi-nuccore 2316097 GENBANK_XML "ncbi-nuccore/2316097.xml"
+  import sequence ncbi-nuccore 2326454 GENBANK_XML "ncbi-nuccore/2326454.xml"
+  import sequence ncbi-nuccore 237510832 GENBANK_XML "ncbi-nuccore/237510832.xml"
+  import sequence ncbi-nuccore 239836676 GENBANK_XML "ncbi-nuccore/239836676.xml"
+  import sequence ncbi-nuccore 239836678 GENBANK_XML "ncbi-nuccore/239836678.xml"
+  import sequence ncbi-nuccore 239836680 GENBANK_XML "ncbi-nuccore/239836680.xml"
+  import sequence ncbi-nuccore 239836682 GENBANK_XML "ncbi-nuccore/239836682.xml"
+  import sequence ncbi-nuccore 239836684 GENBANK_XML "ncbi-nuccore/239836684.xml"
+  import sequence ncbi-nuccore 239836686 GENBANK_XML "ncbi-nuccore/239836686.xml"
+  import sequence ncbi-nuccore 239836688 GENBANK_XML "ncbi-nuccore/239836688.xml"
+  import sequence ncbi-nuccore 239836690 GENBANK_XML "ncbi-nuccore/239836690.xml"
+  import sequence ncbi-nuccore 239836692 GENBANK_XML "ncbi-nuccore/239836692.xml"
+  import sequence ncbi-nuccore 239836694 GENBANK_XML "ncbi-nuccore/239836694.xml"
+  import sequence ncbi-nuccore 239836696 GENBANK_XML "ncbi-nuccore/239836696.xml"
+  import sequence ncbi-nuccore 2462303 GENBANK_XML "ncbi-nuccore/2462303.xml"
+  import sequence ncbi-nuccore 254546397 GENBANK_XML "ncbi-nuccore/254546397.xml"
+  import sequence ncbi-nuccore 254546399 GENBANK_XML "ncbi-nuccore/254546399.xml"
+  import sequence ncbi-nuccore 315570725 GENBANK_XML "ncbi-nuccore/315570725.xml"
+  import sequence ncbi-nuccore 315570727 GENBANK_XML "ncbi-nuccore/315570727.xml"
+  import sequence ncbi-nuccore 317447628 GENBANK_XML "ncbi-nuccore/317447628.xml"
+  import sequence ncbi-nuccore 317448464 GENBANK_XML "ncbi-nuccore/317448464.xml"
+  import sequence ncbi-nuccore 329737 GENBANK_XML "ncbi-nuccore/329737.xml"
+  import sequence ncbi-nuccore 329770 GENBANK_XML "ncbi-nuccore/329770.xml"
+  import sequence ncbi-nuccore 329873 GENBANK_XML "ncbi-nuccore/329873.xml"
+  import sequence ncbi-nuccore 336091197 GENBANK_XML "ncbi-nuccore/336091197.xml"
+  import sequence ncbi-nuccore 336091199 GENBANK_XML "ncbi-nuccore/336091199.xml"
+  import sequence ncbi-nuccore 339647219 GENBANK_XML "ncbi-nuccore/339647219.xml"
+  import sequence ncbi-nuccore 339647234 GENBANK_XML "ncbi-nuccore/339647234.xml"
+  import sequence ncbi-nuccore 343403635 GENBANK_XML "ncbi-nuccore/343403635.xml"
+  import sequence ncbi-nuccore 343403647 GENBANK_XML "ncbi-nuccore/343403647.xml"
+  import sequence ncbi-nuccore 365767472 GENBANK_XML "ncbi-nuccore/365767472.xml"
+  import sequence ncbi-nuccore 3660725 GENBANK_XML "ncbi-nuccore/3660725.xml"
+  import sequence ncbi-nuccore 375127704 GENBANK_XML "ncbi-nuccore/375127704.xml"
+  import sequence ncbi-nuccore 379772008 GENBANK_XML "ncbi-nuccore/379772008.xml"
+  import sequence ncbi-nuccore 379772010 GENBANK_XML "ncbi-nuccore/379772010.xml"
+  import sequence ncbi-nuccore 379772012 GENBANK_XML "ncbi-nuccore/379772012.xml"
+  import sequence ncbi-nuccore 379772014 GENBANK_XML "ncbi-nuccore/379772014.xml"
+  import sequence ncbi-nuccore 379772016 GENBANK_XML "ncbi-nuccore/379772016.xml"
+  import sequence ncbi-nuccore 379772026 GENBANK_XML "ncbi-nuccore/379772026.xml"
+  import sequence ncbi-nuccore 379772028 GENBANK_XML "ncbi-nuccore/379772028.xml"
+  import sequence ncbi-nuccore 379772030 GENBANK_XML "ncbi-nuccore/379772030.xml"
+  import sequence ncbi-nuccore 379772032 GENBANK_XML "ncbi-nuccore/379772032.xml"
+  import sequence ncbi-nuccore 379772038 GENBANK_XML "ncbi-nuccore/379772038.xml"
+  import sequence ncbi-nuccore 379772058 GENBANK_XML "ncbi-nuccore/379772058.xml"
+  import sequence ncbi-nuccore 395147242 GENBANK_XML "ncbi-nuccore/395147242.xml"
+  import sequence ncbi-nuccore 395147250 GENBANK_XML "ncbi-nuccore/395147250.xml"
+  import sequence ncbi-nuccore 395147252 GENBANK_XML "ncbi-nuccore/395147252.xml"
+  import sequence ncbi-nuccore 395147254 GENBANK_XML "ncbi-nuccore/395147254.xml"
+  import sequence ncbi-nuccore 395147258 GENBANK_XML "ncbi-nuccore/395147258.xml"
+  import sequence ncbi-nuccore 395147262 GENBANK_XML "ncbi-nuccore/395147262.xml"
+  import sequence ncbi-nuccore 395147264 GENBANK_XML "ncbi-nuccore/395147264.xml"
+  import sequence ncbi-nuccore 395147270 GENBANK_XML "ncbi-nuccore/395147270.xml"
+  import sequence ncbi-nuccore 395147277 GENBANK_XML "ncbi-nuccore/395147277.xml"
+  import sequence ncbi-nuccore 395147283 GENBANK_XML "ncbi-nuccore/395147283.xml"
+  import sequence ncbi-nuccore 395147285 GENBANK_XML "ncbi-nuccore/395147285.xml"
+  import sequence ncbi-nuccore 395147287 GENBANK_XML "ncbi-nuccore/395147287.xml"
+  import sequence ncbi-nuccore 395147295 GENBANK_XML "ncbi-nuccore/395147295.xml"
+  import sequence ncbi-nuccore 395147297 GENBANK_XML "ncbi-nuccore/395147297.xml"
+  import sequence ncbi-nuccore 403309722 GENBANK_XML "ncbi-nuccore/403309722.xml"
+  import sequence ncbi-nuccore 407751074 GENBANK_XML "ncbi-nuccore/407751074.xml"
+  import sequence ncbi-nuccore 407751082 GENBANK_XML "ncbi-nuccore/407751082.xml"
+  import sequence ncbi-nuccore 407751084 GENBANK_XML "ncbi-nuccore/407751084.xml"
+  import sequence ncbi-nuccore 464177 GENBANK_XML "ncbi-nuccore/464177.xml"
+  import sequence ncbi-nuccore 50235321 GENBANK_XML "ncbi-nuccore/50235321.xml"
+  import sequence ncbi-nuccore 514395 GENBANK_XML "ncbi-nuccore/514395.xml"
+  import sequence ncbi-nuccore 525546079 GENBANK_XML "ncbi-nuccore/525546079.xml"
+  import sequence ncbi-nuccore 525546082 GENBANK_XML "ncbi-nuccore/525546082.xml"
+  import sequence ncbi-nuccore 525546088 GENBANK_XML "ncbi-nuccore/525546088.xml"
+  import sequence ncbi-nuccore 525546091 GENBANK_XML "ncbi-nuccore/525546091.xml"
+  import sequence ncbi-nuccore 525546096 GENBANK_XML "ncbi-nuccore/525546096.xml"
+  import sequence ncbi-nuccore 525546099 GENBANK_XML "ncbi-nuccore/525546099.xml"
+  import sequence ncbi-nuccore 541469396 GENBANK_XML "ncbi-nuccore/541469396.xml"
+  import sequence ncbi-nuccore 558520 GENBANK_XML "ncbi-nuccore/558520.xml"
+  import sequence ncbi-nuccore 576294941 GENBANK_XML "ncbi-nuccore/576294941.xml"
+  import sequence ncbi-nuccore 576294957 GENBANK_XML "ncbi-nuccore/576294957.xml"
+  import sequence ncbi-nuccore 57791993 GENBANK_XML "ncbi-nuccore/57791993.xml"
+  import sequence ncbi-nuccore 60115454 GENBANK_XML "ncbi-nuccore/60115454.xml"
+  import sequence ncbi-nuccore 60115455 GENBANK_XML "ncbi-nuccore/60115455.xml"
+  import sequence ncbi-nuccore 60115456 GENBANK_XML "ncbi-nuccore/60115456.xml"
+  import sequence ncbi-nuccore 60115457 GENBANK_XML "ncbi-nuccore/60115457.xml"
+  import sequence ncbi-nuccore 633201 GENBANK_XML "ncbi-nuccore/633201.xml"
+  import sequence ncbi-nuccore 6521008 GENBANK_XML "ncbi-nuccore/6521008.xml"
+  import sequence ncbi-nuccore 658508360 GENBANK_XML "ncbi-nuccore/658508360.xml"
+  import sequence ncbi-nuccore 658508368 GENBANK_XML "ncbi-nuccore/658508368.xml"
+  import sequence ncbi-nuccore 658508370 GENBANK_XML "ncbi-nuccore/658508370.xml"
+  import sequence ncbi-nuccore 658508372 GENBANK_XML "ncbi-nuccore/658508372.xml"
+  import sequence ncbi-nuccore 658508374 GENBANK_XML "ncbi-nuccore/658508374.xml"
+  import sequence ncbi-nuccore 658508380 GENBANK_XML "ncbi-nuccore/658508380.xml"
+  import sequence ncbi-nuccore 658508386 GENBANK_XML "ncbi-nuccore/658508386.xml"
+  import sequence ncbi-nuccore 658508388 GENBANK_XML "ncbi-nuccore/658508388.xml"
+  import sequence ncbi-nuccore 669687810 GENBANK_XML "ncbi-nuccore/669687810.xml"
+  import sequence ncbi-nuccore 669687812 GENBANK_XML "ncbi-nuccore/669687812.xml"
+  import sequence ncbi-nuccore 676877 GENBANK_XML "ncbi-nuccore/676877.xml"
+  import sequence ncbi-nuccore 685430766 GENBANK_XML "ncbi-nuccore/685430766.xml"
+  import sequence ncbi-nuccore 685430778 GENBANK_XML "ncbi-nuccore/685430778.xml"
+  import sequence ncbi-nuccore 73765378 GENBANK_XML "ncbi-nuccore/73765378.xml"
+  import sequence ncbi-nuccore 749396727 GENBANK_XML "ncbi-nuccore/749396727.xml"
+  import sequence ncbi-nuccore 749396729 GENBANK_XML "ncbi-nuccore/749396729.xml"
+  import sequence ncbi-nuccore 749396731 GENBANK_XML "ncbi-nuccore/749396731.xml"
+  import sequence ncbi-nuccore 749396733 GENBANK_XML "ncbi-nuccore/749396733.xml"
+  import sequence ncbi-nuccore 763907344 GENBANK_XML "ncbi-nuccore/763907344.xml"
+  import sequence ncbi-nuccore 82617877 GENBANK_XML "ncbi-nuccore/82617877.xml"
+  import sequence ncbi-nuccore 83699530 GENBANK_XML "ncbi-nuccore/83699530.xml"
+  import sequence ncbi-nuccore 83699532 GENBANK_XML "ncbi-nuccore/83699532.xml"
+  import sequence ncbi-nuccore 87294804 GENBANK_XML "ncbi-nuccore/87294804.xml"
+  import sequence ncbi-nuccore 89519412 GENBANK_XML "ncbi-nuccore/89519412.xml"
+  import sequence ncbi-nuccore 89519418 GENBANK_XML "ncbi-nuccore/89519418.xml"
+  import sequence ncbi-nuccore 9757541 GENBANK_XML "ncbi-nuccore/9757541.xml"
 	  
   import module gb-populator hcvGenbankXmlPopulator.xml
   module gb-populator
@@ -713,127 +865,202 @@ project HCV
       create feature p7 -t AMINO_ACID -p non_structural_proteins
       create feature NS2 -t AMINO_ACID -p non_structural_proteins
       create feature NS3 -t AMINO_ACID -p non_structural_proteins
-        create feature NS3_drg_rst_h77_codon_36 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_43 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_54 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_80 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_122 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_132 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_155 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_156 -t AMINO_ACID -p NS3
-        create feature NS3_drg_rst_h77_codon_168 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_36 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_43 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_54 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_80 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_122 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_132 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_155 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_156 -t AMINO_ACID -p NS3
+        create feature NS3_DR_h77_codon_168 -t AMINO_ACID -p NS3
       create feature NS4A -t AMINO_ACID -p non_structural_proteins
       create feature NS4B -t AMINO_ACID -p non_structural_proteins
       create feature NS5A -t AMINO_ACID -p non_structural_proteins
-        create feature NS5A_drg_rst_h77_codon_28 -t AMINO_ACID -p NS5A
-        create feature NS5A_drg_rst_h77_codon_30 -t AMINO_ACID -p NS5A
-        create feature NS5A_drg_rst_h77_codon_31 -t AMINO_ACID -p NS5A
-        create feature NS5A_drg_rst_h77_codon_93 -t AMINO_ACID -p NS5A
+        create feature NS5A_DR_h77_codon_28 -t AMINO_ACID -p NS5A
+        create feature NS5A_DR_h77_codon_30 -t AMINO_ACID -p NS5A
+        create feature NS5A_DR_h77_codon_31 -t AMINO_ACID -p NS5A
+        create feature NS5A_DR_h77_codon_93 -t AMINO_ACID -p NS5A
       create feature NS5B -t AMINO_ACID -p non_structural_proteins
-        create feature NS5B_drg_rst_h77_codon_282 -t AMINO_ACID -p NS5B
-        create feature NS5B_drg_rst_h77_codon_316 -t AMINO_ACID -p NS5B
-        create feature NS5B_drg_rst_h77_codon_419 -t AMINO_ACID -p NS5B
+        create feature NS5B_DR_h77_codon_282 -t AMINO_ACID -p NS5B
+        create feature NS5B_DR_h77_codon_316 -t AMINO_ACID -p NS5B
+        create feature NS5B_DR_h77_codon_419 -t AMINO_ACID -p NS5B
     create feature 3UTR -p whole_genome
   
 
-  feature NS3_drg_rst_h77_codon_36
+  feature NS3_DR_h77_codon_36
     create variation drug_resistance "[AMGI]"
 	exit
-  feature NS3_drg_rst_h77_codon_43 
+  feature NS3_DR_h77_codon_43 
     create variation drug_resistance "[S]"
 	exit
-  feature NS3_drg_rst_h77_codon_54 
+  feature NS3_DR_h77_codon_54 
     create variation drug_resistance "[ACGS]"
 	exit
-  feature NS3_drg_rst_h77_codon_80 
+  feature NS3_DR_h77_codon_80 
     create variation drug_resistance "[KR]"
 	exit
-  feature NS3_drg_rst_h77_codon_122 
+  feature NS3_DR_h77_codon_122 
     create variation drug_resistance "[AGR]"
 	exit
-  feature NS3_drg_rst_h77_codon_132 
+  feature NS3_DR_h77_codon_132 
     create variation drug_resistance "[V]"
 	exit
-  feature NS3_drg_rst_h77_codon_155 
+  feature NS3_DR_h77_codon_155 
     create variation drug_resistance "[KTGMQ]"
 	exit
-  feature NS3_drg_rst_h77_codon_156 
+  feature NS3_DR_h77_codon_156 
     create variation drug_resistance "[FNSTV]"
 	exit
-  feature NS3_drg_rst_h77_codon_168 
+  feature NS3_DR_h77_codon_168 
     create variation drug_resistance "[NAEHVGY]"
 	exit
-  feature NS5A_drg_rst_h77_codon_28 
+  feature NS5A_DR_h77_codon_28 
     create variation drug_resistance "[T]"
 	exit
-  feature NS5A_drg_rst_h77_codon_30 
+  feature NS5A_DR_h77_codon_30 
     create variation drug_resistance "[EHR]"
 	exit
-  feature NS5A_drg_rst_h77_codon_31 
+  feature NS5A_DR_h77_codon_31 
     create variation drug_resistance "[MV]"
 	exit
-  feature NS5A_drg_rst_h77_codon_93 
+  feature NS5A_DR_h77_codon_93 
     create variation drug_resistance "[CHN]"
 	exit
-  feature NS5B_drg_rst_h77_codon_282 
+  feature NS5B_DR_h77_codon_282 
     create variation drug_resistance "[T]"
 	exit
-  feature NS5B_drg_rst_h77_codon_316 
+  feature NS5B_DR_h77_codon_316 
 	exit
-  feature NS5B_drg_rst_h77_codon_419 
+  feature NS5B_DR_h77_codon_419 
 	exit
   
   reference H77
-  
     add feature-location 5UTR
     feature-location 5UTR
       add segment 1 341
-            exit
+      exit
+	    
     add feature-location Core
     feature-location Core
       add segment 342 914
-            exit
+      exit
+	    
     add feature-location E1
     feature-location E1
       add segment 915 1490
       exit
+      
     add feature-location E2
     feature-location E2
       add segment 1491 2579
       exit
+      
     add feature-location p7
     feature-location p7
       add segment 2580 2768
       exit
+      
     add feature-location NS2
     feature-location NS2
       add segment 2769 3419
       exit
+      
     add feature-location NS3
     feature-location NS3
       add segment 3420 5312
       exit
+    add feature-location NS3_DR_h77_codon_36
+    feature-location NS3_DR_h77_codon_36	
+      add segment 3525 3527
+      exit
+    add feature-location NS3_DR_h77_codon_43
+    feature-location NS3_DR_h77_codon_43 
+      add segment 3546 3548
+      exit
+    add feature-location NS3_DR_h77_codon_54
+    feature-location NS3_DR_h77_codon_54 
+      add segment 3579 3581
+      exit
+    add feature-location NS3_DR_h77_codon_80
+    feature-location NS3_DR_h77_codon_80 
+      add segment 3657 3659
+      exit
+    add feature-location NS3_DR_h77_codon_122
+    feature-location NS3_DR_h77_codon_122 
+      add segment 3783 3785
+      exit
+    add feature-location NS3_DR_h77_codon_132
+    feature-location NS3_DR_h77_codon_132 
+      add segment 3813 3815
+      exit
+    add feature-location NS3_DR_h77_codon_155
+    feature-location NS3_DR_h77_codon_155 
+      add segment 3882 3884
+      exit
+    add feature-location NS3_DR_h77_codon_156
+    feature-location NS3_DR_h77_codon_156 
+      add segment 3885 3887
+      exit
+    add feature-location NS3_DR_h77_codon_168
+    feature-location NS3_DR_h77_codon_168 
+      add segment 3921 3923
+      exit
+
     add feature-location NS4A
     feature-location NS4A
       add segment 5313 5474
       exit
+
     add feature-location NS4B
     feature-location NS4B
       add segment 5475 6257
       exit
+
     add feature-location NS5A
     feature-location NS5A
       add segment 6258 7601
       exit
+    add feature-location NS5A_DR_h77_codon_28
+    feature-location NS5A_DR_h77_codon_28 
+      add segment 6339 6341
+      exit
+    add feature-location NS5A_DR_h77_codon_30
+    feature-location NS5A_DR_h77_codon_30 
+      add segment 6345 6347
+      exit
+    add feature-location NS5A_DR_h77_codon_31
+    feature-location NS5A_DR_h77_codon_31 
+      add segment 6348 6350
+      exit
+    add feature-location NS5A_DR_h77_codon_93
+    feature-location NS5A_DR_h77_codon_93 
+      add segment 6534 6536
+      exit
+
     add feature-location NS5B
     feature-location NS5B
       add segment 7602 9377
       exit
+    add feature-location NS5B_DR_h77_codon_282
+    feature-location NS5B_DR_h77_codon_282 
+      add segment 8445 8447
+      exit
+    add feature-location NS5B_DR_h77_codon_316
+    feature-location NS5B_DR_h77_codon_316
+      add segment 8547 8549
+      exit
+    add feature-location NS5B_DR_h77_codon_419
+    feature-location NS5B_DR_h77_codon_419
+      add segment 8856 8858
+      exit
+
     add feature-location 3UTR
     feature-location 3UTR
       add segment 9378 9620
       exit
-    exit
+
+    exit  
     
   create alignment H77 AL_MASTER
   alignment AL_MASTER
