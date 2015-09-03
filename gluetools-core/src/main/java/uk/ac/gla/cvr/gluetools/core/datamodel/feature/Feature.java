@@ -10,6 +10,7 @@ import java.util.Set;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 
 @GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, _Feature.TRANSCRIPTION_TYPE_PROPERTY, Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY})
 public class Feature extends _Feature {
@@ -44,12 +45,7 @@ public class Feature extends _Feature {
 	}
 	
 	private TranscriptionFormat buildTranscriptionFormat() {
-		String formatString = getTranscriptionType();
-		try {
-			return TranscriptionFormat.valueOf(formatString);
-		} catch(IllegalArgumentException iae) {
-			throw new FeatureException(FeatureException.Code.UNKNOWN_TRANSCRIPTION_TYPE, formatString);
-		}
+		return TranscriptionUtils.transcriptionFormatFromString(getTranscriptionType());
 	}	
 
 	

@@ -14,6 +14,7 @@ public abstract class _Variation extends GlueDataObject {
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String NAME_PROPERTY = "name";
     public static final String REGEX_PROPERTY = "regex";
+    public static final String TRANSCRIPTION_TYPE_PROPERTY = "transcriptionType";
     public static final String FEATURE_PROPERTY = "feature";
 
     public static final String FEATURE_NAME_PK_COLUMN = "FEATURE_NAME";
@@ -38,6 +39,13 @@ public abstract class _Variation extends GlueDataObject {
     }
     public String getRegex() {
         return (String)readProperty(REGEX_PROPERTY);
+    }
+
+    public void setTranscriptionType(String transcriptionType) {
+        writeProperty(TRANSCRIPTION_TYPE_PROPERTY, transcriptionType);
+    }
+    public String getTranscriptionType() {
+        return (String)readProperty(TRANSCRIPTION_TYPE_PROPERTY);
     }
 
     public void setFeature(Feature feature) {

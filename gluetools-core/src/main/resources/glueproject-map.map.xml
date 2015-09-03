@@ -67,6 +67,7 @@
 		<db-attribute name="FEATURE_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REGEX" type="VARCHAR" isMandatory="true" length="1000"/>
+		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
 	</db-entity>
 	<obj-entity name="AlignedSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment" dbEntityName="ALIGNED_SEGMENT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="memberEnd" type="java.lang.Integer" db-attribute-path="MEMBER_END"/>
@@ -111,6 +112,7 @@
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="REGEX"/>
+		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
 	</obj-entity>
 	<db-relationship name="alignmentMember" source="ALIGNED_SEGMENT" target="ALIGNMENT_MEMBER" toMany="false">
 		<db-attribute-pair source="ALIGNMENT" target="ALIGNMENT"/>

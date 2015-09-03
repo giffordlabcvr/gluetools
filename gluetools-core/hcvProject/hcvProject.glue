@@ -889,46 +889,46 @@ project HCV
   
 
   feature NS3_DR_h77_codon_36
-    create variation drug_resistance "[AMGI]"
+    create variation -t AMINO_ACID drug_resistance "[AMGI]"
 	exit
   feature NS3_DR_h77_codon_43 
-    create variation drug_resistance "[S]"
+    create variation -t AMINO_ACID drug_resistance "[S]"
 	exit
   feature NS3_DR_h77_codon_54 
-    create variation drug_resistance "[ACGS]"
+    create variation -t AMINO_ACID drug_resistance "[ACGS]"
 	exit
   feature NS3_DR_h77_codon_80 
-    create variation drug_resistance "[KR]"
+    create variation -t AMINO_ACID drug_resistance "[KR]"
 	exit
   feature NS3_DR_h77_codon_122 
-    create variation drug_resistance "[AGR]"
+    create variation -t AMINO_ACID drug_resistance "[AGR]"
 	exit
   feature NS3_DR_h77_codon_132 
-    create variation drug_resistance "[V]"
+    create variation -t AMINO_ACID drug_resistance "[V]"
 	exit
   feature NS3_DR_h77_codon_155 
-    create variation drug_resistance "[KTGMQ]"
+    create variation -t AMINO_ACID drug_resistance "[KTGMQ]"
 	exit
   feature NS3_DR_h77_codon_156 
-    create variation drug_resistance "[FNSTV]"
+    create variation -t AMINO_ACID drug_resistance "[FNSTV]"
 	exit
   feature NS3_DR_h77_codon_168 
-    create variation drug_resistance "[NAEHVGY]"
+    create variation -t AMINO_ACID drug_resistance "[NAEHVGY]"
 	exit
   feature NS5A_DR_h77_codon_28 
-    create variation drug_resistance "[T]"
+    create variation -t AMINO_ACID drug_resistance "[T]"
 	exit
   feature NS5A_DR_h77_codon_30 
-    create variation drug_resistance "[EHR]"
+    create variation -t AMINO_ACID drug_resistance "[EHR]"
 	exit
   feature NS5A_DR_h77_codon_31 
-    create variation drug_resistance "[MV]"
+    create variation -t AMINO_ACID drug_resistance "[MV]"
 	exit
   feature NS5A_DR_h77_codon_93 
-    create variation drug_resistance "[CHN]"
+    create variation -t AMINO_ACID drug_resistance "[CHN]"
 	exit
   feature NS5B_DR_h77_codon_282 
-    create variation drug_resistance "[T]"
+    create variation -t AMINO_ACID drug_resistance "[T]"
 	exit
   feature NS5B_DR_h77_codon_316 
 	exit

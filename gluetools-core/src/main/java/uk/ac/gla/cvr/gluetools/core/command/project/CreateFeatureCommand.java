@@ -11,7 +11,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
@@ -20,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 @CommandClass( 
 	commandWords={"create","feature"}, 
 	docoptUsages={"<featureName> [-t <type>] [-p <parent>] [<description>]"},
-	docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NONE, AMINO_ACID]",
+	docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]",
 			       "-p <featureName>, --parentName <featureName>  Name of parent feature"},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Create a new genome feature", 
