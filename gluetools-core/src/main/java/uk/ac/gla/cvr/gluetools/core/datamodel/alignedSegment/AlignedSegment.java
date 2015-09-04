@@ -81,6 +81,24 @@ public class AlignedSegment extends _AlignedSegment implements IQueryAlignedSegm
 	public Integer getQueryEnd() {
 		return getMemberEnd();
 	}
+
+	@Override
+	public void setQueryStart(Integer queryStart) {
+		setMemberStart(queryStart);
+	}
+
+	@Override
+	public void setQueryEnd(Integer queryEnd) {
+		setMemberEnd(queryEnd);
+	}
 	
-	
+	public AlignedSegment clone() {
+		AlignedSegment copy = new AlignedSegment();
+		copy.setRefStart(getRefStart());
+		copy.setRefEnd(getRefEnd());
+		copy.setMemberStart(getMemberStart());
+		copy.setMemberEnd(getMemberEnd());
+		return copy;
+	}
+
 }

@@ -6,7 +6,11 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 
 	public Integer getQueryStart();
 
+	public void setQueryStart(Integer queryStart);
+
 	public Integer getQueryEnd();
+
+	public void setQueryEnd(Integer queryEnd);
 
 	public static double getQueryNtCoveragePercent(List<? extends IQueryAlignedSegment> alignedSegments, int queryLength) {
 		int queryNTs = 0;

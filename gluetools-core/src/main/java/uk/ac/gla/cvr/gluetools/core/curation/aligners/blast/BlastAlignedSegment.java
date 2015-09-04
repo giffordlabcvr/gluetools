@@ -95,7 +95,7 @@ public class BlastAlignedSegment extends QueryAlignedSegment implements Cloneabl
 						/*    [3 existing   9]
 						 * [1   new       6]
 						 */
-						// nothing to do.
+						newSegments.removeFirst();
 					}
 				}
 				nextNewStart = updateNextStart(newSegments, getStart);

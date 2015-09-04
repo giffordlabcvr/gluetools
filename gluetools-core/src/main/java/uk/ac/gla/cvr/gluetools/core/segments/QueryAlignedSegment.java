@@ -49,14 +49,18 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 	public Integer getQueryStart() {
 		return queryStart;
 	}
-	public void setQueryStart(int queryStart) {
+
+	@Override
+	public void setQueryStart(Integer queryStart) {
 		this.queryStart = queryStart;
 	}
 	@Override
 	public Integer getQueryEnd() {
 		return queryEnd;
 	}
-	public void setQueryEnd(int queryEnd) {
+
+	@Override
+	public void setQueryEnd(Integer queryEnd) {
 		this.queryEnd = queryEnd;
 	}
 	
