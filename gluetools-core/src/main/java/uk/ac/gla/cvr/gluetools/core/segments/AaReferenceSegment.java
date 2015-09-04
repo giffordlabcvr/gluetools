@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -98,5 +101,6 @@ public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaR
 		builder
 			.set(AMINO_ACIDS, getAminoAcids());
 	}
+	
 	
 }

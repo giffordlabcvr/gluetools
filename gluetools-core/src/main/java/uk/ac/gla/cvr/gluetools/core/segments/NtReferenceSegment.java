@@ -98,5 +98,9 @@ public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtR
 		builder
 			.set(NUCLEOTIDES, getNucleotides());
 	}
+	@Override
+	public char ntAtRefLocation(int refLocation) {
+		return getNucleotides().charAt(refLocation - getRefStart());
+	}
 	
 }

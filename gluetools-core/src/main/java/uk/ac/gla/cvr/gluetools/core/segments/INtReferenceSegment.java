@@ -4,4 +4,6 @@ public interface INtReferenceSegment extends IReferenceSegment {
 
 	public CharSequence getNucleotides();
 	
+	public char ntAtRefLocation(int refLocation);
+	
 }
