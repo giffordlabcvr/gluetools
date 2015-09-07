@@ -17,8 +17,7 @@ public class ReferenceShowSequenceCommand extends ReferenceSequenceModeCommand<R
 	
 	@Override
 	public ReferenceShowSequenceResult execute(CommandContext cmdContext) {
-		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext.getObjectContext(), 
-				ReferenceSequence.class, ReferenceSequence.pkMap(getRefSeqName()), false);
+		ReferenceSequence refSeq = lookupRefSeq(cmdContext);
 		return new ReferenceShowSequenceResult(refSeq.getSequence().getSource().getName(), refSeq.getSequence().getSequenceID());
 	}
 

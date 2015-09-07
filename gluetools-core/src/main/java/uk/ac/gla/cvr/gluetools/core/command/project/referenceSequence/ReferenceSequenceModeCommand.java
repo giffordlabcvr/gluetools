@@ -13,7 +13,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -31,6 +33,12 @@ public abstract class ReferenceSequenceModeCommand<R extends CommandResult> exte
 
 	protected String getRefSeqName() {
 		return refSeqName;
+	}
+
+	protected ReferenceSequence lookupRefSeq(CommandContext cmdContext) {
+		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext.getObjectContext(), 
+				ReferenceSequence.class, ReferenceSequence.pkMap(getRefSeqName()), false);
+		return refSeq;
 	}
 
 	@SuppressWarnings("rawtypes")

@@ -36,8 +36,7 @@ public class AddFeatureLocCommand extends ReferenceSequenceModeCommand<CreateRes
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext.getObjectContext(), ReferenceSequence.class, 
-				ReferenceSequence.pkMap(getRefSeqName()));
+		ReferenceSequence referenceSequence = lookupRefSeq(cmdContext);
 		Feature feature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, 
 				Feature.pkMap(featureName));
 		FeatureLocation featureLoc = GlueDataObject.create(objContext, FeatureLocation.class, FeatureLocation.pkMap(referenceSequence.getName(), feature.getName()), false);

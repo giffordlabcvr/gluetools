@@ -855,37 +855,37 @@ project HCV
 
   create reference H77 ncbi-nuccore 2316097
   
-  create feature whole_genome
-    create feature 5UTR -p whole_genome
-    create feature structural_proteins -p whole_genome
-      create feature Core -t AMINO_ACID -p structural_proteins
-      create feature E1 -t AMINO_ACID -p structural_proteins
-      create feature E2 -t AMINO_ACID -p structural_proteins
-    create feature non_structural_proteins -p whole_genome
-      create feature p7 -t AMINO_ACID -p non_structural_proteins
-      create feature NS2 -t AMINO_ACID -p non_structural_proteins
-      create feature NS3 -t AMINO_ACID -p non_structural_proteins
-        create feature NS3_DR_h77_codon_36 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_43 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_54 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_80 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_122 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_132 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_155 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_156 -t AMINO_ACID -p NS3
-        create feature NS3_DR_h77_codon_168 -t AMINO_ACID -p NS3
-      create feature NS4A -t AMINO_ACID -p non_structural_proteins
-      create feature NS4B -t AMINO_ACID -p non_structural_proteins
-      create feature NS5A -t AMINO_ACID -p non_structural_proteins
-        create feature NS5A_DR_h77_codon_28 -t AMINO_ACID -p NS5A
-        create feature NS5A_DR_h77_codon_30 -t AMINO_ACID -p NS5A
-        create feature NS5A_DR_h77_codon_31 -t AMINO_ACID -p NS5A
-        create feature NS5A_DR_h77_codon_93 -t AMINO_ACID -p NS5A
-      create feature NS5B -t AMINO_ACID -p non_structural_proteins
-        create feature NS5B_DR_h77_codon_282 -t AMINO_ACID -p NS5B
-        create feature NS5B_DR_h77_codon_316 -t AMINO_ACID -p NS5B
-        create feature NS5B_DR_h77_codon_419 -t AMINO_ACID -p NS5B
-    create feature 3UTR -p whole_genome
+  create feature whole_genome "Whole genome"
+    create feature 5UTR -p whole_genome "5' UTR"
+    create feature structural_proteins -p whole_genome "Structural proteins"
+      create feature Core -t AMINO_ACID -p structural_proteins "Core"
+      create feature E1 -t AMINO_ACID -p structural_proteins "E1"
+      create feature E2 -t AMINO_ACID -p structural_proteins "E2"
+    create feature non_structural_proteins -p whole_genome "Non-structural proteins"
+      create feature p7 -t AMINO_ACID -p non_structural_proteins "p7"
+      create feature NS2 -t AMINO_ACID -p non_structural_proteins "NS2"
+      create feature NS3 -t AMINO_ACID -p non_structural_proteins "NS3"
+        create feature NS3_DR_h77_codon_36 -t AMINO_ACID -p NS3 "Codon 36"
+        create feature NS3_DR_h77_codon_43 -t AMINO_ACID -p NS3 "Codon 43"
+        create feature NS3_DR_h77_codon_54 -t AMINO_ACID -p NS3 "Codon 54"
+        create feature NS3_DR_h77_codon_80 -t AMINO_ACID -p NS3 "Codon 80"
+        create feature NS3_DR_h77_codon_122 -t AMINO_ACID -p NS3 "Codon 122"
+        create feature NS3_DR_h77_codon_132 -t AMINO_ACID -p NS3 "Codon 132"
+        create feature NS3_DR_h77_codon_155 -t AMINO_ACID -p NS3 "Codon 155"
+        create feature NS3_DR_h77_codon_156 -t AMINO_ACID -p NS3 "Codon 156"
+        create feature NS3_DR_h77_codon_168 -t AMINO_ACID -p NS3 "Codon 168"
+      create feature NS4A -t AMINO_ACID -p non_structural_proteins "NS4A"
+      create feature NS4B -t AMINO_ACID -p non_structural_proteins "NS4B"
+      create feature NS5A -t AMINO_ACID -p non_structural_proteins "NS5A"
+        create feature NS5A_DR_h77_codon_28 -t AMINO_ACID -p NS5A "Codon 28"
+        create feature NS5A_DR_h77_codon_30 -t AMINO_ACID -p NS5A "Codon 30"
+        create feature NS5A_DR_h77_codon_31 -t AMINO_ACID -p NS5A "Codon 31"
+        create feature NS5A_DR_h77_codon_93 -t AMINO_ACID -p NS5A "Codon 93"
+      create feature NS5B -t AMINO_ACID -p non_structural_proteins "NS5B"
+        create feature NS5B_DR_h77_codon_282 -t AMINO_ACID -p NS5B "Codon 282"
+        create feature NS5B_DR_h77_codon_316 -t AMINO_ACID -p NS5B "Codon 316"
+        create feature NS5B_DR_h77_codon_419 -t AMINO_ACID -p NS5B "Codon 419"
+    create feature 3UTR -p whole_genome "3' UTR"
   
 
   

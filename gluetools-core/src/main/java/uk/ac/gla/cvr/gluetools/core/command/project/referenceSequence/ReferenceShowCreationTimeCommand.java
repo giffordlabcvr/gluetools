@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 
 @CommandClass(
@@ -17,9 +16,7 @@ public class ReferenceShowCreationTimeCommand extends ReferenceSequenceModeComma
 	
 	@Override
 	public ReferenceShowCreationTimeResult execute(CommandContext cmdContext) {
-		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext.getObjectContext(), 
-				ReferenceSequence.class, ReferenceSequence.pkMap(getRefSeqName()), false);
-		return new ReferenceShowCreationTimeResult(Long.toString(refSeq.getCreationTime()));
+		return new ReferenceShowCreationTimeResult(Long.toString(lookupRefSeq(cmdContext).getCreationTime()));
 	}
 
 	public static class ReferenceShowCreationTimeResult extends MapResult {

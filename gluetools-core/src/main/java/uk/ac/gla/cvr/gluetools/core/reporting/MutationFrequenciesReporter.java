@@ -408,7 +408,12 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	private void generateFeatureLocationResults(SequenceResult seqResult) {
 		for(AlignmentAnalysis alignmentAnalysis : seqResult.almtAnalysisChain) {
+			generateAlignmentAnalysisFeatureLocResult(alignmentAnalysis);
 		}
+	}
+	
+	private void generateAlignmentAnalysisFeatureLocResult(AlignmentAnalysis alignmentAnalysis) {
+		
 	}
 
 	// by using the "translate segments" command, we can fill in seqToRefAlignedSegments for the rest of the chain.
@@ -559,7 +564,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		private double seqToRefQueryCoverage;
 		private double seqToRefReferenceCoverage;
 		private List<QueryAlignedSegment> refToParentAlignedSegments;
-		private List<SequenceFeatureLocationResult> seqFeatureLocResults;
+		private FeatureAnalysisTree featureAnalysisTree;
 		
 		public void toDocument(ObjectBuilder seqAlmtAnalysisObj) {
 			seqAlmtAnalysisObj.set("alignmentName", alignmentName);
@@ -578,20 +583,25 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 					refToParentAlignedSegment.toDocument(refToParentAlignedSegArray.addObject());
 				}
 			} 
-			ArrayBuilder seqFeatureLocResultArray = seqAlmtAnalysisObj.setArray("sequenceFeatureLocation");
-			/*for(SequenceFeatureLocationResult seqFeatureLocResult: seqFeatureLocResults) {
-				seqFeatureLocResult.toDocument(seqFeatureLocResultArray.addObject());
-			}*/
-			
+			ObjectBuilder featureTreeObj = seqAlmtAnalysisObj.setObject("featureAnalysisTree");
+			featureAnalysisTree.toDocument(featureTreeObj);
 
 		}
 	}
 
-	private static class SequenceFeatureLocationResult {
+	private static class FeatureAnalysisTree {
 		private String featureName;
+		private String featureDescription;
+		private List<FeatureAnalysisTree> children = new ArrayList<FeatureAnalysisTree>();
 
-		public void toDocument(ObjectBuilder seqFeatureLocObj) {
-			seqFeatureLocObj.set("featureName", featureName);
+		public void toDocument(ObjectBuilder featureAnalysisObj) {
+			featureAnalysisObj.set("featureName", featureName);
+			featureAnalysisObj.set("featureDescription", featureDescription);
+			ArrayBuilder childFeatureArray = featureAnalysisObj.setArray("features");
+			for(FeatureAnalysisTree childTree: children) {
+				ObjectBuilder childTreeObj = childFeatureArray.addObject();
+				childTree.toDocument(childTreeObj);
+			}
 		}
 	}
 	
