@@ -33,6 +33,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand.ListAlignedSegmentResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowFeatureTreeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowFeatureTreeCommand.ReferenceShowFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand.ReferenceShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.ListFeatureSegmentCommand;
@@ -52,7 +54,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
+import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -402,18 +407,28 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		// fill in seqToRefAlignedSegments for the rest of the chain.
 		seqResults.forEach(seqResult -> propagateAlignedSegments(seqResult));
 		
-		seqResults.forEach(seqResult -> generateFeatureLocationResults(seqResult));
+		seqResults.forEach(seqResult -> generateFeatureAnalysisResults(seqResult));
 		return seqResults;
 	}
 
-	private void generateFeatureLocationResults(SequenceResult seqResult) {
+	private void generateFeatureAnalysisResults(SequenceResult seqResult) {
 		for(AlignmentAnalysis alignmentAnalysis : seqResult.almtAnalysisChain) {
-			generateAlignmentAnalysisFeatureLocResult(alignmentAnalysis);
+			generateAlignmentAnalysisFeatureResults(seqResult.analysisContext, alignmentAnalysis);
 		}
 	}
 	
-	private void generateAlignmentAnalysisFeatureLocResult(AlignmentAnalysis alignmentAnalysis) {
-		
+	private void generateAlignmentAnalysisFeatureResults(AnalysisContext analysisContext, AlignmentAnalysis alignmentAnalysis) {
+		String refName = alignmentAnalysis.referenceName;
+		ReferenceShowFeatureTreeResult featureTreeResult = analysisContext.getFeatureTreeResult(refName);
+		// build a list of feature analysis trees, by templating from the reference "show feature tree" command result.
+		DocumentReader docReader = new DocumentReader(featureTreeResult.getDocument());
+		ArrayReader featureRoots = docReader.getArray("features");
+		alignmentAnalysis.featureAnalysisTrees = new ArrayList<FeatureAnalysisTree>();
+		for(int i = 0; i < featureRoots.size(); i++) {
+			FeatureAnalysisTree featureAnalysisTree = new FeatureAnalysisTree();
+			featureAnalysisTree.fromDocument(featureRoots.getObject(i));
+			alignmentAnalysis.featureAnalysisTrees.add(featureAnalysisTree);
+		}
 	}
 
 	// by using the "translate segments" command, we can fill in seqToRefAlignedSegments for the rest of the chain.
@@ -564,7 +579,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		private double seqToRefQueryCoverage;
 		private double seqToRefReferenceCoverage;
 		private List<QueryAlignedSegment> refToParentAlignedSegments;
-		private FeatureAnalysisTree featureAnalysisTree;
+		private List<FeatureAnalysisTree> featureAnalysisTrees;
 		
 		public void toDocument(ObjectBuilder seqAlmtAnalysisObj) {
 			seqAlmtAnalysisObj.set("alignmentName", alignmentName);
@@ -583,8 +598,10 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 					refToParentAlignedSegment.toDocument(refToParentAlignedSegArray.addObject());
 				}
 			} 
-			ObjectBuilder featureTreeObj = seqAlmtAnalysisObj.setObject("featureAnalysisTree");
-			featureAnalysisTree.toDocument(featureTreeObj);
+			ArrayBuilder featureTreesArray = seqAlmtAnalysisObj.setArray("featureAnalysisTree");
+			for(FeatureAnalysisTree featureAnalysisTree: featureAnalysisTrees) {
+				featureAnalysisTree.toDocument(featureTreesArray.addObject());
+			}
 
 		}
 	}
@@ -592,15 +609,27 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private static class FeatureAnalysisTree {
 		private String featureName;
 		private String featureDescription;
-		private List<FeatureAnalysisTree> children = new ArrayList<FeatureAnalysisTree>();
+		private List<FeatureAnalysisTree> features = new ArrayList<FeatureAnalysisTree>();
 
 		public void toDocument(ObjectBuilder featureAnalysisObj) {
 			featureAnalysisObj.set("featureName", featureName);
 			featureAnalysisObj.set("featureDescription", featureDescription);
 			ArrayBuilder childFeatureArray = featureAnalysisObj.setArray("features");
-			for(FeatureAnalysisTree childTree: children) {
+			for(FeatureAnalysisTree childTree: features) {
 				ObjectBuilder childTreeObj = childFeatureArray.addObject();
 				childTree.toDocument(childTreeObj);
+			}
+		}
+		
+		public void fromDocument(ObjectReader objReader) {
+			featureName = objReader.stringValue("featureName");
+			featureDescription = objReader.stringValue("featureDescription");
+			ArrayReader childFeaturesArray = objReader.getArray("features");
+			for(int i = 0; i < childFeaturesArray.size(); i++) {
+				ObjectReader childReader = childFeaturesArray.getObject(i);
+				FeatureAnalysisTree featureAnalysisTree = new FeatureAnalysisTree();
+				featureAnalysisTree.fromDocument(childReader);
+				features.add(featureAnalysisTree);
 			}
 		}
 	}
@@ -637,16 +666,26 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private static class AnalysisContext {
 		private CommandContext cmdContext;
 		private Map<String, String> almtSearchStringToAlmtName;
-		
 		private Map<String, List<Map<String,Object>>> almtNameToAncestorsListOfMaps = new LinkedHashMap<String, List<Map<String,Object>>>();
-		
 		private Map<String, List<QueryAlignedSegment>> almtNameToRefParentAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
-		
 		private Map<String, Integer> refNameToLength = new LinkedHashMap<String, Integer>();
+		private Map<String, ReferenceShowFeatureTreeResult> refNameToFeatureTreeResult = new LinkedHashMap<String, ReferenceShowFeatureTreeResult>();
 		
 		public AnalysisContext(CommandContext cmdContext) {
 			super();
 			this.cmdContext = cmdContext;
+		}
+
+		public ReferenceShowFeatureTreeResult getFeatureTreeResult(String referenceName) {
+			ReferenceShowFeatureTreeResult featureTreeResult = refNameToFeatureTreeResult.get(referenceName);
+			if(featureTreeResult != null) {
+				return featureTreeResult;
+			}
+			try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
+				featureTreeResult = cmdContext.cmdBuilder(ReferenceShowFeatureTreeCommand.class).execute();
+			}
+			refNameToFeatureTreeResult.put(referenceName, featureTreeResult);
+			return featureTreeResult;
 		}
 
 		public List<QueryAlignedSegment> getRefToParentAlignedSegments(String alignmentName, String referenceName, String parentAlignmentName) {

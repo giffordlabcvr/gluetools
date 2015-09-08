@@ -32,6 +32,52 @@ submitSequencesAnalysis
 		dialogs.create('dialogs/alignmentDetails.html','alignmentDetailsCtrl',sequenceResult,{});
 	}
 	
+	
+	$scope.analysisResultsCtrl = function($scope) {
+		console.log('created controller for ', $scope.sequenceResult);
+
+		$scope.alignmentsWithResults = {};
+		$scope.alignmentOptions = [];
+		$scope.noneSelected = "None selected";
+		$scope.numAlignmentsWithResults = 0;
+		for(var i = 0; i < $scope.sequenceResult.alignmentAnalysis.length; i++) {
+			var alignmentAnalysis = $scope.sequenceResult.alignmentAnalysis[i];
+			if(alignmentAnalysis.featureAnalysisTree) {
+				$scope.alignmentsWithResults[alignmentAnalysis.alignmentName] = alignmentAnalysis;
+				$scope.numAlignmentsWithResults ++;
+				$scope.alignmentOptions.push(alignmentAnalysis.alignmentName);
+			}
+		}
+		if($scope.numAlignmentsWithResults != 1) {
+			$scope.alignmentOptions.unshift($scope.noneSelected);
+		}
+		
+		$scope.$watch( 'selectedAlignment', function( newObj, oldObj ) {
+			console.log("selectedAlignment for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
+			if(newObj != $scope.noneSelected) {
+				$scope.sequenceResult.featureAnalysisTree = $scope.alignmentsWithResults[newObj].featureAnalysisTree;
+			} else {
+				$scope.sequenceResult.featureAnalysisTree = null;
+			}
+			$scope.sequenceResult.selectedFeature = $scope.noneSelected;
+		}, false);
+		
+		if($scope.numAlignmentsWithResults == 1) {
+			$scope.selectedAlignment = _.pairs($scope.alignmentsWithResults)[0][0]; 
+		} else {
+			$scope.selectedAlignment = $scope.noneSelected;
+		}
+		
+		$scope.selectGenomeFeature = function(sequenceResult) {
+			var dlg = dialogs.create('dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
+			dlg.result.then(function(featureName){
+				$scope.sequenceResult.selectedFeature = featureName;
+			});
+		}
+
+		
+	}
+	
 	$scope.removeAll = function() {
 		$scope.uploader.clearQueue();
 		$scope.analysisResults = null;
@@ -158,6 +204,24 @@ submitSequencesAnalysis
 	$scope.dismiss = function(){
 		$modalInstance.dismiss('Dismissed');
 	}; 
+})
+.controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
+	$scope.sequenceResult = data;
+	$scope.defaultOpenDepth = 2;
+	$scope.defaultSelectedId = data.selectedFeature;
+	addUtilsToScope($scope);
+	
+	console.log("select genome feature, sequenceResult", $scope.sequenceResult)
+	
+	$scope.select = function(selectedNode){
+		console.log("selectedNode", selectedNode);
+		$modalInstance.close(selectedNode.featureName);
+	}; 
+
+	$scope.dismiss = function(){
+		$modalInstance.dismiss('Dismissed');
+	}; 
+
 });
 
 

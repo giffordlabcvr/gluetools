@@ -1,0 +1,19 @@
+<div class="modal-header">
+	<h3 class="modal-title">
+		Select genome feature
+	</h3>
+	<h5 class="modal-title">
+		{{sequenceResult.sequenceID}}
+	</h5>
+</div>
+<div class="modal-body">
+		<div data-angular-treeview="true" data-tree-id="featureTree"
+			data-tree-model="sequenceResult.featureAnalysisTree" data-default-selected-id="{{defaultSelectedId}}"
+			data-default-open-depth="{{defaultOpenDepth}}" data-node-id="featureName"
+			data-node-label="featureDescription" data-node-children="features"></div>
+
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-disabled="!featureTree.currentNode" ng-click="select(featureTree.currentNode)">OK</button>
+	<button type="button" class="btn btn-cancel" ng-click="dismiss()">Cancel</button>
+</div>

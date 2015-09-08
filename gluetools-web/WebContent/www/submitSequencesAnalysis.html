@@ -135,10 +135,40 @@
 	
 			<div ng-show="analysisResults">
 				<h3>Anaylsis: {{analysisResults.file.name}}</h3>
-				<div ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult">
+				<div ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult" 
+						ng-controller="analysisResultsCtrl">
 					<h5>{{sequenceResult.sequenceID}}</h5>
-					<a ng-click="showAlignmentDetails(sequenceResult)">Alignment details <i class="glyphicon glyphicon-link"></i></a>
-				</div>
+				<table class="table table-nonfluid">
+					<thead>
+						<tr>
+							<th>Alignment</th>
+							<th></th>
+							<th>Genome feature</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+						<td>
+							<select name="singleSelect" ng-model="selectedAlignment">
+								<option ng-repeat="alignmentOption in alignmentOptions" value="{{alignmentOption}}">{{alignmentOption}}</option>
+							</select>
+						</td>
+						<td>
+							<a ng-click="showAlignmentDetails(sequenceResult)">Coverage details <i class="glyphicon glyphicon-link"></i></a>
+						</td>
+						<td>
+							{{sequenceResult.selectedFeature}}
+						</td>
+						<td>
+							<button type="button" ng-disabled="selectedAlignment == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
+									Select
+							</button>
+						</td>
+						</tr>
+					</tbody>
+				</table>
+
 			</div>
 		</div>
 	</div>

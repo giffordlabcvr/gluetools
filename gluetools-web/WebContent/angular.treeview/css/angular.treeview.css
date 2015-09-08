@@ -45,7 +45,8 @@ div[data-tree-model] li i, div[data-tree-model] li span {
 }
 
 div[data-tree-model] li .selected {
-  background-color: #dddddd;
-  // font-weight: bold;
+  background-color: #337ab7;
+  color: #ffffff;
+	// font-weight: bold;
   //padding: 1px 5px;
 }
