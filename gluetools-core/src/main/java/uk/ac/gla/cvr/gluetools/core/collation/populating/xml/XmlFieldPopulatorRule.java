@@ -70,5 +70,5 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 	public String getFieldName() {
 		return fieldName;
 	}
-	
+
 }

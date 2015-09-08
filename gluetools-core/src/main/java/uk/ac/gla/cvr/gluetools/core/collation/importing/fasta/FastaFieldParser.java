@@ -79,4 +79,5 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	public Pattern getNullRegex() {
 		return nullRegex;
 	}
+
 }

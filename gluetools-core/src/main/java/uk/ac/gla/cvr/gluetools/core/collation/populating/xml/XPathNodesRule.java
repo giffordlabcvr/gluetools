@@ -34,5 +34,4 @@ public class XPathNodesRule extends NodeSelectorRule implements Plugin {
 		}
 	}
 
-	
 }

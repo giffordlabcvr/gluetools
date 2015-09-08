@@ -141,7 +141,7 @@
 				<table class="table table-nonfluid">
 					<thead>
 						<tr>
-							<th>Alignment</th>
+							<th>Reference sequence</th>
 							<th></th>
 							<th>Genome feature</th>
 							<th></th>
@@ -150,18 +150,18 @@
 					<tbody>
 						<tr>
 						<td>
-							<select name="singleSelect" ng-model="selectedAlignment">
-								<option ng-repeat="alignmentOption in alignmentOptions" value="{{alignmentOption}}">{{alignmentOption}}</option>
+							<select name="singleSelect" ng-model="selectedReference">
+								<option ng-repeat="referenceOption in referenceOptions" value="{{referenceOption}}">{{referenceOption}}</option>
 							</select>
 						</td>
 						<td>
 							<a ng-click="showAlignmentDetails(sequenceResult)">Coverage details <i class="glyphicon glyphicon-link"></i></a>
 						</td>
 						<td>
-							{{sequenceResult.selectedFeature}}
+							{{sequenceResult.selectedFeature.featureName}}
 						</td>
 						<td>
-							<button type="button" ng-disabled="selectedAlignment == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
+							<button type="button" ng-disabled="selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
 									Select
 							</button>
 						</td>

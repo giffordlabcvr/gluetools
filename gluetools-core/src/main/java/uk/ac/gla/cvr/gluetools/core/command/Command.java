@@ -21,5 +21,5 @@ public abstract class Command<R extends CommandResult> implements Plugin {
 	}
 
 	public abstract R execute(CommandContext cmdContext);
-	
+
 }

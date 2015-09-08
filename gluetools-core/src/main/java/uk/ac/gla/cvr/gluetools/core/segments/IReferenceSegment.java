@@ -1,7 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
+import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+
 
 public interface IReferenceSegment {
+
+	public static final String REF_START = "refStart";
+	public static final String REF_END = "refEnd";
+
 
 	public Integer getRefStart();
 
@@ -38,5 +44,14 @@ public interface IReferenceSegment {
 	}
 
 	public IReferenceSegment clone();
+	
+	
+	public default void toDocument(ObjectBuilder builder) {
+		builder
+			.set(REF_START, getRefStart())
+			.set(REF_END, getRefEnd());
+	}
+
+	
 	
 }

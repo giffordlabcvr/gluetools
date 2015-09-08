@@ -7,7 +7,6 @@ import java.util.function.BiFunction;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -16,9 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 
 	
-	public static final String REF_START = "refStart";
-	public static final String REF_END = "refEnd";
-
 	private int refStart, refEnd;
 
 	public ReferenceSegment(int refStart, int refEnd) {
@@ -91,11 +87,6 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return true;
 	}
 
-	public void toDocument(ObjectBuilder builder) {
-		builder
-			.set(REF_START, getRefStart())
-			.set(REF_END, getRefEnd());
-	}
 	
 	public ReferenceSegment clone() {
 		return new ReferenceSegment(refStart, refEnd);
@@ -106,7 +97,7 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	 * which is returned
 	 * This supplied segment is then modified to be the remaining part.
 	 */
-	public static <A extends ReferenceSegment> A truncateLeftSplit(A segment, int length) {
+	public static <A extends ReferenceSegment> Plugin truncateLeftSplit(A segment, int length) {
 		@SuppressWarnings("unchecked")
 		A newSegment = (A) segment.clone();
 		int currentLength = segment.getCurrentLength();
@@ -120,7 +111,7 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	 * which is returned.
 	 * The supplied segment is modified to be the remaining part.
 	 */
-	public static <A extends ReferenceSegment> A truncateRightSplit(A segment, int length) {
+	public static <A extends ReferenceSegment> Plugin truncateRightSplit(A segment, int length) {
 		@SuppressWarnings("unchecked")
 		A newSegment = (A) segment.clone();
 		int currentLength = segment.getCurrentLength();

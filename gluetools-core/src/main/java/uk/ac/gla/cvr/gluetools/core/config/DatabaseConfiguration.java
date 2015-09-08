@@ -55,5 +55,5 @@ public class DatabaseConfiguration implements Plugin {
 	public String getJdbcUrl() {
 		return jdbcUrl;
 	}
-	
+
 }

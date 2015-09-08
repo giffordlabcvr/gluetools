@@ -55,5 +55,5 @@ public class PropertiesConfiguration implements Plugin {
 			return null;
 		}
 	}
-	
+
 }

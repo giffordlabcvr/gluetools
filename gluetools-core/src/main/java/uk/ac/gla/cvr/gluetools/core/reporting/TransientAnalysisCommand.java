@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.ReferenceResult;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.SequenceResult;
 
 @CommandClass(
@@ -63,18 +64,20 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 
 	@Override
 	protected TransientAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-		List<SequenceResult> seqResults = mutationFrequenciesPlugin.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceData);
-		return new TransientAnalysisResult(seqResults);
+		return mutationFrequenciesPlugin.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceData);
 	}
 
 	public static class TransientAnalysisResult extends CommandResult {
 
-		protected TransientAnalysisResult(List<SequenceResult> seqResults) {
+		protected TransientAnalysisResult(List<ReferenceResult> refResults, List<SequenceResult> seqResults) {
 			super("transientAnalysisResult");
+			ArrayBuilder refResultArrayBuilder = getDocumentBuilder().setArray("referenceResult");
+			for(ReferenceResult refResult: refResults) {
+				refResult.toDocument(refResultArrayBuilder.addObject());
+			}
 			ArrayBuilder seqResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
 			for(SequenceResult seqResult: seqResults) {
-				ObjectBuilder seqResultObj = seqResultArrayBuilder.addObject();
-				seqResult.toDocument(seqResultObj);
+				seqResult.toDocument(seqResultArrayBuilder.addObject());
 			}
 		}
 		

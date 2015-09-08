@@ -7,5 +7,5 @@ public interface Plugin {
 	
 	public default void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 	}
-	
+
 }

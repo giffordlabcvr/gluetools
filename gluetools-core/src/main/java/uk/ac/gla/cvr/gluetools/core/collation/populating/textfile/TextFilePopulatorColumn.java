@@ -83,5 +83,5 @@ public class TextFilePopulatorColumn implements Plugin, FieldPopulator {
 	public Pattern getNullRegex() {
 		return nullRegex;
 	}
-	
+
 }

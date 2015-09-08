@@ -36,45 +36,54 @@ submitSequencesAnalysis
 	$scope.analysisResultsCtrl = function($scope) {
 		console.log('created controller for ', $scope.sequenceResult);
 
-		$scope.alignmentsWithResults = {};
-		$scope.alignmentOptions = [];
+		console.log('refResultMap:', $scope.sequenceResult.refResultMap);
+		
+		$scope.referenceOptions = [];
 		$scope.noneSelected = "None selected";
-		$scope.numAlignmentsWithResults = 0;
+		$scope.numReferenceOptions = 0;
+		
+		var refResultMap = $scope.sequenceResult.refResultMap;
+		
 		for(var i = 0; i < $scope.sequenceResult.alignmentAnalysis.length; i++) {
 			var alignmentAnalysis = $scope.sequenceResult.alignmentAnalysis[i];
-			if(alignmentAnalysis.featureAnalysisTree) {
-				$scope.alignmentsWithResults[alignmentAnalysis.alignmentName] = alignmentAnalysis;
-				$scope.numAlignmentsWithResults ++;
-				$scope.alignmentOptions.push(alignmentAnalysis.alignmentName);
+			if(refResultMap[alignmentAnalysis.referenceName].featureAnalysisTree) {
+				$scope.numReferenceOptions ++;
+				$scope.referenceOptions.push(alignmentAnalysis.referenceName);
 			}
 		}
-		if($scope.numAlignmentsWithResults != 1) {
-			$scope.alignmentOptions.unshift($scope.noneSelected);
+		if($scope.numReferenceOptions != 1) {
+			// add to front.
+			$scope.referenceOptions.unshift($scope.noneSelected);
 		}
 		
-		$scope.$watch( 'selectedAlignment', function( newObj, oldObj ) {
-			console.log("selectedAlignment for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
+		$scope.$watch( 'selectedReference', function( newObj, oldObj ) {
+			console.log("selectedReference for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
 			if(newObj != $scope.noneSelected) {
-				$scope.sequenceResult.featureAnalysisTree = $scope.alignmentsWithResults[newObj].featureAnalysisTree;
+				$scope.sequenceResult.featureAnalysisTree = $scope.sequenceResult.refResultMap[newObj].featureAnalysisTree;
 			} else {
 				$scope.sequenceResult.featureAnalysisTree = null;
 			}
-			$scope.sequenceResult.selectedFeature = $scope.noneSelected;
+			$scope.sequenceResult.selectedFeature = { featureName: $scope.noneSelected }
 		}, false);
 		
-		if($scope.numAlignmentsWithResults == 1) {
-			$scope.selectedAlignment = _.pairs($scope.alignmentsWithResults)[0][0]; 
+		if($scope.numReferenceOptions == 1) {
+			$scope.selectedReference = $scope.referenceOptions[0]; 
 		} else {
-			$scope.selectedAlignment = $scope.noneSelected;
+			$scope.selectedReference = $scope.noneSelected;
 		}
 		
 		$scope.selectGenomeFeature = function(sequenceResult) {
 			var dlg = dialogs.create('dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
-			dlg.result.then(function(featureName){
-				$scope.sequenceResult.selectedFeature = featureName;
+			dlg.result.then(function(feature){
+				$scope.sequenceResult.selectedFeature = feature;
 			});
 		}
 
+		$scope.$watch( 'sequenceResult.selectedFeature', function( newObj, oldObj ) {
+			console.log("selectedFeature for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
+		}, false);
+
+		
 		
 	}
 	
@@ -174,6 +183,18 @@ submitSequencesAnalysis
     uploader.onSuccessItem = function(fileItem, response, status, headers) {
         console.info('onSuccessItem', fileItem, response, status, headers);
         fileItem.transientAnalysisResult = response.transientAnalysisResult;
+        // create a map from the ref results.
+        var refResultMap = {};
+        var refResultArray = fileItem.transientAnalysisResult.referenceResult;
+        for(var i = 0; i < refResultArray.length; i++) {
+        	refResultMap[refResultArray[i].referenceName] = refResultArray[i];
+        }
+        // add a reference to the ref results for each seqResult.
+        var seqResultArray = fileItem.transientAnalysisResult.sequenceResult;
+        for(var i = 0; i < seqResultArray.length; i++) {
+        	seqResultArray[i].refResultMap = refResultMap;
+        }
+        
     };
     uploader.onErrorItem = function(fileItem, response, status, headers) {
         console.info('onErrorItem', fileItem, response, status, headers);
@@ -215,7 +236,7 @@ submitSequencesAnalysis
 	
 	$scope.select = function(selectedNode){
 		console.log("selectedNode", selectedNode);
-		$modalInstance.close(selectedNode.featureName);
+		$modalInstance.close(selectedNode);
 	}; 
 
 	$scope.dismiss = function(){

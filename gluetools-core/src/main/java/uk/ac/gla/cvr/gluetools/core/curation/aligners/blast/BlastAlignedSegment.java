@@ -84,7 +84,7 @@ public class BlastAlignedSegment extends QueryAlignedSegment implements Cloneabl
 					/*    [ existing ---
 					 * [   new   ---
 					 */
-					BlastAlignedSegment newSegment = ReferenceSegment.truncateLeftSplit(newSegments.getFirst(), existingStart - newStart);
+					BlastAlignedSegment newSegment = (BlastAlignedSegment) ReferenceSegment.truncateLeftSplit(newSegments.getFirst(), existingStart - newStart);
 					truncatedNewSegments.add(newSegment);
 					if(existingEnd < newEnd) {
 						/*    [3 existing 6]
