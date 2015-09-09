@@ -150,7 +150,7 @@
 					<tbody>
 						<tr>
 						<td>
-							<select name="singleSelect" ng-model="selectedReference">
+							<select name="singleSelect" ng-model="sequenceResult.selectedReference">
 								<option ng-repeat="referenceOption in referenceOptions" value="{{referenceOption}}">{{referenceOption}}</option>
 							</select>
 						</td>
@@ -158,17 +158,43 @@
 							<a ng-click="showAlignmentDetails(sequenceResult)">Coverage details <i class="glyphicon glyphicon-link"></i></a>
 						</td>
 						<td>
-							{{sequenceResult.selectedFeature.featureName}}
+							{{sequenceResult.selectedFeature.featureDescription}}
 						</td>
 						<td>
-							<button type="button" ng-disabled="selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
+							<button type="button" ng-disabled="sequenceResult.selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
 									Select
 							</button>
 						</td>
 						</tr>
 					</tbody>
 				</table>
+				<table class="table analysisSequenceTable">
+				  	<tbody ng-repeat="analysisSequenceRow in sequenceResult.analysisSequenceRows track by $index">
+					  	<tr class="analysisSequenceReferenceAAIndex">
+					  		<td colspan=3 ng-repeat="referenceAAIndex in analysisSequenceRow.referenceAAIndices track by $index">{{referenceAAIndex}}</td>
+					  	</tr>
+					  	<tr class="analysisSequenceReferenceAA">
+					  		<td colspan=3 ng-repeat="referenceAA in analysisSequenceRow.referenceAAs track by $index">{{referenceAA}}</td>
+					  	</tr>
+					  	<tr class="analysisSequenceReferenceNT">
+					  		<td ng-repeat="referenceNT in analysisSequenceRow.referenceNTs track by $index">{{referenceNT}}</td>
+					  	</tr>
+					  	<tr class="analysisSequenceReferenceNTIndex">
+					  		<td ng-repeat="referenceNTIndex in analysisSequenceRow.referenceNTIndices track by $index"><div>{{referenceNTIndex}}</div></td>
+					  	</tr>
 
+
+					  	<tr class="analysisSequenceQueryAA">
+					  		<td colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">{{queryAA}}</td>
+					  	</tr>
+					  	<tr class="analysisSequenceQueryNT">
+					  		<td ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>
+					  	</tr>
+					  	<tr class="analysisSequenceQueryNTIndex">
+					  		<td ng-repeat="queryNTIndex in analysisSequenceRow.queryNTIndices track by $index"><div>{{queryNTIndex}}</div></td>
+					  	</tr>
+				  	</tbody>
+				</table>
 			</div>
 		</div>
 	</div>

@@ -24,7 +24,8 @@ public class TranscriptionUtils {
 	 * 
 	 * It is a precondition that the nucleotide segments do not cover any NT location prior to codon1Start.
 	 */
-	public static List<AaReferenceSegment> transcribeAminoAcids(int codon1Start, List<INtReferenceSegment> ntRefSegments) {
+	public static List<AaReferenceSegment> transcribeAminoAcids(int codon1Start, 
+			List<? extends INtReferenceSegment> ntRefSegments) {
 		List<AaReferenceSegment> aaReferenceSegments = new ArrayList<AaReferenceSegment>();
 		// codon at which the current AA seg starts
 		Integer aaSegStartCodon = null;
@@ -34,6 +35,7 @@ public class TranscriptionUtils {
 		Integer aaSegNextCodon = null;
 		// NTs for the next codon
 		char[] currentCodonNts = new char[3];
+		int[] currentCodonNtIndices = new int[3];
 		
 		for(INtReferenceSegment ntRefSegment: ntRefSegments) {
 			int ntSegStartCodon = getCodon(codon1Start, ntRefSegment.getRefStart());
@@ -47,7 +49,7 @@ public class TranscriptionUtils {
 				aaSegStartCodon = null;
 				aaSegNextCodon = null;
 				aaSegBuffer = null;
-				clearCodonNts(currentCodonNts);
+				clearCodonNts(currentCodonNts, currentCodonNtIndices);
 			} 
 			
 			// iterate over the codon locations covered by the ntRefSegment
@@ -57,9 +59,9 @@ public class TranscriptionUtils {
 				}
 				int startNT = getNt(codon1Start, ntSegCodon);
 				// get the codon NTs from the segment
-				int nextNT = populateCodonNtsFromNtSeg(startNT, currentCodonNts, ntRefSegment);
+				int nextNT = populateCodonNtsFromNtSeg(startNT, currentCodonNts, currentCodonNtIndices, ntRefSegment);
 				// attempt to transcribe
-				char aa = transcribe(currentCodonNts);
+				char aa = transcribe(currentCodonNts, currentCodonNtIndices);
 				if(aa == 0) { // failed or incomplete transcription.
 					if(nextNT == startNT+3) { // failed transcription
 						if(aaSegStartCodon != null) { // AA seg in progress
@@ -68,7 +70,7 @@ public class TranscriptionUtils {
 							aaSegStartCodon = null;
 							aaSegNextCodon = null;
 							aaSegBuffer = null;
-							clearCodonNts(currentCodonNts);
+							clearCodonNts(currentCodonNts, currentCodonNtIndices);
 						}
 					} 
 				} else { // successful transcription
@@ -77,12 +79,12 @@ public class TranscriptionUtils {
 						aaSegStartCodon = ntSegCodon;
 						aaSegNextCodon = ntSegCodon;
 						aaSegBuffer = new StringBuffer();
-						clearCodonNts(currentCodonNts);
+						clearCodonNts(currentCodonNts, currentCodonNtIndices);
 					} 
 					// add AA to segment.
 					aaSegBuffer.append(aa);
 					aaSegNextCodon ++;
-					clearCodonNts(currentCodonNts);
+					clearCodonNts(currentCodonNts, currentCodonNtIndices);
 				}
 			}
 		}
@@ -100,22 +102,26 @@ public class TranscriptionUtils {
 				aaSegStartCodon+(aminoAcids.length()-1), aminoAcids);
 	}
 	
-	private static int populateCodonNtsFromNtSeg(int startNt, char[] codonNts, INtReferenceSegment ntRefSegment) {
+	private static int populateCodonNtsFromNtSeg(int startNt, char[] codonNts, int[] currentCodonNtIndices, INtReferenceSegment ntRefSegment) {
 		int nextNT = startNt;
 		for(int i = 0; i < 3; i++) {
 			int refLocation = startNt+i;
 			if(refLocation >= ntRefSegment.getRefStart() && refLocation <= ntRefSegment.getRefEnd()) {
 				nextNT = refLocation+1;
 				codonNts[i] = ntRefSegment.ntAtRefLocation(refLocation);
+				currentCodonNtIndices[i] = ntRefSegment.ntIndexAtRefLoction(refLocation);
 			}
 		}
 		return nextNT;
 	}
 	
-	private static void clearCodonNts(char[] codonNts) {
+	private static void clearCodonNts(char[] codonNts, int[] currentCodonNtIndices) {
 		codonNts[0] = 0;
 		codonNts[1] = 0;
 		codonNts[2] = 0;
+		currentCodonNtIndices[0] = 0;
+		currentCodonNtIndices[1] = 0;
+		currentCodonNtIndices[2] = 0;
 	}
 	
 	/**
@@ -174,11 +180,30 @@ public class TranscriptionUtils {
 	 * Returns the amino acid code if known, or 0 otherwise.
 	 * 
 	 */
-	public static char transcribe(char[] codonNTs) {
+	public static char transcribe(char[] codonNTs, int[] codonNtIndices) {
 		char firstBase = codonNTs[0];
 		char secondBase = codonNTs[1];
 		char thirdBase = codonNTs[2];
 		
+		// check NTs are contiguous, otherwise return "unknown".
+		int firstNtIndex = codonNtIndices[0];
+		int secondNtIndex = codonNtIndices[1];
+		int thirdNtIndex = codonNtIndices[2];
+
+		if(firstBase != 0 && secondBase != 0 && thirdBase != 0) {
+			if(secondNtIndex != firstNtIndex+1 ||
+					thirdNtIndex != secondNtIndex+1) {
+				return 0;
+			}
+		} else if(firstBase != 0 && secondBase != 0) {
+			if(secondNtIndex != firstNtIndex+1) {
+				return 0;
+			}
+		} else if(secondBase != 0 && thirdBase != 0) {
+			if(thirdNtIndex != secondNtIndex+1) {
+				return 0;
+			}
+		} 
 		
 		if(T_or_U(firstBase)) {
 			if(T_or_U(secondBase)) {

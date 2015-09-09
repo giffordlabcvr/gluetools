@@ -213,6 +213,12 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 						 */
 						segments1Linked.removeFirst();
 						seg2.truncateLeft(1 + (seg1End - seg2Start));
+					} else if(seg1End == seg2End) {
+						/* [1   seg1   7]
+						 *    [2 seg2  7]
+						 */
+						segments1Linked.removeFirst();
+						segments2Linked.removeFirst();
 					} else {
 						/* [1   seg1      9]
 						 *    [2 seg2  7]
@@ -230,6 +236,12 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 						 */
 						segments1Linked.removeFirst();
 						seg2.truncateLeft(1 + (seg1End - seg2Start));
+					} else if(seg1End == seg2End) {
+						/*    [3   seg1   6]
+						 * [1  seg2       6]
+						 */
+						segments1Linked.removeFirst();
+						segments2Linked.removeFirst();
 					} else {
 						/*    [3   seg1     9]
 						 * [1  seg2       6]

@@ -56,20 +56,20 @@ submitSequencesAnalysis
 			$scope.referenceOptions.unshift($scope.noneSelected);
 		}
 		
-		$scope.$watch( 'selectedReference', function( newObj, oldObj ) {
+		$scope.$watch( 'sequenceResult.selectedReference', function( newObj, oldObj ) {
 			console.log("selectedReference for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
 			if(newObj != $scope.noneSelected) {
 				$scope.sequenceResult.featureAnalysisTree = $scope.sequenceResult.refResultMap[newObj].featureAnalysisTree;
 			} else {
 				$scope.sequenceResult.featureAnalysisTree = null;
 			}
-			$scope.sequenceResult.selectedFeature = { featureName: $scope.noneSelected }
+			$scope.sequenceResult.selectedFeature = { featureDescription: $scope.noneSelected }
 		}, false);
 		
 		if($scope.numReferenceOptions == 1) {
-			$scope.selectedReference = $scope.referenceOptions[0]; 
+			$scope.sequenceResult.selectedReference = $scope.referenceOptions[0]; 
 		} else {
-			$scope.selectedReference = $scope.noneSelected;
+			$scope.sequenceResult.selectedReference = $scope.noneSelected;
 		}
 		
 		$scope.selectGenomeFeature = function(sequenceResult) {
@@ -81,11 +81,40 @@ submitSequencesAnalysis
 
 		$scope.$watch( 'sequenceResult.selectedFeature', function( newObj, oldObj ) {
 			console.log("selectedFeature for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
+			$scope.updateSequenceAnalysis();
 		}, false);
 
+		$scope.updateSequenceAnalysis = function() {
+			console.log("sequenceResult ", $scope.sequenceResult);
+			$scope.sequenceResult.analysisSequenceRows = [];
+			if($scope.sequenceResult.selectedFeature.featureDescription == $scope.noneSelected) {
+				return;
+			}
+			var sequenceFeatureResult;
+			var alignmentAnalysis;
+			for(var i = 0; i < $scope.sequenceResult.alignmentAnalysis.length; i++) {
+				if($scope.sequenceResult.alignmentAnalysis[i].referenceName == $scope.sequenceResult.selectedReference) {
+					alignmentAnalysis = $scope.sequenceResult.alignmentAnalysis[i];
+				}
+			}
+			console.log("alignmentAnalysis ", alignmentAnalysis);
+			var sequenceFeatureResult;
+			for(var i = 0; i < alignmentAnalysis.sequenceFeatureResult.length; i++) {
+				if(alignmentAnalysis.sequenceFeatureResult[i].featureName == $scope.sequenceResult.selectedFeature.featureName) {
+					sequenceFeatureResult = alignmentAnalysis.sequenceFeatureResult[i];
+				}
+			}
+			console.log("sequenceFeatureResult ", sequenceFeatureResult);
+			$scope.sequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
+					$scope.sequenceResult.selectedFeature, 
+					sequenceFeatureResult);
+			console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
+		}
+		
 		
 		
 	}
+	
 	
 	$scope.removeAll = function() {
 		$scope.uploader.clearQueue();
@@ -229,7 +258,7 @@ submitSequencesAnalysis
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
 	$scope.sequenceResult = data;
 	$scope.defaultOpenDepth = 2;
-	$scope.defaultSelectedId = data.selectedFeature;
+	$scope.defaultSelectedId = data.selectedFeature.featureName;
 	addUtilsToScope($scope);
 	
 	console.log("select genome feature, sequenceResult", $scope.sequenceResult)

@@ -11,8 +11,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtReferenceSegment, Cloneable {
 	
-	public static final String NUCLEOTIDES = "nucleotides";
-
 	private CharSequence nucleotides;
 
 	public NtReferenceSegment(int refStart, int refEnd, CharSequence nucleotides) {
@@ -60,9 +58,9 @@ public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtR
 
 	
 	public String toString() { return
-		super.toString() +
-				" NTs: "+getNucleotides();
-	}
+			super.toString() +
+					" NTs: "+getNucleotides();
+		}
 	
 	
 	
@@ -95,12 +93,11 @@ public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtR
 
 	public void toDocument(ObjectBuilder builder) {
 		super.toDocument(builder);
-		builder
-			.set(NUCLEOTIDES, getNucleotides());
+		builder.set(NUCLEOTIDES, getNucleotides());
 	}
 	@Override
-	public char ntAtRefLocation(int refLocation) {
-		return getNucleotides().charAt(refLocation - getRefStart());
-	}
+	public int ntIndexAtRefLoction(int refLocation) {
+		return refLocation;
+	}	
 	
 }

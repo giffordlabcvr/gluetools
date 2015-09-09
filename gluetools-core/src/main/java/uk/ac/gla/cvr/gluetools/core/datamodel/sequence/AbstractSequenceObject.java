@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 
 public abstract class AbstractSequenceObject {
@@ -39,9 +40,12 @@ public abstract class AbstractSequenceObject {
 	
 	public abstract String getHeader();
 
-	// Given segments aligning this sequence to a reference, return a set of NtReferenceSegments which 
-	// contain nucleotide segments from this sequence, in the coordinates of that reference.
-	public List<NtReferenceSegment> getNtReferenceSegmentsFromQueryAligned(List<? extends IQueryAlignedSegment> queryAlignedSegments) {
+	/**
+	 * Given segments aligning this sequence to a reference, return a set of NtQueryAlignedSegments which 
+	 * additionally contain nucleotide segments from this sequence.
+	 * @param queryAlignedSegments
+	 */
+	public List<NtQueryAlignedSegment> getNtQueryAlignedSegments(List<? extends IQueryAlignedSegment> queryAlignedSegments) {
 		String nucleotides = getNucleotides();
 		return queryAlignedSegments.stream()
 				.map(queryAlignedSegment -> {
@@ -49,16 +53,19 @@ public abstract class AbstractSequenceObject {
 					int refEnd = queryAlignedSegment.getRefEnd();
 					int queryStart = queryAlignedSegment.getQueryStart();
 					int queryEnd = queryAlignedSegment.getQueryEnd();
-					return new NtReferenceSegment(refStart, refEnd, 
+					return new NtQueryAlignedSegment(refStart, refEnd, queryStart, queryEnd,
 							nucleotides.subSequence(queryStart-1, queryEnd));
 				})
 				.collect(Collectors.toList());
 	}
 
 	
-	// Assuming this sequence is a reference sequence, create nucleotide segments from it, 
-	// according to the supplied reference segments
-	public List<NtReferenceSegment> getNtReferenceSegmentsFromReference(List<? extends IReferenceSegment> refSegments) {
+	/**
+	 * Assuming this sequence is a reference sequence, create nucleotide segments from it, 
+	 * according to the supplied reference segments
+	 * @param refSegments
+	 */
+	public List<NtReferenceSegment> getNtReferenceSegments(List<? extends IReferenceSegment> refSegments) {
 		String nucleotides = getNucleotides();
 		return refSegments.stream()
 				.map(refSegment -> {
@@ -69,7 +76,5 @@ public abstract class AbstractSequenceObject {
 				})
 				.collect(Collectors.toList());
 	}
-
-	
 	
 }

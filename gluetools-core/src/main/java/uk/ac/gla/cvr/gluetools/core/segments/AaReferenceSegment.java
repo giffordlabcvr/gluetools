@@ -11,8 +11,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaReferenceSegment, Cloneable {
 	
-	public static final String AMINO_ACIDS = "aminoAcids";
-
 	private CharSequence aminoAcids;
 
 	public AaReferenceSegment(int refStart, int refEnd, CharSequence aminoAcids) {
@@ -95,8 +93,7 @@ public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaR
 
 	public void toDocument(ObjectBuilder builder) {
 		super.toDocument(builder);
-		builder
-			.set(AMINO_ACIDS, getAminoAcids());
+		builder.set(AMINO_ACIDS, getAminoAcids());
 	}
 	
 	

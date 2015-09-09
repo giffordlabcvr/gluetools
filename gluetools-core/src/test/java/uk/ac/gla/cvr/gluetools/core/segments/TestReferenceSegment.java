@@ -135,6 +135,85 @@ public class TestReferenceSegment {
 						));
 	}
 
+	@Test
+	public void testIntersection9() {
+		intersectionTest(
+				refSegs(
+						refSeg(915, 1490)
+						),
+				refSegs(
+						refSeg(44, 197), 
+						refSeg(198, 206), 
+						refSeg(207, 844), 
+						refSeg(845, 847), 
+						refSeg(849, 874), 
+						refSeg(1363, 1490), 
+						refSeg(1674, 1763), 
+						refSeg(1764, 1784), 
+						refSeg(1785, 1787), 
+						refSeg(1788, 1894), 
+						refSeg(2634, 2765), 
+						refSeg(2766, 2783), 
+						refSeg(2784, 2821), 
+						refSeg(3681, 3979), 
+						refSeg(3982, 3985), 
+						refSeg(3986, 3986), 
+						refSeg(3987, 4059), 
+						refSeg(7140, 7175), 
+						refSeg(7176, 7275), 
+						refSeg(8216, 8464), 
+						refSeg(8574, 9080), 
+						refSeg(9082, 9092), 
+						refSeg(9093, 9373)
+						),
+				expectedIntersection(
+						"Ref: [1363, 1490]"
+						)
+		);
+	}
+	
+	@Test
+	public void testIntersection10() {
+		intersectionTest(
+				refSegs(
+						refSeg(4,8)
+						),
+				refSegs(
+						refSeg(4,12)
+						),
+				expectedIntersection(
+						"Ref: [4, 8]"
+		));
+	}
+
+	@Test
+	public void testIntersection11() {
+		intersectionTest(
+				refSegs(
+						refSeg(4,8)
+						),
+				refSegs(
+						refSeg(4,8)
+						),
+				expectedIntersection(
+						"Ref: [4, 8]"
+		));
+	}
+
+	@Test
+	public void testIntersection12() {
+		intersectionTest(
+				refSegs(
+						refSeg(4,12)
+						),
+				refSegs(
+						refSeg(4,8)
+						),
+				expectedIntersection(
+						"Ref: [4, 8]"
+		));
+	}
+
 	
 	private static ReferenceSegment refSeg(int refStart, int refEnd) {
 		return new ReferenceSegment(refStart, refEnd);
