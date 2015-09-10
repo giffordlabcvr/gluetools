@@ -1,5 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Supplier;
+
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 
 
@@ -52,6 +57,24 @@ public interface IReferenceSegment {
 			.set(REF_END, getRefEnd());
 	}
 
+	public static <L extends List<S>, S extends IReferenceSegment> L sortByRefStart(L segments, Supplier<L> listSupplier) {
+		L sorted = listSupplier.get();
+		sorted.addAll(segments);
+		Collections.sort(sorted, new RefStartComparator());
+		return sorted;
+	}
 	
+	public static class RefStartComparator implements Comparator<IReferenceSegment> {
+		@Override
+		public int compare(IReferenceSegment o1, IReferenceSegment o2) {
+			return Integer.compare(o1.getRefStart(), o1.getRefStart());
+		}
+	}
+
+	public default void translate(int offset) {
+		setRefStart(getRefStart()+offset);
+		setRefEnd(getRefEnd()+offset);
+	}
+
 	
 }

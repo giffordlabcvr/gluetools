@@ -860,7 +860,7 @@ project HCV
 
     create feature 5UTR -p whole_genome "5' UTR"
 
-    create feature precursor_polyprotein "Precursor polyprotein"
+    create feature precursor_polyprotein -p whole_genome "Precursor polyprotein"
       feature precursor_polyprotein set metatag OPEN_READING_FRAME
       feature precursor_polyprotein set metatag OWN_CODON_NUMBERING
 
@@ -942,6 +942,12 @@ project HCV
     feature-location 5UTR
       add segment 1 341
       exit
+
+    add feature-location precursor_polyprotein
+    feature-location precursor_polyprotein
+      add segment 342 9377
+      exit
+
 	    
     add feature-location Core
     feature-location Core

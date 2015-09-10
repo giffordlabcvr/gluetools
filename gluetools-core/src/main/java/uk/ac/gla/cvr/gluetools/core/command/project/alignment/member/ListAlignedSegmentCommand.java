@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 
@@ -32,6 +34,8 @@ public class ListAlignedSegmentCommand extends MemberModeCommand<ListAlignedSegm
 		List<AlignedSegment> segments = 
 				GlueDataObject.query(cmdContext.getObjectContext(), AlignedSegment.class, 
 						new SelectQuery(AlignedSegment.class, exp));
+		segments = IReferenceSegment.sortByRefStart(segments, ArrayList::new);
+		
 		return new ListAlignedSegmentResult(segments);
 	}
 

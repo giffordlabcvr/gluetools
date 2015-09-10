@@ -56,7 +56,11 @@ public class ObjectReader {
 	}
 	
 	public Object value(String name) {
-		return GlueTypeUtils.elementToObject(getFieldElement(name));
+		Element fieldElement = getFieldElement(name);
+		if(fieldElement == null) {
+			return null;
+		}
+		return GlueTypeUtils.elementToObject(fieldElement);
 	}
 	
 	public Boolean booleanValue(String name) {

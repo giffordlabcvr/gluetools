@@ -2,9 +2,12 @@ package uk.ac.gla.cvr.gluetools.core.transcription;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.INtReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class TranscriptionUtils {
 
@@ -17,6 +20,21 @@ public class TranscriptionUtils {
 
 	}
 
+	/**
+	 * Given a list of segments in NT coordinates, translate them to AA coordinates, given the NT location of codon 1.
+	 * 
+	 * The returned segments will include codons which are only partially covered by the input segments.
+	 * 
+	 */
+	
+	public static List<ReferenceSegment> translateToCodonCoordinates(int codon1Start, List <? extends IReferenceSegment> ntSegments) {
+		return ntSegments.stream()
+			.map(ntSegment -> new ReferenceSegment(
+				getCodon(codon1Start, ntSegment.getRefStart()), 
+				getCodon(codon1Start, ntSegment.getRefEnd())
+				))
+			.collect(Collectors.toList());
+	}
 	
 	/**
 	 * Given nucleotide segments and a nucleotide location specifying the nucleotide at which codon 1 starts,

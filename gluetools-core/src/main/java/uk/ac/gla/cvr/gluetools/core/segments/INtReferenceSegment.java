@@ -11,5 +11,10 @@ public interface INtReferenceSegment extends IReferenceSegment {
 	}
 
 	public int ntIndexAtRefLoction(int refLocation);
+
+	public default CharSequence getNucleotidesSubsequence(int startIndex, int endIndex) {
+		return getNucleotides().subSequence((startIndex-getRefStart()), (endIndex-getRefStart()) + 1);
+	}
+
 	
 }

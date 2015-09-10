@@ -257,7 +257,7 @@ submitSequencesAnalysis
 })
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
 	$scope.sequenceResult = data;
-	$scope.defaultOpenDepth = 2;
+	$scope.defaultOpenDepth = 99;
 	$scope.defaultSelectedId = data.selectedFeature.featureName;
 	addUtilsToScope($scope);
 	

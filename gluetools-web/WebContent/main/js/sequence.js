@@ -10,10 +10,16 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 	
 	var empty = String.fromCharCode(160); // non breaking space.
 
+	var aasPerRow = 20;
+	var ntsPerRow = aasPerRow * 3;
+	
 	if(ntReferenceSegmentArray) {
 		var minNTIndex = ntReferenceSegmentArray[0].refStart;
 		var maxNTIndex = ntReferenceSegmentArray[ntReferenceSegmentArray.length-1].refEnd;
 		var numNTs = 1+(maxNTIndex - minNTIndex);
+		if(numNTs < ntsPerRow) {
+			numNTs = ntsPerRow;
+		}
 		var referenceNTIndices = new Array(numNTs);
 		var referenceNTs = new Array(numNTs);
 		var queryNTIndices = new Array(numNTs);
@@ -100,8 +106,6 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 			}
 		}		
 
-		var aasPerRow = 20;
-		var ntsPerRow = aasPerRow * 3;
 		var row = 0;
 
 		while(row*ntsPerRow <= numNTs) {

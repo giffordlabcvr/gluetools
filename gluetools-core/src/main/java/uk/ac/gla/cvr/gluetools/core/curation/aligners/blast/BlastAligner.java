@@ -24,6 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHit;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
@@ -154,6 +155,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 					.map(hsp -> alignedSegmentsForHsp(hsp))
 					.collect(Collectors.toList());
 
+			
 			// merge/rationalise the segments;
 			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
 			// store merged segments against the query fasta ID.
@@ -169,10 +171,13 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 		}
 		BlastSegmentList mergedSegments;
 		// start with the segments from the highest scoring HSP
-		mergedSegments = perHspAlignedSegments.remove(0);
+		BlastSegmentList highestScoringSegments = perHspAlignedSegments.remove(0);
+		mergedSegments = IReferenceSegment.sortByRefStart(highestScoringSegments, BlastSegmentList::new);
 		// fold in segments from other HSPs in descending score order.
 		while(!perHspAlignedSegments.isEmpty()) {
-			mergedSegments.mergeInSegmentList(perHspAlignedSegments.remove(0));
+			BlastSegmentList nextSegments = perHspAlignedSegments.remove(0);
+			nextSegments = IReferenceSegment.sortByRefStart(nextSegments, BlastSegmentList::new);
+			mergedSegments.mergeInSegmentList(nextSegments);
 		}
 		return mergedSegments;
 	}

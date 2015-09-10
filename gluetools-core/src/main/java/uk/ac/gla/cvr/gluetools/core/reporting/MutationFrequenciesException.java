@@ -7,7 +7,8 @@ public class MutationFrequenciesException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		UNABLE_TO_DETECT_ALIGNMENT_NAME("header");
+		UNABLE_TO_DETECT_ALIGNMENT_NAME("header"), 
+		FEATURE_CODON_NUMBERING_MISMATCH("orfFeature", "descendentFeature", "orfFeatureCodon1Start", "descendentFeatureCodon1Start");
 
 		private String[] argNames;
 		private Code(String... argNames) {

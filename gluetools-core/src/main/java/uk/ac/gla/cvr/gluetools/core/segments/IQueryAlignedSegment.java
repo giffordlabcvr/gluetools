@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public interface IQueryAlignedSegment extends IReferenceSegment {
@@ -29,4 +32,25 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 		return 100.0 * referenceNTs / referenceLength;
 	}
 
+	public static <S extends IQueryAlignedSegment> List<S> sortByQueryStart(List<S> segments) {
+		ArrayList<S> sorted = new ArrayList<S>(segments);
+		Collections.sort(sorted, new QueryStartComparator());
+		return sorted;
+	}
+	
+	public static class QueryStartComparator implements Comparator<IQueryAlignedSegment> {
+		@Override
+		public int compare(IQueryAlignedSegment o1, IQueryAlignedSegment o2) {
+			return Integer.compare(o1.getQueryStart(), o2.getQueryStart());
+		}
+	}
+
+	public default void translate(int offset) {
+		setRefStart(getRefStart()+offset);
+		setRefEnd(getRefEnd()+offset);
+		setQueryStart(getQueryStart()+offset);
+		setQueryEnd(getQueryEnd()+offset);
+	}
+
+	
 }

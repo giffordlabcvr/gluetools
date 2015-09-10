@@ -49,6 +49,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
@@ -84,7 +85,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	private String alignmentName;
 	private String alignerModuleName;
-	private Integer minimumSegmentNTLength;
 	private TranscriptionEngine transcriptionEngine;
 	
 	public MutationFrequenciesReporter() {
@@ -97,7 +97,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		alignmentName = PluginUtils.configureStringProperty(configElem, "alignmentName", true);
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, "alignerModuleName", true);
-		minimumSegmentNTLength = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "minimumSegmentNTLength", false)).orElse(10);
 	}
 
 	private class MyRefSeg extends SegmentUtils.Segment {
@@ -510,7 +509,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		AlignmentAnalysis prevAlmtAnalysis = null;
 		for(Map<String, Object> ancestorMap: ancestorListOfMaps) {
 			currentAlmtAnalysis.seqObj = seqResult.seqObj;
-			currentAlmtAnalysis.minimumSegmentNTLength = minimumSegmentNTLength;
 			currentAlmtAnalysis.alignmentName = (String) ancestorMap.get(Alignment.NAME_PROPERTY);
 			currentAlmtAnalysis.referenceName = (String) ancestorMap.get(Alignment.REF_SEQ_NAME_PATH);
 			currentAlmtAnalysis.referenceLength = seqResult.analysisContext.getRefLength(currentAlmtAnalysis.referenceName);
@@ -553,7 +551,9 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			String refSequenceID;
 			
 			try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
-				featureTreeResult = cmdContext.cmdBuilder(ReferenceShowFeatureTreeCommand.class).execute();
+				featureTreeResult = cmdContext.cmdBuilder(ReferenceShowFeatureTreeCommand.class)
+						.setBoolean(ReferenceShowFeatureTreeCommand.INCLUDE_HIDDEN, false)
+						.execute();
 				ReferenceShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
 				refSourceName = refShowSeqResult.getSourceName();
 				refSequenceID = refShowSeqResult.getSequenceID();
@@ -567,9 +567,9 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			for(int i = 0; i < featureRoots.size(); i++) {
 				FeatureAnalysisTree featureAnalysisTree = new FeatureAnalysisTree();
 				featureAnalysisTree.fromDocument(featureRoots.getObject(i));
-				featureAnalysisTree.createRealisedSegments(referenceSequenceObject);
 				rootFeatureAnalysisTrees.add(featureAnalysisTree);
 				featureAnalysisTree.addToMap(featureNameToAnalysis);
+				featureAnalysisTree.createRealisedSegments(featureNameToAnalysis, referenceSequenceObject);
 			}
 		}
 
@@ -634,12 +634,11 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		private String referenceName;
 		private int referenceLength;
 		private int sequenceLength;
-		private int minimumSegmentNTLength;
 		private List<QueryAlignedSegment> seqToRefAlignedSegments;
 		private double seqToRefQueryCoverage;
 		private double seqToRefReferenceCoverage;
 		private List<QueryAlignedSegment> refToParentAlignedSegments;
-		private List<SequenceFeatureResult> sequenceFeatureResults = new ArrayList<SequenceFeatureResult>();
+		private Map<String, SequenceFeatureResult> featureToSequenceFeatureResult = new LinkedHashMap<String, SequenceFeatureResult>();
 		
 		public void toDocument(ObjectBuilder seqAlmtAnalysisObj) {
 			seqAlmtAnalysisObj.set("alignmentName", alignmentName);
@@ -659,40 +658,77 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				}
 			} 
 			ArrayBuilder seqFeatureResultArray = seqAlmtAnalysisObj.setArray("sequenceFeatureResult");
-			for(SequenceFeatureResult seqFeatureResult: sequenceFeatureResults) {
+			for(SequenceFeatureResult seqFeatureResult: featureToSequenceFeatureResult.values()) {
 				seqFeatureResult.toDocument(seqFeatureResultArray.addObject());
 			}
 		}
 
 		public void generateFeatureResults(AnalysisContext analysisContext) {
 			ReferenceResult referenceResult = analysisContext.getReferenceResult(referenceName);
-			referenceResult.getFeatureNameToAnalysis().values().forEach(featureAnalysisTree -> {
-				sequenceFeatureResults.add(new SequenceFeatureResult(seqObj, 
-						featureAnalysisTree, seqToRefAlignedSegments, minimumSegmentNTLength));
+			referenceResult.getFeatureNameToAnalysis().forEach(
+					(featureName, featureAnalysisTree) -> {
+						SequenceFeatureResult seqFeatureResult = new SequenceFeatureResult(featureName);
+						SequenceFeatureResult orfAncestorFeatureResult = null;
+						if(featureAnalysisTree.orfAncestorFeature != null) {
+							orfAncestorFeatureResult = featureToSequenceFeatureResult.get(featureAnalysisTree.orfAncestorFeature);
+						}
+						seqFeatureResult.init(referenceResult, seqObj, featureAnalysisTree, orfAncestorFeatureResult, seqToRefAlignedSegments);
+						featureToSequenceFeatureResult.put(featureName, seqFeatureResult);
 			});
 		}
 	}
 
 	private static class FeatureAnalysisTree {
 		private String featureName;
+		private String orfAncestorFeature;
 		private Integer codon1Start;
 		private String featureDescription;
 		private TranscriptionFormat featureTranscriptionFormat;
+		private List<String> featureMetatags = new ArrayList<String>();
 		private List<FeatureAnalysisTree> features = new ArrayList<FeatureAnalysisTree>();
 		private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
 		private List<NtReferenceSegment> ntReferenceSegments = new ArrayList<NtReferenceSegment>();
 		private List<AaReferenceSegment> aaReferenceSegments = new ArrayList<AaReferenceSegment>();
 		
-		public void createRealisedSegments(AbstractSequenceObject refSeqObject) {
+		public void createRealisedSegments(Map<String, FeatureAnalysisTree> featureNameToAnalysis, AbstractSequenceObject refSeqObject) {
 			if(!referenceSegments.isEmpty()) {
 				ntReferenceSegments = refSeqObject.getNtReferenceSegments(referenceSegments);
-				if(featureTranscriptionFormat == TranscriptionFormat.AMINO_ACID) {
-					codon1Start = referenceSegments.get(0).getRefStart();
+				if(featureMetatags.contains(FeatureMetatag.Type.OPEN_READING_FRAME.name())) {
 					aaReferenceSegments = TranscriptionUtils.transcribeAminoAcids(codon1Start, ntReferenceSegments);
+				} else if(orfAncestorFeature != null) {
+					FeatureAnalysisTree orfAncestorAnalysisTree = featureNameToAnalysis.get(orfAncestorFeature);
+					Integer orfAncestorCodon1Start = orfAncestorAnalysisTree.codon1Start;
+					List<AaReferenceSegment> ancestorAaRefSegs = orfAncestorAnalysisTree.aaReferenceSegments;
+					
+					// find the AA locations of this feature, using the ORF's codon coordinates.
+					List<ReferenceSegment> templateAaRefSegs = 
+							TranscriptionUtils.translateToCodonCoordinates(orfAncestorCodon1Start, ntReferenceSegments);
+					
+					aaReferenceSegments = ReferenceSegment.intersection(templateAaRefSegs, ancestorAaRefSegs, 
+							(templateSeg, ancestorSeg) -> {
+								int refStart = Math.max(templateSeg.getRefStart(), ancestorSeg.getRefStart());
+								int refEnd = Math.min(templateSeg.getRefEnd(), ancestorSeg.getRefEnd());
+								CharSequence aminoAcids = ancestorSeg.getAminoAcidsSubsequence(refStart, refEnd);
+								return new AaReferenceSegment(refStart, refEnd, aminoAcids);
+							}
+					);
+
+					// if necessary translate to feature's own codon coordinates.
+					if(codon1Start != null) {
+						int ntOffset = orfAncestorCodon1Start-codon1Start;
+						if(ntOffset % 3 != 0) {
+							throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_CODON_NUMBERING_MISMATCH, 
+									orfAncestorFeature, featureName, 
+									Integer.toString(orfAncestorCodon1Start), Integer.toString(codon1Start));
+						}
+						int ancestorToLocalCodonOffset = ntOffset/3;
+						aaReferenceSegments.forEach(aaRefSeg -> aaRefSeg.translate(ancestorToLocalCodonOffset));
+					}
+					
 				}
 			}
 			for(FeatureAnalysisTree childTree: features) {
-				childTree.createRealisedSegments(refSeqObject);
+				childTree.createRealisedSegments(featureNameToAnalysis, refSeqObject);
 			}
 		}
 
@@ -707,9 +743,16 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			featureAnalysisObj.set("featureName", featureName);
 			featureAnalysisObj.set("featureDescription", featureDescription);
 			featureAnalysisObj.set("featureTranscriptionType", featureTranscriptionFormat.name());
+			featureAnalysisObj.set("orfAncestorFeature", orfAncestorFeature);
 			if(codon1Start != null) {
 				featureAnalysisObj.set("codon1Start", codon1Start);
 			}
+
+			ArrayBuilder metatagArray = featureAnalysisObj.setArray("featureMetatag");
+			for(String metatag: featureMetatags) {
+				metatagArray.addString(metatag);
+			}
+
 			
 			ArrayBuilder ntRefSegArray = featureAnalysisObj.setArray("ntReferenceSegment");
 			for(NtReferenceSegment ntReferenceSegment: ntReferenceSegments) {
@@ -733,6 +776,15 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			featureDescription = objReader.stringValue("featureDescription");
 			featureTranscriptionFormat = TranscriptionUtils.transcriptionFormatFromString(objReader.stringValue("featureTranscriptionType"));
 
+			orfAncestorFeature = objReader.stringValue("orfAncestorFeature");
+			codon1Start = objReader.intValue("codon1Start");
+
+			ArrayReader metatagArray = objReader.getArray("featureMetatag");
+			for(int i = 0; i < metatagArray.size(); i++) {
+				featureMetatags.add(metatagArray.stringValue(i));
+			}
+
+			
 			ArrayReader refSegArray = objReader.getArray("referenceSegment");
 			for(int i = 0; i < refSegArray.size(); i++) {
 				referenceSegments.add(new ReferenceSegment(refSegArray.getObject(i)));
@@ -874,33 +926,61 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		private String featureName;
 		private List<NtQueryAlignedSegment> ntQueryAlignedSegments;
 		private List<AaReferenceSegment> aaQueryAlignedSegments;
-		private Integer minimumSegmentNTLength;
 		
-		public SequenceFeatureResult(AbstractSequenceObject seqObj, 
-				FeatureAnalysisTree featureAnalysisTree, List<QueryAlignedSegment> seqToRefAlignedSegments, 
-				Integer minimumSegmentNTLength) {
-			this.featureName = featureAnalysisTree.featureName;
-			this.minimumSegmentNTLength = minimumSegmentNTLength;
-			init(seqObj, featureAnalysisTree, seqToRefAlignedSegments);
+		public SequenceFeatureResult(String featureName) {
+			this.featureName = featureName;
 		}
 
 		public void init(
+				ReferenceResult referenceResult,
 				AbstractSequenceObject seqObj,
 				FeatureAnalysisTree featureAnalysisTree,
+				SequenceFeatureResult orfAncestorFeatureResult, 
 				List<QueryAlignedSegment> seqToRefAlignedSegments) {
 			List<QueryAlignedSegment> featureQueryAlignedSegments = 
 					ReferenceSegment.intersection(featureAnalysisTree.referenceSegments, seqToRefAlignedSegments, 
 							new SegMerger());
-			featureQueryAlignedSegments = featureQueryAlignedSegments.stream()
-					.filter(seg -> seg.getCurrentLength() >= minimumSegmentNTLength)
-					.collect(Collectors.toList());
 			ntQueryAlignedSegments = 
 					seqObj.getNtQueryAlignedSegments(featureQueryAlignedSegments);
-			if(featureAnalysisTree.featureTranscriptionFormat == TranscriptionFormat.AMINO_ACID) {
-				aaQueryAlignedSegments = TranscriptionUtils
-						.transcribeAminoAcids(featureAnalysisTree.codon1Start, ntQueryAlignedSegments);
+			if(ntQueryAlignedSegments.isEmpty()) {
+				aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
+			} else {
+				if(featureAnalysisTree.featureMetatags.contains(FeatureMetatag.Type.OPEN_READING_FRAME.name())) {
+					aaQueryAlignedSegments = TranscriptionUtils
+							.transcribeAminoAcids(featureAnalysisTree.codon1Start, ntQueryAlignedSegments);
+				} else if(orfAncestorFeatureResult != null) {
+					String ancestorFeatureName = orfAncestorFeatureResult.featureName;
+					Map<String, FeatureAnalysisTree> featureNameToAnalysis = referenceResult.getFeatureNameToAnalysis();
+					Integer codon1Start = featureNameToAnalysis.get(featureName).codon1Start;
+					Integer orfAncestorCodon1Start = featureNameToAnalysis.get(ancestorFeatureName).codon1Start;
+					List<AaReferenceSegment> ancestorAaRefSegs = orfAncestorFeatureResult.aaQueryAlignedSegments;
+					
+					// find the AA locations of the Query NTs, using the ORF's codon coordinates.
+					List<ReferenceSegment> templateAaRefSegs = 
+							TranscriptionUtils.translateToCodonCoordinates(orfAncestorCodon1Start, ntQueryAlignedSegments);
+					
+					aaQueryAlignedSegments = ReferenceSegment.intersection(templateAaRefSegs, ancestorAaRefSegs, 
+							(templateSeg, ancestorSeg) -> {
+								int refStart = Math.max(templateSeg.getRefStart(), ancestorSeg.getRefStart());
+								int refEnd = Math.min(templateSeg.getRefEnd(), ancestorSeg.getRefEnd());
+								CharSequence aminoAcids = ancestorSeg.getAminoAcidsSubsequence(refStart, refEnd);
+								return new AaReferenceSegment(refStart, refEnd, aminoAcids);
+							}
+					);
+
+					// if necessary translate to feature's own codon coordinates.
+					if(codon1Start != null) {
+						int ntOffset = orfAncestorCodon1Start-codon1Start;
+						if(ntOffset % 3 != 0) {
+							throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_CODON_NUMBERING_MISMATCH, 
+									ancestorFeatureName, featureName, 
+									Integer.toString(orfAncestorCodon1Start), Integer.toString(codon1Start));
+						}
+						int ancestorToLocalCodonOffset = ntOffset/3;
+						aaQueryAlignedSegments.forEach(aaRefSeg -> aaRefSeg.translate(ancestorToLocalCodonOffset));
+					}
+				}
 			}
-			
 		}
 
 		private class SegMerger implements BiFunction<ReferenceSegment, QueryAlignedSegment, QueryAlignedSegment> {

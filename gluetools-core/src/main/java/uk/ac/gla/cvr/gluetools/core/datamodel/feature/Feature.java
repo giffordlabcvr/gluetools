@@ -6,9 +6,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 
@@ -70,6 +73,32 @@ public class Feature extends _Feature {
 		super.setParent(parent);
 	}
 
+	public Set<Type> getMetatagTypes() {
+		return getFeatureMetatags().stream().map(m -> m.getType()).collect(Collectors.toSet());
+	}
+
+	public Feature getOrfAncestor() {
+		if(getMetatagTypes().contains(FeatureMetatag.Type.OPEN_READING_FRAME)) {
+			return this;
+		}
+		Feature parent = getParent();
+		if(parent == null) {
+			return null;
+		} else {
+			return parent.getOrfAncestor();
+		}
+	}
+
+	public int getDepthInTree() {
+		Feature parent = getParent();
+		if(parent == null) {
+			return 0;
+		} else {
+			return 1+parent.getDepthInTree();
+		}
+		
+	}
+	
 	
 	
 }
