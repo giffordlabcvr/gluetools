@@ -35,6 +35,10 @@
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
+	<db-entity name="FEATURE_METATAG">
+		<db-attribute name="FEATURE_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="FEATURE_SEGMENT">
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_END" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
@@ -88,6 +92,9 @@
 		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
 	</obj-entity>
 	<obj-entity name="FeatureLocation" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation" dbEntityName="FEATURE_LOCATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+	</obj-entity>
+	<obj-entity name="FeatureMetatag" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag" dbEntityName="FEATURE_METATAG" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
 	<obj-entity name="FeatureSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment" dbEntityName="FEATURE_SEGMENT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>
@@ -150,6 +157,9 @@
 	<db-relationship name="featureLocations" source="FEATURE" target="FEATURE_LOCATION" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="FEATURE"/>
 	</db-relationship>
+	<db-relationship name="metatags" source="FEATURE" target="FEATURE_METATAG" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="NAME" target="FEATURE_NAME"/>
+	</db-relationship>
 	<db-relationship name="parent" source="FEATURE" target="FEATURE" toMany="false">
 		<db-attribute-pair source="PARENT_NAME" target="NAME"/>
 	</db-relationship>
@@ -166,6 +176,9 @@
 	<db-relationship name="variations" source="FEATURE_LOCATION" target="VARIATION" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+	</db-relationship>
+	<db-relationship name="feature" source="FEATURE_METATAG" target="FEATURE" toMany="false">
+		<db-attribute-pair source="FEATURE_NAME" target="NAME"/>
 	</db-relationship>
 	<db-relationship name="featureLocation" source="FEATURE_SEGMENT" target="FEATURE_LOCATION" toMany="false">
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
@@ -209,11 +222,13 @@
 	<obj-relationship name="sequence" source="AlignmentMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="children" source="Feature" target="Feature" deleteRule="Nullify" db-relationship-path="children"/>
 	<obj-relationship name="featureLocations" source="Feature" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="featureLocations"/>
+	<obj-relationship name="featureMetatags" source="Feature" target="FeatureMetatag" deleteRule="Cascade" db-relationship-path="metatags"/>
 	<obj-relationship name="parent" source="Feature" target="Feature" deleteRule="Nullify" db-relationship-path="parent"/>
 	<obj-relationship name="feature" source="FeatureLocation" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 	<obj-relationship name="referenceSequence" source="FeatureLocation" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="referenceSequence"/>
 	<obj-relationship name="segments" source="FeatureLocation" target="FeatureSegment" deleteRule="Cascade" db-relationship-path="segments"/>
 	<obj-relationship name="variations" source="FeatureLocation" target="Variation" deleteRule="Cascade" db-relationship-path="variations"/>
+	<obj-relationship name="feature" source="FeatureMetatag" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 	<obj-relationship name="featureLocation" source="FeatureSegment" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLocation"/>
 	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignmentsWhereRefSequence"/>
 	<obj-relationship name="featureLocations" source="ReferenceSequence" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="featureLocations"/>

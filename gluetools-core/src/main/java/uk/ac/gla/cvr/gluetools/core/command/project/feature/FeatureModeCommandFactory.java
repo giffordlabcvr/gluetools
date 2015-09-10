@@ -21,6 +21,10 @@ public class FeatureModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(FeatureShowParentCommand.class);
 		registerCommandClass(FeatureShowTranscriptionTypeCommand.class);
 
+		registerCommandClass(FeatureSetMetatagCommand.class);
+		registerCommandClass(FeatureUnsetMetatagCommand.class);
+		registerCommandClass(FeatureListMetatagCommand.class);
+
 		registerCommandClass(ExitCommand.class);
 	}
 	
