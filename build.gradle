@@ -15,8 +15,13 @@ project('gluetools-ws') {
 
 }
 
-subprojects {
 
+task deployAll(dependsOn: [':gluetools-core:deployJar', ':gluetools-core:deployHcvProject', ':gluetools-ws:deployWar', ':gluetools-web:deployWebAppWar']) {
+}
+
+
+
+configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 
 	dependencies {
 	    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.4.1'
