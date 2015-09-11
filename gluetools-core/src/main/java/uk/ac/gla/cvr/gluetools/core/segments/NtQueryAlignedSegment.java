@@ -7,7 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public class NtQueryAlignedSegment extends QueryAlignedSegment implements INtReferenceSegment {
+public class NtQueryAlignedSegment extends QueryAlignedSegment implements INtTranscribableSegment {
 
 	private CharSequence nucleotides;
 	

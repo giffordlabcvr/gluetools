@@ -44,20 +44,21 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 			}
 		}
 
-		
-		for(var segIndex = 0; segIndex < ntQuerySegmentArray.length; segIndex++) {
-			var ntQuerySegment = ntQuerySegmentArray[segIndex];
-			var qrySegQryNTIndex = ntQuerySegment.queryStart;
-			for(var qrySegRefNTIndex = ntQuerySegment.refStart; 
-					qrySegRefNTIndex <= ntQuerySegment.refEnd; qrySegRefNTIndex++) {
-				var ntColumn = qrySegRefNTIndex - minNTIndex;
-				if(qrySegRefNTIndex == ntQuerySegment.refStart) {
-					queryNTIndices[ntColumn] = qrySegQryNTIndex;
-				} else if(qrySegRefNTIndex == ntQuerySegment.refEnd) {
-					queryNTIndices[ntColumn] = qrySegQryNTIndex;
+		if(ntQuerySegmentArray) {
+			for(var segIndex = 0; segIndex < ntQuerySegmentArray.length; segIndex++) {
+				var ntQuerySegment = ntQuerySegmentArray[segIndex];
+				var qrySegQryNTIndex = ntQuerySegment.queryStart;
+				for(var qrySegRefNTIndex = ntQuerySegment.refStart; 
+						qrySegRefNTIndex <= ntQuerySegment.refEnd; qrySegRefNTIndex++) {
+					var ntColumn = qrySegRefNTIndex - minNTIndex;
+					if(qrySegRefNTIndex == ntQuerySegment.refStart) {
+						queryNTIndices[ntColumn] = qrySegQryNTIndex;
+					} else if(qrySegRefNTIndex == ntQuerySegment.refEnd) {
+						queryNTIndices[ntColumn] = qrySegQryNTIndex;
+					}
+					queryNTs[ntColumn] = ntQuerySegment.nucleotides.charAt(qrySegRefNTIndex - ntQuerySegment.refStart);
+					qrySegQryNTIndex++;
 				}
-				queryNTs[ntColumn] = ntQuerySegment.nucleotides.charAt(qrySegRefNTIndex - ntQuerySegment.refStart);
-				qrySegQryNTIndex++;
 			}
 		}
 
@@ -96,12 +97,14 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					referenceAAs[aaColumn] = aaReferenceSegment.aminoAcids.charAt(refSegAAIndex - aaReferenceSegment.refStart);
 				}
 			}
-			for(var segIndex = 0; segIndex < aaQuerySegmentArray.length; segIndex++) {
-				var aaQuerySegment = aaQuerySegmentArray[segIndex];
-				for(var qrySegAAIndex = aaQuerySegment.refStart; 
-						qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
-					var aaColumn = qrySegAAIndex - minAAIndex;
-					queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(qrySegAAIndex - aaQuerySegment.refStart);
+			if(aaQuerySegmentArray) {
+				for(var segIndex = 0; segIndex < aaQuerySegmentArray.length; segIndex++) {
+					var aaQuerySegment = aaQuerySegmentArray[segIndex];
+					for(var qrySegAAIndex = aaQuerySegment.refStart; 
+							qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
+						var aaColumn = qrySegAAIndex - minAAIndex;
+						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(qrySegAAIndex - aaQuerySegment.refStart);
+					}
 				}
 			}
 		}		

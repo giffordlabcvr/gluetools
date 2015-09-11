@@ -228,7 +228,7 @@ public class TestNtsToAAs {
 	}
 	
 	private static void aaTest(String nts, char expectedAA) {
-		Assert.assertEquals(expectedAA, TranscriptionUtils.transcribe(nts.toCharArray(), new int[]{1, 2, 3}));
+		Assert.assertEquals(expectedAA, TranscriptionUtils.transcribe(nts.toCharArray()));
 	}
 
 }

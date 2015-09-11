@@ -45,6 +45,14 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 		}
 	}
 
+	public default int getReferenceToQueryOffset() {
+		return getQueryStart() - getRefStart();
+	}
+
+	public default int getQueryToReferenceOffset() {
+		return getRefStart() - getQueryStart();
+	}
+
 	public default void translate(int offset) {
 		setRefStart(getRefStart()+offset);
 		setRefEnd(getRefEnd()+offset);

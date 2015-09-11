@@ -2,10 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.transcription;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.INtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
@@ -25,121 +22,86 @@ public class TranscriptionUtils {
 	 * 
 	 * The returned segments will include codons which are only partially covered by the input segments.
 	 * 
+	 * However, each codon coordinate will be covered by at most one segment in the returned list.
+	 * 
 	 */
 	
 	public static List<ReferenceSegment> translateToCodonCoordinates(int codon1Start, List <? extends IReferenceSegment> ntSegments) {
-		return ntSegments.stream()
-			.map(ntSegment -> new ReferenceSegment(
-				getCodon(codon1Start, ntSegment.getRefStart()), 
-				getCodon(codon1Start, ntSegment.getRefEnd())
-				))
-			.collect(Collectors.toList());
+		List<ReferenceSegment> resultList = new ArrayList<ReferenceSegment>();
+		ReferenceSegment lastRefSeg = null;
+		for(IReferenceSegment ntSegment: ntSegments) {
+			int segmentCodonStart = getCodon(codon1Start, ntSegment.getRefStart());
+			int segmentCodonEnd = getCodon(codon1Start, ntSegment.getRefEnd());
+			ReferenceSegment newRefSeg = null;
+			if(lastRefSeg == null) {
+				newRefSeg = new ReferenceSegment(segmentCodonStart, segmentCodonEnd);
+			} else if(segmentCodonStart > lastRefSeg.getRefEnd()) {
+				newRefSeg = new ReferenceSegment(segmentCodonStart, segmentCodonEnd);
+			} else if(segmentCodonEnd > lastRefSeg.getRefEnd()) {
+				newRefSeg = new ReferenceSegment(lastRefSeg.getRefEnd()+1, segmentCodonEnd);
+			}
+			if(newRefSeg != null) {
+				resultList.add(newRefSeg);
+				lastRefSeg = newRefSeg;
+			}
+		}
+		return resultList;
 	}
-	
+
 	/**
-	 * Given nucleotide segments and a nucleotide location specifying the nucleotide at which codon 1 starts,
-	 * transcribe the nucleotides into amino-acid segments.
+	 * Transcribe nucleotides to amino acids.
 	 * 
-	 * It is a precondition that the nucleotide segments do not cover any NT location prior to codon1Start.
+	 * If the first 3 nucleotides do not produce 'M', transcription stops and the empty string is returned.
+	 * If there is a gap of indeterminate length '-' in the nucleotides, transcription stops at that gap, 
+	 * and includes any AAs found before the gap.
+	 * If any NTs are encountered which are definitely a stop codon, transcription stops there and includes 
+	 * the stop codon.
+	 * If any NTs are encountered which *could* be a stop codon, transcription stops before the stop codon.
+	 * 
 	 */
-	public static List<AaReferenceSegment> transcribeAminoAcids(int codon1Start, 
-			List<? extends INtReferenceSegment> ntRefSegments) {
-		List<AaReferenceSegment> aaReferenceSegments = new ArrayList<AaReferenceSegment>();
-		// codon at which the current AA seg starts
-		Integer aaSegStartCodon = null;
-		// accumulated AAs for the current AA seg
-		StringBuffer aaSegBuffer = null;
-		// next codon to produce
-		Integer aaSegNextCodon = null;
-		// NTs for the next codon
-		char[] currentCodonNts = new char[3];
-		int[] currentCodonNtIndices = new int[3];
-		
-		for(INtReferenceSegment ntRefSegment: ntRefSegments) {
-			int ntSegStartCodon = getCodon(codon1Start, ntRefSegment.getRefStart());
-			int ntSegEndCodon = getCodon(codon1Start, ntRefSegment.getRefEnd());
-			
-			if(aaSegStartCodon != null // AA seg in progress  
-					&& ntSegStartCodon > aaSegNextCodon) { // but NT seg starts after the end of the current AA seg.
-				// Wrap up old AA seg
-				String aminoAcids = aaSegBuffer.toString();
-				aaReferenceSegments.add(newAaSegment(aaSegStartCodon, aminoAcids));
-				aaSegStartCodon = null;
-				aaSegNextCodon = null;
-				aaSegBuffer = null;
-				clearCodonNts(currentCodonNts, currentCodonNtIndices);
-			} 
-			
-			// iterate over the codon locations covered by the ntRefSegment
-			for(int ntSegCodon = ntSegStartCodon; ntSegCodon <= ntSegEndCodon; ntSegCodon++) {
-				if(aaSegStartCodon != null && ntSegCodon < aaSegNextCodon) {
-					continue; // can happen if the last AA was determined on fewer than 3 bases.
-				}
-				int startNT = getNt(codon1Start, ntSegCodon);
-				// get the codon NTs from the segment
-				int nextNT = populateCodonNtsFromNtSeg(startNT, currentCodonNts, currentCodonNtIndices, ntRefSegment);
-				// attempt to transcribe
-				char aa = transcribe(currentCodonNts, currentCodonNtIndices);
-				if(aa == 0) { // failed or incomplete transcription.
-					if(nextNT == startNT+3) { // failed transcription
-						if(aaSegStartCodon != null) { // AA seg in progress
-							// wrap up current AA seg
-							aaReferenceSegments.add(newAaSegment(aaSegStartCodon, aaSegBuffer.toString()));
-							aaSegStartCodon = null;
-							aaSegNextCodon = null;
-							aaSegBuffer = null;
-							clearCodonNts(currentCodonNts, currentCodonNtIndices);
-						}
-					} 
-				} else { // successful transcription
-					if(aaSegStartCodon == null) { // no current AA seg in progress						
-						// start new AA seg
-						aaSegStartCodon = ntSegCodon;
-						aaSegNextCodon = ntSegCodon;
-						aaSegBuffer = new StringBuffer();
-						clearCodonNts(currentCodonNts, currentCodonNtIndices);
-					} 
-					// add AA to segment.
-					aaSegBuffer.append(aa);
-					aaSegNextCodon ++;
-					clearCodonNts(currentCodonNts, currentCodonNtIndices);
+	
+	public static String transcribe(CharSequence nts) {
+		StringBuffer aas = new StringBuffer();
+		char[] codonNts = new char[3];
+		boolean stopTranscribing = false;
+		for(int ntIndex = 0; ntIndex < nts.length(); ntIndex +=3) {
+			clearCodonNts(codonNts);
+			for(int i = 0; i < 3; i++) {
+				if(ntIndex+i < nts.length()) {
+					char nt = nts.charAt(ntIndex+i);
+					if(nt == '-') {
+						stopTranscribing = true;
+						break;
+					}
+					codonNts[i] = nt;
 				}
 			}
-		}
-		// wrap up any remaining aaSegment.
-		if(aaSegStartCodon != null) {
-			aaReferenceSegments.add(newAaSegment(aaSegStartCodon, aaSegBuffer.toString()));
-		}
-		return aaReferenceSegments;
-	}
-
-
-	private static AaReferenceSegment newAaSegment(Integer aaSegStartCodon,
-			String aminoAcids) {
-		return new AaReferenceSegment(aaSegStartCodon, 
-				aaSegStartCodon+(aminoAcids.length()-1), aminoAcids);
-	}
-	
-	private static int populateCodonNtsFromNtSeg(int startNt, char[] codonNts, int[] currentCodonNtIndices, INtReferenceSegment ntRefSegment) {
-		int nextNT = startNt;
-		for(int i = 0; i < 3; i++) {
-			int refLocation = startNt+i;
-			if(refLocation >= ntRefSegment.getRefStart() && refLocation <= ntRefSegment.getRefEnd()) {
-				nextNT = refLocation+1;
-				codonNts[i] = ntRefSegment.ntAtRefLocation(refLocation);
-				currentCodonNtIndices[i] = ntRefSegment.ntIndexAtRefLoction(refLocation);
+			char nextAA = transcribe(codonNts);
+			if(ntIndex == 0 && nextAA != 'M') {
+				stopTranscribing = true;
+			} else if(nextAA == 0) {
+				if(couldBeStopCodon(codonNts)) {
+					stopTranscribing = true;
+				} else if(codonNts[0] != 0 && codonNts[1] != 0 && codonNts[2] != 0){
+					aas.append('X'); // unknown AA
+				}
+			} else if(nextAA == '*') {
+				aas.append(nextAA);
+				stopTranscribing = true;
+			} else {
+				aas.append(nextAA);
+			}
+			if(stopTranscribing) {
+				break;
 			}
 		}
-		return nextNT;
+		return aas.toString();
 	}
 	
-	private static void clearCodonNts(char[] codonNts, int[] currentCodonNtIndices) {
+	private static void clearCodonNts(char[] codonNts) {
 		codonNts[0] = 0;
 		codonNts[1] = 0;
 		codonNts[2] = 0;
-		currentCodonNtIndices[0] = 0;
-		currentCodonNtIndices[1] = 0;
-		currentCodonNtIndices[2] = 0;
 	}
 	
 	/**
@@ -166,7 +128,7 @@ public class TranscriptionUtils {
 	 *	-					gap of indeterminate length	
  	 *
 	 */
-	
+
 	public static boolean A(char nt) {
 		return nt == 'A';
 	}
@@ -192,36 +154,47 @@ public class TranscriptionUtils {
 		return nt == 'A' || nt == 'C' || nt == 'M';
 	}
 
+	private static boolean possible_A_or_G(char nt) {
+		return nt == 0 || nt == 'A' || nt == 'G' || nt == 'R' || 
+				nt == 'K' || nt == 'M' || nt == 'S' || nt == 'W' || nt == 'B' ||
+				nt == 'D' || nt == 'H' || nt == 'V' || nt == 'N' || nt == 'X';
+	}
+
+	private static boolean possible_T_or_U(char nt) {
+		return nt == 0 || nt == 'T' || nt == 'U' || nt == 'Y' || 
+				nt == 'K' || nt == 'W' || nt == 'B' || nt == 'D' || nt == 'H' ||
+				nt == 'N' || nt == 'X';
+	}
+
+	/**
+	 * return true if the set of three characters could be a stop codon.
+	 * @param codonNTs
+	 */
+	public static boolean couldBeStopCodon(char[] codonNTs) {
+		char firstBase = codonNTs[0];
+		char secondBase = codonNTs[1];
+		char thirdBase = codonNTs[2];
+
+		if(possible_T_or_U(firstBase) &&
+				possible_A_or_G(secondBase) &&
+				possible_A_or_G(thirdBase) &&
+				!(G(secondBase) && G(thirdBase))) {
+			return true;
+		}
+		return false;
+	}
+	
+	// TODO produce ambiguous AA values: B, J or Z
 	
 	/**
 	 * codonNTs is an array of 3 nt characters, some of which may be 0, which indicates a missing base.
 	 * Returns the amino acid code if known, or 0 otherwise.
 	 * 
 	 */
-	public static char transcribe(char[] codonNTs, int[] codonNtIndices) {
+	public static char transcribe(char[] codonNTs) {
 		char firstBase = codonNTs[0];
 		char secondBase = codonNTs[1];
 		char thirdBase = codonNTs[2];
-		
-		// check NTs are contiguous, otherwise return "unknown".
-		int firstNtIndex = codonNtIndices[0];
-		int secondNtIndex = codonNtIndices[1];
-		int thirdNtIndex = codonNtIndices[2];
-
-		if(firstBase != 0 && secondBase != 0 && thirdBase != 0) {
-			if(secondNtIndex != firstNtIndex+1 ||
-					thirdNtIndex != secondNtIndex+1) {
-				return 0;
-			}
-		} else if(firstBase != 0 && secondBase != 0) {
-			if(secondNtIndex != firstNtIndex+1) {
-				return 0;
-			}
-		} else if(secondBase != 0 && thirdBase != 0) {
-			if(thirdNtIndex != secondNtIndex+1) {
-				return 0;
-			}
-		} 
 		
 		if(T_or_U(firstBase)) {
 			if(T_or_U(secondBase)) {
@@ -346,17 +319,37 @@ public class TranscriptionUtils {
 
 
 	/**
+	 * Given a nucleotide number, which codon is it in.
 	 * Example, if codon 1 starts at NT 3285, then NT 3287 is in codon 1, NT 3288 is in codon 2 etc.
 	 */
-	private static int getCodon(int codon1Start, int ntLocation) {
+	public static int getCodon(int codon1Start, int ntLocation) {
 		return 1 + ((ntLocation - codon1Start) / 3);
 	}
+
+	/**
+	 * is a nucleotide at the start of a codon.
+	 * @param ntLocation
+	 * @return
+	 */
+	public static boolean isAtStartOfCodon(int codon1Start, int ntLocation) {
+		return (ntLocation - codon1Start) % 3 == 0;
+	}
+
+	/**
+	 * is a nucleotide at the start of a codon.
+	 * @param ntLocation
+	 * @return
+	 */
+	public static boolean isAtEndOfCodon(int codon1Start, int ntLocation) {
+		return (ntLocation - codon1Start) % 3 == 2;
+	}
+
 	
 	/**
 	 * Given a codon number, what nucleotide location does this codon start at.
 	 * Example, if codon 1 starts at NT 3285, then codon 4 starts at 3294.
 	 */
-	private static int getNt(int codon1Start, int codon) {
+	public static int getNt(int codon1Start, int codon) {
 		return ((codon-1) * 3)+codon1Start;
 	}
 

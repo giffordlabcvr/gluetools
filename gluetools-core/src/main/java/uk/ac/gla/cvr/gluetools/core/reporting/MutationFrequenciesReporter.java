@@ -694,7 +694,24 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			if(!referenceSegments.isEmpty()) {
 				ntReferenceSegments = refSeqObject.getNtReferenceSegments(referenceSegments);
 				if(featureMetatags.contains(FeatureMetatag.Type.OPEN_READING_FRAME.name())) {
-					aaReferenceSegments = TranscriptionUtils.transcribeAminoAcids(codon1Start, ntReferenceSegments);
+					if(ntReferenceSegments.size() != 1) {
+						throw new MutationFrequenciesException(MutationFrequenciesException.Code.ORF_MUST_HAVE_SINGLE_SEGMENT, 
+								featureName, Integer.toString(ntReferenceSegments.size()));
+					}
+					NtReferenceSegment orfNtReference = ntReferenceSegments.get(0);
+					if(orfNtReference.getCurrentLength() % 3 != 0) {
+						throw new MutationFrequenciesException(MutationFrequenciesException.Code.ORF_LENGTH_NOT_MULTIPLE_OF_3, 
+								featureName, orfNtReference.getCurrentLength());
+					}
+
+					String transcribedAAs = TranscriptionUtils.transcribe(orfNtReference.getNucleotides());
+					if(transcribedAAs.length() != orfNtReference.getCurrentLength() / 3) {
+						throw new MutationFrequenciesException(MutationFrequenciesException.Code.ORF_INCOMPLETE_TRANSCRIPTION, 
+								featureName, 
+								Integer.toString(transcribedAAs.length()), 
+								Integer.toString(orfNtReference.getCurrentLength() / 3));
+					}
+					aaReferenceSegments = Collections.singletonList(new AaReferenceSegment(1, transcribedAAs.length(), transcribedAAs));
 				} else if(orfAncestorFeature != null) {
 					FeatureAnalysisTree orfAncestorAnalysisTree = featureNameToAnalysis.get(orfAncestorFeature);
 					Integer orfAncestorCodon1Start = orfAncestorAnalysisTree.codon1Start;
@@ -937,36 +954,80 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				FeatureAnalysisTree featureAnalysisTree,
 				SequenceFeatureResult orfAncestorFeatureResult, 
 				List<QueryAlignedSegment> seqToRefAlignedSegments) {
+			// intersect the seqToRefAlignedSegments with the reference segments of the feature we are looking at
 			List<QueryAlignedSegment> featureQueryAlignedSegments = 
 					ReferenceSegment.intersection(featureAnalysisTree.referenceSegments, seqToRefAlignedSegments, 
 							new SegMerger());
+			// realize these segments (add NTs)
 			ntQueryAlignedSegments = 
 					seqObj.getNtQueryAlignedSegments(featureQueryAlignedSegments);
 			if(ntQueryAlignedSegments.isEmpty()) {
 				aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
 			} else {
 				if(featureAnalysisTree.featureMetatags.contains(FeatureMetatag.Type.OPEN_READING_FRAME.name())) {
-					aaQueryAlignedSegments = TranscriptionUtils
-							.transcribeAminoAcids(featureAnalysisTree.codon1Start, ntQueryAlignedSegments);
+					int firstNtQuerySegRefStart = ntQueryAlignedSegments.get(0).getRefStart();
+					int firstNtRefSegStart = featureAnalysisTree.ntReferenceSegments.get(0).getRefStart();
+					if(firstNtQuerySegRefStart != firstNtRefSegStart) {
+						// query segments fail to cover the start codon, so we can't transcribe.
+						aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
+					} else {
+						int seqFeatureQueryNtStart = ntQueryAlignedSegments.get(0).getQueryStart();
+						int seqFeatureQueryNtEnd = ntQueryAlignedSegments.get(ntQueryAlignedSegments.size()-1).getQueryEnd();
+
+						// attempt to transcribe everything between the start and end points.
+						// the point of this is to pick up any possible stop codons or gaps in the gaps between aligned
+						// segments
+						String seqFeatureAAs = TranscriptionUtils.transcribe(
+								seqObj.getNucleotides(seqFeatureQueryNtStart, seqFeatureQueryNtEnd));
+						if(seqFeatureAAs.length() == 0) {
+							aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
+						} else {
+							aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
+							int firstSegRefToQueryOffset = ntQueryAlignedSegments.get(0).getReferenceToQueryOffset();
+							for(NtQueryAlignedSegment ntQuerySeg : ntQueryAlignedSegments) {
+								int segReferenceToQueryOffset = ntQuerySeg.getReferenceToQueryOffset();
+								if( (segReferenceToQueryOffset - firstSegRefToQueryOffset) % 3 != 0 ) {
+									continue; // skip any query segments which change the reading frame.
+								}
+								// conservatively select the transcribed chunk which is fully covered by this segment.
+								int querySegNtStart = ntQuerySeg.getQueryStart();
+								int firstQuerySegCodon = TranscriptionUtils.getCodon(seqFeatureQueryNtStart, querySegNtStart);
+								if(!TranscriptionUtils.isAtStartOfCodon(seqFeatureQueryNtStart, querySegNtStart)) {
+									firstQuerySegCodon++;
+								}
+								int querySegNtEnd = ntQuerySeg.getQueryEnd();
+								int lastQuerySegCodon = TranscriptionUtils.getCodon(seqFeatureQueryNtStart, querySegNtEnd);
+								if(!TranscriptionUtils.isAtEndOfCodon(seqFeatureQueryNtStart, querySegNtEnd)) {
+									lastQuerySegCodon--;
+								}
+								if(lastQuerySegCodon < firstQuerySegCodon) {
+									continue;
+								}
+								if(firstQuerySegCodon >= seqFeatureAAs.length()) {
+									continue;
+								}
+								lastQuerySegCodon = Math.min(lastQuerySegCodon, seqFeatureAAs.length());
+								CharSequence querySegAas = seqFeatureAAs.subSequence(firstQuerySegCodon-1, lastQuerySegCodon);
+								// translate the location back to reference codon numbers
+								int refNTStart = TranscriptionUtils.getNt(seqFeatureQueryNtStart, firstQuerySegCodon) + 
+										ntQuerySeg.getQueryToReferenceOffset();
+								int refCodonStart = TranscriptionUtils.getCodon(featureAnalysisTree.codon1Start, refNTStart);
+								int refCodonEnd = refCodonStart+(querySegAas.length()-1);
+								aaQueryAlignedSegments.add(new AaReferenceSegment(refCodonStart, refCodonEnd, querySegAas));								
+							}
+						}
+					}
 				} else if(orfAncestorFeatureResult != null) {
 					String ancestorFeatureName = orfAncestorFeatureResult.featureName;
 					Map<String, FeatureAnalysisTree> featureNameToAnalysis = referenceResult.getFeatureNameToAnalysis();
 					Integer codon1Start = featureNameToAnalysis.get(featureName).codon1Start;
 					Integer orfAncestorCodon1Start = featureNameToAnalysis.get(ancestorFeatureName).codon1Start;
 					List<AaReferenceSegment> ancestorAaRefSegs = orfAncestorFeatureResult.aaQueryAlignedSegments;
+					Integer ancestorReferenceToQueryOffset = orfAncestorFeatureResult.ntQueryAlignedSegments.get(0).getReferenceToQueryOffset();
 					
-					// find the AA locations of the Query NTs, using the ORF's codon coordinates.
-					List<ReferenceSegment> templateAaRefSegs = 
-							TranscriptionUtils.translateToCodonCoordinates(orfAncestorCodon1Start, ntQueryAlignedSegments);
-					
-					aaQueryAlignedSegments = ReferenceSegment.intersection(templateAaRefSegs, ancestorAaRefSegs, 
-							(templateSeg, ancestorSeg) -> {
-								int refStart = Math.max(templateSeg.getRefStart(), ancestorSeg.getRefStart());
-								int refEnd = Math.min(templateSeg.getRefEnd(), ancestorSeg.getRefEnd());
-								CharSequence aminoAcids = ancestorSeg.getAminoAcidsSubsequence(refStart, refEnd);
-								return new AaReferenceSegment(refStart, refEnd, aminoAcids);
-							}
-					);
+					aaQueryAlignedSegments = translateNtQuerySegsToAaQuerySegs(
+							ancestorAaRefSegs, orfAncestorCodon1Start, 
+							ntQueryAlignedSegments, ancestorReferenceToQueryOffset);
 
 					// if necessary translate to feature's own codon coordinates.
 					if(codon1Start != null) {
@@ -981,6 +1042,39 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 					}
 				}
 			}
+		}
+
+		// Given a list of aa segments covering the transcribed area, and a codon 1 start location
+		// narrow this down to the set of aa segments for those reference regions covered by ntQueryAlignedSegments.
+		// referenceToQueryOffset implicitly specifies the reading frame -- ntQueryAlignedSegments whose offset implies 
+		// a different reading frame must be filtered out.
+		private List<AaReferenceSegment> translateNtQuerySegsToAaQuerySegs(
+				List<AaReferenceSegment> aaReferenceSegments,
+				Integer codon1Start,
+				List<NtQueryAlignedSegment> ntQueryAlignedSegments, 
+				Integer referenceToQueryOffset) {
+			
+			// Let x be the reference -> query offset specifying the reading frame
+			// If any query NT segment proposes an offset which is not equal to x 
+			// plus/minus some multiple of 3, possibly zero, that segment must be discarded.
+			List<QueryAlignedSegment> filteredNtSegments = ntQueryAlignedSegments
+					.stream()
+					.filter(ntSeg -> ( (ntSeg.getReferenceToQueryOffset() - referenceToQueryOffset) % 3 == 0 ))
+					.collect(Collectors.toList());
+
+			// find the AA codon coordinates of the filtered NT segments, 
+			// using the ORF's codon coordinates.
+			List<ReferenceSegment> templateAaRefSegs = 
+					TranscriptionUtils.translateToCodonCoordinates(codon1Start, filteredNtSegments);
+			// intersect this template with the already transcribed segment to get the final Query AA segments.
+			return ReferenceSegment.intersection(templateAaRefSegs, aaReferenceSegments, 
+					(templateSeg, aaRefSeg) -> {
+						int refStart = Math.max(templateSeg.getRefStart(), aaRefSeg.getRefStart());
+						int refEnd = Math.min(templateSeg.getRefEnd(), aaRefSeg.getRefEnd());
+						CharSequence aminoAcids = aaRefSeg.getAminoAcidsSubsequence(refStart, refEnd);
+						return new AaReferenceSegment(refStart, refEnd, aminoAcids);
+					}
+			);
 		}
 
 		private class SegMerger implements BiFunction<ReferenceSegment, QueryAlignedSegment, QueryAlignedSegment> {

@@ -77,4 +77,8 @@ public abstract class AbstractSequenceObject {
 				.collect(Collectors.toList());
 	}
 	
+	public CharSequence getNucleotides(int ntStart, int ntEnd) {
+		return getNucleotides().subSequence(ntStart-1, ntEnd);
+	}
+	
 }

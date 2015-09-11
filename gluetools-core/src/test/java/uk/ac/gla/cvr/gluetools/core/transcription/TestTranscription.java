@@ -1,18 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.transcription;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 
 public class TestTranscription {
 
 	
-
+	/*
 	
 	@Test
 	public void testTranscription1() {
@@ -138,36 +133,61 @@ public class TestTranscription {
 				));
 	}
 
-	
-	
-	
-	
-	
-	
-	private static void transcriptionTest(int codon1Start, NtReferenceSegment[] ntRefSegments, String[] expectedAaSegments) {
-		Assert.assertEquals(Arrays.asList(expectedAaSegments), 
-				TranscriptionUtils.transcribeAminoAcids(codon1Start, Arrays.asList(ntRefSegments))
-				.stream()
-				.map(AaReferenceSegment::toString)
-				.collect(Collectors.toList()));
-		
-	}
-	private static NtReferenceSegment ntSeg(int refStart, int refEnd, String nucleotides) {
-		NtReferenceSegment ntSeg = new NtReferenceSegment(refStart, refEnd, nucleotides);
-		if(nucleotides.length() != ntSeg.getCurrentLength()) {
-			throw new RuntimeException("ntSeg nucleotides of incorrect length");
-		}
-		return ntSeg;
-		
-	}
-	
-	private static NtReferenceSegment[] ntSegs(NtReferenceSegment ... ntSegs) {
-		return ntSegs;
+	*/
+
+	@Test
+	public void testTranscription1() {
+		transcriptionTest("", ""); 
 	}
 
-	private static String[] expectedAaSegments(String ... expectedAaSegments) {
-		return expectedAaSegments;
+	@Test
+	public void testTranscription2() {
+		transcriptionTest("ATGGGGCCCTAG", "MGP*"); 
 	}
 
-	
+	@Test
+	public void testTranscription3() {
+		transcriptionTest("ATCTAG", ""); // not a start codon.
+	}
+
+	@Test
+	public void testTranscription4() {
+		transcriptionTest("ATGGGGCCCTAGCCCCCC", "MGP*"); 
+	}
+
+	@Test
+	public void testTranscription5() {
+		transcriptionTest("ATGGGGNNNGGCC", "MG"); // NNN could be a stop codon 
+	}
+
+	@Test
+	public void testTranscription6() {
+		transcriptionTest("A", ""); 
+	}
+
+	@Test
+	public void testTranscription7() {
+		transcriptionTest("AT", ""); 
+	}
+
+	@Test
+	public void testTranscription8() {
+		transcriptionTest("ATGGGGCCC-CCCTAG", "MGP"); // gap 
+	}
+
+	@Test
+	public void testTranscription9() {
+		transcriptionTest("ATGGGGCCCC-CCTAG", "MGP"); // gap 
+	}
+
+	@Test
+	public void testTranscription10() {
+		transcriptionTest("ATGGGGCCCCC-CTAG", "MGPP"); // gap 
+	}
+
+	private static void transcriptionTest(String nucleotides, String expectedAas) {
+		Assert.assertEquals(expectedAas, TranscriptionUtils.transcribe(nucleotides));
+	}
+		
+
 }

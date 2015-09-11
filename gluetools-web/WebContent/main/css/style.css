@@ -109,7 +109,9 @@ a {
 	color: #88aacc;
 }
 
-.analysisSequenceReferenceNTIndex div {
+.analysisSequenceReferenceNTIndex div, .analysisSequenceQueryNTIndex div {
+	-ms-transform: rotate(90deg) translate(-105%, 30%); 
+    -webkit-transform: rotate(90deg) translate(-105%, 30%);
 	transform: rotate(90deg) translate(-105%, 30%);
 	height: 50px;
 	text-align: left;
@@ -128,11 +130,6 @@ a {
 	color: #99bb77;
 }
 
-.analysisSequenceQueryNTIndex div {
-	transform: rotate(90deg) translate(-105%, 30%);
-	height: 50px;
-	text-align: left;
-}
 
 
 
