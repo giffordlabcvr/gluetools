@@ -1,0 +1,36 @@
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
+
+@CommandClass( 
+		commandWords={"show","pattern"}, 
+		docoptUsages={""},
+		docoptOptions={},
+		metaTags={},
+		description="Show the variation's pattern") 
+public class VariationShowPatternCommand extends VariationModeCommand<VariationShowPatternCommand.VariationShowPatternResult> {
+
+	@Override
+	public VariationShowPatternResult execute(CommandContext cmdContext) {
+		Variation variation = lookupVariation(cmdContext);
+		return new VariationShowPatternResult(variation.getTranscriptionFormat(), variation.getRegex());
+	}
+
+	public class VariationShowPatternResult extends MapResult {
+
+		public VariationShowPatternResult(TranscriptionFormat transcriptionType, String regex) {
+			super("variationShowPatternResult", mapBuilder()
+					.put(Variation.TRANSCRIPTION_TYPE_PROPERTY, transcriptionType.name())
+					.put(Variation.REGEX_PROPERTY, regex)
+					);
+		}
+
+		
+	}
+
+}
+

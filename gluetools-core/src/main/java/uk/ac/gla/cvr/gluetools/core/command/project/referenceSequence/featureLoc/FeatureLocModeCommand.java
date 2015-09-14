@@ -3,6 +3,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
@@ -49,7 +51,11 @@ public abstract class FeatureLocModeCommand<R extends CommandResult> extends Ref
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			if(argStrings.isEmpty()) {
 				ObjectContext objContext = cmdContext.getObjectContext();
-				List<Variation> variation = GlueDataObject.query(objContext, Variation.class, new SelectQuery(Variation.class));
+				FeatureLocMode featureLocMode = getFeatureLocMode(cmdContext);
+				Expression expression = ExpressionFactory.matchExp(Variation.REF_SEQ_NAME_PATH, featureLocMode.getRefSeqName());
+				expression = expression.andExp(ExpressionFactory.matchExp(Variation.FEATURE_NAME_PATH, featureLocMode.getFeatureName()));
+				List<Variation> variation = GlueDataObject.query(objContext, Variation.class, 
+						new SelectQuery(Variation.class, expression));
 				return variation.stream().map(Variation::getName).collect(Collectors.toList());
 			}
 			return super.completionSuggestions(cmdContext, cmdClass, argStrings);

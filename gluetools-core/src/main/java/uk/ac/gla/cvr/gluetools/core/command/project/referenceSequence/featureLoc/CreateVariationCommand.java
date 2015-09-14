@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.NotifiabilityLevel;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -22,12 +23,13 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 
 
 @CommandClass( 
-	commandWords={"create","variation"}, 
-	docoptUsages={"<variationName> <refStart> <refEnd> [-t <type>] <regex> [<description>]"},
-	docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
-	metaTags={CmdMeta.updatesDatabase},
-	description="Create a new feature variation", 
-	furtherHelp="A variation is a regular expression defining a known motif which may occur at this feature location.") 
+		commandWords={"create","variation"}, 
+		docoptUsages={"<variationName> <refStart> <refEnd> [-t <type>] <regex> [-n <notifiabilityLevel>] [<description>]"},
+		docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]", 
+				"-n <level>, --notifiabilityLevel <level>  Possible values: [ACTIONABLE, NOT_ACTIONABLE]"},
+		metaTags={CmdMeta.updatesDatabase},
+		description="Create a new feature variation", 
+		furtherHelp="A variation is a regular expression defining a known motif which may occur at this feature location.") 
 public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
 	private static final String REF_END = "refEnd";
@@ -36,12 +38,14 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 	public static final String TRANSCRIPTION_TYPE = "transcriptionType";
 	public static final String REGEX = "regex";
 	public static final String DESCRIPTION = "description";
-
+	public static final String NOTIFIABILITY_LEVEL = "notifiabilityLevel";
+	
 	private String variationName;
 	private Integer refStart;
 	private Integer refEnd;
 	private TranscriptionFormat transcriptionFormat;
 	private Pattern regex;
+	private NotifiabilityLevel notifiabilityLevel;
 	private Optional<String> description;
 	
 	@Override
@@ -55,6 +59,10 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 				PluginUtils.configureEnumProperty(TranscriptionFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
 				orElse(TranscriptionFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
+		notifiabilityLevel = Optional.ofNullable(
+				PluginUtils.configureEnumProperty(NotifiabilityLevel.class, configElem, NOTIFIABILITY_LEVEL, false)).
+				orElse(NotifiabilityLevel.ACTIONABLE);
+
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DESCRIPTION, false));
 	}
 
@@ -83,6 +91,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setRefEnd(refEnd);
 		variation.setTranscriptionType(transcriptionFormat.name());
 		variation.setRegex(regex.pattern());
+		variation.setNotifiability(notifiabilityLevel.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
 		cmdContext.commit();
 		return new CreateResult(Variation.class, 1);

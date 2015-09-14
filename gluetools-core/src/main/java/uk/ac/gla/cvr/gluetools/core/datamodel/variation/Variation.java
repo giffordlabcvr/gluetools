@@ -14,6 +14,12 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 @GlueDataClass(defaultListColumns = {_Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY})
 public class Variation extends _Variation {
 
+	public enum NotifiabilityLevel {
+		ACTIONABLE,
+		NOT_ACTIONABLE
+	}
+	
+	private NotifiabilityLevel notifiabilityLevel;
 	private TranscriptionFormat transcriptionFormat;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -21,7 +27,7 @@ public class Variation extends _Variation {
 
 	public static Map<String, String> pkMap(String referenceName, String featureName, String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
-		idMap.put(REF_SEQ_NAME_PATH, featureName);
+		idMap.put(REF_SEQ_NAME_PATH, referenceName);
 		idMap.put(FEATURE_NAME_PATH, featureName);
 		idMap.put(NAME_PROPERTY, name);
 		return idMap;
@@ -48,5 +54,18 @@ public class Variation extends _Variation {
 		return TranscriptionUtils.transcriptionFormatFromString(getTranscriptionType());
 	}	
 
+	
+	public NotifiabilityLevel getNotifiabilityLevel() {
+		if(notifiabilityLevel == null) {
+			notifiabilityLevel = buildNotifiabilityLevel();
+		}
+		return notifiabilityLevel;
+	}
+	
+	private NotifiabilityLevel buildNotifiabilityLevel() {
+		return NotifiabilityLevel.valueOf(getNotifiability());
+	}	
+
+	
 	
 }
