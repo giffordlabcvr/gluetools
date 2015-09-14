@@ -13,6 +13,9 @@ public abstract class _Variation extends GlueDataObject {
 
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String NAME_PROPERTY = "name";
+    public static final String NOTIFIABILITY_PROPERTY = "notifiability";
+    public static final String REF_END_PROPERTY = "refEnd";
+    public static final String REF_START_PROPERTY = "refStart";
     public static final String REGEX_PROPERTY = "regex";
     public static final String TRANSCRIPTION_TYPE_PROPERTY = "transcriptionType";
     public static final String FEATURE_LOC_PROPERTY = "featureLoc";
@@ -33,6 +36,27 @@ public abstract class _Variation extends GlueDataObject {
     }
     public String getName() {
         return (String)readProperty(NAME_PROPERTY);
+    }
+
+    public void setNotifiability(String notifiability) {
+        writeProperty(NOTIFIABILITY_PROPERTY, notifiability);
+    }
+    public String getNotifiability() {
+        return (String)readProperty(NOTIFIABILITY_PROPERTY);
+    }
+
+    public void setRefEnd(Integer refEnd) {
+        writeProperty(REF_END_PROPERTY, refEnd);
+    }
+    public Integer getRefEnd() {
+        return (Integer)readProperty(REF_END_PROPERTY);
+    }
+
+    public void setRefStart(Integer refStart) {
+        writeProperty(REF_START_PROPERTY, refStart);
+    }
+    public Integer getRefStart() {
+        return (Integer)readProperty(REF_START_PROPERTY);
     }
 
     public void setRegex(String regex) {

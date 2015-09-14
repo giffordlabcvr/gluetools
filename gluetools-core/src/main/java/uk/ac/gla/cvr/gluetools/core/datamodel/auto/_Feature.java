@@ -17,7 +17,6 @@ public abstract class _Feature extends GlueDataObject {
 
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String NAME_PROPERTY = "name";
-    public static final String TRANSCRIPTION_TYPE_PROPERTY = "transcriptionType";
     public static final String CHILDREN_PROPERTY = "children";
     public static final String FEATURE_LOCATIONS_PROPERTY = "featureLocations";
     public static final String FEATURE_METATAGS_PROPERTY = "featureMetatags";
@@ -37,13 +36,6 @@ public abstract class _Feature extends GlueDataObject {
     }
     public String getName() {
         return (String)readProperty(NAME_PROPERTY);
-    }
-
-    public void setTranscriptionType(String transcriptionType) {
-        writeProperty(TRANSCRIPTION_TYPE_PROPERTY, transcriptionType);
-    }
-    public String getTranscriptionType() {
-        return (String)readProperty(TRANSCRIPTION_TYPE_PROPERTY);
     }
 
     public void addToChildren(Feature obj) {

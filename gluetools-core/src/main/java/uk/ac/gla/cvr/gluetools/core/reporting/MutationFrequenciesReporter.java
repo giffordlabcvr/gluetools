@@ -74,7 +74,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils.Segment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
@@ -683,7 +682,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		private String orfAncestorFeature;
 		private Integer codon1Start;
 		private String featureDescription;
-		private TranscriptionFormat featureTranscriptionFormat;
 		private List<String> featureMetatags = new ArrayList<String>();
 		private List<FeatureAnalysisTree> features = new ArrayList<FeatureAnalysisTree>();
 		private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
@@ -759,7 +757,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		public void toDocument(ObjectBuilder featureAnalysisObj) {
 			featureAnalysisObj.set("featureName", featureName);
 			featureAnalysisObj.set("featureDescription", featureDescription);
-			featureAnalysisObj.set("featureTranscriptionType", featureTranscriptionFormat.name());
 			featureAnalysisObj.set("orfAncestorFeature", orfAncestorFeature);
 			if(codon1Start != null) {
 				featureAnalysisObj.set("codon1Start", codon1Start);
@@ -791,7 +788,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		public void fromDocument(ObjectReader objReader) {
 			featureName = objReader.stringValue("featureName");
 			featureDescription = objReader.stringValue("featureDescription");
-			featureTranscriptionFormat = TranscriptionUtils.transcriptionFormatFromString(objReader.stringValue("featureTranscriptionType"));
 
 			orfAncestorFeature = objReader.stringValue("orfAncestorFeature");
 			codon1Start = objReader.intValue("codon1Start");

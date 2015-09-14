@@ -29,7 +29,6 @@
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="PARENT_NAME" type="VARCHAR" length="50"/>
-		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
 	</db-entity>
 	<db-entity name="FEATURE_LOCATION">
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
@@ -70,7 +69,10 @@
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="NOTIFIABILITY" type="VARCHAR" length="50"/>
+		<db-attribute name="REF_END" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="REF_START" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="REGEX" type="VARCHAR" isMandatory="true" length="1000"/>
 		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
 	</db-entity>
@@ -89,7 +91,6 @@
 	<obj-entity name="Feature" className="uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature" dbEntityName="FEATURE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
-		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
 	</obj-entity>
 	<obj-entity name="FeatureLocation" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation" dbEntityName="FEATURE_LOCATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 	</obj-entity>
@@ -119,6 +120,9 @@
 	<obj-entity name="Variation" className="uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation" dbEntityName="VARIATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+		<obj-attribute name="notifiability" type="java.lang.String" db-attribute-path="NOTIFIABILITY"/>
+		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>
+		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="REF_START"/>
 		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="REGEX"/>
 		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
 	</obj-entity>

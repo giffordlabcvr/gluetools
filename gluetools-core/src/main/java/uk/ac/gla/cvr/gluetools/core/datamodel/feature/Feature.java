@@ -12,17 +12,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 
-@GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, _Feature.TRANSCRIPTION_TYPE_PROPERTY, Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY})
+@GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY})
 public class Feature extends _Feature {
 
 	public static final String PARENT_NAME_PATH = _Feature.PARENT_PROPERTY+"."+_Feature.NAME_PROPERTY;
 
 	
-	private TranscriptionFormat transcriptionFormat;
-
 	public static Map<String, String> pkMap(String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
 		idMap.put(NAME_PROPERTY, name);
@@ -40,18 +36,6 @@ public class Feature extends _Feature {
 		return pkMap(getName());
 	}
 
-	public TranscriptionFormat getTranscriptionFormat() {
-		if(transcriptionFormat == null) {
-			transcriptionFormat = buildTranscriptionFormat();
-		}
-		return transcriptionFormat;
-	}
-	
-	private TranscriptionFormat buildTranscriptionFormat() {
-		return TranscriptionUtils.transcriptionFormatFromString(getTranscriptionType());
-	}	
-
-	
 	@Override
 	public void setParent(Feature parent) {
 		if(parent != null) {

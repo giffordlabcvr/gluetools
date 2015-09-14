@@ -129,7 +129,6 @@ public class ReferenceShowFeatureTreeCommand extends ReferenceSequenceModeComman
 				if(orfAncestor != null) {
 					objectBuilder.set("orfAncestorFeature", orfAncestor.getName());
 				}
-				objectBuilder.set("featureTranscriptionType", feature.getTranscriptionFormat().name());
 				ArrayBuilder metatagArray = objectBuilder.setArray("featureMetatag");
 				metatagTypes.forEach(t -> metatagArray.addString(t.name()));
 				featureNameToResultObject.put(feature.getName(), objectBuilder);

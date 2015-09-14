@@ -867,70 +867,70 @@ project HCV
       create feature structural_proteins -p precursor_polyprotein "Structural proteins"
         feature structural_proteins set metatag INFORMATIONAL
 
-        create feature Core -t AMINO_ACID -p structural_proteins "Core"
+        create feature Core -p structural_proteins "Core"
           feature Core set metatag OWN_CODON_NUMBERING
 
-        create feature E1 -t AMINO_ACID -p structural_proteins "E1"
+        create feature E1 -p structural_proteins "E1"
           feature E1 set metatag OWN_CODON_NUMBERING
 
-        create feature E2 -t AMINO_ACID -p structural_proteins "E2"
+        create feature E2 -p structural_proteins "E2"
           feature E2 set metatag OWN_CODON_NUMBERING
 
       create feature non_structural_proteins -p precursor_polyprotein "Non-structural proteins"
         feature non_structural_proteins set metatag INFORMATIONAL
 
-        create feature p7 -t AMINO_ACID -p non_structural_proteins "p7"
+        create feature p7 -p non_structural_proteins "p7"
           feature p7 set metatag OWN_CODON_NUMBERING
 
-        create feature NS2 -t AMINO_ACID -p non_structural_proteins "NS2"
+        create feature NS2 -p non_structural_proteins "NS2"
           feature NS2 set metatag OWN_CODON_NUMBERING
 
-        create feature NS3 -t AMINO_ACID -p non_structural_proteins "NS3"
+        create feature NS3 -p non_structural_proteins "NS3"
           feature NS3 set metatag OWN_CODON_NUMBERING
 
-          create feature NS3_DR_h77_codon_36 -t AMINO_ACID -p NS3 "Codon 36"
+          create feature NS3_DR_h77_codon_36 -p NS3 "Codon 36"
             feature NS3_DR_h77_codon_36 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_43 -t AMINO_ACID -p NS3 "Codon 43"
+          create feature NS3_DR_h77_codon_43 -p NS3 "Codon 43"
             feature NS3_DR_h77_codon_43 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_54 -t AMINO_ACID -p NS3 "Codon 54"
+          create feature NS3_DR_h77_codon_54 -p NS3 "Codon 54"
             feature NS3_DR_h77_codon_54 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_80 -t AMINO_ACID -p NS3 "Codon 80"
+          create feature NS3_DR_h77_codon_80 -p NS3 "Codon 80"
             feature NS3_DR_h77_codon_80 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_122 -t AMINO_ACID -p NS3 "Codon 122"
+          create feature NS3_DR_h77_codon_122 -p NS3 "Codon 122"
             feature NS3_DR_h77_codon_122 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_132 -t AMINO_ACID -p NS3 "Codon 132"
+          create feature NS3_DR_h77_codon_132 -p NS3 "Codon 132"
             feature NS3_DR_h77_codon_132 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_155 -t AMINO_ACID -p NS3 "Codon 155"
+          create feature NS3_DR_h77_codon_155 -p NS3 "Codon 155"
             feature NS3_DR_h77_codon_155 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_156 -t AMINO_ACID -p NS3 "Codon 156"
+          create feature NS3_DR_h77_codon_156 -p NS3 "Codon 156"
             feature NS3_DR_h77_codon_156 set metatag HIDDEN
-          create feature NS3_DR_h77_codon_168 -t AMINO_ACID -p NS3 "Codon 168"
+          create feature NS3_DR_h77_codon_168 -p NS3 "Codon 168"
             feature NS3_DR_h77_codon_168 set metatag HIDDEN
 
-        create feature NS4A -t AMINO_ACID -p non_structural_proteins "NS4A"
+        create feature NS4A -p non_structural_proteins "NS4A"
           feature NS4A set metatag OWN_CODON_NUMBERING
-        create feature NS4B -t AMINO_ACID -p non_structural_proteins "NS4B"
+        create feature NS4B -p non_structural_proteins "NS4B"
           feature NS4B set metatag OWN_CODON_NUMBERING
-        create feature NS5A -t AMINO_ACID -p non_structural_proteins "NS5A"
+        create feature NS5A -p non_structural_proteins "NS5A"
           feature NS5A set metatag OWN_CODON_NUMBERING
 
-          create feature NS5A_DR_h77_codon_28 -t AMINO_ACID -p NS5A "Codon 28"
+          create feature NS5A_DR_h77_codon_28 -p NS5A "Codon 28"
             feature NS5A_DR_h77_codon_28 set metatag HIDDEN
-          create feature NS5A_DR_h77_codon_30 -t AMINO_ACID -p NS5A "Codon 30"
+          create feature NS5A_DR_h77_codon_30 -p NS5A "Codon 30"
             feature NS5A_DR_h77_codon_30 set metatag HIDDEN
-          create feature NS5A_DR_h77_codon_31 -t AMINO_ACID -p NS5A "Codon 31"
+          create feature NS5A_DR_h77_codon_31 -p NS5A "Codon 31"
             feature NS5A_DR_h77_codon_31 set metatag HIDDEN
-          create feature NS5A_DR_h77_codon_93 -t AMINO_ACID -p NS5A "Codon 93"
+          create feature NS5A_DR_h77_codon_93 -p NS5A "Codon 93"
             feature NS5A_DR_h77_codon_93 set metatag HIDDEN
 
-        create feature NS5B -t AMINO_ACID -p non_structural_proteins "NS5B"
+        create feature NS5B -p non_structural_proteins "NS5B"
           feature NS5B set metatag OWN_CODON_NUMBERING
 
-          create feature NS5B_DR_h77_codon_282 -t AMINO_ACID -p NS5B "Codon 282"
+          create feature NS5B_DR_h77_codon_282 -p NS5B "Codon 282"
             feature NS5B_DR_h77_codon_282 set metatag HIDDEN
-          create feature NS5B_DR_h77_codon_316 -t AMINO_ACID -p NS5B "Codon 316"
+          create feature NS5B_DR_h77_codon_316 -p NS5B "Codon 316"
             feature NS5B_DR_h77_codon_316 set metatag HIDDEN
-          create feature NS5B_DR_h77_codon_419 -t AMINO_ACID -p NS5B "Codon 419"
+          create feature NS5B_DR_h77_codon_419 -p NS5B "Codon 419"
             feature NS5B_DR_h77_codon_419 set metatag HIDDEN
 
     create feature 3UTR -p whole_genome "3' UTR"
@@ -977,51 +977,15 @@ project HCV
     add feature-location NS3
     feature-location NS3
       add segment 3420 5312
-      exit
-    add feature-location NS3_DR_h77_codon_36
-    feature-location NS3_DR_h77_codon_36	
-      add segment 3525 3527
-      create variation -t AMINO_ACID drug_resistance "[AMGI]"
-      exit
-    add feature-location NS3_DR_h77_codon_43
-    feature-location NS3_DR_h77_codon_43 
-	  create variation -t AMINO_ACID drug_resistance "[S]"
-      add segment 3546 3548
-      exit
-    add feature-location NS3_DR_h77_codon_54
-    feature-location NS3_DR_h77_codon_54 
-      create variation -t AMINO_ACID drug_resistance "[ACGS]"
-      add segment 3579 3581
-      exit
-    add feature-location NS3_DR_h77_codon_80
-    feature-location NS3_DR_h77_codon_80
-      create variation -t AMINO_ACID drug_resistance "[KR]"
-      add segment 3657 3659
-      exit
-    add feature-location NS3_DR_h77_codon_122
-    feature-location NS3_DR_h77_codon_122 
-      create variation -t AMINO_ACID drug_resistance "[AGR]"
-      add segment 3783 3785
-      exit
-    add feature-location NS3_DR_h77_codon_132
-    feature-location NS3_DR_h77_codon_132
-      create variation -t AMINO_ACID drug_resistance "[V]"
-      add segment 3813 3815
-      exit
-    add feature-location NS3_DR_h77_codon_155
-    feature-location NS3_DR_h77_codon_155
-      create variation -t AMINO_ACID drug_resistance "[KTGMQ]" 
-      add segment 3882 3884
-      exit
-    add feature-location NS3_DR_h77_codon_156
-    feature-location NS3_DR_h77_codon_156
-      create variation -t AMINO_ACID drug_resistance "[FNSTV]"
-      add segment 3885 3887
-      exit
-    add feature-location NS3_DR_h77_codon_168
-    feature-location NS3_DR_h77_codon_168
-      create variation -t AMINO_ACID drug_resistance "[NAEHVGY]"
-      add segment 3921 3923
+      create variation NS3_DR_h77_codon_36 3525 3527 -t AMINO_ACID "[AMGI]" "Drug resistance"
+      create variation NS3_DR_h77_codon_43 3546 3548 -t AMINO_ACID "[S]" "Drug resistance"
+      create variation NS3_DR_h77_codon_54 3579 3581 -t AMINO_ACID "[ACGS]" "Drug resistance"
+      create variation NS3_DR_h77_codon_80 3657 3659 -t AMINO_ACID "[KR]" "Drug resistance"
+      create variation NS3_DR_h77_codon_122 3783 3785 -t AMINO_ACID "[AGR]" "Drug resistance"
+      create variation NS3_DR_h77_codon_132 3813 3815 -t AMINO_ACID "[V]" "Drug resistance"
+      create variation NS3_DR_h77_codon_155 3882 3884 -t AMINO_ACID "[KTGMQ]" "Drug resistance"
+      create variation NS3_DR_h77_codon_156 3885 3887 -t AMINO_ACID "[FNSTV]" "Drug resistance"
+      create variation NS3_DR_h77_codon_168 3921 3923 -t AMINO_ACID "[NAEHVGY]" "Drug resistance"
       exit
 
     add feature-location NS4A
@@ -1037,44 +1001,19 @@ project HCV
     add feature-location NS5A
     feature-location NS5A
       add segment 6258 7601
-      exit
-    add feature-location NS5A_DR_h77_codon_28
-    feature-location NS5A_DR_h77_codon_28
-      create variation -t AMINO_ACID drug_resistance "[T]"
-      add segment 6339 6341
-      exit
-    add feature-location NS5A_DR_h77_codon_30
-    feature-location NS5A_DR_h77_codon_30
-      create variation -t AMINO_ACID drug_resistance "[EHR]"
-      add segment 6345 6347
-      exit
-    add feature-location NS5A_DR_h77_codon_31
-    feature-location NS5A_DR_h77_codon_31
-      create variation -t AMINO_ACID drug_resistance "[MV]"
-      add segment 6348 6350
-      exit
-    add feature-location NS5A_DR_h77_codon_93
-    feature-location NS5A_DR_h77_codon_93
-      create variation -t AMINO_ACID drug_resistance "[CHN]"
-      add segment 6534 6536
+      create variation NS5A_DR_h77_codon_28 6339 6341 -t AMINO_ACID "[T]" "Drug resistance"
+      create variation NS5A_DR_h77_codon_30 6345 6347 -t AMINO_ACID "[EHR]" "Drug resistance"
+      create variation NS5A_DR_h77_codon_31 6348 6350 -t AMINO_ACID "[MV]" "Drug resistance"
+      create variation NS5A_DR_h77_codon_93 6534 6536 -t AMINO_ACID "[CHN]" "Drug resistance"
       exit
 
     add feature-location NS5B
     feature-location NS5B
       add segment 7602 9377
-      exit
-    add feature-location NS5B_DR_h77_codon_282
-    feature-location NS5B_DR_h77_codon_282
-      create variation -t AMINO_ACID drug_resistance "[T]"
-      add segment 8445 8447
-      exit
-    add feature-location NS5B_DR_h77_codon_316
-    feature-location NS5B_DR_h77_codon_316
-      add segment 8547 8549
-      exit
-    add feature-location NS5B_DR_h77_codon_419
-    feature-location NS5B_DR_h77_codon_419
-      add segment 8856 8858
+      create variation NS5B_DR_h77_codon_282 8445 8447 -t AMINO_ACID "[T]" "Drug resistance"
+      # Waiting for amino acid values
+      # create variation NS5B_DR_h77_codon_316 8547 8549 -t AMINO_ACID "" "Drug resistance"
+      # create variation NS5B_DR_h77_codon_419 8856 8858 -t AMINO_ACID "" "Drug resistance"
       exit
 
     add feature-location 3UTR
@@ -1083,9 +1022,6 @@ project HCV
       exit
 
     exit  
-
-
-  
     
   create alignment H77 AL_MASTER
   alignment AL_MASTER
