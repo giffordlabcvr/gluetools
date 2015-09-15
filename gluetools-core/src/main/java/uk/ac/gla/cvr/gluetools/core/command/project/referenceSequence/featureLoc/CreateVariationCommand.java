@@ -12,10 +12,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.NotifiabilityLevel;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -26,10 +25,15 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 		commandWords={"create","variation"}, 
 		docoptUsages={"<variationName> <refStart> <refEnd> [-t <type>] <regex> [-n <notifiabilityLevel>] [<description>]"},
 		docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]", 
-				"-n <level>, --notifiabilityLevel <level>  Possible values: [ACTIONABLE, NOT_ACTIONABLE]"},
+				"-n <level>, --notifiabilityLevel <level>  Possible values: [NOTIFIABLE, NOT_NOTIFIABLE]"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Create a new feature variation", 
-		furtherHelp="A variation is a regular expression defining a known motif which may occur at this feature location.") 
+		furtherHelp="A variation is a regular expression defining a known motif which may occur in a query sequence. "+
+		"Note that the meaning of refStart and refEnd are dependent on the transcription type and on the feature location: "+
+		"For variations of type NUCLEOTIDE, refStart and refEnd define simply the NT region of the reference sequence to "+
+		"which the motif should be aligned. For variations of type AMINO_ACID, refStart and refEnd define the codon-numbered "+
+		"region to which the query should be aligned, based on the numbering scheme of the smallest-scope feature ancestor of "+
+		"this variation which has its own codon numbering.") 
 public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
 	private static final String REF_END = "refEnd";
@@ -61,26 +65,18 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
 		notifiabilityLevel = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(NotifiabilityLevel.class, configElem, NOTIFIABILITY_LEVEL, false)).
-				orElse(NotifiabilityLevel.ACTIONABLE);
+				orElse(NotifiabilityLevel.NOTIFIABLE);
 
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DESCRIPTION, false));
 	}
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		
 		if(refStart > refEnd) {
 			throw new VariationException(Code.VARIATION_ENDPOINTS_REVERSED, 
 					getRefSeqName(), getFeatureName(), variationName, Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		Sequence refSequence = featureLoc.getReferenceSequence().getSequence();
-		int refSeqLength = refSequence.getSequenceObject().getNucleotides().length();
-		if(refStart < 1 || refEnd > refSeqLength) {
-			throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
-					getRefSeqName(), getFeatureName(), variationName, 
-					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
-		}
 		ObjectContext objContext = cmdContext.getObjectContext();
 		Variation variation = GlueDataObject.create(objContext, 
 				Variation.class, Variation.pkMap(

@@ -7,8 +7,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
@@ -43,14 +41,6 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 		if(refStart > refEnd) {
 			throw new VariationException(Code.VARIATION_ENDPOINTS_REVERSED, 
 					getRefSeqName(), getFeatureName(), getVariationName(), Integer.toString(refStart), Integer.toString(refEnd));
-		}
-		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		Sequence refSequence = featureLoc.getReferenceSequence().getSequence();
-		int refSeqLength = refSequence.getSequenceObject().getNucleotides().length();
-		if(refStart < 1 || refEnd > refSeqLength) {
-			throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
-					getRefSeqName(), getFeatureName(), getVariationName(), 
-					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		Variation variation = lookupVariation(cmdContext);
 		variation.setRefStart(refStart);

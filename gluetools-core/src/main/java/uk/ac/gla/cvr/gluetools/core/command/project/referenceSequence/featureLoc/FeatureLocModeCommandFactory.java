@@ -24,6 +24,8 @@ public class FeatureLocModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteVariationCommand.class);
 		registerCommandClass(ListVariationCommand.class);
 		
+		registerCommandClass(FeatureLocValidateCommand.class);
+		
 		registerCommandClass(ExitCommand.class);
 	}
 	

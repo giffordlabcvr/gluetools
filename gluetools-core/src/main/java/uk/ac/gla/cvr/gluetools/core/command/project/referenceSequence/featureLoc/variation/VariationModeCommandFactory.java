@@ -22,6 +22,7 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(VariationShowNotifiabilityCommand.class);
 		registerCommandClass(VariationSetLocationCommand.class);
 		registerCommandClass(VariationShowLocationCommand.class);
+		registerCommandClass(VariationValidateCommand.class);
 		
 		registerCommandClass(ExitCommand.class);
 	}

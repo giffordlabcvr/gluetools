@@ -134,3 +134,17 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 	}
 	
 }
+
+function isDifference(reference, query) {
+	var empty = String.fromCharCode(160); // non breaking space.
+	if(reference == empty) {
+		return false;
+	}
+	if(query == empty) {
+		return false;
+	}
+	if(query == reference) {
+		return false;
+	}
+	return true;
+} 

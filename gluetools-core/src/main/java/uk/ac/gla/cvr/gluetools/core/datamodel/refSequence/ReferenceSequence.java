@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.refSequence;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
@@ -34,6 +35,12 @@ public class ReferenceSequence extends _ReferenceSequence {
 	@Override
 	protected Map<String, String> pkMap() {
 		return pkMap(getName());
+	}
+
+
+	public void validate(CommandContext cmdContext) {
+		getFeatureLocations().forEach(featureLoc -> featureLoc.validate(cmdContext));
+
 	}
 
 

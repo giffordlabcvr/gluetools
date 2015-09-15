@@ -97,16 +97,47 @@ a {
 	font-size: 120%;
 }
 
-.analysisSequenceReferenceAA {
+.analysisSequenceReferenceAA, .analysisSequenceQueryAA {
 	font-weight: bold;
-	background-color: #ddeeff;
-	color: #3a5c7e;
 	font-size: 120%;
 }
 
-.analysisSequenceReferenceNTIndex, .analysisSequenceReferenceNT {
+.analysisSequenceReferenceAA {
+	background-color: #ddeeff;
+	color: #3a5c7e;
+}
+
+.analysisSequenceQueryAA {
+	background-color: #ddeecc;
+	color: #557733;
+}
+
+.difference_NOTIFIABLE {
+	background-color: #CC0000;
+	color: #ffffff;
+}
+
+.difference_NOT_NOTIFIABLE {
+	background-color: #559900;
+	color: #ffffff;
+}
+
+.difference {
+	background-color: #aaaaaa; 
+	color: #ffffff;
+}
+
+
+.analysisSequenceReferenceNTIndex, .analysisSequenceReferenceNT, .analysisSequenceQueryNTIndex, .analysisSequenceQueryNT {
 	font-weight: bold;
+}
+
+.analysisSequenceReferenceNTIndex, .analysisSequenceReferenceNT {
 	color: #88aacc;
+}
+
+.analysisSequenceQueryNTIndex, .analysisSequenceQueryNT {
+	color: #99bb77;
 }
 
 .analysisSequenceReferenceNTIndex div, .analysisSequenceQueryNTIndex div {
@@ -118,17 +149,7 @@ a {
 }
 
 
-.analysisSequenceQueryAA {
-	font-weight: bold;
-	background-color: #ddeecc;
-	color: #557733;
-	font-size: 120%;
-}
 
-.analysisSequenceQueryNTIndex, .analysisSequenceQueryNT {
-	font-weight: bold;
-	color: #99bb77;
-}
 
 
 

@@ -6,7 +6,8 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class FeatureException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		PARENT_RELATIONSHIP_LOOP("loopNames");
+		PARENT_RELATIONSHIP_LOOP("loopNames"), 
+		FEATURE_WITH_OWN_CODON_NUMBERING_NOT_IN_ORF("featureName");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

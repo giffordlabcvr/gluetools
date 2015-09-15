@@ -266,6 +266,103 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return segList.getFirst().getRefStart();
 	}
 
+	public static <SA extends IReferenceSegment, SB extends IReferenceSegment> BiFunction<SA, SB, SA> cloneLeftSegMerger() {
+		return new BiFunction<SA, SB, SA>() {
+			@Override
+			public SA apply(SA leftSeg, SB rightSeg) {
+				@SuppressWarnings("unchecked")
+				SA overlap = (SA) leftSeg.clone();
+				int leftTruncate = Math.max(leftSeg.getRefStart(), rightSeg.getRefStart()) - leftSeg.getRefStart();
+				if(leftTruncate > 0) {
+					overlap.truncateLeft(leftTruncate);
+				}
+				int rightTruncate = leftSeg.getRefEnd() - Math.min(leftSeg.getRefEnd(), rightSeg.getRefEnd());
+				if(rightTruncate > 0) {
+					overlap.truncateRight(rightTruncate);
+				}
+				return overlap;
+			}
+		};
+	}
+
+	
+	public static <SA extends IReferenceSegment, SB extends IReferenceSegment> BiFunction<SA, SB, SB> cloneRightSegMerger() {
+		return new BiFunction<SA, SB, SB>() {
+			@Override
+			public SB apply(SA leftSeg, SB rightSeg) {
+				@SuppressWarnings("unchecked")
+				SB overlap = (SB) rightSeg.clone();
+				int leftTruncate = Math.max(leftSeg.getRefStart(), rightSeg.getRefStart()) - rightSeg.getRefStart();
+				if(leftTruncate > 0) {
+					overlap.truncateLeft(leftTruncate);
+				}
+				int rightTruncate = rightSeg.getRefEnd() - Math.min(leftSeg.getRefEnd(), rightSeg.getRefEnd());
+				if(rightTruncate > 0) {
+					overlap.truncateRight(rightTruncate);
+				}
+				return overlap;
+			}
+		};
+	}
+	
+	/**
+     * returns true iff every segment in segmentsToCover is covered by segments.
+	 * @param segments
+	 * @param segmentsToCover
+	 * @return
+	 */
+	public static boolean covers(List<? extends IReferenceSegment> segmentsOrig, 
+			List<? extends IReferenceSegment> segmentsToCoverOrig) {
+		LinkedList<IReferenceSegment> segments = new LinkedList<IReferenceSegment>(segmentsOrig);
+		LinkedList<ReferenceSegment> segmentsToCover = new LinkedList<ReferenceSegment>();
+		segmentsToCoverOrig.forEach(seg -> segmentsToCover.add(new ReferenceSegment(seg.getRefStart(), seg.getRefEnd())));
+		
+		while(!segments.isEmpty() && !segmentsToCover.isEmpty()) {
+			if(segments.isEmpty() && !segmentsToCover.isEmpty()) {
+				return false;
+			}
+			if(!segments.isEmpty() && segmentsToCover.isEmpty()) {
+				return true;
+			}
+			Integer segRefStart = segments.getFirst().getRefStart();
+			Integer segRefEnd = segments.getFirst().getRefEnd();
+			Integer seg2coverRefStart = segmentsToCover.getFirst().getRefStart();
+			Integer seg2coverRefEnd = segmentsToCover.getFirst().getRefEnd();
+			if(segRefEnd < seg2coverRefStart) {
+				segments.removeFirst(); // first in segments is irrelevant, remove it.
+			} else if(seg2coverRefEnd < segRefStart) {
+				return false; // first in segmentsToCover is uncovered.
+			} else if(segRefStart <= seg2coverRefStart) {
+				/* [1   seg  ....
+				 *    [2 seg2cover ....
+				 */
+				if(seg2coverRefEnd <= segRefEnd) {
+					/* [1   seg           9]
+					 *    [2 seg2cover 7]
+					 */
+					segmentsToCover.removeFirst(); // seg2cover contained
+				} else {
+					/* [1   seg      7]
+					 *    [2 seg2cover  9]
+					 */
+					segments.removeFirst(); 
+					segmentsToCover.getFirst().truncateLeft((segRefEnd - seg2coverRefStart) + 1 ); 
+				}
+			} else {
+				/*    [2   seg  ....
+				 * [1    seg2cover ....
+				 */
+				return false; // some part of seg2cover is uncovered.
+			}
+		}
+		if(segments.isEmpty() && !segmentsToCover.isEmpty()) {
+			return false;
+		}
+		if(!segments.isEmpty() && segmentsToCover.isEmpty()) {
+			return true;
+		}
+		return true; // not sure if this is reachable!
+	}
 
 	
 }

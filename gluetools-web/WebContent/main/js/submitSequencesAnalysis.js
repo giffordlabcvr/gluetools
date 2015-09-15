@@ -111,8 +111,26 @@ submitSequencesAnalysis
 			console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
 		}
 		
-		
-		
+		$scope.calculateAaDifferenceStyle = function(analysisSequenceRow, $index) {
+			var referenceAa = analysisSequenceRow["referenceAAs"][$index];
+			var queryAa = analysisSequenceRow["queryAAs"][$index];
+			if(isDifference(referenceAa, queryAa)) {
+				return "difference";
+			} else {
+				return "";
+			}
+		};
+
+		$scope.calculateNtDifferenceStyle = function(analysisSequenceRow, $index) {
+			var referenceNt = analysisSequenceRow["referenceNTs"][$index];
+			var queryNt = analysisSequenceRow["queryNTs"][$index];
+			if(isDifference(referenceNt, queryNt)) {
+				return "difference";
+			} else {
+				return "";
+			}
+		};
+
 	}
 	
 	

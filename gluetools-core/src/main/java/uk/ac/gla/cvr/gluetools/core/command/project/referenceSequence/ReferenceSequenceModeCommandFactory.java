@@ -24,6 +24,8 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ReferenceShowCreationTimeCommand.class);
 		registerCommandClass(ReferenceShowFeatureTreeCommand.class);
 
+		registerCommandClass(ReferenceValidateCommand.class);
+
 		registerCommandClass(ExitCommand.class);
 	}
 	

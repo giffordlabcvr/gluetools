@@ -214,6 +214,150 @@ public class TestReferenceSegment {
 		));
 	}
 
+	@Test
+	public void testCovers1() {
+		coversTest(
+				refSegs(
+						refSeg(4,12)
+						),
+				refSegs(
+						refSeg(4,8)
+						),
+				true
+		);
+	}
+
+	@Test
+	public void testCovers2() {
+		coversTest(
+				refSegs(
+						refSeg(4,8)
+						),
+				refSegs(
+						refSeg(4,12)
+						),
+				false
+		);
+	}
+
+	@Test
+	public void testCovers3() {
+		coversTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(9,12)
+						),
+				refSegs(
+						refSeg(4,12)
+						),
+				true
+		);
+	}
+
+	@Test
+	public void testCovers4() {
+		coversTest(
+				refSegs(
+						refSeg(4,12)
+						),
+				refSegs(
+						refSeg(9,12)
+						),
+				true
+		);
+	}
+
+	@Test
+	public void testCovers5() {
+		coversTest(
+				refSegs(
+						refSeg(1,2),
+						refSeg(4,12)
+						),
+				refSegs(
+						refSeg(9,12)
+						),
+				true
+		);
+	}
+
+	@Test
+	public void testCovers6() {
+		coversTest(
+				refSegs(
+						refSeg(1,12)
+						),
+				refSegs(
+						refSeg(4, 9)
+						),
+				true
+		);
+	}
+
+	@Test
+	public void testCovers7() {
+		coversTest(
+				refSegs(
+						refSeg(1,12)
+						),
+				refSegs(
+						refSeg(4, 13)
+						),
+				false
+		);
+	}
+
+	
+	@Test
+	public void testCovers8() {
+		coversTest(
+				refSegs(
+						refSeg(4, 9)
+						),
+				refSegs(
+						refSeg(3, 9)
+						),
+				false
+		);
+	}
+
+	
+	@Test
+	public void testCovers9() {
+		coversTest(
+				refSegs(
+						refSeg(1, 3),
+						refSeg(5, 9)
+						),
+				refSegs(
+						refSeg(1, 3),
+						refSeg(5, 9)
+						),
+				true
+		);
+	}
+
+	@Test
+	public void testCovers10() {
+		coversTest(
+				refSegs(
+						refSeg(5, 9)
+						),
+				refSegs(
+						refSeg(1, 3),
+						refSeg(5, 9)
+						),
+				false
+		);
+	}
+
+	
+	
+	
+	
+	
+	
+	
 	
 	private static ReferenceSegment refSeg(int refStart, int refEnd) {
 		return new ReferenceSegment(refStart, refEnd);
@@ -233,6 +377,13 @@ public class TestReferenceSegment {
 		List<String> actualResults = intersection.stream().map(s -> s.toString()).collect(Collectors.toList());
 		Assert.assertEquals(Arrays.asList(expectedIntersection), actualResults);
 	}
+
+	private void coversTest(ReferenceSegment[] segs1, ReferenceSegment[] segs2, boolean expectedCoverResult) {
+		boolean actualCoverResult = ReferenceSegment.covers(Arrays.asList(segs1), Arrays.asList(segs2));
+		Assert.assertEquals(expectedCoverResult, actualCoverResult);
+	}
+
+	
 	
 	private class SegMerger implements BiFunction<ReferenceSegment, ReferenceSegment, ReferenceSegment> {
 		@Override

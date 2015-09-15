@@ -55,6 +55,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ListFormatSequenceCommand.class);
 		registerCommandClass(ExportSequenceCommand.class);
 
+		registerCommandClass(ProjectValidateCommand.class);
 		
 		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");
 		addGroupHelp(Arrays.asList("list"), "List certain objects in this project");

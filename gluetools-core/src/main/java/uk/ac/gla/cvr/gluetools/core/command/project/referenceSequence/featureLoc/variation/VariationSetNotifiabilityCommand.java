@@ -26,7 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptOptions={},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Set the variation's notifiability level", 
-		furtherHelp="Possible values for the notifiability level are [ACTIONABLE, NOT_ACTIONABLE]") 
+		furtherHelp="Possible values for the notifiability level are [NOTIFIABLE, NOT_NOTIFIABLE]") 
 public class VariationSetNotifiabilityCommand extends VariationModeCommand<OkResult> {
 
 	public static final String NOTIFIABILITY_LEVEL = "notifiabilityLevel";
@@ -39,7 +39,7 @@ public class VariationSetNotifiabilityCommand extends VariationModeCommand<OkRes
 		super.configure(pluginConfigContext, configElem);
 		notifiabilityLevel = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(NotifiabilityLevel.class, configElem, NOTIFIABILITY_LEVEL, false)).
-				orElse(NotifiabilityLevel.ACTIONABLE);
+				orElse(NotifiabilityLevel.NOTIFIABLE);
 	}
 
 	@Override

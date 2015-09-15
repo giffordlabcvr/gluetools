@@ -1,13 +1,22 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 
@@ -15,8 +24,8 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
 public class Variation extends _Variation {
 
 	public enum NotifiabilityLevel {
-		ACTIONABLE,
-		NOT_ACTIONABLE
+		NOTIFIABLE,
+		NOT_NOTIFIABLE
 	}
 	
 	private NotifiabilityLevel notifiabilityLevel;
@@ -64,6 +73,46 @@ public class Variation extends _Variation {
 	
 	private NotifiabilityLevel buildNotifiabilityLevel() {
 		return NotifiabilityLevel.valueOf(getNotifiability());
+	}
+
+	public void validate(CommandContext cmdContext) {
+		Integer refStart = getRefStart();
+		Integer refEnd = getRefEnd();
+		FeatureLocation featureLoc = getFeatureLoc();
+		ReferenceSequence refSeq = featureLoc.getReferenceSequence();
+		Feature feature = featureLoc.getFeature();
+		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
+		TranscriptionFormat transcriptionFormat = getTranscriptionFormat();
+		if(transcriptionFormat == TranscriptionFormat.NUCLEOTIDE) {
+			if(!ReferenceSegment.covers(featureLocSegments, 
+					Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
+				throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
+						refSeq.getName(), feature.getName(), getName(), 
+						Integer.toString(refStart), Integer.toString(refEnd));
+			}
+		} else if(transcriptionFormat == TranscriptionFormat.AMINO_ACID) {
+			Feature orfAncestor = feature.getOrfAncestor();
+			if(orfAncestor == null) {
+				throw new VariationException(Code.AMINO_ACID_VARIATION_MUST_BE_DEFINED_IN_ORF, 
+						refSeq.getName(), feature.getName(), getName(), transcriptionFormat.name());
+			}
+			FeatureLocation codonNumberingAncestorLocation = featureLoc.getCodonNumberingAncestorLocation(cmdContext);
+			if(codonNumberingAncestorLocation == null) {
+				throw new VariationException(Code.AMINO_ACID_VARIATION_HAS_NO_CODON_NUMBERING_ANCESTOR, 
+						refSeq.getName(), feature.getName(), getName(), transcriptionFormat.name());
+			}
+			Integer maxCodonNumber = codonNumberingAncestorLocation.getMaxCodonNumber();
+			if(refStart < 1 || refEnd > maxCodonNumber) {
+				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
+						refSeq.getName(), feature.getName(), getName(), 
+						codonNumberingAncestorLocation.getFeature().getName(),
+						Integer.toString(refStart), Integer.toString(refEnd), maxCodonNumber);
+			}
+
+			
+			
+		}
+
 	}	
 
 	

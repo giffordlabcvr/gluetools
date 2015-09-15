@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
@@ -73,6 +74,18 @@ public class Feature extends _Feature {
 		}
 	}
 
+	// "Next ancestor" is defined as the first distinct ancestor we encounter while traversing the tree, which is not informational
+	public Feature getNextAncestor() {
+		Feature parent = getParent();
+		if(parent == null) {
+			return null;
+		} else if(!parent.getMetatagTypes().contains(FeatureMetatag.Type.INFORMATIONAL)) {
+			return parent;
+		} else {
+			return parent.getNextAncestor();
+		}
+	}
+
 	public int getDepthInTree() {
 		Feature parent = getParent();
 		if(parent == null) {
@@ -83,6 +96,27 @@ public class Feature extends _Feature {
 		
 	}
 	
+	public void validate(CommandContext cmdContext) {
+		if(hasOwnCodonNumbering()) {
+			Feature orfAncestor = getOrfAncestor();
+			if(orfAncestor == null) {
+				throw new FeatureException(FeatureException.Code.FEATURE_WITH_OWN_CODON_NUMBERING_NOT_IN_ORF, 
+						getName());
+			}
+		}
+	}
+
+	
+	public boolean hasOwnCodonNumbering() {
+		return getMetatagTypes().contains(FeatureMetatag.Type.OWN_CODON_NUMBERING);
+	}
+
+	public boolean isOpenReadingFrame() {
+		return getMetatagTypes().contains(FeatureMetatag.Type.OPEN_READING_FRAME);
+	}
+
+	
+
 	
 	
 }
