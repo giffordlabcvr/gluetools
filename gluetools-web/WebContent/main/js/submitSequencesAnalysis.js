@@ -36,19 +36,19 @@ submitSequencesAnalysis
 	$scope.analysisResultsCtrl = function($scope) {
 		console.log('created controller for ', $scope.sequenceResult);
 
-		console.log('refResultMap:', $scope.sequenceResult.refResultMap);
+		console.log('refToFeatureTreeMap:', $scope.sequenceResult.refToFeatureTreeMap);
 		
 		$scope.referenceOptions = [];
 		$scope.noneSelected = "None selected";
 		$scope.numReferenceOptions = 0;
 		
-		var refResultMap = $scope.sequenceResult.refResultMap;
+		var refToFeatureTreeMap = $scope.sequenceResult.refToFeatureTreeMap;
 		
-		for(var i = 0; i < $scope.sequenceResult.alignmentAnalysis.length; i++) {
-			var alignmentAnalysis = $scope.sequenceResult.alignmentAnalysis[i];
-			if(refResultMap[alignmentAnalysis.referenceName].featureAnalysisTree) {
+		for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
+			var sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
+			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features) {
 				$scope.numReferenceOptions ++;
-				$scope.referenceOptions.push(alignmentAnalysis.referenceName);
+				$scope.referenceOptions.push(sequenceAlignmentResult.referenceName);
 			}
 		}
 		if($scope.numReferenceOptions != 1) {
@@ -59,9 +59,9 @@ submitSequencesAnalysis
 		$scope.$watch( 'sequenceResult.selectedReference', function( newObj, oldObj ) {
 			console.log("selectedReference for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
 			if(newObj != $scope.noneSelected) {
-				$scope.sequenceResult.featureAnalysisTree = $scope.sequenceResult.refResultMap[newObj].featureAnalysisTree;
+				$scope.sequenceResult.featureTreeResult = $scope.sequenceResult.refToFeatureTreeMap[newObj].features;
 			} else {
-				$scope.sequenceResult.featureAnalysisTree = null;
+				$scope.sequenceResult.featureTreeResult = null;
 			}
 			$scope.sequenceResult.selectedFeature = { featureDescription: $scope.noneSelected }
 		}, false);
@@ -91,17 +91,17 @@ submitSequencesAnalysis
 				return;
 			}
 			var sequenceFeatureResult;
-			var alignmentAnalysis;
-			for(var i = 0; i < $scope.sequenceResult.alignmentAnalysis.length; i++) {
-				if($scope.sequenceResult.alignmentAnalysis[i].referenceName == $scope.sequenceResult.selectedReference) {
-					alignmentAnalysis = $scope.sequenceResult.alignmentAnalysis[i];
+			var sequenceAlignmentResult;
+			for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
+				if($scope.sequenceResult.sequenceAlignmentResult[i].referenceName == $scope.sequenceResult.selectedReference) {
+					sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
 				}
 			}
-			console.log("alignmentAnalysis ", alignmentAnalysis);
+			console.log("sequenceAlignmentResult ", sequenceAlignmentResult);
 			var sequenceFeatureResult;
-			for(var i = 0; i < alignmentAnalysis.sequenceFeatureResult.length; i++) {
-				if(alignmentAnalysis.sequenceFeatureResult[i].featureName == $scope.sequenceResult.selectedFeature.featureName) {
-					sequenceFeatureResult = alignmentAnalysis.sequenceFeatureResult[i];
+			for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
+				if(sequenceAlignmentResult.sequenceFeatureResult[i].featureName == $scope.sequenceResult.selectedFeature.featureName) {
+					sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
 				}
 			}
 			console.log("sequenceFeatureResult ", sequenceFeatureResult);
@@ -231,15 +231,15 @@ submitSequencesAnalysis
         console.info('onSuccessItem', fileItem, response, status, headers);
         fileItem.transientAnalysisResult = response.transientAnalysisResult;
         // create a map from the ref results.
-        var refResultMap = {};
-        var refResultArray = fileItem.transientAnalysisResult.referenceResult;
-        for(var i = 0; i < refResultArray.length; i++) {
-        	refResultMap[refResultArray[i].referenceName] = refResultArray[i];
+        var refToFeatureTreeMap = {};
+        var alignmentResultArray = fileItem.transientAnalysisResult.alignmentResult;
+        for(var i = 0; i < alignmentResultArray.length; i++) {
+        	refToFeatureTreeMap[alignmentResultArray[i].referenceName] = alignmentResultArray[i].featureTreeResult;
         }
         // add a reference to the ref results for each seqResult.
         var seqResultArray = fileItem.transientAnalysisResult.sequenceResult;
         for(var i = 0; i < seqResultArray.length; i++) {
-        	seqResultArray[i].refResultMap = refResultMap;
+        	seqResultArray[i].refToFeatureTreeMap = refToFeatureTreeMap;
         }
         
     };

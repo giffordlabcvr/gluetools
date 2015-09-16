@@ -1,12 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public abstract class AbstractSequenceObject {
 
@@ -79,6 +84,23 @@ public abstract class AbstractSequenceObject {
 	
 	public CharSequence getNucleotides(int ntStart, int ntEnd) {
 		return getNucleotides().subSequence(ntStart-1, ntEnd);
+	}
+
+	public static List<AbstractSequenceObject> seqObjectsFromSeqData(
+			byte[] sequenceData) {
+		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
+		List<AbstractSequenceObject> seqObjects;
+		if(format == SequenceFormat.FASTA) {
+			Map<String, DNASequence> fastaMap = FastaUtils.parseFasta(sequenceData);
+			seqObjects = fastaMap.entrySet().stream()
+					.map(ent -> new FastaSequenceObject(ent.getKey(), ent.getValue().toString()))
+					.collect(Collectors.toList());
+		} else {
+			AbstractSequenceObject seqObj = format.sequenceObject();
+			seqObj.fromOriginalData(sequenceData);
+			seqObjects = Collections.singletonList(seqObj);
+		}
+		return seqObjects;
 	}
 	
 }

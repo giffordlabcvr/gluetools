@@ -5087,11 +5087,6 @@ project HCV
     alignment AL_2b show statistics
 
   
-  module mutationFrequencies
-  
-    generate -t 6 -f E1
-    exit
-
   # delete source stopHcvCvr
 	  
   validate

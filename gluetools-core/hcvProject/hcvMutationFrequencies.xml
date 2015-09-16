@@ -1,4 +1,3 @@
 <mutationFrequenciesReporter>
-	<alignmentName>AL_MASTER</alignmentName>
 	<alignerModuleName>blastAligner</alignerModuleName>
 </mutationFrequenciesReporter>

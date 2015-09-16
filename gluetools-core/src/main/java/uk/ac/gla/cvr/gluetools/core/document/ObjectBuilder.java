@@ -1,7 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -18,6 +20,10 @@ public class ObjectBuilder {
 
 	Element getElement() {
 		return parentElement;
+	}
+	
+	public ObjectReader getObjectReader() {
+		return new ObjectReader(getElement());
 	}
 	
 	public ObjectBuilder setInt(String name, int value) {
@@ -76,7 +82,15 @@ public class ObjectBuilder {
 		return this;
 	}
 
-	
+	public void setImportedDocument(Document document) {
+		Element elem = getElement();
+		Document ownerDocument = elem.getOwnerDocument();
+		Element elemToImport = document.getDocumentElement();
+		NodeList childNodes = elemToImport.getChildNodes();
+		for(int i = 0; i < childNodes.getLength(); i++) {
+			elem.appendChild(ownerDocument.importNode(childNodes.item(i), true));
+		}
+	}
 	
 	
 }

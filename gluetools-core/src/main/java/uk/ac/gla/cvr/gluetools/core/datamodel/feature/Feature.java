@@ -116,7 +116,4 @@ public class Feature extends _Feature {
 	}
 
 	
-
-	
-	
 }

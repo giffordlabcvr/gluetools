@@ -17,8 +17,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.ReferenceResult;
-import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter.SequenceResult;
 
 @CommandClass(
 		commandWords={"transient", "analysis"}, 
@@ -68,11 +66,11 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 
 	public static class TransientAnalysisResult extends CommandResult {
 
-		protected TransientAnalysisResult(List<ReferenceResult> refResults, List<SequenceResult> seqResults) {
+		protected TransientAnalysisResult(List<AlignmentResult> almtResults, List<SequenceResult> seqResults) {
 			super("transientAnalysisResult");
-			ArrayBuilder refResultArrayBuilder = getDocumentBuilder().setArray("referenceResult");
-			for(ReferenceResult refResult: refResults) {
-				refResult.toDocument(refResultArrayBuilder.addObject());
+			ArrayBuilder almtResultArrayBuilder = getDocumentBuilder().setArray("alignmentResult");
+			for(AlignmentResult almtResult: almtResults) {
+				almtResult.toDocument(almtResultArrayBuilder.addObject());
 			}
 			ArrayBuilder seqResultArrayBuilder = getDocumentBuilder().setArray("sequenceResult");
 			for(SequenceResult seqResult: seqResults) {

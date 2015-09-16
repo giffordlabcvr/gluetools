@@ -12,10 +12,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatagExcep
 public class FeatureMetatag extends _FeatureMetatag {
 
 	public enum Type {
-		OPEN_READING_FRAME, // this feature (and any descendent features) can be translated to amino acids
-		INFORMATIONAL, // informational features are in place just to group other features
-		HIDDEN, // hidden features should not be displayed in a UI
-		OWN_CODON_NUMBERING, // this feature uses its own codon numbering coordinates, rather than inheriting them from an ancestor.		
+		/** 
+		 * this feature (and any descendent features) can be translated to amino acids
+		 */
+		OPEN_READING_FRAME,
+		/** 
+		 * informational features are in place just to group other features
+		 * */
+		INFORMATIONAL, 
+		/** 
+		 * this feature uses its own codon numbering coordinates, rather than inheriting them from an ancestor.
+		 */
+		OWN_CODON_NUMBERING, 
 	}
 
 	private Type type = null;

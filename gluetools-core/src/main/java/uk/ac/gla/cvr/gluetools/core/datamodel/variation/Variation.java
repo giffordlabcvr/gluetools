@@ -101,7 +101,7 @@ public class Variation extends _Variation {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_HAS_NO_CODON_NUMBERING_ANCESTOR, 
 						refSeq.getName(), feature.getName(), getName(), transcriptionFormat.name());
 			}
-			Integer maxCodonNumber = codonNumberingAncestorLocation.getMaxCodonNumber();
+			Integer maxCodonNumber = codonNumberingAncestorLocation.getOwnCodonNumberingMax(cmdContext);
 			if(refStart < 1 || refEnd > maxCodonNumber) {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
 						refSeq.getName(), feature.getName(), getName(), 

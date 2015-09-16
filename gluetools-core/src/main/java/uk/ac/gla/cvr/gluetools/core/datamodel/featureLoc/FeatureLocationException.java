@@ -9,7 +9,9 @@ public class FeatureLocationException extends GlueException {
 		NEXT_ANCESTOR_FEATURE_LOCATION_UNDEFINED("refSeqName", "featureName", "nextAncestorFeatureName"),
 		FEATURE_LOCATION_NOT_CONTAINED_WITHIN_NEXT_ANCESTOR("refSeqName", "featureName", "nextAncestorFeatureName"), 
 		FEATURE_LOCATION_HAS_NO_SEGMENTS("refSeqName", "featureName"), 
-		FEATURE_LOCATION_SEGMENT_NOT_CODON_ALIGNED("refSeqName", "featureName", "segRefStart", "segRefEnd", "codon1Start");
+		FEATURE_LOCATION_SEGMENT_NOT_CODON_ALIGNED("refSeqName", "featureName", "segRefStart", "segRefEnd", "codon1Start"),
+		FEATURE_LOCATION_ORF_TRANSCRIPTION_INCOMPLETE("refSeqName", "featureName", "segRefStart", "segRefEnd");
+		
 		
 		private String[] argNames;
 		private Code(String... argNames) {
