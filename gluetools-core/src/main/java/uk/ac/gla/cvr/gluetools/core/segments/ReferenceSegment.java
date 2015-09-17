@@ -305,6 +305,12 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		};
 	}
 	
+	public static boolean sameRegion(
+			List<? extends IReferenceSegment> segments1, 
+			List<? extends IReferenceSegment> segments2) {
+		return covers(segments1, segments2) && covers(segments2, segments1);
+	}
+	
 	/**
      * returns true iff every segment in segmentsToCover is covered by segments.
 	 * @param segments

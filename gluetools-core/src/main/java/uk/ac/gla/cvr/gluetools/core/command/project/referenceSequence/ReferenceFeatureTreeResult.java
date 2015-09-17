@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,6 +14,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -35,6 +38,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	private List<ReferenceSegment> referenceSegments = null;
 	private List<NtReferenceSegment> ntReferenceSegments = null;
 	private List<AaReferenceSegment> aaReferenceSegments = null;
+	private List<VariationDocument> variationDocuments = new ArrayList<VariationDocument>();
 	
 	private ReferenceFeatureTreeResult parentTreeResult;
 
@@ -116,6 +120,13 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 			refSeg.toDocument(refSegArray.addObject());
 		});
 		featureTreeResult.realiseSegments(cmdContext, featureLocation);
+		ArrayBuilder variationArray = objectBuilder.setArray("variation");
+		for(Variation variation: featureLocation.getVariations()) {
+			VariationDocument variationDocument = variation.getVariationDocument();
+			variationDocuments.add(variationDocument);
+			variationDocument.toDocument(variationArray.addObject());
+		}
+		
 	}
 	
 	private ReferenceFeatureTreeResult findAncestor(String name) {
@@ -210,8 +221,16 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return referenceSegments;
 	}
 
+	public List<VariationDocument> getVariationDocuments() {
+		return variationDocuments;
+	}
+
 	public boolean isInformational() {
 		return getFeatureMetatags().contains(FeatureMetatag.Type.INFORMATIONAL.name());
+	}
+
+	public boolean isOpenReadingFrame() {
+		return getFeatureMetatags().contains(FeatureMetatag.Type.OPEN_READING_FRAME.name());
 	}
 	
 }

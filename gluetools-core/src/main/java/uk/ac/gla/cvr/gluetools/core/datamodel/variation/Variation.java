@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
@@ -30,6 +31,7 @@ public class Variation extends _Variation {
 	
 	private NotifiabilityLevel notifiabilityLevel;
 	private TranscriptionFormat transcriptionFormat;
+	private Pattern regexPattern;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
 	public static final String REF_SEQ_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+_ReferenceSequence.NAME_PROPERTY;
@@ -64,6 +66,17 @@ public class Variation extends _Variation {
 	}	
 
 	
+	public Pattern getRegexPattern() {
+		if(regexPattern == null) {
+			regexPattern = buildRegexPattern();
+		}
+		return regexPattern;
+	}
+	
+	private Pattern buildRegexPattern() {
+		return Pattern.compile(getRegex());
+	}	
+
 	public NotifiabilityLevel getNotifiabilityLevel() {
 		if(notifiabilityLevel == null) {
 			notifiabilityLevel = buildNotifiabilityLevel();
@@ -115,6 +128,11 @@ public class Variation extends _Variation {
 
 	}	
 
-	
+	public VariationDocument getVariationDocument() {
+		return new VariationDocument(getName(), 
+				getRefStart(), getRefEnd(), 
+				getRegexPattern(), getDescription(), 
+				getNotifiabilityLevel(), getTranscriptionFormat());
+	}
 	
 }
