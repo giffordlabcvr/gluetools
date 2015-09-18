@@ -16,7 +16,8 @@ import org.biojava.nbio.core.sequence.compound.AmbiguityDNACompoundSet;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-public class Sam2ConsensusSequenceObject extends AbstractSequenceObject {
+public class Sam2ConsensusSequenceObject extends AbstractSequenceObject 
+	implements SupportsMinorityVariants<Sam2ConsensusSequenceObject, Sam2ConsensusMinorityVariantFilter>{
 
 	public Sam2ConsensusSequenceObject() {
 		super(SequenceFormat.SAM2CONSENSUS_EXTENDED);
@@ -166,12 +167,12 @@ public class Sam2ConsensusSequenceObject extends AbstractSequenceObject {
 		}
 	}
 
-	private String getChar(String[] cells, String[] columnHeaders, int columnIndex, int expectedPosition) {
+	private Character getChar(String[] cells, String[] columnHeaders, int columnIndex, int expectedPosition) {
 		if(cells[columnIndex].length() != 1) {
 			throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "Position "+expectedPosition+", column "+
 					columnHeaders[columnIndex]+", expected single character, found: \""+cells[columnIndex]+"\"");
 		}
-		return cells[columnIndex];
+		return cells[columnIndex].charAt(0);
 	}
 
 	@Override
@@ -187,6 +188,61 @@ public class Sam2ConsensusSequenceObject extends AbstractSequenceObject {
 	public Object getLocationFieldValue(int position, LocationField field) {
 		return ntLocations[position-1].get(field);
 	}
+	
+	public double getEntropy(int position) {
+		return ((Double) getLocationFieldValue(position, LocationField.entropy)).doubleValue();
+	}
+
+	public char getConsensus(int position) {
+		return ((Character) getLocationFieldValue(position, LocationField.consensus)).charValue();
+	}
+
+	public double getProportion(int position, char ntValue) {
+		LocationField ntCountField;
+		switch(ntValue) {
+		case 'A':
+			ntCountField = LocationField.a;
+			break;
+		case 'T':
+			ntCountField = LocationField.t;
+			break;
+		case 'C':
+			ntCountField = LocationField.c;
+			break;
+		case 'G':
+			ntCountField = LocationField.g;
+			break;
+		default:
+			throw new RuntimeException("Bad NT value: "+ntValue);
+		}
+		int ntCount = ((Integer) getLocationFieldValue(position, ntCountField)).intValue();
+		int total = ((Integer) getLocationFieldValue(position, LocationField.coverage)).intValue();
+		return ((double) ntCount) / total;
+	}
+
+	
+	public int getQuality(int position, char ntValue) {
+		LocationField ntQualityField;
+		switch(ntValue) {
+		case 'A':
+			ntQualityField = LocationField.aQual;
+			break;
+		case 'T':
+			ntQualityField = LocationField.tQual;
+			break;
+		case 'C':
+			ntQualityField = LocationField.cQual;
+			break;
+		case 'G':
+			ntQualityField = LocationField.gQual;
+			break;
+		default:
+			throw new RuntimeException("Bad NT value: "+ntValue);
+		}
+		return ((Integer) getLocationFieldValue(position, ntQualityField)).intValue();
+	}
+
+	
 
 	@Override
 	public byte[] toOriginalData() {
@@ -215,6 +271,5 @@ public class Sam2ConsensusSequenceObject extends AbstractSequenceObject {
 		}
 		return buf.toString().getBytes();
 	}
-
 
 }

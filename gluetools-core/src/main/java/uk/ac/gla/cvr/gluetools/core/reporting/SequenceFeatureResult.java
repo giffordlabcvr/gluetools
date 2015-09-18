@@ -7,7 +7,11 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceFeatureTreeResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AaMinorityVariant;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NtMinorityVariant;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -31,6 +35,9 @@ public class SequenceFeatureResult {
 	private List<ReferenceDifferenceNote> aaReferenceDifferenceNotes;
 	private ReferenceFeatureTreeResult featureTreeResult;
 	
+	private List<NtMinorityVariant> ntMinorityVariants;
+	private List<AaMinorityVariant> aaMinorityVariants;
+	
 	public SequenceFeatureResult(ReferenceFeatureTreeResult featureTreeResult) {
 		this.featureTreeResult = featureTreeResult;
 	}
@@ -38,7 +45,8 @@ public class SequenceFeatureResult {
 	public void init(
 			AbstractSequenceObject querySeqObj,
 			List<QueryAlignedSegment> seqToRefAlignedSegments, 
-			Map<String, SequenceFeatureResult> featureToSequenceFeatureResult) {
+			Map<String, SequenceFeatureResult> featureToSequenceFeatureResult, 
+			Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter) {
 		// intersect the seqToRefAlignedSegments with the reference segments of the feature we are looking at
 		List<QueryAlignedSegment> featureQueryAlignedSegments = 
 				ReferenceSegment.intersection(featureTreeResult.getReferenceSegments(), seqToRefAlignedSegments, 
@@ -46,6 +54,9 @@ public class SequenceFeatureResult {
 		// realize these segments (add NTs)
 		ntQueryAlignedSegments = 
 				querySeqObj.getNtQueryAlignedSegments(featureQueryAlignedSegments);
+		
+		ntMinorityVariants = generateNtMinorityVariants(ntQueryAlignedSegments, querySeqObj, s2cMinorityVariantFilter);
+		
 		if(ntQueryAlignedSegments.isEmpty()) {
 			aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
 		} else {
@@ -60,6 +71,21 @@ public class SequenceFeatureResult {
 			}
 		}
 		generateContentNotes();
+	}
+
+
+	private List<NtMinorityVariant> generateNtMinorityVariants(
+			List<NtQueryAlignedSegment> ntQuerySegments, AbstractSequenceObject querySeqObj,
+			Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter) {
+		List<NtMinorityVariant> ntMinorityVariants = new ArrayList<NtMinorityVariant>();
+		if(querySeqObj instanceof Sam2ConsensusSequenceObject) {
+			Sam2ConsensusSequenceObject s2cSeqObj = (Sam2ConsensusSequenceObject) querySeqObj;
+			for(NtQueryAlignedSegment ntQuerySeg: ntQuerySegments) {
+				ntMinorityVariants.addAll(s2cSeqObj.getMinorityVariants(ntQuerySeg.getQueryStart(), 
+						ntQuerySeg.getQueryEnd(), s2cMinorityVariantFilter));
+			}
+		}
+		return ntMinorityVariants;
 	}
 
 	private void generateContentNotes() {
@@ -144,6 +170,7 @@ public class SequenceFeatureResult {
 	public void transcribeOrfDescendent(
 			SequenceFeatureResult orfAncestorSequenceFeatureResult) {
 		Integer codon1Start = featureTreeResult.getCodon1Start();
+
 		ReferenceFeatureTreeResult orfAncestorFeatureTreeResult = orfAncestorSequenceFeatureResult.featureTreeResult;
 		Integer orfAncestorCodon1Start = orfAncestorFeatureTreeResult.getCodon1Start();
 		List<AaReferenceSegment> ancestorAaRefSegs = orfAncestorSequenceFeatureResult.aaQueryAlignedSegments;
@@ -153,12 +180,25 @@ public class SequenceFeatureResult {
 				ancestorAaRefSegs, orfAncestorCodon1Start, 
 				ntQueryAlignedSegments, ancestorReferenceToQueryOffset);
 
+		List<AaMinorityVariant> orfAncestorAaMvs = orfAncestorSequenceFeatureResult.aaMinorityVariants;
+		aaMinorityVariants = new ArrayList<AaMinorityVariant>();
+		// add all minority variants which are located in this feature.
+		for(AaMinorityVariant orfAncestorAaMv: orfAncestorAaMvs) {			
+			if(ReferenceSegment.coversLocation(aaQueryAlignedSegments, orfAncestorAaMv.getAaIndex())) {
+				aaMinorityVariants.add(orfAncestorAaMv.clone());
+			}
+		}
+		
 		// if necessary translate to feature's own codon coordinates.
 		if(codon1Start != null) {
 			int ntOffset = orfAncestorCodon1Start-codon1Start;
 			int ancestorToLocalCodonOffset = ntOffset/3;
 			aaQueryAlignedSegments.forEach(aaRefSeg -> aaRefSeg.translate(ancestorToLocalCodonOffset));
+			aaMinorityVariants.forEach(aaMv -> aaMv.translate(ancestorToLocalCodonOffset));
 		}
+		
+		
+		
 	}
 
 	public void transcribeOpenReadingFrame(AbstractSequenceObject seqObj) {
@@ -168,33 +208,39 @@ public class SequenceFeatureResult {
 			// query segments fail to cover the start codon, so we can't transcribe.
 			aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
 		} else {
-			int seqFeatureQueryNtStart = ntQueryAlignedSegments.get(0).getQueryStart();
-			int seqFeatureQueryNtEnd = ntQueryAlignedSegments.get(ntQueryAlignedSegments.size()-1).getQueryEnd();
+			int firstQuerySegNtStart = ntQueryAlignedSegments.get(0).getQueryStart();
+			int lastQuerySegNtEnd = ntQueryAlignedSegments.get(ntQueryAlignedSegments.size()-1).getQueryEnd();
 
 			// attempt to transcribe everything between the start and end points.
 			// the point of this is to pick up any possible stop codons or gaps in the gaps between aligned
 			// segments
-			String seqFeatureAAs = TranscriptionUtils.transcribe(
-					seqObj.getNucleotides(seqFeatureQueryNtStart, seqFeatureQueryNtEnd));
-			if(seqFeatureAAs.length() == 0) {
-				aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
-			} else {
-				aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
+			CharSequence seqFeatureNts = seqObj.getNucleotides(firstQuerySegNtStart, lastQuerySegNtEnd);
+			List<NtMinorityVariant> ntMinorityVariantsInSegment = 
+					findMinorityVariants(ntMinorityVariants, firstQuerySegNtStart, lastQuerySegNtEnd);
+			
+			String seqFeatureAAs = TranscriptionUtils.transcribe(seqFeatureNts);
+			aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
+			aaMinorityVariants = new ArrayList<AaMinorityVariant>();
+			if(seqFeatureAAs.length() != 0) {
 				int firstSegRefToQueryOffset = ntQueryAlignedSegments.get(0).getReferenceToQueryOffset();
 				for(NtQueryAlignedSegment ntQuerySeg : ntQueryAlignedSegments) {
 					int segReferenceToQueryOffset = ntQuerySeg.getReferenceToQueryOffset();
 					if( (segReferenceToQueryOffset - firstSegRefToQueryOffset) % 3 != 0 ) {
 						continue; // skip any query segments which change the reading frame.
 					}
+					int segQueryToReferenceOffset = ntQuerySeg.getQueryToReferenceOffset();
+
 					// conservatively select the transcribed chunk which is fully covered by this segment.
 					int querySegNtStart = ntQuerySeg.getQueryStart();
-					int firstQuerySegCodon = TranscriptionUtils.getCodon(seqFeatureQueryNtStart, querySegNtStart);
-					if(!TranscriptionUtils.isAtStartOfCodon(seqFeatureQueryNtStart, querySegNtStart)) {
+					
+					// find codon of this query seg within transcribed segment.
+					int firstQuerySegCodon = TranscriptionUtils.getCodon(firstQuerySegNtStart, querySegNtStart);
+					if(!TranscriptionUtils.isAtStartOfCodon(firstQuerySegNtStart, querySegNtStart)) {
 						firstQuerySegCodon++;
 					}
 					int querySegNtEnd = ntQuerySeg.getQueryEnd();
-					int lastQuerySegCodon = TranscriptionUtils.getCodon(seqFeatureQueryNtStart, querySegNtEnd);
-					if(!TranscriptionUtils.isAtEndOfCodon(seqFeatureQueryNtStart, querySegNtEnd)) {
+					int lastQuerySegCodon = TranscriptionUtils.getCodon(firstQuerySegNtStart, querySegNtEnd);
+					if(!TranscriptionUtils.isAtEndOfCodon(firstQuerySegNtStart, querySegNtEnd)) {
 						lastQuerySegCodon--;
 					}
 					if(lastQuerySegCodon < firstQuerySegCodon) {
@@ -206,14 +252,57 @@ public class SequenceFeatureResult {
 					lastQuerySegCodon = Math.min(lastQuerySegCodon, seqFeatureAAs.length());
 					CharSequence querySegAas = seqFeatureAAs.subSequence(firstQuerySegCodon-1, lastQuerySegCodon);
 					// translate the location back to reference codon numbers
-					int refNTStart = TranscriptionUtils.getNt(seqFeatureQueryNtStart, firstQuerySegCodon) + 
-							ntQuerySeg.getQueryToReferenceOffset();
-					int refCodonStart = TranscriptionUtils.getCodon(featureTreeResult.getCodon1Start(), refNTStart);
+					int refNTStart = TranscriptionUtils.getNt(firstQuerySegNtStart, firstQuerySegCodon) + 
+							segQueryToReferenceOffset;
+					int codon1Start = featureTreeResult.getCodon1Start();
+					
+					int refCodonStart = TranscriptionUtils.getCodon(codon1Start, refNTStart);
 					int refCodonEnd = refCodonStart+(querySegAas.length()-1);
-					aaQueryAlignedSegments.add(new AaReferenceSegment(refCodonStart, refCodonEnd, querySegAas));								
+					AaReferenceSegment aaSeg = new AaReferenceSegment(refCodonStart, refCodonEnd, querySegAas);
+					aaQueryAlignedSegments.add(aaSeg);
+					
+					
+					for(NtMinorityVariant ntMinorityVariant: ntMinorityVariantsInSegment) {
+						int mvNtQueryIndex = ntMinorityVariant.getNtIndex();
+						// translate to reference coordinate
+						int mvNtRefIndex = mvNtQueryIndex+segQueryToReferenceOffset;
+						// find the codon which contains the minority variant location.
+						int mvCodonNumber = TranscriptionUtils.getCodon(codon1Start, mvNtRefIndex);
+						
+						if(mvCodonNumber >= refCodonStart && mvCodonNumber <= refCodonEnd) {
+							// find the reference NT index where this codon starts
+							int mvCodonNtRefStart = TranscriptionUtils.getNt(codon1Start, mvCodonNumber);
+							// translate back to Query NT coordinates
+							int mvCodonNtQueryStart = mvCodonNtRefStart + segReferenceToQueryOffset;
+							// find the three NTs at this location in the sequence.
+							char[] mvCodonNts = seqObj.getNucleotides(mvCodonNtQueryStart, mvCodonNtQueryStart+2).toString().toCharArray();
+							// substitute in the minority variant NT
+							mvCodonNts[mvNtQueryIndex-mvCodonNtQueryStart] = ntMinorityVariant.getNtValue();
+							char mvAaValue = TranscriptionUtils.transcribe(mvCodonNts);
+							if(mvAaValue != 0) {
+								char nonVariantValue = aaSeg.getAminoAcidsSubsequence(mvCodonNumber, mvCodonNumber).charAt(0);
+								if(mvAaValue != nonVariantValue) {
+									aaMinorityVariants.add(
+											new AaMinorityVariant(mvCodonNumber, mvAaValue, ntMinorityVariant.getProportion()));
+								}
+							}
+						}
+					}
 				}
 			}
 		}
+	}
+
+	private List<NtMinorityVariant> findMinorityVariants(
+			List<NtMinorityVariant> ntMinorityVariants, int queryNtStart, int queryNtEnd) {
+		List<NtMinorityVariant> ntMinorityVariantsInSegment = new ArrayList<NtMinorityVariant>();
+		for(NtMinorityVariant ntMinorityVariant: ntMinorityVariants) {
+			int ntMinorityVariantIndex = ntMinorityVariant.getNtIndex();
+			if(ntMinorityVariantIndex >= queryNtStart && ntMinorityVariantIndex <= queryNtEnd) {
+				ntMinorityVariantsInSegment.add(ntMinorityVariant);
+			}
+		}
+		return ntMinorityVariantsInSegment;
 	}
 
 	// Given a list of aa segments covering the transcribed area, and a codon 1 start location
@@ -280,6 +369,11 @@ public class SequenceFeatureResult {
 		for(ReferenceDifferenceNote ntRefDiff: ntReferenceDifferenceNotes) {
 			ntRefDiff.toDocument(ntRefDiffArray.addObject());
 		}
+		ArrayBuilder ntMinorityVariantArray = seqFeatureResultObj.setArray("ntMinorityVariant");
+		for(NtMinorityVariant ntMinorityVariant: ntMinorityVariants) {
+			ntMinorityVariant.toDocument(ntMinorityVariantArray.addObject());
+		}
+
 		if(aaVariationNotes != null) {
 			ArrayBuilder aaVariationNoteArray = seqFeatureResultObj.setArray("aaVariationNote");
 			for(VariationNote aaVariationNote: aaVariationNotes) {
@@ -292,5 +386,13 @@ public class SequenceFeatureResult {
 				aaRefDiff.toDocument(aaRefDiffArray.addObject());
 			}
 		}
+		if(aaMinorityVariants != null) {
+			ArrayBuilder aaMinorityVariantArray = seqFeatureResultObj.setArray("aaMinorityVariant");
+			for(AaMinorityVariant aaMinorityVariant: aaMinorityVariants) {
+				aaMinorityVariant.toDocument(aaMinorityVariantArray.addObject());
+			}
+		}
+
+		
 	}
 }

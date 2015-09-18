@@ -190,6 +190,9 @@
 					  	<tr class="analysisSequenceQueryNT">
 					  		<td class="{{analysisSequenceRow.queryNTDifferenceStyle[$index]}}" ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>
 					  	</tr>
+					  	<tr class="analysisSequenceMinorityVariantAA" ng-show="analysisSequenceRow.minorityVariantAAs">
+					  		<td colspan=3 ng-repeat="minorityVariantAA in analysisSequenceRow.minorityVariantAAs track by $index">{{minorityVariantAA}}<sup>{{analysisSequenceRow.minorityVariantAAProportions[$index]}}</sup></td>
+					  	</tr>
 					  	<tr class="analysisSequenceQueryNTIndex">
 					  		<td ng-repeat="queryNTIndex in analysisSequenceRow.queryNTIndices track by $index"><div>{{queryNTIndex}}</div></td>
 					  	</tr>

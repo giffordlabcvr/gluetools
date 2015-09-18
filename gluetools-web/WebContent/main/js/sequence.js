@@ -11,9 +11,11 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 	var analysisSequenceRows = [];
 	
 	var variationMap = {};
-	
-	for(var x = 0; x < feature.variation.length; x++) {
-		variationMap[feature.variation[x].name] = feature.variation[x];
+
+	if(feature.variation) {
+		for(var x = 0; x < feature.variation.length; x++) {
+			variationMap[feature.variation[x].name] = feature.variation[x];
+		}
 	}
 	
 	var ntReferenceSegmentArray = feature.ntReferenceSegment;
@@ -27,6 +29,25 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 
 	var ntReferenceDiffArray = sequenceFeatureResult.ntReferenceDifferenceNote;
 	var aaReferenceDiffArray = sequenceFeatureResult.aaReferenceDifferenceNote;
+	
+	var aaMinorityVariantArray = sequenceFeatureResult.aaMinorityVariant;
+	
+	var aaMinorityVariantMap = {};
+	
+	if(aaMinorityVariantArray) {
+		for(var x = 0; x < aaMinorityVariantArray.length; x++) {
+			var aaMv = aaMinorityVariantArray[x];
+			// update map only if proportion is higher?
+			var existing = aaMinorityVariantMap[aaMv.aaIndex];
+			if(existing) {
+				if(aaMv.proportion > existing.proportion) {
+					aaMinorityVariantMap[aaMv.aaIndex] = aaMv;
+				}
+			} else {
+				aaMinorityVariantMap[aaMv.aaIndex] = aaMv;
+			}
+		}
+	}
 
 	var empty = String.fromCharCode(160); // non breaking space.
 
@@ -115,6 +136,10 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 		var referenceAAIndices;
 		var referenceAAs;
 		var queryAAs;
+		var minorityVariantAAs;
+		var minorityVariantAAProportions;
+
+		
 		if(aaReferenceSegmentArray) {
 			minAAIndex = aaReferenceSegmentArray[0].refStart;
 			maxAAIndex = aaReferenceSegmentArray[aaReferenceSegmentArray.length-1].refEnd;
@@ -123,12 +148,16 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 			referenceAAs = new Array(numAAs);
 			queryAAs = new Array(numAAs);
 			queryAADifferenceStyle = new Array(numAAs);
+			minorityVariantAAs = new Array(numAAs);
+			minorityVariantAAProportions = new Array(numAAs);
 
 			for(var i = 0; i < numAAs; i++) {
 				referenceAAIndices[i] = empty;
 				referenceAAs[i] = empty;
 				queryAAs[i] = empty;
 				queryAADifferenceStyle[i] = "";
+				minorityVariantAAs[i] = empty;
+				minorityVariantAAProportions[i] = empty;
 			}
 			for(var segIndex = 0; segIndex < aaReferenceSegmentArray.length; segIndex++) {
 
@@ -147,6 +176,12 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					
 					var indexInSeg = refSegAAIndex - aaReferenceSegment.refStart;
 					referenceAAs[aaColumn] = aaReferenceSegment.aminoAcids.charAt(indexInSeg);
+					
+					var mvAa = aaMinorityVariantMap[refSegAAIndex];
+					if(mvAa) {
+						minorityVariantAAs[aaColumn] = mvAa.aaValue;
+						minorityVariantAAProportions[aaColumn] = empty+toFixed(100*mvAa.proportion,1);
+					}
 				}
 			}
 			if(aaQuerySegmentArray) {
@@ -207,6 +242,10 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 				analysisSequenceRow["referenceAAs"] = referenceAAs.slice(aaStart, aaEnd);
 				analysisSequenceRow["queryAAs"] = queryAAs.slice(aaStart, aaEnd);
 				analysisSequenceRow["queryAADifferenceStyle"] = queryAADifferenceStyle.slice(aaStart, aaEnd);
+				if(aaMinorityVariantArray) {
+					analysisSequenceRow["minorityVariantAAs"] = minorityVariantAAs.slice(aaStart, aaEnd);
+					analysisSequenceRow["minorityVariantAAProportions"] = minorityVariantAAProportions.slice(aaStart, aaEnd);
+				}
 			}
 			analysisSequenceRows.push(analysisSequenceRow);
 			row++;

@@ -1,3 +1,6 @@
 <mutationFrequenciesReporter>
 	<alignerModuleName>blastAligner</alignerModuleName>
+	<sam2ConsensusMinorityVariantFilter>
+		<minProportion>0.01</minProportion>
+	</sam2ConsensusMinorityVariantFilter>
 </mutationFrequenciesReporter>

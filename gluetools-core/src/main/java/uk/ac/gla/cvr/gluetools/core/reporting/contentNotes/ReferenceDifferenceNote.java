@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.contentNotes;
 
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 
 /**
  * A reference difference note points out that the sequence content differs from a reference at certain locations.

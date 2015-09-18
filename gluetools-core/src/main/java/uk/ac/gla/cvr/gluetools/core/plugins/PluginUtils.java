@@ -252,7 +252,7 @@ public class PluginUtils {
 			if(maxValue != null) {
 				if(maxInclusive && result > maxValue) {
 					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
-				} else if(result <= maxValue) {
+				} else if(result >= maxValue) {
 					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">=", maxValue);
 				}
 			}

@@ -7,6 +7,7 @@ import java.util.Map;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -43,23 +44,24 @@ public class SequenceAlignmentResult {
 	}
 
 	public void generateSequenceAlignmentFeatureResults(CommandContext cmdContext, 
-			Map<String, AlignmentResult> almtNameToAlmtResult, SequenceResult seqResult) {
+			Map<String, AlignmentResult> almtNameToAlmtResult, SequenceResult seqResult, 
+			Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter) {
 		AlignmentResult alignmentResult = almtNameToAlmtResult.get(alignmentName);
 		ReferenceFeatureTreeResult rootResult = alignmentResult.getReferenceFeatureTreeResult();
 		for(ReferenceFeatureTreeResult rootChildTree: rootResult.getChildTrees().values()) {
-			generateFeatureResult(cmdContext, rootChildTree, seqResult.getSeqObj());
+			generateFeatureResult(cmdContext, rootChildTree, seqResult.getSeqObj(), s2cMinorityVariantFilter);
 		}
 	}
 
 	private void generateFeatureResult(CommandContext cmdContext, ReferenceFeatureTreeResult featureTreeResult, 
-			AbstractSequenceObject querySeqObj) {
+			AbstractSequenceObject querySeqObj, Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter) {
 		if(!featureTreeResult.isInformational()) {
 			SequenceFeatureResult seqFeatureResult = new SequenceFeatureResult(featureTreeResult);
-			seqFeatureResult.init(querySeqObj, seqToRefAlignedSegments, featureToSequenceFeatureResult);
+			seqFeatureResult.init(querySeqObj, seqToRefAlignedSegments, featureToSequenceFeatureResult, s2cMinorityVariantFilter);
 			featureToSequenceFeatureResult.put(featureTreeResult.getFeatureName(), seqFeatureResult);
 		}
 		featureTreeResult.getChildTrees().values().forEach(childFeatureTreeResult -> 
-		generateFeatureResult(cmdContext, childFeatureTreeResult, querySeqObj));
+		generateFeatureResult(cmdContext, childFeatureTreeResult, querySeqObj, s2cMinorityVariantFilter));
 	}
 
 	public String getAlignmentName() {

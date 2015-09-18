@@ -259,6 +259,15 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return intersectionSegments;
 	}
 	
+	public static boolean coversLocation(List<? extends IReferenceSegment> segList, int location) {
+		for(IReferenceSegment seg: segList) {
+			if(location >= seg.getRefStart() && location <= seg.getRefEnd()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private static int updateNextStart(LinkedList<? extends IReferenceSegment> segList) {
 		if(segList.isEmpty()) {
 			return Integer.MAX_VALUE;

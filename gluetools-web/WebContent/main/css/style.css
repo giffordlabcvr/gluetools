@@ -97,9 +97,12 @@ a {
 	font-size: 120%;
 }
 
+.analysisSequenceReferenceAA, .analysisSequenceQueryAA, .analysisSequenceMinorityVariantAA {
+	font-size: 120%;
+}
+
 .analysisSequenceReferenceAA, .analysisSequenceQueryAA {
 	font-weight: bold;
-	font-size: 120%;
 }
 
 .analysisSequenceReferenceAA {
@@ -107,9 +110,12 @@ a {
 	color: #3a5c7e;
 }
 
+.analysisSequenceQueryAA, .analysisSequenceMinorityVariantAA {
+	color: #557733;
+}
+
 .analysisSequenceQueryAA {
 	background-color: #ddeecc;
-	color: #557733;
 }
 
 .difference_NOTIFIABLE {

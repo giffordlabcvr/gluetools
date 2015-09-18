@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -37,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {
 
 	private String alignerModuleName;
+	private Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter;
 	
 	public MutationFrequenciesReporter() {
 		addProvidedCmdClass(TransientAnalysisCommand.class);
@@ -45,6 +47,12 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, "alignerModuleName", true);
+		s2cMinorityVariantFilter = new Sam2ConsensusMinorityVariantFilter();
+		Element s2cMinorityVariantFilterElem = PluginUtils.findConfigElement(configElem, "sam2ConsensusMinorityVariantFilter");
+		if(s2cMinorityVariantFilterElem != null) {
+			s2cMinorityVariantFilter.configure(pluginConfigContext, s2cMinorityVariantFilterElem);
+		}
+		
 	}
 
 	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
@@ -159,7 +167,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	private void generateSequenceFeatureResults(CommandContext cmdContext, Map<String, AlignmentResult> almtNameToAlmtResult, SequenceResult seqResult) {
 		for(SequenceAlignmentResult sequenceAlignmentResult : seqResult.seqAlignmentResults) {
-			sequenceAlignmentResult.generateSequenceAlignmentFeatureResults(cmdContext, almtNameToAlmtResult, seqResult);
+			sequenceAlignmentResult.generateSequenceAlignmentFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, 
+					s2cMinorityVariantFilter);
 		}
 	}
 	
