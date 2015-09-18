@@ -7,7 +7,7 @@
 	</h5>
 </div>
 <div class="modal-body">
-	The query sequence (NT length {{sequenceResult.alignmentAnalysis[0].sequenceLength}}) was aligned against the following reference sequences in turn.
+	The query sequence (NT length {{sequenceResult.sequenceAlignmentResult[0].sequenceLength}}) was aligned against the following reference sequences in turn.
 	
 	<p></p>
 	<table class="table table-condensed table-bordered">
@@ -15,11 +15,11 @@
 		<th>Alignment</th>
 		<th>Query NT coverage</th>
 		<th>Reference NT coverage</th>
-		<tr ng-repeat="alignmentAnalysis in sequenceResult.alignmentAnalysis">
-			<td>{{alignmentAnalysis.referenceName}} (NT length {{alignmentAnalysis.referenceLength}})</td>
-			<td>{{alignmentAnalysis.alignmentName}}</td>
-			<td>{{toFixed(alignmentAnalysis.seqToRefQueryCoverage,2)}}%</td>
-			<td>{{toFixed(alignmentAnalysis.seqToRefReferenceCoverage,2)}}%</td>
+		<tr ng-repeat="sequenceAlignmentResult in sequenceResult.sequenceAlignmentResult">
+			<td>{{sequenceAlignmentResult.referenceName}} (NT length {{sequenceAlignmentResult.referenceLength}})</td>
+			<td>{{sequenceAlignmentResult.alignmentName}}</td>
+			<td>{{toFixed(sequenceAlignmentResult.seqToRefQueryCoverage,2)}}%</td>
+			<td>{{toFixed(sequenceAlignmentResult.seqToRefReferenceCoverage,2)}}%</td>
 		</tr>
 	</table>
 </div>

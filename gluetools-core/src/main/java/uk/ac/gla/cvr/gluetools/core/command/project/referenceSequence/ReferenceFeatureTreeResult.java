@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
@@ -41,7 +42,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	private List<VariationDocument> variationDocuments = new ArrayList<VariationDocument>();
 	
 	private ReferenceFeatureTreeResult parentTreeResult;
-
 	
 	private Map<String, ReferenceFeatureTreeResult> featureNameToTreeResult = 
 			new LinkedHashMap<String, ReferenceFeatureTreeResult>();
@@ -123,7 +123,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		ArrayBuilder variationArray = objectBuilder.setArray("variation");
 		for(Variation variation: featureLocation.getVariations()) {
 			VariationDocument variationDocument = variation.getVariationDocument();
-			variationDocuments.add(variationDocument);
+			featureTreeResult.variationDocuments.add(variationDocument);
 			variationDocument.toDocument(variationArray.addObject());
 		}
 		

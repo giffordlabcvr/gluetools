@@ -52,14 +52,14 @@ public class SequenceAlignmentResult {
 	}
 
 	private void generateFeatureResult(CommandContext cmdContext, ReferenceFeatureTreeResult featureTreeResult, 
-			AbstractSequenceObject seqObj) {
+			AbstractSequenceObject querySeqObj) {
 		if(!featureTreeResult.isInformational()) {
 			SequenceFeatureResult seqFeatureResult = new SequenceFeatureResult(featureTreeResult);
-			seqFeatureResult.init(seqObj, seqToRefAlignedSegments, featureToSequenceFeatureResult);
+			seqFeatureResult.init(querySeqObj, seqToRefAlignedSegments, featureToSequenceFeatureResult);
 			featureToSequenceFeatureResult.put(featureTreeResult.getFeatureName(), seqFeatureResult);
 		}
 		featureTreeResult.getChildTrees().values().forEach(childFeatureTreeResult -> 
-		generateFeatureResult(cmdContext, childFeatureTreeResult, seqObj));
+		generateFeatureResult(cmdContext, childFeatureTreeResult, querySeqObj));
 	}
 
 	public String getAlignmentName() {

@@ -185,10 +185,10 @@
 
 
 					  	<tr class="analysisSequenceQueryAA">
-					  		<td class="{{calculateAaDifferenceStyle(analysisSequenceRow, $index)}}" colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">{{queryAA}}</td>
+					  		<td class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}" colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">{{queryAA}}</td>
 					  	</tr>
 					  	<tr class="analysisSequenceQueryNT">
-					  		<td class="{{calculateNtDifferenceStyle(analysisSequenceRow, $index)}}" ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>
+					  		<td class="{{analysisSequenceRow.queryNTDifferenceStyle[$index]}}" ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>
 					  	</tr>
 					  	<tr class="analysisSequenceQueryNTIndex">
 					  		<td ng-repeat="queryNTIndex in analysisSequenceRow.queryNTIndices track by $index"><div>{{queryNTIndex}}</div></td>

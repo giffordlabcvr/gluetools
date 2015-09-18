@@ -1,13 +1,33 @@
+
+function updateDifferenceStyle(oldDifferenceStyle, newDifferenceStyle) {
+	if(newDifferenceStyle == "difference_NOT_NOTIFIABLE" && oldDifferenceStyle == "difference_NOTIFIABLE") {
+		return oldDifferenceStyle;
+	}
+	return newDifferenceStyle;
+}
+
 function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 	
 	var analysisSequenceRows = [];
+	
+	var variationMap = {};
+	
+	for(var x = 0; x < feature.variation.length; x++) {
+		variationMap[feature.variation[x].name] = feature.variation[x];
+	}
 	
 	var ntReferenceSegmentArray = feature.ntReferenceSegment;
 	var aaReferenceSegmentArray = feature.aaReferenceSegment;
 
 	var ntQuerySegmentArray = sequenceFeatureResult.ntQueryAlignedSegment;
 	var aaQuerySegmentArray = sequenceFeatureResult.aaQueryAlignedSegment;
-	
+
+	var ntVariationNoteArray = sequenceFeatureResult.ntVariationNote;
+	var aaVariationNoteArray = sequenceFeatureResult.aaVariationNote;
+
+	var ntReferenceDiffArray = sequenceFeatureResult.ntReferenceDifferenceNote;
+	var aaReferenceDiffArray = sequenceFeatureResult.aaReferenceDifferenceNote;
+
 	var empty = String.fromCharCode(160); // non breaking space.
 
 	var aasPerRow = 20;
@@ -24,11 +44,14 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 		var referenceNTs = new Array(numNTs);
 		var queryNTIndices = new Array(numNTs);
 		var queryNTs = new Array(numNTs);
+		var queryNTDifferenceStyle = new Array(numNTs);
+		
 		for(var i = 0; i < numNTs; i++) {
 			referenceNTIndices[i] = empty;
 			referenceNTs[i] = empty;
 			queryNTIndices[i] = empty;
 			queryNTs[i] = empty;
+			queryNTDifferenceStyle[i] = "";
 		}
 		for(var segIndex = 0; segIndex < ntReferenceSegmentArray.length; segIndex++) {
 			var ntReferenceSegment = ntReferenceSegmentArray[segIndex];
@@ -47,6 +70,14 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 		if(ntQuerySegmentArray) {
 			for(var segIndex = 0; segIndex < ntQuerySegmentArray.length; segIndex++) {
 				var ntQuerySegment = ntQuerySegmentArray[segIndex];
+				var ntReferenceDiff;
+				if(ntReferenceDiffArray && segIndex < ntReferenceDiffArray.length) {
+					var diff = ntReferenceDiffArray[segIndex];
+					if(diff.refStart == ntQuerySegment.refStart && 
+					   diff.refEnd == ntQuerySegment.refEnd) {
+						ntReferenceDiff = diff;
+					}
+				}
 				var qrySegQryNTIndex = ntQuerySegment.queryStart;
 				for(var qrySegRefNTIndex = ntQuerySegment.refStart; 
 						qrySegRefNTIndex <= ntQuerySegment.refEnd; qrySegRefNTIndex++) {
@@ -56,8 +87,22 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					} else if(qrySegRefNTIndex == ntQuerySegment.refEnd) {
 						queryNTIndices[ntColumn] = qrySegQryNTIndex;
 					}
-					queryNTs[ntColumn] = ntQuerySegment.nucleotides.charAt(qrySegRefNTIndex - ntQuerySegment.refStart);
+					var indexInSeg = qrySegRefNTIndex - ntQuerySegment.refStart;
+					queryNTs[ntColumn] = ntQuerySegment.nucleotides.charAt(indexInSeg);
+					if(ntReferenceDiff && ntReferenceDiff.mask[indexInSeg] == "X") {
+						queryNTDifferenceStyle[ntColumn] = "difference"
+					}
 					qrySegQryNTIndex++;
+				}
+			}
+			if(ntVariationNoteArray) {
+				for(var i = 0 ; i < ntVariationNoteArray.length; i++) {
+					var ntVariationNote = ntVariationNoteArray[i];
+					var variationDifferenceStyle = "difference_"+variationMap[ntVariationNote.variationName].notifiability;
+					for(var variationNtIndex = ntVariationNote.refStart; variationNtIndex <= ntVariationNote.refEnd; variationNtIndex++) {
+						var ntColumn = variationNtIndex - minNTIndex;
+						queryNTDifferenceStyle[ntColumn] = updateDifferenceStyle(queryNTDifferenceStyle[ntColumn], variationDifferenceStyle);
+					}
 				}
 			}
 		}
@@ -77,13 +122,18 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 			referenceAAIndices = new Array(numAAs);
 			referenceAAs = new Array(numAAs);
 			queryAAs = new Array(numAAs);
+			queryAADifferenceStyle = new Array(numAAs);
+
 			for(var i = 0; i < numAAs; i++) {
 				referenceAAIndices[i] = empty;
 				referenceAAs[i] = empty;
 				queryAAs[i] = empty;
+				queryAADifferenceStyle[i] = "";
 			}
 			for(var segIndex = 0; segIndex < aaReferenceSegmentArray.length; segIndex++) {
+
 				var aaReferenceSegment = aaReferenceSegmentArray[segIndex];
+
 				for(var refSegAAIndex = aaReferenceSegment.refStart; 
 						refSegAAIndex <= aaReferenceSegment.refEnd; refSegAAIndex++) {
 					var aaColumn = refSegAAIndex - minAAIndex;
@@ -94,18 +144,47 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					} else if(refSegAAIndex % 10 == 0) {
 						referenceAAIndices[aaColumn] = refSegAAIndex;
 					}
-					referenceAAs[aaColumn] = aaReferenceSegment.aminoAcids.charAt(refSegAAIndex - aaReferenceSegment.refStart);
+					
+					var indexInSeg = refSegAAIndex - aaReferenceSegment.refStart;
+					referenceAAs[aaColumn] = aaReferenceSegment.aminoAcids.charAt(indexInSeg);
 				}
 			}
 			if(aaQuerySegmentArray) {
 				for(var segIndex = 0; segIndex < aaQuerySegmentArray.length; segIndex++) {
 					var aaQuerySegment = aaQuerySegmentArray[segIndex];
+					
+					var aaReferenceDiff;
+					if(aaReferenceDiffArray && segIndex < aaReferenceDiffArray.length) {
+						var diff = aaReferenceDiffArray[segIndex];
+						if(diff.refStart == aaQuerySegment.refStart && 
+						   diff.refEnd == aaQuerySegment.refEnd) {
+							aaReferenceDiff = diff;
+						}
+					}
+					
+
+					
 					for(var qrySegAAIndex = aaQuerySegment.refStart; 
 							qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
 						var aaColumn = qrySegAAIndex - minAAIndex;
-						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(qrySegAAIndex - aaQuerySegment.refStart);
+						var indexInSeg = qrySegAAIndex - aaQuerySegment.refStart;
+						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(indexInSeg);
+						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] == "X") {
+							queryAADifferenceStyle[aaColumn] = "difference"
+						}
 					}
 				}
+				if(aaVariationNoteArray) {
+					for(var i = 0 ; i < aaVariationNoteArray.length; i++) {
+						var aaVariationNote = aaVariationNoteArray[i];
+						var variationDifferenceStyle = "difference_"+variationMap[aaVariationNote.variationName].notifiability;
+						for(var variationAaIndex = aaVariationNote.refStart; variationAaIndex <= aaVariationNote.refEnd; variationAaIndex++) {
+							var aaColumn = variationAaIndex - minAAIndex;
+							queryAADifferenceStyle[aaColumn] = updateDifferenceStyle(queryAADifferenceStyle[aaColumn], variationDifferenceStyle);
+						}
+					}
+				}
+
 			}
 		}		
 
@@ -119,6 +198,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 			analysisSequenceRow["referenceNTs"] = referenceNTs.slice(ntStart, ntEnd);
 			analysisSequenceRow["queryNTIndices"] = queryNTIndices.slice(ntStart, ntEnd);
 			analysisSequenceRow["queryNTs"] = queryNTs.slice(ntStart, ntEnd);
+			analysisSequenceRow["queryNTDifferenceStyle"] = queryNTDifferenceStyle.slice(ntStart, ntEnd);
 
 			if(aaReferenceSegmentArray) {
 				var aaStart = row*aasPerRow;
@@ -126,6 +206,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 				analysisSequenceRow["referenceAAIndices"] = referenceAAIndices.slice(aaStart, aaEnd);
 				analysisSequenceRow["referenceAAs"] = referenceAAs.slice(aaStart, aaEnd);
 				analysisSequenceRow["queryAAs"] = queryAAs.slice(aaStart, aaEnd);
+				analysisSequenceRow["queryAADifferenceStyle"] = queryAADifferenceStyle.slice(aaStart, aaEnd);
 			}
 			analysisSequenceRows.push(analysisSequenceRow);
 			row++;
