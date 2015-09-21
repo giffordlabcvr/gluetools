@@ -7,12 +7,14 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.cayenne.configuration.server.ServerRuntime;
@@ -63,7 +65,7 @@ public class WsCmdContext extends CommandContext {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@SuppressWarnings("rawtypes")
-	public String postAsCommand(String commandString) {
+	public String postAsCommand(String commandString, @Context HttpServletResponse response) {
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
@@ -74,7 +76,9 @@ public class WsCmdContext extends CommandContext {
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
-		return command.execute(this).getJsonObject().toString();
+		String commandResult = command.execute(this).getJsonObject().toString();
+		addCacheDisablingHeaders(response);
+		return commandResult;
 	}
 	
 	@POST()
@@ -83,7 +87,8 @@ public class WsCmdContext extends CommandContext {
 	@SuppressWarnings({ "rawtypes" })
 	public String postAsCommandMultipart(
 			@FormDataParam("file") InputStream fileInputStream,
-			@FormDataParam("command") String commandString) {
+			@FormDataParam("command") String commandString, 
+			@Context HttpServletResponse response) {
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
@@ -109,7 +114,9 @@ public class WsCmdContext extends CommandContext {
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
-		return command.execute(this).getJsonObject().toString();
+		String commandResult = command.execute(this).getJsonObject().toString();
+		addCacheDisablingHeaders(response);
+		return commandResult;
 	}
 	
 	
@@ -179,6 +186,10 @@ public class WsCmdContext extends CommandContext {
 		}
 	}
 	
-	
+	private void addCacheDisablingHeaders(HttpServletResponse response) {
+		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+		response.setHeader("Expires", "0"); // Proxies.
+	}
 	
 }

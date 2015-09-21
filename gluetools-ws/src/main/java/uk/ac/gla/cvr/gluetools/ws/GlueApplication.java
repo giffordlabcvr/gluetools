@@ -34,6 +34,9 @@ public class GlueApplication extends ResourceConfig implements ServletContextLis
     	register(MultiPartFeature.class);
 	}
 
+
+	
+	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
         String configFilePath = null;
