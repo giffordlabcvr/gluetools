@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<featureName>"},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Remove a feature location") 
-public class RemoveFeatureLocation extends ReferenceSequenceModeCommand<DeleteResult> {
+public class RemoveFeatureLocCommand extends ReferenceSequenceModeCommand<DeleteResult> {
 
 	private String featureName;
 	
@@ -38,6 +38,6 @@ public class RemoveFeatureLocation extends ReferenceSequenceModeCommand<DeleteRe
 	}
 
 	@CompleterClass
-	public static class Completer extends FeatureNameCompleter {}
+	public static class Completer extends FeatureLocNameCompleter {}
 
 }

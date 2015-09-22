@@ -17,7 +17,7 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 		super.populateCommandTree();
 
 		registerCommandClass(AddFeatureLocCommand.class);
-		registerCommandClass(RemoveFeatureLocation.class);
+		registerCommandClass(RemoveFeatureLocCommand.class);
 		registerCommandClass(ListFeatureLocCommand.class);
 		registerCommandClass(FeatureLocCommand.class);
 		registerCommandClass(ReferenceShowSequenceCommand.class);

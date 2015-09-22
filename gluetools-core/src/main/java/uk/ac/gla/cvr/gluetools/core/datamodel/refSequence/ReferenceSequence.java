@@ -1,6 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.refSequence;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -8,6 +12,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 
 @GlueDataClass(defaultListColumns = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH})
 public class ReferenceSequence extends _ReferenceSequence {
@@ -44,4 +51,54 @@ public class ReferenceSequence extends _ReferenceSequence {
 	}
 
 
+	public ReferenceFeatureTreeResult getFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
+		List<FeatureLocation> featureLocations = new ArrayList<FeatureLocation>(getFeatureLocations());
+		Collections.sort(featureLocations, new FeatureLocationComparator());
+		ReferenceFeatureTreeResult result = new ReferenceFeatureTreeResult();
+		for(FeatureLocation featureLocation: featureLocations) {
+			if(limitingFeature == null || 
+					(!recursive || featureLocation.getFeature().isDescendentOf(limitingFeature)) || 
+					limitingFeature.isDescendentOf(featureLocation.getFeature()) ) {
+				result.addFeatureLocation(cmdContext, featureLocation);
+			}
+ 		}
+		return result;
+	}
+
+
+	// sort feature locations by start NT index, adding those which have segments defined before those that don't.
+	// if two feature locations start at the same NT index, add first the feature location higher up the feature tree, 
+	// breaking ties by feature name.
+	// if neither feature location has a segment defined, sort by feature name.
+	private class FeatureLocationComparator implements Comparator<FeatureLocation> {
+		@Override
+		public int compare(FeatureLocation o1, FeatureLocation o2) {
+			List<FeatureSegment> o1Segs = o1.getSegments();
+			List<FeatureSegment> o2Segs = o2.getSegments();
+			if(o1Segs.size() > 0) {
+				if(o2Segs.size() > 0) {
+					int refStartComparison = Integer.compare(o1Segs.get(0).getRefStart(), o2Segs.get(0).getRefStart());
+					if(refStartComparison != 0) {
+						return refStartComparison;
+					}
+					int featureDepthComparison = Integer.compare(o1.getFeature().getDepthInTree(), o2.getFeature().getDepthInTree());
+					if(featureDepthComparison != 0) {
+						return featureDepthComparison;
+					}
+					return o1.getFeature().getName().compareTo(o2.getFeature().getName());
+				} else {
+					return -1;
+				}
+			} else {
+				if(o2Segs.size() > 0) {
+					return 1;
+				} else {
+					return o1.getFeature().getName().compareTo(o2.getFeature().getName());
+				} 
+			}
+		}
+	}
+
+
+	
 }

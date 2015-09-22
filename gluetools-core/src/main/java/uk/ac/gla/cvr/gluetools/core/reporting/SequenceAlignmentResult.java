@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceFeatureTreeResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;

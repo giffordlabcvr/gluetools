@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -42,7 +43,7 @@ public abstract class ReferenceSequenceModeCommand<R extends CommandResult> exte
 	}
 
 	@SuppressWarnings("rawtypes")
-	public abstract static class FeatureNameCompleter extends CommandCompleter {
+	public abstract static class FeatureLocNameCompleter extends CommandCompleter {
 		@Override
 		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
 			if(argStrings.isEmpty()) {
@@ -54,6 +55,20 @@ public abstract class ReferenceSequenceModeCommand<R extends CommandResult> exte
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	public abstract static class FeatureNameCompleter extends CommandCompleter {
+		@Override
+		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
+			if(argStrings.isEmpty()) {
+				return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class)).
+						getColumnValues(Feature.NAME_PROPERTY);
+			}
+			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+		}
+	}
+
+	
+	
 	protected static ReferenceSequenceMode getRefSeqMode(CommandContext cmdContext) {
 		return (ReferenceSequenceMode) cmdContext.peekCommandMode();
 	}

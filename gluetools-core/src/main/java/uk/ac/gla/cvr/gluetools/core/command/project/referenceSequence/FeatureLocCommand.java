@@ -44,6 +44,6 @@ public class FeatureLocCommand extends ReferenceSequenceModeCommand<OkResult>  {
 	}
 
 	@CompleterClass
-	public static class Completer extends FeatureNameCompleter {}	
+	public static class Completer extends FeatureLocNameCompleter {}	
 
 }

@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
+package uk.ac.gla.cvr.gluetools.core.datamodel.refSequence;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -70,7 +70,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return getDocumentBuilder();
 	}
 	
-	public ReferenceFeatureTreeResult addFeature(Feature feature) {
+	private ReferenceFeatureTreeResult addFeature(Feature feature) {
 		Feature parentFeature = feature.getParent();
 		ReferenceFeatureTreeResult parentFeatureTreeResult = null;
 		if(parentFeature == null) {
@@ -101,8 +101,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		metatagTypes.forEach(t -> metatagArray.addString(t.name()));
 	}
 
-	public void addFeatureLocation(CommandContext cmdContext, 
-			FeatureLocation featureLocation) {
+	public void addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation) {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
 		ObjectBuilder objectBuilder = featureTreeResult.getObjectBuilder();
@@ -125,7 +124,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 			featureTreeResult.variationDocuments.add(variationDocument);
 			variationDocument.toDocument(variationArray.addObject());
 		}
-		
 	}
 	
 	private ReferenceFeatureTreeResult findAncestor(String name) {

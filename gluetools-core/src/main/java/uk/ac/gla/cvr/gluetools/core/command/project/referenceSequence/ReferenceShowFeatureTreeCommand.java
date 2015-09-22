@@ -5,66 +5,53 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"show", "feature", "tree"},
-		docoptUsages={""},
+		docoptUsages={"[<featureName>]"},
 		docoptOptions={},
 		description="Show a tree of features for which the reference has a location",
-		furtherHelp="Features at the same tree level are listed in order of refStart"
+		furtherHelp="If <featureName> is supplied, the result tree will only contain locations of features which "+
+		"are ancestors or descendents of that specific feature. Otherwise, all feature locations will be present. Feature "+
+		"locations at the same tree level are listed in order of refStart."
 )
 public class ReferenceShowFeatureTreeCommand extends ReferenceSequenceModeCommand<ReferenceFeatureTreeResult> {
 
+	private static final String FEATURE_NAME = "featureName";
+	
+	private String featureName;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
+	}
 
 	@Override
 	public ReferenceFeatureTreeResult execute(CommandContext cmdContext) {
 		ReferenceSequence refSeq = lookupRefSeq(cmdContext);
-		List<FeatureLocation> featureLocations = new ArrayList<FeatureLocation>(refSeq.getFeatureLocations());
-		Collections.sort(featureLocations, new FeatureLocationComparator());
-		ReferenceFeatureTreeResult result = new ReferenceFeatureTreeResult();
-		for(FeatureLocation featureLocation: featureLocations) {
-			result.addFeatureLocation(cmdContext, featureLocation);
+		Feature limitingFeature = null;
+		if(featureName != null) {
+			limitingFeature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, Feature.pkMap(featureName));
 		}
-		return result;
+		boolean recursive = true;
+		return refSeq.getFeatureTree(cmdContext, limitingFeature, recursive);
 	}
 
-	// sort feature locations by start NT index, adding those which have segments defined before those that don't.
-	// if two feature locations start at the same NT index, add first the feature location higher up the feature tree, 
-	// breaking ties by feature name.
-	// if neither feature location has a segment defined, sort by feature name.
-	private class FeatureLocationComparator implements Comparator<FeatureLocation> {
-		@Override
-		public int compare(FeatureLocation o1, FeatureLocation o2) {
-			List<FeatureSegment> o1Segs = o1.getSegments();
-			List<FeatureSegment> o2Segs = o2.getSegments();
-			if(o1Segs.size() > 0) {
-				if(o2Segs.size() > 0) {
-					int refStartComparison = Integer.compare(o1Segs.get(0).getRefStart(), o2Segs.get(0).getRefStart());
-					if(refStartComparison != 0) {
-						return refStartComparison;
-					}
-					int featureDepthComparison = Integer.compare(o1.getFeature().getDepthInTree(), o2.getFeature().getDepthInTree());
-					if(featureDepthComparison != 0) {
-						return featureDepthComparison;
-					}
-					return o1.getFeature().getName().compareTo(o2.getFeature().getName());
-				} else {
-					return -1;
-				}
-			} else {
-				if(o2Segs.size() > 0) {
-					return 1;
-				} else {
-					return o1.getFeature().getName().compareTo(o2.getFeature().getName());
-				} 
-			}
-		}
-	}
-
+	@CompleterClass
+	public static class Completer extends FeatureNameCompleter {}
 
 }

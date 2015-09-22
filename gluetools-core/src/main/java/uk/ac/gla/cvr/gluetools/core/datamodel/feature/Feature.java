@@ -115,5 +115,16 @@ public class Feature extends _Feature {
 		return getMetatagTypes().contains(FeatureMetatag.Type.OPEN_READING_FRAME);
 	}
 
+	public boolean isDescendentOf(Feature ancestorFeature) {
+		if(this.getName().equals(ancestorFeature.getName())) {
+			return true;
+		}
+		Feature parent = getParent();
+		if(parent == null) {
+			return false;
+		}
+		return parent.isDescendentOf(ancestorFeature);
+	}
+
 	
 }

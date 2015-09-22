@@ -3,15 +3,20 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -33,7 +38,7 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 		return alignmentName;
 	}
 
-	protected AlignmentMode getAlignmentMode(CommandContext cmdContext) {
+	protected static AlignmentMode getAlignmentMode(CommandContext cmdContext) {
 		return (AlignmentMode) cmdContext.peekCommandMode();
 	}
 
@@ -66,5 +71,21 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 		
 
 	}
+	
+	
+	
+	@SuppressWarnings("rawtypes")
+	public abstract static class FeatureLocNameCompleter extends CommandCompleter {
+		@Override
+		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
+			AlignmentMode alignmentMode = getAlignmentMode(cmdContext);
+			Alignment alignment = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, 
+					Alignment.pkMap(alignmentMode.getAlignmentName()));
+			Expression exp = ExpressionFactory.matchExp(FeatureLocation.REF_SEQ_NAME_PATH, alignment.getRefSequence().getName());
+			return CommandUtils.runListCommand(cmdContext, FeatureLocation.class, new SelectQuery(FeatureLocation.class, exp)).
+					getColumnValues(FeatureLocation.FEATURE_NAME_PATH);
+		}
+	}
+
 	
 }

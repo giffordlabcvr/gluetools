@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceFeatureTreeResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AaMinorityVariant;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NtMinorityVariant;
