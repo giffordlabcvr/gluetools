@@ -50,7 +50,7 @@ public class AlignmentShowStatisticsCommand extends AlignmentModeCommand<Alignme
 		List<AlignmentMember> members = alignment.getMembers();
 		List<Map<String, Object>> rows = members.stream()
 				.map(memb -> {
-					Map<String, Object> row = memb.getStatistics(memberStatistics);
+					Map<String, Object> row = memb.getStatistics(memberStatistics, cmdContext);
 					row.put(AlignmentMember.SOURCE_NAME_PATH, memb.getSequence().getSource().getName());
 					row.put(AlignmentMember.SEQUENCE_ID_PATH, memb.getSequence().getSequenceID());
 					return row;

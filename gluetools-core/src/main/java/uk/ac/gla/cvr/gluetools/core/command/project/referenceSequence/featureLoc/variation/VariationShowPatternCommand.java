@@ -4,7 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"show","pattern"}, 
@@ -22,7 +22,7 @@ public class VariationShowPatternCommand extends VariationModeCommand<VariationS
 
 	public class VariationShowPatternResult extends MapResult {
 
-		public VariationShowPatternResult(TranscriptionFormat transcriptionType, String regex) {
+		public VariationShowPatternResult(TranslationFormat transcriptionType, String regex) {
 			super("variationShowPatternResult", mapBuilder()
 					.put(Variation.TRANSCRIPTION_TYPE_PROPERTY, transcriptionType.name())
 					.put(Variation.REGEX_PROPERTY, regex)

@@ -15,7 +15,7 @@ public class SequenceShowLengthCommand extends SequenceModeCommand<SequenceShowL
 	@Override
 	public SequenceShowLengthResult execute(CommandContext cmdContext) {
 		Sequence sequence = lookupSequence(cmdContext);
-		return new SequenceShowLengthResult(sequence.getSequenceObject().getNucleotides().length());
+		return new SequenceShowLengthResult(sequence.getSequenceObject().getNucleotides(cmdContext).length());
 	}
 
 	public static class SequenceShowLengthResult extends MapResult {

@@ -20,7 +20,7 @@ public class GenbankXmlSequenceObject extends AbstractSequenceObject {
 	}
 
 	@Override
-	public String getNucleotides() {
+	protected String getNucleotides() {
 		if(nucleotides == null) {
 			nucleotides = extractNucleotides();
 		}

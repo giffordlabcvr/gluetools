@@ -4,6 +4,9 @@ import java.util.Arrays;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectSetSettingCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectShowSettingCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectUnsetSettingCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 // TODO -- mode command factories parameterized by mode command base class?
@@ -46,6 +49,10 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteFeatureCommand.class);
 		registerCommandClass(ListFeatureCommand.class);
 
+		registerCommandClass(ProjectSetSettingCommand.class);
+		registerCommandClass(ProjectUnsetSettingCommand.class);
+		registerCommandClass(ProjectShowSettingCommand.class);
+		
 		registerCommandClass(ModuleCommand.class);
 		registerCommandClass(SequenceCommand.class);
 		registerCommandClass(ReferenceSequenceCommand.class);

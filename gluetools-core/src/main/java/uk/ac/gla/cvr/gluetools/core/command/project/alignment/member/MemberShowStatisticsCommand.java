@@ -49,7 +49,7 @@ public class MemberShowStatisticsCommand extends MemberModeCommand<MemberShowSta
 		AlignmentMember almtMember = GlueDataObject.lookup(
 				cmdContext.getObjectContext(), AlignmentMember.class, 
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
-		return new MemberStatisticsResult(almtMember.getStatistics(memberStatistics));
+		return new MemberStatisticsResult(almtMember.getStatistics(memberStatistics, cmdContext));
 	}
 	
 	

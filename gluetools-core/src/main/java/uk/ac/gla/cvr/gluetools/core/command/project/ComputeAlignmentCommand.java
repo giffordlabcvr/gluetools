@@ -143,7 +143,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 			byte[] base64Bytes = memberSeqOriginalData.getBase64Bytes();
 			AbstractSequenceObject memberSeqObject = memberSeqFormat.sequenceObject();
 			memberSeqObject.fromOriginalData(base64Bytes);
-			String nucleotides = memberSeqObject.getNucleotides();
+			String nucleotides = memberSeqObject.getNucleotides(cmdContext);
 			String queryId = constructQueryId(memberSourceName, memberSeqId);
 			queryIdToNucleotides.put(queryId, nucleotides);
 		}

@@ -14,12 +14,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 
 @GlueDataClass(defaultListColumns = {FeatureLocation.FEATURE_NAME_PATH})
@@ -113,8 +114,8 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 	private void checkCodonAligned(Feature feature, int codon1Start, IReferenceSegment seg) {
-		if(!TranscriptionUtils.isAtStartOfCodon(codon1Start, seg.getRefStart()) || 
-				!TranscriptionUtils.isAtEndOfCodon(codon1Start, seg.getRefEnd())) {
+		if(!TranslationUtils.isAtStartOfCodon(codon1Start, seg.getRefStart()) || 
+				!TranslationUtils.isAtEndOfCodon(codon1Start, seg.getRefEnd())) {
 			throw new FeatureLocationException(
 					FeatureLocationException.Code.FEATURE_LOCATION_SEGMENT_NOT_CODON_ALIGNED, 
 					getReferenceSequence().getName(), feature.getName(), Integer.toString(seg.getRefStart()), 
@@ -163,12 +164,12 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 	
 	/**
-	 * Transcribe an ORF feature location to AAs
+	 * Translate an ORF feature location to AAs
 	 * Returns null if this feature location is not an ORF.
 	 * @param cmdContext
 	 * @return
 	 */
-	public List<AaReferenceSegment> transcribe(CommandContext cmdContext) {
+	public List<AaReferenceSegment> translate(CommandContext cmdContext) {
 		Feature feature = getFeature();
 		if(feature.isOpenReadingFrame()) {
 			Integer codon1Start = getCodon1Start(cmdContext);
@@ -179,26 +180,27 @@ public class FeatureLocation extends _FeatureLocation {
 			if(featureLocSegments.isEmpty()) {
 				return null;
 			}
-			List<ReferenceSegment> segmentsToTranscribe = featureLocSegments.stream()
+			List<ReferenceSegment> segmentsToTranslate = featureLocSegments.stream()
 				.map(featureLocSeg -> new ReferenceSegment(featureLocSeg.getRefStart(), featureLocSeg.getRefEnd()))
 				.collect(Collectors.toList());
 
 			ReferenceSequence refSeq = getReferenceSequence();
 			List<NtReferenceSegment> ntSegmentsToTranscribe = 
-					refSeq.getSequence().getSequenceObject().getNtReferenceSegments(segmentsToTranscribe);
+					refSeq.getSequence().getSequenceObject().getNtReferenceSegments(segmentsToTranslate, cmdContext);
 			
 			List<AaReferenceSegment> transcribedSegments = new ArrayList<AaReferenceSegment>();
 			
 			for(NtReferenceSegment ntSegment : ntSegmentsToTranscribe) {
 				checkCodonAligned(feature, codon1Start, ntSegment);
 				CharSequence nucleotides = ntSegment.getNucleotides();
-				String aminoAcids = TranscriptionUtils.transcribe(nucleotides);
+				boolean translateBeyondPossibleStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_POSSIBLE_STOP).equals("true");
+				String aminoAcids = TranslationUtils.translate(nucleotides, true, false, translateBeyondPossibleStop);
 				if(aminoAcids.length() != nucleotides.length() / 3) {
 					throw new FeatureLocationException(
 							FeatureLocationException.Code.FEATURE_LOCATION_ORF_TRANSCRIPTION_INCOMPLETE, 
 							refSeq.getName(), feature.getName(), ntSegment.getRefStart(), ntSegment.getRefEnd());
 				}
-				int aaRefStart = TranscriptionUtils.getCodon(codon1Start, ntSegment.getRefStart());
+				int aaRefStart = TranslationUtils.getCodon(codon1Start, ntSegment.getRefStart());
 				int aaRefEnd = aaRefStart+(aminoAcids.length()-1);
 				transcribedSegments.add(new AaReferenceSegment(aaRefStart, aaRefEnd, aminoAcids));
 			};

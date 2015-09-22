@@ -6,13 +6,13 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-public class TranscriptionUtils {
+public class TranslationUtils {
 
-	public static TranscriptionFormat transcriptionFormatFromString(String formatString) {
+	public static TranslationFormat transcriptionFormatFromString(String formatString) {
 		try {
-			return TranscriptionFormat.valueOf(formatString);
+			return TranslationFormat.valueOf(formatString);
 		} catch(IllegalArgumentException iae) {
-			throw new TranscriptionException(TranscriptionException.Code.UNKNOWN_TRANSCRIPTION_TYPE, formatString);
+			throw new TranslationException(TranslationException.Code.UNKNOWN_TRANSLATION_TYPE, formatString);
 		}
 
 	}
@@ -49,18 +49,23 @@ public class TranscriptionUtils {
 	}
 
 	/**
-	 * Transcribe nucleotides to amino acids.
+	 * Translate nucleotides to amino acids.
 	 * 
-	 * If the first 3 nucleotides do not produce 'M', transcription stops and the empty string is returned.
-	 * If there is a gap of indeterminate length '-' in the nucleotides, transcription stops at that gap, 
+	 * If requireMethionineAtStart == true and
+	 * the first 3 nucleotides do not produce 'M', translation stops and the empty string is returned.
+	 * If stopAtHyphen == true and there is a gap of indeterminate length '-' in the nucleotides, translation stops at that gap, 
 	 * and includes any AAs found before the gap.
-	 * If any NTs are encountered which are definitely a stop codon, transcription stops there and includes 
+	 * If any NTs are encountered which are definitely a stop codon, translation stops there and includes 
 	 * the stop codon.
-	 * If any NTs are encountered which *could* be a stop codon, transcription stops before the stop codon.
+	 * If translateBeyondPossibleStopCodon == false and any NTs are encountered which *could* be a stop codon, 
+	 * translation stops before the possible stop codon.
 	 * 
 	 */
 	
-	public static String transcribe(CharSequence nts) {
+	public static String translate(CharSequence nts,
+			boolean requireMethionineAtStart, 
+			boolean stopAtHyphen,
+			boolean translateBeyondPossibleStopCodon) {
 		StringBuffer aas = new StringBuffer();
 		char[] codonNts = new char[3];
 		boolean stopTranscribing = false;
@@ -69,18 +74,18 @@ public class TranscriptionUtils {
 			for(int i = 0; i < 3; i++) {
 				if(ntIndex+i < nts.length()) {
 					char nt = nts.charAt(ntIndex+i);
-					if(nt == '-') {
+					if(stopAtHyphen && nt == '-') {
 						stopTranscribing = true;
 						break;
 					}
 					codonNts[i] = nt;
 				}
 			}
-			char nextAA = transcribe(codonNts);
-			if(ntIndex == 0 && nextAA != 'M') {
+			char nextAA = translate(codonNts);
+			if(ntIndex == 0 && requireMethionineAtStart && nextAA != 'M') {
 				stopTranscribing = true;
 			} else if(nextAA == 0) {
-				if(couldBeStopCodon(codonNts)) {
+				if(!translateBeyondPossibleStopCodon && couldBeStopCodon(codonNts)) {
 					stopTranscribing = true;
 				} else if(codonNts[0] != 0 && codonNts[1] != 0 && codonNts[2] != 0){
 					aas.append('X'); // unknown AA
@@ -191,7 +196,7 @@ public class TranscriptionUtils {
 	 * Returns the amino acid code if known, or 0 otherwise.
 	 * 
 	 */
-	public static char transcribe(char[] codonNTs) {
+	public static char translate(char[] codonNTs) {
 		char firstBase = codonNTs[0];
 		char secondBase = codonNTs[1];
 		char thirdBase = codonNTs[2];

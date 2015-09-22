@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
@@ -24,14 +25,14 @@ public class SequenceResult {
 	// recombinants or segmented genomes.
 	List<SequenceAlignmentResult> seqAlignmentResults = new ArrayList<SequenceAlignmentResult>();
 	
-	public SequenceResult(String sourceName, String sequenceID,
+	public SequenceResult(CommandContext cmdContext, String sourceName, String sequenceID,
 			String initialAlignmentName, AbstractSequenceObject seqObj) {
 		super();
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;
 		this.initialAlignmentName = initialAlignmentName;
 		this.seqObj = seqObj;
-		this.sequenceLength = seqObj.getNucleotides().length();
+		this.sequenceLength = seqObj.getNucleotides(cmdContext).length();
 	}
 
 	public void toDocument(ObjectBuilder seqResultObj) {

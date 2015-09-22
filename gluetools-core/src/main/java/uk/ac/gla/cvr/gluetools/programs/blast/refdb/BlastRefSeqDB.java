@@ -121,7 +121,7 @@ public class BlastRefSeqDB {
 		byte[] refSeqBytes = refSeqOriginalData.getBase64Bytes();
 		AbstractSequenceObject refSeqObject = refSeqFormat.sequenceObject();
 		refSeqObject.fromOriginalData(refSeqBytes);
-		return refSeqObject.getNucleotides();
+		return refSeqObject.getNucleotides(cmdContext);
 	}
 
 	private OriginalDataResult getReferenceSeqOriginalData(

@@ -57,7 +57,7 @@ public class SequenceAlignmentResult {
 			AbstractSequenceObject querySeqObj, Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter) {
 		if(!featureTreeResult.isInformational()) {
 			SequenceFeatureResult seqFeatureResult = new SequenceFeatureResult(featureTreeResult);
-			seqFeatureResult.init(querySeqObj, seqToRefAlignedSegments, featureToSequenceFeatureResult, s2cMinorityVariantFilter);
+			seqFeatureResult.init(cmdContext, querySeqObj, seqToRefAlignedSegments, featureToSequenceFeatureResult, s2cMinorityVariantFilter);
 			featureToSequenceFeatureResult.put(featureTreeResult.getFeatureName(), seqFeatureResult);
 		}
 		featureTreeResult.getChildTrees().values().forEach(childFeatureTreeResult -> 

@@ -18,8 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 @GlueDataClass(defaultListColumns = {_Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY})
 public class Variation extends _Variation {
@@ -30,7 +30,7 @@ public class Variation extends _Variation {
 	}
 	
 	private NotifiabilityLevel notifiabilityLevel;
-	private TranscriptionFormat transcriptionFormat;
+	private TranslationFormat transcriptionFormat;
 	private Pattern regexPattern;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -54,15 +54,15 @@ public class Variation extends _Variation {
 		return pkMap(getFeatureLoc().getReferenceSequence().getName(), getFeatureLoc().getFeature().getName(), getName());
 	}
 	
-	public TranscriptionFormat getTranscriptionFormat() {
+	public TranslationFormat getTranscriptionFormat() {
 		if(transcriptionFormat == null) {
 			transcriptionFormat = buildTranscriptionFormat();
 		}
 		return transcriptionFormat;
 	}
 	
-	private TranscriptionFormat buildTranscriptionFormat() {
-		return TranscriptionUtils.transcriptionFormatFromString(getTranscriptionType());
+	private TranslationFormat buildTranscriptionFormat() {
+		return TranslationUtils.transcriptionFormatFromString(getTranscriptionType());
 	}	
 
 	
@@ -95,15 +95,15 @@ public class Variation extends _Variation {
 		ReferenceSequence refSeq = featureLoc.getReferenceSequence();
 		Feature feature = featureLoc.getFeature();
 		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
-		TranscriptionFormat transcriptionFormat = getTranscriptionFormat();
-		if(transcriptionFormat == TranscriptionFormat.NUCLEOTIDE) {
+		TranslationFormat transcriptionFormat = getTranscriptionFormat();
+		if(transcriptionFormat == TranslationFormat.NUCLEOTIDE) {
 			if(!ReferenceSegment.covers(featureLocSegments, 
 					Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
 				throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
 						refSeq.getName(), feature.getName(), getName(), 
 						Integer.toString(refStart), Integer.toString(refEnd));
 			}
-		} else if(transcriptionFormat == TranscriptionFormat.AMINO_ACID) {
+		} else if(transcriptionFormat == TranslationFormat.AMINO_ACID) {
 			Feature orfAncestor = feature.getOrfAncestor();
 			if(orfAncestor == null) {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_MUST_BE_DEFINED_IN_ORF, 

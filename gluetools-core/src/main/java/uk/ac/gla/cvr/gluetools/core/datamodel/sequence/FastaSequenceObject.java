@@ -29,13 +29,13 @@ public class FastaSequenceObject extends AbstractSequenceObject {
 	}
 
 	@Override
-	public String getNucleotides() {
+	protected String getNucleotides() {
 		return nucleotides;
 	}
 
 	@Override
 	public byte[] toOriginalData() {
-		return FastaUtils.seqIdNtsPairToFasta(getHeader(), getNucleotides()).getBytes();
+		return FastaUtils.seqIdNtsPairToFasta(getHeader(), nucleotides).getBytes();
 	}
 
 	@Override

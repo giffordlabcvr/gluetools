@@ -34,6 +34,11 @@ schema-project HCV
         exit
  
 project HCV
+
+  set setting ignore-nt-sequence-hyphens true
+  set setting translate-beyond-possible-stop true
+  set setting translate-orf-descendents-directly true
+
   create source ncbi-nuccore
   import sequence ncbi-nuccore 113720385 GENBANK_XML "ncbi-nuccore/113720385.xml"
   import sequence ncbi-nuccore 113720387 GENBANK_XML "ncbi-nuccore/113720387.xml"

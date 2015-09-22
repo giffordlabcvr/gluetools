@@ -1,7 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.transcription;
+package uk.ac.gla.cvr.gluetools.core.translation;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 public class TestNtsToAAs {
 
@@ -228,7 +230,7 @@ public class TestNtsToAAs {
 	}
 	
 	private static void aaTest(String nts, char expectedAA) {
-		Assert.assertEquals(expectedAA, TranscriptionUtils.transcribe(nts.toCharArray()));
+		Assert.assertEquals(expectedAA, TranslationUtils.translate(nts.toCharArray()));
 	}
 
 }

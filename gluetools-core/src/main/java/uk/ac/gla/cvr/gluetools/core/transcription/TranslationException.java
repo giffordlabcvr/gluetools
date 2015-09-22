@@ -2,11 +2,11 @@ package uk.ac.gla.cvr.gluetools.core.transcription;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class TranscriptionException extends GlueException {
+public class TranslationException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		UNKNOWN_TRANSCRIPTION_TYPE("unknownTranscriptionType");
+		UNKNOWN_TRANSLATION_TYPE("unknownTranscriptionType");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -18,11 +18,11 @@ public class TranscriptionException extends GlueException {
 		}
 	}
 
-	public TranscriptionException(Code code, Object... errorArgs) {
+	public TranslationException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public TranscriptionException(Throwable cause, Code code,
+	public TranslationException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

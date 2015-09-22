@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"import","module"}, 
 	docoptUsages={"<name> <fileName>"},
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase},
-	description="Create a new module, importing its config from a file") 
+	description="Create a new module, importing config from a file") 
 public class ImportModuleCommand extends ProjectModeCommand<CreateResult> {
 
 	private String name;

@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.IAaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.INtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 /**
  * Representation of a variation definition which is easy to serialize, and which can be used for computation.
@@ -24,12 +24,12 @@ public class VariationDocument {
 	private Pattern regex;
 	private String description;
 	private NotifiabilityLevel notifiabilityLevel;
-	private TranscriptionFormat transcriptionFormat;
+	private TranslationFormat transcriptionFormat;
 	
 	public VariationDocument(String name, int refStart, int refEnd,
 			Pattern regex, String description,
 			NotifiabilityLevel notifiabilityLevel,
-			TranscriptionFormat transcriptionFormat) {
+			TranslationFormat transcriptionFormat) {
 		super();
 		this.name = name;
 		this.refStart = refStart;
@@ -58,7 +58,7 @@ public class VariationDocument {
 	public NotifiabilityLevel getNotifiabilityLevel() {
 		return notifiabilityLevel;
 	}
-	public TranscriptionFormat getTranscriptionFormat() {
+	public TranslationFormat getTranscriptionFormat() {
 		return transcriptionFormat;
 	}
 	

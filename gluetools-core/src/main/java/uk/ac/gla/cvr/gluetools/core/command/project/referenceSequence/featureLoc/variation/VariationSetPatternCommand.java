@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"set","pattern"}, 
@@ -26,7 +26,7 @@ public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 	public static final String TRANSCRIPTION_TYPE = "transcriptionType";
 	public static final String REGEX = "regex";
 	
-	private TranscriptionFormat transcriptionFormat;
+	private TranslationFormat transcriptionFormat;
 	private Pattern regex;
 	
 	@Override
@@ -34,8 +34,8 @@ public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		transcriptionFormat = Optional.ofNullable(
-				PluginUtils.configureEnumProperty(TranscriptionFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
-				orElse(TranscriptionFormat.NUCLEOTIDE);
+				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
+				orElse(TranslationFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
 	}
 

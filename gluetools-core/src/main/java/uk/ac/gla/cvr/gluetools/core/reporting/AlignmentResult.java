@@ -62,7 +62,7 @@ public class AlignmentResult {
 		}
 		referenceSequenceObject = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
 				Sequence.pkMap(refSourceName, refSequenceID)).getSequenceObject();
-		referenceLength = referenceSequenceObject.getNucleotides().length();
+		referenceLength = referenceSequenceObject.getNucleotides(cmdContext).length();
 		this.referenceFeatureTreeResult = featureTreeResult;
 	}
 

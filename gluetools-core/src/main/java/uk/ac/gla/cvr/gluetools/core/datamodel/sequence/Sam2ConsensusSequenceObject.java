@@ -181,7 +181,7 @@ public class Sam2ConsensusSequenceObject extends AbstractSequenceObject
 	}
 
 	@Override
-	public String getNucleotides() {
+	protected String getNucleotides() {
 		return nucleotides;
 	}
 

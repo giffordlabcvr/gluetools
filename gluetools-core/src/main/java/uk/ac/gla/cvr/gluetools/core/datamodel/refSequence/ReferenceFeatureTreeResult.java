@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionUtils;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 /**
  * This result object encapsulates all the feature locations of a reference sequence, including their realised NT and AA segments.
@@ -138,15 +138,15 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	
 	private void realiseSegments(CommandContext cmdContext, FeatureLocation featureLocation) {
 		ntReferenceSegments = featureLocation.getReferenceSequence()
-				.getSequence().getSequenceObject().getNtReferenceSegments(referenceSegments);
+				.getSequence().getSequenceObject().getNtReferenceSegments(referenceSegments, cmdContext);
 		ArrayBuilder ntRefSegArray = objectBuilder.setArray("ntReferenceSegment");
 		ntReferenceSegments.forEach(ntRefSeg -> {
 			ntRefSeg.toDocument(ntRefSegArray.addObject());
 		});
-		if(getFeatureMetatags().contains(FeatureMetatag.Type.OPEN_READING_FRAME.name())) {
-			aaReferenceSegments = featureLocation.transcribe(cmdContext);
+		String orfAncestorFeatureName = getOrfAncestorFeatureName();
+		if(featureLocation.getFeature().isOpenReadingFrame()) {
+			aaReferenceSegments = featureLocation.translate(cmdContext);
 		} else {
-			String orfAncestorFeatureName = getOrfAncestorFeatureName();
 			if(orfAncestorFeatureName != null) {
 				ReferenceFeatureTreeResult ancestorTreeResult = findAncestor(orfAncestorFeatureName);
 				List<AaReferenceSegment> ancestorAaRefSegs = ancestorTreeResult.aaReferenceSegments;
@@ -154,7 +154,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 
 				// find the AA locations of this feature, using the ORF's codon coordinates.
 				List<ReferenceSegment> templateAaRefSegs = 
-						TranscriptionUtils.translateToCodonCoordinates(orfAncestorCodon1Start, ntReferenceSegments);
+						TranslationUtils.translateToCodonCoordinates(orfAncestorCodon1Start, ntReferenceSegments);
 
 				aaReferenceSegments = ReferenceSegment.intersection(templateAaRefSegs, ancestorAaRefSegs, 
 						(templateSeg, ancestorSeg) -> {

@@ -82,7 +82,7 @@ public class FastaExporter extends ModulePlugin<FastaExporter> {
 				}
 				fastaId = result.toString();
 			}
-			stringBuffer.append(FastaUtils.seqIdNtsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides()));
+			stringBuffer.append(FastaUtils.seqIdNtsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
 		cmdContext.saveBytes(fileName, stringBuffer.toString().getBytes());
 		return new OkResult();

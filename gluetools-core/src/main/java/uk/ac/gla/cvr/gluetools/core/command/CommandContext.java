@@ -15,6 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
@@ -149,6 +151,19 @@ public class CommandContext {
 
 	@SuppressWarnings("rawtypes")
 	public void checkCommmandIsExecutable(Class<? extends Command> cmdClass) {
+	}
+
+	public String getProjectSettingValue(ProjectSettingOption projectSettingOption) {
+		ProjectSetting projectSetting = 
+				GlueDataObject.lookup(getObjectContext(), ProjectSetting.class, 
+						ProjectSetting.pkMap(projectSettingOption.name()), true);
+		String valueText;
+		if(projectSetting == null) {
+			valueText = projectSettingOption.getDefaultValue();
+		} else {
+			valueText = projectSetting.getValue();
+		}
+		return valueText;
 	}
 	
 }

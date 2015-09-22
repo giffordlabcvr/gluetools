@@ -158,7 +158,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			} else {
 				initialAlignmentName = alignmentName.get();
 			}
-			seqResults.add(new SequenceResult("submittedData", header, initialAlignmentName, seqObj));
+			seqResults.add(new SequenceResult(cmdContext, "submittedData", header, initialAlignmentName, seqObj));
 		});
 		
 		initSequenceAlignmentResults(cmdContext, seqResults);
@@ -226,7 +226,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			seqResults.forEach(seqResult -> {
 				ObjectBuilder seqObjBuilder = seqArrayBuilder.addObject();
 				seqObjBuilder.set(AlignCommand.QUERY_ID, constructQueryID(seqResult.getSourceName(), seqResult.getSequenceID()));
-				String seqNucleotides = seqResult.getSeqObj().getNucleotides();
+				String seqNucleotides = seqResult.getSeqObj().getNucleotides(cmdContext);
 				seqObjBuilder.set(AlignCommand.NUCLEOTIDES, seqNucleotides);
 			});
 			R alignerResult = cmdBuilder.execute();

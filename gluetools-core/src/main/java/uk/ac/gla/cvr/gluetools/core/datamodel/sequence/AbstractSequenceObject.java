@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
@@ -16,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 public abstract class AbstractSequenceObject {
 
 	private SequenceFormat seqFormat;
+	private String processedNucleotides = null;
 	
 	public AbstractSequenceObject(SequenceFormat seqFormat) {
 		super();
@@ -26,7 +29,17 @@ public abstract class AbstractSequenceObject {
 		return seqFormat;
 	}
 
-	public abstract String getNucleotides();
+	public final String getNucleotides(CommandContext cmdContext) {
+		if(processedNucleotides == null) {
+			processedNucleotides = getNucleotides();
+			if(cmdContext.getProjectSettingValue(ProjectSettingOption.IGNORE_NT_SEQUENCE_HYPHENS).equals("true")) {
+				processedNucleotides = processedNucleotides.replaceAll("-", "");
+			}
+		}
+		return processedNucleotides;
+	}
+	
+	protected abstract String getNucleotides();
 	
 	public abstract byte[] toOriginalData();
 
@@ -50,8 +63,8 @@ public abstract class AbstractSequenceObject {
 	 * additionally contain nucleotide segments from this sequence.
 	 * @param queryAlignedSegments
 	 */
-	public List<NtQueryAlignedSegment> getNtQueryAlignedSegments(List<? extends IQueryAlignedSegment> queryAlignedSegments) {
-		String nucleotides = getNucleotides();
+	public List<NtQueryAlignedSegment> getNtQueryAlignedSegments(List<? extends IQueryAlignedSegment> queryAlignedSegments, CommandContext cmdContext) {
+		String nucleotides = getNucleotides(cmdContext);
 		return queryAlignedSegments.stream()
 				.map(queryAlignedSegment -> {
 					int refStart = queryAlignedSegment.getRefStart();
@@ -70,8 +83,8 @@ public abstract class AbstractSequenceObject {
 	 * according to the supplied reference segments
 	 * @param refSegments
 	 */
-	public List<NtReferenceSegment> getNtReferenceSegments(List<? extends IReferenceSegment> refSegments) {
-		String nucleotides = getNucleotides();
+	public List<NtReferenceSegment> getNtReferenceSegments(List<? extends IReferenceSegment> refSegments, CommandContext cmdContext) {
+		String nucleotides = getNucleotides(cmdContext);
 		return refSegments.stream()
 				.map(refSegment -> {
 					int refStart = refSegment.getRefStart();
@@ -82,8 +95,8 @@ public abstract class AbstractSequenceObject {
 				.collect(Collectors.toList());
 	}
 	
-	public CharSequence getNucleotides(int ntStart, int ntEnd) {
-		return getNucleotides().subSequence(ntStart-1, ntEnd);
+	public CharSequence getNucleotides(CommandContext cmdContext, int ntStart, int ntEnd) {
+		return getNucleotides(cmdContext).subSequence(ntStart-1, ntEnd);
 	}
 
 	public static List<AbstractSequenceObject> seqObjectsFromSeqData(

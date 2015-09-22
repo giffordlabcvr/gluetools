@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
@@ -52,27 +53,27 @@ public class AlignmentMember extends _AlignmentMember {
 	}
 	
 	
-	public Map<String, Object> getStatistics(List<AlignmentMember.MemberStatistic> statistics) {
+	public Map<String, Object> getStatistics(List<AlignmentMember.MemberStatistic> statistics, CommandContext cmdContext) {
 		Map<String, Object> results = new LinkedHashMap<String, Object>();
 		if(statistics.contains(AlignmentMember.MemberStatistic.referenceNtCoveragePercent)) {
-			results.put(AlignmentMember.MemberStatistic.referenceNtCoveragePercent.name(), getReferenceNtCoveragePercent());
+			results.put(AlignmentMember.MemberStatistic.referenceNtCoveragePercent.name(), getReferenceNtCoveragePercent(cmdContext));
 		}
 		if(statistics.contains(AlignmentMember.MemberStatistic.memberNtCoveragePercent)) {
-			results.put(AlignmentMember.MemberStatistic.memberNtCoveragePercent.name(), getMemberNtCoveragePercent());
+			results.put(AlignmentMember.MemberStatistic.memberNtCoveragePercent.name(), getMemberNtCoveragePercent(cmdContext));
 		}
 
 		return results;
 	}
 
-	private double getMemberNtCoveragePercent() {
-		int memberLength = getSequence().getSequenceObject().getNucleotides().length();
+	private double getMemberNtCoveragePercent(CommandContext cmdContext) {
+		int memberLength = getSequence().getSequenceObject().getNucleotides(cmdContext).length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return IQueryAlignedSegment.getQueryNtCoveragePercent(alignedSegments, memberLength);
 	}
 
-	private double getReferenceNtCoveragePercent() {
+	private double getReferenceNtCoveragePercent(CommandContext cmdContext) {
 		int referenceLength = getAlignment().getRefSequence().
-				getSequence().getSequenceObject().getNucleotides().length();
+				getSequence().getSequenceObject().getNucleotides(cmdContext).length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return IQueryAlignedSegment.getReferenceNtCoveragePercent(alignedSegments, referenceLength);
 	}

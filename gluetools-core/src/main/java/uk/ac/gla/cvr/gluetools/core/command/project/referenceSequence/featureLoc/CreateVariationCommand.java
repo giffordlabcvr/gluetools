@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranscriptionFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 
 @CommandClass( 
@@ -47,7 +47,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 	private String variationName;
 	private Integer refStart;
 	private Integer refEnd;
-	private TranscriptionFormat transcriptionFormat;
+	private TranslationFormat transcriptionFormat;
 	private Pattern regex;
 	private NotifiabilityLevel notifiabilityLevel;
 	private Optional<String> description;
@@ -60,8 +60,8 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		refEnd = PluginUtils.configureIntProperty(configElem, REF_END, true);
 		
 		transcriptionFormat = Optional.ofNullable(
-				PluginUtils.configureEnumProperty(TranscriptionFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
-				orElse(TranscriptionFormat.NUCLEOTIDE);
+				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
+				orElse(TranslationFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
 		notifiabilityLevel = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(NotifiabilityLevel.class, configElem, NOTIFIABILITY_LEVEL, false)).
