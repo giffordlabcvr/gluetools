@@ -5086,6 +5086,37 @@ project HCV
     compute alignment AL_2b blastAligner 
     alignment AL_2b show statistics
 
+    create reference REF_5a ncbi-nuccore 2462303
+    create alignment REF_5a AL_5a
+    alignment AL_5a set parent AL_MASTER
+    alignment AL_5a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '5' and SUBTYPE = 'a'"
+    compute alignment AL_5a blastAligner 
+    alignment AL_5a show statistics
+
+    create reference REF_6a ncbi-nuccore 161898754
+    create alignment REF_6a AL_6a
+    alignment AL_6a set parent AL_MASTER
+    alignment AL_6a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '6' and SUBTYPE = 'a'"
+    compute alignment AL_6a blastAligner 
+    alignment AL_6a show statistics
+
+    create reference REF_6c ncbi-nuccore 145687741
+    create alignment REF_6c AL_6c
+    alignment AL_6c set parent AL_MASTER
+    alignment AL_6c add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '6' and SUBTYPE = 'c'"
+    compute alignment AL_6c blastAligner 
+    alignment AL_6c show statistics
+
+
+    create reference REF_7a ncbi-nuccore 763907344
+    create alignment REF_7a AL_7a
+    alignment AL_7a set parent AL_MASTER
+    alignment AL_7a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '7' and SUBTYPE = 'a'"
+    compute alignment AL_7a blastAligner 
+    alignment AL_7a show statistics
+
+
+
   
   # delete source stopHcvCvr
 	  
