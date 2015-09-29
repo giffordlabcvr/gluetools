@@ -3,7 +3,6 @@ apply plugin: 'eclipse-wtp'
 apply plugin: 'org.hidetake.ssh'
 
 sourceCompatibility = 1.8
-version = '1.0'
 
 remotes {
   gluehome {
