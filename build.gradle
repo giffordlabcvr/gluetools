@@ -45,7 +45,9 @@ scmVersion {
         prefix = 'gluetools'
     }
     versionCreator 'versionWithBranch'
-    customKey = file('~/.ssh/github_id_rsa')
+    repository {
+        customKey = file('/Users/joshsinger/.ssh/github_id_rsa')
+    }
 }
 
 allprojects {

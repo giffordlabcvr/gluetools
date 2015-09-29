@@ -5,4 +5,6 @@ git tag -a -m "test release" gluetools-0.1.0
 gradle currentVersion
 
 ## move from snapshot to full release.
+## this will increment the version, tag the commit and push the tag.
+## fails if there are uncommitted changes.
 gradle release
