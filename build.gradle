@@ -41,6 +41,9 @@ configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 }
 
 scmVersion {
+	hooks {
+        pre 'fileUpdate', [file: 'gluetools-core/src/main/resources/gluecore.properties', pattern: {v, c -> /version=$v/}, replacement: {v, c -> "version=$v"}]
+    }
     tag {
         prefix = 'gluetools'
     }
@@ -49,9 +52,6 @@ scmVersion {
         customKey = file('/Users/joshsinger/.ssh/github_id_rsa')
     }
 
-	hooks {
-        pre 'fileUpdate', [file: 'gluetools-core/src/main/resources/gluecore.properties', pattern: {v, c -> /version=$v/}, replacement: {v, c -> "version=$v"}]
-    }
 }
 
 allprojects {
