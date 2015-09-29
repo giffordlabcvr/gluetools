@@ -12,6 +12,6 @@
 hs_err_pid*
 /bin/
 RemoteSystemsTempFiles
-.gradle
+.gradle/
 gluetools-web/build
 .settings
