@@ -6,5 +6,5 @@ gradle currentVersion
 
 ## move from snapshot to full release.
 ## this will increment the version, tag the commit and push the tag.
-## fails if there are uncommitted changes.
+## fails if there are uncommitted changes, or if local is ahead of remote.
 gradle release
