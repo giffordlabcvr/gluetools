@@ -19,7 +19,7 @@ submitSequencesAnalysis
 	$scope.alignmentNames = [];
 
 	$scope.showSupportedFormats = function() {
-		dialogs.create('dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
+		dialogs.create('hcvApp/dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
 	}
 	
 	$scope.showAnalysisResults = function(item) {
@@ -29,7 +29,7 @@ submitSequencesAnalysis
 	}
 	
 	$scope.showAlignmentDetails = function(sequenceResult) {
-		dialogs.create('dialogs/alignmentDetails.html','alignmentDetailsCtrl',sequenceResult,{});
+		dialogs.create('hcvApp/dialogs/alignmentDetails.html','alignmentDetailsCtrl',sequenceResult,{});
 	}
 	
 	
@@ -73,7 +73,7 @@ submitSequencesAnalysis
 		}
 		
 		$scope.selectGenomeFeature = function(sequenceResult) {
-			var dlg = dialogs.create('dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
+			var dlg = dialogs.create('hcvApp/dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
 			dlg.result.then(function(feature){
 				$scope.sequenceResult.selectedFeature = feature;
 			});

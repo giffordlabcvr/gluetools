@@ -1,3 +1,5 @@
+# http://axion-release-plugin.readthedocs.org/
+
 ## tag the current head
 git tag -a -m "test release" gluetools-0.1.0
 

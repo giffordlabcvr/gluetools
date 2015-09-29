@@ -21,13 +21,17 @@ buildscript {
 }
 
 war {
+	dependsOn 'copyJarToDownloads'
 	webAppDirName = 'WebContent'
 }
 
-
+task copyJarToDownloads(dependsOn: [':gluetools-core:jarAll'], type: Copy) {
+    from '../gluetools-core/build/libs/gluetools-core-all-'+version+'.jar'
+    into 'WebContent/www/gluetools/downloads'
+}
 
 task deployWebAppWar(dependsOn: ['war']) {
-  ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web.war')
+  ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web-'+version+'.war')
   ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWar.touchfile')
   inputs.file glueWebAppWarFile
   outputs.file glueWebAppWarTouchfile

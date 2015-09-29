@@ -10,15 +10,15 @@ hcvApp.config(['$routeProvider',
     function($routeProvider) {
       $routeProvider.
       	when('/datasetAnalysis', {
-          templateUrl: 'datasetAnalysis.html',
+          templateUrl: 'hcvApp/datasetAnalysis.html',
           controller: 'datasetAnalysisCtrl'
         }).
         when('/submitSequencesAnalysis', {
-            templateUrl: 'submitSequencesAnalysis.html',
+            templateUrl: 'hcvApp/submitSequencesAnalysis.html',
             controller: 'submitSequencesAnalysisCtrl'
           }).
         when('/home', {
-            templateUrl: 'home.html',
+            templateUrl: 'hcvApp/home.html',
             controller: 'homeCtrl'
           }).
         otherwise({

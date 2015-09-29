@@ -1,5 +1,7 @@
 Usage: 
-  gluetools [-him] [-c <configFile>] [-f <file>]
+  gluetools -v
+  gluetools -h
+  gluetools [-im] [-c <configFile>] [-f <file>]
 
 Options:
   -h, --help                       Print usage and options information
@@ -7,4 +9,5 @@ Options:
   -m, --migrate-schema             Migrate database schema if necessary
   -f <file>, --batch-file <file>   Run commands in batch mode from a file
   -c <file>, --config-file <file>  Configure gluetools from a file
+  -v, --version                    Display version info and exit
   

@@ -1,6 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.cayenne.ObjectContext;
@@ -55,8 +58,15 @@ public class GluetoolsEngine implements Plugin {
 	private DatabaseConfiguration dbConfiguration = new DatabaseConfiguration();
 	private PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
 	private ServerRuntime rootServerRuntime;
+	private Properties gluecoreProperties;
 	
 	private GluetoolsEngine(String configFilePath) {
+		gluecoreProperties = new Properties();
+		try (InputStream propertiesStream = this.getClass().getResourceAsStream("/gluecore.properties")) {
+			gluecoreProperties.load(propertiesStream);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		freemarkerConfiguration = new Configuration();
 		Document configDocument = null;
 		if(configFilePath != null) {
@@ -86,14 +96,17 @@ public class GluetoolsEngine implements Plugin {
 		if(dbConfigElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, dbConfigElem, dbConfiguration);
 		}
+		Element propertiesConfigElem = PluginUtils.findConfigElement(configElem, "properties");
+		if(propertiesConfigElem != null) {
+			PluginFactory.configurePlugin(pluginConfigContext, propertiesConfigElem, propertiesConfiguration);
+		}
+	}
+
+	public void dbWarning() {
 		if(dbConfiguration.getVendor() == Vendor.ApacheDerby &&
 				dbConfiguration.getJdbcUrl().contains(":memory:")) {
 			logger.warning("The GLUE database is in-memory Apache Derby. "+
 				"Changes will not be persisted beyond the lifetime of this GLUE instance.");
-		}
-		Element propertiesConfigElem = PluginUtils.findConfigElement(configElem, "properties");
-		if(propertiesConfigElem != null) {
-			PluginFactory.configurePlugin(pluginConfigContext, propertiesConfigElem, propertiesConfiguration);
 		}
 	}
 
@@ -151,6 +164,10 @@ public class GluetoolsEngine implements Plugin {
 	
 	private void dispose() {
 		rootServerRuntime.shutdown();
+	}
+
+	public Properties getGluecoreProperties() {
+		return gluecoreProperties;
 	}
 
 	

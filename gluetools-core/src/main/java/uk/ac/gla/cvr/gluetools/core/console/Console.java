@@ -61,6 +61,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	private String configFilePath = null;
 	private boolean interactiveAfterBatch = false;
 	private boolean migrateSchema;
+	private boolean version;
 	
 	private Console() {
 	}
@@ -244,16 +245,19 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		Console console = new Console();
 		setupConsoleOptions(docoptResult, console);
 		console.init();
-		Object fileString = docoptResult.get("--batch-file");
-		if(fileString != null) {
-			console.runBatchFile(fileString);
-			if(console.interactiveAfterBatch) {
-				console.batchLine = null;
+		if(!console.version) {
+			GluetoolsEngine.getInstance().dbWarning();
+			Object fileString = docoptResult.get("--batch-file");
+			if(fileString != null) {
+				console.runBatchFile(fileString);
+				if(console.interactiveAfterBatch) {
+					console.batchLine = null;
+					console.interactiveSession();
+				}
+
+			} else {
 				console.interactiveSession();
 			}
-			
-		} else {
-			console.interactiveSession();
 		}
 		console.shutdown();
 	}
@@ -271,6 +275,10 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(interactiveOption != null) {
 			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
 		}
+		Object versionOption = docoptResult.get("--version");
+		if(versionOption != null) {
+			console.version = Boolean.parseBoolean(versionOption.toString());
+		}
 	}
 
 	private void init() {
@@ -285,6 +293,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		commandContext.setCommandContextListener(this);
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));
 		reader.addCompleter(new ConsoleCompleter(commandContext));
+		output(versionLine());
 	}
 
 	private void interactiveSession() {
@@ -402,6 +411,11 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	}
 
 
-	
+	private String versionLine() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("GLUEtools version");
+		buffer.append(" ").append(GluetoolsEngine.getInstance().getGluecoreProperties().getProperty("version", "unknown"));
+		return buffer.toString();
+	}
 	
 }
