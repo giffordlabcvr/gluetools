@@ -1,16 +1,21 @@
-var hcvApp = angular.module('gluetoolsApp', [
+var glueToolsApp = angular.module('gluetoolsApp', [
   'ngRoute',
   'home',
-  'download'
+  'download', 
+  'installation'
 ]);
 
-hcvApp.config(['$routeProvider',
+glueToolsApp.config(['$routeProvider',
     function($routeProvider) {
       $routeProvider.
-      	when('/download', {
-          templateUrl: 'gluetools/download.html',
-          controller: 'downloadCtrl'
-        }).
+    	when('/download', {
+            templateUrl: 'gluetools/download.html',
+            controller: 'downloadCtrl'
+          }).
+    	when('/installation', {
+            templateUrl: 'gluetools/installation.html',
+            controller: 'installationCtrl'
+          }).
         when('/home', {
             templateUrl: 'gluetools/home.html',
             controller: 'homeCtrl'
@@ -20,11 +25,12 @@ hcvApp.config(['$routeProvider',
         });
     }]);
 
-hcvApp.controller('gluetoolsCtrl', 
+glueToolsApp.controller('gluetoolsCtrl', 
 [ '$scope',
   function ($scope) {
   	$scope.brand = "GLUEtools";
   	$scope.homeMenuTitle = "Home";
   	$scope.downloadMenuTitle = "Download";
+  	$scope.installationMenuTitle = "Install";
   } ]);
 

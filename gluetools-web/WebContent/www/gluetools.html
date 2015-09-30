@@ -6,15 +6,22 @@
 	<meta http-equiv="pragma" content="no-cache" />
 
 	<script type="text/javascript" src="../angular/angular.js"></script>
+	<script type="text/javascript" src="../highlight-js/highlight.min.js"></script>
+	<script type="text/javascript" src="../angular-highlightjs/angular-highlightjs.min.js"></script>
+
 	<script type="text/javascript" src="../angular/angular-route.min.js"></script>
 	<script type="text/javascript" src="../ui-bootstrap/ui-bootstrap.js"></script>
 
 	<script type="text/javascript" src="../main/js/gluetools.js"></script>
 	<script type="text/javascript" src="../main/js/gluetools/home.js"></script>
 	<script type="text/javascript" src="../main/js/gluetools/download.js"></script>
-	
+	<script type="text/javascript" src="../main/js/gluetools/installation.js"></script>
+
+	<link rel="stylesheet" href="../highlight-js/highlightjs-dark.css"/>
 	<link rel="stylesheet" href="../bootstrap/css/bootstrap.css"/>
 	<link rel="stylesheet" href="../main/css/style.css"/>
+
+
 </head>
 <body>
 
@@ -41,13 +48,16 @@
 	      <ul class="nav navbar-nav">
 	        <li><a href="#home">{{homeMenuTitle}}</a></li>
 	        <li><a href="#download">{{downloadMenuTitle}}</a></li>
+	        <li><a href="#installation">{{installationMenuTitle}}</a></li>
 	      </ul>
 	    </div><!-- /.navbar-collapse -->
 	  </nav>
 	</div>     
+	
+	
+	
 	<div ng-view></div>
 
 </div>
-
 </body>
 </html>

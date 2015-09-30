@@ -44,6 +44,7 @@ scmVersion {
 	hooks {
         pre 'fileUpdate', [file: 'gluetools-core/src/main/resources/gluecore.properties', pattern: {v, c -> /version=$v/}, replacement: {v, c -> "version=$v"}]
         pre 'fileUpdate', [file: 'gluetools-web/WebContent/www/gluetools/download.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
+        pre 'fileUpdate', [file: 'gluetools-web/WebContent/www/gluetools/installation.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
 		pre 'commit', {v, p -> "Release version $v"}
     }
     tag {

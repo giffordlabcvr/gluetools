@@ -1,7 +1,7 @@
-var home = angular.module('download', ['ui.bootstrap']);
+var download = angular.module('download', ['ui.bootstrap']);
 
 
-home.controller('downloadCtrl', 
+download.controller('downloadCtrl', 
 		[ '$scope', 
 		function($scope) {
 		} ]);
