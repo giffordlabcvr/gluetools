@@ -25,9 +25,13 @@ war {
 	webAppDirName = 'WebContent'
 }
 
-task copyJarToDownloads(dependsOn: [':gluetools-core:jarAll'], type: Copy) {
+task copyJarToDownloads(dependsOn: [':gluetools-core:jarAll', 'cleanDownloadJar'], type: Copy) {
     from '../gluetools-core/build/libs/gluetools-core-all-'+version+'.jar'
     into 'WebContent/www/gluetools/downloads'
+}
+
+task cleanDownloadJar(type: Delete) {
+	delete fileTree(dir: 'WebContent/www/gluetools/downloads').matching { include 'gluetools-core-all-*.jar' }
 }
 
 task deployWebAppWar(dependsOn: ['war']) {
