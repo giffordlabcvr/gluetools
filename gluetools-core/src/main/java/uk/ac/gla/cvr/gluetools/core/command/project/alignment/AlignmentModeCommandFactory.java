@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFeatureLocationCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class AlignmentModeCommandFactory extends BaseCommandFactory {
@@ -29,8 +30,6 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentShowParentCommand.class);
 		registerCommandClass(AlignmentShowAncestorsCommand.class);
 
-		registerCommandClass(InheritFeatureLocationCommand.class);
-		
 		registerCommandClass(ExitCommand.class);
 	}
 	

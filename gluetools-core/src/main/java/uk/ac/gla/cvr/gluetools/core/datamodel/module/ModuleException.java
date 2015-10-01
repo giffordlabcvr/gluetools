@@ -6,7 +6,7 @@ public class ModuleException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		CREATE_FROM_FILE_FAILED("file");
+		CREATE_FROM_FILE_FAILED("file", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

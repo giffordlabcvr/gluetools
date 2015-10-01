@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceFeatureTreeResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AaMinorityVariant;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NtMinorityVariant;
@@ -35,13 +36,13 @@ public class SequenceFeatureResult {
 	private List<VariationNote> aaVariationNotes = new ArrayList<VariationNote>();
 	private List<ReferenceDifferenceNote> ntReferenceDifferenceNotes = new ArrayList<ReferenceDifferenceNote>();
 	private List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = new ArrayList<ReferenceDifferenceNote>();
-	private ReferenceFeatureTreeResult featureTreeResult;
+	private ReferenceRealisedFeatureTreeResult featureTreeResult;
 	
 	private List<NtMinorityVariant> ntMinorityVariants = new ArrayList<NtMinorityVariant>();
 	private List<AaMinorityVariant> aaMinorityVariants = new ArrayList<AaMinorityVariant>();
 
 	
-	public SequenceFeatureResult(ReferenceFeatureTreeResult featureTreeResult) {
+	public SequenceFeatureResult(ReferenceRealisedFeatureTreeResult featureTreeResult) {
 		this.featureTreeResult = featureTreeResult;
 	}
 

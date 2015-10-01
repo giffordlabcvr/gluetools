@@ -1,6 +1,0 @@
-Nim_030-0031_Ref,3,some value 1
-Nim_070-0231_Ref,6,some value 2
-Nim_070-0290_Ref,67,some value 3
-Nim_070-0337_R1-Ref,2,some value 4
-Nim_070-0337_R1-Ref,1,n/a
-file1,56,some value 56

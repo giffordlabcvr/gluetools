@@ -26,8 +26,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 /**
- * This result object encapsulates all the feature locations of a reference sequence, including their realised NT and AA segments.
- * It also has accessors for pretty much everything.
+ * This result object encapsulates all the feature locations of a reference sequence, in a tree, with feature metatags, 
+ * variations etc.
  */
 
 public class ReferenceFeatureTreeResult extends CommandResult {
@@ -35,9 +35,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	private ObjectBuilder objectBuilder = null;
 	private ObjectReader objectReader = null;
 	
-	private List<ReferenceSegment> referenceSegments = null;
-	private List<NtReferenceSegment> ntReferenceSegments = null;
-	private List<AaReferenceSegment> aaReferenceSegments = null;
+	private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
 	private List<VariationDocument> variationDocuments = new ArrayList<VariationDocument>();
 	
 	private ReferenceFeatureTreeResult parentTreeResult;
@@ -56,6 +54,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
  	 	this.objectReader = objectBuilder.getObjectReader();
 	}
 
+
 	private ObjectReader getObjectReader() {
 		if(objectReader != null) {
 			return objectReader;
@@ -63,14 +62,14 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return getDocumentReader();
 	}
 	
-	private ObjectBuilder getObjectBuilder() {
+	protected ObjectBuilder getObjectBuilder() {
 		if(objectBuilder != null) {
 			return objectBuilder;
 		}
 		return getDocumentBuilder();
 	}
 	
-	private ReferenceFeatureTreeResult addFeature(Feature feature) {
+	protected ReferenceFeatureTreeResult addFeature(Feature feature) {
 		Feature parentFeature = feature.getParent();
 		ReferenceFeatureTreeResult parentFeatureTreeResult = null;
 		if(parentFeature == null) {
@@ -84,9 +83,15 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		}
 		ObjectBuilder objectBuilder = parentFeatureTreeResult.getObjectBuilder().setArray("features").addObject();
 		featureToDocument(feature, objectBuilder);
-		featureTreeResult = new ReferenceFeatureTreeResult(parentFeatureTreeResult, objectBuilder);
+		featureTreeResult = createChildFeatureTreeResult(parentFeatureTreeResult, objectBuilder);
 		parentFeatureTreeResult.featureNameToTreeResult.put(feature.getName(), featureTreeResult);
 		return featureTreeResult;
+	}
+
+	protected ReferenceFeatureTreeResult createChildFeatureTreeResult(
+			ReferenceFeatureTreeResult parentFeatureTreeResult,
+			ObjectBuilder objectBuilder) {
+		return new ReferenceFeatureTreeResult(parentFeatureTreeResult, objectBuilder);
 	}
 
 	private void featureToDocument(Feature feature, ObjectBuilder objectBuilder) {
@@ -101,7 +106,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		metatagTypes.forEach(t -> metatagArray.addString(t.name()));
 	}
 
-	public void addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation) {
+	public ReferenceFeatureTreeResult addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation) {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
 		ObjectBuilder objectBuilder = featureTreeResult.getObjectBuilder();
@@ -110,23 +115,23 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 			objectBuilder.setInt("codon1Start", codon1Start);
 		}
 		List<FeatureSegment> featureLocSegments = featureLocation.getSegments();
-		featureTreeResult.referenceSegments = featureLocSegments.stream()
+		featureTreeResult.referenceSegments.addAll(featureLocSegments.stream()
 				.map(featureLocSeg -> new ReferenceSegment(featureLocSeg.getRefStart(), featureLocSeg.getRefEnd()))
-				.collect(Collectors.toList());
+				.collect(Collectors.toList()));
 		ArrayBuilder refSegArray = objectBuilder.setArray("referenceSegment");
 		featureTreeResult.referenceSegments.forEach(refSeg -> {
 			refSeg.toDocument(refSegArray.addObject());
 		});
-		featureTreeResult.realiseSegments(cmdContext, featureLocation);
 		ArrayBuilder variationArray = objectBuilder.setArray("variation");
 		for(Variation variation: featureLocation.getVariations()) {
 			VariationDocument variationDocument = variation.getVariationDocument();
 			featureTreeResult.variationDocuments.add(variationDocument);
 			variationDocument.toDocument(variationArray.addObject());
 		}
+		return featureTreeResult;
 	}
 	
-	private ReferenceFeatureTreeResult findAncestor(String name) {
+	protected ReferenceFeatureTreeResult findAncestor(String name) {
 		if(parentTreeResult == null) {
 			return null;
 		}
@@ -136,53 +141,9 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return parentTreeResult.findAncestor(name);
 	}
 	
-	private void realiseSegments(CommandContext cmdContext, FeatureLocation featureLocation) {
-		ntReferenceSegments = featureLocation.getReferenceSequence()
-				.getSequence().getSequenceObject().getNtReferenceSegments(referenceSegments, cmdContext);
-		ArrayBuilder ntRefSegArray = objectBuilder.setArray("ntReferenceSegment");
-		ntReferenceSegments.forEach(ntRefSeg -> {
-			ntRefSeg.toDocument(ntRefSegArray.addObject());
-		});
-		String orfAncestorFeatureName = getOrfAncestorFeatureName();
-		if(featureLocation.getFeature().isOpenReadingFrame()) {
-			aaReferenceSegments = featureLocation.translate(cmdContext);
-		} else {
-			if(orfAncestorFeatureName != null) {
-				ReferenceFeatureTreeResult ancestorTreeResult = findAncestor(orfAncestorFeatureName);
-				List<AaReferenceSegment> ancestorAaRefSegs = ancestorTreeResult.aaReferenceSegments;
-				Integer orfAncestorCodon1Start = ancestorTreeResult.getCodon1Start();
 
-				// find the AA locations of this feature, using the ORF's codon coordinates.
-				List<ReferenceSegment> templateAaRefSegs = 
-						TranslationUtils.translateToCodonCoordinates(orfAncestorCodon1Start, ntReferenceSegments);
-
-				aaReferenceSegments = ReferenceSegment.intersection(templateAaRefSegs, ancestorAaRefSegs, 
-						(templateSeg, ancestorSeg) -> {
-							int refStart = Math.max(templateSeg.getRefStart(), ancestorSeg.getRefStart());
-							int refEnd = Math.min(templateSeg.getRefEnd(), ancestorSeg.getRefEnd());
-							CharSequence aminoAcids = ancestorSeg.getAminoAcidsSubsequence(refStart, refEnd);
-							return new AaReferenceSegment(refStart, refEnd, aminoAcids);
-						});
-
-				Integer codon1Start = getCodon1Start();
-				// if necessary translate to feature's own codon coordinates.
-				if(codon1Start != null && !codon1Start.equals(orfAncestorCodon1Start)) {
-					int ntOffset = orfAncestorCodon1Start-codon1Start;
-					int ancestorToLocalCodonOffset = ntOffset/3;
-					aaReferenceSegments.forEach(aaRefSeg -> aaRefSeg.translate(ancestorToLocalCodonOffset));
-				}
-			}
-		}
-		if(aaReferenceSegments != null) {
-			ArrayBuilder aaRefSegArray = objectBuilder.setArray("aaReferenceSegment");
-			aaReferenceSegments.forEach(aaRefSeg -> {
-				aaRefSeg.toDocument(aaRefSegArray.addObject());
-			});
-		}
-	}
-
-	public Map<String, ReferenceFeatureTreeResult> getChildTrees() {
-		return featureNameToTreeResult;
+	public List<? extends ReferenceFeatureTreeResult> getChildTrees() {
+		return new ArrayList<ReferenceFeatureTreeResult>(featureNameToTreeResult.values());
 	}
 	
 	public Integer getCodon1Start() {
@@ -204,14 +165,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 			metatags.add(featureMetatagArray.stringValue(i));
 		}
 		return metatags;
-	}
-
-	public List<NtReferenceSegment> getNtReferenceSegments() {
-		return ntReferenceSegments;
-	}
-
-	public List<AaReferenceSegment> getAaReferenceSegments() {
-		return aaReferenceSegments;
 	}
 
 	public List<ReferenceSegment> getReferenceSegments() {

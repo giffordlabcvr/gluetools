@@ -52,17 +52,30 @@ public class ReferenceSequence extends _ReferenceSequence {
 
 
 	public ReferenceFeatureTreeResult getFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
+		ReferenceFeatureTreeResult featureTree = new ReferenceFeatureTreeResult();
+		buildTree(cmdContext, limitingFeature, recursive, featureTree);
+		return featureTree;
+	}
+
+	public ReferenceRealisedFeatureTreeResult getRealisedFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
+		ReferenceRealisedFeatureTreeResult featureTree = new ReferenceRealisedFeatureTreeResult();
+		buildTree(cmdContext, limitingFeature, recursive, featureTree);
+		return featureTree;
+	}
+
+	public void buildTree(CommandContext cmdContext,
+			Feature limitingFeature, boolean recursive, ReferenceFeatureTreeResult featureTree) {
 		List<FeatureLocation> featureLocations = new ArrayList<FeatureLocation>(getFeatureLocations());
 		Collections.sort(featureLocations, new FeatureLocationComparator());
-		ReferenceFeatureTreeResult result = new ReferenceFeatureTreeResult();
 		for(FeatureLocation featureLocation: featureLocations) {
+			Feature feature = featureLocation.getFeature();
 			if(limitingFeature == null || 
-					(!recursive || featureLocation.getFeature().isDescendentOf(limitingFeature)) || 
-					limitingFeature.isDescendentOf(featureLocation.getFeature()) ) {
-				result.addFeatureLocation(cmdContext, featureLocation);
+					feature.getName().equals(limitingFeature.getName()) ||
+					(recursive && feature.isDescendentOf(limitingFeature)) || 
+					limitingFeature.isDescendentOf(feature) ) {
+				featureTree.addFeatureLocation(cmdContext, featureLocation);
 			}
  		}
-		return result;
 	}
 
 

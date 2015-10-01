@@ -12,7 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceS
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand.ReferenceShowSequenceResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceFeatureTreeResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
@@ -23,7 +23,7 @@ public class AlignmentResult {
 	private String referenceName;
 	private String alignmentName;
 	private int referenceLength;
-	private ReferenceFeatureTreeResult referenceFeatureTreeResult;
+	private ReferenceRealisedFeatureTreeResult referenceFeatureTreeResult;
 	private AbstractSequenceObject referenceSequenceObject;
 	private List<QueryAlignedSegment> refToParentAlignedSegments;
 	
@@ -33,7 +33,7 @@ public class AlignmentResult {
 	}
 
 	public void init(CommandContext cmdContext, String parentAlignmentName) {
-		ReferenceFeatureTreeResult featureTreeResult;
+		ReferenceRealisedFeatureTreeResult featureTreeResult;
 		String refSourceName;
 		String refSequenceID;
 		
@@ -45,7 +45,9 @@ public class AlignmentResult {
 		}
 
 		try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
-			featureTreeResult = cmdContext.cmdBuilder(ReferenceShowFeatureTreeCommand.class)
+			featureTreeResult = (ReferenceRealisedFeatureTreeResult) 
+					cmdContext.cmdBuilder(ReferenceShowFeatureTreeCommand.class)
+					.set(ReferenceShowFeatureTreeCommand.REALIZED, true)
 					.execute();
 			ReferenceShowSequenceResult refShowSeqResult = cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
 			refSourceName = refShowSeqResult.getSourceName();
@@ -81,7 +83,7 @@ public class AlignmentResult {
 		featureTreeObj.setImportedDocument(featureTreeDoc);
 	}
 
-	public ReferenceFeatureTreeResult getReferenceFeatureTreeResult() {
+	public ReferenceRealisedFeatureTreeResult getReferenceFeatureTreeResult() {
 		return referenceFeatureTreeResult;
 	}
 

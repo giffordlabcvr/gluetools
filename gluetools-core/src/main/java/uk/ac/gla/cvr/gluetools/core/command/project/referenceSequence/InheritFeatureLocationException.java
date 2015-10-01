@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
@@ -6,7 +6,7 @@ public class InheritFeatureLocationException extends GlueException {
 
 
 	public enum Code implements GlueErrorCode {
-		NO_PARENT_ALIGNMENT("almtName");
+		NOT_MEMBER_OF_ALIGNMENT("refSeqName", "almtName");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

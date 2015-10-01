@@ -43,7 +43,7 @@ public class ImportModuleCommand extends ProjectModeCommand<CreateResult> {
 		try {
 			module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		} catch(Exception e) {
-			throw new ModuleException(e, Code.CREATE_FROM_FILE_FAILED, fileName);
+			throw new ModuleException(Code.CREATE_FROM_FILE_FAILED, fileName, e.getMessage());
 		}
 		cmdContext.commit();
 		return new CreateResult(Module.class, 1);

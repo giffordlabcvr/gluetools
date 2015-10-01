@@ -116,15 +116,24 @@ public class Feature extends _Feature {
 	}
 
 	public boolean isDescendentOf(Feature ancestorFeature) {
-		if(this.getName().equals(ancestorFeature.getName())) {
-			return true;
-		}
 		Feature parent = getParent();
 		if(parent == null) {
 			return false;
 		}
+		if(parent.getName().equals(ancestorFeature.getName())) {
+			return true;
+		}
 		return parent.isDescendentOf(ancestorFeature);
 	}
 
+	public List<Feature> getDescendents() {
+		List<Feature> descendents = new ArrayList<Feature>();
+		List<Feature> children = getChildren();
+		for(Feature childFeature: children) {
+			descendents.add(childFeature);
+			descendents.addAll(childFeature.getDescendents());
+		}
+		return descendents;
+	}
 	
 }

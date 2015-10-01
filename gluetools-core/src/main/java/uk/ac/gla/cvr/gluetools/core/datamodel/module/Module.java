@@ -65,7 +65,7 @@ public class Module extends _Module {
 		try {
 			return GlueXmlUtils.documentFromStream(new ByteArrayInputStream(config));
 		} catch (SAXException e) {
-			throw new PluginFactoryException(e, Code.PLUGIN_CONFIG_FORMAT_ERROR, e.getMessage());
+			throw new PluginFactoryException(Code.PLUGIN_CONFIG_FORMAT_ERROR, e.getMessage());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
