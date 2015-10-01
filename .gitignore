@@ -15,3 +15,4 @@ RemoteSystemsTempFiles
 .gradle/
 gluetools-web/build
 .settings
+export.fasta
