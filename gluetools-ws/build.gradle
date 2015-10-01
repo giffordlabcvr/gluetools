@@ -42,13 +42,14 @@ task deployGlueWSConfig(dependsOn: ':gluetools-core:deployGlueConfig') {
 	    }
 	  }
 	  glueWSConfigTouchfile.delete()
+	  buildDir.mkdirs()
 	  glueWSConfigTouchfile.createNewFile()
   }
 }
 
 
 task deployWar(dependsOn: ['war','deployGlueWSConfig']) {
-  ext.glueWSWarFile = new File(buildDir, '/libs/gluetools-ws.war')
+  ext.glueWSWarFile = new File(buildDir, '/libs/gluetools-ws-'+version+'.war')
   ext.glueWSWarTouchfile = new File(buildDir, '/deployWar.touchfile')
   inputs.file glueWSWarFile
   outputs.file glueWSWarTouchfile
@@ -65,6 +66,7 @@ task deployWar(dependsOn: ['war','deployGlueWSConfig']) {
 	    }
 	  }
 	  glueWSWarTouchfile.delete()
+	  buildDir.mkdirs()
 	  glueWSWarTouchfile.createNewFile()
   }
 }

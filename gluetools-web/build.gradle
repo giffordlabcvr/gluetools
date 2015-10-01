@@ -52,6 +52,7 @@ task deployWebAppWar(dependsOn: ['war']) {
 	    }
 	  }
 	  glueWebAppWarTouchfile.delete()
+	  buildDir.mkdirs()
 	  glueWebAppWarTouchfile.createNewFile()
   }
 }

@@ -60,6 +60,7 @@ task deployGlueConfig {
 	    }
 	  }
 	  glueConfigTouchfile.delete()
+	  buildDir.mkdirs()
 	  glueConfigTouchfile.createNewFile()
   }
 }
@@ -80,6 +81,7 @@ task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
 	    }
 	  }
 	  deployJarTouchfile.delete()
+	  buildDir.mkdirs()
 	  deployJarTouchfile.createNewFile()
   }
 }
@@ -101,6 +103,7 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	    }
 	  }
 	  deployHcvProjectTouchfile.delete()
+	  buildDir.mkdirs()
 	  deployHcvProjectTouchfile.createNewFile()
   }
 }
