@@ -123,6 +123,16 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			List<QueryAlignedSegment> intersection = 
 					ReferenceSegment.intersection(parentFeatureLocSegs, refParentAlignedSegments, new SegMerger());
 			
+			if(spanGaps && intersection.size() > 1) {
+				QueryAlignedSegment firstSeg = intersection.get(0);
+				QueryAlignedSegment lastSeg = intersection.get(intersection.size() - 1);
+				
+				// ref points are pretty irrelevant here, as only the query points are used.
+				QueryAlignedSegment spanningSegment = new QueryAlignedSegment(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
+						firstSeg.getQueryStart(), lastSeg.getQueryEnd());
+				intersection = Collections.singletonList(spanningSegment);
+			}
+			
 			int numAddedSegments = 0;
 			// add segments to the new feature location based on the query start/end points of the intersection result.
 			for(QueryAlignedSegment intersectSeg: intersection) {

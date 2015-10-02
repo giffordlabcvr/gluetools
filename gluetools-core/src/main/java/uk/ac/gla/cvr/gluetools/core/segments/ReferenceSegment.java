@@ -315,26 +315,6 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		};
 	}
 	
-	/**
-	 * If segments is empty, return an empty list.
-	 * Otherwise, return a list which contains a single segment, cloned from one of segments, which covers all the same regions, 
-	 * including any internal gaps.
-	 * @param segments
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public static <SA extends IReferenceSegment> List<SA> spanGaps(List<SA> segments) {
-		if(segments.isEmpty()) {
-			return Collections.emptyList();
-		}
-		SA singleSegment = (SA) segments.get(0).clone();
-		SA lastSegment = (SA) segments.get(segments.size()-1);
-		
-		singleSegment.setRefEnd(lastSegment.getRefEnd());
-		
-		return Collections.singletonList(singleSegment);
-	}
-	
 	public static boolean sameRegion(
 			List<? extends IReferenceSegment> segments1, 
 			List<? extends IReferenceSegment> segments2) {

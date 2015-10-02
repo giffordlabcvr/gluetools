@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 public class SequenceAlignmentResult {
 	private String alignmentName;
 	private String referenceName;
+	private Integer referenceLength;
 	private List<QueryAlignedSegment> seqToRefAlignedSegments;
 	private double seqToRefQueryCoverage;
 	private double seqToRefReferenceCoverage;
@@ -29,6 +30,7 @@ public class SequenceAlignmentResult {
 	public void toDocument(ObjectBuilder seqAlmtAnalysisObj) {
 		seqAlmtAnalysisObj.set("alignmentName", alignmentName);
 		seqAlmtAnalysisObj.set("referenceName", referenceName);
+		seqAlmtAnalysisObj.set("referenceLength", referenceLength);
 		seqAlmtAnalysisObj.set("seqToRefQueryCoverage", seqToRefQueryCoverage);
 		seqAlmtAnalysisObj.set("seqToRefReferenceCoverage", seqToRefReferenceCoverage);
 		ArrayBuilder seqToRefAlignedSegArray = seqAlmtAnalysisObj.setArray("seqToRefAlignedSegment");
@@ -66,10 +68,6 @@ public class SequenceAlignmentResult {
 		return alignmentName;
 	}
 
-	public void setAlignmentName(String alignmentName) {
-		this.alignmentName = alignmentName;
-	}
-
 	public List<QueryAlignedSegment> getSeqToRefAlignedSegments() {
 		return seqToRefAlignedSegments;
 	}
@@ -85,6 +83,14 @@ public class SequenceAlignmentResult {
 
 	public void setSeqToRefReferenceCoverage(double seqToRefReferenceCoverage) {
 		this.seqToRefReferenceCoverage = seqToRefReferenceCoverage;
+	}
+
+	public Integer getReferenceLength() {
+		return referenceLength;
+	}
+
+	public void setReferenceLength(Integer referenceLength) {
+		this.referenceLength = referenceLength;
 	}
 	
 	

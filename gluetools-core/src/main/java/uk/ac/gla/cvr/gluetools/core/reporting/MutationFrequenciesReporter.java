@@ -196,6 +196,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 			currentAlmtResult = almtNameToAlmtResult.get(parentAlmtAnalysis.getAlignmentName());
 			
+			parentAlmtAnalysis.setReferenceLength(currentAlmtResult.getReferenceLength());
+			
 			parentAlmtAnalysis.setSeqToRefReferenceCoverage(
 					IQueryAlignedSegment.getReferenceNtCoveragePercent(parentSeqToRefAlignedSegments, currentAlmtResult.getReferenceLength()));
 
@@ -236,6 +238,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				List<QueryAlignedSegment> seqToRefAlignedSegments = queryIdToAlignedSegments.get(constructQueryID(seqResult.getSourceName(), seqResult.getSequenceID()));
 				initialSeqAlmtResult.setSeqToRefAlignedSegments(seqToRefAlignedSegments);
 
+				initialSeqAlmtResult.setReferenceLength(almtResult.getReferenceLength());
+				
 				initialSeqAlmtResult.setSeqToRefReferenceCoverage(
 						IQueryAlignedSegment.getReferenceNtCoveragePercent(seqToRefAlignedSegments, almtResult.getReferenceLength()));
 
