@@ -66,8 +66,8 @@ public class AlignmentShowAncestorsCommand extends AlignmentModeCommand<Alignmen
 					ancestorAlignments.stream()
 					.map(almt -> {
 						Map<String, Object> map = new LinkedHashMap<String, Object>();
-						map.put(Alignment.NAME_PROPERTY, almt.getName());
-						map.put(Alignment.REF_SEQ_NAME_PATH, almt.getRefSequence().getName());
+						map.put(Alignment.NAME_PROPERTY, almt.readNestedProperty(Alignment.NAME_PROPERTY));
+						map.put(Alignment.REF_SEQ_NAME_PATH, almt.readNestedProperty(Alignment.REF_SEQ_NAME_PATH));
 						return map;
 					})
 					.collect(Collectors.toList()));

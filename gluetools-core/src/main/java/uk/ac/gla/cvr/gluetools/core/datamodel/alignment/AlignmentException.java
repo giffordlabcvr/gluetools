@@ -7,7 +7,8 @@ public class AlignmentException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		PARENT_RELATIONSHIP_LOOP("alignmentNames"),
-		REFERENCE_NOT_MEMBER_OF_PARENT("alignmentName", "parentAlignmentName", "referenceName");
+		REFERENCE_NOT_MEMBER_OF_PARENT("alignmentName", "parentAlignmentName", "referenceName"),
+		ALIGNMENT_IS_UNCONSTRAINED("alignmentName");
 
 		private String[] argNames;
 		private Code(String... argNames) {

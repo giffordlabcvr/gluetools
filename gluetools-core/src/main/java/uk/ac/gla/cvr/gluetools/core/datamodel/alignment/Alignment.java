@@ -54,6 +54,9 @@ public class Alignment extends _Alignment {
 				}
 			}
 			ReferenceSequence refSequence = this.getRefSequence();
+			if(refSequence == null) {
+				throw new AlignmentException(Code.ALIGNMENT_IS_UNCONSTRAINED, this.getName());
+			}
 			List<AlignmentMember> refAlmtMemberships = refSequence.getSequence().getAlignmentMemberships();
 			boolean refIsMemberOfParent = false;
 			String parentName = parent.getName();

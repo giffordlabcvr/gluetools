@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 
 @GlueDataClass(defaultListColumns = {AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
@@ -65,14 +66,18 @@ public class AlignmentMember extends _AlignmentMember {
 		return results;
 	}
 
-	private double getMemberNtCoveragePercent(CommandContext cmdContext) {
+	private Double getMemberNtCoveragePercent(CommandContext cmdContext) {
 		int memberLength = getSequence().getSequenceObject().getNucleotides(cmdContext).length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return IQueryAlignedSegment.getQueryNtCoveragePercent(alignedSegments, memberLength);
 	}
 
-	private double getReferenceNtCoveragePercent(CommandContext cmdContext) {
-		int referenceLength = getAlignment().getRefSequence().
+	private Double getReferenceNtCoveragePercent(CommandContext cmdContext) {
+		ReferenceSequence refSequence = getAlignment().getRefSequence();
+		if(refSequence == null) {
+			return null;
+		}
+		int referenceLength = refSequence.
 				getSequence().getSequenceObject().getNucleotides(cmdContext).length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return IQueryAlignedSegment.getReferenceNtCoveragePercent(alignedSegments, referenceLength);

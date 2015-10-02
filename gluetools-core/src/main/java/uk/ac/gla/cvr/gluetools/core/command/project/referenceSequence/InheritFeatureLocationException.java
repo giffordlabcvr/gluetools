@@ -6,7 +6,8 @@ public class InheritFeatureLocationException extends GlueException {
 
 
 	public enum Code implements GlueErrorCode {
-		NOT_MEMBER_OF_ALIGNMENT("refSeqName", "almtName");
+		NOT_MEMBER_OF_ALIGNMENT("refSeqName", "almtName"),
+		PARENT_ALIGNMENT_IS_UNCONSTRAINED("almtName");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -10,7 +10,9 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AlignedSegm
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -61,12 +63,16 @@ public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
 		}
 		AlignmentMember almtMemb = GlueDataObject.lookup(cmdContext.getObjectContext(), AlignmentMember.class, 
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
-		Sequence refSequence = almtMemb.getAlignment().getRefSequence().getSequence();
-		int refSeqLength = refSequence.getSequenceObject().getNucleotides(cmdContext).length();
-		if(refStart < 1 || refEnd > refSeqLength) {
-			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_OUT_OF_RANGE, 
-					getAlignmentName(), getSourceName(), getSequenceID(), 
-					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
+		Alignment alignment = almtMemb.getAlignment();
+		ReferenceSequence refSeq = alignment.getRefSequence();
+		if(refSeq != null) {
+			Sequence refSeqSequence = refSeq.getSequence();
+			int refSeqLength = refSeqSequence.getSequenceObject().getNucleotides(cmdContext).length();
+			if(refStart < 1 || refEnd > refSeqLength) {
+				throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_OUT_OF_RANGE, 
+						getAlignmentName(), getSourceName(), getSequenceID(), 
+						Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
+			}
 		}
 		Sequence membSequence = almtMemb.getSequence();
 		int membSeqLength = membSequence.getSequenceObject().getNucleotides(cmdContext).length();

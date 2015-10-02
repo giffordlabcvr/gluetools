@@ -86,6 +86,9 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		}
 		Feature feature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, Feature.pkMap(featureName));
 		ReferenceSequence parentRefSeq = alignment.getRefSequence();
+		if(parentRefSeq == null) {
+			throw new InheritFeatureLocationException(Code.PARENT_ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
+		}
 		ReferenceFeatureTreeResult parentRefFeatureTree = parentRefSeq.getFeatureTree(cmdContext, feature, recursive);
 		
 		

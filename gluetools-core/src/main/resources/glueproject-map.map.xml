@@ -18,7 +18,7 @@
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="PARENT_NAME" type="VARCHAR" length="50"/>
-		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isMandatory="true" length="50"/>
+		<db-attribute name="REF_SEQUENCE" type="VARCHAR" length="50"/>
 	</db-entity>
 	<db-entity name="ALIGNMENT_MEMBER">
 		<db-attribute name="ALIGNMENT" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>

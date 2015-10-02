@@ -111,8 +111,8 @@ project EXAMPLE_PROJECT
       exit
 	exit
 
-  # create an alignment AL_1 based on REF_1
-  create alignment REF_1 AL_1
+  # create an alignment AL_1 constrained to REF_1
+  create alignment AL_1 -r REF_1
 
   # add some sequences as members to the alignment
   alignment AL_1
