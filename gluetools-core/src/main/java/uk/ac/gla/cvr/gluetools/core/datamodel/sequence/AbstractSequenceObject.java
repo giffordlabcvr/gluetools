@@ -1,11 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
@@ -99,21 +95,21 @@ public abstract class AbstractSequenceObject {
 		return getNucleotides(cmdContext).subSequence(ntStart-1, ntEnd);
 	}
 
-	public static List<AbstractSequenceObject> seqObjectsFromSeqData(
-			byte[] sequenceData) {
-		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
-		List<AbstractSequenceObject> seqObjects;
-		if(format == SequenceFormat.FASTA) {
-			Map<String, DNASequence> fastaMap = FastaUtils.parseFasta(sequenceData);
-			seqObjects = fastaMap.entrySet().stream()
-					.map(ent -> new FastaSequenceObject(ent.getKey(), ent.getValue().toString()))
-					.collect(Collectors.toList());
-		} else {
-			AbstractSequenceObject seqObj = format.sequenceObject();
-			seqObj.fromOriginalData(sequenceData);
-			seqObjects = Collections.singletonList(seqObj);
-		}
-		return seqObjects;
+	public char nt(CommandContext cmdContext, int position) {
+		String nucleotides = getNucleotides(cmdContext);
+		return FastaUtils.nt(nucleotides, position);
 	}
+
+	public CharSequence subSequence(CommandContext cmdContext, int start, int end) {
+		String nucleotides = getNucleotides(cmdContext);
+		return FastaUtils.subSequence(nucleotides, start, end);
+	}
+
+	public int find(CommandContext cmdContext, String sequence, int from) {
+		String nucleotides = getNucleotides(cmdContext);
+		return FastaUtils.find(nucleotides, sequence, from);
+	}
+
+	
 	
 }

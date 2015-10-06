@@ -1,0 +1,30 @@
+<fastaAlignmentImporter>
+  <!-- This element is optional. It controls how the GLUE sequence is identified from the alignment FASTA sequence ID. 
+       If omitted, the whole FASTA ID is matched against the GLUE sequenceID.
+       If present, the matchPattern regex is matched against the FASTA ID to generate capture group values.
+       The outputTemplate element then contains a Freemarker template which creates a GLUE sequence lookup where-clause, 
+       which should identify exactly one sequence -->
+  <idClauseExtractorFormatter>
+    <!-- optional: if omitted the whole FASTA alignment sequence ID is matched as group 1-->
+    <matchPattern><![CDATA[xxx\.(?<primaryAcc>\w+)\.yyy]]></matchPattern>
+    <!-- optional: if omitted the template sequenceID = '{$g1}' is used, which will match
+         group 1 with the GLUE sequence ID -->
+    <outputTemplate>GB_PRIMARY_ACCESSION = '${primaryAcc}'</outputTemplate>
+  </idClauseExtractorFormatter>
+  <!-- If false, the import command will throw an acception if the FASTA ID does not match the matchPattern
+       If true, it will just ignore these FASTA alignment sequences -->
+  <ignoreRegexMatchFailures>false</ignoreRegexMatchFailures>
+  <!-- If true, ignore any FASTA alignment sequences for which the sequence where clause returns no results -->
+  <ignoreMissingSequences>false</ignoreMissingSequences>
+  <!-- If a FASTA alignment sequence character matches this regular expression, it is interpreted as a gap -->
+  <sequenceGapRegex>[Nn-]</sequenceGapRegex>
+  <!-- If true, the import command will throw an exception if any nucleotide position in the GLUE sequence 
+       is not coverd by the FASTA alignment sequence -->
+  <requireTotalCoverage>true</requireTotalCoverage>
+  <!-- If true, the import command will update an existing alignment with the same name. -->
+  <updateExistingAlignment>false</updateExistingAlignment>
+  <!-- If true, the import command will update existing members of the alignment, by adding new segments. 
+       This could be used with requireTotalCoverage = false if the alignment for a given GLUE sequence is split over 
+       several FASTA sequences -->
+  <updateExistingMembers>false</updateExistingMembers>
+</fastaAlignmentImporter>

@@ -124,3 +124,17 @@ project EXAMPLE_PROJECT
     
   # use the blast-aligner to align the members of AL_1
   compute alignment AL_1 blast-aligner
+  
+  create source sequencesToAlign
+  
+  import sequence sequencesToAlign seqToAlign1 FASTA sequencesToAlign/seq1.fasta
+  import sequence sequencesToAlign seqToAlign2 FASTA sequencesToAlign/seq2.fasta
+  import sequence sequencesToAlign seqToAlign3 FASTA sequencesToAlign/seq3.fasta
+  
+  sequence sequencesToAlign seqToAlign1 set field GB_PRIMARY_ACCESSION XY99901
+  sequence sequencesToAlign seqToAlign2 set field GB_PRIMARY_ACCESSION XY99902
+  sequence sequencesToAlign seqToAlign3 set field GB_PRIMARY_ACCESSION XY99903
+  
+  import module fasta-alignment-importer fastaAlignmentImporter.xml 
+  
+  module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignment.fasta

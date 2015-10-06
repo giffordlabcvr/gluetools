@@ -30,13 +30,13 @@ import freemarker.template.TemplateModel;
 public class RegexExtractorFormatter implements Plugin {
 
 	
-	private Optional<Pattern> matchPattern;
+	private Optional<Pattern> matchPattern = Optional.empty();
 	private Template outputTemplate;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
 		matchPattern = Optional.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, "matchPattern", false));
-		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputPattern", false);
+		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputTemplate", false);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -112,6 +112,22 @@ public class RegexExtractorFormatter implements Plugin {
 			}
 		}
 		return input;
+	}
+
+	public Pattern getMatchPattern() {
+		return matchPattern.orElse(null);
+	}
+
+	public void setMatchPattern(Pattern matchPattern) {
+		this.matchPattern = Optional.ofNullable(matchPattern);
+	}
+
+	public Template getOutputTemplate() {
+		return outputTemplate;
+	}
+
+	public void setOutputTemplate(Template outputTemplate) {
+		this.outputTemplate = outputTemplate;
 	}
 	
 	

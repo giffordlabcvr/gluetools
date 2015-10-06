@@ -1,4 +1,4 @@
 <regexExtractorFormatter>
 	<matchPattern>foo</matchPattern>
-	<outputPattern>mook</outputPattern>
+	<outputTemplate>mook</outputTemplate>
 </regexExtractorFormatter>

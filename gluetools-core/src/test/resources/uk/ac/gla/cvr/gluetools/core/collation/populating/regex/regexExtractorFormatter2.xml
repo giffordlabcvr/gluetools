@@ -1,4 +1,4 @@
 <regexExtractorFormatter>
 	<matchPattern>foo (\w+)</matchPattern>
-	<outputPattern>thing: ${g1}</outputPattern>
+	<outputTemplate>thing: ${g1}</outputTemplate>
 </regexExtractorFormatter>

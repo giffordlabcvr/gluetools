@@ -2,7 +2,10 @@ package uk.ac.gla.cvr.gluetools.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.AccessionID;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -12,8 +15,11 @@ import org.biojava.nbio.core.sequence.io.DNASequenceCreator;
 import org.biojava.nbio.core.sequence.io.FastaReader;
 import org.biojava.nbio.core.sequence.io.template.SequenceHeaderParserInterface;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 
 public class FastaUtils {
 	
@@ -68,7 +74,36 @@ public class FastaUtils {
 		return buf.toString();
 		
 	}
-	
-	
+
+	public static List<AbstractSequenceObject> seqObjectsFromSeqData(
+			byte[] sequenceData) {
+		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
+		List<AbstractSequenceObject> seqObjects;
+		if(format == SequenceFormat.FASTA) {
+			Map<String, DNASequence> fastaMap = parseFasta(sequenceData);
+			seqObjects = fastaMap.entrySet().stream()
+					.map(ent -> new FastaSequenceObject(ent.getKey(), ent.getValue().toString()))
+					.collect(Collectors.toList());
+		} else {
+			AbstractSequenceObject seqObj = format.sequenceObject();
+			seqObj.fromOriginalData(sequenceData);
+			seqObjects = Collections.singletonList(seqObj);
+		}
+		return seqObjects;
+	}
+
+	public static char nt(String nucleotides, int position) {
+		return nucleotides.charAt(position-1);
+	}
+
+	public static int find(String nucleotides, String subSequence, int from) {
+		int index = nucleotides.indexOf(subSequence, from-1);
+		if(index == -1) { return index; }
+		return index+1;
+	}
+
+	public static CharSequence subSequence(String nucleotides, int start, int end) {
+		return nucleotides.subSequence(start-1, end);
+	}
 	
 }

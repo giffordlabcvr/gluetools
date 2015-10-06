@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.modules;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaImporter;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopulator;
@@ -24,6 +25,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(TextFilePopulator.class);
 		registerPluginClass(MutationFrequenciesReporter.class);
 		registerPluginClass(BlastAligner.class);
+		registerPluginClass(FastaAlignmentImporter.class);
 	}
 	
 }

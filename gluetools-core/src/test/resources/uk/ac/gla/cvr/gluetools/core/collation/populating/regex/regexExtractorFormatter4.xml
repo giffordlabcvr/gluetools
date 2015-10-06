@@ -1,4 +1,4 @@
 <regexExtractorFormatter>
 	<matchPattern><![CDATA[hello (?<helloThing>\w+)]]></matchPattern>
-	<outputPattern>The hello thing: ${helloThing}</outputPattern>
+	<outputTemplate>The hello thing: ${helloThing}</outputTemplate>
 </regexExtractorFormatter>

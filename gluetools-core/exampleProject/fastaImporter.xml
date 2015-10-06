@@ -2,18 +2,18 @@
 	<!-- For the sequence ID this extract everything before the first dot -->
 	<idParser>
 		<matchPattern>([^\.]+)\..*</matchPattern>
-		<outputPattern>${g1}</outputPattern>
+		<outputTemplate>${g1}</outputTemplate>
 	</idParser>
 	<!-- Set field HEADER_1 on the sequence to the string between the first and second dots -->
 	<fieldParser>
 		<fieldName>HEADER_1</fieldName>
 		<matchPattern>(?:[^\.]+\.){1}([^\.]+)</matchPattern>
-		<outputPattern>${g1}</outputPattern>
+		<outputTemplate>${g1}</outputTemplate>
 	</fieldParser>
 	<!-- Set field HEADER_2 on the sequence to the string after the second dot -->
 	<fieldParser>
 		<fieldName>HEADER_2</fieldName>
 		<matchPattern>(?:[^\.]+\.){2}([^\.]+)</matchPattern>
-		<outputPattern>${g1}</outputPattern>
+		<outputTemplate>${g1}</outputTemplate>
 	</fieldParser>
 </fastaImporter>

@@ -33,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.TransientAnalysisCommand.TransientAnalysisResult;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="mutationFrequenciesReporter")
 public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {
@@ -58,7 +59,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
 			Boolean headerDetect, Optional<String> alignmentName, byte[] sequenceData) {
 
-		List<AbstractSequenceObject> seqObjects = AbstractSequenceObject.seqObjectsFromSeqData(sequenceData);
+		List<AbstractSequenceObject> seqObjects = FastaUtils.seqObjectsFromSeqData(sequenceData);
 		
 		// initialize a sequence result for each sequence object, including
 		// selecting an initial alignment

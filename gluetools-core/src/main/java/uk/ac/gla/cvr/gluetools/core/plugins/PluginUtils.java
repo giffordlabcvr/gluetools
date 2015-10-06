@@ -51,14 +51,21 @@ public class PluginUtils {
 		if(templateString != null) {
 			Configuration freemarkerConfiguration = pluginConfigContext.getFreemarkerConfiguration();
 			try {
-				template = new Template(UUID.randomUUID().toString(), new StringReader(templateString), freemarkerConfiguration);
+				template = templateFromString(templateString, freemarkerConfiguration);
 			} catch(ParseException pe) {
 				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, pe.getLocalizedMessage(), templateString);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
 			} 
 		}
 		return template;
+	}
+
+	public static Template templateFromString(String templateString, Configuration freemarkerConfiguration) throws ParseException {
+		try {
+			Template template = new Template(UUID.randomUUID().toString(), new StringReader(templateString), freemarkerConfiguration);
+			return template;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} 
 	}
 	
 	public static Pattern configureRegexPatternProperty(Element configElem, String propertyName, boolean required) {
