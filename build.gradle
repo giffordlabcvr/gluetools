@@ -5,13 +5,11 @@ apply plugin: 'pl.allegro.tech.build.axion-release'
 project('gluetools-core') {
 	apply plugin: 'java'
 	apply plugin: 'eclipse-wtp'
-	apply plugin: 'pl.allegro.tech.build.axion-release'
 }
 
 project('gluetools-ws') {
 	apply plugin: 'java'
 	apply plugin: 'eclipse-wtp'
-	apply plugin: 'pl.allegro.tech.build.axion-release'
 }
 
 
