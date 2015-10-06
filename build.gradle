@@ -48,9 +48,6 @@ scmVersion {
         pre 'fileUpdate', [file: 'gluetools-web/WebContent/www/gluetools/installation.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
 		pre 'commit', {v, p -> "Release version $v"}
     }
-    tag {
-        prefix = 'gluetools'
-    }
     versionCreator 'versionWithBranch'
     repository {
         customKey = file('/Users/joshsinger/.ssh/github_id_rsa')
@@ -60,6 +57,13 @@ scmVersion {
 
 allprojects {
     project.version = scmVersion.version
+
+	scmVersion {
+	    tag {
+	        prefix = 'gluetools'
+	    }
+    }
+
 }
 
 buildscript {
