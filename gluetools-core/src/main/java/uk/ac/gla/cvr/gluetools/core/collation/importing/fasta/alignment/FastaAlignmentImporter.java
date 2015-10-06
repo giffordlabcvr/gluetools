@@ -2,11 +2,13 @@ package uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
@@ -25,6 +27,8 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
@@ -38,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import freemarker.core.ParseException;
 import freemarker.template.Template;
@@ -45,7 +50,12 @@ import freemarker.template.Template;
 @PluginClass(elemName="fastaAlignmentImporter")
 public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter> {
 
-
+	public static final String IGNORE_REGEX_MATCH_FAILURES = "ignoreRegexMatchFailures";
+	public static final String IGNORE_MISSING_SEQUENCES = "ignoreMissingSequences";
+	public static final String SEQUENCE_GAP_REGEX = "sequenceGapRegex";
+	public static final String REQUIRE_TOTAL_COVERAGE = "requireTotalCoverage";
+	public static final String UPDATE_EXISTING_MEMBERS = "updateExistingMembers";
+	public static final String UPDATE_EXISTING_ALIGNMENT = "updateExistingAlignment";
 	public static final String ID_CLAUSE_EXTRACTOR_FORMATTER = "idClauseExtractorFormatter";
 	
 	private RegexExtractorFormatter idClauseExtractorFormatter = null;
@@ -61,27 +71,28 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 		super();
 		addProvidedCmdClass(ShowImporterCommand.class);
 		addProvidedCmdClass(ImportCommand.class);
+		addProvidedCmdClass(ConfigureImporterCommand.class);
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		ignoreRegexMatchFailures = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "ignoreRegexMatchFailures", false))
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, IGNORE_REGEX_MATCH_FAILURES, false))
 				.orElse(false);
 		ignoreMissingSequences = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "ignoreMissingSequences", false))
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, IGNORE_MISSING_SEQUENCES, false))
 				.orElse(false);
 		sequenceGapRegex = Optional
-				.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, "sequenceGapRegex", false))
+				.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, SEQUENCE_GAP_REGEX, false))
 				.orElse(Pattern.compile("[Nn-]"));
 		requireTotalCoverage = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "requireTotalCoverage", false))
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, REQUIRE_TOTAL_COVERAGE, false))
 				.orElse(true);
 		updateExistingMembers = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "updateExistingMembers", false))
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, UPDATE_EXISTING_MEMBERS, false))
 				.orElse(false);
 		updateExistingAlignment = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "updateExistingAlignment", false))
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, UPDATE_EXISTING_ALIGNMENT, false))
 				.orElse(false);
 		
 		Element extractorElem = PluginUtils.findConfigElement(configElem, ID_CLAUSE_EXTRACTOR_FORMATTER);
@@ -159,7 +170,11 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 			almtMember.setAlignment(alignment);
 			almtMember.setSequence(foundSequence);
 			
-			List<QueryAlignedSegment> queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, dnaSequence.getSequenceAsString(), 
+			List<QueryAlignedSegment> existingSegs = almtMember.getAlignedSegments().stream()
+					.map(AlignedSegment::asQueryAlignedSegment)
+					.collect(Collectors.toList());
+			
+			List<QueryAlignedSegment> queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, dnaSequence.getSequenceAsString(), 
 					fastaID, whereClauseString);
 			for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
 				AlignedSegment alignedSegment = GlueDataObject.create(objContext, AlignedSegment.class, 
@@ -186,7 +201,9 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 	}
 	
 	private List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
-			String fastaAlignmentNTs, String fastaID, String whereClauseString) {
+			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
+			String fastaID, String whereClauseString) {
+
 		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext);
 		
 		List<QueryAlignedSegment> queryAlignedSegs = new ArrayList<QueryAlignedSegment>();
@@ -199,7 +216,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
     		char fastaAlignmentNT = FastaUtils.nt(fastaAlignmentNTs, alignmentNtIndex);
     		if(isGapChar(fastaAlignmentNT)) {
     			if(queryAlignedSeg != null) {
-    				foundSequenceNtIndex = completeQueryAlignedSeg(
+    				foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
 							fastaAlignmentNTs, fastaID, whereClauseString,
 							foundSequenceNTs, queryAlignedSegs,
 							foundSequenceNtIndex, queryAlignedSeg);
@@ -214,7 +231,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 			alignmentNtIndex++;
     	}
 		if(queryAlignedSeg != null) {
-			foundSequenceNtIndex = completeQueryAlignedSeg(
+			foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
 					fastaAlignmentNTs, fastaID, whereClauseString,
 					foundSequenceNTs, queryAlignedSegs,
 					foundSequenceNtIndex, queryAlignedSeg);
@@ -225,7 +242,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 		return queryAlignedSegs;
 	}
 
-	public int completeQueryAlignedSeg(String fastaAlignmentNTs,
+	public int completeQueryAlignedSeg(List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs,
 			String fastaID, String whereClauseString, String foundSequenceNTs,
 			List<QueryAlignedSegment> queryAlignedSegs,
 			int foundSequenceNtIndex, QueryAlignedSegment queryAlignedSeg) {
@@ -246,7 +263,18 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 		}
 		queryAlignedSeg.setQueryStart(foundIdxOfSubseq);
 		queryAlignedSeg.setQueryEnd(foundIdxOfSubseq+(subSequence.length()-1));
+
+		List<QueryAlignedSegment> intersection = ReferenceSegment.intersection(existingSegs, 
+				Collections.singletonList(queryAlignedSeg), 
+				ReferenceSegment.cloneLeftSegMerger());
+		if(!intersection.isEmpty()) {
+			QueryAlignedSegment firstOverlap = intersection.get(0);
+			throw new FastaAlignmentImporterException(Code.SEGMENT_OVERLAPS_EXISTING, 
+					firstOverlap.getRefStart(), firstOverlap.getRefEnd(), 
+					fastaID, whereClauseString);
+		}
 		queryAlignedSegs.add(queryAlignedSeg);
+		existingSegs.add(queryAlignedSeg);
 		foundSequenceNtIndex = queryAlignedSeg.getQueryEnd()+1;
 		return foundSequenceNtIndex;
 	}
@@ -291,5 +319,11 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 			description="Show the current configuration of this importer") 
 	public static class ShowImporterCommand extends ShowConfigCommand<FastaAlignmentImporter> {}
 
+	
+	@SimpleConfigureCommandClass(
+			propertyNames={IGNORE_REGEX_MATCH_FAILURES, IGNORE_MISSING_SEQUENCES, SEQUENCE_GAP_REGEX, 
+					REQUIRE_TOTAL_COVERAGE, UPDATE_EXISTING_MEMBERS, UPDATE_EXISTING_ALIGNMENT}
+	)
+	public static class ConfigureImporterCommand extends SimpleConfigureCommand<FastaAlignmentImporter> {}
 	
 }

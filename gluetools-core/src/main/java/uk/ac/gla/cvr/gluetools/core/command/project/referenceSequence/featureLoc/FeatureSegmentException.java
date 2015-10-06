@@ -8,7 +8,7 @@ public class FeatureSegmentException extends GlueException {
 		
 		FEATURE_SEGMENT_OUT_OF_RANGE("refSeqName", "featureName", "refSeqLength", "refStart", "refEnd"),
 		FEATURE_SEGMENT_ENDPOINTS_REVERSED("refSeqName", "featureName", "refStart", "refEnd"),
-		FEATURE_SEGMENT_OVERLAPS_EXISTING("refSeqName", "featureName", "refStart", "refEnd", "existingRefSeqStart", "existingRefSeqEnd"),
+		FEATURE_SEGMENT_OVERLAPS_EXISTING("refSeqName", "featureName", "refStart", "refEnd"),
 		;
 
 		private String[] argNames;

@@ -10,6 +10,7 @@ public class AlignedSegmentException extends GlueException {
 		ALIGNED_SEGMENT_REF_REGION_ENDPOINTS_REVERSED("alignmentName", "sourceName", "sequenceID", "refStart", "refEnd"),
 		ALIGNED_SEGMENT_MEMBER_REGION_OUT_OF_RANGE("alignmentName", "sourceName", "sequenceID", "membSeqLength", "memberStart", "memberEnd"),
 		ALIGNED_SEGMENT_REGION_LENGTHS_NOT_EQUAL("alignmentName", "sourceName", "sequenceID", "refRegionLength", "membRegionLength"),
+		ALIGNED_SEGMENT_OVERLAPS_EXISTING("alignmentName", "sourceName", "sequenceID", "refStart", "refEnd"),
 		;
 
 		private String[] argNames;

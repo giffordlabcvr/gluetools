@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;

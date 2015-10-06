@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @GlueDataClass(defaultListColumns = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY})
 public class FeatureSegment extends _FeatureSegment implements IReferenceSegment {
@@ -47,6 +48,10 @@ public class FeatureSegment extends _FeatureSegment implements IReferenceSegment
 				getRefEnd());
 	}
 
+	public ReferenceSegment asReferenceSegment() {
+		return new ReferenceSegment(getRefStart(), getRefEnd());
+	}
+	
 	public FeatureSegment clone() {
 		FeatureSegment copy = new FeatureSegment();
 		copy.setRefStart(getRefStart());

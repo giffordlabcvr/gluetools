@@ -1,6 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
@@ -16,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass( 
 	commandWords={"add","segment"}, 
@@ -57,21 +60,24 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 					getRefSeqName(), getFeatureName(), 
 					Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
 		}
-		List<FeatureSegment> existingSegments = featureLoc.getSegments();
-		existingSegments.forEach(sgmt -> {
-			Integer existingRefSeqStart = sgmt.getRefStart();
-			Integer existingRefSeqEnd = sgmt.getRefEnd();
-			if( (refStart >= existingRefSeqStart && refStart <= existingRefSeqEnd) ||
-				(refEnd >= existingRefSeqStart && refEnd <= existingRefSeqEnd) ||
-				(refStart <= existingRefSeqStart && refEnd >= existingRefSeqEnd)
-			) {
-				throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OVERLAPS_EXISTING, 
-						getRefSeqName(), getFeatureName(), Integer.toString(refStart), 
-						Integer.toString(refEnd), Integer.toString(existingRefSeqStart), Integer.toString(existingRefSeqEnd));
-			}
-		});
+		List<ReferenceSegment> existingSegments = featureLoc.getSegments().stream()
+				.map(FeatureSegment::asReferenceSegment)
+				.collect(Collectors.toList());
+
 		FeatureSegment featureSegment = GlueDataObject.create(objContext, FeatureSegment.class, 
 				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd), false);
+		
+		List<ReferenceSegment> intersection = ReferenceSegment.intersection(existingSegments, 
+				Collections.singletonList(featureSegment.asReferenceSegment()), 
+				ReferenceSegment.cloneLeftSegMerger());
+		
+		if(!intersection.isEmpty()) {
+			ReferenceSegment firstOverlap = intersection.get(0);
+			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_OVERLAPS_EXISTING, 
+					getRefSeqName(), getFeatureName(), 
+					Integer.toString(firstOverlap.getRefStart()), Integer.toString(firstOverlap.getRefEnd()));
+		}
+		
 		featureSegment.setFeatureLocation(featureLoc);
 		cmdContext.commit();
 		return new CreateResult(FeatureSegment.class, 1);

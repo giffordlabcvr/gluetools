@@ -137,4 +137,7 @@ project EXAMPLE_PROJECT
   
   import module fasta-alignment-importer fastaAlignmentImporter.xml 
   
-  module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignment.fasta
+  module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentA.fasta
+  module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentB.fasta
+  
+  

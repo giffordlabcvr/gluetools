@@ -20,10 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
-import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 /**
  * This result object encapsulates all the feature locations of a reference sequence, in a tree, with feature metatags, 

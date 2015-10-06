@@ -32,18 +32,32 @@ public abstract class GlueException extends RuntimeException {
 		super();
 		if(code == null) { throw new IllegalArgumentException("Error code must be supplied."); }
 		this.code = code;
-		this.errorArgs = errorArgs;
-		checkArgs(code, errorArgs);
+		this.errorArgs = convertArgs(errorArgs);
+		checkArgs(code, this.errorArgs);
+	}
+
+	private Object[] convertArgs(Object[] errorArgsIn) {
+		Object[] errorArgsOut = new Object[errorArgsIn.length];
+		for(int i = 0; i < errorArgsIn.length; i++) {
+			Object object = errorArgsIn[i];
+			if(object instanceof Integer) {
+				object = ((Integer) object).toString();
+			} 
+			errorArgsOut[i] = object;
+		}
+		return errorArgsOut;
 	}
 
 	protected GlueException(Throwable cause, GlueErrorCode code, Object ... errorArgs) {
 		super(cause);
 		if(code == null) { throw new IllegalArgumentException("Error code must be supplied."); }
 		this.code = code;
-		this.errorArgs = errorArgs;
-		checkArgs(code, errorArgs);
+		this.errorArgs = convertArgs(errorArgs);
+		checkArgs(code, this.errorArgs);
 	}
 
+	
+	
 	private void checkArgs(GlueErrorCode code, Object... errorArgs) {
 		int suppliedArgs = errorArgs.length;
 		int requiredArgs = code.getArgNames().length;

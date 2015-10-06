@@ -66,7 +66,7 @@ public class AlignedSegment extends _AlignedSegment implements IQueryAlignedSegm
 				getMemberEnd());
 	}
 	
-	public IQueryAlignedSegment asQueryAlignedSegment() {
+	public QueryAlignedSegment asQueryAlignedSegment() {
 		return new QueryAlignedSegment(getRefStart(), getRefEnd(), getMemberStart(), getMemberEnd());
 	}
 

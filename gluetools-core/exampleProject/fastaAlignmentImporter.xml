@@ -20,11 +20,11 @@
   <sequenceGapRegex>[Nn-]</sequenceGapRegex>
   <!-- If true, the import command will throw an exception if any nucleotide position in the GLUE sequence 
        is not coverd by the FASTA alignment sequence -->
-  <requireTotalCoverage>true</requireTotalCoverage>
+  <requireTotalCoverage>false</requireTotalCoverage>
   <!-- If true, the import command will update an existing alignment with the same name. -->
-  <updateExistingAlignment>false</updateExistingAlignment>
+  <updateExistingAlignment>true</updateExistingAlignment>
   <!-- If true, the import command will update existing members of the alignment, by adding new segments. 
        This could be used with requireTotalCoverage = false if the alignment for a given GLUE sequence is split over 
        several FASTA sequences -->
-  <updateExistingMembers>false</updateExistingMembers>
+  <updateExistingMembers>true</updateExistingMembers>
 </fastaAlignmentImporter>

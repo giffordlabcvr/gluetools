@@ -1,5 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
@@ -16,6 +20,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 // TODO add the constraint that, in a given alignment member, each reference sequence nucleotide may only be aligned with one
 // member sequence nucleotide.
@@ -89,9 +95,24 @@ public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
 					getAlignmentName(), getSourceName(), getSequenceID(), 
 					Integer.toString(membRegionLength), Integer.toString(refRegionLength));
 		}
+		List<QueryAlignedSegment> existingSegments = almtMemb
+				.getAlignedSegments().stream().map(AlignedSegment::asQueryAlignedSegment).collect(Collectors.toList());
+		
 		// TODO specify and enforce further constraints as necessary. 
 		AlignedSegment alignedSegment = GlueDataObject.create(objContext, AlignedSegment.class, 
 				AlignedSegment.pkMap(getAlignmentName(), getSourceName(), getSequenceID(), refStart, refEnd, memberStart, memberEnd), false);
+
+		List<QueryAlignedSegment> intersection = ReferenceSegment.intersection(existingSegments, 
+				Collections.singletonList(alignedSegment.asQueryAlignedSegment()), 
+				ReferenceSegment.cloneLeftSegMerger());
+		
+		if(!intersection.isEmpty()) {
+			QueryAlignedSegment firstOverlap = intersection.get(0);
+			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_OVERLAPS_EXISTING, 
+					getAlignmentName(), getSourceName(), getSequenceID(), 
+					Integer.toString(firstOverlap.getRefStart()), Integer.toString(firstOverlap.getRefEnd()));
+		}
+		
 		alignedSegment.setAlignmentMember(almtMemb);
 		cmdContext.commit();
 		return new CreateResult(AlignedSegment.class, 1);
