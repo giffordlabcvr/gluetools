@@ -27,4 +27,8 @@
        This could be used with requireTotalCoverage = false if the alignment for a given GLUE sequence is split over 
        several FASTA sequences -->
   <updateExistingMembers>true</updateExistingMembers>
+  <!-- If false, when the import command finds a FASTA sequence segment which could refer to multiple GLUE sequence segments, 
+       it throws an exception. If true, it takes the first found GLUE sequence segment -->
+  <allowAmbiguousSegments>false</allowAmbiguousSegments>
+  
 </fastaAlignmentImporter>

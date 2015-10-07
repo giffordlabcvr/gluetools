@@ -11,7 +11,7 @@ public class FastaAlignmentImporterException extends GlueException {
 		NO_SEQUENCE_FOUND("fastaId", "whereClause"),
 		MULTIPLE_SEQUENCES_FOUND("fastaId", "whereClause"),
 		SUBSEQUENCE_NOT_FOUND("startColumnNumber", "endColumnNumber", "fastaId", "whereClause"), 
-		MULTIPLE_SUBSEQUENCES_FOUND("startColumnNumber", "endColumnNumber", "fastaId", "whereClause"), 
+		AMBIGUOUS_SEGMENT("startColumnNumber", "endColumnNumber", "fastaId", "whereClause", "fromPosition"), 
 		MISSING_COVERAGE("startColumnNumber", "endColumnNumber", "fastaId", "whereClause"), 
 		SEGMENT_OVERLAPS_EXISTING("startColumnNumber", "endColumnNumber", "fastaId", "whereClause");
 		

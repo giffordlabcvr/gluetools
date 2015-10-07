@@ -54,6 +54,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 	public static final String IGNORE_MISSING_SEQUENCES = "ignoreMissingSequences";
 	public static final String SEQUENCE_GAP_REGEX = "sequenceGapRegex";
 	public static final String REQUIRE_TOTAL_COVERAGE = "requireTotalCoverage";
+	public static final String ALLOW_AMBIGUOUS_SEGMENTS = "allowAmbiguousSegments";
 	public static final String UPDATE_EXISTING_MEMBERS = "updateExistingMembers";
 	public static final String UPDATE_EXISTING_ALIGNMENT = "updateExistingAlignment";
 	public static final String ID_CLAUSE_EXTRACTOR_FORMATTER = "idClauseExtractorFormatter";
@@ -66,6 +67,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 	private Pattern sequenceGapRegex = null;
 	private Boolean updateExistingMembers = false;
 	private Boolean updateExistingAlignment = false;
+	private Boolean allowAmbiguousSegments = false;
 	
 	public FastaAlignmentImporter() {
 		super();
@@ -93,6 +95,9 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 				.orElse(false);
 		updateExistingAlignment = Optional
 				.ofNullable(PluginUtils.configureBooleanProperty(configElem, UPDATE_EXISTING_ALIGNMENT, false))
+				.orElse(false);
+		allowAmbiguousSegments = Optional
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALLOW_AMBIGUOUS_SEGMENTS, false))
 				.orElse(false);
 		
 		Element extractorElem = PluginUtils.findConfigElement(configElem, ID_CLAUSE_EXTRACTOR_FORMATTER);
@@ -184,6 +189,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 				alignedSegment.setAlignmentMember(almtMember);
 			}
 			Map<String, Object> memberResultMap = new LinkedHashMap<String, Object>();
+			memberResultMap.put("fastaID", fastaID);
 			memberResultMap.put("sourceName", memberSourceName);
 			memberResultMap.put("sequenceID", memberSequenceID);
 			memberResultMap.put("numSegmentsAdded", new Integer(queryAlignedSegs.size()));
@@ -196,7 +202,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 
 	private static class FastaAlignmentImporterResult extends TableResult {
 		public FastaAlignmentImporterResult(List<Map<String, Object>> rowData) {
-			super("fastaAlignmentImporterResult", Arrays.asList("sourceName", "sequenceID", "numSegmentsAdded"), rowData);
+			super("fastaAlignmentImporterResult", Arrays.asList("fastaID", "sourceName", "sequenceID", "numSegmentsAdded"), rowData);
 		}
 	}
 	
@@ -257,9 +263,11 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 		if(requireTotalCoverage && foundIdxOfSubseq != foundSequenceNtIndex) {
 			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundIdxOfSubseq-1, fastaID, whereClauseString);
 		}
-		int nextIdxOfSubseq = FastaUtils.find(foundSequenceNTs, subSequence, foundIdxOfSubseq+1);
-		if(nextIdxOfSubseq != -1) {
-			throw new FastaAlignmentImporterException(Code.MULTIPLE_SUBSEQUENCES_FOUND, refStart, refEnd, fastaID, whereClauseString);
+		if(!allowAmbiguousSegments) {
+			int nextIdxOfSubseq = FastaUtils.find(foundSequenceNTs, subSequence, foundIdxOfSubseq+1);
+			if(nextIdxOfSubseq != -1) {
+				throw new FastaAlignmentImporterException(Code.AMBIGUOUS_SEGMENT, refStart, refEnd, fastaID, whereClauseString, foundSequenceNtIndex);
+			}
 		}
 		queryAlignedSeg.setQueryStart(foundIdxOfSubseq);
 		queryAlignedSeg.setQueryEnd(foundIdxOfSubseq+(subSequence.length()-1));

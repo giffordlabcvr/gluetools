@@ -5120,8 +5120,11 @@ project HCV
     compute alignment AL_7a blastAligner 
     alignment AL_7a show statistics
 
-
-
+    create alignment AL_UNCONSTRAINED
+    
+  	import module unconstrained-fasta-importer hcvFastaAlignmentImporter.xml
+  	
+  	module unconstrained-fasta-importer import AL_UNCONSTRAINED -f Donald_Smith_HCV_alignment_May_26_2015.filtered.fasta
   
   # delete source stopHcvCvr
 	  
