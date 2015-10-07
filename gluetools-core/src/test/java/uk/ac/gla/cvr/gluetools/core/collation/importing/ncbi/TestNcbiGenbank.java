@@ -21,11 +21,11 @@ public class TestNcbiGenbank {
 		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
 		NcbiImporter ncbiImporter = (NcbiImporter) PluginFactory.get(ModulePluginFactory.creator).
 					createFromElement(pluginConfigContext, document.getDocumentElement());
-		List<String> sequenceIDs = ncbiImporter.getSequenceIDs();
+		List<String> sequenceIDs = ncbiImporter.getGiNumbersToRetrieve();
 		List<RetrievedSequence> retrievedSequences = ncbiImporter.retrieveSequences(sequenceIDs);
 		File directory = new File("/Users/joshsinger/hcv_rega/retrieved_xml");
 		retrievedSequences.forEach(seq -> {
-			File xmlFile = new File(directory, seq.sequenceID+".xml");
+			File xmlFile = new File(directory, seq.giNumber+".xml");
 			try(FileOutputStream fileOutputStream = new FileOutputStream(xmlFile)) {
 				fileOutputStream.write(seq.data);
 			} catch(Exception e) {

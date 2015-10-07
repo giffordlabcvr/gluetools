@@ -31,6 +31,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -51,36 +52,66 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @PluginClass(elemName="ncbiImporter")
 public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
+	private static String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
+
+	public enum SequenceIdField {
+		GI_NUMBER,
+		PRIMARY_ACCESSION
+	}
 	
 	private String sourceName;
-	private String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 	private String database;
 	private String eSearchTerm = null;
 	private int eSearchRetMax;
 	private int eFetchBatchSize;
-	private List<String> specificSequenceIDs;
+	private List<String> specificGiNumbers;
+	private List<String> specificPrimaryAccessions;
 	private SequenceFormat sequenceFormat;
-
+	private SequenceIdField sequenceIdField;
+	
 	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element sequenceSourcerElem) {
-		database = PluginUtils.configureStringProperty(sequenceSourcerElem, "database", "nuccore");
+	public void configure(PluginConfigContext pluginConfigContext, Element ncbiImporterElem) {
+		database = PluginUtils.configureStringProperty(ncbiImporterElem, "database", "nuccore");
 		sourceName = Optional.ofNullable(PluginUtils.
-				configureStringProperty(sequenceSourcerElem, "sourceName", false)).orElse("ncbi-"+database);
-		eSearchTerm = PluginUtils.configureStringProperty(sequenceSourcerElem, "eSearchTerm", false);
-		if(eSearchTerm == null) {
-			specificSequenceIDs = PluginUtils.configureStrings(sequenceSourcerElem, "specificSequenceIDs/sequenceID/text()", true);
-		}
-		eSearchRetMax = PluginUtils.configureIntProperty(sequenceSourcerElem, "eSearchRetMax", 4000);
-		eFetchBatchSize = PluginUtils.configureIntProperty(sequenceSourcerElem, "eFetchBatchSize", 200);
-		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, sequenceSourcerElem, "sequenceFormat", true);
+				configureStringProperty(ncbiImporterElem, "sourceName", false)).orElse("ncbi-"+database);
+		eSearchTerm = PluginUtils.configureStringProperty(ncbiImporterElem, "eSearchTerm", false);
+		specificGiNumbers = PluginUtils.configureStrings(ncbiImporterElem, "specificGiNumbers/giNumber/text()", false);
+		specificPrimaryAccessions = PluginUtils.configureStrings(ncbiImporterElem, "specificPrimaryAccessions/primaryAccession/text()", false);
+		eSearchRetMax = PluginUtils.configureIntProperty(ncbiImporterElem, "eSearchRetMax", 4000);
+		eFetchBatchSize = PluginUtils.configureIntProperty(ncbiImporterElem, "eFetchBatchSize", 200);
+		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, ncbiImporterElem, "sequenceFormat", true);
+		sequenceIdField = Optional.ofNullable(PluginUtils.configureEnumProperty(SequenceIdField.class, 
+				ncbiImporterElem, "sequenceIdField", false)).orElse(SequenceIdField.GI_NUMBER);
+		
 		addProvidedCmdClass(ImportCommand.class);
 		addProvidedCmdClass(ShowImporterCommand.class);
 		addProvidedCmdClass(ConfigureImporterCommand.class);
+		if(!(
+				(eSearchTerm != null && specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty()) ||
+				(eSearchTerm == null && !specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty()) ||
+				(eSearchTerm == null && specificGiNumbers.isEmpty() && !specificPrimaryAccessions.isEmpty())
+			)) {
+			searchTermConfigError();
+		}
+		if(sequenceFormat != SequenceFormat.GENBANK_XML && sequenceIdField != SequenceIdField.GI_NUMBER) {
+			throw new NcbiImporterException(Code.CONFIG_ERROR, "Unless the sequence format is GENBANK_XML, the sequence ID field must be GI_NUMBER");
+			
+		}
+		if(!specificPrimaryAccessions.isEmpty()) {
+			List<String> disjuncts = specificPrimaryAccessions.stream()
+					.map(primaryAcc -> "\""+primaryAcc+"\"[Primary Accession]")
+					.collect(Collectors.toList());
+			eSearchTerm = String.join(" OR ", disjuncts);
+		}
 	}
 
-	List<String> getSequenceIDs() {
-		if(specificSequenceIDs != null) {
-			return specificSequenceIDs;
+	private void searchTermConfigError() {
+		throw new NcbiImporterException(Code.CONFIG_ERROR, "Exactly one of <eSearchTerm>, <specificGiNumbers> or <specificPrimaryAccessions> must be specified.");
+	}
+
+	List<String> getGiNumbersToRetrieve() {
+		if(!specificGiNumbers.isEmpty()) {
+			return specificGiNumbers;
 		}
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eSearchHttpRequest = createESearchRequest();
@@ -101,22 +132,22 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		return "ncbiImporter:"+database+":"+sequenceFormat.name();
 	}
 
-	List<RetrievedSequence> retrieveSequences(List<String> sequenceIDs) {
+	List<RetrievedSequence> retrieveSequences(List<String> giNumbers) {
 		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
 		int batchStart = 0;
 		int batchEnd;
 		do {
-			batchEnd = Math.min(batchStart+eFetchBatchSize, sequenceIDs.size());
-			retrievedSequences.addAll(fetchBatch(sequenceIDs.subList(batchStart, batchEnd)));
+			batchEnd = Math.min(batchStart+eFetchBatchSize, giNumbers.size());
+			retrievedSequences.addAll(fetchBatch(giNumbers.subList(batchStart, batchEnd)));
 			batchStart = batchEnd;
-		} while(batchEnd < sequenceIDs.size());
+		} while(batchEnd < giNumbers.size());
 		return retrievedSequences;
 	}
 
-	private List<RetrievedSequence> fetchBatch(List<String> sequenceIDs) {
+	private List<RetrievedSequence> fetchBatch(List<String> giNumbers) {
 		Object eFetchResponseObject;
 		try(CloseableHttpClient httpClient = createHttpClient()) {
-			HttpUriRequest eFetchRequest = createEFetchRequest(sequenceIDs);
+			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
 			switch(sequenceFormat) {
 			case GENBANK_XML:
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
@@ -140,16 +171,21 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 		
 		int i = 0;
-		for(String sequenceID: sequenceIDs) {
+		for(String giNumber: giNumbers) {
 			if(i >= individualGBFiles.size()) {
 				throw new NcbiImporterException(NcbiImporterException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
 			}
 			RetrievedSequence retrievedSequence = new RetrievedSequence();
+			retrievedSequence.sequenceID = giNumber;
 			retrievedSequence.format = sequenceFormat;
-			retrievedSequence.sequenceID = sequenceID;
+			retrievedSequence.giNumber = giNumber;
 			Object individualFile = individualGBFiles.get(i);
 			if(individualFile instanceof Document) {
-				retrievedSequence.data = GlueXmlUtils.prettyPrint((Document) individualFile);
+				Document individualDocument = (Document) individualFile;
+				retrievedSequence.data = GlueXmlUtils.prettyPrint(individualDocument);
+				if(sequenceIdField == SequenceIdField.PRIMARY_ACCESSION) {
+					retrievedSequence.sequenceID = GlueXmlUtils.getXPathString(individualDocument, "/GBSeq/GBSeq_primary-accession/text()");
+				}
 			}
 			retrievedSequences.add(retrievedSequence);
 			i++;
@@ -175,8 +211,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}).collect(Collectors.toList());
 	}
 
-	private HttpUriRequest createEFetchRequest(List<String> idsToFetch)  {
-		String commaSeparatedIDs = String.join(",", idsToFetch.toArray(new String[]{}));
+	private HttpUriRequest createEFetchRequest(List<String> giNumbers)  {
+		String giNumbersString = String.join(",", giNumbers.toArray(new String[]{}));
 
 
 		// rettype=gb and retmode=xml means retrieve GenBank XML files.
@@ -200,7 +236,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 		StringEntity requestEntity;
 		try {
-			requestEntity = new StringEntity("id="+commaSeparatedIDs);
+			requestEntity = new StringEntity("id="+giNumbersString);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
@@ -304,7 +340,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 		StringEntity requestEntity;
 		try {
-			requestEntity = new StringEntity("term="+eSearchTerm.trim());
+			requestEntity = new StringEntity("term="+eSearchTerm.trim().replaceAll("[\\n\\r]", ""));
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
@@ -341,8 +377,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	}
 
 	private CreateResult doImport(CommandContext cmdContext) {
-		List<String> sequenceIDs = getSequenceIDs();
-		List<RetrievedSequence> sequences = retrieveSequences(sequenceIDs);
+		List<String> giNumbers = getGiNumbersToRetrieve();
+		List<RetrievedSequence> sequences = retrieveSequences(giNumbers);
 		ensureSourceExists(cmdContext, sourceName);
 		int sequencesCreated = 0;
 		for(RetrievedSequence sequence: sequences) {
@@ -357,7 +393,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	
 	
 	class RetrievedSequence {
-		String sequenceID;
+		public String sequenceID;
+		String giNumber;
 		SequenceFormat format;
 		byte[] data;
 	}

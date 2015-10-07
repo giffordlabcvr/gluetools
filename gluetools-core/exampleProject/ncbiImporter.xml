@@ -1,6 +1,15 @@
 <ncbiImporter>
-<eSearchTerm>"Hepatitis C"[Organism] AND 5000:20000[SLEN]</eSearchTerm>
-<sequenceFormat>GENBANK_XML</sequenceFormat>
-<eSearchRetMax>10</eSearchRetMax>
-<eFetchBatchSize>500</eFetchBatchSize>
+  <!-- an alternative to eSearchTerm is to specify specific GI numbers or Primary Accession strings, 
+       contact the developer for more details -->
+  <eSearchTerm>"Hepatitis C"[Organism] 
+  
+  
+  AND 5000:20000[SLEN]</eSearchTerm>
+  <sequenceFormat>GENBANK_XML</sequenceFormat>
+  <!-- This specifies the GenBank field which will be used as the GLUE sequence ID. The options are:
+       GI_NUMBER (default)
+       PRIMARY_ACCESSION -->
+  <sequenceIdField>PRIMARY_ACCESSION</sequenceIdField>
+  <eSearchRetMax>10</eSearchRetMax>
+  <eFetchBatchSize>500</eFetchBatchSize>
 </ncbiImporter>

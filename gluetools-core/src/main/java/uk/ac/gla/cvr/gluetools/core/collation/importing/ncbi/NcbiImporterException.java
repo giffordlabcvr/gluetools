@@ -9,6 +9,7 @@ public class NcbiImporterException extends ModulePluginException {
 		IO_ERROR("requestName", "errorTxt"), 
 		FORMATTING_ERROR("requestName", "errorTxt"),
 		SEARCH_ERROR("errorTxt"),
+		CONFIG_ERROR("errorTxt"),
 		PROTOCOL_ERROR("requestName", "errorTxt"),
 		CANNOT_PROCESS_SEQUENCE_FORMAT("formatName"), 
 		INSUFFICIENT_SEQUENCES_RETURNED();
