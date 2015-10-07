@@ -16,7 +16,8 @@ public class ConsoleException extends GlueException {
 		WRITE_ERROR("path", "errorTxt"),
 		FILE_CREATION_ERROR("path", "errorTxt"),
 		COMMAND_NOT_WRAPPABLE("commandWords", "commandModePath"), 
-		COMMAND_HAS_COMPLEX_INPUT("commandWords");
+		COMMAND_HAS_COMPLEX_INPUT("commandWords"), 
+		MAKE_DIRECTORY_ERROR("path");
 
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -70,17 +70,8 @@ public class ConsoleCommandContext extends CommandContext {
 		}
 	}
 	
-	public void saveBytes(String file, byte[] bytes) {
-		File path = new File(file);
-		if(!path.isAbsolute()) {
-			path = new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH), file);
-		}
-		try {
-			path = path.getCanonicalFile();
-		} catch (IOException e) {
-			throw new ConsoleException(e, Code.INVALID_PATH, path, e.getMessage());
-		}
-		saveBytesToFile(path, bytes);
+	public void saveBytes(String fileString, byte[] bytes) {
+		saveBytesToFile(fileStringToFile(fileString), bytes);
 	}
 	
 	public static void saveBytesToFile(File file, byte[] bytes) {
@@ -102,19 +93,29 @@ public class ConsoleCommandContext extends CommandContext {
 		}
 	}
 
-	
+	public void mkdirs(String fileString) {
+		File dirFile = fileStringToFile(fileString);
+		dirFile.mkdirs();
+		if(!dirFile.isDirectory()) {
+			throw new ConsoleException(Code.MAKE_DIRECTORY_ERROR, dirFile);
+		}
+	}
 
-	public byte[] loadBytes(String file) {
-		File path = new File(file);
+	public byte[] loadBytes(String fileString) {
+		return loadBytesFromFile(fileStringToFile(fileString));
+	}
+
+	public File fileStringToFile(String fileString) {
+		File path = new File(fileString);
 		if(!path.isAbsolute()) {
-			path = new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH), file);
+			path = new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH), fileString);
 		}
 		try {
 			path = path.getCanonicalFile();
 		} catch (IOException e) {
 			throw new ConsoleException(e, Code.INVALID_PATH, path, e.getMessage());
 		}
-		return loadBytesFromFile(path);
+		return path;
 	}
 
 	public static byte[] loadBytesFromFile(File file) {
