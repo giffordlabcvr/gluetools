@@ -59,7 +59,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	private ConsoleCommandContext commandContext;
 	private Integer batchLine = null;
 	private String configFilePath = null;
-	private boolean interactiveAfterBatch = false;
+	private boolean nonInteractive = true;
 	private boolean migrateSchema;
 	private boolean version;
 	
@@ -250,12 +250,8 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			Object fileString = docoptResult.get("--batch-file");
 			if(fileString != null) {
 				console.runBatchFile(fileString);
-				if(console.interactiveAfterBatch) {
-					console.batchLine = null;
-					console.interactiveSession();
-				}
-
-			} else {
+			}
+			if(!console.nonInteractive) {
 				console.interactiveSession();
 			}
 		}
@@ -271,9 +267,9 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(migrateSchemaOption != null) {
 			console.migrateSchema = Boolean.parseBoolean(migrateSchemaOption.toString());
 		}
-		Object interactiveOption = docoptResult.get("--interactive");
-		if(interactiveOption != null) {
-			console.interactiveAfterBatch = Boolean.parseBoolean(interactiveOption.toString());
+		Object nonInteractiveOption = docoptResult.get("--non-interactive");
+		if(nonInteractiveOption != null) {
+			console.nonInteractive = Boolean.parseBoolean(nonInteractiveOption.toString());
 		}
 		Object versionOption = docoptResult.get("--version");
 		if(versionOption != null) {

@@ -99,7 +99,7 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	    session(remotes.gluehome) {
 	      execute 'rm -rf /opt/gluehome/hcvProject'
 	      put from: hcvProjectDir, into: '/opt/gluehome'
-	      execute 'cd /opt/gluehome ; java -jar '+jarFileName+' -c gluetools-config-gluehome.xml -f hcvProject/hcvProject.glue'
+	      execute 'cd /opt/gluehome ; java -jar '+jarFileName+' -c gluetools-config-gluehome.xml -n -f hcvProject/hcvProject.glue'
 	    }
 	  }
 	  deployHcvProjectTouchfile.delete()
@@ -163,3 +163,21 @@ uploadArchives {
        }
     }
 }
+
+task exampleProjectZip(type: Zip) {
+	from projectDir
+	ext.exampleProjectDir = new File(projectDir, 'exampleProject')
+	ext.exampleProjectTouchfile = new File(buildDir, '/exampleProject.touchfile')
+	inputs.dir exampleProjectDir
+	outputs.file exampleProjectTouchfile
+    baseName "exampleProject"
+    include "exampleProject/**"
+    doLast {
+	  exampleProjectTouchfile.delete()
+	  buildDir.mkdirs()
+	  exampleProjectTouchfile.createNewFile()
+  }
+
+
+}
+

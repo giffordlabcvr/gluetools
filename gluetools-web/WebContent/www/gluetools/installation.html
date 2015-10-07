@@ -77,12 +77,19 @@ GLUEtools will read this file each time it runs. Modify the XML file to specify:
 </ul>
 <div hljs source="gluetoolsXml"></div>
 
+<h3>Download the GLUEtools example project</h3>
+Download the example project from the <a href="#download">GLUEtools download page</a>.
+
+<p>Execute the following command line to unzip the project.</p>
+<pre>
+$ unzip exampleProject-0.1.13.zip
+</pre>
+
 <h3>Run GLUEtools</h3>
 
 <p>Execute the following command line to start GLUEtools.</p>
 <pre>
-$ java -jar gluetools-core-all-0.1.13.jar -c gluetools-config.xml
-GLUEtools version 0.1.13
-Mode path: /
-GLUE>
+$ java -jar gluetools-core-all-0.1.13.jar -c gluetools-config.xml -f exampleProject/exampleProject.glue
 </pre>
+<p>The <code>-f</code> option runs the commands in the <code>exampleProject.glue</code> file.</p> 
+
