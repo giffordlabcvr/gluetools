@@ -5,7 +5,7 @@ import uk.ac.gla.cvr.gluetools.utils.ByteScanningUtils;
 public enum SequenceFormat {
 
 	// this MUST come before FASTA, so that it detection from bytes happens correctly.
-	SAM2CONSENSUS_EXTENDED("SAM2CONSENSUS extended", null) {
+	SAM2CONSENSUS_EXTENDED("SAM2CONSENSUS extended", null, "s2c") {
 		@Override
 		public boolean detectFromBytes(byte[] data) {
 			return data.length > 0 &&
@@ -18,7 +18,7 @@ public enum SequenceFormat {
 		}
 	},
 
-	FASTA("FASTA nucleic acid", "https://en.wikipedia.org/wiki/FASTA_format") {
+	FASTA("FASTA nucleic acid", "https://en.wikipedia.org/wiki/FASTA_format", "fasta") {
 		@Override
 		public boolean detectFromBytes(byte[] data) {
 			return data.length > 0 &&
@@ -30,7 +30,7 @@ public enum SequenceFormat {
 		}
 	},
 	
-	GENBANK_XML("Genbank GBSeq XML", "http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/asn_spec/gbseq.asn.html") {
+	GENBANK_XML("Genbank GBSeq XML", "http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/asn_spec/gbseq.asn.html", "xml") {
 		@Override
 		public boolean detectFromBytes(byte[] data) {
 			return ByteScanningUtils.indexOf(data, "<GBSeq>".getBytes(), 0) >= 0;
@@ -46,10 +46,12 @@ public enum SequenceFormat {
 
 	private String displayName;
 	private String formatURL;
+	private String standardFileExtension;
 	
-	private SequenceFormat(String displayName, String formatURL) {
+	private SequenceFormat(String displayName, String formatURL, String standardFileExtension) {
 		this.displayName = displayName;
 		this.formatURL = formatURL;
+		this.standardFileExtension = standardFileExtension;
 	}
 	
 	public String getDisplayName() {
@@ -58,6 +60,10 @@ public enum SequenceFormat {
 	public String getFormatURL() {
 		return formatURL;
 	}
+	public String getStandardFileExtension() {
+		return standardFileExtension;
+	}
+
 	public abstract AbstractSequenceObject sequenceObject();
 	
 	public abstract boolean detectFromBytes(byte[] data);
@@ -68,8 +74,20 @@ public enum SequenceFormat {
 				return seqFormat;
 			}
 		}
-		throw new SequenceException(SequenceException.Code.UNABLE_TO_DETERMINE_SEQUENCE_FORMAT);
+		throw new SequenceException(SequenceException.Code.UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_BYTES);
 	}
 
+	public static SequenceFormat detectFormatFromExtension(String extension) {
+		for(SequenceFormat seqFormat : SequenceFormat.values()) {
+			if(extension.equals(seqFormat.getStandardFileExtension())) {
+				return seqFormat;
+			}
+		}
+		throw new SequenceException(SequenceException.Code.UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_FILE_EXTENSION, extension);
+	}
+
+	
+	
+	
 	
 }

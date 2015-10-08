@@ -22,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	}, 
 	metaTags = { CmdMeta.consoleOnly },
 	furtherHelp=
-		"The <fileName> names the file which will the sequence data",
+		"The <fileName> names the file which will contain the sequence data",
 	description="Export the original sequence data to a file") 
 public class ExportSequenceCommand extends ProjectModeCommand<OkResult> {
 

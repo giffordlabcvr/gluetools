@@ -3,8 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -100,7 +103,37 @@ public class ConsoleCommandContext extends CommandContext {
 			throw new ConsoleException(Code.MAKE_DIRECTORY_ERROR, dirFile);
 		}
 	}
+	
+	public List<String> listMembers(String pathString, boolean includeFiles, boolean includeDirectories) {
+		File dirFile = fileStringToFile(pathString);
+		return listMembers(dirFile, includeFiles, includeDirectories);
+	}
 
+	public List<String> listMembers(File dirFile, boolean includeFiles,
+			boolean includeDirectories) {
+		if(!dirFile.isDirectory()) {
+			throw new ConsoleException(Code.NOT_A_DIRECTORY, dirFile);
+		}
+		return Arrays.asList(dirFile.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				File theMember = new File(dir, name);
+				if(includeFiles && theMember.isFile()) {
+					return true;
+				}
+				if(includeDirectories && theMember.isDirectory()) {
+					return true;
+				}
+				return false;
+			}
+		}));
+	}
+
+	public List<String> listMembers(boolean includeFiles, boolean includeDirectories) {
+		return listMembers(new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH)), includeFiles, includeDirectories);
+	}
+	
+	
 	public byte[] loadBytes(String fileString) {
 		return loadBytesFromFile(fileStringToFile(fileString));
 	}

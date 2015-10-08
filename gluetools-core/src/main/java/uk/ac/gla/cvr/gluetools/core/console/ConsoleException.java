@@ -10,6 +10,7 @@ public class ConsoleException extends GlueException {
 		INVALID_PATH("invalidPath", "errorText"), 
 		FILE_NOT_FOUND("path"), 
 		NOT_A_FILE("path"), 
+		NOT_A_DIRECTORY("path"), 
 		FILE_NOT_READABLE("path"), 
 		FILE_NOT_WRITEABLE("path"), 
 		READ_ERROR("path", "errorTxt"),

@@ -31,6 +31,8 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(CreateSourceCommand.class);
 		registerCommandClass(DeleteSourceCommand.class);
 		registerCommandClass(ListSourceCommand.class);
+		registerCommandClass(ImportSourceCommand.class);
+		registerCommandClass(ExportSourceCommand.class);
 
 		registerCommandClass(ImportModuleCommand.class);
 		registerCommandClass(DeleteModuleCommand.class);

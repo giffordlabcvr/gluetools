@@ -11,7 +11,8 @@ public class SequenceException extends GlueException {
 		NO_DATA_PROVIDED(),
 		BASE_64_FORMAT_EXCEPTION("errorText"),
 		INVALID_FIELD("invalidField", "validFields"), 
-		UNABLE_TO_DETERMINE_SEQUENCE_FORMAT;
+		UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_BYTES, 
+		UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_FILE_EXTENSION("fileExtension");
 		
 		private String[] argNames;
 		private Code(String... argNames) {
