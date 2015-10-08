@@ -6,7 +6,7 @@ public class BlastRefSeqDBException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		MAKE_BLAST_DB_FAILED("projectName", "refName", "exitCode", "stdErr");
+		MAKE_BLAST_DB_FAILED("dbsDir", "projectName", "refName", "exitCode", "stdErr");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

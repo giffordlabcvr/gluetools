@@ -6,7 +6,8 @@ public class ProcessUtilsException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		UNABLE_TO_START_PROCESS("command", "errorTxt"),
+		UNABLE_TO_START_PROCESS("errorTxt"),
+		UNABLE_TO_START_PROCESS_FOR_COMMAND("command", "errorTxt"),
 		PROCESS_IO_ERROR("command", "errorTxt");
 
 		private String[] argNames;

@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,12 +46,17 @@ public class ProcessUtils {
 	
 	public static ProcessResult runProcess(byte[] inputByteArray, String... commandWords) {
 		if(commandWords.length == 0) {
-			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, "<noCommand>", 
+			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, 
 					"No command words supplied");
 		}
 		if(commandWords[0] == null) {
-			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, "<noCommand>", 
+			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, 
 					"First command word was null");
+		}
+		File executableFile = new File(commandWords[0]);
+		if(!executableFile.canExecute()) {
+			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, 
+					"Not an executable file: "+executableFile.getPath());
 		}
 		ProcessBuilder processBuilder = new ProcessBuilder(commandWords);
 		Process process = null;
@@ -63,7 +69,7 @@ public class ProcessUtils {
 				process = processBuilder.start();
 			} catch(IOException ioe1) {
 				throw new ProcessUtilsException(ioe1, 
-						ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, commandWords[0], 
+						ProcessUtilsException.Code.UNABLE_TO_START_PROCESS_FOR_COMMAND, commandWords[0], 
 						ioe1.getLocalizedMessage());
 			}
 			OutputStream processStdIn = process.getOutputStream();

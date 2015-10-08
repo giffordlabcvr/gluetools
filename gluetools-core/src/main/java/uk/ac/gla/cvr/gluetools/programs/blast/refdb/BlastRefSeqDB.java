@@ -49,11 +49,12 @@ public class BlastRefSeqDB {
 		String projectName = ((ProjectMode) cmdContext.peekCommandMode()).getProject().getName();
 		RefDBKey refDbKey = new RefDBKey(projectName, refName);
 		SingleReferenceDB refDB;
+		String blastDbDir = "";
 		synchronized(referenceDBs) {
 			refDB = referenceDBs.get(refDbKey);
 			if(refDB == null) {
 				PropertiesConfiguration propertiesConfiguration = cmdContext.getGluetoolsEngine().getPropertiesConfiguration();
-				String blastDbDir = propertiesConfiguration.getPropertyValue(BLAST_DB_DIR_PROPERTY);
+				blastDbDir = propertiesConfiguration.getPropertyValue(BLAST_DB_DIR_PROPERTY);
 				File projectRefDbDir = new File(blastDbDir, projectName);
 				projectRefDbDir.mkdirs();
 				File refDbFile = new File(projectRefDbDir, refName);
@@ -88,7 +89,7 @@ public class BlastRefSeqDB {
 			if(exitCode != 0) {
 				logger.info(new String(processResult.getOutputBytes()));
 				throw new BlastRefSeqDBException(BlastRefSeqDBException.Code.MAKE_BLAST_DB_FAILED, 
-						projectName, refName, exitCode, new String(processResult.getErrorBytes()));
+						blastDbDir, projectName, refName, exitCode, new String(processResult.getErrorBytes()));
 			} else {
 				cleanupRequired = false;
 			}
@@ -106,11 +107,13 @@ public class BlastRefSeqDB {
 				return name.startsWith(refName);
 			}
 		});
-		for(File dbFile: dbFiles) {
-			try {
-				Files.delete(dbFile.toPath());
-			} catch(Exception e) {
-				logger.warning("Unable to clean up reference DB file: "+dbFile.getAbsolutePath());
+		if(dbFiles != null) {
+			for(File dbFile: dbFiles) {
+				try {
+					Files.delete(dbFile.toPath());
+				} catch(Exception e) {
+					logger.warning("Unable to clean up reference DB file: "+dbFile.getAbsolutePath());
+				}
 			}
 		}
 	}
