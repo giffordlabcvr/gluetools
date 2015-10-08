@@ -41,6 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -84,6 +85,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				ncbiImporterElem, "sequenceIdField", false)).orElse(SequenceIdField.GI_NUMBER);
 		
 		addProvidedCmdClass(ImportCommand.class);
+		addProvidedCmdClass(PreviewCommand.class);
 		addProvidedCmdClass(ShowImporterCommand.class);
 		addProvidedCmdClass(ConfigureImporterCommand.class);
 		if(!(
@@ -376,6 +378,13 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 	}
 
+	public PreviewResult doPreview(CommandContext cmdContext) {
+		List<String> giNumbers = getGiNumbersToRetrieve();
+		return new PreviewResult(giNumbers.size());
+	}
+
+
+	
 	private CreateResult doImport(CommandContext cmdContext) {
 		List<String> giNumbers = getGiNumbersToRetrieve();
 		List<RetrievedSequence> sequences = retrieveSequences(giNumbers);
@@ -399,6 +408,13 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		byte[] data;
 	}
 	
+	public static class PreviewResult extends MapResult {
+
+		public PreviewResult(int numGenbankRecordsFound) {
+			super("ncbiImporterPreviewResult", mapBuilder().put("numGenbankRecordsFound", numGenbankRecordsFound));
+		}
+		
+	}
 	
 	@CommandClass( 
 			commandWords={"import"}, 
@@ -406,14 +422,26 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			metaTags={CmdMeta.updatesDatabase},
 			description="Import sequence data from NCBI into the project") 
 	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, NcbiImporter> implements ProvidedProjectModeCommand {
-
 		@Override
 		protected CreateResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doImport(cmdContext);
 		}
-		
 	}
 
+	
+	@CommandClass( 
+			commandWords={"preview"}, 
+			docoptUsages={""},
+			metaTags={},
+			description="Preview the NCBI results") 
+	public static class PreviewCommand extends ModuleProvidedCommand<PreviewResult, NcbiImporter> implements ProvidedProjectModeCommand {
+		@Override
+		protected PreviewResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
+			return importerPlugin.doPreview(cmdContext);
+		}
+	}
+
+	
 	@CommandClass( 
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
@@ -425,6 +453,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize"}
 	)
 	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporter> {}
+
 
 
 }
