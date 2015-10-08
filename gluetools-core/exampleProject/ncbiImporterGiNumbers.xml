@@ -1,0 +1,10 @@
+<ncbiImporter>
+  <specificGiNumbers>
+	<giNumber>2316097</giNumber>
+    <giNumber>365767472</giNumber>
+    <giNumber>329873</giNumber>
+  </specificGiNumbers>
+  <sequenceFormat>GENBANK_XML</sequenceFormat>
+  <sequenceIdField>GI_NUMBER</sequenceIdField>
+  <eFetchBatchSize>500</eFetchBatchSize>
+</ncbiImporter>

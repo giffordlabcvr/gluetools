@@ -1,0 +1,10 @@
+<ncbiImporter>
+  <specificPrimaryAccessions>
+	<primaryAccession>AF009606</primaryAccession>
+    <primaryAccession>M62321</primaryAccession>
+    <primaryAccession>HQ850279</primaryAccession>
+  </specificPrimaryAccessions>
+  <sequenceFormat>GENBANK_XML</sequenceFormat>
+  <sequenceIdField>PRIMARY_ACCESSION</sequenceIdField>
+  <eFetchBatchSize>500</eFetchBatchSize>
+</ncbiImporter>
