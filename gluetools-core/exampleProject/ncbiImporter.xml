@@ -2,7 +2,10 @@
   <!-- The eSearchTerm is a standard NCBI entrez text query. 
        An alternative to eSearchTerm is to specify specific GI numbers or Primary Accessions 
        to retrieve. See ncbiImporterGiNumbers.xml and ncbiImporterPrimaryAccessions.xml for syntax examples -->
-  <eSearchTerm>"Hepatitis C"[Organism] AND 5000:20000[SLEN]</eSearchTerm>
+  <eSearchTerm>
+  	"Hepatitis C"[Organism] AND 
+  	5000:20000[SLEN]
+  </eSearchTerm>
   <sequenceFormat>GENBANK_XML</sequenceFormat>
   <!-- This specifies the field of the GenBank document which will be used as the GLUE sequence ID. The options are:
        GI_NUMBER (default if omitted)

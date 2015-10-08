@@ -46,9 +46,6 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 	private String sourceName;
 	private List<FastaFieldParser> fieldParsers;
 
-	
-	
-	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
@@ -162,7 +159,5 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 	public Pattern getNullRegex() {
 		return nullRegex;
 	}
-
-
 
 }

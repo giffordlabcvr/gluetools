@@ -20,6 +20,8 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	private Pattern nullRegex = null;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters = null;
+	private Boolean overwrite;
+	private Boolean forceUpdate;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -28,6 +30,8 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 		nullRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
 				orElse(Pattern.compile(FieldPopulator.DEFAULT_NULL_REGEX));
+		overwrite = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwrite", false)).orElse(false);
+		forceUpdate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "forceUpdate", false)).orElse(false);
 		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 				PluginUtils.findConfigElements(configElem, "valueConverter"));
 		mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
@@ -78,6 +82,16 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	@Override
 	public Pattern getNullRegex() {
 		return nullRegex;
+	}
+
+	@Override
+	public boolean getOverwrite() {
+		return overwrite;
+	}
+
+	@Override
+	public boolean getForceUpdate() {
+		return forceUpdate;
 	}
 
 }

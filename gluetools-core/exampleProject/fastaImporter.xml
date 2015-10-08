@@ -9,6 +9,13 @@
 		<fieldName>HEADER_1</fieldName>
 		<matchPattern>(?:[^\.]+\.){1}([^\.]+)</matchPattern>
 		<outputTemplate>${g1}</outputTemplate>
+		<!-- Null existing values will always be overwritten. 
+	         If overwrite is set to true, non-null existing field values will also be overwritten. 
+	         Default if omitted is false -->
+		<overwrite>false</overwrite>
+	    <!-- If forceUpdate is set to true, the field value will be updated, even if the new value is null.
+	         Default if omitted is false -->
+	    <forceUpdate>false</forceUpdate>
 	</fieldParser>
 	<!-- Set field HEADER_2 on the sequence to the string after the second dot -->
 	<fieldParser>

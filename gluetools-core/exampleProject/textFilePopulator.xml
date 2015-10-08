@@ -11,6 +11,13 @@
 	</textFileColumn>
 	<textFileColumn>
 		<number>2</number>
+		<!-- Null existing values will always be overwritten. 
+		     If overwrite is set to true, non-null existing field values will also be overwritten. 
+		     Default if omitted is false -->
+		<overwrite>false</overwrite>
+		<!-- If forceUpdate is set to true, the field value will be updated, even if the new value is null.
+		     Default if omitted is false -->
+		<forceUpdate>false</forceUpdate>
 		<fieldName>CUSTOM_FIELD_Y</fieldName>
 		<nullRegex>n/a</nullRegex>
 	</textFileColumn>

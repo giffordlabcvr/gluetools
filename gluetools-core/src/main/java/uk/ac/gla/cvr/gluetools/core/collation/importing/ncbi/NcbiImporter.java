@@ -49,7 +49,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-// TODO importer plugin should only fetch sequence the source does not already have.
+// TODO importer plugin should only fetch sequences the source does not already have.
 @PluginClass(elemName="ncbiImporter")
 public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
@@ -342,7 +342,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 		StringEntity requestEntity;
 		try {
-			requestEntity = new StringEntity("term="+eSearchTerm.trim().replaceAll("[\\n\\r]", ""));
+			String termOnOneLine = eSearchTerm.trim().replaceAll("[\\n\\r\\t]", "");
+			requestEntity = new StringEntity("term="+termOnOneLine);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}

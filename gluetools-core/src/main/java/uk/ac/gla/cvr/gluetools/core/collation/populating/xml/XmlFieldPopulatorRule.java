@@ -26,17 +26,20 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 	private Pattern nullRegex;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters;
+	private Boolean overwrite;
+	private Boolean forceUpdate;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
 		fieldName = PluginUtils.configureString(configElem, "@fieldName", true);
+		overwrite = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwrite", false)).orElse(false);
+		forceUpdate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "forceUpdate", false)).orElse(false);
 		nullRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
 				orElse(Pattern.compile(DEFAULT_NULL_REGEX));
 		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 				PluginUtils.findConfigElements(configElem, "valueConverter"));
 		mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
-
 	}
 	
 	public void execute(CommandContext cmdContext, Node node) {
@@ -71,4 +74,13 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 		return fieldName;
 	}
 
+	@Override
+	public boolean getOverwrite() {
+		return overwrite;
+	}
+
+	@Override
+	public boolean getForceUpdate() {
+		return forceUpdate;
+	}
 }

@@ -53,7 +53,8 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		cmdContext.cmdBuilder(SetFieldCommand.class).
 			set(SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName()).
 			set(SetFieldCommand.FIELD_VALUE, fieldValue).
-			set(SetFieldCommand.NO_OVERWRITE, "true").
+			set(SetFieldCommand.OVERWRITE, fieldPopulator.getOverwrite()).
+			set(SetFieldCommand.FORCE_UPDATE, fieldPopulator.getForceUpdate()).
 			execute();
 	}
 }

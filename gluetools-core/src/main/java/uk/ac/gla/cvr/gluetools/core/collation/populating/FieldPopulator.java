@@ -18,4 +18,12 @@ public interface FieldPopulator {
 	public default String getFieldName() {
 		return null;
 	}
+	
+	public default boolean getOverwrite() {
+		return false;
+	}
+
+	public default boolean getForceUpdate() {
+		return false;
+	}
 }
