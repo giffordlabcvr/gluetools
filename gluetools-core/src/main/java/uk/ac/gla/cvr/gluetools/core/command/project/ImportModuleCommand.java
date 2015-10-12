@@ -8,6 +8,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;
@@ -18,25 +20,37 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"import","module"}, 
-	docoptUsages={"<name> <fileName>"},
+	docoptUsages={"[-r] <name> <fileName>"},
+	docoptOptions={"-r, --reload  If module exists, reload its config"},
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase},
 	description="Create a new module, importing config from a file") 
-public class ImportModuleCommand extends ProjectModeCommand<CreateResult> {
+public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 
 	private String name;
 	private String fileName;
+	private Boolean reload;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		name = PluginUtils.configureStringProperty(configElem, "name", true);
 		fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
+		reload = PluginUtils.configureBooleanProperty(configElem, "reload", true);
 	}
 
 	@Override
-	public CreateResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.create(objContext, Module.class, Module.pkMap(name), false);
+		Module module = null;
+		boolean moduleExisted = false;
+		if(reload) {
+			module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(name), true);
+		}
+		if(module != null) {
+			moduleExisted = true;
+		} else {
+			module = GlueDataObject.create(objContext, Module.class, Module.pkMap(name), false);
+		}
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		byte[] config = consoleCmdContext.loadBytes(fileName);
 		module.setConfig(config);
@@ -46,7 +60,11 @@ public class ImportModuleCommand extends ProjectModeCommand<CreateResult> {
 			throw new ModuleException(Code.CREATE_FROM_FILE_FAILED, fileName, e.getMessage());
 		}
 		cmdContext.commit();
-		return new CreateResult(Module.class, 1);
+		if(moduleExisted) {
+			return new UpdateResult(Module.class, 1);
+		} else {
+			return new CreateResult(Module.class, 1);
+		}
 	}
 
 }
