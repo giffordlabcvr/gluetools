@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.segments;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 
 import org.w3c.dom.Element;
@@ -73,6 +74,10 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		super.truncateRight(length);
 		queryEnd -= length;
 	}
+	
+	public QueryAlignedSegment invert() {
+		return new QueryAlignedSegment(getQueryStart(), getQueryEnd(), getRefStart(), getRefEnd());
+	}
 
 	public String toString() { return
 		super.toString() +
@@ -140,14 +145,17 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		
 	}
 	
-	public static LinkedList<QueryAlignedSegment> translateSegments(
-			LinkedList<QueryAlignedSegment> queryToRef1Segments,
-			LinkedList<QueryAlignedSegment> ref1ToRef2Segments) {
+	public static List<QueryAlignedSegment> translateSegments(
+			List<QueryAlignedSegment> queryToRef1Segments0,
+			List<QueryAlignedSegment> ref1ToRef2Segments0) {
 		Function<QueryAlignedSegment, Integer> getRefStart = QueryAlignedSegment::getRefStart;
 		Function<QueryAlignedSegment, Integer> getQueryStart = QueryAlignedSegment::getQueryStart;
 		Function<QueryAlignedSegment, Integer> getRefEnd = QueryAlignedSegment::getRefEnd;
 		Function<QueryAlignedSegment, Integer> getQueryEnd = QueryAlignedSegment::getQueryEnd;
 
+		LinkedList<QueryAlignedSegment> queryToRef1Segments = new LinkedList<QueryAlignedSegment>(queryToRef1Segments0);
+		LinkedList<QueryAlignedSegment> ref1ToRef2Segments = new LinkedList<QueryAlignedSegment>(ref1ToRef2Segments0);
+		
 		Collections.sort(queryToRef1Segments, new SegmentStartComparator(getRefStart));
 		Collections.sort(ref1ToRef2Segments, new SegmentStartComparator(getQueryStart));
 		

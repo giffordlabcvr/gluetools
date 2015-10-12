@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.curation.aligners;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -29,7 +30,7 @@ public class TestQueryAlignedSegment {
 				alignedSeg(40, 45, 60, 65),
 				alignedSeg(55, 65, 75, 85)
 				));
-		LinkedList<QueryAlignedSegment> translated = QueryAlignedSegment.translateSegments(queryToRef1Segments, ref1ToRef2Segments);
+		List<QueryAlignedSegment> translated = QueryAlignedSegment.translateSegments(queryToRef1Segments, ref1ToRef2Segments);
 		Assert.assertEquals(Arrays.asList(
 				"Ref: [6, 10] <-> Query: [26, 30]",
 				"Ref: [20, 26] <-> Query: [35, 41]",

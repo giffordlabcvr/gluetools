@@ -5126,6 +5126,10 @@ project HCV
   	
   	module unconstrained-fasta-importer import AL_UNCONSTRAINED -f Donald_Smith_HCV_alignment_May_26_2015.filtered.fasta
   
+    create alignment AL_3a_DERIVED -r REF_3a
+    
+    derive alignment AL_UNCONSTRAINED AL_3a_DERIVED -w "sequence.GENOTYPE = '3' and sequence.SUBTYPE = 'a'"
+  
   # delete source stopHcvCvr
 	  
   validate

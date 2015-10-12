@@ -243,7 +243,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		public static final String ADDED_SEGMENTS = "addedSegments";
 		
 		protected ComputeAlignmentResult(List<Map<String, Object>> listOfMaps) {
-			super("updateAlignmentResult",  
+			super("computeAlignmentResult",  
 					Arrays.asList(
 							AlignmentMember.SOURCE_NAME_PATH, 
 							AlignmentMember.SEQUENCE_ID_PATH, 
