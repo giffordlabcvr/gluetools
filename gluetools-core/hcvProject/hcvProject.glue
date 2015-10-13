@@ -1,7 +1,5 @@
 delete project HCV
 
-console change load-save-path hcvProject
-
 create project HCV "HCV mutation analysis"
 
 schema-project HCV
