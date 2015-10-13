@@ -89,7 +89,7 @@ task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
 // HCV project 
 task deployHcvProject(dependsOn: ['deployJar']) {
   ext.jarFileName = project.name+"-all-"+version+'.jar'
-  ext.hcvProjectDir = new File(projectDir, 'hcvProject')
+  ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
   ext.deployHcvProjectTouchfile = new File(buildDir, '/deployHcvProject.touchfile')
   inputs.dir hcvProjectDir
   outputs.file deployHcvProjectTouchfile
@@ -97,9 +97,9 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	  println "Uploading GLUE project: "+hcvProjectDir.name
 	  ssh.run {
 	    session(remotes.gluehome) {
-	      execute 'rm -rf /opt/gluehome/hcvProject'
+	      execute 'rm -rf /opt/gluehome/hcvGlue'
 	      put from: hcvProjectDir, into: '/opt/gluehome'
-	      execute 'cd /opt/gluehome ; java -jar '+jarFileName+' -c gluetools-config-gluehome.xml -n -f hcvProject/hcvProject.glue'
+	      execute 'cd /opt/gluehome/hcvGlue ; java -jar ../'+jarFileName+' -c ../gluetools-config-gluehome.xml -n -f hcvProject.glue'
 	    }
 	  }
 	  deployHcvProjectTouchfile.delete()
