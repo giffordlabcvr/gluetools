@@ -2,8 +2,10 @@ package uk.ac.gla.cvr.gluetools.core;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -27,6 +29,7 @@ public abstract class GlueException extends RuntimeException {
 	
 	private GlueErrorCode code;
 	private Object[] errorArgs;
+	private Map<String, Object> userData = new LinkedHashMap<String, Object>();
 	
 	protected GlueException(GlueErrorCode code, Object ... errorArgs) {
 		super();
@@ -150,5 +153,14 @@ public abstract class GlueException extends RuntimeException {
 		builder.add(getClass().getSimpleName(), detailBuilder);
 		return builder.build();
 	}
+	
+	public Object getUserData(String key) {
+		return userData.get(key);
+	}
+
+	public void putUserData(String key, Object data) {
+		userData.put(key, data);
+	}
+
 	
 }

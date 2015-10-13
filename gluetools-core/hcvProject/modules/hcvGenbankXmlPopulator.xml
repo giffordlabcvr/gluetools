@@ -63,11 +63,11 @@
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="note">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>genotype:?\s+([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>genotype:?\s+[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
@@ -75,21 +75,21 @@
 				<matchPattern>[Rr]ecombinant</matchPattern>
 				<outputTemplate>true</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>subtype\s+([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>subtype\s+[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="genotype">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
@@ -99,52 +99,52 @@
 		Had a look at ViPR (www.viprbrc.org), they are also treating serotype as 
 		genotype / subtype -->
 		<gbQualifier name="serotype">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 	
 		<gbQualifier name="type">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="subtype">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>([1-9])[a-z]+</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="organism">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>subtype\s+([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>subtype\s+[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="strain">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="GENOTYPE">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="SUBTYPE">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>

@@ -19,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
+import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 
@@ -26,12 +27,14 @@ public class ConsoleCommandContext extends CommandContext {
 
 	private Map<ConsoleOption, String> optionToValue = new LinkedHashMap<ConsoleOption, String>();
 	
-	public ConsoleCommandContext(GluetoolsEngine gluetoolsEngine) {
-		super(gluetoolsEngine, "the GLUE console");
-	}
-
 	private boolean finished = false;
 	private boolean requireModeWrappable = false;
+	private Console console;
+
+	public ConsoleCommandContext(GluetoolsEngine gluetoolsEngine, Console console) {
+		super(gluetoolsEngine, "the GLUE console");
+		this.console = console;
+	}
 
 	public void unsetOptionValue(ConsoleOption option) {
 		optionToValue.remove(option);
@@ -191,6 +194,10 @@ public class ConsoleCommandContext extends CommandContext {
 		}
 
 
+	}
+
+	public void runBatchCommands(String batchFilePath, String batchContent) {
+		console.runBatchCommands(batchFilePath, batchContent);
 	}
 
 	

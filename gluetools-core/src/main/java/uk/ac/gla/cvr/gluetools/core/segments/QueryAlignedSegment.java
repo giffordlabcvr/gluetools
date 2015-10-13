@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -153,8 +154,14 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		Function<QueryAlignedSegment, Integer> getRefEnd = QueryAlignedSegment::getRefEnd;
 		Function<QueryAlignedSegment, Integer> getQueryEnd = QueryAlignedSegment::getQueryEnd;
 
-		LinkedList<QueryAlignedSegment> queryToRef1Segments = new LinkedList<QueryAlignedSegment>(queryToRef1Segments0);
-		LinkedList<QueryAlignedSegment> ref1ToRef2Segments = new LinkedList<QueryAlignedSegment>(ref1ToRef2Segments0);
+		LinkedList<QueryAlignedSegment> queryToRef1Segments = 
+				new LinkedList<QueryAlignedSegment>(queryToRef1Segments0.stream()
+						.map(QueryAlignedSegment::clone)
+						.collect(Collectors.toList()));
+		LinkedList<QueryAlignedSegment> ref1ToRef2Segments = 
+				new LinkedList<QueryAlignedSegment>(ref1ToRef2Segments0.stream()
+						.map(QueryAlignedSegment::clone)
+						.collect(Collectors.toList()));
 		
 		Collections.sort(queryToRef1Segments, new SegmentStartComparator(getRefStart));
 		Collections.sort(ref1ToRef2Segments, new SegmentStartComparator(getQueryStart));

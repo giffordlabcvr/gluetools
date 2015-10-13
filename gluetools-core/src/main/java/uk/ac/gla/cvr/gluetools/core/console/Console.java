@@ -54,10 +54,12 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 @SuppressWarnings("rawtypes")
 public class Console implements CommandContextListener, CommandResultRenderingContext
 {
+	private static final String GLUE_PROMPT = "GLUE> ";
+	private static final String GLUE_CONSOLE_BATCH_CONTEXT_STACK = "glue.console.batchContextStack";
 	private PrintWriter out;
 	private ConsoleReader reader;
 	private ConsoleCommandContext commandContext;
-	private Integer batchLine = null;
+	private LinkedList<BatchContext> batchContextStack = new LinkedList<BatchContext>();
 	private String configFilePath = null;
 	private boolean nonInteractive = true;
 	private boolean migrateSchema;
@@ -78,20 +80,23 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			throw new RuntimeException(ioe);
 		}
 		try {
-			handleLine(line);
+			handleLine(line, false, true);
 		} catch(GlueException ge) {
 			handleGlueException(ge);
 		}
 	}
 
-	private void handleLine(String line) {
+	private void handleLine(String line, boolean outputCommandToConsole, boolean outputResultToConsole) {
 		ArrayList<Token> tokens = null;
 		tokens = Lexer.lex(line);
 		// output(tokens.toString());
 		List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
 		if(!meaningfulTokens.isEmpty()) {
 			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
-			executeTokenStrings(tokenStrings);
+			if(outputCommandToConsole) {
+				output(GLUE_PROMPT+String.join(" ", tokenStrings));
+			}
+			executeTokenStrings(tokenStrings, outputResultToConsole);
 		}
 	}
 
@@ -100,11 +105,13 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		commandResult.renderToConsole(this);
 	}
 
-	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings) {
-		return executeTokenStrings(tokenStrings, false);
+	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, boolean outputResultToConsole) {
+		return executeTokenStrings(tokenStrings, false, outputResultToConsole);
 	}
 	
-	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, boolean requireModeWrappable) {
+	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, 
+			boolean requireModeWrappable, 
+			boolean outputResultToConsole) {
 		CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
 		Class<? extends Command> commandClass = commandFactory.identifyCommandClass(commandContext, tokenStrings);
 		if(commandClass == null) {
@@ -137,7 +144,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			command.execute(commandContext);
 			Class<? extends Command> innerCmdClass = null;
 			try {
-				innerCmdClass = executeTokenStrings(innerCmdWords, true);
+				innerCmdClass = executeTokenStrings(innerCmdWords, true, outputResultToConsole);
 				return innerCmdClass;
 			} finally {
 				commandContext.setRequireModeWrappable(false);
@@ -149,7 +156,9 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			}
 		} else {
 			CommandResult commandResult = command.execute(commandContext);
-			renderCommandResult(commandResult);
+			if(outputResultToConsole) {
+				renderCommandResult(commandResult);
+			}
 			return commandClass;
 		}
 	}
@@ -249,7 +258,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			GluetoolsEngine.getInstance().dbWarning();
 			Object fileString = docoptResult.get("--batch-file");
 			if(fileString != null) {
-				console.runBatchFile(fileString);
+				console.runBatchFile(fileString.toString());
 			}
 			if(!console.nonInteractive) {
 				console.interactiveSession();
@@ -285,7 +294,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		}
 		this.out = new PrintWriter(reader.getOutput());
 		GluetoolsEngine gluetoolsEngine = GluetoolsEngine.initInstance(configFilePath, this.migrateSchema);
-		this.commandContext = new ConsoleCommandContext(gluetoolsEngine);
+		this.commandContext = new ConsoleCommandContext(gluetoolsEngine, this);
 		commandContext.setCommandContextListener(this);
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));
 		reader.addCompleter(new ConsoleCompleter(commandContext));
@@ -305,53 +314,77 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		GluetoolsEngine.shutdown();
 	}
 
-	private void runBatchFile(Object fileString) {
-		String fileContent = null;
+	private void runBatchFile(String batchFilePath) {
+		String batchContent = null;
 		try {
-			fileContent = new String(commandContext.loadBytes(fileString.toString()));
+			batchContent = new String(commandContext.loadBytes(batchFilePath));
 		} catch(GlueException glueException) {
 			handleGlueException(glueException);
 			System.exit(1);
 		}
-		String[] fileCommands = fileContent.split("\n");
-		int batchLine = 1;
-		for(String fileCommandLine: fileCommands) {
-			setBatchLine(batchLine);
-			try {
-				handleLine(fileCommandLine);
-			} catch(GlueException ge) {
-				handleGlueException(ge);
-				System.exit(1);
-			}
-			batchLine++;
-			
+		try {
+			runBatchCommands(batchFilePath, batchContent);
+		} catch(GlueException ge) {
+			handleGlueException(ge);
+			System.exit(1);
 		}
 	}
 
-
-	private Integer getBatchLine() {
-		return batchLine;
+	public void runBatchCommands(String batchFilePath, String batchContent) {
+		String[] batchLines = batchContent.split("\n");
+		try {
+			BatchContext batchContext = new BatchContext(batchFilePath, 1);
+			batchContext.batchLineNumber = 1;
+			batchContextStack.push(batchContext);
+			for(String batchLine: batchLines) {
+				try {
+					handleLine(batchLine, true, true);
+				} catch(GlueException ge) {
+					if(ge.getUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK) == null) {
+						ge.putUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK, new LinkedList<BatchContext>(batchContextStack));
+					}
+					throw ge;
+				}
+				batchContext.batchLineNumber++;
+			}
+		} finally {
+			batchContextStack.pop();
+		}
 	}
 
-	private void setBatchLine(Integer batchLine) {
-		this.batchLine = batchLine;
-	}
 
 	private void handleGlueException(GlueException glueException) {
-		GlueErrorCode errorCode = glueException.getCode();
-		Object[] errorArgs = glueException.getErrorArgs();
-		if(glueException instanceof ConsoleException && errorCode == Code.SYNTAX_ERROR && 
-				errorArgs.length >= 1 && errorArgs[0] instanceof Integer) {
-			int position = (Integer) errorArgs[0];
-			output(StringUtils.repeat(" ", position+reader.getPrompt().length())+"^");
-			outputError("Bad syntax");
-		} else {
-			outputError(glueException);
-		}
+		outputError(glueException);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void outputError(Throwable exception) {
-		outputError(exception.getLocalizedMessage());
+		if(exception instanceof GlueException) {
+			GlueException glueException = (GlueException) exception;
+			GlueErrorCode errorCode = glueException.getCode();
+			Object[] errorArgs = glueException.getErrorArgs();
+			LinkedList<BatchContext> batchContextStack = 
+					(LinkedList<BatchContext>) glueException.getUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK);
+			if(batchContextStack != null && !batchContextStack.isEmpty()) {
+				boolean first = true;
+				for(BatchContext batchContext: batchContextStack) {
+					if(first) {
+						output("Exception at line "+batchContext.batchLineNumber+" of "+batchContext.batchFilePath);
+						first = false;
+					} else {
+						output("Invoked from line "+batchContext.batchLineNumber+" of "+batchContext.batchFilePath);
+					}
+				}
+			}
+			if(glueException instanceof ConsoleException && errorCode == Code.SYNTAX_ERROR && 
+					errorArgs.length >= 1 && errorArgs[0] instanceof Integer) {
+				int position = (Integer) errorArgs[0];
+				output(StringUtils.repeat(" ", position+reader.getPrompt().length())+"^");
+				output("Error: Bad syntax");
+			} else {
+				output("Error: "+glueException.getLocalizedMessage());
+			}
+		}
 		boolean verboseError = commandContext.getOptionValue(ConsoleOption.VERBOSE_ERROR).equals("true");
 		if(verboseError) {
 			outputStackTrace(exception);
@@ -384,16 +417,8 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		out.flush();
 	}
 
-	private void outputError(String message) {
-		if(getBatchLine() == null) {
-			output("Error: "+message);
-		} else {
-			output("Error at line "+getBatchLine()+": "+message);
-		}
-	}
-
 	private void updatePrompt() {
-		reader.setPrompt("Mode path: "+commandContext.getModePath()+"\nGLUE> ");
+		reader.setPrompt("Mode path: "+commandContext.getModePath()+"\n"+GLUE_PROMPT);
 	}
 
 	@Override
@@ -412,6 +437,17 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		buffer.append("GLUEtools version");
 		buffer.append(" ").append(GluetoolsEngine.getInstance().getGluecoreProperties().getProperty("version", "unknown"));
 		return buffer.toString();
+	}
+	
+	private class BatchContext {
+		
+		public BatchContext(String batchFilePath, Integer batchLineNumber) {
+			super();
+			this.batchFilePath = batchFilePath;
+			this.batchLineNumber = batchLineNumber;
+		}
+		String batchFilePath;
+		Integer batchLineNumber;
 	}
 	
 }

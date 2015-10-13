@@ -1,7 +1,7 @@
 <fastaAlignmentImporter>
   <idClauseExtractorFormatter>
     <matchPattern><![CDATA[[A-Za-z0-9_\?]+_(?<primaryAcc>[A-Z]{1,2}[0-9]+)]]></matchPattern>
-    <outputTemplate>GB_PRIMARY_ACCESSION = '${primaryAcc}'</outputTemplate>
+    <outputTemplate>sequenceID = '${primaryAcc}'</outputTemplate>
   </idClauseExtractorFormatter>
   <ignoreRegexMatchFailures>false</ignoreRegexMatchFailures>
   <ignoreMissingSequences>false</ignoreMissingSequences>

@@ -1,0 +1,51 @@
+
+  # import STOP-HCV CVR sequences, add them to the relevant alignments, and BLAST align 
+
+
+    import module fastaImporter modules/hcvFastaImporter.xml  
+    module fastaImporter import -f stopHcvNimble.fasta
+
+    alignment AL_1b add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '1' and SUBTYPE = 'b'"
+    compute alignment AL_1b blastAligner -w "sequence.source.name = 'stopHcvCvr'"
+    alignment AL_1b show statistics
+
+    alignment AL_1a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '1' and SUBTYPE = 'a'"
+    compute alignment AL_1a blastAligner -w "sequence.source.name = 'stopHcvCvr'"
+    alignment AL_1a show statistics
+
+    alignment AL_4a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '4' and SUBTYPE = 'a'"
+    compute alignment AL_4a blastAligner -w "sequence.source.name = 'stopHcvCvr'"
+    alignment AL_4a show statistics
+
+    alignment AL_4d add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '4' and SUBTYPE = 'd'"
+    compute alignment AL_4d blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_4d show statistics
+
+    alignment AL_3a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '3' and SUBTYPE = 'a'"
+    compute alignment AL_3a blastAligner -w "sequence.source.name = 'stopHcvCvr'"
+    alignment AL_3a show statistics
+
+    alignment AL_2a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '2' and SUBTYPE = 'a'"
+    compute alignment AL_2a blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_2a show statistics
+
+    alignment AL_2b add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '2' and SUBTYPE = 'b'"
+    compute alignment AL_2b blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_2b show statistics
+
+    alignment AL_5a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '5' and SUBTYPE = 'a'"
+    compute alignment AL_5a blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_5a show statistics
+
+    alignment AL_6a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '6' and SUBTYPE = 'a'"
+    compute alignment AL_6a blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_6a show statistics
+
+    alignment AL_6c add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '6' and SUBTYPE = 'c'"
+    compute alignment AL_6c blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_6c show statistics
+
+    alignment AL_7a add member -w "source.name = 'stopHcvCvr' and GENOTYPE = '7' and SUBTYPE = 'a'"
+    compute alignment AL_7a blastAligner -w "sequence.source.name = 'stopHcvCvr'" 
+    alignment AL_7a show statistics
+

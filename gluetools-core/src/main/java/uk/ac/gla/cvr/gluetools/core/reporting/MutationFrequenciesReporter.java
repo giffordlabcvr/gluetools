@@ -258,13 +258,24 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	}
 	
 	private String detectAlignmentNameFromHeader(Map<String, String> almtSearchStringToAlmtName, String header) {
+		int bestLength = Integer.MIN_VALUE;
+		String bestMatch = null;
 		for(Entry<String, String> entry: almtSearchStringToAlmtName.entrySet()) {
-			if(header.contains(entry.getKey())) {
-				return entry.getValue();
+			String searchString = entry.getKey();
+			if(header.contains(searchString)) {
+				String almtName = entry.getValue();
+				if(bestMatch == null || searchString.length() > bestLength) {
+					bestMatch = almtName;
+					bestLength = searchString.length();
+				}
 			}
+		}
+		if(bestMatch != null) {
+			return bestMatch;
 		}
 		throw new MutationFrequenciesException(MutationFrequenciesException.Code.UNABLE_TO_DETECT_ALIGNMENT_NAME, header);
 	}
+	
 	
 	
 }

@@ -110,7 +110,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		Feature currentFeature = GlueDataObject.lookup(objContext, Feature.class, Feature.pkMap(featureName));
 		Map<String, String> featureLocPkMap = FeatureLocation.pkMap(thisRefSeq.getName(), featureName);
 		FeatureLocation currentFeatureLoc = GlueDataObject.lookup(objContext, FeatureLocation.class, featureLocPkMap, true);
-		if(currentFeatureLoc == null) {
+		if(currentFeatureLoc == null && !currentFeature.isInformational()) {
 			currentFeatureLoc = GlueDataObject.create(objContext, FeatureLocation.class,  featureLocPkMap, false);
 			currentFeatureLoc.setFeature(currentFeature);
 			currentFeatureLoc.setReferenceSequence(thisRefSeq);

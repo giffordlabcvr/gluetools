@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import uk.ac.gla.cvr.gluetools.core.command.config.ConfigShowPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.RunFileCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleChangeDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleHelpOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleSetOptionCommand;
@@ -18,6 +19,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		super.populateCommandTree();
 		registerCommandClass(QuitCommand.class);
 		registerCommandClass(HelpCommand.class);
+		registerCommandClass(RunFileCommand.class);
 		
 		addGroupHelp(Arrays.asList("console"), "Manage console options");
 		registerCommandClass(ConsoleChangeDirectoryCommand.class);

@@ -125,8 +125,11 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 			for(AlignedSegment segmentToRemove: segmentsToRemove) {
 				GlueDataObject.delete(objContext, AlignedSegment.class, segmentToRemove.pkMap(), false);
 			}
+			cmdContext.commit();
 			
-			List<QueryAlignedSegment> memberToSrcAlmtQaSegs = sourceAlmtMember.getAlignedSegments().stream()
+			List<AlignedSegment> memberToSrcSegs = sourceAlmtMember.getAlignedSegments();
+			
+			List<QueryAlignedSegment> memberToSrcAlmtQaSegs = memberToSrcSegs.stream()
 					.map(AlignedSegment::asQueryAlignedSegment)
 					.collect(Collectors.toList());
 			
