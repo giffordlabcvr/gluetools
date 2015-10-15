@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.List;
 
 import org.apache.cayenne.ObjectContext;
@@ -23,27 +21,19 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureComman
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import freemarker.template.SimpleScalar;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="fastaExporter")
-public class FastaExporter extends ModulePlugin<FastaExporter> {
+public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 
-	private Template idTemplate;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		idTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "idTemplate", false);
 		addProvidedCmdClass(ExportCommand.class);
 		addProvidedCmdClass(ShowExporterCommand.class);
 		addProvidedCmdClass(ConfigureExporterCommand.class);
@@ -60,28 +50,7 @@ public class FastaExporter extends ModulePlugin<FastaExporter> {
 		List<Sequence> sequences = GlueDataObject.query(objContext, Sequence.class, selectQuery);
 		StringBuffer stringBuffer = new StringBuffer();
 		sequences.forEach(seq -> {
-			String fastaId;
-			if(idTemplate == null) {
-				fastaId = seq.getSequenceID();
-			} else {
-				TemplateHashModel variableResolver = new TemplateHashModel() {
-					@Override
-					public TemplateModel get(String key) {
-						return new SimpleScalar(seq.readNestedProperty(key).toString()); 
-					}
-					@Override
-					public boolean isEmpty() { return false; }
-				};
-				StringWriter result = new StringWriter();
-				try {
-					idTemplate.process(variableResolver, result);
-				} catch (TemplateException e) {
-					throw new CommandException(e, Code.COMMAND_FAILED_ERROR, e.getLocalizedMessage());
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-				fastaId = result.toString();
-			}
+			String fastaId = generateFastaId(seq);
 			stringBuffer.append(FastaUtils.seqIdNtsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
 		cmdContext.saveBytes(fileName, stringBuffer.toString().getBytes());

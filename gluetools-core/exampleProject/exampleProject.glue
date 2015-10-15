@@ -2,8 +2,6 @@ delete project EXAMPLE_PROJECT
 
 create project EXAMPLE_PROJECT "GLUE example project"
 
-console change load-save-path exampleProject
-
 # add some fields to the sequence table of this project
 schema-project EXAMPLE_PROJECT
   table SEQUENCES
@@ -139,5 +137,11 @@ project EXAMPLE_PROJECT
   
   module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentA.fasta
   module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentB.fasta
+  
+  import module fasta-alignment-exporter fastaAlignmentExporter.xml
+  
+  module fasta-alignment-exporter export alignment AL_1 -i -a -f exportAlignment.fasta
+  
+  
   
   
