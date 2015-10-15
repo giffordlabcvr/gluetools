@@ -36,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass(
 		commandWords={"inherit", "feature-location"}, 
-		docoptUsages={"[-rs] <alignmentName> <featureName>"},
+		docoptUsages={"[-r] [-s] <alignmentName> <featureName>"},
 		docoptOptions={"-r, --recursive  Add locations for the feature's descendents",
 					   "-s, --spanGaps  New locations should span any gaps in the alignment"},
 		description="Inherit a feature location from parent reference", 
