@@ -54,6 +54,7 @@ private static Multiton factories = new Multiton();
 	protected void registerCommandClass(Class<? extends Command> cmdClass) {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
+		cmdUsage.validate(cmdClass);
 		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdUsage.commandWords())), cmdClass);
 	}
 

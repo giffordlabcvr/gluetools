@@ -17,9 +17,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"project"},
-	docoptUsages={"<projectName>"},
-	description="Enter a project command mode")
+		commandWords={"project"},
+		docoptUsages={"<projectName>"},
+		description="Enter a project command mode")
 @EnterModeCommandClass(
 		commandModeClass = ProjectMode.class)
 public class ProjectCommand extends RootModeCommand<OkResult>  {

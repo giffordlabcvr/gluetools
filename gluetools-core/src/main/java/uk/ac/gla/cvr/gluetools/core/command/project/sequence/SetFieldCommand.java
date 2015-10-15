@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"set", "field"}, 
-	docoptUsages={"[-of] <fieldName> <fieldValue>"},
+	docoptUsages={"[-o] [-f] <fieldName> <fieldValue>"},
 	docoptOptions={
 			"-o, --overwrite    Overwrite non-null existing value [default: false]", 
 			"-f, --forceUpdate  Force update, includes setting null [default: false]", 

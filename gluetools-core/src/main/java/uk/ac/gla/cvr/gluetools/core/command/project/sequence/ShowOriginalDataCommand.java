@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 @CommandClass( 
 	commandWords={"show", "original-data"}, 
 	docoptUsages={""},
-	docoptOptions={""},
+	docoptOptions={},
 	description="Show the original sequence data",
 	furtherHelp="Returns the data from which the sequence object was created, in its original format") 
 public class ShowOriginalDataCommand extends SequenceModeCommand<OriginalDataResult> {

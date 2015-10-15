@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	}, 
 	metaTags={CmdMeta.updatesDatabase, CmdMeta.consumesBinary},
 	docoptOptions={
-		"-b <data> --base64 <data>  Sequence data encoded as Base64"},
+		"-b <data>, --base64 <data>  Sequence data encoded as Base64"},
 	description="Create a new sequence") 
 public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 

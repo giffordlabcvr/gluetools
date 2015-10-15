@@ -13,6 +13,9 @@ public class RootCommandFactory extends BaseCommandFactory {
 
 	protected void populateCommandTree() {
 		super.populateCommandTree();
+		
+		registerCommandClass(TestCommand.class);
+		
 		registerCommandClass(ProjectCommand.class);
 		registerCommandClass(CreateProjectCommand.class);
 		registerCommandClass(DeleteProjectCommand.class);

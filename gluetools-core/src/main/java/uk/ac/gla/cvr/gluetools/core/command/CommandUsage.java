@@ -2,7 +2,14 @@ package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM;
+import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
+import uk.ac.gla.cvr.gluetools.core.docopt.DocoptLexer;
+import uk.ac.gla.cvr.gluetools.core.docopt.DocoptLexer.Token;
 
 @SuppressWarnings("rawtypes")
 public class CommandUsage {
@@ -130,4 +137,39 @@ public class CommandUsage {
 		return commandUsageForCmdClass(cmdClass).hasMetaTag(metaTag);
 	}
 
+	public void validate(Class<? extends Command> cmdClass) {
+		//System.out.println("command class: "+cmdClass.getCanonicalName());
+		//System.out.println("command words: "+String.join(" ", commandWords));
+		Map<Character, String> optionsMap = optionsMap();
+		//System.out.println("options map: "+optionsMap);
+		createFSM(optionsMap);
+	}
+
+	public Node createFSM(Map<Character, String> optionsMap) {
+		List<Node> startNodes = new ArrayList<Node>();
+		for(String docoptUsage: docoptUsages) {
+			List<Token> tokens = DocoptLexer.meaningfulTokens(DocoptLexer.lex(docoptUsage));
+			//System.out.println("docoptUsage: "+docoptUsage);
+			//System.out.println("tokens: "+tokens);
+			//System.out.println("---------");
+			startNodes.add(DocoptFSM.buildFSM(tokens, optionsMap));
+		}
+		Node mainNode = new Node();
+		startNodes.forEach(startNode -> mainNode.nullTo(startNode));
+		return mainNode;
+	}
+	
+	public Map<Character, String> optionsMap() {
+		Map<Character, String> optionsMap = new LinkedHashMap<Character, String>();
+		for(String optionLine: docoptOptions) {
+			String mainPart = optionLine.substring(0, optionLine.indexOf("  ")).trim();
+			mainPart = mainPart.replaceAll("<[A-Za-z0-9]+>", "");
+			String[] bits = mainPart.split(",");
+			optionsMap.put(bits[0].trim().charAt(1), 
+					bits[1].trim().replace("--", ""));
+		}
+		return optionsMap;
+	}
+
+	
 }

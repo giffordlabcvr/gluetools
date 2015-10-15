@@ -293,7 +293,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 	
 	@CommandClass( 
 			commandWords={"import"}, 
-			docoptUsages={"<alignmentName> -f <file> [-s <sourceName]"},
+			docoptUsages={"<alignmentName> -f <file> [-s <sourceName>]"},
 			docoptOptions={
 			"-f <file>, --fileName <file>  FASTA file",
 			"-s <sourceName>, --sourceName <sourceName>  Restrict alignment members to a given source"},
