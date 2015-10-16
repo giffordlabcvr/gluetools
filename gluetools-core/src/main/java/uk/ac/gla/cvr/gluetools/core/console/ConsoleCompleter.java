@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -107,12 +108,19 @@ public class ConsoleCompleter implements Completer {
 				}
 			}
 		} else {
-			List<String> suggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, true, requireModeWrappable).
-					stream().filter(s -> s.startsWith(prefix)).collect(Collectors.toList());
+			List<CompletionSuggestion> completionSuggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, prefix, true, requireModeWrappable);
+
+			List<CompletionSuggestion> suggestions = completionSuggestions.
+					stream().filter(s -> s.getSuggestedWord().startsWith(prefix)).collect(Collectors.toList());
 			if(suggestions.isEmpty()) {
 				return -1;
 			} else {
-				candidates.addAll(suggestions.stream().map(s -> s+" ").collect(Collectors.toList()));
+				candidates.addAll(suggestions.stream().map(s -> {
+					if(s.isCompleted()) {
+						return s.getSuggestedWord()+" ";
+					} else {
+						return s.getSuggestedWord();
+					}}).collect(Collectors.toList()));
 				return suggestionPos;
 			} 
 		}

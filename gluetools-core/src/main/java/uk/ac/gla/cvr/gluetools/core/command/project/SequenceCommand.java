@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
@@ -97,9 +98,9 @@ public class SequenceCommand extends ProjectModeCommand<OkResult>  {
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		@Override
-		protected List<String> instantiateVariable(
+		protected List<CompletionSuggestion> instantiateVariable(
 				ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String variableName) {
+				String prefix, String variableName) {
 			if(variableName.equals("sourceName")) {
 				return super.listNames(cmdContext, Source.class, Source.NAME_PROPERTY);
 			}

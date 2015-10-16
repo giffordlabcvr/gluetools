@@ -107,13 +107,18 @@ public class ConsoleCommandContext extends CommandContext {
 		}
 	}
 	
-	public List<String> listMembers(String pathString, boolean includeFiles, boolean includeDirectories) {
+	public List<String> listMembers(String pathString, boolean includeFiles, boolean includeDirectories, String prefix) {
 		File dirFile = fileStringToFile(pathString);
-		return listMembers(dirFile, includeFiles, includeDirectories);
+		return listMembers(dirFile, includeFiles, includeDirectories, prefix);
 	}
 
-	public List<String> listMembers(File dirFile, boolean includeFiles,
-			boolean includeDirectories) {
+	public boolean isDirectory(String pathString) {
+		File dirFile = fileStringToFile(pathString);
+		return dirFile.isDirectory();
+	}
+
+	
+	public List<String> listMembers(File dirFile, boolean includeFiles, boolean includeDirectories, String prefix) {
 		if(!dirFile.isDirectory()) {
 			throw new ConsoleException(Code.NOT_A_DIRECTORY, dirFile);
 		}
@@ -121,6 +126,9 @@ public class ConsoleCommandContext extends CommandContext {
 			@Override
 			public boolean accept(File dir, String name) {
 				File theMember = new File(dir, name);
+				if(prefix != null && !name.startsWith(prefix)) {
+					return false;
+				}
 				if(includeFiles && theMember.isFile()) {
 					return true;
 				}
@@ -132,8 +140,8 @@ public class ConsoleCommandContext extends CommandContext {
 		}));
 	}
 
-	public List<String> listMembers(boolean includeFiles, boolean includeDirectories) {
-		return listMembers(new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH)), includeFiles, includeDirectories);
+	public List<String> listMembers(boolean includeFiles, boolean includeDirectories, String prefix) {
+		return listMembers(new File(getOptionValue(ConsoleOption.LOAD_SAVE_PATH)), includeFiles, includeDirectories, prefix);
 	}
 	
 	

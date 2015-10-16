@@ -58,7 +58,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	@Override
 	public ExportSourceResult execute(CommandContext cmdContext) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		if(consoleCmdContext.listMembers(false, true).contains(sourceName)) {
+		if(consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Directory "+
 					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" already exists");
 		}

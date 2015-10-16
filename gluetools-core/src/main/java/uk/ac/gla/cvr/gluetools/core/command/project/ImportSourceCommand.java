@@ -55,12 +55,12 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 	public ImportSourceResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		if(!consoleCmdContext.listMembers(false, true).contains(sourceName)) {
+		if(!consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No directory "+
 					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" exists");
 		}
 		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), false);
-		List<String> fileNames = consoleCmdContext.listMembers(sourceName, true, false);
+		List<String> fileNames = consoleCmdContext.listMembers(sourceName, true, false, "");
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		fileNames.forEach(fileName -> {
 			File filePath = new File(sourceName, fileName);

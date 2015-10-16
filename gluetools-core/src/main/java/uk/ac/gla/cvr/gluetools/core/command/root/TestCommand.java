@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -33,9 +34,9 @@ public class TestCommand extends Command<OkResult>{
 	@CompleterClass
 	public static class TestCompleter extends AdvancedCmdCompleter {
 		@Override
-		protected List<String> instantiateVariable(
+		protected List<CompletionSuggestion> instantiateVariable(
 				ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String variableName) {
+				String prefix, String variableName) {
 			if(variableName.equals("projectName")) {
 				return super.listNames(cmdContext, Project.class, Project.NAME_PROPERTY);
 			}

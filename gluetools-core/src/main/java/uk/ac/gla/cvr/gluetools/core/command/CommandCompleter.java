@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 
@@ -12,6 +13,13 @@ public abstract class CommandCompleter {
 	
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
+	public List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext cmdContext, 
+			Class<? extends Command> cmdClass, List<String> argStrings, String prefix) {
+		List<String> completionSuggestions = completionSuggestions(cmdContext, cmdClass, argStrings);
+		return completionSuggestions.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+	}
+	
+	
 	public List<String> completionSuggestions(ConsoleCommandContext cmdContext, 
 			Class<? extends Command> cmdClass, List<String> argStrings) {
 		return Collections.emptyList();

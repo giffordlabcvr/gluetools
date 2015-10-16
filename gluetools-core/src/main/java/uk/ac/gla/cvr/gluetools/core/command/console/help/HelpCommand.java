@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -52,9 +53,9 @@ public class HelpCommand extends Command<ConsoleCommandResult> {
 	@CompleterClass
 	public static class HelpCommandCompleter extends CommandCompleter {
 		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext commandContext, Class<? extends Command> cmdClass, List<String> argStrings) {
+		public List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext commandContext, Class<? extends Command> cmdClass, List<String> argStrings, String prefix) {
 			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
-			return commandFactory.getCommandWordSuggestions(commandContext, argStrings, false, commandContext.isRequireModeWrappable());
+			return commandFactory.getCommandWordSuggestions(commandContext, argStrings, prefix, false, commandContext.isRequireModeWrappable());
 		}
 		
 	}
