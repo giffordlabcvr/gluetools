@@ -43,7 +43,9 @@ public class AlignmentSetParentCommand extends AlignmentModeCommand<OkResult> {
 		return new OkResult();
 	}
 
+	
+
 	@CompleterClass
 	public static class AlignmentNameCompleter extends ProjectModeCommand.AlignmentNameCompleter {}
-	
+
 }

@@ -2,10 +2,12 @@ package uk.ac.gla.cvr.gluetools.core.command.console.config;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -35,4 +37,11 @@ public class ConsoleChangeDirectoryCommand extends Command<SimpleConsoleCommandR
 		return new SimpleConsoleCommandResult(path);
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerPathLookup("path", true);
+		}
+	}
 }

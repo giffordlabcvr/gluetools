@@ -1,20 +1,27 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -87,5 +94,21 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 		}
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
+			registerVariableInstantiator("sequenceID", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Map<String, Object> bindings,
+						String prefix) {
+					return AdvancedCmdCompleter.listNames(cmdContext, prefix, Sequence.class, Sequence.SEQUENCE_ID_PROPERTY, 
+							ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName")));
+				}
+			});
+		}
+	}
 
 }

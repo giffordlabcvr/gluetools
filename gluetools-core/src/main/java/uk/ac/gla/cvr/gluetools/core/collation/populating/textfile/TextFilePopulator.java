@@ -16,9 +16,11 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
@@ -193,9 +195,9 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"-f <file>"},
+			docoptUsages={"-f <fileName>"},
 			docoptOptions={
-				"-f <file>, --fileName <file>  Text file with field values"},
+				"-f <fileName>, --fileName <fileName>  Text file with field values"},
 			description="Populate sequence field values based on a text file", 
 			metaTags = { CmdMeta.consoleOnly , CmdMeta.updatesDatabase},
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
@@ -213,6 +215,15 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		protected OkResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
 			return populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName);
 		}
+		
+		@CompleterClass
+		public static class Completer extends AdvancedCmdCompleter {
+			public Completer() {
+				super();
+				registerPathLookup("fileName", false);
+			}
+		}
+
 		
 	}
 

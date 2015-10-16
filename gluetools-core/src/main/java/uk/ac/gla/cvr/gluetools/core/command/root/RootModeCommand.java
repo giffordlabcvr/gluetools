@@ -1,32 +1,20 @@
 package uk.ac.gla.cvr.gluetools.core.command.root;
 
-import java.util.List;
-
-import org.apache.cayenne.query.SelectQuery;
-
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 public abstract class RootModeCommand<R extends CommandResult> extends Command<R> {
-
 	
 	@SuppressWarnings("rawtypes")
-	protected abstract static class ProjectNameCompleter extends CommandCompleter {
-		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				ListResult listCmdResult = CommandUtils.runListCommand(cmdContext, Project.class, new SelectQuery(Project.class));
-				return listCmdResult.getColumnValues(Project.NAME_PROPERTY);
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+	protected abstract static class ProjectNameCompleter extends AdvancedCmdCompleter {
+		
+		public ProjectNameCompleter() {
+			super();
+			registerDataObjectNameLookup("projectName", Project.class, Project.NAME_PROPERTY);
 		}
 		
 	}
-
 	
 }

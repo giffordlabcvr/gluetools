@@ -5,9 +5,11 @@ import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -48,4 +50,13 @@ public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 		return new UpdateResult(Variation.class, 1);
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerEnumLookup("transcriptionType", TranslationFormat.class);
+		}
+	}
+
+	
 }

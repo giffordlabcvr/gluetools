@@ -97,18 +97,18 @@ public class SequenceCommand extends ProjectModeCommand<OkResult>  {
 
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
-		@Override
-		protected List<CompletionSuggestion> instantiateVariable(
-				ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String prefix, String variableName) {
-			if(variableName.equals("sourceName")) {
-				return super.listNames(cmdContext, Source.class, Source.NAME_PROPERTY);
-			}
-			if(variableName.equals("sequenceID")) {
-				return super.listNames(cmdContext, Sequence.class, Sequence.SEQUENCE_ID_PROPERTY, 
-						ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName")));
-			}
-			return null;
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
+			registerVariableInstantiator("sequenceID", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Map<String, Object> bindings,
+						String prefix) {
+					return AdvancedCmdCompleter.listNames(cmdContext, prefix, Sequence.class, Sequence.SEQUENCE_ID_PROPERTY, 
+							ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName")));
+				}
+			});
 		}
 	}
 

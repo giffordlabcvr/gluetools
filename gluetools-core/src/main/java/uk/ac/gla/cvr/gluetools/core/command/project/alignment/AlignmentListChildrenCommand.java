@@ -23,4 +23,5 @@ public class AlignmentListChildrenCommand extends AlignmentModeCommand<ListResul
 		return new ListResult(Alignment.class, children, columnHeaders);
 	}
 	
+
 }

@@ -32,7 +32,7 @@ public abstract class SequenceModeCommand<R extends CommandResult> extends Comma
 	}
 
 
-	protected SequenceMode getSequenceMode(CommandContext cmdContext) {
+	protected static SequenceMode getSequenceMode(CommandContext cmdContext) {
 		SequenceMode sequenceMode = (SequenceMode) cmdContext.peekCommandMode();
 		return sequenceMode;
 	}

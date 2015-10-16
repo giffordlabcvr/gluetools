@@ -2,28 +2,20 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
 import java.util.List;
 
-
-
-
-
-
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
-
-
-
-
-
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.AbstractFastaExporter;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -127,10 +119,10 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 	
 	@CommandClass( 
 			commandWords={"export", "alignment"}, 
-			docoptUsages={"<alignmentName> [-i] (-w <whereClause> | -a) -f <file>"},
+			docoptUsages={"<alignmentName> [-i] (-w <whereClause> | -a) -f <fileName>"},
 			docoptOptions={
 				"-i, --includeReference                         Include reference sequence",
-				"-f <file>, --fileName <file>                   FASTA file",
+				"-f <fileName>, --fileName <fileName>           FASTA file",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify exported members",
 			    "-a, --allMembers                               Export all members"},
 			metaTags = { CmdMeta.consoleOnly },
@@ -169,6 +161,16 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 		protected OkResult execute(CommandContext cmdContext, FastaAlignmentExporter importerPlugin) {
 			return importerPlugin.doExport((ConsoleCommandContext) cmdContext, fileName, alignmentName, includeReference, whereClause);
 		}
+		
+		@CompleterClass
+		public static class Completer extends AdvancedCmdCompleter {
+			public Completer() {
+				super();
+				registerDataObjectNameLookup("aligmentName", Alignment.class, Alignment.NAME_PROPERTY);
+				registerPathLookup("fileName", false);
+			}
+		}
+
 	}
 	
 	@CommandClass( 
@@ -180,7 +182,9 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 	@SimpleConfigureCommandClass(
 			propertyNames={"idTemplate"}
 	)
-	public static class ConfigureExporterCommand extends SimpleConfigureCommand<FastaAlignmentExporter> {}
+	public static class ConfigureExporterCommand extends SimpleConfigureCommand<FastaAlignmentExporter> {
+		
+	}
 
 
 	

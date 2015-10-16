@@ -7,10 +7,12 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
@@ -61,9 +63,9 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 	
 	@CommandClass( 
 			commandWords={"export"}, 
-			docoptUsages={"(-w <whereClause> | -a) -f <file>"},
+			docoptUsages={"(-w <whereClause> | -a) -f <fileName>"},
 			docoptOptions={
-				"-f <file>, --fileName <file>                   FASTA file",
+				"-f <fileName>, --fileName <fileName>           FASTA file",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
 			    "-a, --allSequences                             Export all project sequences"},
 			metaTags = { CmdMeta.consoleOnly },
@@ -97,6 +99,15 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		protected OkResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
 			return importerPlugin.doExport((ConsoleCommandContext) cmdContext, fileName, whereClause);
 		}
+		
+		@CompleterClass
+		public static class Completer extends AdvancedCmdCompleter {
+			public Completer() {
+				super();
+				registerPathLookup("fileName", false);
+			}
+		}
+
 	}
 	
 	@CommandClass( 

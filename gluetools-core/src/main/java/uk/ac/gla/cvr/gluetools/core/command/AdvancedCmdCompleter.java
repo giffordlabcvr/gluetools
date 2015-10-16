@@ -2,12 +2,14 @@ package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -17,6 +19,76 @@ import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
 
 public class AdvancedCmdCompleter extends CommandCompleter {
+
+	protected abstract class VariableInstantiator {
+		protected abstract List<CompletionSuggestion> instantiate(
+				ConsoleCommandContext cmdContext, Map<String, Object> bindings, String prefix);
+	}
+	
+	private class SimpleDataObjectNameInstantiator extends VariableInstantiator {
+		private Class<? extends GlueDataObject> theClass;
+		private String nameProperty;
+		@SuppressWarnings("unused")
+		public SimpleDataObjectNameInstantiator(
+				Class<? extends GlueDataObject> theClass, String nameProperty) {
+			super();
+			this.theClass = theClass;
+			this.nameProperty = nameProperty;
+		}
+		@Override
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Map<String, Object> bindings,
+				String prefix) {
+			return listNames(cmdContext, prefix, theClass, nameProperty);
+		}
+	}
+
+	private class SimpleEnumInstantiator extends VariableInstantiator {
+		private Class<? extends Enum<?>> theClass;
+		public SimpleEnumInstantiator(Class<? extends Enum<?>> theClass) {
+			super();
+			this.theClass = theClass;
+		}
+		@Override
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Map<String, Object> bindings,
+				String prefix) {
+			return listEnumValues(cmdContext, prefix, theClass);
+		}
+	}
+
+	
+	private class SimplePathInstantiator extends VariableInstantiator {
+		private boolean directoriesOnly;
+		
+		public SimplePathInstantiator(boolean directoriesOnly) {
+			super();
+			this.directoriesOnly = directoriesOnly;
+		}
+
+		@Override
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Map<String, Object> bindings,
+				String prefix) {
+			return completePath(cmdContext, prefix, directoriesOnly);
+		}
+	}
+	
+	
+	private Map<String, VariableInstantiator> variableInstantiators = new LinkedHashMap<String, VariableInstantiator>();
+	
+	protected void registerVariableInstantiator(String variableName, VariableInstantiator variableInstantiator) {
+		variableInstantiators.put(variableName, variableInstantiator);
+	}
+
+	protected void registerDataObjectNameLookup(String variableName, Class<? extends GlueDataObject> theClass, String nameProperty) {
+		registerVariableInstantiator(variableName, new SimpleDataObjectNameInstantiator(theClass, nameProperty));
+	}
+
+	protected void registerEnumLookup(String variableName, Class<? extends Enum<?>> theClass) {
+		registerVariableInstantiator(variableName, new SimpleEnumInstantiator(theClass));
+	}
+
+	protected void registerPathLookup(String variableName, boolean directoriesOnly) {
+		registerVariableInstantiator(variableName, new SimplePathInstantiator(directoriesOnly));
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -31,7 +103,11 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		List<CompletionSuggestion> results = new ArrayList<CompletionSuggestion>();
 		if(variableName != null) {
 			Map<String, Object> bindings = parseResult.getBindings();
-			List<CompletionSuggestion> instantiations = instantiateVariable(cmdContext, bindings, prefix, variableName);
+			List<CompletionSuggestion> instantiations = null;
+			VariableInstantiator variableInstantiator = variableInstantiators.get(variableName);
+			if(variableInstantiator != null) {
+				instantiations = variableInstantiator.instantiate(cmdContext, bindings, prefix);
+			}
 			if(instantiations != null) {
 				Object currentBinding = bindings.get(variableName);
 				if(currentBinding != null && currentBinding instanceof String) {
@@ -45,6 +121,8 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 							.collect(Collectors.toList());
 				}
 				results.addAll(instantiations);
+			} else {
+				results.add(new CompletionSuggestion("<"+variableName+">", true));
 			}
 		}
 		results.addAll(
@@ -54,21 +132,24 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 	}
 
-	protected List<CompletionSuggestion> instantiateVariable(ConsoleCommandContext cmdContext, Map<String, Object> bindings, String prefix, String variableName) {
-		return null;
-	}
-	
-	protected final List<CompletionSuggestion> listNames(ConsoleCommandContext cmdContext, Class<? extends GlueDataObject> theClass,
-			String nameProperty) {
-		ListResult listCmdResult = CommandUtils.runListCommand(cmdContext, theClass, new SelectQuery(theClass));
-		return listCmdResult.getColumnValues(nameProperty)
-				.stream()
-				.map(s -> new CompletionSuggestion(s, true))
-				.collect(Collectors.toList());
+	private static final List<CompletionSuggestion> listNames(
+			ConsoleCommandContext cmdContext, String prefix, Class<? extends GlueDataObject> theClass, String nameProperty) {
+		return listNames(cmdContext, prefix, theClass, nameProperty, ExpressionFactory.expTrue());
 	}
 
-	protected final List<CompletionSuggestion> listNames(ConsoleCommandContext cmdContext, Class<? extends GlueDataObject> theClass, 
+	private static final List<CompletionSuggestion> listEnumValues(
+			ConsoleCommandContext cmdContext, String prefix, Class<? extends Enum<?>> theClass) {
+		return Arrays.asList(theClass.getEnumConstants()).stream()
+				.map(ec -> new CompletionSuggestion(ec.name(), true)).collect(Collectors.toList());
+	}
+
+	
+	
+	protected static final List<CompletionSuggestion> listNames(ConsoleCommandContext cmdContext, String prefix, Class<? extends GlueDataObject> theClass, 
 			String nameProperty, Expression whereClause) {
+		if(prefix != null && prefix.length()>0) {
+			whereClause = whereClause.andExp(ExpressionFactory.likeExp(nameProperty, prefix+"%"));
+		}
 		ListResult listCmdResult = CommandUtils.runListCommand(cmdContext, theClass, new SelectQuery(theClass, whereClause));
 		return listCmdResult.getColumnValues(nameProperty)
 				.stream()
@@ -76,7 +157,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 				.collect(Collectors.toList());
 	}
 
-	public List<CompletionSuggestion> completePath(ConsoleCommandContext cmdContext, String prefix) {
+	private static List<CompletionSuggestion> completePath(ConsoleCommandContext cmdContext, String prefix, boolean directoriesOnly) {
 		// parent path might be
 		// the configured load-save-path if prefix does not have any path.
 		// an absolute path specified by the pathFromPrefix
@@ -102,7 +183,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		List<String> stringResults = new ArrayList<String>();
 		if(cmdContext.isDirectory(parentPath.toString())) {
-			List<String> fileMembers = cmdContext.listMembers(parentPath, true, false, searchPrefix);
+			List<String> fileMembers = cmdContext.listMembers(parentPath, !directoriesOnly, false, searchPrefix);
 			List<String> directoryMembers = cmdContext
 					.listMembers(parentPath, false, true, searchPrefix)
 					.stream()

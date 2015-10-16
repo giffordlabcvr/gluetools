@@ -6,9 +6,11 @@ import java.util.regex.Pattern;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
@@ -47,7 +49,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 	private String variationName;
 	private Integer refStart;
 	private Integer refEnd;
-	private TranslationFormat transcriptionFormat;
+	private TranslationFormat translationFormat;
 	private Pattern regex;
 	private NotifiabilityLevel notifiabilityLevel;
 	private Optional<String> description;
@@ -59,7 +61,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		refStart = PluginUtils.configureIntProperty(configElem, REF_START, true);
 		refEnd = PluginUtils.configureIntProperty(configElem, REF_END, true);
 		
-		transcriptionFormat = Optional.ofNullable(
+		translationFormat = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
 				orElse(TranslationFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
@@ -85,7 +87,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setFeatureLoc(featureLoc);
 		variation.setRefStart(refStart);
 		variation.setRefEnd(refEnd);
-		variation.setTranscriptionType(transcriptionFormat.name());
+		variation.setTranscriptionType(translationFormat.name());
 		variation.setRegex(regex.pattern());
 		variation.setNotifiability(notifiabilityLevel.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
@@ -93,4 +95,12 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		return new CreateResult(Variation.class, 1);
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerEnumLookup("type", TranslationFormat.class);
+			registerEnumLookup("notifiabilityLevel", NotifiabilityLevel.class);
+		}
+	}
 }

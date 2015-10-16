@@ -4,8 +4,10 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -47,5 +49,11 @@ public class ShowNucleotidesCommand extends SequenceModeCommand<NucleotidesResul
 		return new NucleotidesResult(beginIndex, end, SegmentUtils.subSeq(nucleotides, beginIndex, end));
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+		}
+	}
 
 }

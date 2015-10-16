@@ -1,8 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
@@ -11,7 +8,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
@@ -75,14 +71,9 @@ public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
-		@Override
-		protected List<CompletionSuggestion> instantiateVariable(
-				ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String prefix, String variableName) {
-			if(variableName.equals("fileName")) {
-				return super.completePath(cmdContext, prefix);
-			}
-			return null;
+		public Completer() {
+			super();
+			registerPathLookup("fileName", false);
 		}
 	}
 

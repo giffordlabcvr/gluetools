@@ -5,15 +5,18 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -21,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"transient", "analysis"}, 
 		description = "Analyse mutations for binary sequence data", 
-		docoptUsages = { "-b <data> (-h | <referenceName>)" }, 
+		docoptUsages = { "-b <data> (-h | <alignmentName>)" }, 
 		docoptOptions = {
 				"-h, --headerDetect          Guess reference from sequence header",
 				"-b <data>, --base64 <data>  Sequence binary data"
@@ -79,6 +82,15 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 		}
 		
 	}
+	
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
+		}
+	}
+
 
 
 	

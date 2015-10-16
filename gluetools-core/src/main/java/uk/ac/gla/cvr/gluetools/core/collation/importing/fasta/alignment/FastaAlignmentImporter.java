@@ -20,9 +20,11 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAlignmentImporterException.Code;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -36,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -293,9 +296,9 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 	
 	@CommandClass( 
 			commandWords={"import"}, 
-			docoptUsages={"<alignmentName> -f <file> [-s <sourceName>]"},
+			docoptUsages={"<alignmentName> -f <fileName> [-s <sourceName>]"},
 			docoptOptions={
-			"-f <file>, --fileName <file>  FASTA file",
+			"-f <fileName>, --fileName <fileName>        FASTA file",
 			"-s <sourceName>, --sourceName <sourceName>  Restrict alignment members to a given source"},
 			description="Import an unconstrained alignment from a FASTA file", 
 			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
@@ -319,6 +322,17 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 		protected FastaAlignmentImporterResult execute(CommandContext cmdContext, FastaAlignmentImporter importerPlugin) {
 			return importerPlugin.doImport((ConsoleCommandContext) cmdContext, fileName, alignmentName, sourceName);
 		}
+		
+		@CompleterClass
+		public static class Completer extends AdvancedCmdCompleter {
+			public Completer() {
+				super();
+				registerDataObjectNameLookup("aligmentName", Alignment.class, Alignment.NAME_PROPERTY);
+				registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
+				registerPathLookup("fileName", false);
+			}
+		}
+
 	}
 	
 	@CommandClass( 

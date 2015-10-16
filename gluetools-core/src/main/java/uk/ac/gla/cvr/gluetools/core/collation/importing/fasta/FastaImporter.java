@@ -18,9 +18,11 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaFieldParser.R
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
@@ -111,9 +113,9 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 	
 	@CommandClass( 
 			commandWords={"import"}, 
-			docoptUsages={"-f <file>"},
+			docoptUsages={"-f <fileName>"},
 			docoptOptions={
-				"-f <file>, --fileName <file>  FASTA file"},
+				"-f <fileName>, --fileName <fileName>  FASTA file"},
 			description="Import sequences from a FASTA file", 
 			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
@@ -131,6 +133,15 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 		protected CreateResult execute(CommandContext cmdContext, FastaImporter importerPlugin) {
 			return importerPlugin.doImport((ConsoleCommandContext) cmdContext, fileName);
 		}
+		
+		@CompleterClass
+		public static class Completer extends AdvancedCmdCompleter {
+			public Completer() {
+				super();
+				registerPathLookup("filename", false);
+			}
+		}
+
 	}
 		
 

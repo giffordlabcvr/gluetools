@@ -3,9 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -57,6 +59,16 @@ public class ImportSequenceCommand extends ProjectModeCommand<CreateResult> {
 		sequence.setOriginalData(sequenceData);
 		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);
+	}
+
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
+			registerEnumLookup("format", SequenceFormat.class);
+			registerPathLookup("fileName", false);
+		}
 	}
 
 }

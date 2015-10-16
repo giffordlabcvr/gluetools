@@ -14,6 +14,17 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.GroupHelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.feature.FeatureModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceSequenceModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.ProjectSchemaModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences.TableSequencesModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -63,6 +74,13 @@ private static Multiton factories = new Multiton();
 		CommandPluginFactory cmdPluginFactory = new CommandPluginFactory();
 		GroupHelpLine groupHelpLine;
 		boolean modeWrappable = false;
+		
+		
+		@SuppressWarnings({ "rawtypes" })
+		public void collectCommandClasses(List<Class<? extends Command>> cmdClasses) {
+			cmdClasses.addAll(cmdPluginFactory.getRegisteredClasses());
+			childNodes.values().forEach(cn -> cn.collectCommandClasses(cmdClasses));
+		}
 		
 		// fullHelp means expand group helps to cover sub groups.
 		private List<HelpLine> helpLines(List<String> commandWords, boolean fullHelp, boolean requireModeWrappable) {
@@ -262,5 +280,67 @@ private static Multiton factories = new Multiton();
 		rootNode = new CommandTreeNode();
 	}
 	protected void populateCommandTree() {}
+	
+	
+	@SuppressWarnings("rawtypes")
+	private static Map<String, String> commandMap = new LinkedHashMap<String, String>();
+	private static int totalLegacyCompleter = 0;
+	private static int totalNoCompleter = 0;
+	
+	@SuppressWarnings("unchecked")
+	public static void main(String[] args) {
+		List<Creator<? extends CommandFactory>> creators = 	Arrays.asList(
+				AlignmentModeCommandFactory.creator,
+				FeatureLocModeCommandFactory.creator,
+				FeatureModeCommandFactory.creator,
+				MemberModeCommandFactory.creator,
+				ProjectModeCommandFactory.creator,
+				ProjectSchemaModeCommandFactory.creator,
+				ReferenceSequenceModeCommandFactory.creator,
+				RootCommandFactory.creator,
+				SequenceModeCommandFactory.creator,
+				TableSequencesModeCommandFactory.creator,
+				VariationModeCommandFactory.creator
+		);
+		creators.forEach(creator -> {
+			CommandFactory cmdFactory = CommandFactory.get(creator);
+			cmdFactory.verifyCommands();
+		});
+		commandMap.forEach((c, s) -> {
+			System.out.println(c);
+			System.out.println(s);
+			System.out.println("--------");
+		});
+		System.out.println("Commands with no completer: "+totalNoCompleter);
+		System.out.println("Commands with legacy completer: "+totalLegacyCompleter);
+
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void verifyCommands() {
+		List<Class<? extends Command>> cmdClasses = new ArrayList<Class<? extends Command>>();
+		rootNode.collectCommandClasses(cmdClasses);
+		
+		for(Class<? extends Command> cmdClass : cmdClasses) {
+			CommandUsage usage = CommandUsage.commandUsageForCmdClass(cmdClass);
+			String megaUsage = String.join(" ", usage.docoptUsages());
+			if(megaUsage.trim().length() > 0) {
+				CommandCompleter completer = CommandCompleter.commandCompleterForCmdClass(cmdClass);
+				String className = cmdClass.getCanonicalName();
+				if(!commandMap.containsKey(className)) {
+					if(completer == null) {
+						commandMap.put(cmdClass.getCanonicalName(), "NO COMPLETER");
+						totalNoCompleter++;
+					} else if(!(completer instanceof AdvancedCmdCompleter)) {
+						commandMap.put(cmdClass.getCanonicalName(), "LEGACY COMPLETER");
+						totalLegacyCompleter++;
+					}
+				}
+			}
+		}
+	}
+	
+	
+	
 
 }

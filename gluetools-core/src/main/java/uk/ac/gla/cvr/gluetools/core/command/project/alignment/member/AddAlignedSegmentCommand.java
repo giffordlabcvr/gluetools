@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AlignedSegmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -118,4 +120,10 @@ public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
 		return new CreateResult(AlignedSegment.class, 1);
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+		}
+	}
 }

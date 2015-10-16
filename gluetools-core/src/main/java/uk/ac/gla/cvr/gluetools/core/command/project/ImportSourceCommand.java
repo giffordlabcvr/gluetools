@@ -10,10 +10,12 @@ import java.util.Map;
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ImportSourceCommand.ImportSourceResult;
@@ -29,41 +31,49 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"import", "source"}, 
 	docoptUsages={
-		"<sourceName>"
+		"<sourcePath>"
 	}, 
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 	furtherHelp=
-		"The <sourceName> names the new source which will be created. "+ 
-		"There must be a directory called <sourceName> relative to the current load-save-path. "+
-		"This directory contains the sequence data, one file per sequence. The first part of the "+
+		"The argument <sourcePath> names a directory, which may be relative to the current load-save-path. "+
+	    "The name of the new source will be the name of this directory. "+
+		"The directory contains the sequence data, one file per sequence. The first part of the "+
 		"sequence file name will become the sequenceID, and the extension will be the standard file "+
 		"extension for the sequence format, as specified in the \"list format sequence\" command output.",
 	description="Populate source from directory containing sequence files") 
 public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> {
 
-	public static final String SOURCE_NAME = "sourceName";
+	public static final String SOURCE_PATH = "sourcePath";
 
-	private String sourceName;
+	private String sourcePath;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		sourceName = PluginUtils.configureStringProperty(configElem, SOURCE_NAME, true);
+		sourcePath = PluginUtils.configureStringProperty(configElem, SOURCE_PATH, true);
 	}
 
 	@Override
 	public ImportSourceResult execute(CommandContext cmdContext) {
 		ObjectContext objContext = cmdContext.getObjectContext();
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		if(!consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No directory "+
-					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" exists");
+		File fullPath;
+		File sourceFile = new File(sourcePath);
+		if(sourceFile.isAbsolute()) {
+			fullPath = sourceFile;
+		} else {
+			fullPath = new File(consoleCmdContext.getLoadSavePath(), sourcePath);
 		}
+		if(!consoleCmdContext.isDirectory(sourcePath)) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No directory "+
+					fullPath.getAbsolutePath()+" exists");
+		}
+		String sourceName = fullPath.getName();
 		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), false);
-		List<String> fileNames = consoleCmdContext.listMembers(sourceName, true, false, "");
+		List<String> fileNames = consoleCmdContext.listMembers(sourcePath, true, false, "");
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		fileNames.forEach(fileName -> {
-			File filePath = new File(sourceName, fileName);
+			File filePath = new File(fullPath, fileName);
 			int lastIndexOfDot = fileName.lastIndexOf('.');
 			if(lastIndexOfDot == -1) {
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "File "+
@@ -102,4 +112,13 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 		
 	}
 
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerPathLookup("sourcePath", true);
+		}
+	}
+
+	
 }
