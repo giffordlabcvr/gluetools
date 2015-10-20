@@ -58,5 +58,9 @@ public class GenbankXmlSequenceObject extends AbstractSequenceObject {
 	private String extractHeader() {
 		return GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_primary-accession/text()");
 	}
+	
+	public Document getDocument() {
+		return document;
+	}
 
 }

@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPath;
@@ -40,16 +42,18 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.GenbankXmlSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-// TODO importer plugin should only fetch sequences the source does not already have.
 @PluginClass(elemName="ncbiImporter")
 public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
@@ -69,6 +73,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private List<String> specificPrimaryAccessions;
 	private SequenceFormat sequenceFormat;
 	private SequenceIdField sequenceIdField;
+	private boolean overwriteExisting = false;
+	private Integer maxDownloaded = null;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element ncbiImporterElem) {
@@ -83,6 +89,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, ncbiImporterElem, "sequenceFormat", true);
 		sequenceIdField = Optional.ofNullable(PluginUtils.configureEnumProperty(SequenceIdField.class, 
 				ncbiImporterElem, "sequenceIdField", false)).orElse(SequenceIdField.GI_NUMBER);
+		overwriteExisting = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, "overwriteExisting", false)).orElse(false);
+		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, "maxDownloaded", false);
 		
 		addProvidedCmdClass(ImportCommand.class);
 		addProvidedCmdClass(PreviewCommand.class);
@@ -111,17 +119,36 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		throw new NcbiImporterException(Code.CONFIG_ERROR, "Exactly one of <eSearchTerm>, <specificGiNumbers> or <specificPrimaryAccessions> must be specified.");
 	}
 
-	List<String> getGiNumbersToRetrieve() {
+	private void getGiNumbersMatchingAndExisting(CommandContext cmdContext, 
+			Set<String> giNumbersMatching, Set<String> giNumbersExisting) {
 		if(!specificGiNumbers.isEmpty()) {
-			return specificGiNumbers;
+			giNumbersMatching.addAll(specificGiNumbers);
+		} else {
+			try(CloseableHttpClient httpClient = createHttpClient()) {
+				HttpUriRequest eSearchHttpRequest = createESearchRequest();
+				Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
+				checkForESearchErrors(eSearchResponseDoc);
+				giNumbersMatching.addAll(GlueXmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()"));
+			} catch (IOException e) {
+				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
+			}
 		}
-		try(CloseableHttpClient httpClient = createHttpClient()) {
-			HttpUriRequest eSearchHttpRequest = createESearchRequest();
-			Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
-			checkForESearchErrors(eSearchResponseDoc);
-			return GlueXmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()");
-		} catch (IOException e) {
-			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
+		Source source = GlueDataObject.lookup(cmdContext.getObjectContext(), Source.class, Source.pkMap(sourceName), true);
+		if(source == null) {
+			return;
+		}
+		for(Sequence sequence: source.getSequences()) {
+			if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
+				continue;
+			}
+			GenbankXmlSequenceObject seqObj = (GenbankXmlSequenceObject) sequence.getSequenceObject();
+			List<String> seqIds = GlueXmlUtils.getXPathStrings(seqObj.getDocument(), "/GBSeq/GBSeq_other-seqids/GBSeqid/text()");
+			for(String seqId: seqIds) {
+				if(seqId.startsWith("gi|")) {
+					giNumbersExisting.add(seqId.replace("gi|", ""));
+					break;
+				}
+			}
 		}
 	}
 
@@ -379,26 +406,55 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 	}
 
-	public PreviewResult doPreview(CommandContext cmdContext) {
-		List<String> giNumbers = getGiNumbersToRetrieve();
-		return new PreviewResult(giNumbers.size());
+	public NcbiImporterResult doPreview(CommandContext cmdContext) {
+		
+		Set<String> matchingGiNumbers = new LinkedHashSet<String>();
+		Set<String> existingGiNumbers = new LinkedHashSet<String>();
+		
+		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers);
+		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), 0, 0,
+				maxDownloaded, overwriteExisting, eSearchRetMax);
 	}
 
 
 	
-	private CreateResult doImport(CommandContext cmdContext) {
-		List<String> giNumbers = getGiNumbersToRetrieve();
-		List<RetrievedSequence> sequences = retrieveSequences(giNumbers);
+	private NcbiImporterResult doImport(CommandContext cmdContext) {
+		Set<String> matchingGiNumbers = new LinkedHashSet<String>();
+		Set<String> existingGiNumbers = new LinkedHashSet<String>();
+		
+		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers);
+		Set<String> giNumbersToRetrieve = new LinkedHashSet<String>(matchingGiNumbers);
+		if(!overwriteExisting) {
+			giNumbersToRetrieve.removeAll(existingGiNumbers);
+		}
+		List<RetrievedSequence> sequences = retrieveSequences(new ArrayList<String>(giNumbersToRetrieve));
 		ensureSourceExists(cmdContext, sourceName);
-		int sequencesCreated = 0;
+		int recordsAdded = 0;
+		int recordsUpdated = 0;
 		for(RetrievedSequence sequence: sequences) {
 			String sequenceID = sequence.sequenceID;
 			SequenceFormat format = sequence.format;
 			byte[] sequenceData = sequence.data;
+			boolean preExisting = false;
+			if(overwriteExisting) {
+				DeleteResult deleteResult = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+				cmdContext.commit();
+				if(deleteResult.getNumber() == 1) {
+					preExisting = true;
+				}
+			}
 			createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
-			sequencesCreated++;
+			if(preExisting) {
+				recordsUpdated++;
+			} else {
+				recordsAdded++;
+			}
+			if(maxDownloaded != null && recordsUpdated+recordsAdded >= maxDownloaded) {
+				break;
+			}
 		}
-		return new CreateResult(Sequence.class, sequencesCreated);
+		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), recordsAdded, recordsUpdated,
+				maxDownloaded, overwriteExisting, eSearchRetMax);
 	}
 	
 	
@@ -409,10 +465,23 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		byte[] data;
 	}
 	
-	public static class PreviewResult extends MapResult {
+	public static class NcbiImporterResult extends MapResult {
 
-		public PreviewResult(int numGenbankRecordsFound) {
-			super("ncbiImporterPreviewResult", mapBuilder().put("numGenbankRecordsFound", numGenbankRecordsFound));
+		public NcbiImporterResult(int numGenbankRecordsFound, 
+				int numGenbankRecordsPreExisting, 
+				int numGenbankRecordsAdded, 
+				int numGenbankRecordsUpdated,
+				Integer maxDownloadedSetting,
+				Boolean overwriteExistingSetting,
+				Integer eSearchRetMaxSetting) {
+			super("ncbiImporterResult", mapBuilder()
+					.put("numGenbankRecordsFound", numGenbankRecordsFound)
+					.put("numGenbankRecordsPreExisting", numGenbankRecordsPreExisting)
+					.put("numGenbankRecordsAdded", numGenbankRecordsAdded)
+					.put("numGenbankRecordsUpdated", numGenbankRecordsUpdated)
+					.put("maxDownloadedSetting", maxDownloadedSetting)
+					.put("overwriteExistingSetting", overwriteExistingSetting)
+					.put("eSearchRetMaxSetting", eSearchRetMaxSetting));
 		}
 		
 	}
@@ -422,9 +491,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			docoptUsages={""},
 			metaTags={CmdMeta.updatesDatabase},
 			description="Import sequence data from NCBI into the project") 
-	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, NcbiImporter> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModuleProvidedCommand<NcbiImporterResult, NcbiImporter> implements ProvidedProjectModeCommand {
 		@Override
-		protected CreateResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
+		protected NcbiImporterResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doImport(cmdContext);
 		}
 	}
@@ -435,9 +504,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			docoptUsages={""},
 			metaTags={},
 			description="Preview the NCBI results") 
-	public static class PreviewCommand extends ModuleProvidedCommand<PreviewResult, NcbiImporter> implements ProvidedProjectModeCommand {
+	public static class PreviewCommand extends ModuleProvidedCommand<NcbiImporterResult, NcbiImporter> implements ProvidedProjectModeCommand {
 		@Override
-		protected PreviewResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
+		protected NcbiImporterResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doPreview(cmdContext);
 		}
 	}
@@ -451,7 +520,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	@SimpleConfigureCommandClass(
 			propertyNames={"sourceName", "database", "eSearchTerm", 
-					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize"}
+					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize", 
+					"overwriteExisting", "maxDownloaded"}
 	)
 	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporter> {}
 
