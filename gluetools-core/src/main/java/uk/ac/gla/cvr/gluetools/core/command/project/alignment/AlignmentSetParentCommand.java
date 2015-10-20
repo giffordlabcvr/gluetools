@@ -1,12 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -46,6 +53,23 @@ public class AlignmentSetParentCommand extends AlignmentModeCommand<OkResult> {
 	
 
 	@CompleterClass
-	public static class AlignmentNameCompleter extends ProjectModeCommand.AlignmentNameCompleter {}
+	public static class AlignmentNameCompleter extends AdvancedCmdCompleter {
+
+		public AlignmentNameCompleter() {
+			super();
+			registerVariableInstantiator("parentAlignmentName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					String thisAlmtName = ((AlignmentMode) cmdContext.peekCommandMode()).getAlignmentName();
+					return listNames(cmdContext, prefix, Alignment.class, Alignment.NAME_PROPERTY, 
+							ExpressionFactory.noMatchExp(Alignment.NAME_PROPERTY, thisAlmtName));
+				}
+			});
+		}
+		
+	}
 
 }

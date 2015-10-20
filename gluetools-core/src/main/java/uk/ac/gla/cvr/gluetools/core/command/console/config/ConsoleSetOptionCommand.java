@@ -1,8 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.console.config;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -11,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException.Code;
@@ -50,29 +52,30 @@ public class ConsoleSetOptionCommand extends ConsoleOptionCommand<OkResult> {
 	}
 	
 	@CompleterClass
-	@SuppressWarnings("rawtypes")
 	public static class Completer extends OptionNameCompleter {
 
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.size() == 1) {
-				String optionName = argStrings.get(0);
-				try {
-					ConsoleOption consoleOption = lookupOptionByName(optionName);
-					String[] allowedValues = consoleOption.getAllowedValues();
-					if(allowedValues != null) {
-						return Arrays.asList(allowedValues);
+		public Completer() {
+			super();
+			registerVariableInstantiator("optionValue", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					try {
+						ConsoleOption consoleOption = ConsoleOptionCommand.lookupOptionByName((String) bindings.get("optionName"));
+						String[] allowedValues = consoleOption.getAllowedValues();
+						if(allowedValues != null) {
+							return Arrays.asList(allowedValues).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+						}
+					} catch(ConsoleOptionException coe) {
+						// bad option name.
 					}
-				} catch(ConsoleOptionException coe) {
-					// bad option name.
+					return null;
 				}
-				return new ArrayList<String>();
+			});
 			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
-		}
-		
+
 	}
 
 

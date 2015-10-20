@@ -1,8 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.settings;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -11,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
@@ -62,30 +64,34 @@ public class ProjectSetSettingCommand extends ProjectSettingCommand<OkResult> {
 		}
 	}
 	
+	
+	
 	@CompleterClass
-	@SuppressWarnings("rawtypes")
 	public static class Completer extends SettingNameCompleter {
 
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.size() == 1) {
-				String settingName = argStrings.get(0);
-				try {
-					ProjectSettingOption projectSettingOption = lookupSettingOptionByName(settingName);
-					String[] allowedValues = projectSettingOption.getAllowedValues();
-					if(allowedValues != null) {
-						return Arrays.asList(allowedValues);
+		public Completer() {
+			super();
+			registerVariableInstantiator("settingValue", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					try {
+						String settingName = (String) bindings.get("settingName");
+						ProjectSettingOption projectSettingOption = lookupSettingOptionByName(settingName);
+						String[] allowedValues = projectSettingOption.getAllowedValues();
+						if(allowedValues != null) {
+							return Arrays.asList(allowedValues).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+						}
+					} catch(ProjectSettingException coe) {
+						// bad setting name.
 					}
-				} catch(ProjectSettingException coe) {
-					// bad setting name.
+					return null;
 				}
-				return new ArrayList<String>();
+			});
 			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
-		}
-		
+
 	}
 
 

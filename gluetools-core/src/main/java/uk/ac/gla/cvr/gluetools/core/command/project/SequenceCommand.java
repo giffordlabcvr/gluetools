@@ -9,6 +9,7 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -102,9 +103,10 @@ public class SequenceCommand extends ProjectModeCommand<OkResult>  {
 			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
 			registerVariableInstantiator("sequenceID", new VariableInstantiator() {
 				@Override
+				@SuppressWarnings("rawtypes")
 				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-						String prefix) {
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
 					return AdvancedCmdCompleter.listNames(cmdContext, prefix, Sequence.class, Sequence.SEQUENCE_ID_PROPERTY, 
 							ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName")));
 				}

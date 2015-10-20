@@ -7,14 +7,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFeatureLocationCommand.InheritFeatureLocationResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFeatureLocationException.Code;
@@ -173,21 +176,32 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	
 	
 	@CompleterClass
-	public static class Completer extends FeatureLocNameCompleter {
+	public static class Completer extends AdvancedCmdCompleter {
 
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty() || argStrings.size() == 1 && argStrings.get(0).matches("-r|--recursive")) {
-				return super.completionSuggestions(cmdContext, cmdClass, argStrings);
-			}
-			return Collections.emptyList();
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
+			registerVariableInstantiator("featureName", 
+					new VariableInstantiator() {
+						@Override
+						@SuppressWarnings("rawtypes")
+						protected List<CompletionSuggestion> instantiate(
+								ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+								Map<String, Object> bindings, String prefix) {
+							String alignmentName = (String) bindings.get("alignmentName");
+							Alignment almt = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, Alignment.pkMap(alignmentName), true);
+							if(almt != null) {
+								ReferenceSequence refSequence = almt.getRefSequence();
+								if(refSequence != null) {
+									return refSequence.getFeatureLocations().stream()
+											.map(fl -> new CompletionSuggestion(fl.getFeature().getName(), true))
+											.collect(Collectors.toList());
+								}
+							}
+							return null;
+						}
+					});
 		}
-		
-		
-		
 	}
 	
 	

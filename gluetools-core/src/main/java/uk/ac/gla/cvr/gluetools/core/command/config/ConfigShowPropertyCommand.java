@@ -3,15 +3,18 @@ package uk.ac.gla.cvr.gluetools.core.command.config;
 
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -44,18 +47,22 @@ public class ConfigShowPropertyCommand extends Command<ConfigPropertyResult> {
 	
 	
 	@CompleterClass
-	public static class PropertyNameCompleter extends CommandCompleter {
+	public static class PropertyNameCompleter extends AdvancedCmdCompleter {
 
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				return cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getAllPropertyNames();
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+		public PropertyNameCompleter() {
+			super();
+			registerVariableInstantiator("propertyName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					return cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getAllPropertyNames()
+							.stream().map(pn -> new CompletionSuggestion(pn, true)).collect(Collectors.toList());
+				}
+			});
 		}
-		
+
 	}
 
 

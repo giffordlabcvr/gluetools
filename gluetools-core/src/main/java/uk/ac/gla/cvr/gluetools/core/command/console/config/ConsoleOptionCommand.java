@@ -1,12 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.command.console.config;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException.Code;
@@ -39,18 +42,21 @@ public abstract class ConsoleOptionCommand<R extends CommandResult> extends Comm
 		throw new ConsoleOptionException(Code.NO_SUCH_OPTION, optionName);
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public abstract static class OptionNameCompleter extends CommandCompleter {
-		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				LinkedList<String> suggestions = new LinkedList<String>();
-				for(ConsoleOption consoleOption : ConsoleOption.values()) {
-					suggestions.add(consoleOption.getName());
+	public abstract static class OptionNameCompleter extends AdvancedCmdCompleter {
+		public OptionNameCompleter() {
+			super();
+			registerVariableInstantiator("optionName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					return Arrays.asList(ConsoleOption.values())
+							.stream()
+							.map(co -> new CompletionSuggestion(co.getName(), true))
+							.collect(Collectors.toList());
 				}
-				return suggestions;
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+			});
 		}
 	}
 	

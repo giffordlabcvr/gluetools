@@ -8,7 +8,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.SequenceFieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -52,8 +51,7 @@ public class UnsetFieldCommand extends SequenceModeCommand<OkResult> {
 	}
 
 	@CompleterClass
-	public static class Completer extends SequenceFieldCompleter {
-	}
+	public static class Completer extends SequenceFieldNameCompleter {}
 
 
 }

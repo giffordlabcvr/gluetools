@@ -1,17 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -42,28 +42,31 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 				Alignment.pkMap(getAlignmentName()));
 	}
 	
-	protected static abstract class AlignmentModeCompleter extends CommandCompleter {
-		protected Alignment getAlignment(ConsoleCommandContext cmdContext) {
-			AlignmentMode almtMode = (AlignmentMode) cmdContext.peekCommandMode();
-			Alignment almt = GlueDataObject.lookup(cmdContext.getObjectContext(), 
-					Alignment.class, Alignment.pkMap(almtMode.getAlignmentName()));
-			return almt;
+	protected static abstract class AlignmentMemberCompleter extends AdvancedCmdCompleter {
+		public AlignmentMemberCompleter() {
+			super();
+			registerVariableInstantiator("sourceName", 
+					new QualifiedDataObjectNameInstantiator(AlignmentMember.class, AlignmentMember.SOURCE_NAME_PATH) {
+						@SuppressWarnings("rawtypes")
+						@Override
+						protected void qualifyResults(CommandMode cmdMode,
+								Map<String, Object> bindings,
+								Map<String, Object> qualifierValues) {
+							qualifierValues.put(AlignmentMember.ALIGNMENT_NAME_PATH, ((AlignmentMode) cmdMode).getAlignmentName());
+						}
+			});
+			registerVariableInstantiator("sequenceID", 
+					new QualifiedDataObjectNameInstantiator(AlignmentMember.class, AlignmentMember.SEQUENCE_ID_PATH) {
+						@SuppressWarnings("rawtypes")
+						@Override
+						protected void qualifyResults(CommandMode cmdMode,
+								Map<String, Object> bindings,
+								Map<String, Object> qualifierValues) {
+							qualifierValues.put(AlignmentMember.ALIGNMENT_NAME_PATH, ((AlignmentMode) cmdMode).getAlignmentName());
+							qualifierValues.put(AlignmentMember.SOURCE_NAME_PATH, bindings.get("sourceName"));
+						}
+			});
 		}
-
-		protected List<String> getMemberSources(ConsoleCommandContext cmdContext) {
-			Alignment almt = getAlignment(cmdContext);
-			return almt.getMembers().stream()
-					.map(memb -> memb.getSequence().getSource().getName())
-					.collect(Collectors.toList());
-		}
-
-		protected List<String> getMemberSequenceIDs(String sourceName, Alignment almt) {
-			return almt.getMembers().stream()
-					.filter(memb -> memb.getSequence().getSource().getName().equals(sourceName))
-					.map(memb -> memb.getSequence().getSequenceID())
-					.collect(Collectors.toList());
-		}
-		
 
 	}
 	

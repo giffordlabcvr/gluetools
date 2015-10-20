@@ -7,7 +7,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.SequenceFieldCompleter;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -50,8 +49,7 @@ public class ShowFieldCommand extends SequenceModeCommand<FieldValueResult> {
 	}
 
 	@CompleterClass
-	public static class Completer extends SequenceFieldCompleter {
-	}
+	public static class Completer extends SequenceFieldNameCompleter {}
 
 
 }

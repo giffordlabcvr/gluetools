@@ -1,12 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.settings;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -40,20 +44,24 @@ public abstract class ProjectSettingCommand<R extends CommandResult> extends Pro
 		throw new ProjectSettingException(ProjectSettingException.Code.NO_SUCH_SETTING, optionName);
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public abstract static class SettingNameCompleter extends CommandCompleter {
-		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				LinkedList<String> suggestions = new LinkedList<String>();
-				for(ProjectSettingOption projectSettingOption : ProjectSettingOption.values()) {
-					suggestions.add(projectSettingOption.getName());
+	@CompleterClass
+	public static class SettingNameCompleter extends AdvancedCmdCompleter {
+
+		public SettingNameCompleter() {
+			super();
+			registerVariableInstantiator("settingName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					return Arrays.asList(ProjectSettingOption.values())
+							.stream()
+							.map(co -> new CompletionSuggestion(co.getName(), true))
+							.collect(Collectors.toList());
 				}
-				return suggestions;
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+			});
 		}
 	}
-	
 	
 }

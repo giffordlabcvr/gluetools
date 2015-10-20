@@ -1,18 +1,21 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
@@ -69,30 +72,31 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@CompleterClass
-	public static class ListSequencesFieldCompleter extends SequenceFieldCompleter {
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			List<String> suggestions = new ArrayList<String>();
-			if(argStrings.size() == 0) {
-				suggestions.add("-w");
-				suggestions.add("--whereClause");
-				suggestions.addAll(getAllFieldNames(cmdContext));
-			} else if(argStrings.size() == 1) {
-				String arg0 = argStrings.get(0);
-				if(!arg0.equals("-w") && !arg0.equals("--whereClause")) {
-					suggestions.addAll(getAllFieldNames(cmdContext));
-				}
-			} else {
-				suggestions.addAll(getAllFieldNames(cmdContext));
-			}
-			return suggestions;
-		}
+	public static class Completer extends AdvancedCmdCompleter {
 		
+		public Completer() {
+			super();
+			registerVariableInstantiator("fieldName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					return getSequenceFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+				}
+				protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
+					return getProject(cmdContext).getAllSequenceFieldNames();
+				}
+				private Project getProject(ConsoleCommandContext cmdContext) {
+					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+					Project project = insideProjectMode.getProject();
+					return project;
+				}
+			});
+		}
 	}
+		
 
 
 }

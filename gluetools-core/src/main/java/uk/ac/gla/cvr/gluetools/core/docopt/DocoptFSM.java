@@ -38,7 +38,10 @@ public class DocoptFSM {
 				break;
 			case VARIABLE:
 				String variableName = currentToken.getData().replace("<", "").replace(">", "");
+				//System.out.println("variable "+variableName+" from: "+currentNode);
+				lastNode = currentNode;
 				currentNode = currentNode.variableToNew(variableName);
+				//System.out.println("variable "+variableName+" to: "+currentNode);
 				break;
 			case BRLEFT:
 				contextStack.push(new Context(currentNode, ")"));
@@ -80,6 +83,7 @@ public class DocoptFSM {
 				if(lastType != TokenType.VARIABLE) {
 					throw new RuntimeException("Ellipsis can only occur after variable");
 				}
+				//System.out.println("ellipsis from:"+currentNode+" to "+lastNode);
 				currentNode.nullTo(lastNode);
 				break;
 			case OPTION:
@@ -95,7 +99,6 @@ public class DocoptFSM {
 				break;
 			default:
 			}
-			lastNode = currentNode;
 			lastType = currentType;
 		}
 	}
@@ -161,6 +164,7 @@ public class DocoptFSM {
 						.filter(n -> {return !frontier.contains(n);})
 						.collect(Collectors.toList()));
 			}
+			//System.out.println("Frontier: "+new LinkedList<Node>(frontier));
 			return frontier
 					.stream()
 					.map(n -> { return n.transitions; })
@@ -190,6 +194,9 @@ public class DocoptFSM {
 		public NullTransition(Node toNode) {
 			super(toNode);
 		}
+		public String toString() {
+			return "NULL";
+		}
 	}
 
 	public static class LiteralTransition extends Transition {
@@ -201,6 +208,9 @@ public class DocoptFSM {
 		public String getLiteral() {
 			return literal;
 		}
+		public String toString() {
+			return "literal:"+literal;
+		}
 	}
 
 	public static class VariableTransition extends Transition {
@@ -211,6 +221,9 @@ public class DocoptFSM {
 		}
 		public String getVariableName() {
 			return variableName;
+		}
+		public String toString() {
+			return "variable:"+variableName;
 		}
 	}
 

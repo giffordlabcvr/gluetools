@@ -13,7 +13,6 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
@@ -21,8 +20,9 @@ import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
 public class AdvancedCmdCompleter extends CommandCompleter {
 
 	protected abstract class VariableInstantiator {
+		@SuppressWarnings("rawtypes")
 		protected abstract List<CompletionSuggestion> instantiate(
-				ConsoleCommandContext cmdContext, Map<String, Object> bindings, String prefix);
+				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> bindings, String prefix);
 	}
 	
 	private class SimpleDataObjectNameInstantiator extends VariableInstantiator {
@@ -36,12 +36,42 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			this.nameProperty = nameProperty;
 		}
 		@Override
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String prefix) {
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
 			return listNames(cmdContext, prefix, theClass, nameProperty);
 		}
 	}
 
+	protected abstract class QualifiedDataObjectNameInstantiator extends VariableInstantiator {
+		private Class<? extends GlueDataObject> theClass;
+		private String nameProperty;
+		@SuppressWarnings("unused")
+		public QualifiedDataObjectNameInstantiator(
+				Class<? extends GlueDataObject> theClass, String nameProperty) {
+			super();
+			this.theClass = theClass;
+			this.nameProperty = nameProperty;
+		}
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected final List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			Map<String, Object> qualifierValues = new LinkedHashMap<String, Object>();
+			qualifyResults(cmdContext.peekCommandMode(), bindings, qualifierValues);
+			Expression matchExp = ExpressionFactory.expTrue();
+			for(Map.Entry<String, Object> qualifierEntry: qualifierValues.entrySet()) {
+				matchExp = matchExp.andExp(ExpressionFactory.matchExp(qualifierEntry.getKey(), qualifierEntry.getValue()));
+			}
+			return listNames(cmdContext, prefix, theClass, nameProperty, matchExp);
+		}
+
+		@SuppressWarnings("rawtypes")
+		protected abstract void qualifyResults(CommandMode cmdMode, Map<String, Object> bindings, Map<String, Object> qualifierValues);
+	}
+
+	
+	
 	private class SimpleEnumInstantiator extends VariableInstantiator {
 		private Class<? extends Enum<?>> theClass;
 		public SimpleEnumInstantiator(Class<? extends Enum<?>> theClass) {
@@ -49,8 +79,9 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			this.theClass = theClass;
 		}
 		@Override
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String prefix) {
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
 			return listEnumValues(cmdContext, prefix, theClass);
 		}
 	}
@@ -65,8 +96,9 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 
 		@Override
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-				String prefix) {
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
 			return completePath(cmdContext, prefix, directoriesOnly);
 		}
 	}
@@ -74,8 +106,9 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	
 	private Map<String, VariableInstantiator> variableInstantiators = new LinkedHashMap<String, VariableInstantiator>();
 	
-	protected void registerVariableInstantiator(String variableName, VariableInstantiator variableInstantiator) {
+	protected <A extends VariableInstantiator> A registerVariableInstantiator(String variableName, A variableInstantiator) {
 		variableInstantiators.put(variableName, variableInstantiator);
+		return variableInstantiator;
 	}
 
 	protected void registerDataObjectNameLookup(String variableName, Class<? extends GlueDataObject> theClass, String nameProperty) {
@@ -106,7 +139,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			List<CompletionSuggestion> instantiations = null;
 			VariableInstantiator variableInstantiator = variableInstantiators.get(variableName);
 			if(variableInstantiator != null) {
-				instantiations = variableInstantiator.instantiate(cmdContext, bindings, prefix);
+				instantiations = variableInstantiator.instantiate(cmdContext, cmdClass, bindings, prefix);
 			}
 			if(instantiations != null) {
 				Object currentBinding = bindings.get(variableName);
@@ -145,15 +178,16 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 	
 	
-	protected static final List<CompletionSuggestion> listNames(ConsoleCommandContext cmdContext, String prefix, Class<? extends GlueDataObject> theClass, 
+	protected static final <A extends GlueDataObject> List<CompletionSuggestion> 
+		listNames(ConsoleCommandContext cmdContext, String prefix, Class<A> theClass, 
 			String nameProperty, Expression whereClause) {
 		if(prefix != null && prefix.length()>0) {
 			whereClause = whereClause.andExp(ExpressionFactory.likeExp(nameProperty, prefix+"%"));
 		}
-		ListResult listCmdResult = CommandUtils.runListCommand(cmdContext, theClass, new SelectQuery(theClass, whereClause));
-		return listCmdResult.getColumnValues(nameProperty)
+		List<A> queryResults = GlueDataObject.query(cmdContext.getObjectContext(), theClass, new SelectQuery(theClass, whereClause));
+		return queryResults
 				.stream()
-				.map(s -> new CompletionSuggestion(s, true))
+				.map(s -> new CompletionSuggestion(s.readNestedProperty(nameProperty).toString(), true))
 				.collect(Collectors.toList());
 	}
 

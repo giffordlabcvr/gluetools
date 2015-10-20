@@ -1,18 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterUtils;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -51,15 +47,13 @@ public class VariationSetNotifiabilityCommand extends VariationModeCommand<OkRes
 	}
 
 	@CompleterClass
-	public static class MetatagTypeCompleter extends CommandCompleter {
+	public static class Completer extends AdvancedCmdCompleter {
 
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			return CompleterUtils.enumCompletionSuggestions(NotifiabilityLevel.class);
+		public Completer() {
+			super();
+			registerEnumLookup("notifiabilityLevel", NotifiabilityLevel.class);
 		}
+
 		
 	}
 

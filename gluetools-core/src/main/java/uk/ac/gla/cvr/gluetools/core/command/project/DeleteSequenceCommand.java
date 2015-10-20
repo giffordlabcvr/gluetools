@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
@@ -15,9 +14,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -99,13 +97,13 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
-			registerVariableInstantiator("sequenceID", new VariableInstantiator() {
+			registerVariableInstantiator("sequenceID", 
+					new QualifiedDataObjectNameInstantiator(Sequence.class, Sequence.SEQUENCE_ID_PROPERTY) {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext, Map<String, Object> bindings,
-						String prefix) {
-					return AdvancedCmdCompleter.listNames(cmdContext, prefix, Sequence.class, Sequence.SEQUENCE_ID_PROPERTY, 
-							ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName")));
+				@SuppressWarnings("rawtypes")
+				protected void qualifyResults(CommandMode cmdMode,
+						Map<String, Object> bindings, Map<String, Object> qualifierValues) {
+					qualifierValues.put(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName"));
 				}
 			});
 		}

@@ -1,17 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceSequenceModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -46,20 +40,22 @@ public abstract class FeatureLocModeCommand<R extends CommandResult> extends Ref
 	}
 
 	@SuppressWarnings("rawtypes")
-	public abstract static class VariationNameCompleter extends CommandCompleter {
-		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				ObjectContext objContext = cmdContext.getObjectContext();
-				FeatureLocMode featureLocMode = getFeatureLocMode(cmdContext);
-				Expression expression = ExpressionFactory.matchExp(Variation.REF_SEQ_NAME_PATH, featureLocMode.getRefSeqName());
-				expression = expression.andExp(ExpressionFactory.matchExp(Variation.FEATURE_NAME_PATH, featureLocMode.getFeatureName()));
-				List<Variation> variation = GlueDataObject.query(objContext, Variation.class, 
-						new SelectQuery(Variation.class, expression));
-				return variation.stream().map(Variation::getName).collect(Collectors.toList());
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
+	public abstract static class VariationNameCompleter extends AdvancedCmdCompleter {
+		
+		public VariationNameCompleter() {
+			super();
+			registerVariableInstantiator("variationName", new QualifiedDataObjectNameInstantiator(
+					Variation.class, Variation.NAME_PROPERTY) {
+				@Override
+				protected void qualifyResults(CommandMode cmdMode,
+						Map<String, Object> bindings, Map<String, Object> qualifierValues) {
+					FeatureLocMode featureLocMode = (FeatureLocMode) cmdMode;
+					qualifierValues.put(Variation.REF_SEQ_NAME_PATH, featureLocMode.getRefSeqName());
+					qualifierValues.put(Variation.FEATURE_NAME_PATH, featureLocMode.getFeatureName());
+				}
+			});
 		}
+
 	}
 
 

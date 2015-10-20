@@ -1,15 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.feature;
 
-import java.util.List;
-
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterUtils;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -47,15 +42,13 @@ public abstract class FeatureModeCommand<R extends CommandResult> extends Projec
 
 	
 	@CompleterClass
-	public static class MetatagTypeCompleter extends CommandCompleter {
+	public static class MetatagTypeCompleter extends AdvancedCmdCompleter {
 
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			return CompleterUtils.enumCompletionSuggestions(FeatureMetatag.Type.class);
+		public MetatagTypeCompleter() {
+			super();
+			registerEnumLookup("metatagName", FeatureMetatag.Type.class);
 		}
+
 		
 	}
 

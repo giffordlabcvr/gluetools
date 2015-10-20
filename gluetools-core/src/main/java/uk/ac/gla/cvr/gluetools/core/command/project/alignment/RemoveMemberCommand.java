@@ -13,12 +13,10 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -122,26 +120,6 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 	}
 	
 	@CompleterClass
-	public static class Completer extends AlignmentModeCompleter {
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				return getMemberSources(cmdContext);
-			} else {
-				String arg0 = argStrings.get(0);
-				if(argStrings.size() == 1 &&
-						!Arrays.asList("-a", "--allMembers", "-w", "--whereClause").contains(arg0)) {
-					Alignment almt = getAlignment(cmdContext);
-					return getMemberSequenceIDs(arg0, almt);
-				}
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
-		}
-
-	}
+	public static class Completer extends AlignmentMemberCompleter {}
 
 }

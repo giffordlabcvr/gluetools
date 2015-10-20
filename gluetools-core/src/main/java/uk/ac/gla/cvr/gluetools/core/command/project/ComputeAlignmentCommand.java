@@ -2,13 +2,11 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -19,9 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AddAlignedSegmentCommand;
@@ -257,20 +253,12 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	@CompleterClass
 	public static class Completer extends AlignmentNameCompleter {
 
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(
-				ConsoleCommandContext cmdContext,
-				Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty()) {
-				return super.completionSuggestions(cmdContext, cmdClass, argStrings);
-			} else if(argStrings.size() == 1) {
-				return CommandUtils.runListCommand(cmdContext, Module.class, new SelectQuery(Module.class)).
-						getColumnValues(Module.NAME_PROPERTY);
-			} else { 
-				return Collections.emptyList();
-			}
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("alignerModuleName", Module.class, Module.NAME_PROPERTY);
 		}
+
+		
 		
 		
 		

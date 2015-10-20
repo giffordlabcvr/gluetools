@@ -1,17 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
-import java.util.List;
-
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceFeatureTreeResult;
@@ -59,18 +52,6 @@ public class ReferenceShowFeatureTreeCommand extends ReferenceSequenceModeComman
 	}
 
 	@CompleterClass
-	public static class Completer extends CommandCompleter {
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public List<String> completionSuggestions(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, List<String> argStrings) {
-			if(argStrings.isEmpty() || argStrings.size() == 1 && argStrings.get(0).matches("-r|--realized")) {
-				return CommandUtils.runListCommand(cmdContext, Feature.class, new SelectQuery(Feature.class)).
-						getColumnValues(Feature.NAME_PROPERTY);
-			}
-			return super.completionSuggestions(cmdContext, cmdClass, argStrings);
-		}
-		
-	}
+	public static class Completer extends FeatureLocNameCompleter {}
 
 }

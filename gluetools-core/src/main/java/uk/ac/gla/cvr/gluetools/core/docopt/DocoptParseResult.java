@@ -82,7 +82,7 @@ public class DocoptParseResult {
 				result.nextVariable = variableName;
 			}	
 		}
-		
+		// System.out.println("nonNullTransitions: "+finalNonNullTransitions);
 		return result;
 	}
 

@@ -1,9 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -43,5 +50,22 @@ public abstract class SequenceModeCommand<R extends CommandResult> extends Comma
 		return sequence;
 	}
 	
+	public abstract static class SequenceFieldNameCompleter extends AdvancedCmdCompleter {
+		public SequenceFieldNameCompleter() {
+			super();
+			registerVariableInstantiator("fieldName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					return 
+							getSequenceMode(cmdContext).getProject().getCustomSequenceFieldNames()
+							.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+				}
+			});
+		}
+	}
+
 	
 }
