@@ -2,7 +2,8 @@ var glueToolsApp = angular.module('gluetoolsApp', [
   'ngRoute',
   'home',
   'download', 
-  'installation'
+  'installation',
+  'model'
 ]);
 
 glueToolsApp.config(['$routeProvider',
@@ -12,9 +13,13 @@ glueToolsApp.config(['$routeProvider',
             templateUrl: 'gluetools/download.html',
             controller: 'downloadCtrl'
           }).
-    	when('/installation', {
+      	when('/installation', {
             templateUrl: 'gluetools/installation.html',
             controller: 'installationCtrl'
+          }).
+      	when('/model', {
+            templateUrl: 'gluetools/model.html',
+            controller: 'modelCtrl'
           }).
         when('/home', {
             templateUrl: 'gluetools/home.html',
@@ -31,6 +36,8 @@ glueToolsApp.controller('gluetoolsCtrl',
   	$scope.brand = "GLUEtools";
   	$scope.homeMenuTitle = "Home";
   	$scope.downloadMenuTitle = "Download";
-  	$scope.installationMenuTitle = "Install";
+  	$scope.documentationMenuTitle = "Documentation";
+  	$scope.modelMenuTitle = "Model";
+  	$scope.installationMenuTitle = "Installation";
   } ]);
 
