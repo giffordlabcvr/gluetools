@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusSequenceObje
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.DifferenceSummaryNote;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
@@ -36,6 +37,8 @@ public class SequenceFeatureResult {
 	private List<VariationNote> aaVariationNotes = new ArrayList<VariationNote>();
 	private List<ReferenceDifferenceNote> ntReferenceDifferenceNotes = new ArrayList<ReferenceDifferenceNote>();
 	private List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = new ArrayList<ReferenceDifferenceNote>();
+	
+	
 	private ReferenceRealisedFeatureTreeResult featureTreeResult;
 	
 	private List<NtMinorityVariant> ntMinorityVariants = new ArrayList<NtMinorityVariant>();
@@ -121,6 +124,7 @@ public class SequenceFeatureResult {
 		}
 	}
 
+
 	private void generateNtDifferenceNotes(
 			List<NtReferenceSegment> ntReferenceSegments) {
 		ntReferenceDifferenceNotes.addAll(ReferenceSegment.intersection(ntReferenceSegments, ntQueryAlignedSegments, 
@@ -131,7 +135,7 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(ntRefSeg.getRefEnd(), ntQuerySeg.getRefEnd());
 						CharSequence refNts = ntRefSeg.getNucleotidesSubsequence(refStart, refEnd);
 						CharSequence queryNts = ntQuerySeg.getNucleotidesSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, generateMask(refNts, queryNts));
+						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false);
 					}
 		}));
 	}
@@ -148,24 +152,13 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(aaRefSeg.getRefEnd(), aaQuerySeg.getRefEnd());
 						CharSequence refAas = aaRefSeg.getAminoAcidsSubsequence(refStart, refEnd);
 						CharSequence queryAas = aaQuerySeg.getAminoAcidsSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, generateMask(refAas, queryAas));
+						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, true);
 					}
 
 		});
 	}
 
 
-	private CharSequence generateMask(CharSequence refChars, CharSequence queryChars) {
-		char[] diffChars = new char[refChars.length()];
-		for(int i = 0; i < refChars.length(); i++) {
-			if(refChars.charAt(i) == queryChars.charAt(i)) {
-				diffChars[i] = '-';
-			} else {
-				diffChars[i] = 'X';
-			}
-		}
-		return new String(diffChars);
-	}
 
 	
 	public void deriveTranslationFromOrfAncestor(
@@ -394,7 +387,5 @@ public class SequenceFeatureResult {
 				aaMinorityVariant.toDocument(aaMinorityVariantArray.addObject());
 			}
 		}
-
-		
 	}
 }

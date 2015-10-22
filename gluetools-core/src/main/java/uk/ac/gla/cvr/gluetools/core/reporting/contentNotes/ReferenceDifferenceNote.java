@@ -1,5 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.contentNotes;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 
 /**
@@ -11,22 +15,47 @@ import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 public class ReferenceDifferenceNote extends SequenceContentNote {
 
 	private CharSequence mask;
+	private List<DifferenceSummaryNote> differenceSummaryNotes = new ArrayList<DifferenceSummaryNote>();
 
-	public ReferenceDifferenceNote(int refStart, int refEnd, CharSequence mask) {
+	public ReferenceDifferenceNote(int refStart, int refEnd, CharSequence refChars, CharSequence queryChars, boolean includeDifferenceSummaryNotes) {
 		super(refStart, refEnd);
-		this.mask = mask;
+		init(refStart, refChars, queryChars, includeDifferenceSummaryNotes);
 	}
 
 	@Override
 	public void toDocument(ObjectBuilder sequenceDifferenceObj) {
 		super.toDocument(sequenceDifferenceObj);
 		sequenceDifferenceObj.set("mask", mask);
+		if(differenceSummaryNotes != null) {
+			ArrayBuilder diffSummaryArray = sequenceDifferenceObj.setArray("differenceSummaryNote");
+			for(DifferenceSummaryNote diffSummNote: differenceSummaryNotes) {
+				diffSummNote.toDocument(diffSummaryArray.addObject());
+			}
+		}
+
 	}
 
-	@Override
-	public ReferenceDifferenceNote clone() {
-		return new ReferenceDifferenceNote(getRefStart(), getRefEnd(), getMask());
+	
+	private void init(int refStart, CharSequence refChars, CharSequence queryChars, boolean includeDifferenceSummaryNotes) {
+		int refPos = refStart;
+		char[] diffChars = new char[refChars.length()];
+		for(int i = 0; i < refChars.length(); i++) {
+			char refChar = refChars.charAt(i);
+			char queryChar = queryChars.charAt(i);
+			if(refChar == queryChar) {
+				diffChars[i] = '-';
+			} else {
+				diffChars[i] = 'X';
+				if(includeDifferenceSummaryNotes) {
+					String summaryString = new String(new char[]{refChar}) + Integer.toString(refPos) + new String(new char[]{queryChar});
+					differenceSummaryNotes.add(new DifferenceSummaryNote(summaryString, null));
+				}
+			}
+			refPos++;
+		}
+		this.mask = new String(diffChars);
 	}
+
 
 	public CharSequence getMask() {
 		return mask;

@@ -31,8 +31,10 @@ hcvApp.controller('hcvAppCtrl',
   function ($scope) {
   	$scope.brand = "HCV-GLUE";
   	$scope.homeMenuTitle = "Home";
+  	$scope.projectMenuTitle = "Project";
+  	$scope.projectSourcesMenuTitle = "Sources";
+  	$scope.projectSequencesMenuTitle = "Sequences";
   	$scope.analysisMenuTitle = "Analysis";
-  	$scope.datasetAnalysisMenuTitle = "Dataset analysis";
   	$scope.submitSequencesAnalysisMenuTitle = "Submit sequences for analysis";
   } ]);
 

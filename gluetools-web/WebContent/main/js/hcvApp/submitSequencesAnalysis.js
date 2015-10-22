@@ -14,7 +14,7 @@ submitSequencesAnalysis
 	$scope.selectFilesButtonText = "Select files";
 	$scope.autoDetectFormat = "Auto-detect"
 	$scope.headerDetectAlmtName = "Header-detect"
-
+		
 	$scope.sequenceFormats = [];
 	$scope.alignmentNames = [];
 
@@ -41,6 +41,7 @@ submitSequencesAnalysis
 		$scope.referenceOptions = [];
 		$scope.noneSelected = "None selected";
 		$scope.numReferenceOptions = 0;
+		$scope.sequenceResult.differenceView = "differenceSummary";
 		
 		var refToFeatureTreeMap = $scope.sequenceResult.refToFeatureTreeMap;
 		
@@ -109,6 +110,12 @@ submitSequencesAnalysis
 					$scope.sequenceResult.selectedFeature, 
 					sequenceFeatureResult);
 			console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
+
+			// this needs to move to a controller specific to the summary button.
+			$scope.sequenceResult.alignmentDifferenceSummaries = 
+				generateAlignmentDifferenceSummaries($scope.sequenceResult);
+			console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
+
 		}
 		
 
@@ -217,9 +224,9 @@ submitSequencesAnalysis
         for(var i = 0; i < alignmentResultArray.length; i++) {
         	refToFeatureTreeMap[alignmentResultArray[i].referenceName] = alignmentResultArray[i].featureTreeResult;
         }
-        // add a reference to the ref results for each seqResult.
         var seqResultArray = fileItem.transientAnalysisResult.sequenceResult;
         for(var i = 0; i < seqResultArray.length; i++) {
+            // add a reference to the ref results for each seqResult.
         	seqResultArray[i].refToFeatureTreeMap = refToFeatureTreeMap;
         }
         

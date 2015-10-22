@@ -7,8 +7,7 @@
 		{{pageExplanation}}
 	
 		<div>
-			<h3>{{selectFilesHeader}}</h3> 
-			<a ng-click="showSupportedFormats()">Supported sequence file formats <i class="glyphicon glyphicon-link"></i></a>
+			<h3>{{selectFilesHeader}} <small><a ng-click="showSupportedFormats()">Supported sequence file formats <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
 			<p></p>			
 			<div class="row">
 				<div class="col-md-6">
@@ -137,30 +136,33 @@
 				<h3>Anaylsis: {{analysisResults.file.name}}</h3>
 				<div ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult" 
 						ng-controller="analysisResultsCtrl">
-					<h5>{{sequenceResult.sequenceID}}</h5>
+					<h4>{{sequenceResult.sequenceID}} <small><a ng-click="showAlignmentDetails(sequenceResult)">Coverage details <i class="glyphicon glyphicon-link"></i></a></small></h4>
 				<table class="table table-nonfluid">
 					<thead>
 						<tr>
-							<th>Reference sequence</th>
-							<th></th>
-							<th>Genome feature</th>
-							<th></th>
+							<th>Difference view</th>
+							<th ng-show="sequenceResult.differenceView == 'genomeDetail'">Reference sequence</th>
+							<th ng-show="sequenceResult.differenceView == 'genomeDetail'">Genome feature</th>
+							<th ng-show="sequenceResult.differenceView == 'genomeDetail'"></th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
 						<td>
+						<div class="btn-group">
+					        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.differenceView" btn-radio="'differenceSummary'">Summary</label>
+					        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.differenceView" btn-radio="'genomeDetail'">Detail</label>
+    					</div>
+						</td>
+						<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
 							<select name="singleSelect" ng-model="sequenceResult.selectedReference">
 								<option ng-repeat="referenceOption in referenceOptions" value="{{referenceOption}}">{{referenceOption}}</option>
 							</select>
 						</td>
-						<td>
-							<a ng-click="showAlignmentDetails(sequenceResult)">Coverage details <i class="glyphicon glyphicon-link"></i></a>
-						</td>
-						<td>
+						<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
 							{{sequenceResult.selectedFeature.featureDescription}}
 						</td>
-						<td>
+						<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
 							<button type="button" ng-disabled="sequenceResult.selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
 									Select
 							</button>
@@ -168,7 +170,54 @@
 						</tr>
 					</tbody>
 				</table>
-				<table class="table analysisSequenceTable">
+				
+				
+				<table ng-show="sequenceResult.differenceView == 'differenceSummary'" class="table" >
+					<thead>
+						<tr>
+							<th>Reference sequence</th>
+							<th>Genome feature</th>
+							<th>Differences</th>
+						</tr>
+					</thead>
+				  	<tbody>
+					  	<tr>
+					  		<td rowspan="2">REF_1a</td>
+					  		<td>NS3</td>
+					  		<td>G34D H56L Q49R</td>
+					  	</tr>
+					  	<tr>
+					  		<td>NS5A</td>
+					  		<td>G34D H56L Q49R</td>
+					  	</tr>
+					  	<tr>
+					  		<td rowSpan="3">REF_1</td>
+					  		<td>NS3</td>
+					  		<td>G34D H56L Q49R H56L Q49R H56L Q49R</td>
+					  	</tr>
+					  	<tr>
+					  		<td>NS5B</td>
+					  		<td>G34D H56L Q49R H56L Q49R</td>
+					  	</tr>
+					  	<tr>
+					  		<td>NS5A</td>
+					  		<td>G34D H56L Q49R</td>
+					  	</tr>
+					  	<tr>
+					  		<td rowSpan="2">REF_H77</td>
+					  		<td>NS2</td>
+					  		<td>G34D H56L Q49R H56L Q49R H56L Q49R</td>
+					  	</tr>
+					  	<tr>
+					  		<td>NS4B</td>
+					  		<td>G34D H56L Q49R H56L Q49R</td>
+					  	</tr>
+				  	</tbody>
+				</table>
+				
+				
+				
+				<table ng-show="sequenceResult.differenceView == 'genomeDetail'" class="table analysisSequenceTable" >
 				  	<tbody ng-repeat="analysisSequenceRow in sequenceResult.analysisSequenceRows track by $index">
 					  	<tr class="analysisSequenceReferenceAAIndex">
 					  		<td colspan=3 ng-repeat="referenceAAIndex in analysisSequenceRow.referenceAAIndices track by $index">{{referenceAAIndex}}</td>
