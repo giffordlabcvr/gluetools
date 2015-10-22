@@ -1,16 +1,18 @@
 <h2>GLUEtools</h2>
 
 <h3>Mission statement</h3>
-<em>A software package for developing, disseminating and utilising detailed hypotheses concerning the evolution of virus and <a href="https://en.wikipedia.org/wiki/Endogenous_viral_element">EVE</a> genomes.</em>
+<em>A software package for developing nucleotide-level evolutionary hypotheses for virus and endogenous viral element (EVE) genomes.
+It enables the dissemination of these hypotheses on the web and the utilisation of the hypotheses in wider software systems. 
+</em>
 
 <h3>Design overview</h3>
-At the heart of GLUEtools is an <a href="https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model">entity-relationship</a> <a href="#model">model</a> which has been designed for representing:
+At the heart of GLUEtools is an <a href="#model">entity-relationship model</a> which has been designed for representing:
 <ul>
 <li>Virus and EVE genome data</li>
 <li>Phenotypic and other data associated with specific sequences</li>
 <li>Genomic feature annotations</li>
-<li>The detailed proposed evolutionary relationships between genomes</li>
-<li>Configurable modules for advanced manipulation and analysis of the data</li>
+<li>The nucleotide-level proposed evolutionary relationships between genomes</li>
+<li>Configurable modules for manipulation and analysis of the data</li>
 </ul>
 Data hosted inside a GLUEtools instance is organised into independent <em>projects</em>. 
 
@@ -18,7 +20,7 @@ Typical activities associated with developing a GLUEtools project:
 <ul>
 <li>Import sequence data into GLUEtools from a public database or elsewhere</li>
 <li>Define relevant additional sequence data fields and obtaining corrected / normalised values for these fields</li>
-<li>Filter out irrelevant sequences</li>
+<li>Filter out certain sequences from the project</li>
 <li>Select reference sequences and define genomic features on these references</li>
 <li>Apply sequence alignment techniques to capture homologies between genome segments</li>
 <li>Arrange data into evolutionary clades and define relationships between these clades</li>
@@ -33,22 +35,22 @@ Once a project has been developed, it can be published as a web resource, which 
 
 <h3>Software architecture</h3>
 
-<p>The <a href="https://en.wikipedia.org/wiki/Application_programming_interface">API</a> 
+<p>The <a href="https://en.wikipedia.org/wiki/Application_programming_interface">Application Programming Interface</a> (API) 
 of GLUEtools is a rich, extensive set of <em>commands</em> for developing, querying and analysing its model. 
 </p>
 
-<p>The GLUEtools engine may be run in <a href="https://en.wikipedia.org/wiki/Command-line_interface">command line mode</a>, in which case the commands may be executed interactively or from files.
+<p>The GLUEtools engine may be run using a <a href="https://en.wikipedia.org/wiki/Command-line_interface">command line interface</a> (CLI), in which case the commands may be executed interactively or from files.
 </p>
 
 <p>Alternatively the GLUEtools engine may be integrated into a <a href="https://en.wikipedia.org/wiki/Web_container">web container</a>, 
-in which case the commands may be executed via a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">REST</a>-style <a href="https://en.wikipedia.org/wiki/Web_service">web service</a> interactions.
+in which case the commands may be executed via a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">Representational State Transfer</a> (REST) <a href="https://en.wikipedia.org/wiki/Web_service">web service</a> interactions.
 
 
 <p>GLUEtools is implemented in <a href="https://en.wikipedia.org/wiki/Java_(programming_language)">Java</a>. 
 However, it should not be viewed as a Java library, as it is not intended that other systems will interface directly with the Java code. The command set is the supported API, there is no Java API.</p>
 
 
-<p>GLUEtools is database-centric. The GLUEtools Java engine relies on a <a href="https://en.wikipedia.org/wiki/Relational_database_management_system">RDBMS</a> such as <a href="http://www.mysql.com/">MySQL</a> or 
+<p>GLUEtools is database-centric. The GLUEtools Java engine relies on a <a href="https://en.wikipedia.org/wiki/Relational_database_management_system">Relational Database Management System</a> (RDBMS) such as <a href="http://www.mysql.com/">MySQL</a> or 
 <a href="https://db.apache.org/derby/">Apache Derby</a>. All aspects of a GLUEtools project are stored in this database.
 
 </p>

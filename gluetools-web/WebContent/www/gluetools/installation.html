@@ -85,11 +85,30 @@ Download the example project from the <a href="#download">GLUEtools download pag
 $ unzip exampleProject-0.1.22.zip
 </pre>
 
-<h3>Run GLUEtools</h3>
-
-<p>Execute the following command line to start GLUEtools.</p>
+<h3>Make a script to run GLUEtools</h3>
+<p>Let's suppose you've put the jar and XML config file in <code>/home/fred/gluetools</code>. 
+We suggest you create a bash script called <code>gluetools.sh</code> in <code>/home/fred/gluetools/bin</code>.
+The bash script contents should be:
+<div hljs language="bash" no-escape>
+#!/bin/bash
+java -jar ${GLUETOOLS_HOME}/gluetools-core-all-0.1.22.jar -c ${GLUETOOLS_HOME}/gluetools-config.xml ${@}
+</div>
+Make sure the bash script is executable:
 <pre>
-$ java -jar gluetools-core-all-0.1.22.jar -c gluetools-config.xml -f exampleProject/exampleProject.glue
+$ chmod u+x /home/fred/gluetools/bin/gluetools.sh
+</pre>
+
+Add the following to your <code>.bash_profile</code> file</p>
+<div hljs language="bash" no-escape>
+export GLUETOOLS_HOME=/home/fred/gluetools
+export PATH=$PATH:$GLUETOOLS_HOME/bin
+</div>
+<h3>Run GLUEtools</h3>
+<p>Now you can execute the following command line to start GLUEtools and build the example project</p>
+<pre>
+$ cd exampleProject
+$ gluetools.sh -f exampleProject.glue
 </pre>
 <p>The <code>-f</code> option runs the commands in the <code>exampleProject.glue</code> file.</p> 
+You will then see the GLUE interactive prompt.
 
