@@ -180,4 +180,8 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return getFeatureMetatags().contains(FeatureMetatag.Type.OPEN_READING_FRAME.name());
 	}
 	
+	public boolean isIncludedInSummary() {
+		return getFeatureMetatags().contains(FeatureMetatag.Type.INCLUDE_IN_SUMMARY.name());
+	}
+
 }

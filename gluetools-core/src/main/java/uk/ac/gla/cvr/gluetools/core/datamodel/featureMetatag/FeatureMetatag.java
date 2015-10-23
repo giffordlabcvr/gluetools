@@ -24,6 +24,10 @@ public class FeatureMetatag extends _FeatureMetatag {
 		 * this feature uses its own codon numbering coordinates, rather than inheriting them from an ancestor.
 		 */
 		OWN_CODON_NUMBERING, 
+		/** 
+		 * include this feature in the summary view
+		 */
+		INCLUDE_IN_SUMMARY, 
 	}
 
 	private Type type = null;

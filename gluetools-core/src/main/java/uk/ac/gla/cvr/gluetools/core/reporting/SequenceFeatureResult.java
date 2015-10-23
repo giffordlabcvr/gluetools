@@ -152,7 +152,7 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(aaRefSeg.getRefEnd(), aaQuerySeg.getRefEnd());
 						CharSequence refAas = aaRefSeg.getAminoAcidsSubsequence(refStart, refEnd);
 						CharSequence queryAas = aaQuerySeg.getAminoAcidsSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, true);
+						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, featureTreeResult.isIncludedInSummary());
 					}
 
 		});
