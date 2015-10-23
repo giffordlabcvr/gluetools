@@ -7,22 +7,29 @@ function updateDifferenceStyle(oldDifferenceStyle, newDifferenceStyle) {
 }
 
 function generateAlignmentDifferenceSummaries(sequenceResult) {
-	var alignmentDifferenceSummaries = {};
+	var alignmentDifferenceSummaries = [];
 	for(var x = 0; x < sequenceResult.sequenceAlignmentResult.length; x++) {
 		var sequenceAlignmentResult = sequenceResult.sequenceAlignmentResult[x];
-		alignmentDifferenceSummaries[sequenceAlignmentResult.referenceName] = 
-			generateDifferenceSummary(sequenceAlignmentResult);
+		var differenceSummariesForAlmtResult = 
+			generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult);
+		for(var y = 0; y < differenceSummariesForAlmtResult.length; y++) {
+			alignmentDifferenceSummaries.push(differenceSummariesForAlmtResult[y]);
+		}
 	}
 	return alignmentDifferenceSummaries;
 }
 
-function generateDifferenceSummary(sequenceAlignmentResult) {
-	var featureNameToDifferences = {}
+function generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult) {
+	var differenceSummariesForAlmtResult = [];
+	var firstDiffSummary = null;
 	for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
 		var sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
 		if(!sequenceFeatureResult.aaReferenceDifferenceNote) {
 			continue;
 		}
+		var differenceSummary = {
+			"featureName":sequenceFeatureResult.featureName
+		};
 		var differences = [];
 		for(var j = 0; j < sequenceFeatureResult.aaReferenceDifferenceNote.length; j++) {
 			aaReferenceDifferenceNote = sequenceFeatureResult.aaReferenceDifferenceNote[j];
@@ -33,10 +40,16 @@ function generateDifferenceSummary(sequenceAlignmentResult) {
 			}
 		}
 		if(differences.length > 0) {
-			featureNameToDifferences[sequenceFeatureResult.featureName] = differences;
+			if(firstDiffSummary == null) {
+				firstDiffSummary = differenceSummary;
+				differenceSummary["referenceName"] = sequenceAlignmentResult.referenceName;
+			}
+			differenceSummary["differences"] = differences;
+			differenceSummariesForAlmtResult.push(differenceSummary);
 		}
 	}
-	return featureNameToDifferences;
+	firstDiffSummary["rowspan"] = differenceSummariesForAlmtResult.length;
+	return differenceSummariesForAlmtResult;
 }
 
 function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {

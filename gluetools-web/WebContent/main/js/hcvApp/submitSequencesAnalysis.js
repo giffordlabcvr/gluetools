@@ -45,6 +45,11 @@ submitSequencesAnalysis
 		
 		var refToFeatureTreeMap = $scope.sequenceResult.refToFeatureTreeMap;
 		
+		$scope.sequenceResult.alignmentDifferenceSummaries = 
+			generateAlignmentDifferenceSummaries($scope.sequenceResult);
+		console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
+
+		
 		for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
 			var sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
 			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features) {
@@ -110,12 +115,6 @@ submitSequencesAnalysis
 					$scope.sequenceResult.selectedFeature, 
 					sequenceFeatureResult);
 			console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
-
-			// this needs to move to a controller specific to the summary button.
-			$scope.sequenceResult.alignmentDifferenceSummaries = 
-				generateAlignmentDifferenceSummaries($scope.sequenceResult);
-			console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
-
 		}
 		
 

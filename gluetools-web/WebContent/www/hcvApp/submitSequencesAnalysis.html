@@ -181,42 +181,13 @@
 						</tr>
 					</thead>
 				  	<tbody>
-					  	<tr>
-					  		<td rowspan="2">REF_1a</td>
-					  		<td>NS3</td>
-					  		<td>G34D H56L Q49R</td>
-					  	</tr>
-					  	<tr>
-					  		<td>NS5A</td>
-					  		<td>G34D H56L Q49R</td>
-					  	</tr>
-					  	<tr>
-					  		<td rowSpan="3">REF_1</td>
-					  		<td>NS3</td>
-					  		<td>G34D H56L Q49R H56L Q49R H56L Q49R</td>
-					  	</tr>
-					  	<tr>
-					  		<td>NS5B</td>
-					  		<td>G34D H56L Q49R H56L Q49R</td>
-					  	</tr>
-					  	<tr>
-					  		<td>NS5A</td>
-					  		<td>G34D H56L Q49R</td>
-					  	</tr>
-					  	<tr>
-					  		<td rowSpan="2">REF_H77</td>
-					  		<td>NS2</td>
-					  		<td>G34D H56L Q49R H56L Q49R H56L Q49R</td>
-					  	</tr>
-					  	<tr>
-					  		<td>NS4B</td>
-					  		<td>G34D H56L Q49R H56L Q49R</td>
+					  	<tr ng-repeat="diffSummary in sequenceResult.alignmentDifferenceSummaries">
+					  		<td ng-show="diffSummary.referenceName" rowspan="{{diffSummary.rowspan}}">{{diffSummary.referenceName}}</td>
+					  		<td>{{diffSummary.featureName}}</td>
+					  		<td><span ng-repeat="diff in diffSummary.differences">{{diff.summaryString}} </span></td>
 					  	</tr>
 				  	</tbody>
 				</table>
-				
-				
-				
 				<table ng-show="sequenceResult.differenceView == 'genomeDetail'" class="table analysisSequenceTable" >
 				  	<tbody ng-repeat="analysisSequenceRow in sequenceResult.analysisSequenceRows track by $index">
 					  	<tr class="analysisSequenceReferenceAAIndex">
