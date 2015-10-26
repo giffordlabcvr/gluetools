@@ -423,36 +423,44 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		Set<String> existingGiNumbers = new LinkedHashSet<String>();
 		
 		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers);
-		Set<String> giNumbersToRetrieve = new LinkedHashSet<String>(matchingGiNumbers);
+		Set<String> retrieveSet = new LinkedHashSet<String>(matchingGiNumbers);
 		if(!overwriteExisting) {
-			giNumbersToRetrieve.removeAll(existingGiNumbers);
+			retrieveSet.removeAll(existingGiNumbers);
 		}
-		List<RetrievedSequence> sequences = retrieveSequences(new ArrayList<String>(giNumbersToRetrieve));
-		ensureSourceExists(cmdContext, sourceName);
+		List<String> retrieveList = new ArrayList<String>(retrieveSet);
+		if(maxDownloaded != null && retrieveList.size() > maxDownloaded) {
+			retrieveList = retrieveList.subList(0, maxDownloaded);
+		}
+		List<String> giNumbers = new ArrayList<String>(retrieveList);
+		int batchStart = 0;
+		int batchEnd;
 		int recordsAdded = 0;
 		int recordsUpdated = 0;
-		for(RetrievedSequence sequence: sequences) {
-			String sequenceID = sequence.sequenceID;
-			SequenceFormat format = sequence.format;
-			byte[] sequenceData = sequence.data;
-			boolean preExisting = false;
-			if(overwriteExisting) {
-				DeleteResult deleteResult = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
-				cmdContext.commit();
-				if(deleteResult.getNumber() == 1) {
-					preExisting = true;
+		ensureSourceExists(cmdContext, sourceName);
+		do {
+			batchEnd = Math.min(batchStart+eFetchBatchSize, giNumbers.size());
+			List<RetrievedSequence> batchSequences = fetchBatch(giNumbers.subList(batchStart, batchEnd));
+			for(RetrievedSequence sequence: batchSequences) {
+				String sequenceID = sequence.sequenceID;
+				SequenceFormat format = sequence.format;
+				byte[] sequenceData = sequence.data;
+				boolean preExisting = false;
+				if(overwriteExisting) {
+					DeleteResult deleteResult = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+					cmdContext.commit();
+					if(deleteResult.getNumber() == 1) {
+						preExisting = true;
+					}
+				}
+				createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
+				if(preExisting) {
+					recordsUpdated++;
+				} else {
+					recordsAdded++;
 				}
 			}
-			createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
-			if(preExisting) {
-				recordsUpdated++;
-			} else {
-				recordsAdded++;
-			}
-			if(maxDownloaded != null && recordsUpdated+recordsAdded >= maxDownloaded) {
-				break;
-			}
-		}
+			batchStart = batchEnd;
+		} while(batchEnd < giNumbers.size());
 		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), recordsAdded, recordsUpdated,
 				maxDownloaded, overwriteExisting, eSearchRetMax);
 	}

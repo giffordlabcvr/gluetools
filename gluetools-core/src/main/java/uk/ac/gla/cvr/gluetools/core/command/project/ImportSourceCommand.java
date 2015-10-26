@@ -31,26 +31,33 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"import", "source"}, 
 	docoptUsages={
-		"<sourcePath>"
+		"[-b <batchSize>] <sourcePath>"
 	}, 
+	docoptOptions={"-b <batchSize>, --batchSize <batchSize>  Commit batch size [default: 250]"},
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 	furtherHelp=
 		"The argument <sourcePath> names a directory, which may be relative to the current load-save-path. "+
 	    "The name of the new source will be the name of this directory. "+
 		"The directory contains the sequence data, one file per sequence. The first part of the "+
 		"sequence file name will become the sequenceID, and the extension will be the standard file "+
-		"extension for the sequence format, as specified in the \"list format sequence\" command output.",
+		"extension for the sequence format, as specified in the \"list format sequence\" command output. "+
+		"The <batchSize> argument allows you to control how often sequences are committed to the database "+
+		"during the import. The default is every 250 sequences. A larger <batchSize> means fewer database "+
+		"accesses, but requires more Java heap memory.",
 	description="Populate source from directory containing sequence files") 
 public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> {
 
 	public static final String SOURCE_PATH = "sourcePath";
+	public static final String BATCH_SIZE = "batchSize";
 
 	private String sourcePath;
+	private Integer batchSize;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		sourcePath = PluginUtils.configureStringProperty(configElem, SOURCE_PATH, true);
+		batchSize = PluginUtils.configureIntProperty(configElem, BATCH_SIZE, true);
 	}
 
 	@Override
@@ -72,7 +79,8 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), false);
 		List<String> fileNames = consoleCmdContext.listMembers(sourcePath, true, false, "");
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
-		fileNames.forEach(fileName -> {
+		int sequencesAdded = 0;
+		for(String fileName: fileNames) {
 			File filePath = new File(fullPath, fileName);
 			int lastIndexOfDot = fileName.lastIndexOf('.');
 			if(lastIndexOfDot == -1) {
@@ -98,8 +106,11 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 			fileResult.put("sequenceID", sequenceID);
 			fileResult.put("sequenceFormat", seqFormat.name());
 			rowData.add(fileResult);
-		});
-		
+			sequencesAdded++;
+			if(sequencesAdded == batchSize.intValue()) {
+				cmdContext.commit();
+			}
+		}
 		cmdContext.commit();
 		return new ImportSourceResult(rowData);
 	}
