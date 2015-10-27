@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
 import java.util.List;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -49,8 +48,8 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 
 	public OkResult doExport(ConsoleCommandContext cmdContext, String fileName, 
 			String alignmentName, Boolean includeReference, Expression whereClause) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Alignment alignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(alignmentName));
+		
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		SelectQuery selectQuery = null;
 		Expression exp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignmentName);
 		if(whereClause != null) {
@@ -58,7 +57,7 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 		} else {
 			selectQuery = new SelectQuery(AlignmentMember.class, exp);
 		}
-		List<AlignmentMember> almtMembers = GlueDataObject.query(objContext, AlignmentMember.class, selectQuery);
+		List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
 		StringBuffer stringBuffer = new StringBuffer();
 		ReferenceSequence refSequence = alignment.getRefSequence();
 		int maxNtIndex = 0;

@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.Optional;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -42,8 +41,8 @@ public class CreateSourceCommand extends ProjectModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), allowExisting);
+		
+		GlueDataObject.create(cmdContext, Source.class, Source.pkMap(sourceName), allowExisting);
 		cmdContext.commit();
 		return new CreateResult(Source.class, 1);
 	}

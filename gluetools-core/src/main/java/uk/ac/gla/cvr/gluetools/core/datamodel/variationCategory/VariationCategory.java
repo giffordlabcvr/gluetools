@@ -1,0 +1,50 @@
+package uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
+
+@GlueDataClass(defaultListColumns = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY})
+public class VariationCategory extends _VariationCategory {
+
+	public static final String PARENT_NAME_PATH = _VariationCategory.PARENT_PROPERTY+"."+_VariationCategory.NAME_PROPERTY;
+
+	public enum NotifiabilityLevel {
+		NOTIFIABLE,
+		NOT_NOTIFIABLE
+	}
+	
+	private NotifiabilityLevel notifiabilityLevel;
+
+	public NotifiabilityLevel getNotifiabilityLevel() {
+		if(notifiabilityLevel == null) {
+			notifiabilityLevel = buildNotifiabilityLevel();
+		}
+		return notifiabilityLevel;
+	}
+	
+	private NotifiabilityLevel buildNotifiabilityLevel() {
+		return NotifiabilityLevel.valueOf(getNotifiability());
+	}
+
+	public static Map<String, String> pkMap(String name) {
+		Map<String, String> idMap = new LinkedHashMap<String, String>();
+		idMap.put(NAME_PROPERTY, name);
+		return idMap;
+	}
+
+	@Override
+	public void setPKValues(Map<String, String> pkMap) {
+		setName(pkMap.get(NAME_PROPERTY));
+	}
+
+	
+	@Override
+	protected Map<String, String> pkMap() {
+		return pkMap(getName());
+	}
+
+
+}

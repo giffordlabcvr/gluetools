@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -31,9 +30,9 @@ public class DeleteVariationCommand extends FeatureLocModeCommand<DeleteResult> 
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		DeleteResult result = 
-				GlueDataObject.delete(objContext, Variation.class, Variation.pkMap(
+				GlueDataObject.delete(cmdContext, Variation.class, Variation.pkMap(
 						getRefSeqName(), getFeatureName(), variationName), true);
 		cmdContext.commit();
 		return result;

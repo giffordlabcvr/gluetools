@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
@@ -81,22 +80,22 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		Alignment alignment = lookupAlignment(cmdContext);
 		List<Sequence> sequencesToAdd;
 		if(whereClause.isPresent()) {
 			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause.get());
-			sequencesToAdd = GlueDataObject.query(objContext, Sequence.class, selectQuery);
+			sequencesToAdd = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 		} else if(allSequences) {
 			SelectQuery selectQuery = new SelectQuery(Sequence.class);
-			sequencesToAdd = GlueDataObject.query(objContext, Sequence.class, selectQuery);
+			sequencesToAdd = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 		} else {
-			sequencesToAdd = Arrays.asList(GlueDataObject.lookup(objContext, Sequence.class, 
+			sequencesToAdd = Arrays.asList(GlueDataObject.lookup(cmdContext, Sequence.class, 
 					Sequence.pkMap(sourceName.get(), sequenceID.get())));
 		}
 		int added = 0;
 		for(Sequence seq: sequencesToAdd) {
-			AlignmentMember newMember = GlueDataObject.create(objContext, AlignmentMember.class, 
+			AlignmentMember newMember = GlueDataObject.create(cmdContext, AlignmentMember.class, 
 					AlignmentMember.pkMap(alignment.getName(), seq.getSource().getName(), seq.getSequenceID()), true);
 			newMember.setAlignment(alignment);
 			newMember.setSequence(seq);

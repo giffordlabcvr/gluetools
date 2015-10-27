@@ -32,7 +32,7 @@ public class ListAlignedSegmentCommand extends MemberModeCommand<ListAlignedSegm
 		exp = exp.andExp(ExpressionFactory.matchExp(AlignedSegment.MEMBER_SEQUENCE_ID_PATH, getSequenceID()));
 		
 		List<AlignedSegment> segments = 
-				GlueDataObject.query(cmdContext.getObjectContext(), AlignedSegment.class, 
+				GlueDataObject.query(cmdContext, AlignedSegment.class, 
 						new SelectQuery(AlignedSegment.class, exp));
 		segments = IReferenceSegment.sortByRefStart(segments, ArrayList::new);
 		

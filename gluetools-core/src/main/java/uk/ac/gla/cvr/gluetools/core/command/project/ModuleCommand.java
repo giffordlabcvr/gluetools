@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -34,8 +33,8 @@ public class ModuleCommand extends ProjectModeCommand<OkResult>  {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(moduleName));
+		
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
 		cmdContext.pushCommandMode(new ModuleMode(cmdContext, this, module.getName()));
 		return CommandResult.OK;
 	}

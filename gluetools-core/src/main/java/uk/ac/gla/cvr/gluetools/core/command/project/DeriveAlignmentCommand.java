@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -77,9 +76,9 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 
 	@Override
 	public DeriveAlignmentResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Alignment sourceAlignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(sourceAlmtName));
-		Alignment targetAlignment = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(targetAlmtName));
+		
+		Alignment sourceAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(sourceAlmtName));
+		Alignment targetAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(targetAlmtName));
 		ReferenceSequence refSequence = targetAlignment.getRefSequence();
 		if(refSequence == null) {
 			throw new DeriveAlignmentException(Code.TARGET_ALIGNMENT_IS_UNCONSTRAINED, targetAlignment.getName());
@@ -87,7 +86,7 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 		Sequence refSeqSeq = refSequence.getSequence();
 		String refSequenceSourceName = refSeqSeq.getSource().getName();
 		String refSequenceSeqID = refSeqSeq.getSequenceID();
-		AlignmentMember refSeqMemberInSourceAlmt = GlueDataObject.lookup(objContext, AlignmentMember.class, 
+		AlignmentMember refSeqMemberInSourceAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(sourceAlignment.getName(), refSequenceSourceName, refSequenceSeqID), true);
 		if(refSeqMemberInSourceAlmt == null) {
 			throw new DeriveAlignmentException(Code.REFERENCE_SEQUENCE_NOT_MEMBER_OF_SOURCE_ALIGNMENT, 
@@ -109,7 +108,7 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 		} else {
 			selectQuery = new SelectQuery(AlignmentMember.class, sourceAlmtMemberExp);
 		}
-		List<AlignmentMember> sourceAlmtMembers = GlueDataObject.query(objContext, AlignmentMember.class, selectQuery);
+		List<AlignmentMember> sourceAlmtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
 		
 		for(AlignmentMember sourceAlmtMember: sourceAlmtMembers) {
@@ -118,14 +117,14 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 			String memberSourceName = memberSeq.getSource().getName();
 			String memberSeqID = memberSeq.getSequenceID();
 			
-			AlignmentMember targetAlmtMember = GlueDataObject.create(objContext, AlignmentMember.class, 
+			AlignmentMember targetAlmtMember = GlueDataObject.create(cmdContext, AlignmentMember.class, 
 					AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
 			targetAlmtMember.setAlignment(targetAlignment);
 			targetAlmtMember.setSequence(memberSeq);
 			
 			List<AlignedSegment> segmentsToRemove = new ArrayList<AlignedSegment>(targetAlmtMember.getAlignedSegments());
 			for(AlignedSegment segmentToRemove: segmentsToRemove) {
-				GlueDataObject.delete(objContext, AlignedSegment.class, segmentToRemove.pkMap(), false);
+				GlueDataObject.delete(cmdContext, AlignedSegment.class, segmentToRemove.pkMap(), false);
 			}
 			cmdContext.commit();
 			
@@ -139,7 +138,7 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 					QueryAlignedSegment.translateSegments(memberToSrcAlmtQaSegs, srcAlmtToRefQaSegs);
 
 			for(QueryAlignedSegment qaSegmentToAdd: memberToRefQaSegs) {
-				AlignedSegment alignedSegment = GlueDataObject.create(objContext, AlignedSegment.class, 
+				AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
 						AlignedSegment.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID, 
 								qaSegmentToAdd.getRefStart(), qaSegmentToAdd.getRefEnd(), 
 								qaSegmentToAdd.getQueryStart(), qaSegmentToAdd.getQueryEnd())

@@ -184,7 +184,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		if(prefix != null && prefix.length()>0) {
 			whereClause = whereClause.andExp(ExpressionFactory.likeExp(nameProperty, prefix+"%"));
 		}
-		List<A> queryResults = GlueDataObject.query(cmdContext.getObjectContext(), theClass, new SelectQuery(theClass, whereClause));
+		List<A> queryResults = GlueDataObject.query(cmdContext, theClass, new SelectQuery(theClass, whereClause));
 		return queryResults
 				.stream()
 				.map(s -> new CompletionSuggestion(s.readNestedProperty(nameProperty).toString(), true))

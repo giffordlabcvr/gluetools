@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -42,8 +41,8 @@ public class RemoveFeatureLocCommand extends ReferenceSequenceModeCommand<Delete
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Feature feature = GlueDataObject.lookup(objContext, Feature.class, Feature.pkMap(featureName));
+		
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		List<String> locsToDelete = new ArrayList<String>();
 		locsToDelete.add(featureName);
 		if(recursive) {
@@ -52,7 +51,7 @@ public class RemoveFeatureLocCommand extends ReferenceSequenceModeCommand<Delete
 		}
 		int deleted = 0;
 		for(String locToDelete: locsToDelete) {
-			DeleteResult result = GlueDataObject.delete(objContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), locToDelete), true);
+			DeleteResult result = GlueDataObject.delete(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), locToDelete), true);
 			cmdContext.commit();
 			deleted += result.getNumber();
 		}

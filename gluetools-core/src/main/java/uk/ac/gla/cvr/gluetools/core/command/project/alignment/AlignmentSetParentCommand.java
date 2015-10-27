@@ -44,7 +44,7 @@ public class AlignmentSetParentCommand extends AlignmentModeCommand<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		Alignment alignment = lookupAlignment(cmdContext);
-		Alignment parentAlignment = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, Alignment.pkMap(parentAlignmentName));
+		Alignment parentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(parentAlignmentName));
 		alignment.setParent(parentAlignment);
 		cmdContext.commit();
 		return new OkResult();

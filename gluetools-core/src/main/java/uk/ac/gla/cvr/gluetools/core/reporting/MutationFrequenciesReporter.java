@@ -216,7 +216,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	// run the aligner to produce QueryAlignedSegments aligning each seqObj with its initial reference.
 	private <R extends Aligner.AlignerResult, A extends Aligner<R,A>> void initSeqToRefAlignedSegments(
 			CommandContext cmdContext, List<SequenceResult> seqResults, AlignmentResult almtResult) {
-		Module alignerModule = GlueDataObject.lookup(cmdContext.getObjectContext(), 
+		Module alignerModule = GlueDataObject.lookup(cmdContext, 
 				Module.class, Module.pkMap(alignerModuleName));
 		@SuppressWarnings("unchecked")
 		Aligner<R,A> aligner = (Aligner<R, A>) alignerModule.getModulePlugin(cmdContext.getGluetoolsEngine());

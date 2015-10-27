@@ -19,11 +19,16 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -49,6 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.GenbankXmlSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -126,14 +132,16 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		} else {
 			try(CloseableHttpClient httpClient = createHttpClient()) {
 				HttpUriRequest eSearchHttpRequest = createESearchRequest();
+				GlueLogger.getGlueLogger().finest("Sending eSearch request to NCBI");
 				Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
+				GlueLogger.getGlueLogger().finest("NCBI eSearch response received");
 				checkForESearchErrors(eSearchResponseDoc);
 				giNumbersMatching.addAll(GlueXmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()"));
 			} catch (IOException e) {
 				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 			}
 		}
-		Source source = GlueDataObject.lookup(cmdContext.getObjectContext(), Source.class, Source.pkMap(sourceName), true);
+		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName), true);
 		if(source == null) {
 			return;
 		}
@@ -153,7 +161,10 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	}
 
 	private CloseableHttpClient createHttpClient() {
-		CloseableHttpClient httpClient = HttpClients.createDefault();
+		// ignore cookies, in order to prevent a log warning resulting from NCBI's incorrect
+		// implementation of the spec.
+		RequestConfig globalConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build();
+		CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(globalConfig).build();
 		return httpClient;
 	}
 
@@ -179,7 +190,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
 			switch(sequenceFormat) {
 			case GENBANK_XML:
+				GlueLogger.getGlueLogger().finest("Sending eFetch request to NCBI");
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
+				GlueLogger.getGlueLogger().finest("NCBI eFetch response received");
 				break;
 			default:
 				throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
@@ -424,13 +437,16 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		
 		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers);
 		Set<String> retrieveSet = new LinkedHashSet<String>(matchingGiNumbers);
+		GlueLogger.getGlueLogger().fine("NCBI sequences matching search query: "+retrieveSet.size());
 		if(!overwriteExisting) {
 			retrieveSet.removeAll(existingGiNumbers);
 		}
+
 		List<String> retrieveList = new ArrayList<String>(retrieveSet);
 		if(maxDownloaded != null && retrieveList.size() > maxDownloaded) {
 			retrieveList = retrieveList.subList(0, maxDownloaded);
 		}
+		GlueLogger.getGlueLogger().fine("NCBI sequences to download: "+retrieveList.size());
 		List<String> giNumbers = new ArrayList<String>(retrieveList);
 		int batchStart = 0;
 		int batchEnd;
@@ -446,7 +462,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				byte[] sequenceData = sequence.data;
 				boolean preExisting = false;
 				if(overwriteExisting) {
-					DeleteResult deleteResult = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+					DeleteResult deleteResult = GlueDataObject.delete(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
 					cmdContext.commit();
 					if(deleteResult.getNumber() == 1) {
 						preExisting = true;
@@ -459,6 +475,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					recordsAdded++;
 				}
 			}
+			cmdContext.newObjectContext();
+			GlueLogger.getGlueLogger().fine("Sequences updated: "+recordsUpdated+", sequences added: "+recordsAdded);
 			batchStart = batchEnd;
 		} while(batchEnd < giNumbers.size());
 		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), recordsAdded, recordsUpdated,

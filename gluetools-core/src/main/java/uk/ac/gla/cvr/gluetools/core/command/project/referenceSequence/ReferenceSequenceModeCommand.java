@@ -32,7 +32,7 @@ public abstract class ReferenceSequenceModeCommand<R extends CommandResult> exte
 	}
 
 	protected ReferenceSequence lookupRefSeq(CommandContext cmdContext) {
-		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext.getObjectContext(), 
+		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext, 
 				ReferenceSequence.class, ReferenceSequence.pkMap(getRefSeqName()), false);
 		return refSeq;
 	}

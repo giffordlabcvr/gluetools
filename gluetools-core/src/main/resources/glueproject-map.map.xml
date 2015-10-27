@@ -70,15 +70,21 @@
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="VARIATION">
+		<db-attribute name="CATEGORY" type="VARCHAR" length="50"/>
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="NOTIFIABILITY" type="VARCHAR" length="50"/>
 		<db-attribute name="REF_END" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_START" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="REGEX" type="VARCHAR" isMandatory="true" length="1000"/>
 		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
+	</db-entity>
+	<db-entity name="VARIATION_CATEGORY">
+		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="NOTIFIABILITY" type="VARCHAR" isMandatory="true" length="50"/>
+		<db-attribute name="PARENT_NAME" type="VARCHAR" length="50"/>
 	</db-entity>
 	<obj-entity name="AlignedSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment" dbEntityName="ALIGNED_SEGMENT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="memberEnd" type="java.lang.Integer" db-attribute-path="MEMBER_END"/>
@@ -128,11 +134,15 @@
 	<obj-entity name="Variation" className="uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation" dbEntityName="VARIATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
-		<obj-attribute name="notifiability" type="java.lang.String" db-attribute-path="NOTIFIABILITY"/>
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="REF_START"/>
 		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="REGEX"/>
 		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
+	</obj-entity>
+	<obj-entity name="VariationCategory" className="uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory" dbEntityName="VARIATION_CATEGORY" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+		<obj-attribute name="notifiability" type="java.lang.String" db-attribute-path="NOTIFIABILITY"/>
 	</obj-entity>
 	<db-relationship name="alignmentMember" source="ALIGNED_SEGMENT" target="ALIGNMENT_MEMBER" toMany="false">
 		<db-attribute-pair source="ALIGNMENT" target="ALIGNMENT"/>
@@ -220,9 +230,21 @@
 	<db-relationship name="sequences" source="SOURCE" target="SEQUENCE" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="SOURCE"/>
 	</db-relationship>
+	<db-relationship name="category" source="VARIATION" target="VARIATION_CATEGORY" toMany="false">
+		<db-attribute-pair source="CATEGORY" target="NAME"/>
+	</db-relationship>
 	<db-relationship name="featureLoc" source="VARIATION" target="FEATURE_LOCATION" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+	</db-relationship>
+	<db-relationship name="children" source="VARIATION_CATEGORY" target="VARIATION_CATEGORY" toMany="true">
+		<db-attribute-pair source="NAME" target="PARENT_NAME"/>
+	</db-relationship>
+	<db-relationship name="members" source="VARIATION_CATEGORY" target="VARIATION" toMany="true">
+		<db-attribute-pair source="NAME" target="CATEGORY"/>
+	</db-relationship>
+	<db-relationship name="parent" source="VARIATION_CATEGORY" target="VARIATION_CATEGORY" toMany="false">
+		<db-attribute-pair source="PARENT_NAME" target="NAME"/>
 	</db-relationship>
 	<obj-relationship name="alignmentMember" source="AlignedSegment" target="AlignmentMember" deleteRule="Nullify" db-relationship-path="alignmentMember"/>
 	<obj-relationship name="children" source="Alignment" target="Alignment" deleteRule="Nullify" db-relationship-path="children"/>
@@ -249,5 +271,9 @@
 	<obj-relationship name="referenceSequences" source="Sequence" target="ReferenceSequence" deleteRule="Deny" db-relationship-path="referenceSequences"/>
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
 	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
+	<obj-relationship name="category" source="Variation" target="VariationCategory" deleteRule="Nullify" db-relationship-path="category"/>
 	<obj-relationship name="featureLoc" source="Variation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLoc"/>
+	<obj-relationship name="children" source="VariationCategory" target="VariationCategory" deleteRule="Deny" db-relationship-path="children"/>
+	<obj-relationship name="members" source="VariationCategory" target="Variation" deleteRule="Deny" db-relationship-path="members"/>
+	<obj-relationship name="parent" source="VariationCategory" target="VariationCategory" deleteRule="Nullify" db-relationship-path="parent"/>
 </data-map>

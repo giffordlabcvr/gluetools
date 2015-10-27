@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.NotifiabilityLevel;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.IAaReferenceSegment;
@@ -23,12 +22,10 @@ public class VariationDocument {
 	private int refEnd;
 	private Pattern regex;
 	private String description;
-	private NotifiabilityLevel notifiabilityLevel;
 	private TranslationFormat transcriptionFormat;
 	
 	public VariationDocument(String name, int refStart, int refEnd,
 			Pattern regex, String description,
-			NotifiabilityLevel notifiabilityLevel,
 			TranslationFormat transcriptionFormat) {
 		super();
 		this.name = name;
@@ -36,7 +33,6 @@ public class VariationDocument {
 		this.refEnd = refEnd;
 		this.regex = regex;
 		this.description = description;
-		this.notifiabilityLevel = notifiabilityLevel;
 		this.transcriptionFormat = transcriptionFormat;
 	}
 
@@ -55,9 +51,6 @@ public class VariationDocument {
 	public String getDescription() {
 		return description;
 	}
-	public NotifiabilityLevel getNotifiabilityLevel() {
-		return notifiabilityLevel;
-	}
 	public TranslationFormat getTranscriptionFormat() {
 		return transcriptionFormat;
 	}
@@ -68,7 +61,6 @@ public class VariationDocument {
 		objBuilder.set("refEnd", refEnd);
 		objBuilder.set("regex", regex.pattern());
 		objBuilder.set("description", description);
-		objBuilder.set("notifiability", notifiabilityLevel.name());
 		objBuilder.set("transcriptionType", transcriptionFormat.name());
 	}
 	

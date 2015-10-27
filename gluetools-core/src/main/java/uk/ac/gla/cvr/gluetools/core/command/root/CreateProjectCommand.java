@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import java.util.Optional;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
@@ -38,8 +37,8 @@ public class CreateProjectCommand extends RootModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Project newProject = GlueDataObject.create(objContext, Project.class, Project.pkMap(projectName), false);
+		
+		Project newProject = GlueDataObject.create(cmdContext, Project.class, Project.pkMap(projectName), false);
 		description.ifPresent(newProject::setDescription);
 		ServerRuntime projectRuntime = 
 				ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), newProject);

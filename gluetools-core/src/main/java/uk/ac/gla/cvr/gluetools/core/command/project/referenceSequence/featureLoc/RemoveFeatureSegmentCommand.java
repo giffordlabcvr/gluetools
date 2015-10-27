@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -37,8 +36,8 @@ public class RemoveFeatureSegmentCommand extends FeatureLocModeCommand<DeleteRes
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, FeatureSegment.class, 
+		
+		DeleteResult result = GlueDataObject.delete(cmdContext, FeatureSegment.class, 
 				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd), true);
 		cmdContext.commit();
 		return result;

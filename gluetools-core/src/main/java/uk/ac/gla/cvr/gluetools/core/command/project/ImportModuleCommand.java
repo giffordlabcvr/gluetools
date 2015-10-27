@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -42,16 +41,16 @@ public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		Module module = null;
 		boolean moduleExisted = false;
 		if(reload) {
-			module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(name), true);
+			module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(name), true);
 		}
 		if(module != null) {
 			moduleExisted = true;
 		} else {
-			module = GlueDataObject.create(objContext, Module.class, Module.pkMap(name), false);
+			module = GlueDataObject.create(cmdContext, Module.class, Module.pkMap(name), false);
 		}
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		byte[] config = consoleCmdContext.loadBytes(fileName);

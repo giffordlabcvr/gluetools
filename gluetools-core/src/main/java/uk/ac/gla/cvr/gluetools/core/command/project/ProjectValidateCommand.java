@@ -23,10 +23,10 @@ public class ProjectValidateCommand extends ProjectModeCommand<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		List<Feature> features = 
-				GlueDataObject.query(cmdContext.getObjectContext(), Feature.class, new SelectQuery(Feature.class));
+				GlueDataObject.query(cmdContext, Feature.class, new SelectQuery(Feature.class));
 		features.forEach(feature -> feature.validate(cmdContext));
 		List<ReferenceSequence> refSeqs = 
-				GlueDataObject.query(cmdContext.getObjectContext(), ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
+				GlueDataObject.query(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
 		refSeqs.forEach(refSeq -> refSeq.validate(cmdContext));
 		return new OkResult();
 	}

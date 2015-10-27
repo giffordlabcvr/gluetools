@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -26,8 +25,8 @@ public class ListFeatureSegmentCommand extends FeatureLocModeCommand<ListResult>
 	public ListResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.matchExp(FeatureSegment.REF_SEQ_NAME_PATH, getRefSeqName());
 		exp = exp.andExp(ExpressionFactory.matchExp(FeatureSegment.FEATURE_NAME_PATH, getFeatureName()));
-		ObjectContext objContext = cmdContext.getObjectContext();
-		List<FeatureSegment> segments = GlueDataObject.query(objContext, FeatureSegment.class, new SelectQuery(FeatureSegment.class, exp));
+		
+		List<FeatureSegment> segments = GlueDataObject.query(cmdContext, FeatureSegment.class, new SelectQuery(FeatureSegment.class, exp));
 		segments = IReferenceSegment.sortByRefStart(segments, ArrayList::new);
 		
 		return new ListResult(FeatureSegment.class, segments);

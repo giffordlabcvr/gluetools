@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -35,8 +34,8 @@ public class FeatureLocCommand extends ReferenceSequenceModeCommand<OkResult>  {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		FeatureLocation featureLoc = GlueDataObject.lookup(objContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), featureName));
+		
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRefSeqName(), featureName));
 		cmdContext.pushCommandMode(new FeatureLocMode(getRefSeqMode(cmdContext).getProject(), this, 
 				featureLoc.getReferenceSequence().getName(),
 				featureLoc.getFeature().getName()));

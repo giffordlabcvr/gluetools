@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -35,8 +34,8 @@ public class ReferenceSequenceCommand extends ProjectModeCommand<OkResult>  {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		ReferenceSequence refSequence = GlueDataObject.lookup(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSeqName));
+		
+		ReferenceSequence refSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSeqName));
 		cmdContext.pushCommandMode(new ReferenceSequenceMode(getProjectMode(cmdContext).getProject(), this, refSequence.getName()));
 		return CommandResult.OK;
 	}

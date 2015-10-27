@@ -77,11 +77,11 @@ public class SequenceCommand extends ProjectModeCommand<OkResult>  {
 	public OkResult execute(CommandContext cmdContext) {
 		Sequence sequence;
 		if(whereClause == null) {
-			sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
+			sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
 					Sequence.pkMap(sourceName, sequenceID));
 		} else {
 			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause);
-			List<Sequence> sequences = GlueDataObject.query(cmdContext.getObjectContext(), Sequence.class, selectQuery);
+			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 			int numSeqs = sequences.size();
 			if(numSeqs == 1) {
 				sequence = sequences.get(0);

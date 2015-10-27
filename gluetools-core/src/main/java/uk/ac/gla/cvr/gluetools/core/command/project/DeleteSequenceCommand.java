@@ -65,7 +65,7 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		if(sourceName.isPresent()) {
-			DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), 
+			DeleteResult result = GlueDataObject.delete(cmdContext, 
 					Sequence.class, Sequence.pkMap(sourceName.get(), sequenceID.get()), true);
 			cmdContext.commit();
 			return result; 
@@ -77,14 +77,14 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 				selectQuery = new SelectQuery(Sequence.class);
 			}
 			List<Sequence> sequencesToDelete = 
-					GlueDataObject.query(cmdContext.getObjectContext(), Sequence.class, selectQuery);
+					GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 			// filter out reference sequences
 			sequencesToDelete = sequencesToDelete.stream()
 					.filter(seq -> seq.getReferenceSequences().isEmpty())
 					.collect(Collectors.toList());
 			int numDeleted = 0;
 			for(Sequence seqToDelete: sequencesToDelete) {
-				DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), Sequence.class, seqToDelete.pkMap(), true);
+				DeleteResult result = GlueDataObject.delete(cmdContext, Sequence.class, seqToDelete.pkMap(), true);
 				numDeleted = numDeleted+result.getNumber();
 			}
 			cmdContext.commit();

@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -31,8 +30,8 @@ public class DeleteModuleCommand extends ProjectModeCommand<DeleteResult> {
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, Module.class, Module.pkMap(moduleName), true);
+		
+		DeleteResult result = GlueDataObject.delete(cmdContext, Module.class, Module.pkMap(moduleName), true);
 		cmdContext.commit();
 		return result;
 	}

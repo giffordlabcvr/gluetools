@@ -24,7 +24,7 @@ public class ModuleModeCommandFactory extends BaseCommandFactory {
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected void refreshCommandTree(CommandContext cmdContext) {
-		Module module = GlueDataObject.lookup(cmdContext.getObjectContext(), Module.class, Module.pkMap(moduleName));
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
 		@SuppressWarnings("rawtypes")
 		List<Class<? extends ModuleProvidedCommand>> providedCmdClasses = module.getProvidedCommandClasses(cmdContext.getGluetoolsEngine());
 		if(cmdClasses == null || !providedCmdClasses.equals(cmdClasses)) {

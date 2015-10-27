@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
+package uk.ac.gla.cvr.gluetools.core.command.project.variationCategory;
 
 import java.util.Optional;
 
@@ -11,8 +11,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.NotifiabilityLevel;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory.NotifiabilityLevel;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -21,9 +21,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptUsages={"<notifiabilityLevel>"},
 		docoptOptions={},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Set the variation's notifiability level", 
+		description="Set the variation category's notifiability level", 
 		furtherHelp="Possible values for the notifiability level are [NOTIFIABLE, NOT_NOTIFIABLE]") 
-public class VariationSetNotifiabilityCommand extends VariationModeCommand<OkResult> {
+public class VariationCategorySetNotifiabilityCommand extends VariationCategoryModeCommand<OkResult> {
 
 	public static final String NOTIFIABILITY_LEVEL = "notifiabilityLevel";
 	
@@ -40,10 +40,10 @@ public class VariationSetNotifiabilityCommand extends VariationModeCommand<OkRes
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		Variation variation = lookupVariation(cmdContext);
-		variation.setNotifiability(notifiabilityLevel.name());
+		VariationCategory variationCategory = lookupVariationCategory(cmdContext);
+		variationCategory.setNotifiability(notifiabilityLevel.name());
 		cmdContext.commit();
-		return new UpdateResult(Variation.class, 1);
+		return new UpdateResult(VariationCategory.class, 1);
 	}
 
 	@CompleterClass

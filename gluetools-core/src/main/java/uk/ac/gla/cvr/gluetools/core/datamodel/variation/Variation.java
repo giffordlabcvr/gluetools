@@ -24,12 +24,6 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 @GlueDataClass(defaultListColumns = {_Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY})
 public class Variation extends _Variation {
 
-	public enum NotifiabilityLevel {
-		NOTIFIABLE,
-		NOT_NOTIFIABLE
-	}
-	
-	private NotifiabilityLevel notifiabilityLevel;
 	private TranslationFormat transcriptionFormat;
 	private Pattern regexPattern;
 
@@ -77,17 +71,6 @@ public class Variation extends _Variation {
 		return Pattern.compile(getRegex());
 	}	
 
-	public NotifiabilityLevel getNotifiabilityLevel() {
-		if(notifiabilityLevel == null) {
-			notifiabilityLevel = buildNotifiabilityLevel();
-		}
-		return notifiabilityLevel;
-	}
-	
-	private NotifiabilityLevel buildNotifiabilityLevel() {
-		return NotifiabilityLevel.valueOf(getNotifiability());
-	}
-
 	public void validate(CommandContext cmdContext) {
 		Integer refStart = getRefStart();
 		Integer refEnd = getRefEnd();
@@ -131,8 +114,7 @@ public class Variation extends _Variation {
 	public VariationDocument getVariationDocument() {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
-				getRegexPattern(), getDescription(), 
-				getNotifiabilityLevel(), getTranscriptionFormat());
+				getRegexPattern(), getDescription(), getTranscriptionFormat());
 	}
 	
 }

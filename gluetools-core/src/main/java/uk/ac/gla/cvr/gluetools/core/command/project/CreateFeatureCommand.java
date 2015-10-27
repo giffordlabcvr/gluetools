@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.Optional;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -44,12 +43,12 @@ public class CreateFeatureCommand extends ProjectModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Feature feature = GlueDataObject.create(objContext, 
+		
+		Feature feature = GlueDataObject.create(cmdContext, 
 				Feature.class, Feature.pkMap(featureName), false);
 		description.ifPresent(d -> {feature.setDescription(d);});
 		parentName.ifPresent(pname -> {
-			Feature parentFeature = GlueDataObject.lookup(objContext, Feature.class, Feature.pkMap(pname));
+			Feature parentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(pname));
 			feature.setParent(parentFeature);
 		});
 		cmdContext.commit();

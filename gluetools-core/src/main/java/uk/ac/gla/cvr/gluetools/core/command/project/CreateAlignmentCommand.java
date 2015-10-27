@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -48,13 +47,13 @@ public class CreateAlignmentCommand extends ProjectModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		ReferenceSequence refSequence = null;
 		if(refSeqName != null) {
-			refSequence = GlueDataObject.lookup(cmdContext.getObjectContext(), ReferenceSequence.class, 
+			refSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 					ReferenceSequence.pkMap(refSeqName));
 		}
-		Alignment alignment = GlueDataObject.create(objContext, Alignment.class, Alignment.pkMap(alignmentName), false);
+		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), false);
 		if(refSequence != null) {
 			alignment.setRefSequence(refSequence);
 		}

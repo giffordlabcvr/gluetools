@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
@@ -66,7 +65,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" already exists");
 		}
 		consoleCmdContext.mkdirs(sourceName);
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		SelectQuery selectQuery = new SelectQuery(Sequence.class, ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName));
 		ListResult listResult = CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, Arrays.asList(Sequence.SEQUENCE_ID_PROPERTY));
 		List<String> seqIDs = listResult.asListOfMaps()
@@ -75,7 +74,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 				.collect(Collectors.toList());
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		seqIDs.forEach(sequenceID -> {
-			Sequence sequence = GlueDataObject.lookup(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
 			AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
 			byte[] sequenceBytes = sequenceObject.toOriginalData();
 			SequenceFormat seqFormat = sequenceObject.getSeqFormat();

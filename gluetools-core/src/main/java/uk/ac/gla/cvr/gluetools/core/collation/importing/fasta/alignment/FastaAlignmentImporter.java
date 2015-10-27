@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -126,8 +125,8 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 
 	public FastaAlignmentImporterResult doImport(ConsoleCommandContext cmdContext, String fileName, String alignmentName, String sourceName) {
 		byte[] fastaFileBytes = cmdContext.loadBytes(fileName);
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Alignment alignment = GlueDataObject.create(objContext, Alignment.class, Alignment.pkMap(alignmentName), updateExistingAlignment);
+		
+		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), updateExistingAlignment);
 
 		ReferenceSequence refSequence = alignment.getRefSequence();
 		if(refSequence != null) {
@@ -159,7 +158,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 						.matchExp(Sequence.SOURCE_NAME_PATH, sourceName)
 						.andExp(whereClauseExp);
 			}
-			List<Sequence> foundSequences = GlueDataObject.query(objContext, Sequence.class, new SelectQuery(Sequence.class, whereClauseExp));
+			List<Sequence> foundSequences = GlueDataObject.query(cmdContext, Sequence.class, new SelectQuery(Sequence.class, whereClauseExp));
 			if(foundSequences.isEmpty()) {
 				if(ignoreMissingSequences) {
 					continue;
@@ -173,7 +172,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 			String memberSourceName = foundSequence.getSource().getName();
 			String memberSequenceID = foundSequence.getSequenceID();
 			AlignmentMember almtMember = 
-					GlueDataObject.create(objContext, AlignmentMember.class, 
+					GlueDataObject.create(cmdContext, AlignmentMember.class, 
 					AlignmentMember.pkMap(alignmentName, memberSourceName, memberSequenceID), updateExistingMembers);
 			almtMember.setAlignment(alignment);
 			almtMember.setSequence(foundSequence);
@@ -185,7 +184,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 			List<QueryAlignedSegment> queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, dnaSequence.getSequenceAsString(), 
 					fastaID, whereClauseString);
 			for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
-				AlignedSegment alignedSegment = GlueDataObject.create(objContext, AlignedSegment.class, 
+				AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
 						AlignedSegment.pkMap(alignmentName, memberSourceName, memberSequenceID, 
 								queryAlignedSeg.getRefStart(), queryAlignedSeg.getRefEnd(), 
 								queryAlignedSeg.getQueryStart(), queryAlignedSeg.getQueryEnd()), false);

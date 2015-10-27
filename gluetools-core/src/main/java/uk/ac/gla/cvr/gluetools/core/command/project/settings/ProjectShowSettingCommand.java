@@ -25,7 +25,7 @@ public class ProjectShowSettingCommand extends ProjectSettingCommand<MapResult> 
 		String nameText = projectSettingOption.getName();
 		boolean isDefault;
 		ProjectSetting projectSetting = 
-				GlueDataObject.lookup(cmdContext.getObjectContext(), ProjectSetting.class, 
+				GlueDataObject.lookup(cmdContext, ProjectSetting.class, 
 						ProjectSetting.pkMap(projectSettingOption.name()), true);
 		String valueText;
 		if(projectSetting == null) {

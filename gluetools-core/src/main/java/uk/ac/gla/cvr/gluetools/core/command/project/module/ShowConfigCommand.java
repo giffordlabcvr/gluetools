@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
-import org.apache.cayenne.ObjectContext;
-
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -14,8 +12,8 @@ public abstract class ShowConfigCommand<P extends ModulePlugin<P>> extends Modul
 
 	@Override
 	protected final ConsoleCommandResult execute(CommandContext cmdContext, P modulePlugin) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getModuleName()));
+		
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(getModuleName()));
 		return new ConsoleCommandResult(new String(GlueXmlUtils.prettyPrint(module.getConfigDoc())));
 	}
 }

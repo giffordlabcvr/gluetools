@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -43,9 +42,9 @@ public class CreateSequenceFieldCommand extends TableSequencesModeCommand<Create
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Field field = GlueDataObject.create(objContext, Field.class, Field.pkMap(getProjectName(), fieldName), false);
-		Project project = GlueDataObject.lookup(objContext, Project.class, Project.pkMap(getProjectName()));
+		
+		Field field = GlueDataObject.create(cmdContext, Field.class, Field.pkMap(getProjectName(), fieldName), false);
+		Project project = GlueDataObject.lookup(cmdContext, Project.class, Project.pkMap(getProjectName()));
 		field.setProject(project);
 		field.setType(type.name());
 		field.setMaxLength(maxLength);

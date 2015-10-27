@@ -40,7 +40,7 @@ public class CommandContext {
 		commandModeStack.add(0, commandMode);
 		if(commandMode instanceof DbContextChangingMode) {
 			ServerRuntime serverRuntime = ((DbContextChangingMode) commandMode).getNewServerRuntime();
-			objectContextStack.add(0, GlueDataObject.createObjectContext(serverRuntime));
+			objectContextStack.add(0, serverRuntime.getContext());
 		}
 		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
@@ -145,6 +145,11 @@ public class CommandContext {
 		getObjectContext().commitChanges();
 	}
 	
+	public void newObjectContext() {
+		objectContextStack.remove(0);
+		objectContextStack.add(0, peekCommandMode().getServerRuntime().getContext());
+	}
+
 	public <R extends CommandResult, C extends Command<R>> CommandBuilder<R, C> cmdBuilder(Class<C> cmdClass) {
 		return new CommandBuilder<R, C>(this, cmdClass);
 	}
@@ -155,7 +160,7 @@ public class CommandContext {
 
 	public String getProjectSettingValue(ProjectSettingOption projectSettingOption) {
 		ProjectSetting projectSetting = 
-				GlueDataObject.lookup(getObjectContext(), ProjectSetting.class, 
+				GlueDataObject.lookup(this, ProjectSetting.class, 
 						ProjectSetting.pkMap(projectSettingOption.name()), true);
 		String valueText;
 		if(projectSetting == null) {

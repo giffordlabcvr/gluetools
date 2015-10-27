@@ -1,12 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
+
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 @SuppressWarnings("rawtypes")
 public abstract class EnterModeCommandDescriptor {
-
-	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
 	/**
 	 * Used to distinguish an EnterModeCommand's arguments from the words
@@ -24,8 +23,8 @@ public abstract class EnterModeCommandDescriptor {
 			try {
 				return (EnterModeCommandDescriptor) descriptorClass.getConstructor().newInstance();
 			} catch(Exception e) {
-				logger.warning("Failed to instantiate enter mode descriptor class "+descriptorClass.getCanonicalName());
-				logger.warning(e.getClass().getCanonicalName()+": "+e.getMessage());
+				GlueLogger.getGlueLogger().warning("Failed to instantiate enter mode descriptor class "+descriptorClass.getCanonicalName());
+				GlueLogger.getGlueLogger().warning(e.getClass().getCanonicalName()+": "+e.getMessage());
 				return null;
 			}
 		} else {
@@ -33,7 +32,7 @@ public abstract class EnterModeCommandDescriptor {
 			String mainDocoptUsage = docoptUsages[0];
 			// main usage contains items indicating optional elements.
 			if(mainDocoptUsage.contains("[") || mainDocoptUsage.contains("]")) {
-				logger.warning(enterModeCmdClass.getSimpleName()+" has optional docopt, cannot be used as a mode changing command.");
+				GlueLogger.getGlueLogger().warning(enterModeCmdClass.getSimpleName()+" has optional docopt, cannot be used as a mode changing command.");
 				return null;
 			}
 			// assumes space always separates arguments in main usage -- could relax this assumption if necessary.

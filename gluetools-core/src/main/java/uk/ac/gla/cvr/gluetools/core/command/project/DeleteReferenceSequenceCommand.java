@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -33,8 +32,8 @@ public class DeleteReferenceSequenceCommand extends ProjectModeCommand<DeleteRes
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		DeleteResult result = GlueDataObject.delete(objContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSeqName), true);
+		
+		DeleteResult result = GlueDataObject.delete(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(refSeqName), true);
 		cmdContext.commit();
 		return result;
 	}

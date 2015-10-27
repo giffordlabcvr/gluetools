@@ -38,7 +38,7 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 	}
 
 	protected Alignment lookupAlignment(CommandContext cmdContext) {
-		return GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, 
+		return GlueDataObject.lookup(cmdContext, Alignment.class, 
 				Alignment.pkMap(getAlignmentName()));
 	}
 	

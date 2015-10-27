@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -15,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.NotifiabilityLevel;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -25,9 +23,8 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"create","variation"}, 
-		docoptUsages={"<variationName> <refStart> <refEnd> [-t <type>] <regex> [-n <notifiabilityLevel>] [<description>]"},
-		docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]", 
-				"-n <level>, --notifiabilityLevel <level>  Possible values: [NOTIFIABLE, NOT_NOTIFIABLE]"},
+		docoptUsages={"<variationName> <refStart> <refEnd> [-t <type>] <regex> [<description>]"},
+		docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Create a new feature variation", 
 		furtherHelp="A variation is a regular expression defining a known motif which may occur in a query sequence. "+
@@ -44,14 +41,12 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 	public static final String TRANSCRIPTION_TYPE = "transcriptionType";
 	public static final String REGEX = "regex";
 	public static final String DESCRIPTION = "description";
-	public static final String NOTIFIABILITY_LEVEL = "notifiabilityLevel";
 	
 	private String variationName;
 	private Integer refStart;
 	private Integer refEnd;
 	private TranslationFormat translationFormat;
 	private Pattern regex;
-	private NotifiabilityLevel notifiabilityLevel;
 	private Optional<String> description;
 	
 	@Override
@@ -65,9 +60,6 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
 				orElse(TranslationFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
-		notifiabilityLevel = Optional.ofNullable(
-				PluginUtils.configureEnumProperty(NotifiabilityLevel.class, configElem, NOTIFIABILITY_LEVEL, false)).
-				orElse(NotifiabilityLevel.NOTIFIABLE);
 
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DESCRIPTION, false));
 	}
@@ -79,8 +71,8 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 					getRefSeqName(), getFeatureName(), variationName, Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Variation variation = GlueDataObject.create(objContext, 
+		
+		Variation variation = GlueDataObject.create(cmdContext, 
 				Variation.class, Variation.pkMap(
 						featureLoc.getReferenceSequence().getName(), 
 						featureLoc.getFeature().getName(), variationName), false);
@@ -89,7 +81,6 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setRefEnd(refEnd);
 		variation.setTranscriptionType(translationFormat.name());
 		variation.setRegex(regex.pattern());
-		variation.setNotifiability(notifiabilityLevel.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
 		cmdContext.commit();
 		return new CreateResult(Variation.class, 1);
@@ -100,7 +91,6 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		public Completer() {
 			super();
 			registerEnumLookup("type", TranslationFormat.class);
-			registerEnumLookup("notifiabilityLevel", NotifiabilityLevel.class);
 		}
 	}
 }

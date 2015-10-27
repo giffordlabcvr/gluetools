@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -65,7 +64,7 @@ public class ListMemberCommand extends AlignmentModeCommand<ListResult> {
 		if(fieldNames != null) {
 			getAlignmentMode(cmdContext).getProject().checkValidMemberFieldNames(fieldNames);
 		}
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		Expression matchAlignmentName = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName());
 		SelectQuery selectQuery = null;
 		if(whereClause.isPresent()) {
@@ -73,7 +72,7 @@ public class ListMemberCommand extends AlignmentModeCommand<ListResult> {
 		} else {
 			selectQuery = new SelectQuery(AlignmentMember.class, matchAlignmentName);
 		}
-		List<AlignmentMember> members = GlueDataObject.query(objContext, AlignmentMember.class, selectQuery);
+		List<AlignmentMember> members = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
 		if(fieldNames == null) {
 			return new ListResult(AlignmentMember.class, members);
 		} else {

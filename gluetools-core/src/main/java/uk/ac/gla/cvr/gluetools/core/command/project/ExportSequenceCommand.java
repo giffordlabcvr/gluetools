@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.Map;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -50,8 +49,8 @@ public class ExportSequenceCommand extends ProjectModeCommand<OkResult> {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Sequence sequence = GlueDataObject.lookup(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+		
+		Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
 		AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
 		byte[] sequenceBytes = sequenceObject.toOriginalData();
 		((ConsoleCommandContext) cmdContext).saveBytes(fileName, sequenceBytes);

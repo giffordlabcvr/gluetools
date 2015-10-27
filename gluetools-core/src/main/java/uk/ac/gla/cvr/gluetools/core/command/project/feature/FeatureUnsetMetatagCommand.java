@@ -35,7 +35,7 @@ public class FeatureUnsetMetatagCommand extends FeatureModeCommand<DeleteResult>
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		Feature feature = lookupFeature(cmdContext);
-		DeleteResult result = GlueDataObject.delete(cmdContext.getObjectContext(), 
+		DeleteResult result = GlueDataObject.delete(cmdContext, 
 				FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), true);
 		cmdContext.commit();
 		return result;

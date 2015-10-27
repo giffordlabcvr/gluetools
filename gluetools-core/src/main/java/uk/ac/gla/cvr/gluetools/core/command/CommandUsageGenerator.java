@@ -1,11 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
+
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public abstract class CommandUsageGenerator {
-
-	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
 	@SuppressWarnings("rawtypes")
 	public abstract CommandUsage generateUsage(Class<? extends Command> cmdClass);
@@ -20,8 +19,8 @@ public abstract class CommandUsageGenerator {
 		try {
 			return (CommandUsageGenerator) commandUsageGeneratorClass.getConstructor().newInstance();
 		} catch(Exception e) {
-			logger.warning("Failed to instantiate command usage generator class "+commandUsageGeneratorClass.getCanonicalName());
-			logger.warning(e.getClass().getCanonicalName()+": "+e.getMessage());
+			GlueLogger.getGlueLogger().warning("Failed to instantiate command usage generator class "+commandUsageGeneratorClass.getCanonicalName());
+			GlueLogger.getGlueLogger().warning(e.getClass().getCanonicalName()+": "+e.getMessage());
 		}
 		return null;
 	}

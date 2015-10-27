@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -48,12 +47,12 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		if(refStart > refEnd) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_ENDPOINTS_REVERSED, 
 					getRefSeqName(), getFeatureName(), Integer.toString(refStart), Integer.toString(refEnd));
 		}
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext.getObjectContext(), FeatureLocation.class, 
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
 				FeatureLocation.pkMap(getRefSeqName(), getFeatureName()));
 		Sequence refSequence = featureLoc.getReferenceSequence().getSequence();
 		int refSeqLength = refSequence.getSequenceObject().getNucleotides(cmdContext).length();
@@ -66,7 +65,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 				.map(FeatureSegment::asReferenceSegment)
 				.collect(Collectors.toList());
 
-		FeatureSegment featureSegment = GlueDataObject.create(objContext, FeatureSegment.class, 
+		FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
 				FeatureSegment.pkMap(getRefSeqName(), getFeatureName(), refStart, refEnd), false);
 		
 		List<ReferenceSegment> intersection = ReferenceSegment.intersection(existingSegments, 

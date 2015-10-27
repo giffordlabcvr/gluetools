@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -42,11 +41,11 @@ public class AlignmentShowAncestorsCommand extends AlignmentModeCommand<Alignmen
 
 	@Override
 	public ShowAlignmentAncestorsResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		String thisAlmtName = getAlignmentName();
-		Alignment thisAlmt = GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(thisAlmtName));
+		Alignment thisAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(thisAlmtName));
 		Alignment toAlmt = toAlmtName
-				.map(name -> GlueDataObject.lookup(objContext, Alignment.class, Alignment.pkMap(name)))
+				.map(name -> GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(name)))
 				.orElse(null);
 		List<Alignment> ancestors = new ArrayList<Alignment>();
 		Alignment currentAlmt = thisAlmt;

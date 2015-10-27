@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
-import org.apache.cayenne.ObjectContext;
-
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -14,8 +12,8 @@ public abstract class ModuleProvidedCommand<R extends CommandResult, P extends M
 	@SuppressWarnings("unchecked")
 	@Override
 	public final R execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getModuleName()));
+		
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(getModuleName()));
 		@SuppressWarnings("unchecked")
 		P modulePlugin = (P) module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		if(this instanceof ProvidedProjectModeCommand) {

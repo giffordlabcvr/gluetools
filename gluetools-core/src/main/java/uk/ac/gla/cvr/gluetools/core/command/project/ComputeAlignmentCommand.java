@@ -223,7 +223,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	private <R extends AlignerResult, C extends Command<R>> Class<C> getAlignCommandClass(
 			CommandContext cmdContext) {
 		// Look up the module by name, check it is an aligner, and get its align command class.
-		Module module = GlueDataObject.lookup(cmdContext.getObjectContext(), Module.class, Module.pkMap(alignerModuleName));
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(alignerModuleName));
 		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		if(!(modulePlugin instanceof Aligner<?, ?>)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Module "+alignerModuleName+" is not an aligner");

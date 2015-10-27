@@ -20,7 +20,7 @@ public class ProjectUnsetSettingCommand extends ProjectSettingCommand<DeleteResu
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		DeleteResult deleteResult = 
-				GlueDataObject.delete(cmdContext.getObjectContext(), ProjectSetting.class, 
+				GlueDataObject.delete(cmdContext, ProjectSetting.class, 
 						ProjectSetting.pkMap(getProjectSettingOption().name()), true);
 		cmdContext.commit();
 		return deleteResult;

@@ -53,7 +53,7 @@ public class FeatureLocation extends _FeatureLocation {
 		Feature feature = getFeature();
 		Feature nextAncestorFeature = feature.getNextAncestor();
 		if(nextAncestorFeature != null) {
-			return GlueDataObject.lookup(cmdContext.getObjectContext(), FeatureLocation.class, 
+			return GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
 					FeatureLocation.pkMap(getReferenceSequence().getName(), nextAncestorFeature.getName()), true);
 		}
 		return null;

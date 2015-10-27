@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -37,11 +36,11 @@ public class AddFeatureLocCommand extends ReferenceSequenceModeCommand<CreateRes
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		ReferenceSequence referenceSequence = lookupRefSeq(cmdContext);
-		Feature feature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, 
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, 
 				Feature.pkMap(featureName));
-		FeatureLocation featureLoc = GlueDataObject.create(objContext, FeatureLocation.class, FeatureLocation.pkMap(referenceSequence.getName(), feature.getName()), false);
+		FeatureLocation featureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceSequence.getName(), feature.getName()), false);
 		featureLoc.setReferenceSequence(referenceSequence);
 		featureLoc.setFeature(feature);
 		cmdContext.commit();

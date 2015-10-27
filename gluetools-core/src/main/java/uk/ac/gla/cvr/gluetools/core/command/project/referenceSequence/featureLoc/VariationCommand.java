@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -35,8 +34,8 @@ public class VariationCommand extends FeatureLocModeCommand<OkResult>  {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Variation variation = GlueDataObject.lookup(objContext, Variation.class, 
+		
+		Variation variation = GlueDataObject.lookup(cmdContext, Variation.class, 
 				Variation.pkMap(getRefSeqName(), getFeatureName(), variationName));
 		cmdContext.pushCommandMode(new VariationMode(
 				getFeatureLocMode(cmdContext).getProject(), this, getRefSeqName(), getFeatureName(), variation.getName()));

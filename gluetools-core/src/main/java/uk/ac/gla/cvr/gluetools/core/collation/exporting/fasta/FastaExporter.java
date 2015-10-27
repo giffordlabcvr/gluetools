@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
 
 import java.util.List;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
@@ -42,14 +41,14 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 	}
 
 	public OkResult doExport(ConsoleCommandContext cmdContext, String fileName, Expression whereClause) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		SelectQuery selectQuery = null;
 		if(whereClause != null) {
 			selectQuery = new SelectQuery(Sequence.class, whereClause);
 		} else {
 			selectQuery = new SelectQuery(Sequence.class);
 		}
-		List<Sequence> sequences = GlueDataObject.query(objContext, Sequence.class, selectQuery);
+		List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 		StringBuffer stringBuffer = new StringBuffer();
 		sequences.forEach(seq -> {
 			String fastaId = generateFastaId(seq);

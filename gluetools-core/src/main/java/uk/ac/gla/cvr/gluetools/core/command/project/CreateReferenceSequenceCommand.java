@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.Map;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -47,10 +46,10 @@ public class CreateReferenceSequenceCommand extends ProjectModeCommand<CreateRes
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Sequence sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class, 
+		
+		Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
 				Sequence.pkMap(sourceName, sequenceID));
-		ReferenceSequence refSequence = GlueDataObject.create(objContext, ReferenceSequence.class, 
+		ReferenceSequence refSequence = GlueDataObject.create(cmdContext, ReferenceSequence.class, 
 				ReferenceSequence.pkMap(refSeqName), false);
 		refSequence.setSequence(sequence);
 		refSequence.setCreationTime(System.currentTimeMillis());

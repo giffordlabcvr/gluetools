@@ -18,7 +18,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusSequenceObje
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.DifferenceSummaryNote;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;

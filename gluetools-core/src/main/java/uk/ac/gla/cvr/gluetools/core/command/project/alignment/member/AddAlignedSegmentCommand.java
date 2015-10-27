@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -64,12 +63,12 @@ public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		if(refStart > refEnd) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_ENDPOINTS_REVERSED, 
 					getAlignmentName(), getSourceName(), getSequenceID(), Integer.toString(refStart), Integer.toString(refEnd));
 		}
-		AlignmentMember almtMemb = GlueDataObject.lookup(cmdContext.getObjectContext(), AlignmentMember.class, 
+		AlignmentMember almtMemb = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
 		Alignment alignment = almtMemb.getAlignment();
 		ReferenceSequence refSeq = alignment.getRefSequence();
@@ -101,7 +100,7 @@ public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
 				.getAlignedSegments().stream().map(AlignedSegment::asQueryAlignedSegment).collect(Collectors.toList());
 		
 		// TODO specify and enforce further constraints as necessary. 
-		AlignedSegment alignedSegment = GlueDataObject.create(objContext, AlignedSegment.class, 
+		AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
 				AlignedSegment.pkMap(getAlignmentName(), getSourceName(), getSequenceID(), refStart, refEnd, memberStart, memberEnd), false);
 
 		List<QueryAlignedSegment> intersection = ReferenceSegment.intersection(existingSegments, 

@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -82,18 +81,18 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 	
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		Alignment alignment = lookupAlignment(cmdContext);
 		List<AlignmentMember> membersToDelete;
 		if(whereClause.isPresent()) {
 			Expression whereClauseExp = whereClause.get();
 			whereClauseExp = whereClauseExp.andExp(ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName()));
-			membersToDelete = GlueDataObject.query(objContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, whereClauseExp));
+			membersToDelete = GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, whereClauseExp));
 		} else if(allMembers) {
 			List<AlignmentMember> members = alignment.getMembers();
 			membersToDelete = new ArrayList<AlignmentMember>(members);
 		} else {
-			AlignmentMember almtMember = GlueDataObject.lookup(objContext, AlignmentMember.class, 
+			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 					AlignmentMember.pkMap(getAlignmentName(), sourceName.get(), sequenceID.get()), true);
 			if(almtMember != null) {
 				membersToDelete = Arrays.asList(almtMember);
@@ -112,7 +111,7 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 					}
 				}
 			}
-			GlueDataObject.delete(objContext, AlignmentMember.class, member.pkMap(), true);
+			GlueDataObject.delete(cmdContext, AlignmentMember.class, member.pkMap(), true);
 			
 		});
 		cmdContext.commit();

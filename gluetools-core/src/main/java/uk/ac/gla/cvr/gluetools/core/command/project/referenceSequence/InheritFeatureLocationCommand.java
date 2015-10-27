@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -79,15 +78,15 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	@Override
 	public InheritFeatureLocationResult execute(CommandContext cmdContext) {
 		ReferenceSequence thisRefSeq = lookupRefSeq(cmdContext);
-		Alignment alignment = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, Alignment.pkMap(alignmentName));
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		Sequence thisRefSeqSeq = thisRefSeq.getSequence();
 		// find this reference sequence's membership of the parent alignment.
-		AlignmentMember almtMember = GlueDataObject.lookup(cmdContext.getObjectContext(), AlignmentMember.class, 
+		AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(alignment.getName(), thisRefSeqSeq.getSource().getName(), thisRefSeqSeq.getSequenceID()), true);
 		if(almtMember == null) {
 			throw new InheritFeatureLocationException(Code.NOT_MEMBER_OF_ALIGNMENT, thisRefSeq.getName(), alignmentName);
 		}
-		Feature feature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, Feature.pkMap(featureName));
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		ReferenceSequence parentRefSeq = alignment.getRefSequence();
 		if(parentRefSeq == null) {
 			throw new InheritFeatureLocationException(Code.PARENT_ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
@@ -109,12 +108,12 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			AlignmentMember almtMember,
 			ReferenceFeatureTreeResult featureTreeResult, List<Map<String, Object>> resultRowData) {
 		String featureName = featureTreeResult.getFeatureName();
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Feature currentFeature = GlueDataObject.lookup(objContext, Feature.class, Feature.pkMap(featureName));
+		
+		Feature currentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		Map<String, String> featureLocPkMap = FeatureLocation.pkMap(thisRefSeq.getName(), featureName);
-		FeatureLocation currentFeatureLoc = GlueDataObject.lookup(objContext, FeatureLocation.class, featureLocPkMap, true);
+		FeatureLocation currentFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, featureLocPkMap, true);
 		if(currentFeatureLoc == null && !currentFeature.isInformational()) {
-			currentFeatureLoc = GlueDataObject.create(objContext, FeatureLocation.class,  featureLocPkMap, false);
+			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class,  featureLocPkMap, false);
 			currentFeatureLoc.setFeature(currentFeature);
 			currentFeatureLoc.setReferenceSequence(thisRefSeq);
 			cmdContext.commit();
@@ -142,7 +141,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			int numAddedSegments = 0;
 			// add segments to the new feature location based on the query start/end points of the intersection result.
 			for(QueryAlignedSegment intersectSeg: intersection) {
-				FeatureSegment featureSegment = GlueDataObject.create(objContext, FeatureSegment.class, 
+				FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
 						FeatureSegment.pkMap(thisRefSeq.getName(), featureName, 
 								intersectSeg.getQueryStart(), intersectSeg.getQueryEnd()), false);
 				featureSegment.setFeatureLocation(currentFeatureLoc);
@@ -189,7 +188,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 								ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 								Map<String, Object> bindings, String prefix) {
 							String alignmentName = (String) bindings.get("alignmentName");
-							Alignment almt = GlueDataObject.lookup(cmdContext.getObjectContext(), Alignment.class, Alignment.pkMap(alignmentName), true);
+							Alignment almt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), true);
 							if(almt != null) {
 								ReferenceSequence refSequence = almt.getRefSequence();
 								if(refSequence != null) {

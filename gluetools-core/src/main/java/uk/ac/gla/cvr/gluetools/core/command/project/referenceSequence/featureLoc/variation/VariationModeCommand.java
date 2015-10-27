@@ -33,7 +33,7 @@ public abstract class VariationModeCommand<R extends CommandResult> extends Feat
 
 
 	protected Variation lookupVariation(CommandContext cmdContext) {
-		return GlueDataObject.lookup(cmdContext.getObjectContext(), Variation.class, 
+		return GlueDataObject.lookup(cmdContext, Variation.class, 
 				Variation.pkMap(getRefSeqName(), getFeatureName(), getVariationName()));
 	}
 

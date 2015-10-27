@@ -3,16 +3,14 @@ package uk.ac.gla.cvr.gluetools.core.command;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 @SuppressWarnings("rawtypes")
 public abstract class CommandCompleter {
 	
-	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
-
 	public List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext cmdContext, 
 			Class<? extends Command> cmdClass, List<String> argStrings, String prefix) {
 		List<String> completionSuggestions = completionSuggestions(cmdContext, cmdClass, argStrings);
@@ -35,8 +33,8 @@ public abstract class CommandCompleter {
 		try {
 			return (CommandCompleter) completerClass.getConstructor().newInstance();
 		} catch(Exception e) {
-			logger.warning("Failed to instantiate command completer class "+completerClass.getCanonicalName());
-			logger.warning(e.getClass().getCanonicalName()+": "+e.getMessage());
+			GlueLogger.getGlueLogger().warning("Failed to instantiate command completer class "+completerClass.getCanonicalName());
+			GlueLogger.getGlueLogger().warning(e.getClass().getCanonicalName()+": "+e.getMessage());
 		}
 		return null;
 	}

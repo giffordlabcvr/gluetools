@@ -37,12 +37,12 @@ public class FeatureSetMetatagCommand extends FeatureModeCommand<CreateResult> {
 	public CreateResult execute(CommandContext cmdContext) {
 		Feature feature = lookupFeature(cmdContext);
 		FeatureMetatag featureMetatag = 
-				GlueDataObject.lookup(cmdContext.getObjectContext(), 
+				GlueDataObject.lookup(cmdContext, 
 						FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), true);
 		if(featureMetatag != null) {
 			return new CreateResult(FeatureMetatag.class, 0);
 		}
-		featureMetatag = GlueDataObject.create(cmdContext.getObjectContext(), 
+		featureMetatag = GlueDataObject.create(cmdContext, 
 				FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), false);
 		featureMetatag.setFeature(feature);
 		cmdContext.commit();

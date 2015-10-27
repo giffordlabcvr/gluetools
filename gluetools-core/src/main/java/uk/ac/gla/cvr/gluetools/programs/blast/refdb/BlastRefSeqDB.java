@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.logging.Logger;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -21,12 +20,11 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCom
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class BlastRefSeqDB {
-
-	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
 	private static BlastRefSeqDB instance;
 	private LinkedHashMap<RefDBKey, SingleReferenceDB> referenceDBs = 
@@ -87,7 +85,7 @@ public class BlastRefSeqDB {
 					);
 			int exitCode = processResult.getExitCode();
 			if(exitCode != 0) {
-				logger.info(new String(processResult.getOutputBytes()));
+				GlueLogger.getGlueLogger().info(new String(processResult.getOutputBytes()));
 				throw new BlastRefSeqDBException(BlastRefSeqDBException.Code.MAKE_BLAST_DB_FAILED, 
 						blastDbDir, projectName, refName, exitCode, new String(processResult.getErrorBytes()));
 			} else {
@@ -112,7 +110,7 @@ public class BlastRefSeqDB {
 				try {
 					Files.delete(dbFile.toPath());
 				} catch(Exception e) {
-					logger.warning("Unable to clean up reference DB file: "+dbFile.getAbsolutePath());
+					GlueLogger.getGlueLogger().warning("Unable to clean up reference DB file: "+dbFile.getAbsolutePath());
 				}
 			}
 		}

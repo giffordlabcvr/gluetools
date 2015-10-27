@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -16,8 +15,8 @@ public abstract class ConfigureCommand<P extends ModulePlugin<P>> extends Module
 	
 	@Override
 	protected final OkResult execute(CommandContext cmdContext, P modulePlugin) {
-		ObjectContext objContext = cmdContext.getObjectContext();
-		Module module = GlueDataObject.lookup(objContext, Module.class, Module.pkMap(getModuleName()));
+		
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(getModuleName()));
 		Document currentDocument = module.getConfigDoc();
 		updateDocument(cmdContext, currentDocument);
 		module.setConfig(GlueXmlUtils.prettyPrint(currentDocument));

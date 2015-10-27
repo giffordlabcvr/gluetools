@@ -45,7 +45,7 @@ public abstract class SequenceModeCommand<R extends CommandResult> extends Comma
 	}
 
 	protected Sequence lookupSequence(CommandContext cmdContext) {
-		Sequence sequence = GlueDataObject.lookup(cmdContext.getObjectContext(), Sequence.class,
+		Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class,
 				Sequence.pkMap(getSourceName(), getSequenceID()));
 		return sequence;
 	}

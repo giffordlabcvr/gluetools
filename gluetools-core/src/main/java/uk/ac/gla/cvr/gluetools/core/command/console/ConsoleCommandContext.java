@@ -41,6 +41,7 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 	
 	public void setOptionValue(ConsoleOption option, String value) {
+		option.onSet(value);
 		optionToValue.put(option, value);
 	}
 	

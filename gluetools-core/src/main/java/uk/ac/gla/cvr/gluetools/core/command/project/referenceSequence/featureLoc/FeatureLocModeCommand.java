@@ -35,7 +35,7 @@ public abstract class FeatureLocModeCommand<R extends CommandResult> extends Ref
 	}
 	
 	public FeatureLocation lookupFeatureLoc(CommandContext cmdContext) {
-		return GlueDataObject.lookup(cmdContext.getObjectContext(), FeatureLocation.class, 
+		return GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
 				FeatureLocation.pkMap(getRefSeqName(), getFeatureName()));
 	}
 

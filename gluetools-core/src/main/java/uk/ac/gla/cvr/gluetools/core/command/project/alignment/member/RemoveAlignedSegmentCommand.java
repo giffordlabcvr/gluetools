@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -64,23 +63,23 @@ public class RemoveAlignedSegmentCommand extends MemberModeCommand<DeleteResult>
 	}
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		if(allSegments) {
 			Expression allMemberSegments = 
 					ExpressionFactory.matchExp(AlignedSegment.ALIGNMENT_NAME_PATH, getAlignmentName())
 					.andExp(ExpressionFactory.matchExp(AlignedSegment.MEMBER_SOURCE_NAME_PATH, getSourceName()))
 					.andExp(ExpressionFactory.matchExp(AlignedSegment.MEMBER_SEQUENCE_ID_PATH, getSequenceID()));
-			List<AlignedSegment> segmentsToDelete = GlueDataObject.query(objContext, AlignedSegment.class, 
+			List<AlignedSegment> segmentsToDelete = GlueDataObject.query(cmdContext, AlignedSegment.class, 
 					new SelectQuery(AlignedSegment.class, allMemberSegments));
 			int numDeleted = 0;
 			for(AlignedSegment segment: segmentsToDelete) {
-				DeleteResult result = GlueDataObject.delete(objContext, AlignedSegment.class, segment.pkMap(), true);
+				DeleteResult result = GlueDataObject.delete(cmdContext, AlignedSegment.class, segment.pkMap(), true);
 				numDeleted = numDeleted+result.getNumber();
 			}
 			cmdContext.commit();
 			return new DeleteResult(AlignedSegment.class, numDeleted);
 		} else {		
-			DeleteResult result = GlueDataObject.delete(objContext, AlignedSegment.class, 
+			DeleteResult result = GlueDataObject.delete(cmdContext, AlignedSegment.class, 
 					AlignedSegment.pkMap(getAlignmentName(), getSourceName(), getSequenceID(), 
 							refStart.get(), 
 							refEnd.get(), 

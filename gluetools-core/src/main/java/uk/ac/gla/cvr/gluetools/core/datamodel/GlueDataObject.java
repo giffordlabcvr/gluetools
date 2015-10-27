@@ -7,40 +7,33 @@ import java.util.stream.Collectors;
 
 import org.apache.cayenne.CayenneDataObject;
 import org.apache.cayenne.DeleteDenyException;
-import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 
 public abstract class GlueDataObject extends CayenneDataObject {
 
-	public static ObjectContext createObjectContext(ServerRuntime serverRuntime) {
-		ObjectContext objContext = serverRuntime.getContext();
-		return objContext;
-	}
-
-
 	public abstract void setPKValues(Map <String, String> pkMap);
 
-	public static <C extends GlueDataObject> C lookup(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap) {
-		return lookup(objContext, objClass, pkMap, false);
+	public static <C extends GlueDataObject> C lookup(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap) {
+		return lookup(cmdContext, objClass, pkMap, false);
 	}
 	
-	public static <C extends GlueDataObject> C lookup(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
+	public static <C extends GlueDataObject> C lookup(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowNull) {
 		Expression qualifier = pkMapToExpression(pkMap);
-		return lookupFromDB(objContext, objClass, allowNull, qualifier);
+		return lookupFromDB(cmdContext, objClass, allowNull, qualifier);
 	}
 
 	public static <C extends GlueDataObject> C lookupFromDB(
-			ObjectContext objContext, Class<C> objClass, boolean allowNull,
+			CommandContext cmdContext, Class<C> objClass, boolean allowNull,
 			Expression qualifier) {
 		SelectQuery query = new SelectQuery(objClass, qualifier);
-		List<?> results = objContext.performQuery(query);
+		List<?> results = cmdContext.getObjectContext().performQuery(query);
 		if(results.isEmpty()) {
 			if(allowNull) {
 				return null;
@@ -63,12 +56,12 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		return qualifier;
 	}
 
-	public static <C extends GlueDataObject> DeleteResult delete(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
+	public static <C extends GlueDataObject> DeleteResult delete(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowNull) {
-		C object = lookup(objContext, objClass, pkMap, allowNull);
+		C object = lookup(cmdContext, objClass, pkMap, allowNull);
 		if(object != null) {
 			try {
-				objContext.deleteObject(object);
+				cmdContext.getObjectContext().deleteObject(object);
 			} catch(DeleteDenyException dde) {
 				String relationship = dde.getRelationship();
 				throw new DataModelException(dde, Code.DELETE_DENIED, objClass.getSimpleName(), pkMap, relationship);
@@ -81,9 +74,9 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	}
 
 	
-	public static <C extends GlueDataObject> List<C> query(ObjectContext objContext, Class<C> objClass, SelectQuery query) {
+	public static <C extends GlueDataObject> List<C> query(CommandContext cmdContext, Class<C> objClass, SelectQuery query) {
 		// should this also interact with the cache?
-		List<?> queryResult = objContext.performQuery(query);
+		List<?> queryResult = cmdContext.getObjectContext().performQuery(query);
 		return queryResult.stream().map(obj -> { 
 			C dataObject = objClass.cast(obj);
 			// ((GlueDataObject) dataObject).setFinalized();
@@ -91,9 +84,9 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		}).collect(Collectors.toList());
 	}
 	
-	public static <C extends GlueDataObject> C create(ObjectContext objContext, Class<C> objClass, Map<String, String> pkMap, 
+	public static <C extends GlueDataObject> C create(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowExists) {
-		C existing = lookup(objContext, objClass, pkMap, true);
+		C existing = lookup(cmdContext, objClass, pkMap, true);
 		if(existing != null) {
 			if(allowExists) {
 				return existing;
@@ -101,7 +94,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 				throw new DataModelException(Code.OBJECT_ALREADY_EXISTS, objClass.getSimpleName(), pkMap);
 			}
 		}
-		C newObject = objContext.newObject(objClass);
+		C newObject = cmdContext.getObjectContext().newObject(objClass);
 		newObject.setPKValues(pkMap);
 		return newObject;
 	}

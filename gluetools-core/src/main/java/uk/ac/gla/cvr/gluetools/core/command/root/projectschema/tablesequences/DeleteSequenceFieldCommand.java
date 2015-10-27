@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
 
 import java.util.Map;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -35,11 +34,11 @@ public class DeleteSequenceFieldCommand extends TableSequencesModeCommand<Delete
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		Map<String, String> pkMap = Field.pkMap(getProjectName(), fieldName);
-		Field field = GlueDataObject.lookup(objContext, Field.class, pkMap);
+		Field field = GlueDataObject.lookup(cmdContext, Field.class, pkMap);
 		ModelBuilder.deleteSequenceColumnFromModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), field.getProject(), field);
-		DeleteResult result = GlueDataObject.delete(objContext, Field.class, pkMap, true);
+		DeleteResult result = GlueDataObject.delete(cmdContext, Field.class, pkMap, true);
 		cmdContext.commit();
 		return result;
 	}

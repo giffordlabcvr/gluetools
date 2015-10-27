@@ -36,7 +36,7 @@ public abstract class FeatureModeCommand<R extends CommandResult> extends Projec
 
 
 	protected Feature lookupFeature(CommandContext cmdContext) {
-		return GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, 
+		return GlueDataObject.lookup(cmdContext, Feature.class, 
 				Feature.pkMap(getFeatureName()));
 	}
 

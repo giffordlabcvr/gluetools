@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
@@ -16,12 +15,12 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration.Vendor;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.GlueSchemaUpdateStrategy;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -30,8 +29,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
 
 public class GluetoolsEngine implements Plugin {
-
-	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 
 	private static GluetoolsEngine instance;
 	
@@ -105,7 +102,7 @@ public class GluetoolsEngine implements Plugin {
 	public void dbWarning() {
 		if(dbConfiguration.getVendor() == Vendor.ApacheDerby &&
 				dbConfiguration.getJdbcUrl().contains(":memory:")) {
-			logger.warning("The GLUE database is in-memory Apache Derby. "+
+			GlueLogger.getGlueLogger().warning("The GLUE database is in-memory Apache Derby. "+
 				"Changes will not be persisted beyond the lifetime of this GLUE instance.");
 		}
 	}
@@ -122,7 +119,7 @@ public class GluetoolsEngine implements Plugin {
 		ServerRuntime metaRuntime = null;
 		try {
 			metaRuntime = ModelBuilder.createMetaRuntime(dbConfiguration);
-			ObjectContext metaObjectContext = GlueDataObject.createObjectContext(metaRuntime);
+			ObjectContext metaObjectContext = metaRuntime.getContext();
 			dbSchemaVersion = ModelBuilder.getDbSchemaVersionString(metaObjectContext);
 			String currentSchemaVersion = SchemaVersion.currentVersionString;
 			if(SchemaVersion.isLaterThanCurrent(dbSchemaVersion)) {

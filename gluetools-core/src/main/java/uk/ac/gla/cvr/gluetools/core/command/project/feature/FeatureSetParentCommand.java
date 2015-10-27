@@ -43,7 +43,7 @@ public class FeatureSetParentCommand extends FeatureModeCommand<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		Feature feature = lookupFeature(cmdContext);
-		Feature parentFeature = GlueDataObject.lookup(cmdContext.getObjectContext(), Feature.class, Feature.pkMap(parentFeatureName));
+		Feature parentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(parentFeatureName));
 		feature.setParent(parentFeature);
 		cmdContext.commit();
 		return new OkResult();

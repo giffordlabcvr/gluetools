@@ -142,6 +142,3 @@ project EXAMPLE_PROJECT
   
   module fasta-alignment-exporter export alignment AL_1 -i -a -f exportAlignment.fasta
   
-  
-  
-  

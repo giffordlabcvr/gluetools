@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cayenne.ObjectContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -24,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -62,7 +62,7 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 
 	@Override
 	public ImportSourceResult execute(CommandContext cmdContext) {
-		ObjectContext objContext = cmdContext.getObjectContext();
+		
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		File fullPath;
 		File sourceFile = new File(sourcePath);
@@ -76,10 +76,11 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 					fullPath.getAbsolutePath()+" exists");
 		}
 		String sourceName = fullPath.getName();
-		Source source = GlueDataObject.create(objContext, Source.class, Source.pkMap(sourceName), false);
+		Source source = GlueDataObject.create(cmdContext, Source.class, Source.pkMap(sourceName), false);
+
 		List<String> fileNames = consoleCmdContext.listMembers(sourcePath, true, false, "");
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
-		int sequencesAdded = 0;
+		int lastCommitSequencesAdded = 0, sequencesAdded = 0;
 		for(String fileName: fileNames) {
 			File filePath = new File(fullPath, fileName);
 			int lastIndexOfDot = fileName.lastIndexOf('.');
@@ -95,7 +96,8 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 			String extension = fileName.substring(lastIndexOfDot+1, fileName.length());
 			SequenceFormat seqFormat = SequenceFormat.detectFormatFromExtension(extension);
 			
-			Sequence sequence = GlueDataObject.create(objContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+			Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+			source = ensureSource(source, cmdContext, sourceName);
 			sequence.setSource(source);
 			sequence.setFormat(seqFormat.name());
 			byte[] sequenceData = ((ConsoleCommandContext) cmdContext).loadBytes(filePath.getPath());
@@ -107,12 +109,26 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 			fileResult.put("sequenceFormat", seqFormat.name());
 			rowData.add(fileResult);
 			sequencesAdded++;
-			if(sequencesAdded == batchSize.intValue()) {
+			if(sequencesAdded % batchSize.intValue() == 0) {
 				cmdContext.commit();
+				cmdContext.newObjectContext();
+				source = null;
+				GlueLogger.getGlueLogger().fine("Sequences added: "+sequencesAdded);
+				lastCommitSequencesAdded = sequencesAdded;
 			}
 		}
-		cmdContext.commit();
+		if(sequencesAdded != lastCommitSequencesAdded) {
+			cmdContext.commit();
+			GlueLogger.getGlueLogger().fine("Sequences added: "+sequencesAdded);
+		}
 		return new ImportSourceResult(rowData);
+	}
+
+	public Source ensureSource(Source source, CommandContext cmdContext, String sourceName) {
+		if(source != null) {
+			return source;
+		}
+		return GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName), false);
 	}
 	
 	public static class ImportSourceResult extends TableResult {
