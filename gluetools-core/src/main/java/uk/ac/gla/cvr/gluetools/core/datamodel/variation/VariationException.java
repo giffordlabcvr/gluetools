@@ -15,8 +15,9 @@ public class VariationException extends GlueException {
 		AMINO_ACID_VARIATION_HAS_NO_CODON_NUMBERING_ANCESTOR("refSeqName", "featureName", 
 				"variationName"), 
 		AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE("refSeqName", "featureName", 
-				"variationName", "codonAncestorFeatureName", "refStart", "refEnd", "maxCodonNumber")
-		;
+				"variationName", "codonAncestorFeatureName", "refStart", "refEnd", "maxCodonNumber"), 
+		VARIATION_LOCATION_UNDEFINED("refSeqName", "featureName", "variationName"), 
+		VARIATION_REGEX_UNDEFINED("refSeqName", "featureName", "variationName");
 
 		private String[] argNames;
 		private Code(String... argNames) {

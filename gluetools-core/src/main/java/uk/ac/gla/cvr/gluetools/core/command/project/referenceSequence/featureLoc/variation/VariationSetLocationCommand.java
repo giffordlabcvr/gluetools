@@ -20,7 +20,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"set","location"}, 
 		docoptUsages={"<refStart> <refEnd>"},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Set the variation's location") 
+		description="Set the variation's location", 
+		furtherHelp="Note that the meaning of refStart and refEnd are dependent on the transcription type and on the feature location: "+
+				"For variations of type NUCLEOTIDE, refStart and refEnd define simply the NT region of the reference sequence to "+
+				"which the motif should be aligned. For variations of type AMINO_ACID, refStart and refEnd define the codon-numbered "+
+				"region to which the query should be aligned, based on the numbering scheme of the smallest-scope feature ancestor of "+
+				"this variation which has its own codon numbering.") 
 public class VariationSetLocationCommand extends VariationModeCommand<OkResult> {
 
 	private static final String REF_END = "refEnd";

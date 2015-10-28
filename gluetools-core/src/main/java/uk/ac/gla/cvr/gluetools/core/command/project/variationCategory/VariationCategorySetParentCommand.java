@@ -54,7 +54,7 @@ public class VariationCategorySetParentCommand extends VariationCategoryModeComm
 
 		public Completer() {
 			super();
-			registerVariableInstantiator("parentFeatureName", new VariableInstantiator() {
+			registerVariableInstantiator("parentName", new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
 				protected List<CompletionSuggestion> instantiate(

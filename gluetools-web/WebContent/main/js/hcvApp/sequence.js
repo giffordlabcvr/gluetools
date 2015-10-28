@@ -162,6 +162,8 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					qrySegQryNTIndex++;
 				}
 			}
+			// commented out until we sort out reporting variation categories through the UI
+			/*
 			if(ntVariationNoteArray) {
 				for(var i = 0 ; i < ntVariationNoteArray.length; i++) {
 					var ntVariationNote = ntVariationNoteArray[i];
@@ -172,6 +174,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					}
 				}
 			}
+			*/
 		}
 
 		
@@ -255,7 +258,8 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 						}
 					}
 				}
-				if(aaVariationNoteArray) {
+				// commented out until we sort out reporting variation categories through the UI
+				/* if(aaVariationNoteArray) {
 					for(var i = 0 ; i < aaVariationNoteArray.length; i++) {
 						var aaVariationNote = aaVariationNoteArray[i];
 						var variationDifferenceStyle = "difference_"+variationMap[aaVariationNote.variationName].notifiability;
@@ -264,7 +268,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 							queryAADifferenceStyle[aaColumn] = updateDifferenceStyle(queryAADifferenceStyle[aaColumn], variationDifferenceStyle);
 						}
 					}
-				}
+				} */
 
 			}
 		}		

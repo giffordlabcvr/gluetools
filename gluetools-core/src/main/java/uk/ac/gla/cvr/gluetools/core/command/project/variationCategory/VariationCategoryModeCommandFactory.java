@@ -22,6 +22,7 @@ public class VariationCategoryModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(VariationCategorySetNotifiabilityCommand.class);
 		registerCommandClass(VariationCategoryShowNotifiabilityCommand.class);
+		registerCommandClass(VariationCategoryListMembersCommand.class);
 
 		registerCommandClass(ExitCommand.class);
 	}

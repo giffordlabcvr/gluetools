@@ -138,11 +138,15 @@ public class CommandUsage {
 	}
 
 	public void validate(Class<? extends Command> cmdClass) {
+		try {
 		//System.out.println("command class: "+cmdClass.getCanonicalName());
 		//System.out.println("command words: "+String.join(" ", commandWords));
 		Map<Character, String> optionsMap = optionsMap();
 		//System.out.println("options map: "+optionsMap);
 		createFSM(optionsMap);
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to validate command usage for "+cmdClass.getSimpleName(), e);
+		}
 	}
 
 	public Node createFSM(Map<Character, String> optionsMap) {

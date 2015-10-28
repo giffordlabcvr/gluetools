@@ -72,11 +72,19 @@ public class Variation extends _Variation {
 	}	
 
 	public void validate(CommandContext cmdContext) {
+		FeatureLocation featureLoc = getFeatureLoc();
+		Feature feature = featureLoc.getFeature();
+		ReferenceSequence refSeq = featureLoc.getReferenceSequence();
 		Integer refStart = getRefStart();
 		Integer refEnd = getRefEnd();
-		FeatureLocation featureLoc = getFeatureLoc();
-		ReferenceSequence refSeq = featureLoc.getReferenceSequence();
-		Feature feature = featureLoc.getFeature();
+		if(refStart == null || refEnd == null) {
+			throw new VariationException(Code.VARIATION_LOCATION_UNDEFINED, 
+					refSeq.getName(), feature.getName(), getName());
+		}
+		if(getRegex() == null) {
+			throw new VariationException(Code.VARIATION_REGEX_UNDEFINED, 
+					refSeq.getName(), feature.getName(), getName());
+		}
 		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
 		TranslationFormat transcriptionFormat = getTranscriptionFormat();
 		if(transcriptionFormat == TranslationFormat.NUCLEOTIDE) {

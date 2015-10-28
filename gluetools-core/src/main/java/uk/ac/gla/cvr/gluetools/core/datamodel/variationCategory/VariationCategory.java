@@ -1,7 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
@@ -46,5 +50,47 @@ public class VariationCategory extends _VariationCategory {
 		return pkMap(getName());
 	}
 
+	@Override
+	public void setParent(VariationCategory parent) {
+		if(parent != null) {
+			Set<String> loopVariationCategoryNames = new LinkedHashSet<String>();
+			loopVariationCategoryNames.add(this.getName());
+			VariationCategory current = parent;
+			while(current != null) {
+				String currentName = current.getName();
+				if(loopVariationCategoryNames.contains(currentName)) {
+					List<String> loopNames = new ArrayList<String>(loopVariationCategoryNames);
+					loopNames.add(currentName);
+					throw new VariationCategoryException(VariationCategoryException.Code.PARENT_RELATIONSHIP_LOOP, loopNames);
+				} else {
+					loopVariationCategoryNames.add(currentName);
+					current = current.getParent();
+				}
+			}
+		}
+		super.setParent(parent);
+	}
 
+
+	public List<VariationCategory> getDescendents() {
+		List<VariationCategory> descendents = new ArrayList<VariationCategory>();
+		List<VariationCategory> children = getChildren();
+		for(VariationCategory childVariationCategory: children) {
+			descendents.add(childVariationCategory);
+			descendents.addAll(childVariationCategory.getDescendents());
+		}
+		return descendents;
+	}
+
+	public List<VariationCategory> getAncestors() {
+		List<VariationCategory> ancestors = new ArrayList<VariationCategory>();
+		VariationCategory current = this;
+		do {
+			ancestors.add(current);
+			current = current.getParent();
+		} while(current != null);
+		return ancestors;
+	}
+	
+	
 }

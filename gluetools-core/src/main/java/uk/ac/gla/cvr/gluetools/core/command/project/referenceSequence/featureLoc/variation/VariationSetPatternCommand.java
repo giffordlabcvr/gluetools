@@ -22,7 +22,9 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 		docoptUsages={"[-t <type>] <regex>"},
 		docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Set the variation's regular expression pattern") 
+		description="Set the variation's regular expression and type",
+		furtherHelp="The <type> of the variation defines whether the regular expression pttern is matched against the "+
+		"nucleotides in the sequence or against the amino acid translation.") 
 public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 
 	public static final String TRANSCRIPTION_TYPE = "transcriptionType";
@@ -54,7 +56,7 @@ public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerEnumLookup("transcriptionType", TranslationFormat.class);
+			registerEnumLookup("type", TranslationFormat.class);
 		}
 	}
 
