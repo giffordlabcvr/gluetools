@@ -147,15 +147,10 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				continue;
 			}
 			GenbankXmlSequenceObject seqObj = (GenbankXmlSequenceObject) sequence.getSequenceObject();
-			List<String> seqIds = GlueXmlUtils.getXPathStrings(seqObj.getDocument(), "/GBSeq/GBSeq_other-seqids/GBSeqid/text()");
-			for(String seqId: seqIds) {
-				if(seqId.startsWith("gi|")) {
-					giNumbersExisting.add(seqId.replace("gi|", ""));
-					break;
-				}
-			}
+			giNumbersExisting.add(giNumberFromDocument(seqObj.getDocument()));
 		}
 	}
+
 
 	private CloseableHttpClient createHttpClient() {
 		// ignore cookies, in order to prevent a log warning resulting from NCBI's incorrect
@@ -210,20 +205,20 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 		
 		int i = 0;
-		for(String giNumber: giNumbers) {
-			if(i >= individualGBFiles.size()) {
-				throw new NcbiImporterException(NcbiImporterException.Code.INSUFFICIENT_SEQUENCES_RETURNED);
-			}
+		for(Object individualFile: individualGBFiles) {
 			RetrievedSequence retrievedSequence = new RetrievedSequence();
-			retrievedSequence.sequenceID = giNumber;
 			retrievedSequence.format = sequenceFormat;
-			retrievedSequence.giNumber = giNumber;
-			Object individualFile = individualGBFiles.get(i);
+			retrievedSequence.sequenceID = null;
 			if(individualFile instanceof Document) {
 				Document individualDocument = (Document) individualFile;
 				retrievedSequence.data = GlueXmlUtils.prettyPrint(individualDocument);
 				if(sequenceIdField == SequenceIdField.PRIMARY_ACCESSION) {
-					retrievedSequence.sequenceID = GlueXmlUtils.getXPathString(individualDocument, "/GBSeq/GBSeq_primary-accession/text()");
+					retrievedSequence.sequenceID = primaryAccessionFromDocument(individualDocument);
+				} else if(sequenceIdField == SequenceIdField.GI_NUMBER) {
+					retrievedSequence.sequenceID = giNumberFromDocument(individualDocument);
+				} 
+				if(retrievedSequence.sequenceID == null) {
+					throw new NcbiImporterException(NcbiImporterException.Code.NULL_SEQUENCE_ID, retrievedSequence.data);
 				}
 			}
 			retrievedSequences.add(retrievedSequence);
@@ -231,6 +226,21 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 		return retrievedSequences;
 	}
+
+	private String primaryAccessionFromDocument(Document individualDocument) {
+		return GlueXmlUtils.getXPathString(individualDocument, "/GBSeq/GBSeq_primary-accession/text()");
+	}
+	
+	private String giNumberFromDocument(Document document) {
+		List<String> seqIds = GlueXmlUtils.getXPathStrings(document, "/GBSeq/GBSeq_other-seqids/GBSeqid/text()");
+		for(String seqId: seqIds) {
+			if(seqId.startsWith("gi|")) {
+				return seqId.replace("gi|", "");
+			}
+		}
+		return null;
+	}
+
 	
 	// lists all the databases
 	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi
@@ -463,6 +473,13 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					cmdContext.commit();
 					if(deleteResult.getNumber() == 1) {
 						preExisting = true;
+					}
+				} else {
+					Sequence existing = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+					if(existing != null) {
+						// shouldn't really happen but sometimes does.
+						GlueLogger.getGlueLogger().warning("Source "+sourceName+", Sequence "+sequenceID+" already exists: not updated.");
+						continue;
 					}
 				}
 				createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);

@@ -12,7 +12,7 @@ public class NcbiImporterException extends ModulePluginException {
 		CONFIG_ERROR("errorTxt"),
 		PROTOCOL_ERROR("requestName", "errorTxt"),
 		CANNOT_PROCESS_SEQUENCE_FORMAT("formatName"), 
-		INSUFFICIENT_SEQUENCES_RETURNED();
+		NULL_SEQUENCE_ID("xmlDoc");
 		
 		private String[] argNames;
 		private Code(String... argNames) {
