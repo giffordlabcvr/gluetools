@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.console.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +34,15 @@ public abstract class ConsoleOptionCommand<R extends CommandResult> extends Comm
 	}
 
 	
-	protected static ConsoleOption lookupOptionByName(String optionName) {
+	public static ConsoleOption lookupOptionByName(String optionName) {
+		List<String> validOptions = new ArrayList<String>();
 		for(ConsoleOption option : ConsoleOption.values()) {
 			if(option.getName().equals(optionName)) {
 				return option;
 			}
+			validOptions.add(option.getName());
 		}
-		throw new ConsoleOptionException(Code.NO_SUCH_OPTION, optionName);
+		throw new ConsoleOptionException(Code.NO_SUCH_OPTION, optionName, validOptions);
 	}
 	
 	public abstract static class OptionNameCompleter extends AdvancedCmdCompleter {

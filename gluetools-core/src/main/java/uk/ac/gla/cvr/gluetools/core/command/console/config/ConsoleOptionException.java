@@ -6,7 +6,7 @@ public class ConsoleOptionException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		NO_SUCH_OPTION("optionName"),
+		NO_SUCH_OPTION("optionName", "validOptions"),
 		INVALID_OPTION_VALUE("optionName", "badValue", "errorTxt");
 
 		private String[] argNames;

@@ -1,7 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
+import java.io.File;
 import java.util.logging.Level;
 
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public enum ConsoleOption {
@@ -10,6 +12,12 @@ public enum ConsoleOption {
 		@Override
 		public String getDefaultValue() {
 			return System.getProperty("user.dir", "/");
+		}
+		public void onSet(String newValue) {
+			File newPath = new File(newValue);
+			if(!newPath.isDirectory()) {
+				throw new ConsoleOptionException(ConsoleOptionException.Code.INVALID_OPTION_VALUE, "load-save-path", newValue, "No such directory");
+			}
 		}
 		
 	},
@@ -31,7 +39,6 @@ public enum ConsoleOption {
 		public void onSet(String newValue) {
 			super.onSet(newValue);
 			GlueLogger.getGlueLogger().setLevel(Level.parse(newValue));
-			System.out.println(GlueLogger.getGlueLogger().getLevel());
 		}
 		
 	};

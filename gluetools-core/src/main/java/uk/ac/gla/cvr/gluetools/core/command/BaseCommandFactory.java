@@ -5,8 +5,10 @@ import java.util.Arrays;
 import uk.ac.gla.cvr.gluetools.core.command.config.ConfigShowPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.RunFileCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleAddOptionLineCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleChangeDirectoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleHelpOptionCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleRemoveOptionLineCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleSetOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleShowOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleUnsetOptionCommand;
@@ -27,6 +29,9 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(ConsoleSetOptionCommand.class);
 		registerCommandClass(ConsoleUnsetOptionCommand.class);
 		registerCommandClass(ConsoleHelpOptionCommand.class);
+
+		registerCommandClass(ConsoleAddOptionLineCommand.class);
+		registerCommandClass(ConsoleRemoveOptionLineCommand.class);
 
 		addGroupHelp(Arrays.asList("config"), "Manage engine configuration");
 		registerCommandClass(ConfigShowPropertyCommand.class);

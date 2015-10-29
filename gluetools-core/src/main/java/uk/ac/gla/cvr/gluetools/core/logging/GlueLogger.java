@@ -8,6 +8,10 @@ public class GlueLogger {
 
 	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.core");
 	
+	static {
+		logger.setLevel(Level.INFO);
+	}
+	
 	public static Logger getGlueLogger() {
 		return logger;
 	}

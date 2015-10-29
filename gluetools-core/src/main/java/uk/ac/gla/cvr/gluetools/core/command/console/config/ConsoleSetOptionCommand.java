@@ -39,7 +39,7 @@ public class ConsoleSetOptionCommand extends ConsoleOptionCommand<OkResult> {
 		if(allowedValues != null) {
 			List<String> valuesList = Arrays.asList(allowedValues);
 			if(!valuesList.contains(optionValue)) {
-				throw new ConsoleOptionException(Code.INVALID_OPTION_VALUE, consoleOption.getName(), optionValue, valuesList.toString());
+				throw new ConsoleOptionException(Code.INVALID_OPTION_VALUE, consoleOption.getName(), optionValue, "Valid values: "+valuesList.toString());
 			}
 		}
 	}

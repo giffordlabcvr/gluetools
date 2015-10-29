@@ -1,11 +1,20 @@
 Usage: 
-  gluetools [-vhnm] [-c <configFile>] [-f <file>]
+  gluetools [-c <c-file>] -v
+  gluetools [-c <c-file>] -h
+  gluetools [-c <c-file>] [-p <c-opt>]... [-nsEO] -f <b-file>
+  gluetools [-c <c-file>] [-p <c-opt>]... [-nsEO] -m <cmd-line>
+  gluetools [-c <c-file>] [-p <c-opt>]... [-s]
 
 Options:
-  -h, --help                       Print usage and options, then exit
-  -v, --version                    Display version info and exit
-  -n, --non-interactive            Do not enter interactive mode
-  -m, --migrate-schema             Migrate database schema if necessary
-  -f <file>, --batch-file <file>   Run commands in batch mode from a file
-  -c <file>, --config-file <file>  Configure gluetools from a file
+  -h, --help                            Display usage and options, then exit
+  -v, --version                         Display version info and exit
+  -n, --non-interactive                 Do not enter interactive mode
+  -s, --migrate-schema                  Migrate database schema if necessary
+  -f <b-file>, --batch-file <b-file>    Run commands in batch mode from a file
+  -m <cmd-line>, --cmd-line <cmd-line>  Run a single inline command line
+  -c <c-file>, --config-file <c-file>   Configure gluetools from a file
+  -p <c-opt>, --console-option <c-opt>  Inline console option as name:value
+  -E, --no-echo                         Suppress batch/inline command echo
+  -O, --no-output                       Suppress batch/inline command echo
+              
   

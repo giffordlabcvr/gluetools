@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
@@ -33,7 +32,6 @@ public class CommandContext {
 	}
 
 	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
-	private Optional<CommandContextListener> commandContextListener = Optional.empty();
 	
 	public void pushCommandMode(CommandMode<?> commandMode) {
 		commandMode.setParentCommandMode(peekCommandMode());
@@ -42,7 +40,6 @@ public class CommandContext {
 			ServerRuntime serverRuntime = ((DbContextChangingMode) commandMode).getNewServerRuntime();
 			objectContextStack.add(0, serverRuntime.getContext());
 		}
-		commandContextListener.ifPresent(c -> c.commandModeChanged());
 	}
 
 	public String getDescription() {
@@ -82,7 +79,6 @@ public class CommandContext {
 			objectContextStack.remove(0);
 		}
 		commandMode.exit();
-		commandContextListener.ifPresent(c -> c.commandModeChanged());
 		return commandMode;
 	}
 	
@@ -93,10 +89,6 @@ public class CommandContext {
 		return commandModeStack.get(0);
 	}
 	
-	public void setCommandContextListener(CommandContextListener listener) {
-		commandContextListener = Optional.ofNullable(listener);
-	}
-
 	public String getModePath() {
 		List<String> modeIds = 
 				commandModeStack.stream().

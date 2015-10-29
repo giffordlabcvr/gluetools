@@ -7,8 +7,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 
@@ -30,6 +32,7 @@ public class ConsoleCommandContext extends CommandContext {
 	private boolean finished = false;
 	private boolean requireModeWrappable = false;
 	private Console console;
+	private Set<ConsoleOption> optionLines = new LinkedHashSet<ConsoleOption>();
 
 	public ConsoleCommandContext(GluetoolsEngine gluetoolsEngine, Console console) {
 		super(gluetoolsEngine, "the GLUE console");
@@ -205,10 +208,21 @@ public class ConsoleCommandContext extends CommandContext {
 
 	}
 
-	public void runBatchCommands(String batchFilePath, String batchContent) {
-		console.runBatchCommands(batchFilePath, batchContent);
+	public void runBatchCommands(String batchFilePath, String batchContent, boolean noEcho, boolean noOutput) {
+		console.runBatchCommands(batchFilePath, batchContent, noEcho, noOutput);
 	}
 
+	public void addOptionLine(ConsoleOption consoleOption) {
+		optionLines.add(consoleOption);
+	}
+
+	public void removeOptionLine(ConsoleOption consoleOption) {
+		optionLines.remove(consoleOption);
+	}
+
+	public Set<ConsoleOption> getOptionLines() {
+		return optionLines;
+	}
 	
 
 	

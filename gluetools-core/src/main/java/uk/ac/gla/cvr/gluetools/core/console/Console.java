@@ -1,10 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +25,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContextListener;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
@@ -31,6 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
@@ -54,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 // TODO history should be stored in the DB.
 // TODO in batch mode, exceptions should go to stderr.
 @SuppressWarnings("rawtypes")
-public class Console implements CommandContextListener, CommandResultRenderingContext
+public class Console implements CommandResultRenderingContext
 {
 	private static final String GLUE_PROMPT = "GLUE> ";
 	private static final String GLUE_CONSOLE_BATCH_CONTEXT_STACK = "glue.console.batchContextStack";
@@ -63,9 +65,14 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	private ConsoleCommandContext commandContext;
 	private LinkedList<BatchContext> batchContextStack = new LinkedList<BatchContext>();
 	private String configFilePath = null;
+	private Map<ConsoleOption, String> inlineConsoleOptions = null;
 	private boolean nonInteractive = true;
 	private boolean migrateSchema;
 	private boolean version;
+	private boolean noEcho = false;
+	private boolean noOutput = false;
+	private String batchFilePath;
+	private String inlineCmdLine;
 	
 	private Console() {
 	}
@@ -76,6 +83,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 
 	private void handleInteractiveLine() {
 		String line = null;
+		modePathAndOptionLines();
 		try {
 			line = reader.readLine();
 		} catch (IOException ioe) {
@@ -91,12 +99,11 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 	private void handleLine(String line, boolean outputCommandToConsole, boolean outputResultToConsole) {
 		ArrayList<Token> tokens = null;
 		tokens = Lexer.lex(line);
-		// output(tokens.toString());
 		List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
 		if(!meaningfulTokens.isEmpty()) {
 			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
 			if(outputCommandToConsole) {
-				output(GLUE_PROMPT+String.join(" ", tokenStrings));
+				output(GLUE_PROMPT+String.join(" ", line.trim()));
 			}
 			executeTokenStrings(tokenStrings, outputResultToConsole);
 		}
@@ -256,11 +263,15 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		Console console = new Console();
 		setupConsoleOptions(docoptResult, console);
 		console.init();
-		if(!console.version) {
+		if(console.version) {
+			console.output(console.versionLine());
+		} else {
 			GluetoolsEngine.getInstance().dbWarning();
-			Object fileString = docoptResult.get("--batch-file");
-			if(fileString != null) {
-				console.runBatchFile(fileString.toString());
+			if(console.batchFilePath != null) {
+				console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
+			}
+			if(console.inlineCmdLine != null) {
+				console.runInlineCmdLine(console.inlineCmdLine, console.noEcho, console.noOutput);
 			}
 			if(!console.nonInteractive) {
 				console.interactiveSession();
@@ -274,6 +285,14 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(configFileOption != null) {
 			console.configFilePath = configFileOption.toString();
 		}
+		Object batchFileOption = docoptResult.get("--batch-file");
+		if(batchFileOption != null) {
+			console.batchFilePath = batchFileOption.toString();
+		}
+		Object cmdLineOption = docoptResult.get("--cmd-line");
+		if(cmdLineOption != null) {
+			console.inlineCmdLine = cmdLineOption.toString();
+		}
 		Object migrateSchemaOption = docoptResult.get("--migrate-schema");
 		if(migrateSchemaOption != null) {
 			console.migrateSchema = Boolean.parseBoolean(migrateSchemaOption.toString());
@@ -286,6 +305,30 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		if(versionOption != null) {
 			console.version = Boolean.parseBoolean(versionOption.toString());
 		}
+		Object consoleOptionOption = docoptResult.get("--console-option");
+		if(consoleOptionOption != null) {
+			@SuppressWarnings("unchecked")
+			List<Object> optionNameValuePairs = (List<Object>) consoleOptionOption;
+			console.inlineConsoleOptions = new LinkedHashMap<ConsoleOption, String>();
+			for(Object nameValuePairObj : optionNameValuePairs) {
+				String nameValuePair = (String) nameValuePairObj;
+				int indexOfColon = nameValuePair.indexOf(':');
+				if(indexOfColon == -1) {
+					throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Inline console option does not contain \":\"");
+				}
+				String name = nameValuePair.substring(0, indexOfColon);
+				ConsoleOption consoleOption = ConsoleOptionCommand.lookupOptionByName(name);
+				console.inlineConsoleOptions.put(consoleOption, nameValuePair.substring(indexOfColon+1, nameValuePair.length()));
+			}
+		}
+		Object noEchoOption = docoptResult.get("--no-echo");
+		if(noEchoOption != null) {
+			console.noEcho = Boolean.parseBoolean(noEchoOption.toString());
+		}
+		Object noOutputOption = docoptResult.get("--no-output");
+		if(noOutputOption != null) {
+			console.noOutput = Boolean.parseBoolean(noOutputOption.toString());
+		}
 	}
 
 	private void init() {
@@ -295,21 +338,43 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			throw new RuntimeException(ioe);
 		}
 		this.out = new PrintWriter(reader.getOutput());
+		reader.setPrompt(GLUE_PROMPT);
 		GlueLogger.getGlueLogger().setUseParentHandlers(false);
 		ConsoleLoggerHandler handler = new ConsoleLoggerHandler(this);
 		handler.setFormatter(new GlueLoggingFormatter());
 		GlueLogger.getGlueLogger().addHandler(handler);
 		GluetoolsEngine gluetoolsEngine = GluetoolsEngine.initInstance(configFilePath, this.migrateSchema);
 		this.commandContext = new ConsoleCommandContext(gluetoolsEngine, this);
-		commandContext.setCommandContextListener(this);
+		if(inlineConsoleOptions != null) {
+			inlineConsoleOptions.forEach((optionName, optionValue) -> {
+				this.commandContext.setOptionValue(optionName, optionValue);
+			});
+		}
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));
 		reader.addCompleter(new ConsoleCompleter(commandContext));
-		output(versionLine());
 	}
 
 	private void interactiveSession() {
+		output(versionLine());
+		runGlueRC();
 		while(!isFinished()) {
 			handleInteractiveLine();
+		}
+	}
+
+	private void runGlueRC() {
+		String userHome = System.getProperty("user.home");
+		if(userHome == null) {
+			return;
+		}
+		File userHomeFile = new File(userHome);
+		if(!userHomeFile.isDirectory()) {
+			return;
+		}
+		File glueRCFile = new File(userHomeFile, ".gluerc");
+		if(glueRCFile.isFile() && glueRCFile.canRead()) {
+			GlueLogger.getGlueLogger().finest("Running .gluerc from "+userHome);
+			runBatchFile(glueRCFile.getAbsolutePath(), true, true);
 		}
 	}
 
@@ -320,7 +385,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		GluetoolsEngine.shutdown();
 	}
 
-	private void runBatchFile(String batchFilePath) {
+	private void runBatchFile(String batchFilePath, boolean noEcho, boolean noOutput) {
 		String batchContent = null;
 		try {
 			batchContent = new String(commandContext.loadBytes(batchFilePath));
@@ -329,14 +394,23 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			System.exit(1);
 		}
 		try {
-			runBatchCommands(batchFilePath, batchContent);
+			runBatchCommands(batchFilePath, batchContent, noEcho, noOutput);
+		} catch(GlueException ge) {
+			handleGlueException(ge);
+			System.exit(1);
+		}
+	}
+	
+	private void runInlineCmdLine(String inlineCmdLine, boolean noEcho, boolean noOutput) {
+		try {
+			runBatchCommands("inline-cmd-line", inlineCmdLine, noEcho, noOutput);
 		} catch(GlueException ge) {
 			handleGlueException(ge);
 			System.exit(1);
 		}
 	}
 
-	public void runBatchCommands(String batchFilePath, String batchContent) {
+	public void runBatchCommands(String batchFilePath, String batchContent, boolean noEcho, boolean noOutput) {
 		String[] batchLines = batchContent.split("\n");
 		try {
 			BatchContext batchContext = new BatchContext(batchFilePath, 1);
@@ -344,7 +418,7 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 			batchContextStack.push(batchContext);
 			for(String batchLine: batchLines) {
 				try {
-					handleLine(batchLine, true, true);
+					handleLine(batchLine, !noEcho, !noOutput);
 				} catch(GlueException ge) {
 					if(ge.getUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK) == null) {
 						ge.putUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK, new LinkedList<BatchContext>(batchContextStack));
@@ -423,13 +497,19 @@ public class Console implements CommandContextListener, CommandResultRenderingCo
 		out.flush();
 	}
 
-	private void updatePrompt() {
-		reader.setPrompt("Mode path: "+commandContext.getModePath()+"\n"+GLUE_PROMPT);
-	}
-
-	@Override
-	public void commandModeChanged() {
-		updatePrompt();
+	private void modePathAndOptionLines() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Mode path: ").append(commandContext.getModePath());
+		for(ConsoleOption consoleOption: commandContext.getOptionLines()) {
+			buf.append("\n").append("Option ").append(consoleOption.getName()).append(": ");
+			String optionValue = commandContext.getOptionValue(consoleOption);
+			if(optionValue == null) {
+				buf.append("-");
+			} else {
+				buf.append(optionValue);
+			}
+		}
+		output(buf.toString());
 	}
 
 	@Override
