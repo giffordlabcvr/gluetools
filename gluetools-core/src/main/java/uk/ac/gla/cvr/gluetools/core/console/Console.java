@@ -513,8 +513,8 @@ public class Console implements CommandResultRenderingContext
 	}
 
 	@Override
-	public String getConsoleOutputFormat() {
-		return commandContext.getOptionValue(ConsoleOption.CMD_RESULT_FORMAT);
+	public ConsoleOutputFormat getConsoleOutputFormat() {
+		return ConsoleOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_RESULT_FORMAT).toUpperCase());
 	}
 
 

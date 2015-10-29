@@ -127,11 +127,7 @@ public class TableResult extends CommandResult {
 				headers.forEach(header -> {
 					String cString;
 					Object value = map.get(header);
-					if(value == null) {
-						cString = "-";
-					} else {
-						cString = value.toString();
-					}
+					cString = renderValue(value);
 					if(cString.length() < minColWidth) {
 						cString = " "+cString;
 					}
@@ -143,6 +139,16 @@ public class TableResult extends CommandResult {
 		} 
 	}
 
+	private static String renderValue(Object value) {
+		String cString;
+		if(value == null) {
+			cString = "-";
+		} else {
+			cString = value.toString();
+		}
+		return cString;
+	}
+
 	public static <D extends GlueDataObject> List<Map<String, Object>> listOfMapsFromDataObjects(
 			List<D> results, List<String> propertyPaths) {
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
@@ -152,7 +158,39 @@ public class TableResult extends CommandResult {
 		return listOfMaps;
 	}
 
-	
+	@Override
+	protected void renderToConsoleAsTab(CommandResultRenderingContext renderCtx) {
+		renderDelimitedTable(renderCtx, "\t");
+	}
+	@Override
+	protected void renderToConsoleAsCsv(CommandResultRenderingContext renderCtx) {
+		renderDelimitedTable(renderCtx, ",");
+	}
+
+	private void renderDelimitedTable(CommandResultRenderingContext renderCtx,
+			String delimiter) {
+		List<String> columnHeaders = getColumnHeaders();
+		List<Map<String, Object>> listOfMaps = asListOfMaps(columnHeaders);
+		StringBuffer buf = new StringBuffer();
+		for(int i = 0; i < columnHeaders.size(); i++) {
+			buf.append(columnHeaders.get(i));
+			if(i < columnHeaders.size() - 1) {
+				buf.append(delimiter);
+			}
+		}
+		renderCtx.output(buf.toString());
+		for(Map<String, Object> rowData: listOfMaps) {
+			buf = new StringBuffer();
+			for(int i = 0; i < columnHeaders.size(); i++) {
+				String header = columnHeaders.get(i);
+				buf.append(renderValue(rowData.get(header)));
+				if(i < columnHeaders.size() - 1) {
+					buf.append(delimiter);
+				}
+			}
+			renderCtx.output(buf.toString());
+		}
+	}
 
 
 }

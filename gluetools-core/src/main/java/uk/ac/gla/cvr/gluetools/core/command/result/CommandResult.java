@@ -4,6 +4,7 @@ import javax.json.JsonObject;
 
 import org.w3c.dom.Document;
 
+import uk.ac.gla.cvr.gluetools.core.console.ConsoleOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -50,12 +51,23 @@ public abstract class CommandResult {
 	}
 
 	public final void renderToConsole(CommandResultRenderingContext renderCtx) {
-		if(renderCtx.getConsoleOutputFormat().equals("json")) {
+		ConsoleOutputFormat consoleOutputFormat = renderCtx.getConsoleOutputFormat();
+		switch(consoleOutputFormat) {
+		case JSON:
 			renderToConsoleAsJson(renderCtx);
-		} else if(renderCtx.getConsoleOutputFormat().equals("xml")) {
+			break;
+		case XML:
 			renderToConsoleAsXml(renderCtx);
-		} else {
+			break;
+		case TAB:
+			renderToConsoleAsTab(renderCtx);
+			break;
+		case CSV:
+			renderToConsoleAsCsv(renderCtx);
+			break;
+		default:
 			renderToConsoleAsText(renderCtx);
+			break;
 		}
 	}
 
@@ -73,6 +85,16 @@ public abstract class CommandResult {
 	// default implementation
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		renderToConsoleAsXml(renderCtx);
+	}
+
+	// default implementation
+	protected void renderToConsoleAsTab(CommandResultRenderingContext renderCtx) {
+		renderToConsoleAsText(renderCtx);
+	}
+
+	// default implementation
+	protected void renderToConsoleAsCsv(CommandResultRenderingContext renderCtx) {
+		renderToConsoleAsText(renderCtx);
 	}
 
 	
