@@ -16,6 +16,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -39,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterExcepti
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
@@ -76,6 +80,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private List<String> specificPrimaryAccessions;
 	private SequenceFormat sequenceFormat;
 	private SequenceIdField sequenceIdField;
+	private String giNumberFieldName;
 	private boolean overwriteExisting = false;
 	private Integer maxDownloaded = null;
 	
@@ -94,6 +99,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				ncbiImporterElem, "sequenceIdField", false)).orElse(SequenceIdField.GI_NUMBER);
 		overwriteExisting = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, "overwriteExisting", false)).orElse(false);
 		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, "maxDownloaded", false);
+		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, "giNumberFieldName", "GB_GI_NUMBER");
+		
 		
 		addProvidedCmdClass(ImportCommand.class);
 		addProvidedCmdClass(PreviewCommand.class);
@@ -123,7 +130,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	}
 
 	private void getGiNumbersMatchingAndExisting(CommandContext cmdContext, 
-			Set<String> giNumbersMatching, Set<String> giNumbersExisting) {
+			Set<String> giNumbersMatching, Set<String> giNumbersExisting, 
+			boolean cachedGiNumbers) {
 		if(!specificGiNumbers.isEmpty()) {
 			giNumbersMatching.addAll(specificGiNumbers);
 		} else {
@@ -134,6 +142,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				GlueLogger.getGlueLogger().finest("NCBI eSearch response received");
 				checkForESearchErrors(eSearchResponseDoc);
 				giNumbersMatching.addAll(GlueXmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()"));
+				GlueLogger.getGlueLogger().finest(giNumbersMatching.size()+" GI numbers returned in eSearch response");
 			} catch (IOException e) {
 				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 			}
@@ -142,13 +151,53 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		if(source == null) {
 			return;
 		}
-		for(Sequence sequence: source.getSequences()) {
-			if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
-				continue;
+		int numResults = 0;
+		int fetchOffset = 0;
+		int foundInField = 0; 
+		int foundInDocument = 0;
+		GlueLogger.getGlueLogger().finest("Checking for sequences present in source \""+sourceName+"\"");
+		Expression whereClause = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
+		do {
+			boolean needToCommit = false;
+			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause);
+			selectQuery.setFetchLimit(eFetchBatchSize);
+			selectQuery.setFetchOffset(fetchOffset);
+			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
+			numResults = sequences.size();
+			for(Sequence sequence: sequences) {
+				if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
+					continue;
+				}
+				String giNumber = null;
+				if(cachedGiNumbers) {
+					Object giNumberObj = sequence.readProperty(giNumberFieldName);
+					if(giNumberObj != null) {
+						giNumber = giNumberObj.toString();
+						foundInField++;
+					}
+				}
+				if(giNumber == null) {
+					giNumber = giNumberFromDocument(((GenbankXmlSequenceObject) sequence.getSequenceObject()).getDocument());
+					if(giNumber != null) {
+						foundInDocument++;
+						if(cachedGiNumbers) {
+							sequence.writeProperty(giNumberFieldName, giNumber);
+							needToCommit = true;
+						}
+					}
+				}
+				if(giNumber != null) {
+					giNumbersExisting.add(giNumber);
+				}
 			}
-			GenbankXmlSequenceObject seqObj = (GenbankXmlSequenceObject) sequence.getSequenceObject();
-			giNumbersExisting.add(giNumberFromDocument(seqObj.getDocument()));
-		}
+			GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
+			GlueLogger.getGlueLogger().fine("GI numbers: found "+foundInField+" in custom field, "+foundInDocument+" in sequence documents");
+			fetchOffset += eFetchBatchSize;
+			if(needToCommit) {
+				cmdContext.commit();
+				cmdContext.newObjectContext();
+			}
+		} while(numResults == eFetchBatchSize);
 	}
 
 
@@ -204,7 +253,6 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					sequenceFormat.name());
 		}
 		
-		int i = 0;
 		for(Object individualFile: individualGBFiles) {
 			RetrievedSequence retrievedSequence = new RetrievedSequence();
 			retrievedSequence.format = sequenceFormat;
@@ -222,7 +270,6 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				}
 			}
 			retrievedSequences.add(retrievedSequence);
-			i++;
 		}
 		return retrievedSequences;
 	}
@@ -430,8 +477,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		
 		Set<String> matchingGiNumbers = new LinkedHashSet<String>();
 		Set<String> existingGiNumbers = new LinkedHashSet<String>();
-		
-		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers);
+		boolean cachedGiNumbers = initCachedGiNumbers(cmdContext);
+		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers, cachedGiNumbers);
 		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), 0, 0,
 				maxDownloaded, overwriteExisting, eSearchRetMax);
 	}
@@ -441,8 +488,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private NcbiImporterResult doImport(CommandContext cmdContext) {
 		Set<String> matchingGiNumbers = new LinkedHashSet<String>();
 		Set<String> existingGiNumbers = new LinkedHashSet<String>();
-		
-		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers);
+		boolean cachedGiNumbers = initCachedGiNumbers(cmdContext);
+		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers, cachedGiNumbers);
 		Set<String> retrieveSet = new LinkedHashSet<String>(matchingGiNumbers);
 		GlueLogger.getGlueLogger().fine("NCBI sequences matching search query: "+retrieveSet.size());
 		if(!overwriteExisting) {
@@ -483,6 +530,13 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					}
 				}
 				createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
+				if(cachedGiNumbers && sequence.format == SequenceFormat.GENBANK_XML) {
+					Sequence newSequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+					newSequence.writeProperty(giNumberFieldName, 
+							giNumberFromDocument(((GenbankXmlSequenceObject) newSequence.getSequenceObject()).getDocument()));
+					cmdContext.commit();
+				}
+				
 				if(preExisting) {
 					recordsUpdated++;
 				} else {
@@ -495,6 +549,16 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		} while(batchEnd < giNumbers.size());
 		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), recordsAdded, recordsUpdated,
 				maxDownloaded, overwriteExisting, eSearchRetMax);
+	}
+
+	private boolean initCachedGiNumbers(CommandContext cmdContext) {
+		boolean cachedGiNumbers = true;
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomSequenceFieldNames();
+		if(!customSequenceFieldNames.contains(giNumberFieldName)) {
+			cachedGiNumbers = false;
+			GlueLogger.getGlueLogger().warning("No sequence field \""+giNumberFieldName+"\" exists in the project. Importer performance will be impeded as a result.");
+		}
+		return cachedGiNumbers;
 	}
 	
 	

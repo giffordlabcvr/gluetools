@@ -1,5 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -9,29 +15,55 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
 	commandWords={"delete", "source"}, 
-	docoptUsages={"<sourceName>"},
+	docoptUsages={"[-b <batchSize>] <sourceName>"},
+	docoptOptions={"-b <batchSize>, --batchSize <batchSize>  Sequence deletion batch size"},
 	metaTags={CmdMeta.updatesDatabase},		
-	description="Delete a sequence source and all its sequences") 
+	description="Delete a sequence source and all its sequences",
+	furtherHelp="Sequences are deleted in batches before the source is deleted."+
+	" Default batch size is 250.") 
 public class DeleteSourceCommand extends ProjectModeCommand<DeleteResult> {
 
 	private String sourceName;
+	private int batchSize;
+	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		sourceName = PluginUtils.configureStringProperty(configElem, "sourceName", true);
+		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "batchSize", false)).orElse(250);
 	}
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		
+		Expression whereClause = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
+		int fetchOffset = 0;
+		int numResults;
+		int totalDeleted = 0;
+		do {
+			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause);
+			selectQuery.setFetchLimit(batchSize);
+			selectQuery.setFetchOffset(fetchOffset);
+			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
+			numResults = sequences.size();
+			for(Sequence sequence: sequences) {
+				GlueDataObject.delete(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequence.getSequenceID()), true);
+			}
+			fetchOffset += batchSize;
+			cmdContext.commit();
+			cmdContext.newObjectContext();
+			totalDeleted += numResults;
+			GlueLogger.getGlueLogger().finest("Deleted "+totalDeleted+" sequences from source "+sourceName);
+		} while(numResults == batchSize);
 		DeleteResult result = GlueDataObject.delete(cmdContext, Source.class, Source.pkMap(sourceName), true);
 		cmdContext.commit();
 		return result;

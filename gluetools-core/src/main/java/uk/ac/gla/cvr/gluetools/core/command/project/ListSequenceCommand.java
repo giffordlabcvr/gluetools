@@ -26,11 +26,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"list", "sequence"},
-	docoptUsages={"[-w <whereClause>] [<fieldName> ...]"},
+	docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [<fieldName> ...]"},
 	docoptOptions={
-		"-w <whereClause>, --whereClause <whereClause>  Qualify result set"},
+		"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
+		"-p <pageSize>, --pageSize <pageSize>           Tune ORM page size",
+		"-l <fetchLimit>, --fetchLimit <fetchLimit>     Limit max number of records",
+		"-o <fetchOffset>, --fetchOffset <fetchOffset>  Record number offset"},
 	description="List sequences or sequence field values",
 	furtherHelp=
+	"The <pageSize> option is for performance tuning. The default page size\n"+
+	"is 250 records.\n"+
 	"The optional whereClause qualifies which sequences are displayed.\n"+
 	"Where fieldNames are specified, only these field values will be displayed.\n"+
 	"Examples:\n"+
@@ -42,8 +47,14 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
+	public static final String PAGE_SIZE = "pageSize";
+	public static final String FETCH_LIMIT = "fetchLimit";
+	public static final String FETCH_OFFSET = "fetchOffset";
 	private Optional<Expression> whereClause;
 	private List<String> fieldNames;
+	private int pageSize;
+	private Optional<Integer> fetchLimit;
+	private Optional<Integer> fetchOffset;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -53,6 +64,9 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 		if(fieldNames.isEmpty()) {
 			fieldNames = null; // default fields
 		}
+		pageSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, PAGE_SIZE, false)).orElse(250);
+		fetchLimit = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_LIMIT, false));
+		fetchOffset = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_OFFSET, false));
 	}
 	
 	@Override
@@ -63,6 +77,9 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 		} else {
 			selectQuery = new SelectQuery(Sequence.class);
 		}
+		selectQuery.setPageSize(pageSize);
+		fetchLimit.ifPresent(limit -> selectQuery.setFetchLimit(limit));
+		fetchOffset.ifPresent(offset -> selectQuery.setFetchOffset(offset));
 		Project project = getProjectMode(cmdContext).getProject();
 		if(fieldNames == null) {
 			return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery);

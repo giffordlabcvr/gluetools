@@ -4,6 +4,10 @@
   <!-- The name of the GLUE source object which will contain the imported sequences.
        If omitted, defaults to ncbi-<database> -->
   <sourceName>ncbi-nuccore</sourceName>
+  <!-- Name of the custom field of the sequence table in which the importer will
+       cache GI numbers. If omitted, defaults to GB_GI_NUMBER. 
+       If the field does not exist the importer can still work but will log warnings. -->
+  <giNumberField>GB_GI_NUMBER</giNumberField>
   <!-- The eSearchTerm is a standard NCBI entrez text query. 
        An alternative to eSearchTerm is to specify specific GI numbers or Primary Accessions 
        to retrieve. See ncbiImporterGiNumbers.xml and ncbiImporterPrimaryAccessions.xml for syntax examples -->
