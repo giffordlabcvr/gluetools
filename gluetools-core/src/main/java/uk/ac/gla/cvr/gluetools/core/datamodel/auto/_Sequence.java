@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.seqOrigData.SeqOrigData;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 
 /**
@@ -16,10 +17,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 public abstract class _Sequence extends GlueDataObject {
 
     public static final String FORMAT_PROPERTY = "format";
-    public static final String PACKED_DATA_PROPERTY = "packedData";
     public static final String SEQUENCE_ID_PROPERTY = "sequenceID";
     public static final String ALIGNMENT_MEMBERSHIPS_PROPERTY = "alignmentMemberships";
     public static final String REFERENCE_SEQUENCES_PROPERTY = "referenceSequences";
+    public static final String SEQ_ORIG_DATA_PROPERTY = "seqOrigData";
     public static final String SOURCE_PROPERTY = "source";
 
     public static final String SEQUENCE_ID_PK_COLUMN = "SEQUENCE_ID";
@@ -30,13 +31,6 @@ public abstract class _Sequence extends GlueDataObject {
     }
     public String getFormat() {
         return (String)readProperty(FORMAT_PROPERTY);
-    }
-
-    public void setPackedData(byte[] packedData) {
-        writeProperty(PACKED_DATA_PROPERTY, packedData);
-    }
-    public byte[] getPackedData() {
-        return (byte[])readProperty(PACKED_DATA_PROPERTY);
     }
 
     public void setSequenceID(String sequenceID) {
@@ -67,6 +61,15 @@ public abstract class _Sequence extends GlueDataObject {
     @SuppressWarnings("unchecked")
     public List<ReferenceSequence> getReferenceSequences() {
         return (List<ReferenceSequence>)readProperty(REFERENCE_SEQUENCES_PROPERTY);
+    }
+
+
+    public void setSeqOrigData(SeqOrigData seqOrigData) {
+        setToOneTarget(SEQ_ORIG_DATA_PROPERTY, seqOrigData, true);
+    }
+
+    public SeqOrigData getSeqOrigData() {
+        return (SeqOrigData)readProperty(SEQ_ORIG_DATA_PROPERTY);
     }
 
 

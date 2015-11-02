@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,9 +17,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -151,55 +149,54 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		if(source == null) {
 			return;
 		}
-		int numResults = 0;
-		int fetchOffset = 0;
+
+		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
+		List<Map<String, String>> pkMaps = 
+				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
+				.getSequences()
+				.stream().map(seq -> seq.pkMap())
+				.collect(Collectors.toList());
+		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");
+		int updates = 0;
 		int foundInField = 0; 
 		int foundInDocument = 0;
-		GlueLogger.getGlueLogger().finest("Checking for sequences present in source \""+sourceName+"\"");
-		Expression whereClause = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
-		do {
-			boolean needToCommit = false;
-			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause);
-			selectQuery.setFetchLimit(eFetchBatchSize);
-			selectQuery.setFetchOffset(fetchOffset);
-			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-			numResults = sequences.size();
-			for(Sequence sequence: sequences) {
-				if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
-					continue;
+		GlueLogger.getGlueLogger().finest("Checking for GI numbers in sequences in source \""+sourceName+"\"");
+		for(Map<String, String> pkMap: pkMaps) {
+			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
+			if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
+				continue;
+			}
+			String giNumber = null;
+			if(cachedGiNumbers) {
+				Object giNumberObj = sequence.readProperty(giNumberFieldName);
+				if(giNumberObj != null) {
+					giNumber = giNumberObj.toString();
+					foundInField++;
 				}
-				String giNumber = null;
-				if(cachedGiNumbers) {
-					Object giNumberObj = sequence.readProperty(giNumberFieldName);
-					if(giNumberObj != null) {
-						giNumber = giNumberObj.toString();
-						foundInField++;
-					}
-				}
-				if(giNumber == null) {
-					giNumber = giNumberFromDocument(((GenbankXmlSequenceObject) sequence.getSequenceObject()).getDocument());
-					if(giNumber != null) {
-						foundInDocument++;
-						if(cachedGiNumbers) {
-							sequence.writeProperty(giNumberFieldName, giNumber);
-							needToCommit = true;
-						}
-					}
-				}
+			}
+			if(giNumber == null) {
+				giNumber = giNumberFromDocument(((GenbankXmlSequenceObject) sequence.getSequenceObject()).getDocument());
 				if(giNumber != null) {
-					giNumbersExisting.add(giNumber);
+					foundInDocument++;
+					if(cachedGiNumbers) {
+						sequence.writeProperty(giNumberFieldName, giNumber);
+						updates++;
+					}
 				}
+			}
+			if(giNumber != null) {
+				giNumbersExisting.add(giNumber);
 			}
 			GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
 			GlueLogger.getGlueLogger().fine("GI numbers: found "+foundInField+" in custom field, "+foundInDocument+" in sequence documents");
-			fetchOffset += eFetchBatchSize;
-			if(needToCommit) {
+			if(updates > 0 && updates % eFetchBatchSize == 0) {
 				cmdContext.commit();
 				cmdContext.newObjectContext();
 			}
-		} while(numResults == eFetchBatchSize);
+		}
+		cmdContext.commit();
+		cmdContext.newObjectContext();
 	}
-
 
 	private CloseableHttpClient createHttpClient() {
 		// ignore cookies, in order to prevent a log warning resulting from NCBI's incorrect

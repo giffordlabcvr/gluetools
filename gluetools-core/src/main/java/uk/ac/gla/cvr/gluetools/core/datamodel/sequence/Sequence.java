@@ -59,7 +59,7 @@ public class Sequence extends _Sequence {
 
 	private AbstractSequenceObject buildSequenceObject() {
 		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject();
-		sequenceObject.fromPackedData(super.getPackedData());
+		sequenceObject.fromPackedData(getSeqOrigData().getPackedData());
 		return sequenceObject;
 	}
 	
@@ -70,7 +70,7 @@ public class Sequence extends _Sequence {
 	public void setOriginalData(byte[] originalData) {
 		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject();
 		sequenceObject.fromOriginalData(originalData);
-		super.setPackedData(sequenceObject.toPackedData());
+		getSeqOrigData().setPackedData(sequenceObject.toPackedData());
 		this.sequenceObject = sequenceObject;
 	}
 	

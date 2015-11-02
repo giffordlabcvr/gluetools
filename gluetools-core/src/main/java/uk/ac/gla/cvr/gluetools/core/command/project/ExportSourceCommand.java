@@ -7,9 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -69,36 +68,37 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Directory "+
 					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" already exists");
 		}
-		consoleCmdContext.mkdirs(sourceName);
+		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
+		List<Map<String, String>> pkMaps = 
+				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
+				.getSequences()
+				.stream().map(seq -> seq.pkMap())
+				.collect(Collectors.toList());
+		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");
+		
 		int exported = 0;
-		int offset = 0;
-		int numFound;
+		consoleCmdContext.mkdirs(sourceName);
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
-		do {
-			SelectQuery selectQuery = new SelectQuery(Sequence.class, ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName));
-			selectQuery.setFetchOffset(offset);
-			selectQuery.setFetchLimit(batchSize);
-			List<Sequence> results = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-			numFound = results.size();
-			for(Sequence sequence: results) {
-				String sequenceID = sequence.getSequenceID();
-				AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
-				byte[] sequenceBytes = sequenceObject.toOriginalData();
-				SequenceFormat seqFormat = sequenceObject.getSeqFormat();
-				File filePath = new File(sourceName, sequenceID+"."+seqFormat.getStandardFileExtension());
-				String filePathString = filePath.getPath();
-				consoleCmdContext.saveBytes(filePathString, sequenceBytes);
-				Map<String, Object> fileResult = new LinkedHashMap<String, Object>();
-				fileResult.put("filePath", filePathString);
-				fileResult.put("sourceName", sourceName);
-				fileResult.put("sequenceID", sequenceID);
-				fileResult.put("sequenceFormat", seqFormat.name());
-				rowData.add(fileResult);
+		for(Map<String, String> pkMap: pkMaps) {
+			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
+			String sequenceID = sequence.getSequenceID();
+			AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
+			byte[] sequenceBytes = sequenceObject.toOriginalData();
+			SequenceFormat seqFormat = sequenceObject.getSeqFormat();
+			File filePath = new File(sourceName, sequenceID+"."+seqFormat.getStandardFileExtension());
+			String filePathString = filePath.getPath();
+			consoleCmdContext.saveBytes(filePathString, sequenceBytes);
+			Map<String, Object> fileResult = new LinkedHashMap<String, Object>();
+			fileResult.put("filePath", filePathString);
+			fileResult.put("sourceName", sourceName);
+			fileResult.put("sequenceID", sequenceID);
+			fileResult.put("sequenceFormat", seqFormat.name());
+			rowData.add(fileResult);
+			exported ++;
+			if(exported % batchSize == 0) {
+				GlueLogger.getGlueLogger().fine("Exported "+exported+" sequences.");
 			}
-			offset += batchSize;
-			exported += numFound;
-			GlueLogger.getGlueLogger().fine("Exported "+exported+" sequences.");
-		} while(numFound >= batchSize);
+		}
 		return new ExportSourceResult(rowData);
 	}
 

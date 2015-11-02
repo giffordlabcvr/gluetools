@@ -96,7 +96,7 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 			String extension = fileName.substring(lastIndexOfDot+1, fileName.length());
 			SequenceFormat seqFormat = SequenceFormat.detectFormatFromExtension(extension);
 			
-			Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+			Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceID);
 			source = ensureSource(source, cmdContext, sourceName);
 			sequence.setSource(source);
 			sequence.setFormat(seqFormat.name());

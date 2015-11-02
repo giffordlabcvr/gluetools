@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.seqOrigData.SeqOrigData;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
@@ -50,13 +51,21 @@ public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		
-		Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+		Sequence sequence = createSequence(cmdContext, sourceName, sequenceID);
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
 		sequence.setOriginalData(originalData);
 		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);
+	}
+
+	public static Sequence createSequence(CommandContext cmdContext, String sourceName, String sequenceID) {
+		Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+		SeqOrigData seqOrigData = GlueDataObject.create(cmdContext, SeqOrigData.class, SeqOrigData.pkMap(sourceName, sequenceID), false);
+		sequence.setSeqOrigData(seqOrigData);
+		seqOrigData.setSequence(sequence);
+		return sequence;
 	}
 
 	@CompleterClass

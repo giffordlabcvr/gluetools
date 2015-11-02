@@ -1,11 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -45,25 +44,23 @@ public class DeleteSourceCommand extends ProjectModeCommand<DeleteResult> {
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		Expression whereClause = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
-		int fetchOffset = 0;
-		int numResults;
+		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
+		List<Map<String, String>> pkMaps = 
+				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
+				.getSequences()
+				.stream().map(seq -> seq.pkMap())
+				.collect(Collectors.toList());
+		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");
 		int totalDeleted = 0;
-		do {
-			SelectQuery selectQuery = new SelectQuery(Sequence.class, whereClause);
-			selectQuery.setFetchLimit(batchSize);
-			selectQuery.setFetchOffset(fetchOffset);
-			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-			numResults = sequences.size();
-			for(Sequence sequence: sequences) {
-				GlueDataObject.delete(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequence.getSequenceID()), true);
-			}
-			fetchOffset += batchSize;
-			cmdContext.commit();
-			cmdContext.newObjectContext();
-			totalDeleted += numResults;
-			GlueLogger.getGlueLogger().finest("Deleted "+totalDeleted+" sequences from source "+sourceName);
-		} while(numResults == batchSize);
+		for(Map<String, String> pkMap: pkMaps) {
+			DeleteResult delResult = GlueDataObject.delete(cmdContext, Sequence.class, pkMap, true);
+			totalDeleted += delResult.getNumber();
+			if(totalDeleted % batchSize == 0) {
+				cmdContext.commit();
+				GlueLogger.getGlueLogger().finest("Deleted "+totalDeleted+" sequences from source "+sourceName);
+			} 
+		}
+		GlueLogger.getGlueLogger().finest("Deleted "+totalDeleted+" sequences from source "+sourceName);
 		DeleteResult result = GlueDataObject.delete(cmdContext, Source.class, Source.pkMap(sourceName), true);
 		cmdContext.commit();
 		return result;

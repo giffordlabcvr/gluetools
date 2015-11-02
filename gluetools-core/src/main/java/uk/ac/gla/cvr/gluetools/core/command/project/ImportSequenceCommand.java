@@ -50,7 +50,7 @@ public class ImportSequenceCommand extends ProjectModeCommand<CreateResult> {
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		
-		Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
+		Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceID);
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
