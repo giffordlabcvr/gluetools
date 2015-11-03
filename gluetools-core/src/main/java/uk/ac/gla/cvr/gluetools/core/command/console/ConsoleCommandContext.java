@@ -120,6 +120,16 @@ public class ConsoleCommandContext extends CommandContext {
 		File dirFile = fileStringToFile(pathString);
 		return dirFile.isDirectory();
 	}
+	
+	public boolean isFile(String pathString) {
+		File file = fileStringToFile(pathString);
+		return file.isFile();
+	}
+
+	public boolean delete(String pathString) {
+		File file = fileStringToFile(pathString);
+		return file.delete();
+	}
 
 	
 	public List<String> listMembers(File dirFile, boolean includeFiles, boolean includeDirectories, String prefix) {
@@ -223,6 +233,7 @@ public class ConsoleCommandContext extends CommandContext {
 	public Set<ConsoleOption> getOptionLines() {
 		return optionLines;
 	}
+
 	
 
 	

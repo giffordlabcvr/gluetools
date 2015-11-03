@@ -160,9 +160,11 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		int updates = 0;
 		int foundInField = 0; 
 		int foundInDocument = 0;
+		int numChecked = 0;
 		GlueLogger.getGlueLogger().finest("Checking for GI numbers in sequences in source \""+sourceName+"\"");
 		for(Map<String, String> pkMap: pkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
+			numChecked++;
 			if(!sequence.getFormat().equals(SequenceFormat.GENBANK_XML.name())) {
 				continue;
 			}
@@ -187,15 +189,22 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			if(giNumber != null) {
 				giNumbersExisting.add(giNumber);
 			}
-			GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
-			GlueLogger.getGlueLogger().fine("GI numbers: found "+foundInField+" in custom field, "+foundInDocument+" in sequence documents");
-			if(updates > 0 && updates % eFetchBatchSize == 0) {
-				cmdContext.commit();
-				cmdContext.newObjectContext();
+			if(numChecked % eFetchBatchSize == 0) {
+				GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
+				GlueLogger.getGlueLogger().finest(foundInField+" GI numbers in field, "+foundInDocument+" in document");
+				if(updates > 0) {
+					cmdContext.commit();
+					cmdContext.newObjectContext();
+				}
+				updates = 0;
 			}
 		}
-		cmdContext.commit();
-		cmdContext.newObjectContext();
+		GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
+		GlueLogger.getGlueLogger().finest("Found "+foundInField+" GI numbers in field, "+foundInDocument+" in document");
+		if(updates > 0) {
+			cmdContext.commit();
+			cmdContext.newObjectContext();
+		}
 	}
 
 	private CloseableHttpClient createHttpClient() {
@@ -228,7 +237,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
 			switch(sequenceFormat) {
 			case GENBANK_XML:
-				GlueLogger.getGlueLogger().finest("Sending eFetch request to NCBI");
+				GlueLogger.getGlueLogger().finest("Requesting "+giNumbers.size()+" sequences from NCBI via eFetch");
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
 				GlueLogger.getGlueLogger().finest("NCBI eFetch response received");
 				break;

@@ -34,13 +34,21 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"export", "source"}, 
 	docoptUsages={
-		"[-b <batchSize>] <sourceName>"
+		"[ ( -i | -u ) ] [-b <batchSize>] <sourceName>"
 	}, 
-	docoptOptions={"-b <batchSize>, --batchSize <batchSize>  Commit batch size [default: 250]"},
+	docoptOptions={
+		"-i, --incremental                        Add to directory, don't overwrite",
+		"-u, --update                             Add to directory, overwrite",
+		"-b <batchSize>, --batchSize <batchSize>  Batch size [default: 250]"},
 	metaTags = { CmdMeta.consoleOnly },
 	furtherHelp=
-			"Creates a new directory called <sourceName> relative to the current load-save-path. "+
-			"This directory contains the sequence data, one file per sequence. The first part of the "+
+			"Saves sequences to a directory called <sourceName>, relative to the current load-save-path. "+
+			"If the --incremental or --update option is used, the directory may already exist. Otherwise "+
+			"it should not exist. If it doesn't exist it will be created by the command."+
+			"This sequence data, one file per sequence, will be written to the files in the directory. "+
+			"In the --incremental case sequences will not be saved to overwrite existing sequences in the directory. "+
+			"In the --update case saved sequences will overwrite existing sequences in the directory. "+
+			"The first part of the "+
 			"sequence file name will be the sequenceID, and the extension will be the standard file "+
 			"extension for the sequence format, as specified in the \"list format sequence\" command output. "+
 			"Sequences are retrieved from the database in batches. The <batchSize> option controls the size "+
@@ -50,21 +58,33 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 
 	public static final String SOURCE_NAME = "sourceName";
 	public static final String BATCH_SIZE = "batchSize";
+	public static final String INCREMENTAL = "incremental";
+	public static final String UPDATE = "update";
+
 
 	private String sourceName;
 	private Integer batchSize;
+	private Boolean incremental;
+	private Boolean update;
+
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		sourceName = PluginUtils.configureStringProperty(configElem, SOURCE_NAME, true);
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
+		incremental = PluginUtils.configureBooleanProperty(configElem, INCREMENTAL, true);
+		update = PluginUtils.configureBooleanProperty(configElem, UPDATE, true);
+		if(incremental && update) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify both --incremental and --update");
+		}
+
 	}
 
 	@Override
 	public ExportSourceResult execute(CommandContext cmdContext) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		if(consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
+		if(!update && !incremental && consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Directory "+
 					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" already exists");
 		}
@@ -77,28 +97,37 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");
 		
 		int exported = 0;
+		int skipped = 0;
 		consoleCmdContext.mkdirs(sourceName);
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		for(Map<String, String> pkMap: pkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
 			String sequenceID = sequence.getSequenceID();
-			AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
-			byte[] sequenceBytes = sequenceObject.toOriginalData();
-			SequenceFormat seqFormat = sequenceObject.getSeqFormat();
+			SequenceFormat seqFormat = sequence.getSequenceFormat();
 			File filePath = new File(sourceName, sequenceID+"."+seqFormat.getStandardFileExtension());
-			String filePathString = filePath.getPath();
-			consoleCmdContext.saveBytes(filePathString, sequenceBytes);
-			Map<String, Object> fileResult = new LinkedHashMap<String, Object>();
-			fileResult.put("filePath", filePathString);
-			fileResult.put("sourceName", sourceName);
-			fileResult.put("sequenceID", sequenceID);
-			fileResult.put("sequenceFormat", seqFormat.name());
-			rowData.add(fileResult);
-			exported ++;
-			if(exported % batchSize == 0) {
-				GlueLogger.getGlueLogger().fine("Exported "+exported+" sequences.");
+			if(incremental && consoleCmdContext.isFile(filePath.toString())) {
+				skipped++;
+			} else {
+				if(update && consoleCmdContext.isFile(filePath.toString())) {
+					consoleCmdContext.delete(filePath.toString());
+				}
+				AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
+				byte[] sequenceBytes = sequenceObject.toOriginalData();
+				String filePathString = filePath.getPath();
+				consoleCmdContext.saveBytes(filePathString, sequenceBytes);
+				Map<String, Object> fileResult = new LinkedHashMap<String, Object>();
+				fileResult.put("filePath", filePathString);
+				fileResult.put("sourceName", sourceName);
+				fileResult.put("sequenceID", sequenceID);
+				fileResult.put("sequenceFormat", seqFormat.name());
+				rowData.add(fileResult);
+				exported ++;
+			}
+			if( (exported+skipped) % batchSize == 0) {
+				GlueLogger.getGlueLogger().fine("Sequences exported: "+exported+ ", skipped: "+skipped);
 			}
 		}
+		GlueLogger.getGlueLogger().fine("Sequences exported: "+exported+ ", skipped: "+skipped);
 		return new ExportSourceResult(rowData);
 	}
 
