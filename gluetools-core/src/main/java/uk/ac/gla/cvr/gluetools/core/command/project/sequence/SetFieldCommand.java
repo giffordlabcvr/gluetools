@@ -20,10 +20,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"set", "field"}, 
-	docoptUsages={"[-o] [-f] <fieldName> <fieldValue>"},
+	docoptUsages={"[-o] [-f] [-n] <fieldName> <fieldValue>"},
 	docoptOptions={
 			"-o, --overwrite    Overwrite non-null existing value [default: false]", 
 			"-f, --forceUpdate  Force update, includes setting null [default: false]", 
+			"-n, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Set a field value for the sequence", 
@@ -36,11 +37,13 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 	public static final String FIELD_VALUE = "fieldValue";
 	public static final String OVERWRITE = "overwrite";
 	public static final String FORCE_UPDATE = "forceUpdate";
+	public static final String NO_COMMIT = "noCommit";
 	
 	private String fieldName;
 	private String fieldValue;
 	private Boolean overwrite;
 	private Boolean forceUpdate;
+	private Boolean noCommit;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -49,6 +52,7 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 		fieldValue = PluginUtils.configureStringProperty(configElem, FIELD_VALUE, true);
 		overwrite = PluginUtils.configureBooleanProperty(configElem, OVERWRITE, true);
 		forceUpdate = PluginUtils.configureBooleanProperty(configElem, FORCE_UPDATE, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
 
 
@@ -76,7 +80,9 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 			return new UpdateResult(Sequence.class, 0);
 		}
 		sequence.writeProperty(fieldName, newValue);
-		cmdContext.commit();
+		if(!noCommit) {
+			cmdContext.commit();
+		}
 		return new UpdateResult(Sequence.class, 1);
 	}
 

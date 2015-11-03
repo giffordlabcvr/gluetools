@@ -83,7 +83,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, id);){
 				seq.getUserCollection().forEach(obj -> {
 					FastaFieldParser.Result result = (Result) obj;
-					SequencePopulator.runSetFieldCommand(cmdContext, result.getFieldPopulator(), result.getFieldValue());
+					SequencePopulator.runSetFieldCommand(cmdContext, result.getFieldPopulator(), result.getFieldValue(), false);
 				});
 			}
 		});

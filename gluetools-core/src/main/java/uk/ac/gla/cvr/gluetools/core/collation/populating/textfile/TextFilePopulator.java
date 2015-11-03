@@ -35,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -81,7 +82,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	}
 
 	
-	private OkResult populate(ConsoleCommandContext cmdContext, String fileName) {
+	private OkResult populate(ConsoleCommandContext cmdContext, String fileName, int batchSize) {
 		byte[] fileBytes = cmdContext.loadBytes(fileName);
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
@@ -101,11 +102,25 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		List<String> definedFieldNames = project.getAllSequenceFieldNames();
 		checkFieldsExist(headerColumns, definedFieldNames);
 		checkFieldsExist(numberColumns, definedFieldNames);
+		LinesProcessedHolder holder = new LinesProcessedHolder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, Charset.forName("UTF-8")));
-		reader.lines().forEach(line -> processLine(populatorContext, line));
+		reader.lines().forEach(line -> {
+			processLine(populatorContext, line);
+			holder.linesProcessed++;
+			if(holder.linesProcessed % batchSize == 0) {
+				GlueLogger.getGlueLogger().fine("Processed "+holder.linesProcessed+" lines");
+				cmdContext.commit();
+				cmdContext.newObjectContext();
+			}
+		});
+		GlueLogger.getGlueLogger().fine("Processed "+holder.linesProcessed+" lines");
+		cmdContext.commit();
 		return CommandResult.OK;
 	}
 
+	private class LinesProcessedHolder {
+		int linesProcessed = 0;
+	}
 
 	private void checkFieldsExist(List<TextFilePopulatorColumn> columns, List<String> definedFieldNames) {
 		columns.forEach(col -> {
@@ -180,6 +195,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 
 	public List<Map<String,Object>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
+		GlueLogger.getGlueLogger().fine("Finding sequences to process");
 		ListResult listResult = cmdContext.cmdBuilder(ListSequenceCommand.class).
 			set(ListSequenceCommand.WHERE_CLAUSE, identifyingExp.toString()).
 			execute();
@@ -190,30 +206,38 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		if(sequenceMaps.size() > 1 && !updateMultiple) {
 			throw new TextFilePopulatorException(TextFilePopulatorException.Code.MULTIPLE_SEQUENCES_FOUND, identifyingExp.toString());
 		}
+		GlueLogger.getGlueLogger().fine("Found "+sequenceMaps.size()+" sequences to process");
 		return sequenceMaps;
 	}
 
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"-f <fileName>"},
+			docoptUsages={"[-b <batchSize>] -f <fileName>"},
 			docoptOptions={
-				"-f <fileName>, --fileName <fileName>  Text file with field values"},
+				"-b <batchSize>, --batchSize <batchSize>  Commit batch size [default: 250]",
+				"-f <fileName>, --fileName <fileName>  Text file with field values"
+			},
 			description="Populate sequence field values based on a text file", 
 			metaTags = { CmdMeta.consoleOnly , CmdMeta.updatesDatabase},
-			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
+			furtherHelp="The file is loaded from a location relative to the current load/save directory."+
+			"The <batchSize> argument allows you to control how often updates are committed to the database "+
+					"during the import. The default is every 250 text file lines. A larger <batchSize> means fewer database "+
+					"accesses, but requires more Java heap memory.") 
 	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 
+		private Integer batchSize;
 		private String fileName;
 		
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
+			batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "batchSize", false)).orElse(250);
 			fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
 		}
 		
 		@Override
 		protected OkResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
-			return populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName);
+			return populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize);
 		}
 		
 		@CompleterClass

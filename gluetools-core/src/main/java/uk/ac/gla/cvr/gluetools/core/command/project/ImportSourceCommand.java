@@ -114,13 +114,13 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 			SequenceFormat seqFormat = SequenceFormat.detectFormatFromExtension(extension);
 			
 			if(incremental && 
-					GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true) == null) {
+					GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true) != null) {
 				skipped++;
 			} else {
 				if(update) {
 					GlueDataObject.delete(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
 				}
-				Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceID);
+				Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceID, false);
 				source = ensureSource(source, cmdContext, sourceName);
 				sequence.setSource(source);
 				sequence.setFormat(seqFormat.name());

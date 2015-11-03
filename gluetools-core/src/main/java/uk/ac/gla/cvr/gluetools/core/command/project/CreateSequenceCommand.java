@@ -51,7 +51,7 @@ public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		
-		Sequence sequence = createSequence(cmdContext, sourceName, sequenceID);
+		Sequence sequence = createSequence(cmdContext, sourceName, sequenceID, false);
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName));
 		sequence.setSource(source);
 		sequence.setFormat(format.name());
@@ -60,9 +60,9 @@ public class CreateSequenceCommand extends ProjectModeCommand<CreateResult> {
 		return new CreateResult(Sequence.class, 1);
 	}
 
-	public static Sequence createSequence(CommandContext cmdContext, String sourceName, String sequenceID) {
-		Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), false);
-		SeqOrigData seqOrigData = GlueDataObject.create(cmdContext, SeqOrigData.class, SeqOrigData.pkMap(sourceName, sequenceID), false);
+	public static Sequence createSequence(CommandContext cmdContext, String sourceName, String sequenceID, boolean allowExists) {
+		Sequence sequence = GlueDataObject.create(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), allowExists);
+		SeqOrigData seqOrigData = GlueDataObject.create(cmdContext, SeqOrigData.class, SeqOrigData.pkMap(sourceName, sequenceID), allowExists);
 		sequence.setSeqOrigData(seqOrigData);
 		seqOrigData.setSequence(sequence);
 		return sequence;

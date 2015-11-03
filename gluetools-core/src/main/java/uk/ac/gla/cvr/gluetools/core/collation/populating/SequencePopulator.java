@@ -32,7 +32,7 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 	public static void populateField(CommandContext cmdContext, FieldPopulator fieldPopulator, String inputText) {
 		String fieldPopulatorResult = runFieldPopulator(fieldPopulator, inputText);
 		if(fieldPopulatorResult != null) {
-			runSetFieldCommand(cmdContext, fieldPopulator, fieldPopulatorResult);
+			runSetFieldCommand(cmdContext, fieldPopulator, fieldPopulatorResult, true);
 		}
 	}
 
@@ -49,12 +49,13 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 	}
 
 	public static void runSetFieldCommand(CommandContext cmdContext,
-			FieldPopulator fieldPopulator, String fieldValue) {
-		cmdContext.cmdBuilder(SetFieldCommand.class).
-			set(SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName()).
-			set(SetFieldCommand.FIELD_VALUE, fieldValue).
-			set(SetFieldCommand.OVERWRITE, fieldPopulator.getOverwrite()).
-			set(SetFieldCommand.FORCE_UPDATE, fieldPopulator.getForceUpdate()).
-			execute();
+			FieldPopulator fieldPopulator, String fieldValue, boolean noCommit) {
+		cmdContext.cmdBuilder(SetFieldCommand.class)
+			.set(SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName())
+			.set(SetFieldCommand.FIELD_VALUE, fieldValue)
+			.set(SetFieldCommand.OVERWRITE, fieldPopulator.getOverwrite())
+			.set(SetFieldCommand.FORCE_UPDATE, fieldPopulator.getForceUpdate())
+			.set(SetFieldCommand.NO_COMMIT, noCommit)
+			.execute();
 	}
 }
