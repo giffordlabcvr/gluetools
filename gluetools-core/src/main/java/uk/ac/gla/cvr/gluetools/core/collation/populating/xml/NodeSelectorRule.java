@@ -58,20 +58,20 @@ public abstract class NodeSelectorRule extends XmlPopulatorRule {
 		childRules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
-	protected void executeChildRules(CommandContext cmdContext, Node selectedNode) {
+	protected void executeChildRules(XmlPopulatorContext xmlPopulatorContext, Node selectedNode) {
 		childRules.forEach(rule -> {
 			try {
-				rule.execute(cmdContext, selectedNode);
+				rule.execute(xmlPopulatorContext, selectedNode);
 			} catch(Exception e) {
 				throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_CHILD_RULE_FAILED, e.getLocalizedMessage());
 			}
 		});
 	}
 
-	public final void execute(CommandContext cmdContext, Node node) {
+	public final void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
 		List<Node> selectedNodes = selectNodes(node);
 		selectedNodes.forEach(selectedNode ->
-			executeChildRules(cmdContext, selectedNode));
+			executeChildRules(xmlPopulatorContext, selectedNode));
 	}
 
 }

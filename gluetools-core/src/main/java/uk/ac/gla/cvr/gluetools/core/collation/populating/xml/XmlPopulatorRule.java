@@ -18,7 +18,7 @@ public abstract class XmlPopulatorRule implements Plugin {
 		this.ruleFactory = ruleFactory;
 	}
 
-	public abstract void execute(CommandContext cmdContext, Node node);
+	public abstract void execute(XmlPopulatorContext xmlPopulatorContext, Node node);
 
 	
 }

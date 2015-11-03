@@ -1,39 +1,22 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating;
 
-import java.util.Optional;
 import java.util.regex.Pattern;
-
-import org.apache.cayenne.exp.Expression;
-import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public abstract class SequencePopulator<P extends ModulePlugin<P>> extends ModulePlugin<P> {
 
-	public static final String WHERE_CLAUSE = "whereClause";
-	private Optional<Expression> whereClause;
-
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-	}
 	
-	protected Optional<Expression> getWhereClause() {
-		return whereClause;
-	}
-
-	
-	public static void populateField(CommandContext cmdContext, FieldPopulator fieldPopulator, String inputText) {
+	public static FieldUpdateResult populateField(CommandContext cmdContext, FieldPopulator fieldPopulator, String inputText) {
 		String fieldPopulatorResult = runFieldPopulator(fieldPopulator, inputText);
 		if(fieldPopulatorResult != null) {
-			runSetFieldCommand(cmdContext, fieldPopulator, fieldPopulatorResult, true);
+			return runSetFieldCommand(cmdContext, fieldPopulator, fieldPopulatorResult, true);
 		}
+		return null;
 	}
 
 	public static String runFieldPopulator(FieldPopulator fieldPopulator, String inputText) {
@@ -48,14 +31,48 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		return null;
 	}
 
-	public static void runSetFieldCommand(CommandContext cmdContext,
+	public static FieldUpdateResult runSetFieldCommand(CommandContext cmdContext,
 			FieldPopulator fieldPopulator, String fieldValue, boolean noCommit) {
-		cmdContext.cmdBuilder(SetFieldCommand.class)
-			.set(SetFieldCommand.FIELD_NAME, fieldPopulator.getFieldName())
+		String fieldName = fieldPopulator.getFieldName();
+		UpdateResult updateResult = cmdContext.cmdBuilder(SetFieldCommand.class)
+			.set(SetFieldCommand.FIELD_NAME, fieldName)
 			.set(SetFieldCommand.FIELD_VALUE, fieldValue)
 			.set(SetFieldCommand.OVERWRITE, fieldPopulator.getOverwrite())
 			.set(SetFieldCommand.FORCE_UPDATE, fieldPopulator.getForceUpdate())
 			.set(SetFieldCommand.NO_COMMIT, noCommit)
 			.execute();
+		if(updateResult.getNumber() == 1) {
+			return new FieldUpdateResult(true, fieldName, fieldValue);
+		}
+		return new FieldUpdateResult(false, fieldName, fieldValue);
 	}
+	
+	public static class FieldUpdateResult {
+		private boolean updated;
+		private String fieldValue;
+		private String fieldName;
+
+		public FieldUpdateResult(boolean updated, String fieldName, String fieldValue) {
+			super();
+			this.updated = updated;
+			this.fieldName = fieldName;
+			this.fieldValue = fieldValue;
+		}
+
+		public boolean updated() {
+			return updated;
+		}
+
+		public String getFieldValue() {
+			return fieldValue;
+		}
+
+		public String getFieldName() {
+			return fieldName;
+		}
+		
+		
+		
+	}
+	
 }

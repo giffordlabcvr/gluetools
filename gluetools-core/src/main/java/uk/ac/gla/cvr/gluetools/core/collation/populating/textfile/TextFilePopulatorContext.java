@@ -11,6 +11,5 @@ public class TextFilePopulatorContext {
 	Map<Integer, TextFilePopulatorColumn> positionToColumn = null;
 	Map<TextFilePopulatorColumn, Integer> columnToPosition = null;
 	ConsoleCommandContext cmdContext;
-	Optional<Expression> whereClause;
 	
 }

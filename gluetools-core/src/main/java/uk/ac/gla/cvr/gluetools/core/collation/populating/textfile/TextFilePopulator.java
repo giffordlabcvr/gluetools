@@ -87,7 +87,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
 		populatorContext.cmdContext = cmdContext;
-		populatorContext.whereClause = getWhereClause();
 		if(!numberColumns.isEmpty()) {
 			populatorContext.positionToColumn = new LinkedHashMap<Integer, TextFilePopulatorColumn>();
 			populatorContext.columnToPosition = new LinkedHashMap<TextFilePopulatorColumn, Integer>();
@@ -154,7 +153,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 				}
 				return ExpressionFactory.matchExp(col.getFieldName(), processedCellValue);
 			}).collect(Collectors.toList());
-		populatorContext.whereClause.ifPresent(exp -> idExpressions.add(exp));
 		Expression identifyingExp = idExpressions.subList(1, idExpressions.size()).
 				stream().reduce(idExpressions.get(0), Expression::andExp);
 		
@@ -259,8 +257,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	
 	
 	@SimpleConfigureCommandClass(
-			propertyNames={WHERE_CLAUSE, 
-					SKIP_MISSING, 
+			propertyNames={SKIP_MISSING, 
 					UPDATE_MULTIPLE, 
 					COLUMN_DELIMITER_REGEX}
 	)

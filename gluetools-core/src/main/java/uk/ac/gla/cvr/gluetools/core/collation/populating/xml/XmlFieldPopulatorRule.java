@@ -10,7 +10,6 @@ import org.w3c.dom.Node;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -42,7 +41,7 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 		mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
 	}
 	
-	public void execute(CommandContext cmdContext, Node node) {
+	public void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
 		String selectedText;
 		try {
 			selectedText = GlueXmlUtils.getNodeText(node);
@@ -50,7 +49,10 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 			throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 		}
 		if(selectedText != null) {
-			SequencePopulator.populateField(cmdContext, this, selectedText);
+			SequencePopulator.FieldUpdateResult fieldUpdateResult = SequencePopulator.populateField(xmlPopulatorContext.getCmdContext(), this, selectedText);
+			if(fieldUpdateResult != null && fieldUpdateResult.updated()) {
+				xmlPopulatorContext.getFieldUpdates().put(fieldUpdateResult.getFieldName(), fieldUpdateResult.getFieldValue());
+			}
 		}
 	}
 
