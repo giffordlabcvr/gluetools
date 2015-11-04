@@ -42,6 +42,9 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 	}
 	
 	public void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
+		if(!xmlPopulatorContext.isAllowedField(fieldName)) {
+			return;
+		}
 		String selectedText;
 		try {
 			selectedText = GlueXmlUtils.getNodeText(node);

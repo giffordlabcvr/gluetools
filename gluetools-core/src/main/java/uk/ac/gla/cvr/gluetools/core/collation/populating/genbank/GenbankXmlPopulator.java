@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand.SequenceFieldNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
@@ -63,8 +64,9 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		addProvidedCmdClass(ConfigurePopulatorCommand.class);
 	}
 
-	private void populate(CommandContext cmdContext, String sourceName, String sequenceID, String format, List<Map<String, Object>> rowData) {
-		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(cmdContext);
+	private void populate(CommandContext cmdContext, String sourceName, String sequenceID, String format, 
+			List<Map<String, Object>> rowData, List<String> fieldNames) {
+		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(cmdContext, fieldNames);
 		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 			rules.forEach(rule -> {
 				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
@@ -91,7 +93,8 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		
 	}
 	
-	private PopulateResult populate(CommandContext cmdContext, int batchSize, Optional<Expression> whereClause) {
+	private PopulateResult populate(CommandContext cmdContext, int batchSize, 
+			Optional<Expression> whereClause, boolean updateDB, List<String> fieldNames) {
 		GlueLogger.getGlueLogger().fine("Finding sequences to process");
 		CommandBuilder<ListResult, ListSequenceCommand> cmdBuilder = cmdContext.cmdBuilder(ListSequenceCommand.class);
 		whereClause.ifPresent(wc ->
@@ -109,16 +112,21 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			String sourceName = (String) sequenceMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = (String) sequenceMap.get(Sequence.SEQUENCE_ID_PROPERTY);
 			String format = (String) sequenceMap.get(Sequence.FORMAT_PROPERTY);
-			populate(cmdContext, sourceName, sequenceID, format, rowData);
+			populate(cmdContext, sourceName, sequenceID, format, rowData, fieldNames);
 			sequencesProcessed++;
 			if(sequencesProcessed % batchSize == 0) {
 				GlueLogger.getGlueLogger().fine("Processed "+sequencesProcessed+" sequences");
-				cmdContext.commit();
+				if(updateDB) {
+					cmdContext.commit();
+				} 
 				cmdContext.newObjectContext();
 			}
 		}
 		GlueLogger.getGlueLogger().fine("Processed "+sequencesProcessed+" sequences");
-		cmdContext.commit();
+		if(updateDB) {
+			cmdContext.commit();
+		}
+		cmdContext.newObjectContext();
 		return new PopulateResult(rowData);
 	}
 	
@@ -134,38 +142,56 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 	
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"[-b <batchSize>] [-w <whereClause>]"},
+			docoptUsages={"[-b <batchSize>] [-p] [-w <whereClause>] [<fieldName> ...]"},
 			docoptOptions={
 					"-w <whereClause>, --whereClause <whereClause>  Qualify updated sequences",
-					"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]"
+					"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
+					"-p, --preview                                  Database will not be updated"
 			},
 			metaTags={CmdMeta.updatesDatabase},
 			description="Populate sequence field values based on Genbank XML",
 			furtherHelp=
 			"The <batchSize> argument allows you to control how often updates are committed to the database "+
 					"during the import. The default is every 250 sequences. A larger <batchSize> means fewer database "+
-					"accesses, but requires more Java heap memory.") 
+					"accesses, but requires more Java heap memory. "+
+					"If <fieldName> arguments are supplied, the populator will not update any field unless it appears in the <fieldName> list. "+
+					"If no <fieldName> arguments are supplied, the populator may update any field.") 
 	public static class PopulateCommand extends ModuleProvidedCommand<PopulateResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
 
+		public static final String BATCH_SIZE = "batchSize";
 		public static final String WHERE_CLAUSE = "whereClause";
+		public static final String FIELD_NAME = "fieldName";
+		public static final String PREVIEW = "preview";
 
 		private Integer batchSize;
 		private Optional<Expression> whereClause;
+		private List<String> fieldNames;
+		private Boolean preview;
 		
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
-			batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "batchSize", false)).orElse(250);
+			batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
 			whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
+			preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+			fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
+			if(fieldNames.isEmpty()) {
+				fieldNames = null; // default fields
+			}
 		}
 
 		@Override
 		protected PopulateResult execute(CommandContext cmdContext, GenbankXmlPopulator populatorPlugin) {
-			return populatorPlugin.populate(cmdContext, batchSize, whereClause);
+			return populatorPlugin.populate(cmdContext, batchSize, whereClause, !preview, fieldNames);
 		}
 		
 		@CompleterClass
-		public static class Completer extends AdvancedCmdCompleter {}
+		public static class Completer extends AdvancedCmdCompleter {
+			public Completer() {
+				super();
+				registerVariableInstantiator("fieldName", new SequenceFieldNameInstantiator());
+			}
+		}
 		
 	}
 

@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
 
 public class AdvancedCmdCompleter extends CommandCompleter {
 
-	protected abstract class VariableInstantiator {
+	public abstract static class VariableInstantiator {
 		@SuppressWarnings("rawtypes")
 		protected abstract List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> bindings, String prefix);
@@ -165,7 +165,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 	}
 
-	private static final List<CompletionSuggestion> listNames(
+	public static final List<CompletionSuggestion> listNames(
 			ConsoleCommandContext cmdContext, String prefix, Class<? extends GlueDataObject> theClass, String nameProperty) {
 		return listNames(cmdContext, prefix, theClass, nameProperty, ExpressionFactory.expTrue());
 	}

@@ -35,7 +35,7 @@ public class ModuleCommand extends ProjectModeCommand<OkResult>  {
 	public OkResult execute(CommandContext cmdContext) {
 		
 		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-		cmdContext.pushCommandMode(new ModuleMode(cmdContext, this, module.getName()));
+		cmdContext.pushCommandMode(new ModuleMode(cmdContext, getProjectMode(cmdContext).getProject(), this, module.getName()));
 		return CommandResult.OK;
 	}
 

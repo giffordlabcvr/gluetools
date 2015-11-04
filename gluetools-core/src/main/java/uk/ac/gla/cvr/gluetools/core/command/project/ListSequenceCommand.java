@@ -88,29 +88,35 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 			return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
 		}
 	}
+
+	public final static class SequenceFieldNameInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(
+				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			return getSequenceFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+		}
+
+		protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
+			return getProject(cmdContext).getAllSequenceFieldNames();
+		}
+
+		private Project getProject(ConsoleCommandContext cmdContext) {
+			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+			Project project = insideProjectMode.getProject();
+			return project;
+		}
+	}
+
 	
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		
+
 		public Completer() {
 			super();
-			registerVariableInstantiator("fieldName", new VariableInstantiator() {
-				@Override
-				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
-						Map<String, Object> bindings, String prefix) {
-					return getSequenceFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
-				}
-				protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
-					return getProject(cmdContext).getAllSequenceFieldNames();
-				}
-				private Project getProject(ConsoleCommandContext cmdContext) {
-					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-					Project project = insideProjectMode.getProject();
-					return project;
-				}
-			});
+			registerVariableInstantiator("fieldName", new SequenceFieldNameInstantiator());
 		}
 	}
 		
