@@ -1,10 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
@@ -48,13 +52,15 @@ public class TableResult extends CommandResult {
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		List<String> columnHeaders = getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps(columnHeaders);
-		if(listOfMaps.size() == 0) {
+		ArrayList<TablePage> tablePages = renderToTablePages(columnHeaders, listOfMaps, renderCtx);
+		if(tablePages.size() == 0) {
 			renderCtx.output("Empty result table");
+		} else if(tablePages.size() == 1) {
+			renderCtx.output(tablePages.get(0).content);
 		} else {
-			StringWriter stringWriter = new StringWriter();
-			renderToStringWriter(stringWriter, columnHeaders, listOfMaps);
-			renderCtx.output(stringWriter.toString());
+			interactiveTableRender(renderCtx, "Row", tablePages);
 		}
+
 	}
 	
 	public List<String> getColumnValues(String columnName) {
@@ -108,37 +114,172 @@ public class TableResult extends CommandResult {
 		}
 		return headers;
 	}
+	
+	static class TablePage {
+		String content;
+		int numContentLines;
+		int rowStart;
+		int rowEnd;
+		int totalRows;
+	}
+	
+	private static class MyStringWriter extends StringWriter {
+		int numLines = 0;
+		int prevNumLines = 0;
+		
+		StringBuffer buf = new StringBuffer();
+		public void commit() {
+			super.write(buf.toString());
+			buf = new StringBuffer();
+			prevNumLines = numLines;
+		}
+		
+		@Override
+		public void write(int c) {
+			buf.append(c);
+			if(c == '\n') {
+				numLines++;
+			}
+		}
+		@Override
+		public void write(char[] cbuf, int off, int len) {
+			buf.append(cbuf, off, len);
+			for(int i = off; i < off+len; i++) {
+				if(cbuf[i] == '\n') {
+					numLines++;
+				}
+			}
+		}
+		@Override
+		public void write(String str) {
+			buf.append(str);
+			for(int i = 0; i < str.length(); i++) {
+				if(str.charAt(i) == '\n') {
+					numLines++;
+				}
+			}
+		}
+		@Override
+		public void write(String str, int off, int len) {
+			buf.append(str, off, len);
+			for(int i = off; i < off+len; i++) {
+				if(str.charAt(i) == '\n') {
+					numLines++;
+				}
+			}
+		}
 
-	public static void renderToStringWriter(StringWriter stringWriter,
-			List<String> headers, List<Map<String, Object>> listOfMaps) {
-		int numFound = listOfMaps.size();
-		if(numFound > 0) {
-			final int minColWidth = 25;
-			TextTableExportOptions options = new TextTableExportOptions();
-			options.setStyle(TextTableExportStyle.CLASSIC);
-			TextTableExporter textTable = new TextTableExporter(stringWriter);
-			for(String header: headers) {
-				StringColumn column = new StringColumn(header, Math.max(minColWidth, header.length()));
-				column.setAlign(AlignType.TOP_LEFT);
-				textTable.addColumns(column);
-			}
-			for(Map<String, Object> map: listOfMaps) {
-				Row row = new Row();
-				headers.forEach(header -> {
-					String cString;
-					Object value = map.get(header);
-					cString = renderValue(value);
-					if(cString.length() < minColWidth) {
-						cString = " "+cString;
-					}
-					row.addCellValue(cString);
-				});
-				textTable.addRows(row);
-			}
-			textTable.finishExporting();
-		} 
+		public void rollback() {
+			buf = new StringBuffer();
+			numLines = prevNumLines;
+		}
 	}
 
+	public static ArrayList<TablePage> renderToTablePages(List<String> headers, List<Map<String, Object>> listOfMaps, 
+			CommandResultRenderingContext renderCtx) {
+		int numFound = listOfMaps.size();
+		ArrayList<TablePage> tablePages = new ArrayList<TablePage>();
+
+		ArrayList<Map<String,String>> renderedRows = renderAll(listOfMaps);
+		
+		Set<String> columnsWhichAllowSpaces = new LinkedHashSet<String>(headers);
+		Map<String, Integer> widths = establishWidths(headers, renderCtx, renderedRows, columnsWhichAllowSpaces);
+		
+		if(numFound > 0) {
+			int rowNumber = 1;
+			while(rowNumber <= renderedRows.size()) {
+
+				TablePage tablePage = new TablePage();
+				tablePage.rowStart = rowNumber;
+				tablePage.totalRows = renderedRows.size();
+				MyStringWriter myStringWriter = new MyStringWriter();
+				TextTableExportOptions options = new TextTableExportOptions();
+				options.setStyle(TextTableExportStyle.CLASSIC);
+				TextTableExporter textTable = new TextTableExporter(myStringWriter);
+				for(String header: headers) {
+					StringColumn column = new StringColumn(header, widths.get(header));
+					column.setAlign(AlignType.TOP_LEFT);
+					textTable.addColumns(column);
+					myStringWriter.commit();
+				}
+
+				int maxLines = renderCtx.getTerminalHeight()-2;
+				while(myStringWriter.numLines <= maxLines && rowNumber <= renderedRows.size()) {
+					Map<String, String> headerToValue = renderedRows.get(rowNumber-1);
+					Row row = new Row();
+					headers.forEach(header -> {
+						if(columnsWhichAllowSpaces.contains(header)) {
+							row.addCellValue(" "+headerToValue.get(header));
+						} else {
+							row.addCellValue(headerToValue.get(header));
+						}
+					});
+					textTable.addRows(row);
+					if(myStringWriter.numLines <= maxLines) {
+						myStringWriter.commit();
+						tablePage.rowEnd = rowNumber;
+						rowNumber++;
+					} else {
+						myStringWriter.rollback();
+						break;
+					}
+				}
+				textTable.finishExporting();
+				myStringWriter.commit();
+				tablePage.content = myStringWriter.toString();
+				tablePage.numContentLines = myStringWriter.numLines;
+				tablePages.add(tablePage);
+			}
+		}
+		return tablePages;
+	}
+
+	private static Map<String, Integer> establishWidths(List<String> headers,
+			CommandResultRenderingContext renderCtx,
+			List<Map<String, String>> renderedRows,
+			Set<String> columnsWhichAllowSpaces) {
+		Map<String, Integer> widths = establishPreferredWidths(headers, renderedRows);
+		int totalWidth = widths.values().stream().reduce(new Integer(0), Integer::sum) +
+				headers.size()+1;
+		// reduce column widths by decrementing the widest column until they fit.
+		while(totalWidth > renderCtx.getTerminalWidth()) {
+			Map.Entry<String,Integer> widestHeader = 
+					widths.entrySet().stream().reduce(null, 
+							(entry1, entry2) -> { 
+								if(entry1 == null) { 
+									return entry2;
+								}
+								if(entry1.getValue() < entry2.getValue()) { 
+									return entry2; 
+								} else { 
+									return entry1; 
+								} });
+			widths.put(widestHeader.getKey(), widestHeader.getValue()-1);
+			columnsWhichAllowSpaces.remove(widestHeader.getKey());
+			totalWidth--;
+		}
+		return widths;
+	}
+
+	private static ArrayList<Map<String, String>> renderAll(List<Map<String, Object>> listOfMaps) {
+		return listOfMaps.stream()
+			.map(unrendered -> {
+				Map<String, String> rendered = new LinkedHashMap<String, String>();
+				unrendered.forEach((k,v) -> {rendered.put(k, renderValue(v));});
+				return rendered; })
+			.collect(Collectors.toCollection(() -> new ArrayList<Map<String, String>>(listOfMaps.size())));
+	}
+
+	private static Map<String, Integer> establishPreferredWidths(List<String> headers, List<Map<String, String>> renderedRows) {
+		Map<String, Integer> preferredWidths = new LinkedHashMap<String, Integer>();
+		headers.forEach(header -> preferredWidths.merge(header, header.length()+2, Math::max));
+		renderedRows.forEach(row -> row.forEach((header,value) -> preferredWidths.merge(header, value.length()+2, Math::max)));
+		return preferredWidths;
+	}
+
+	public void updatePreferred(Map<String, Integer> preferredWidths, String header, String content) {
+	}
+	
 	private static String renderValue(Object value) {
 		String cString;
 		if(value == null) {
@@ -189,6 +330,55 @@ public class TableResult extends CommandResult {
 				}
 			}
 			renderCtx.output(buf.toString());
+		}
+	}
+
+	public void interactiveTableRender(CommandResultRenderingContext renderCtx, String objectType,
+			ArrayList<TablePage> tablePages) {
+		int pageNumber = 0;
+		boolean finished = false;
+		while(!finished) {
+			TablePage tablePage = tablePages.get(pageNumber);
+			StringBuffer buf = new StringBuffer(tablePage.content);
+			int numLines = tablePage.numContentLines;
+			while(numLines < renderCtx.getTerminalHeight()-1) {
+				buf.append("\n");
+				numLines++;
+			}
+			buf.append(objectType)
+			.append("s ")
+			.append(tablePage.rowStart)
+			.append(" to ")
+			.append(tablePage.rowEnd)
+			.append(" of ")
+			.append(tablePage.totalRows)
+			.append(" [F:first, L:last, P:prev, N:next, Q:quit]");
+			renderCtx.output(buf.toString(), false);
+			String nextAction = "";
+			while(nextAction.equals("")) {
+				try {
+					int read = renderCtx.getInputStream().read();
+					if(read >= 0) {
+						nextAction = Character.toString((char) read).toUpperCase();
+					}
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				if(nextAction.equals("F")) {
+					pageNumber = 0;
+				} else if(nextAction.equals("L")) {
+					pageNumber = tablePages.size()-1;
+				} else if(nextAction.equals("P")) {
+					pageNumber = Math.max(pageNumber-1, 0);
+				} else if(nextAction.equals("N")) {
+					pageNumber = Math.min(pageNumber+1, tablePages.size()-1);
+				} else if(nextAction.equals("Q")) {
+					finished = true;
+				} else {
+					nextAction = "";
+				}
+			}
+			renderCtx.output("");
 		}
 	}
 

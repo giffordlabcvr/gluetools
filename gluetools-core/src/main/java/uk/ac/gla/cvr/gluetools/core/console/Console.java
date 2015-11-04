@@ -45,14 +45,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
-// TODO allow configuration via a System property.
 // TODO command lines ending with '\' should be concatenated to allow continuations.
-// TODO completion should extend to arguments, at least when these arguments select from a table / enum / map.
 // TODO improve command line table display to adapt columns to data.
 // TODO implement paging of commands in interactive mode.
-// TODO implement toggle for verbose exception reporting.
 // TODO catch general exceptions and continue.
-// TODO implement toggle for whether output should be echoed in batch mode.
 // TODO history should be stored in the DB.
 // TODO in batch mode, exceptions should go to stderr.
 @SuppressWarnings("rawtypes")
@@ -493,7 +489,16 @@ public class Console implements CommandResultRenderingContext
 
 	@Override
 	public void output(String message) {
-		out.println(message);
+		output(message, true);
+	}
+
+	@Override
+	public void output(String message, boolean newLine) {
+		if(newLine) {
+			out.println(message);
+		} else {
+			out.print(message);
+		}
 		out.flush();
 	}
 
@@ -534,6 +539,21 @@ public class Console implements CommandResultRenderingContext
 		}
 		String batchFilePath;
 		Integer batchLineNumber;
+	}
+
+	@Override
+	public int getTerminalWidth() {
+		return reader.getTerminal().getWidth();
+	}
+
+	@Override
+	public int getTerminalHeight() {
+		return reader.getTerminal().getHeight();
+	}
+	
+	@Override
+	public InputStream getInputStream() {
+		return reader.getInput();
 	}
 	
 }

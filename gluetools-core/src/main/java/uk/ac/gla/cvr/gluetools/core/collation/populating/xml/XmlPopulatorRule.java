@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
 import org.w3c.dom.Node;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 
 

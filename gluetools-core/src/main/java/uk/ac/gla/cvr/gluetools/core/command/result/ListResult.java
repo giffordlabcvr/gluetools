@@ -1,6 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
-import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +28,17 @@ public class ListResult extends TableResult {
 
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
-		StringWriter stringWriter = new StringWriter();
 		List<String> columnHeaders = super.getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps();
-		super.renderToStringWriter(stringWriter, columnHeaders, listOfMaps);
 		String objectType = getDocumentReader().stringValue(OBJECT_TYPE);
-		renderCtx.output(stringWriter.toString()+objectType+"s found: "+listOfMaps.size());
+		ArrayList<TablePage> tablePages = renderToTablePages(columnHeaders, listOfMaps, renderCtx);
+		if(tablePages.size() == 0) {
+			renderCtx.output(objectType+"s found: "+listOfMaps.size());
+		} else if(tablePages.size() == 1) {
+			renderCtx.output(tablePages.get(0).content+objectType+"s found: "+listOfMaps.size());
+		} else {
+			super.interactiveTableRender(renderCtx, objectType, tablePages);
+		}
 	}
 
 	

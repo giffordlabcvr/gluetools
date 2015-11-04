@@ -1,9 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.textfile;
 
 import java.util.Map;
-import java.util.Optional;
-
-import org.apache.cayenne.exp.Expression;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 
