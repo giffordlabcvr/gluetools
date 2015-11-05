@@ -203,8 +203,14 @@ public class TableResult extends CommandResult {
 					myStringWriter.commit();
 				}
 
-				int maxLines = renderCtx.getTerminalHeight()-2;
-				while(myStringWriter.numLines <= maxLines && rowNumber <= renderedRows.size()) {
+				int maxLines;
+				if(renderCtx.interactiveTables()) {
+					maxLines = renderCtx.getTerminalHeight()-2;
+				} else {
+					maxLines = Integer.MAX_VALUE;
+				}
+				while( myStringWriter.numLines <= maxLines 
+						&& rowNumber <= renderedRows.size()) {
 					Map<String, String> headerToValue = renderedRows.get(rowNumber-1);
 					Row row = new Row();
 					headers.forEach(header -> {

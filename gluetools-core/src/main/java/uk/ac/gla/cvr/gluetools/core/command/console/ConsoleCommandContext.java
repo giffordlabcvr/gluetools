@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
@@ -219,7 +220,8 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 
 	public void runBatchCommands(String batchFilePath, String batchContent, boolean noEcho, boolean noOutput) {
-		console.runBatchCommands(batchFilePath, batchContent, noEcho, noOutput);
+		String[] lines = batchContent.split("\n");
+		console.runBatchCommands(batchFilePath, Arrays.stream(lines).collect(Collectors.toList()), noEcho, noOutput);
 	}
 
 	public void addOptionLine(ConsoleOption consoleOption) {

@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,7 +70,7 @@ public class Console implements CommandResultRenderingContext
 	private boolean noEcho = false;
 	private boolean noOutput = false;
 	private String batchFilePath;
-	private String inlineCmdLine;
+	private List<String> inlineCmdWords;
 	
 	private Console() {
 	}
@@ -92,14 +94,25 @@ public class Console implements CommandResultRenderingContext
 		}
 	}
 
-	private void handleLine(String line, boolean outputCommandToConsole, boolean outputResultToConsole) {
-		ArrayList<Token> tokens = null;
-		tokens = Lexer.lex(line);
-		List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
-		if(!meaningfulTokens.isEmpty()) {
-			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
+	@SuppressWarnings("unchecked")
+	private void handleLine(Object line, boolean outputCommandToConsole, boolean outputResultToConsole) {
+		List<String> tokenStrings;
+		String cmdEcho;
+		if(line instanceof String) {
+			ArrayList<Token> tokens = null;
+			tokens = Lexer.lex((String) line);
+			cmdEcho = GLUE_PROMPT+String.join(" ", ((String) line).trim());
+			List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
+			tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
+		} else if(line instanceof List) {
+			tokenStrings = (List<String>) line;
+			cmdEcho = GLUE_PROMPT+String.join(" ", (List<String>) line);  // should really quotify the line.
+		} else {
+			throw new RuntimeException("Unrecognized line type");
+		}
+		if(!tokenStrings.isEmpty()) {
 			if(outputCommandToConsole) {
-				output(GLUE_PROMPT+String.join(" ", line.trim()));
+				output(cmdEcho);
 			}
 			executeTokenStrings(tokenStrings, outputResultToConsole);
 		}
@@ -255,8 +268,18 @@ public class Console implements CommandResultRenderingContext
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
 		} 
-		Map<String, Object> docoptResult = docopt.parse(args);
 		Console console = new Console();
+		List<String> argsList = Arrays.stream(args).collect(Collectors.toList());
+		for(int i = 0; i < argsList.size(); i++) {
+			if(argsList.get(i).equals("-i") || argsList.get(i).equals("--inline-cmd")) {
+				if(i < argsList.size() - 1) {
+					console.inlineCmdWords = argsList.subList(i+1, argsList.size());
+					argsList = argsList.subList(0, i);
+					break;
+				}
+			}
+		}
+		Map<String, Object> docoptResult = docopt.parse(argsList.toArray(new String[]{}));
 		setupConsoleOptions(docoptResult, console);
 		console.init();
 		if(console.version) {
@@ -266,16 +289,17 @@ public class Console implements CommandResultRenderingContext
 			if(console.batchFilePath != null) {
 				console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
 			}
-			if(console.inlineCmdLine != null) {
-				console.runInlineCmdLine(console.inlineCmdLine, console.noEcho, console.noOutput);
+			if(console.inlineCmdWords != null) {
+				console.runInlineCommand(console.inlineCmdWords, console.noEcho, console.noOutput);
 			}
-			if(!console.nonInteractive) {
+			if((console.inlineCmdWords == null || console.inlineCmdWords.isEmpty()) && !console.nonInteractive) {
 				console.interactiveSession();
 			}
 		}
 		console.shutdown();
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void setupConsoleOptions(Map<String, Object> docoptResult, Console console) {
 		Object configFileOption = docoptResult.get("--config-file");
 		if(configFileOption != null) {
@@ -284,10 +308,6 @@ public class Console implements CommandResultRenderingContext
 		Object batchFileOption = docoptResult.get("--batch-file");
 		if(batchFileOption != null) {
 			console.batchFilePath = batchFileOption.toString();
-		}
-		Object cmdLineOption = docoptResult.get("--cmd-line");
-		if(cmdLineOption != null) {
-			console.inlineCmdLine = cmdLineOption.toString();
 		}
 		Object migrateSchemaOption = docoptResult.get("--migrate-schema");
 		if(migrateSchemaOption != null) {
@@ -390,29 +410,29 @@ public class Console implements CommandResultRenderingContext
 			System.exit(1);
 		}
 		try {
-			runBatchCommands(batchFilePath, batchContent, noEcho, noOutput);
+			String[] lines = batchContent.split("\n");
+			runBatchCommands(batchFilePath, Arrays.stream(lines).collect(Collectors.toList()), noEcho, noOutput);
 		} catch(GlueException ge) {
 			handleGlueException(ge);
 			System.exit(1);
 		}
 	}
 	
-	private void runInlineCmdLine(String inlineCmdLine, boolean noEcho, boolean noOutput) {
+	private void runInlineCommand(List<String> inlineCmdWords, boolean noEcho, boolean noOutput) {
 		try {
-			runBatchCommands("inline-cmd-line", inlineCmdLine, noEcho, noOutput);
+			runBatchCommands("inline-command", Collections.singletonList(inlineCmdWords), noEcho, noOutput);
 		} catch(GlueException ge) {
 			handleGlueException(ge);
 			System.exit(1);
 		}
 	}
 
-	public void runBatchCommands(String batchFilePath, String batchContent, boolean noEcho, boolean noOutput) {
-		String[] batchLines = batchContent.split("\n");
+	public void runBatchCommands(String batchFilePath, List<Object> batchLines, boolean noEcho, boolean noOutput) {
 		try {
 			BatchContext batchContext = new BatchContext(batchFilePath, 1);
 			batchContext.batchLineNumber = 1;
 			batchContextStack.push(batchContext);
-			for(String batchLine: batchLines) {
+			for(Object batchLine: batchLines) {
 				try {
 					handleLine(batchLine, !noEcho, !noOutput);
 				} catch(GlueException ge) {
@@ -554,6 +574,12 @@ public class Console implements CommandResultRenderingContext
 	@Override
 	public InputStream getInputStream() {
 		return reader.getInput();
+	}
+
+	@Override
+	public boolean interactiveTables() {
+		return batchContextStack.isEmpty() // don't use interactive tables in batch mode.
+				&& commandContext.getOptionValue(ConsoleOption.INTERACTIVE_TABLES).equals("true");
 	}
 	
 }

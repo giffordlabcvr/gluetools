@@ -24,6 +24,7 @@ public enum ConsoleOption {
 	VERBOSE_ERROR("verbose-error", "If \"true\" full stack trace is shown for errors", "false", new String[]{"true", "false"}),
 	ECHO_CMD_XML("echo-cmd-xml", "If \"true\" the XML form of each command is echoed", "false", new String[]{"true", "false"}),
 	ECHO_CMD_JSON("echo-cmd-json", "If \"true\" the JSON form of each command is echoed", "false", new String[]{"true", "false"}),
+	INTERACTIVE_TABLES("interactive-tables", "If \"true\" table results may be browsed interactively", "true", new String[]{"true", "false"}),
 	CMD_RESULT_FORMAT("cmd-result-format", "Configures the format for command results on the console", "text", new String[]{"text", "xml", "json", "tab", "csv"}),
 	LOG_LEVEL("log-level", "Configures the level of detail in the GLUE logger category", null, new String[]{
 			Level.OFF.getName(), Level.SEVERE.getName(), Level.WARNING.getName(), Level.INFO.getName(),

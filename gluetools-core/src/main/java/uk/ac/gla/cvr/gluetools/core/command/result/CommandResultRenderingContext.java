@@ -17,4 +17,6 @@ public interface CommandResultRenderingContext {
 	public int getTerminalHeight();
 
 	public InputStream getInputStream();
+	
+	public boolean interactiveTables();
 }
