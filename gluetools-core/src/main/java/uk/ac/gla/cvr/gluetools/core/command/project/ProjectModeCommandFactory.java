@@ -43,6 +43,8 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ImportSequenceCommand.class);
 		registerCommandClass(DeleteSequenceCommand.class);
 		registerCommandClass(ListSequenceCommand.class);
+		registerCommandClass(MoveSequenceCommand.class);
+		registerCommandClass(CopySequenceCommand.class);
 
 		registerCommandClass(CreateReferenceSequenceCommand.class);
 		registerCommandClass(DeleteReferenceSequenceCommand.class);

@@ -29,7 +29,16 @@ public class ConsoleCompleter implements Completer {
 
 	@Override
 	public int complete(String buffer, int cursor, List<CharSequence> candidates) {
-		List<Token> tokens = Lexer.lex(buffer);
+		List<Token> tokens;
+		try {
+			tokens = Lexer.lex(buffer);
+		} catch(ConsoleException ce) {
+			if(!ce.getCode().equals(ConsoleException.Code.SYNTAX_ERROR)) {
+				throw ce;
+			} else {
+				return -1;
+			}
+		}
 		if(tokens.stream().filter(t -> t.getType() == TokenType.SINGLELINECOMMENT).findFirst().isPresent()) {
 			return -1;
 		}
