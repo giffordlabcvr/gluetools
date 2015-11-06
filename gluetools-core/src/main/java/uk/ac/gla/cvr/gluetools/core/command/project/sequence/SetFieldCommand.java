@@ -1,6 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
-import java.util.List;
+import java.util.Collections;
 
 import org.w3c.dom.Element;
 
@@ -12,8 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -59,11 +57,8 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getSequenceMode(cmdContext).getProject();
-		List<String> customFieldNames = project.getCustomSequenceFieldNames();
+		project.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
 		Sequence sequence = lookupSequence(cmdContext);
-		if(!customFieldNames.contains(fieldName)) {
-			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);
-		}
 		Field field = project.getSequenceField(fieldName);
 		Object oldValue = sequence.readProperty(fieldName);
 		Object newValue = field.getFieldType().getFieldTranslator().valueFromString(fieldValue);

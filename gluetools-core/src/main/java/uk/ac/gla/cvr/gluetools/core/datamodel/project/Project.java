@@ -60,6 +60,18 @@ public class Project extends _Project {
 		}
 	}
 
+	public void checkValidCustomSequenceFieldNames(List<String> fieldNames) {
+		List<String> validFieldNamesList = getCustomSequenceFieldNames();
+		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
+		if(fieldNames != null) {
+			fieldNames.forEach(f-> {
+				if(!validFieldNames.contains(f)) {
+					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validFieldNamesList);
+				}
+			});
+		}
+	}
+
 	
 	public void checkValidMemberFieldNames(List<String> fieldNames) {
 		List<String> validMemberFieldsList = getValidMemberFields();

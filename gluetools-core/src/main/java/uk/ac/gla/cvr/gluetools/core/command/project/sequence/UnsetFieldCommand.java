@@ -1,6 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
-import java.util.List;
+import java.util.Collections;
 
 import org.w3c.dom.Element;
 
@@ -10,10 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -39,12 +36,9 @@ public class UnsetFieldCommand extends SequenceModeCommand<OkResult> {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		Project project = getSequenceMode(cmdContext).getProject();
-		List<String> customFieldNames = project.getCustomSequenceFieldNames();
+		getSequenceMode(cmdContext).getProject()
+		.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
 		Sequence sequence = lookupSequence(cmdContext);
-		if(!customFieldNames.contains(fieldName)) {
-			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);
-		}
 		sequence.writeProperty(fieldName, null);
 		cmdContext.commit();
 		return CommandResult.OK;

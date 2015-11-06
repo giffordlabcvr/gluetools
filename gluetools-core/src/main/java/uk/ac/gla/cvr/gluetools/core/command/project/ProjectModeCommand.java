@@ -1,8 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -13,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategor
 public abstract class ProjectModeCommand<R extends CommandResult> extends Command<R> {
 
 	
-	protected ProjectMode getProjectMode(CommandContext cmdContext) {
+	protected static ProjectMode getProjectMode(CommandContext cmdContext) {
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		return projectMode;
 	}
@@ -60,4 +66,23 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 		}
 	}
 
+	public abstract static class SequenceFieldNameCompleter extends AdvancedCmdCompleter {
+		public SequenceFieldNameCompleter() {
+			super();
+			registerVariableInstantiator("fieldName", new VariableInstantiator() {
+				@Override
+				@SuppressWarnings("rawtypes")
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					return 
+							getProjectMode(cmdContext).getProject().getCustomSequenceFieldNames()
+							.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+				}
+			});
+		}
+	}
+
+	
+	
 }
