@@ -29,8 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-h, --headerDetect          Guess reference from sequence header",
 				"-b <data>, --base64 <data>  Sequence binary data"
 		},
-		metaTags = { CmdMeta.consumesBinary }
-		
+		metaTags = { CmdMeta.consumesBinary }	
 )
 public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAnalysisCommand.TransientAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 	

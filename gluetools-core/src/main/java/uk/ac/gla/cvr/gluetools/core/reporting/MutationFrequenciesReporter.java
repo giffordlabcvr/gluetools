@@ -43,6 +43,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	
 	public MutationFrequenciesReporter() {
 		addProvidedCmdClass(TransientAnalysisCommand.class);
+		addProvidedCmdClass(SingleAlignmentAnalysisCommand.class);
 	}
 
 	@Override

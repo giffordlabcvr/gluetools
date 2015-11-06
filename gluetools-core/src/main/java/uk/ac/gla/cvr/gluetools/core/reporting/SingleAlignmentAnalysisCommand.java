@@ -1,0 +1,143 @@
+package uk.ac.gla.cvr.gluetools.core.reporting;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult;
+
+
+@CommandClass(
+		commandWords={"alignment", "analysis"}, 
+		description = "Analyse mutations for members of a single constrained alignment", 
+		docoptUsages = { "<alignmentName> <referenceName> <featureName>" }, 
+		docoptOptions = {},
+		furtherHelp = "The alignment named by <alignmentName> must be constrained to a reference. "+
+		"The reference sequence named <referenceName> may be the alignment's constraining reference, or "+
+		"the constraining reference of any ancestor alignment. The named reference sequence must have a "+
+		"location defined for the feature named by <featureName>, this must be a non-informational feature.",
+		metaTags = {}	
+)
+public class SingleAlignmentAnalysisCommand 
+	extends ModuleProvidedCommand<SingleAlignmentAnalysisResult, MutationFrequenciesReporter> {
+
+	public static final String ALIGNMENT_NAME = "alignmentName";
+	public static final String REFERENCE_NAME = "referenceName";
+	public static final String FEATURE_NAME = "featureName";
+	
+	private String alignmentName;
+	private String referenceName;
+	private String featureName;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
+		referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+	}
+
+
+
+	@Override
+	protected SingleAlignmentAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	
+	@CompleterClass 
+	public static final class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
+			registerVariableInstantiator("referenceName", new VariableInstantiator() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String alignmentName = (String) bindings.get("alignmentName");
+					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), true);
+					if(alignment != null) {
+						if(alignment.getRefSequence() == null) {
+							return null;
+						}
+						List<Alignment> ancestors = alignment.getAncestors();
+						List<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>();
+						for(Alignment ancestor: ancestors) {
+							ReferenceSequence refSeq = ancestor.getRefSequence();
+							if(refSeq != null) {
+								suggestions.add(new CompletionSuggestion(refSeq.getName(), true));
+							}
+						}
+						return suggestions;
+					}
+					return null;
+				}
+			});
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String referenceName = (String) bindings.get("referenceName");
+					ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
+					if(refSeq != null) {
+						List<FeatureLocation> featureLocations = refSeq.getFeatureLocations();
+						List<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>();
+						for(FeatureLocation featureLoc: featureLocations) {
+							Feature feature = featureLoc.getFeature();
+							if(!feature.isInformational()) {
+								suggestions.add(new CompletionSuggestion(feature.getName(), true));
+							}
+						}
+						return suggestions;
+					}
+					return null;
+				}
+			});
+			
+		}
+		
+	}
+	
+	
+	
+	public static class SingleAlignmentAnalysisResult extends TableResult {
+
+		public SingleAlignmentAnalysisResult(List<Map<String, Object>> rowData) {
+			super("singleAlignmentAnalysisResult", 
+					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY), rowData);
+		}
+		
+	}
+
+
+	
+}

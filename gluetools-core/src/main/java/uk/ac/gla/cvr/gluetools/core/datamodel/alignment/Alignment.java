@@ -35,6 +35,20 @@ public class Alignment extends _Alignment {
 	protected Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
+	
+	public List<Alignment> getAncestors() {
+		Alignment current = this;
+		LinkedHashSet<Alignment> ancestors = new LinkedHashSet<Alignment>();
+		while(current != null) {
+			if(!ancestors.contains(current)) {
+				ancestors.add(current);
+			} else {
+				break; // loop avoidance.
+			}
+			current = current.getParent();
+		}
+		return new ArrayList<Alignment>(ancestors);
+	}
 
 	@Override
 	public void setParent(Alignment parent) {
