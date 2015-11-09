@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
@@ -336,6 +337,14 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		
 		ReferenceRealisedFeatureTreeResult featureTreeResult = 
 				(ReferenceRealisedFeatureTreeResult) referenceAlmtResult.getReferenceFeatureTreeResult().findFeatureTree(featureName);
+		
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		if(feature.isInformational()) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_INFORMATIONAL, featureName);
+		}
+		if(feature.getOrfAncestor() == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_NOT_IN_ANY_ORF, featureName);
+		}
 		
 		if(featureTreeResult == null) {
 			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_LOCATION_NOT_DEFINED, referenceName, featureName);

@@ -253,7 +253,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 						var aaColumn = qrySegAAIndex - minAAIndex;
 						var indexInSeg = qrySegAAIndex - aaQuerySegment.refStart;
 						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(indexInSeg);
-						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] == "X") {
+						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] != "-") {
 							queryAADifferenceStyle[aaColumn] = "difference"
 						}
 					}

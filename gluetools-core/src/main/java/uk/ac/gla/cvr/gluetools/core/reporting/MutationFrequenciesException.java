@@ -14,7 +14,9 @@ public class MutationFrequenciesException extends GlueException {
 		ORF_LENGTH_NOT_MULTIPLE_OF_3("orfFeature", "ntLength"),
 		ALIGNMENT_IS_UNCONSTRAINED("alignmentName"),
 		REF_SEQUENCE_DOES_NOT_CONSTRAIN_ANCESTOR("alignmentName", "referenceName"), 
-		FEATURE_LOCATION_NOT_DEFINED("referenceName", "featureName");
+		FEATURE_LOCATION_NOT_DEFINED("referenceName", "featureName"), 
+		FEATURE_IS_INFORMATIONAL("featureName"),
+		FEATURE_IS_NOT_IN_ANY_ORF("featureName");
 
 		private String[] argNames;
 		private Code(String... argNames) {

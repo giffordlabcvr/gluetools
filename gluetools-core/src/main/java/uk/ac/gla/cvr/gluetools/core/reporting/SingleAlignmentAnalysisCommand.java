@@ -112,7 +112,7 @@ public class SingleAlignmentAnalysisCommand
 						List<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>();
 						for(FeatureLocation featureLoc: featureLocations) {
 							Feature feature = featureLoc.getFeature();
-							if(!feature.isInformational()) {
+							if(!feature.isInformational() && feature.getOrfAncestor() != null) {
 								suggestions.add(new CompletionSuggestion(feature.getName(), true));
 							}
 						}
