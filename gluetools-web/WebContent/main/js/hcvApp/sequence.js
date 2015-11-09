@@ -156,7 +156,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					}
 					var indexInSeg = qrySegRefNTIndex - ntQuerySegment.refStart;
 					queryNTs[ntColumn] = ntQuerySegment.nucleotides.charAt(indexInSeg);
-					if(ntReferenceDiff && ntReferenceDiff.mask[indexInSeg] == "X") {
+					if(ntReferenceDiff && ntReferenceDiff.mask[indexInSeg] != "-") {
 						queryNTDifferenceStyle[ntColumn] = "difference"
 					}
 					qrySegQryNTIndex++;

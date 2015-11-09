@@ -24,5 +24,10 @@ public class DifferenceSummaryNote {
 			objBuilder.setString("variationName", variationName);
 		}
 	}
+
+
+	public String getSummaryString() {
+		return summaryString;
+	}
 	
 }

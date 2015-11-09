@@ -66,6 +66,22 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return getDocumentBuilder();
 	}
 	
+
+	public ReferenceFeatureTreeResult findFeatureTree(String featureName) {
+		String thisFeatureName = this.getFeatureName();
+		if(thisFeatureName != null && thisFeatureName.equals(featureName)) {
+			return this;
+		}
+		for(ReferenceFeatureTreeResult childTree: getChildTrees()) {
+			ReferenceFeatureTreeResult featureTree = childTree.findFeatureTree(featureName);
+			if(featureTree != null) {
+				return featureTree;
+			}
+		}
+		return null;
+	}
+
+	
 	protected ReferenceFeatureTreeResult addFeature(Feature feature) {
 		Feature parentFeature = feature.getParent();
 		ReferenceFeatureTreeResult parentFeatureTreeResult = null;

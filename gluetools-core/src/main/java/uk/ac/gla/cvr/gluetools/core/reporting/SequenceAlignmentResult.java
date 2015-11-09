@@ -61,7 +61,7 @@ public class SequenceAlignmentResult {
 			featureToSequenceFeatureResult.put(featureTreeResult.getFeatureName(), seqFeatureResult);
 		}
 		featureTreeResult.getChildTrees().forEach(childFeatureTreeResult -> 
-		generateFeatureResult(cmdContext, childFeatureTreeResult, querySeqObj, s2cMinorityVariantFilter));
+			generateFeatureResult(cmdContext, childFeatureTreeResult, querySeqObj, s2cMinorityVariantFilter));
 	}
 
 	public String getAlignmentName() {
@@ -93,7 +93,13 @@ public class SequenceAlignmentResult {
 		this.referenceLength = referenceLength;
 	}
 	
-	
+	public SequenceFeatureResult getSequenceFeatureResult(String featureName) {
+		return featureToSequenceFeatureResult.get(featureName);
+	}
+
+	public String getReferenceName() {
+		return referenceName;
+	}
 	
 	
 }

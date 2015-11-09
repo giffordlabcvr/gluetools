@@ -11,7 +11,10 @@ public class MutationFrequenciesException extends GlueException {
 		FEATURE_CODON_NUMBERING_MISMATCH("orfFeature", "descendentFeature", "orfFeatureCodon1Start", "descendentFeatureCodon1Start"), 
 		ORF_MUST_HAVE_SINGLE_SEGMENT("orfFeature", "actualNumberOfFeatures"), 
 		ORF_INCOMPLETE_TRANSCRIPTION("orfFeature", "actualTranscribedLength", "expectedTranscribedLength"), 
-		ORF_LENGTH_NOT_MULTIPLE_OF_3("orfFeature", "ntLength");
+		ORF_LENGTH_NOT_MULTIPLE_OF_3("orfFeature", "ntLength"),
+		ALIGNMENT_IS_UNCONSTRAINED("alignmentName"),
+		REF_SEQUENCE_DOES_NOT_CONSTRAIN_ANCESTOR("alignmentName", "referenceName"), 
+		FEATURE_LOCATION_NOT_DEFINED("referenceName", "featureName");
 
 		private String[] argNames;
 		private Code(String... argNames) {

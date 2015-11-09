@@ -15,13 +15,13 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult;
@@ -39,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.Sin
 		metaTags = {}	
 )
 public class SingleAlignmentAnalysisCommand 
-	extends ModuleProvidedCommand<SingleAlignmentAnalysisResult, MutationFrequenciesReporter> {
+	extends ModuleProvidedCommand<SingleAlignmentAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String REFERENCE_NAME = "referenceName";
@@ -62,8 +62,7 @@ public class SingleAlignmentAnalysisCommand
 
 	@Override
 	protected SingleAlignmentAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {
-		// TODO Auto-generated method stub
-		return null;
+		return modulePlugin.doSingleAlignmentAnalysis(cmdContext, alignmentName, referenceName, featureName);
 	}
 
 	
@@ -131,9 +130,17 @@ public class SingleAlignmentAnalysisCommand
 	
 	public static class SingleAlignmentAnalysisResult extends TableResult {
 
+		public static final String INDEX = "index";
+		public static final String REFERENCE_VALUE = "referenceValue"; // omit?
+		public static final String MUTATION_VALUE = "mutationValue";
+		public static final String TOTAL_MEMBERS = "totalMembers";
+		public static final String MUTATION_MEMBERS = "mutationMembers";
+		
+		
 		public SingleAlignmentAnalysisResult(List<Map<String, Object>> rowData) {
 			super("singleAlignmentAnalysisResult", 
-					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY), rowData);
+					Arrays.asList(INDEX, REFERENCE_VALUE, MUTATION_VALUE, TOTAL_MEMBERS, MUTATION_MEMBERS),
+					rowData);
 		}
 		
 	}

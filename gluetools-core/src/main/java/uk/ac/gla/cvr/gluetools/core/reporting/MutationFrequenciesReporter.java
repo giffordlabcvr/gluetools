@@ -20,17 +20,24 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowAnces
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult;
 import uk.ac.gla.cvr.gluetools.core.reporting.TransientAnalysisCommand.TransientAnalysisResult;
+import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
+import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -85,14 +92,14 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			List<SequenceResult> seqResults,
 			Map<String, AlignmentResult> almtNameToAlmtResult) {
 		// group sequence results by the name of the initial alignment.
-		Map<String, List<SequenceResult>> refNameToSeqResults = 
+		Map<String, List<SequenceResult>> initialAlmtNameToSeqResults = 
 				seqResults.stream().collect(Collectors.groupingBy(seqResult -> 
 					seqResult.getInitialAlignmentName()));
 		
 		// for each list of sequences which have the same starting alignment, align them to the reference of that alignment.
 		// this produces seqToRefAlignedSegments for the first alignment analysis object in the chain.
-		refNameToSeqResults.forEach((almtName, refSeqResults) -> {
-			initSeqToRefAlignedSegments(cmdContext, refSeqResults, almtNameToAlmtResult.get(almtName));
+		initialAlmtNameToSeqResults.forEach((almtName, almtSeqResults) -> {
+			initSeqToRefAlignedSegments(cmdContext, almtSeqResults, almtNameToAlmtResult.get(almtName));
 		});
 	}
 
@@ -247,9 +254,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 				initialSeqAlmtResult.setSeqToRefQueryCoverage(
 						IQueryAlignedSegment.getQueryNtCoveragePercent(seqToRefAlignedSegments, seqResult.getSequenceLength()));
-
-
-			
 			});
 		}
 	}
@@ -275,6 +279,150 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			return bestMatch;
 		}
 		throw new MutationFrequenciesException(MutationFrequenciesException.Code.UNABLE_TO_DETECT_ALIGNMENT_NAME, header);
+	}
+
+	public SingleAlignmentAnalysisResult doSingleAlignmentAnalysis(
+			CommandContext cmdContext, String alignmentName,
+			String referenceName, String featureName) {
+		
+		// init a list of sequence results for the alignment members.
+		List<SequenceResult> seqResults = initSequenceResultsForSingleAlignment(cmdContext, alignmentName);
+	
+		// set up the chain of alignments for each seq result.
+		initSequenceAlignmentResults(cmdContext, seqResults);
+		
+		// generate alignment results for all alignments involved
+		Map<String, AlignmentResult> almtNameToAlmtResult = generateAlignmentResults(cmdContext, seqResults);
+		AlignmentResult almtResult = almtNameToAlmtResult.get(alignmentName);
+		
+		// for each sequence, initialise first sequence alignment result from stored constrained alignment.
+		seqResults.forEach(seqResult -> {
+			SequenceAlignmentResult initialSeqAlmtResult = seqResult.seqAlignmentResults.get(0);
+			Map<String, String> almtMemberPkMap = AlignmentMember.pkMap(alignmentName, seqResult.getSourceName(), seqResult.getSequenceID());
+			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, almtMemberPkMap);
+			List<QueryAlignedSegment> seqToRefAlignedSegments = almtMember.getAlignedSegments().stream()
+					.map(AlignedSegment::asQueryAlignedSegment)
+					.collect(Collectors.toList());
+			initialSeqAlmtResult.setSeqToRefAlignedSegments(seqToRefAlignedSegments);
+
+			initialSeqAlmtResult.setReferenceLength(almtResult.getReferenceLength());
+			
+			initialSeqAlmtResult.setSeqToRefReferenceCoverage(
+					IQueryAlignedSegment.getReferenceNtCoveragePercent(seqToRefAlignedSegments, almtResult.getReferenceLength()));
+
+			initialSeqAlmtResult.setSeqToRefQueryCoverage(
+					IQueryAlignedSegment.getQueryNtCoveragePercent(seqToRefAlignedSegments, seqResult.getSequenceLength()));
+		});		
+
+		// for each sequence fill in seqToRefAlignedSegments for the rest of the path to the root of the tree.
+		seqResults.forEach(seqResult -> propagateAlignedSegments(cmdContext, almtNameToAlmtResult, seqResult));
+		
+		// for each sequence, and each alignment in its path, generate SequenceFeatureResults.
+		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult));
+
+		// alignment result for the selected reference sequence.
+		AlignmentResult referenceAlmtResult = null;
+		
+		for(Map.Entry<String, AlignmentResult> almtResultInMap : almtNameToAlmtResult.entrySet()) {
+			if(almtResultInMap.getValue().getReferenceName().equals(referenceName)) {
+				referenceAlmtResult = almtResultInMap.getValue();
+				break;
+			}
+		}
+		
+		if(referenceAlmtResult == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.REF_SEQUENCE_DOES_NOT_CONSTRAIN_ANCESTOR, alignmentName, referenceName);
+		}
+		
+		ReferenceRealisedFeatureTreeResult featureTreeResult = 
+				(ReferenceRealisedFeatureTreeResult) referenceAlmtResult.getReferenceFeatureTreeResult().findFeatureTree(featureName);
+		
+		if(featureTreeResult == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_LOCATION_NOT_DEFINED, referenceName, featureName);
+		}
+		
+		List<AaReferenceSegment> aaReferenceSegments = featureTreeResult.getAaReferenceSegments();
+		
+		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
+
+		Map<Integer, MutationFrequencySummary> indexToMutationFreqSummary = new LinkedHashMap<Integer, MutationFrequencySummary>();
+		
+		for(AaReferenceSegment refSeg: aaReferenceSegments) {
+			for(int i = refSeg.getRefStart(); i <= refSeg.getRefEnd(); i++) {
+				indexToMutationFreqSummary.put(i, new MutationFrequencySummary(refSeg.getAminoAcidsSubsequence(i, i).toString()));
+			}
+		}
+		
+		for(SequenceResult seqResult: seqResults) {
+			for(SequenceAlignmentResult seqAlmtResult : seqResult.seqAlignmentResults) {
+				if(seqAlmtResult.getReferenceName().equals(referenceName)) {
+					SequenceFeatureResult sequenceFeatureResult = seqAlmtResult.getSequenceFeatureResult(featureName);
+					List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = sequenceFeatureResult.getAaReferenceDifferenceNotes();
+					for(ReferenceDifferenceNote refDiffNote: aaReferenceDifferenceNotes) {
+						CharSequence mask = refDiffNote.getMask();
+						int maskIndex = 0;
+						for(int i = refDiffNote.getRefStart(); i <= refDiffNote.getRefEnd(); i++) {
+							MutationFrequencySummary mutFreqSummary = indexToMutationFreqSummary.get(i);
+							mutFreqSummary.totalMembers = mutFreqSummary.totalMembers+1;
+							char memberValue = mask.charAt(maskIndex);
+							if(memberValue != '-') {
+								mutFreqSummary.mutationMembers.compute(new String(new char[]{memberValue}), (k, v) -> v == null ? 1 : v+1);
+							}
+							maskIndex++;
+						}
+					}
+					break;
+				}
+			}
+		}
+		
+		indexToMutationFreqSummary.forEach((index, mutFreqSummary) -> {
+			int totalMembers = mutFreqSummary.totalMembers;
+			String refValue = mutFreqSummary.refValue;
+			mutFreqSummary.mutationMembers.forEach((mutValue, mutMembers) -> {
+				Map<String, Object> row = new LinkedHashMap<String, Object>();
+				row.put(SingleAlignmentAnalysisResult.INDEX, index);
+				row.put(SingleAlignmentAnalysisResult.REFERENCE_VALUE, refValue);
+				row.put(SingleAlignmentAnalysisResult.MUTATION_VALUE, mutValue);
+				row.put(SingleAlignmentAnalysisResult.TOTAL_MEMBERS, totalMembers);
+				row.put(SingleAlignmentAnalysisResult.MUTATION_MEMBERS, mutMembers);
+				rowData.add(row);
+			});
+			
+		});
+		return new SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult(rowData);
+	}
+	
+	private static class MutationFrequencySummary {
+		String refValue;
+		Integer totalMembers = 0;
+		Map<String, Integer> mutationMembers = new LinkedHashMap<String, Integer>();
+		public MutationFrequencySummary(String refValue) {
+			super();
+			this.refValue = refValue;
+		}
+
+	}
+	
+
+	private List<SequenceResult> initSequenceResultsForSingleAlignment(
+			CommandContext cmdContext, String alignmentName) {
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		if(alignment.getRefSequence() == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
+		}
+		List<AlignmentMember> members = alignment.getMembers();
+		List<SequenceResult> seqResults = members.stream().map(almtMember -> 
+			{ 
+				Sequence sequence = almtMember.getSequence();
+				SequenceResult seqResult = new SequenceResult(cmdContext, 
+						sequence.getSource().getName(), sequence.getSequenceID(), 
+						alignmentName, sequence.getSequenceObject());
+				
+				return seqResult;
+				
+			}).collect(Collectors.toList());
+		return seqResults;
 	}
 	
 	

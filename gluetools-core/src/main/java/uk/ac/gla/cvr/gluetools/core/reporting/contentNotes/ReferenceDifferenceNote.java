@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 /**
  * A reference difference note points out that the sequence content differs from a reference at certain locations.
  * For efficiency, these differences are encoded in a mask char sequence. In the mask, "-" represents no difference and 
- * "X" represents a difference.
+ * any other character represents a difference (the value in the sequence content).
  */
 
 public class ReferenceDifferenceNote extends SequenceContentNote {
@@ -45,7 +45,7 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 			if(refChar == queryChar) {
 				diffChars[i] = '-';
 			} else {
-				diffChars[i] = 'X';
+				diffChars[i] = queryChar;
 				if(includeDifferenceSummaryNotes) {
 					String summaryString = new String(new char[]{refChar}) + Integer.toString(refPos) + new String(new char[]{queryChar});
 					differenceSummaryNotes.add(new DifferenceSummaryNote(summaryString, null));
@@ -76,4 +76,12 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 		super.truncateRight(length);
 		setMask(getMask().subSequence(0, getMask().length() - length));
 	}
+
+	public List<DifferenceSummaryNote> getDifferenceSummaryNotes() {
+		return differenceSummaryNotes;
+	}
+	
+	
+	
+	
 }

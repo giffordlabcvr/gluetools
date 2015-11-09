@@ -387,4 +387,16 @@ public class SequenceFeatureResult {
 			}
 		}
 	}
+
+	public List<AaReferenceSegment> getAaQueryAlignedSegments() {
+		return aaQueryAlignedSegments;
+	}
+
+	public List<ReferenceDifferenceNote> getAaReferenceDifferenceNotes() {
+		return aaReferenceDifferenceNotes;
+	}
+
+	
+	
+	
 }

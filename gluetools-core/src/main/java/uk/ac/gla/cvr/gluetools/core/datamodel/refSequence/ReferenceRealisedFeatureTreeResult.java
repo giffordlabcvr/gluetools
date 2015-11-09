@@ -34,7 +34,9 @@ public class ReferenceRealisedFeatureTreeResult extends ReferenceFeatureTreeResu
 	protected ReferenceRealisedFeatureTreeResult addFeature(Feature feature) {
 		return (ReferenceRealisedFeatureTreeResult) super.addFeature(feature);
 	}
+	
 
+	
 	public ReferenceRealisedFeatureTreeResult addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation) {
 		ReferenceRealisedFeatureTreeResult featureTreeResult = 
 				(ReferenceRealisedFeatureTreeResult) super.addFeatureLocation(cmdContext, featureLocation);
