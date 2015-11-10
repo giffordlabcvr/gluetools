@@ -51,7 +51,7 @@ public class ArrayBuilder {
 			return addDouble(((Double) value).doubleValue());
 		} else if(value instanceof Integer) {
 			return addInt(((Integer) value).intValue());
-		} else if(value instanceof Double) {
+		} else if(value instanceof Boolean) {
 			return addBoolean(((Boolean) value).booleanValue());
 		} else if(value instanceof String) {
 			return addString(((String) value));

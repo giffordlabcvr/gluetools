@@ -36,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -78,8 +79,10 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	public ComputeAlignmentResult execute(CommandContext cmdContext) {
 		// enter the alignment command mode to get the reference sequence name 
 		String refName = getRefSequenceName(cmdContext);
+		GlueLogger.getGlueLogger().finest("Searching for members to align");
 		// enter the alignment command mode to get the member ID maps selected by the where clause
 		List<Map<String, Object>> memberIDs = getMemberSequenceIdMaps(cmdContext);
+		GlueLogger.getGlueLogger().finest("Found "+memberIDs.size()+" members to align");
 		// get the original data for the reference sequence
 		// modify the aligned segments and generate alignment results results for each selected member.
 		List<Map<String, Object>> resultListOfMaps = 
