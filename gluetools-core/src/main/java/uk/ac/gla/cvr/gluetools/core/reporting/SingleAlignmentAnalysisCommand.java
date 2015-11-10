@@ -145,8 +145,8 @@ public class SingleAlignmentAnalysisCommand
 	
 	public static class SingleAlignmentAnalysisResult extends TableResult {
 
-		public static final String INDEX = "index";
 		public static final String REFERENCE_VALUE = "referenceValue"; // omit?
+		public static final String INDEX = "index";
 		public static final String MUTATION_VALUE = "mutationValue";
 		public static final String TOTAL_MEMBERS = "totalMembers";
 		public static final String MUTATION_MEMBERS = "mutationMembers";
@@ -154,7 +154,7 @@ public class SingleAlignmentAnalysisCommand
 		
 		public SingleAlignmentAnalysisResult(List<Map<String, Object>> rowData) {
 			super("singleAlignmentAnalysisResult", 
-					Arrays.asList(INDEX, REFERENCE_VALUE, MUTATION_VALUE, TOTAL_MEMBERS, MUTATION_MEMBERS),
+					Arrays.asList(REFERENCE_VALUE, INDEX, MUTATION_VALUE, TOTAL_MEMBERS, MUTATION_MEMBERS),
 					rowData);
 		}
 		
