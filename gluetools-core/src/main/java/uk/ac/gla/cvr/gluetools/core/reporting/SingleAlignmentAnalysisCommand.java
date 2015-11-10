@@ -145,16 +145,16 @@ public class SingleAlignmentAnalysisCommand
 	
 	public static class SingleAlignmentAnalysisResult extends TableResult {
 
-		public static final String REFERENCE_VALUE = "referenceValue"; // omit?
-		public static final String INDEX = "index";
-		public static final String MUTATION_VALUE = "mutationValue";
+		public static final String REF_AMINO_ACID = "refAA"; // omit?
+		public static final String CODON = "codon";
+		public static final String MUT_AMINO_ACID = "mutAA";
 		public static final String TOTAL_MEMBERS = "totalMembers";
 		public static final String MUTATION_MEMBERS = "mutationMembers";
 		
 		
 		public SingleAlignmentAnalysisResult(List<Map<String, Object>> rowData) {
 			super("singleAlignmentAnalysisResult", 
-					Arrays.asList(REFERENCE_VALUE, INDEX, MUTATION_VALUE, TOTAL_MEMBERS, MUTATION_MEMBERS),
+					Arrays.asList(REF_AMINO_ACID, CODON, MUT_AMINO_ACID, MUTATION_MEMBERS, TOTAL_MEMBERS),
 					rowData);
 		}
 		

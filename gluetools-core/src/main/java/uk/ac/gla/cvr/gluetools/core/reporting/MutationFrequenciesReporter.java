@@ -427,9 +427,9 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			String refValue = mutFreqSummary.refValue;
 			mutFreqSummary.mutationMembers.forEach((mutValue, mutMembers) -> {
 				Map<String, Object> row = new LinkedHashMap<String, Object>();
-				row.put(SingleAlignmentAnalysisResult.INDEX, index);
-				row.put(SingleAlignmentAnalysisResult.REFERENCE_VALUE, refValue);
-				row.put(SingleAlignmentAnalysisResult.MUTATION_VALUE, mutValue);
+				row.put(SingleAlignmentAnalysisResult.CODON, index);
+				row.put(SingleAlignmentAnalysisResult.REF_AMINO_ACID, refValue);
+				row.put(SingleAlignmentAnalysisResult.MUT_AMINO_ACID, mutValue);
 				row.put(SingleAlignmentAnalysisResult.TOTAL_MEMBERS, totalMembers);
 				row.put(SingleAlignmentAnalysisResult.MUTATION_MEMBERS, mutMembers);
 				rowData.add(row);
