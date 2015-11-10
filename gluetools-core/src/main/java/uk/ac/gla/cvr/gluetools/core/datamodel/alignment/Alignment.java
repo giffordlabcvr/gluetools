@@ -88,5 +88,15 @@ public class Alignment extends _Alignment {
 	}
 
 	
+	public List<Alignment> getDescendents() {
+		List<Alignment> descendents = new ArrayList<Alignment>();
+		List<Alignment> children = getChildren();
+		for(Alignment childAlignment: children) {
+			descendents.add(childAlignment);
+			descendents.addAll(childAlignment.getDescendents());
+		}
+		return descendents;
+	}
+
 	
 }

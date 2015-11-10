@@ -1,13 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
@@ -25,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatureTreeResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
@@ -75,7 +82,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		List<SequenceResult> seqResults = initSequenceResults(cmdContext, headerDetect, alignmentName, seqObjects);
 		
 		// generate alignment results for all alignments involved
-		Map<String, AlignmentResult> almtNameToAlmtResult = generateAlignmentResults(cmdContext, seqResults);
+		Map<String, AlignmentResult> almtNameToAlmtResult = new LinkedHashMap<String, AlignmentResult>();
+		addAlmtResultsFromSeqResults(almtNameToAlmtResult, cmdContext, seqResults);
 		
 		// generate the initial segments aligning each sequence to the selected reference.
 		generateInitialAlignments(cmdContext, seqResults, almtNameToAlmtResult);
@@ -84,7 +92,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		seqResults.forEach(seqResult -> propagateAlignedSegments(cmdContext, almtNameToAlmtResult, seqResult));
 		
 		// for each sequence, and each alignment in its path, generate SequenceFeatureResults.
-		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult));
+		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, null, null));
 		
 		return new TransientAnalysisResult(new ArrayList<AlignmentResult>(almtNameToAlmtResult.values()), seqResults);
 	}
@@ -104,10 +112,10 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		});
 	}
 
-	public Map<String, AlignmentResult> generateAlignmentResults(
+	public void addAlmtResultsFromSeqResults(
+			Map<String, AlignmentResult> almtNameToAlmtResult,
 			CommandContext cmdContext, List<SequenceResult> seqResults) {
 		// collect together all alignments which will be involved, mapping their names to the relevant alignmentResults
-		Map<String, AlignmentResult> almtNameToAlmtResult = new LinkedHashMap<String, AlignmentResult>();
 		seqResults.forEach(seqResult -> {
 			for(int i = 0; i < seqResult.seqAlignmentResults.size(); i++) {
 				SequenceAlignmentResult alignmentAnalysis = seqResult.seqAlignmentResults.get(i);
@@ -122,7 +130,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 					almtNameToAlmtResult.put(almtName, alignmentResult);
 				}
 			}});
-		return almtNameToAlmtResult;
 	}
 
 
@@ -175,10 +182,11 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		return seqResults;
 	}
 
-	private void generateSequenceFeatureResults(CommandContext cmdContext, Map<String, AlignmentResult> almtNameToAlmtResult, SequenceResult seqResult) {
+	private void generateSequenceFeatureResults(CommandContext cmdContext, Map<String, AlignmentResult> almtNameToAlmtResult,
+			SequenceResult seqResult, Set<String> featureRestrictions, Set<String> referenceRestrictions) {
 		for(SequenceAlignmentResult sequenceAlignmentResult : seqResult.seqAlignmentResults) {
 			sequenceAlignmentResult.generateSequenceAlignmentFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, 
-					s2cMinorityVariantFilter);
+					s2cMinorityVariantFilter, featureRestrictions, referenceRestrictions);
 		}
 	}
 	
@@ -284,22 +292,80 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	public SingleAlignmentAnalysisResult doSingleAlignmentAnalysis(
 			CommandContext cmdContext, String alignmentName,
-			String referenceName, String featureName) {
+			boolean recursive, Optional<Expression> whereClause, 
+			String referenceName, 
+			String featureName) {
+		
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		if(feature.isInformational()) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_INFORMATIONAL, featureName);
+		}
+		if(feature.getOrfAncestor() == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_NOT_IN_ANY_ORF, featureName);
+		}
+		
+		
 		
 		// init a list of sequence results for the alignment members.
-		List<SequenceResult> seqResults = initSequenceResultsForSingleAlignment(cmdContext, alignmentName);
+		List<SequenceResult> seqResults = 
+				initSequenceResultsForSingleAlignment(cmdContext, alignmentName, recursive, whereClause);
 	
+		
+		Map<String, AlignmentResult> almtNameToAlmtResult = new LinkedHashMap<String, AlignmentResult>();
+
+		// alignment result for the selected reference sequence.
+		AlignmentResult referenceAlmtResult = null;
+
+		// add alignment results for all the ancestor alignments.
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		for(Alignment ancestorAlmt : alignment.getAncestors()) {
+			AlignmentResult ancestorAlmtResult = new AlignmentResult(ancestorAlmt.getName());
+			Alignment parent = ancestorAlmt.getParent();
+			String parentName = parent == null ? null : parent.getName();
+			ancestorAlmtResult.init(cmdContext, parentName);
+			if(ancestorAlmt.getRefSequence().getName().equals(referenceName)) {
+				referenceAlmtResult = ancestorAlmtResult;
+			}
+			almtNameToAlmtResult.put(ancestorAlmt.getName(), ancestorAlmtResult);
+		}
+		
+		if(referenceAlmtResult == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.REF_SEQUENCE_DOES_NOT_CONSTRAIN_ANCESTOR, alignmentName, referenceName);
+		}
+		
 		// set up the chain of alignments for each seq result.
 		initSequenceAlignmentResults(cmdContext, seqResults);
-		
-		// generate alignment results for all alignments involved
-		Map<String, AlignmentResult> almtNameToAlmtResult = generateAlignmentResults(cmdContext, seqResults);
+
+		// generate alignment results for all other alignments involved
+		addAlmtResultsFromSeqResults(almtNameToAlmtResult, cmdContext, seqResults);
 		AlignmentResult almtResult = almtNameToAlmtResult.get(alignmentName);
+
+		
+		ReferenceRealisedFeatureTreeResult featureTreeResult = 
+				(ReferenceRealisedFeatureTreeResult) referenceAlmtResult.getReferenceFeatureTreeResult().findFeatureTree(featureName);
+		
+		if(featureTreeResult == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_LOCATION_NOT_DEFINED, referenceName, featureName);
+		}
+		
+		// we can restrict our analysis to features in this list.
+		Set<String> featureRestrictions = new LinkedHashSet<String>();
+		featureRestrictions.add(feature.getName());
+		Feature orfAncestor = feature.getOrfAncestor();
+		if(orfAncestor != null) {
+			String translateDirectly = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_ORF_DESCENDENTS_DIRECTLY);
+			if(translateDirectly.equals("false")) {
+				featureRestrictions.add(orfAncestor.getName());
+			}
+		}
+		
+		Set<String> referenceRestrictions = new LinkedHashSet<String>();
+		referenceRestrictions.add(referenceName);
 		
 		// for each sequence, initialise first sequence alignment result from stored constrained alignment.
 		seqResults.forEach(seqResult -> {
 			SequenceAlignmentResult initialSeqAlmtResult = seqResult.seqAlignmentResults.get(0);
-			Map<String, String> almtMemberPkMap = AlignmentMember.pkMap(alignmentName, seqResult.getSourceName(), seqResult.getSequenceID());
+			Map<String, String> almtMemberPkMap = AlignmentMember.pkMap(initialSeqAlmtResult.getAlignmentName(), seqResult.getSourceName(), seqResult.getSequenceID());
 			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, almtMemberPkMap);
 			List<QueryAlignedSegment> seqToRefAlignedSegments = almtMember.getAlignedSegments().stream()
 					.map(AlignedSegment::asQueryAlignedSegment)
@@ -319,37 +385,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		seqResults.forEach(seqResult -> propagateAlignedSegments(cmdContext, almtNameToAlmtResult, seqResult));
 		
 		// for each sequence, and each alignment in its path, generate SequenceFeatureResults.
-		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult));
+		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, featureRestrictions, referenceRestrictions));
 
-		// alignment result for the selected reference sequence.
-		AlignmentResult referenceAlmtResult = null;
-		
-		for(Map.Entry<String, AlignmentResult> almtResultInMap : almtNameToAlmtResult.entrySet()) {
-			if(almtResultInMap.getValue().getReferenceName().equals(referenceName)) {
-				referenceAlmtResult = almtResultInMap.getValue();
-				break;
-			}
-		}
-		
-		if(referenceAlmtResult == null) {
-			throw new MutationFrequenciesException(MutationFrequenciesException.Code.REF_SEQUENCE_DOES_NOT_CONSTRAIN_ANCESTOR, alignmentName, referenceName);
-		}
-		
-		ReferenceRealisedFeatureTreeResult featureTreeResult = 
-				(ReferenceRealisedFeatureTreeResult) referenceAlmtResult.getReferenceFeatureTreeResult().findFeatureTree(featureName);
-		
-		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-		if(feature.isInformational()) {
-			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_INFORMATIONAL, featureName);
-		}
-		if(feature.getOrfAncestor() == null) {
-			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_NOT_IN_ANY_ORF, featureName);
-		}
-		
-		if(featureTreeResult == null) {
-			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_LOCATION_NOT_DEFINED, referenceName, featureName);
-		}
-		
 		List<AaReferenceSegment> aaReferenceSegments = featureTreeResult.getAaReferenceSegments();
 		
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
@@ -415,18 +452,31 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	
 
 	private List<SequenceResult> initSequenceResultsForSingleAlignment(
-			CommandContext cmdContext, String alignmentName) {
+			CommandContext cmdContext, String alignmentName, boolean recursive, Optional<Expression> whereClause) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		if(alignment.getRefSequence() == null) {
 			throw new MutationFrequenciesException(MutationFrequenciesException.Code.ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
 		}
-		List<AlignmentMember> members = alignment.getMembers();
+		
+		List<Alignment> alignments = new ArrayList<Alignment>(Collections.singletonList(alignment));
+		if(recursive) {
+			alignments.addAll(alignment.getDescendents());
+		} 
+
+		Expression exp = ExpressionFactory.expFalse();
+		for(Alignment startingAlignment: alignments) {
+			exp = exp.orExp(ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, startingAlignment.getName()));
+		}
+		if(whereClause.isPresent()) {
+			exp = exp.andExp(whereClause.get());
+		}
+		List<AlignmentMember> members = GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, exp));
 		List<SequenceResult> seqResults = members.stream().map(almtMember -> 
 			{ 
 				Sequence sequence = almtMember.getSequence();
 				SequenceResult seqResult = new SequenceResult(cmdContext, 
 						sequence.getSource().getName(), sequence.getSequenceID(), 
-						alignmentName, sequence.getSequenceObject());
+						almtMember.getAlignment().getName(), sequence.getSequenceObject());
 				
 				return seqResult;
 				

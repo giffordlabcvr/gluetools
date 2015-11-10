@@ -6,8 +6,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.CayenneDataObject;
+import org.apache.cayenne.CayenneRuntimeException;
 import org.apache.cayenne.DeleteDenyException;
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
@@ -75,11 +77,21 @@ public abstract class GlueDataObject extends CayenneDataObject {
 
 	
 	public static <C extends GlueDataObject> List<C> query(CommandContext cmdContext, Class<C> objClass, SelectQuery query) {
-		// should this also interact with the cache?
-		List<?> queryResult = cmdContext.getObjectContext().performQuery(query);
+		List<?> queryResult = null;
+		try {
+			queryResult = cmdContext.getObjectContext().performQuery(query);
+		} catch(CayenneRuntimeException cre) {
+			Throwable cause = cre.getCause();
+			Expression qualifier = query.getQualifier();
+			if(qualifier != null && cause != null && cause instanceof ExpressionException) {
+				throw new DataModelException(Code.EXPRESSION_ERROR, qualifier.toString(), cause.getMessage());
+			} else {
+				throw cre;
+			}
+			
+		}
 		return queryResult.stream().map(obj -> { 
 			C dataObject = objClass.cast(obj);
-			// ((GlueDataObject) dataObject).setFinalized();
 			return dataObject;
 		}).collect(Collectors.toList());
 	}

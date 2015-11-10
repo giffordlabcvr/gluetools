@@ -9,7 +9,8 @@ public class DataModelException extends GlueException {
 		OBJECT_NOT_FOUND("entityName", "idMap"),
 		OBJECT_ALREADY_EXISTS("entityName", "idMap"),
 		MULTIPLE_OBJECTS_FOUND("entityName", "idMap"), 
-		DELETE_DENIED("entityName", "idMap", "relationship");
+		DELETE_DENIED("entityName", "idMap", "relationship"),
+		EXPRESSION_ERROR("expression", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
