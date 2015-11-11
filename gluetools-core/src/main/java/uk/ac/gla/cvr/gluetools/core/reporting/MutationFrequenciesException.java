@@ -16,7 +16,8 @@ public class MutationFrequenciesException extends GlueException {
 		REF_SEQUENCE_DOES_NOT_CONSTRAIN_ANCESTOR("alignmentName", "referenceName"), 
 		FEATURE_LOCATION_NOT_DEFINED("referenceName", "featureName"), 
 		FEATURE_IS_INFORMATIONAL("featureName"),
-		FEATURE_IS_NOT_IN_ANY_ORF("featureName");
+		FEATURE_IS_NOT_IN_ANY_ORF("featureName"), 
+		VARIATION_NAME_TEMPLATE_FAILED("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -30,7 +31,7 @@ public class MutationFrequenciesException extends GlueException {
 
 
 	protected MutationFrequenciesException(Throwable cause, Code code,
-			Object[] errorArgs) {
+			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}
 

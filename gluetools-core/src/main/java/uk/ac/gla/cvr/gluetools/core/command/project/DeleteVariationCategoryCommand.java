@@ -20,19 +20,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Delete a variation category") 
 public class DeleteVariationCategoryCommand extends ProjectModeCommand<DeleteResult> {
 
-	private String name;
+	private String vcatName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		name = PluginUtils.configureStringProperty(configElem, "name", true);
+		vcatName = PluginUtils.configureStringProperty(configElem, "vcatName", true);
 	}
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
 		
 		DeleteResult result = 
-				GlueDataObject.delete(cmdContext, VariationCategory.class, VariationCategory.pkMap(name), true);
+				GlueDataObject.delete(cmdContext, VariationCategory.class, VariationCategory.pkMap(vcatName), true);
 		cmdContext.commit();
 		return result;
 	}

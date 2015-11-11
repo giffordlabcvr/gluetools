@@ -17,7 +17,7 @@ public class VariationShowPatternCommand extends VariationModeCommand<VariationS
 	@Override
 	public VariationShowPatternResult execute(CommandContext cmdContext) {
 		Variation variation = lookupVariation(cmdContext);
-		return new VariationShowPatternResult(variation.getTranscriptionFormat(), variation.getRegex());
+		return new VariationShowPatternResult(variation.getTranslationFormat(), variation.getRegex());
 	}
 
 	public class VariationShowPatternResult extends MapResult {

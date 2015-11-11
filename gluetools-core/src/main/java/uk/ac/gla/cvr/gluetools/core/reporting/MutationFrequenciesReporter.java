@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -17,12 +19,16 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListAlignmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.TranslateSegmentsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.TranslateSegmentsCommand.TranslateSegmentsResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowAncestorsCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -48,27 +54,61 @@ import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNo
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import freemarker.core.ParseException;
+import freemarker.template.SimpleScalar;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="mutationFrequenciesReporter")
 public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {
 
+	public static final String GENERATED_VARIATION_PERCENT_THRESHOLD = "generatedVariationPercentThreshold";
+	public static final String GENERATED_VARIATION_NAME_TEMPLATE = "generatedVariationNameTemplate";
+	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
+	
+	// transient analysis related.
 	private String alignerModuleName;
 	private Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter;
+
+	// variation generation related
+	private List<String> generatedVariationCategories;
+	private Template generatedVariationNameTemplate;
+	private Double generatedVariationPercentThreshold;
 	
 	public MutationFrequenciesReporter() {
 		addProvidedCmdClass(TransientAnalysisCommand.class);
 		addProvidedCmdClass(SingleAlignmentAnalysisCommand.class);
+		addProvidedCmdClass(GenerateVariationsCommand.class);
+		addProvidedCmdClass(PreviewVariationsCommand.class);
+		addProvidedCmdClass(ShowMutationFrequenciesReporterCommand.class);
+		addProvidedCmdClass(ConfigureMutationFrequenciesReporterCommand.class);
+
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		alignerModuleName = PluginUtils.configureStringProperty(configElem, "alignerModuleName", true);
+		alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
 		s2cMinorityVariantFilter = new Sam2ConsensusMinorityVariantFilter();
 		Element s2cMinorityVariantFilterElem = PluginUtils.findConfigElement(configElem, "sam2ConsensusMinorityVariantFilter");
 		if(s2cMinorityVariantFilterElem != null) {
 			s2cMinorityVariantFilter.configure(pluginConfigContext, s2cMinorityVariantFilterElem);
 		}
+		
+		generatedVariationCategories = PluginUtils.configureStringsProperty(configElem, "generatedVariationCategory");
+		Template defaultTemplate = null;
+		try {
+			defaultTemplate = PluginUtils.templateFromString("${refAA}_${codon}_${mutAA}", pluginConfigContext.getFreemarkerConfiguration());
+		} catch(ParseException pe) {
+			throw new RuntimeException(pe);
+		}
+		generatedVariationNameTemplate = Optional.ofNullable(
+				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, GENERATED_VARIATION_NAME_TEMPLATE, false))
+				.orElse(defaultTemplate);
+		generatedVariationPercentThreshold = PluginUtils.configureDoubleProperty(configElem, GENERATED_VARIATION_PERCENT_THRESHOLD, 1.0);
 		
 	}
 
@@ -294,7 +334,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			CommandContext cmdContext, String alignmentName,
 			boolean recursive, Optional<Expression> whereClause, 
 			String referenceName, 
-			String featureName) {
+			String featureName,
+			boolean excludeX) {
 		
 		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		if(feature.isInformational()) {
@@ -426,13 +467,17 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			int totalMembers = mutFreqSummary.totalMembers;
 			String refValue = mutFreqSummary.refValue;
 			mutFreqSummary.mutationMembers.forEach((mutValue, mutMembers) -> {
-				Map<String, Object> row = new LinkedHashMap<String, Object>();
-				row.put(SingleAlignmentAnalysisResult.CODON, index);
-				row.put(SingleAlignmentAnalysisResult.REF_AMINO_ACID, refValue);
-				row.put(SingleAlignmentAnalysisResult.MUT_AMINO_ACID, mutValue);
-				row.put(SingleAlignmentAnalysisResult.TOTAL_MEMBERS, totalMembers);
-				row.put(SingleAlignmentAnalysisResult.MUTATION_MEMBERS, mutMembers);
-				rowData.add(row);
+				if(excludeX && mutValue.equals("X")) {
+					return;
+				} else {
+					Map<String, Object> row = new LinkedHashMap<String, Object>();
+					row.put(SingleAlignmentAnalysisResult.CODON, index);
+					row.put(SingleAlignmentAnalysisResult.REF_AMINO_ACID, refValue);
+					row.put(SingleAlignmentAnalysisResult.MUT_AMINO_ACID, mutValue);
+					row.put(SingleAlignmentAnalysisResult.TOTAL_MEMBERS, totalMembers);
+					row.put(SingleAlignmentAnalysisResult.MUTATION_MEMBERS, mutMembers);
+					rowData.add(row);
+				}
 			});
 			
 		});
@@ -483,7 +528,72 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			}).collect(Collectors.toList());
 		return seqResults;
 	}
+
+	public PreviewVariationsResult previewVariations(
+			CommandContext cmdContext, String alignmentName, boolean recursive,
+			Optional<Expression> whereClause, String referenceName,
+			String featureName) {
+		SingleAlignmentAnalysisResult analysisResult = doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName, true);
+		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
+		final String vcats;
+		if(!generatedVariationCategories.isEmpty()) {
+			vcats = String.join(", ", generatedVariationCategories);
+		} else {
+			vcats = null;
+		}
+		analysisResult.asListOfMaps().forEach(analysisRow -> {
+			Integer mutationMembers = (Integer) analysisRow.get(SingleAlignmentAnalysisResult.MUTATION_MEMBERS);
+			Integer totalMembers = (Integer) analysisRow.get(SingleAlignmentAnalysisResult.TOTAL_MEMBERS);
+			if( ( (double) mutationMembers / (double) totalMembers ) * 100.0 < generatedVariationPercentThreshold ) {
+				return;
+			}
+			TemplateHashModel variableResolver = new TemplateHashModel() {
+				@Override
+				public TemplateModel get(String key) {
+					Object object = analysisRow.get(key);
+					return object == null ? null : new SimpleScalar(object.toString());
+				}
+				@Override
+				public boolean isEmpty() { return false; }
+			};
+			StringWriter stringWriter = new StringWriter();
+			try {
+				generatedVariationNameTemplate.process(variableResolver, stringWriter);
+			} catch (TemplateException te) {
+				throw new MutationFrequenciesException(te, 
+						MutationFrequenciesException.Code.VARIATION_NAME_TEMPLATE_FAILED, te.getLocalizedMessage());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			Map<String, Object> row = new LinkedHashMap<String, Object>();
+			row.put(PreviewVariationsResult.VARIATION_NAME, stringWriter.toString());
+			row.put(PreviewVariationsResult.REF_START, analysisRow.get(SingleAlignmentAnalysisResult.CODON));
+			row.put(PreviewVariationsResult.REF_END, analysisRow.get(SingleAlignmentAnalysisResult.CODON));
+			row.put(PreviewVariationsResult.REGEX, "["+
+					( (String) analysisRow.get(SingleAlignmentAnalysisResult.MUT_AMINO_ACID) ) + "]");
+			row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
+			row.put(PreviewVariationsResult.VARIATION_CATEGORIES, vcats);
+			rowData.add(row);
+		});
+		return new PreviewVariationsResult(rowData);
+	}
+
+	public List<String> getGeneratedVariationCategories() {
+		return generatedVariationCategories;
+	}
 	
 	
+	@CommandClass( 
+			commandWords={"show", "configuration"}, 
+			docoptUsages={},
+			description="Show the current configuration of this reporter") 
+	public static class ShowMutationFrequenciesReporterCommand extends ShowConfigCommand<MutationFrequenciesReporter> {}
+
+	
+	@SimpleConfigureCommandClass(
+			propertyNames={ALIGNER_MODULE_NAME, GENERATED_VARIATION_NAME_TEMPLATE, GENERATED_VARIATION_PERCENT_THRESHOLD}
+	)
+	public static class ConfigureMutationFrequenciesReporterCommand extends SimpleConfigureCommand<MutationFrequenciesReporter> {}
+
 	
 }

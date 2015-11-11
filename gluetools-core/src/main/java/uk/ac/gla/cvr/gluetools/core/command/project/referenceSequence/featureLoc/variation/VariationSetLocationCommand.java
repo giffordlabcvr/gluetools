@@ -28,8 +28,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"this variation which has its own codon numbering.") 
 public class VariationSetLocationCommand extends VariationModeCommand<OkResult> {
 
-	private static final String REF_END = "refEnd";
-	private static final String REF_START = "refStart";
+	public static final String REF_END = "refEnd";
+	public static final String REF_START = "refStart";
 	
 	private Integer refStart;
 	private Integer refEnd;

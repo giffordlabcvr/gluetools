@@ -20,25 +20,25 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 @CommandClass( 
 		commandWords={"set","pattern"}, 
 		docoptUsages={"[-t <type>] <regex>"},
-		docoptOptions={"-t <type>, --transcriptionType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
+		docoptOptions={"-t <type>, --translationType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Set the variation's regular expression and type",
 		furtherHelp="The <type> of the variation defines whether the regular expression pttern is matched against the "+
 		"nucleotides in the sequence or against the amino acid translation.") 
 public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 
-	public static final String TRANSCRIPTION_TYPE = "transcriptionType";
+	public static final String TRANSLATION_TYPE = "translationType";
 	public static final String REGEX = "regex";
 	
-	private TranslationFormat transcriptionFormat;
+	private TranslationFormat translationFormat;
 	private Pattern regex;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		transcriptionFormat = Optional.ofNullable(
-				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSCRIPTION_TYPE, false)).
+		translationFormat = Optional.ofNullable(
+				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSLATION_TYPE, false)).
 				orElse(TranslationFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
 	}
@@ -46,7 +46,7 @@ public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		Variation variation = lookupVariation(cmdContext);
-		variation.setTranscriptionType(transcriptionFormat.name());
+		variation.setTranscriptionType(translationFormat.name());
 		variation.setRegex(regex.pattern());
 		cmdContext.commit();
 		return new UpdateResult(Variation.class, 1);

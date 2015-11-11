@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 @GlueDataClass(defaultListColumns = {_Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY})
 public class Variation extends _Variation {
 
-	private TranslationFormat transcriptionFormat;
+	private TranslationFormat translationFormat;
 	private Pattern regexPattern;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -48,14 +48,14 @@ public class Variation extends _Variation {
 		return pkMap(getFeatureLoc().getReferenceSequence().getName(), getFeatureLoc().getFeature().getName(), getName());
 	}
 	
-	public TranslationFormat getTranscriptionFormat() {
-		if(transcriptionFormat == null) {
-			transcriptionFormat = buildTranscriptionFormat();
+	public TranslationFormat getTranslationFormat() {
+		if(translationFormat == null) {
+			translationFormat = buildTranslationFormat();
 		}
-		return transcriptionFormat;
+		return translationFormat;
 	}
 	
-	private TranslationFormat buildTranscriptionFormat() {
+	private TranslationFormat buildTranslationFormat() {
 		return TranslationUtils.transcriptionFormatFromString(getTranscriptionType());
 	}	
 
@@ -86,7 +86,7 @@ public class Variation extends _Variation {
 					refSeq.getName(), feature.getName(), getName());
 		}
 		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
-		TranslationFormat transcriptionFormat = getTranscriptionFormat();
+		TranslationFormat transcriptionFormat = getTranslationFormat();
 		if(transcriptionFormat == TranslationFormat.NUCLEOTIDE) {
 			if(!ReferenceSegment.covers(featureLocSegments, 
 					Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
@@ -122,7 +122,7 @@ public class Variation extends _Variation {
 	public VariationDocument getVariationDocument() {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
-				getRegexPattern(), getDescription(), getTranscriptionFormat());
+				getRegexPattern(), getDescription(), getTranslationFormat());
 	}
 	
 }
