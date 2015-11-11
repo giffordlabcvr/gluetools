@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
@@ -49,11 +50,14 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 @CommandClass(
 		commandWords={"compute", "alignment"}, 
 		description = "Align member segments using an aligner module", 
-		docoptUsages = {"<alignmentName> <alignerModuleName> [-w <whereClause>]"}, 
-		docoptOptions = {"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned"},
+		docoptUsages = {"<alignmentName> <alignerModuleName> [-w <whereClause>] [-b <batchSize>]"}, 
+		docoptOptions = {
+				"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned",
+				"-b <batchSize>, --batchSize <batchSize>        Re-alignment batch size"},
 		metaTags={CmdMeta.updatesDatabase},
 		furtherHelp = "Computes the aligned segments of certain members of the specified alignment, using a given aligner module. "+
-		"If <whereClause> is not specified, all members of the alignment are re-aligned."+
+		"If <whereClause> is not specified, all members of the alignment are re-aligned. "+
+		"Alignment members are aligned in batches, according to <batchSize>. Default <batchSize> is 50."+
 		" Example: compute alignment AL1 blastAligner -w \"sequence.GENOTYPE = 4\""
 )
 public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignmentCommand.ComputeAlignmentResult> {
@@ -61,10 +65,12 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	public static final String WHERE_CLAUSE = "whereClause";
+	public static final String BATCH_SIZE = "batchSize";
 	
 	private String alignmentName;
 	private String alignerModuleName;
 	private Expression whereClause;
+	private int batchSize;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -72,6 +78,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
 		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
+		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(50);
 	}
 	
 
@@ -86,18 +93,38 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		// get the original data for the reference sequence
 		// modify the aligned segments and generate alignment results results for each selected member.
 		List<Map<String, Object>> resultListOfMaps = 
-				getAllAlignResults(cmdContext, memberIDs, refName);
+				getAllAlignResults(cmdContext, new ArrayList<Map<String,Object>>(memberIDs), refName);
 		return new ComputeAlignmentResult(resultListOfMaps);
 	}
 
 
 	private <R extends AlignerResult, C extends Command<R>> List<Map<String, Object>> getAllAlignResults(
-			CommandContext cmdContext, List<Map<String, Object>> memberIDs, String refName) {
+			CommandContext cmdContext, ArrayList<Map<String, Object>> memberIDs, String refName) {
 		// get the align command's class for the module.
 		Class<C> alignCommandClass = getAlignCommandClass(cmdContext);
+		
+		int membersAligned = 0;
+		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
+		
+		while(membersAligned < memberIDs.size()) {
+			int nextMembersAligned = Math.min(membersAligned+batchSize, memberIDs.size());
+			List<Map<String, Object>> membersBatch = memberIDs.subList(membersAligned, nextMembersAligned);
+			getBatchResult(cmdContext, membersBatch, refName, alignCommandClass, resultListOfMaps);
+			membersAligned = nextMembersAligned;
+			GlueLogger.getGlueLogger().finest("Aligned "+membersAligned+" members");
+			cmdContext.newObjectContext();
+		}
+		return resultListOfMaps;
+	}
+
+
+	private <R extends AlignerResult, C extends Command<R>> void getBatchResult(
+			CommandContext cmdContext,
+			List<Map<String, Object>> memberIDs, String refName,
+			Class<C> alignCommandClass,
+			List<Map<String, Object>> resultListOfMaps) {
 		Map<String,String> queryIdToNucleotides = getMembersNtMap(cmdContext, memberIDs);
 		R alignerResult = getAlignerResult(cmdContext, alignCommandClass, refName, queryIdToNucleotides);
-		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
 		Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = alignerResult.getQueryIdToAlignedSegments();
 		for(Map<String, Object> memberIDmap: memberIDs) {
 			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
@@ -108,7 +135,6 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 					memberSourceName, memberSeqId, memberAlignedSegments);
 			resultListOfMaps.add(memberResultMap);
 		}
-		return resultListOfMaps;
 	}
 
 	private <R extends AlignerResult, C extends Command<R>> R getAlignerResult(
