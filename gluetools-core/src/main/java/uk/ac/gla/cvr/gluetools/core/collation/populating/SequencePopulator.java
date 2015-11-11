@@ -1,11 +1,18 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating;
 
+import java.util.Collections;
 import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.UnsetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 
 public abstract class SequencePopulator<P extends ModulePlugin<P>> extends ModulePlugin<P> {
@@ -34,13 +41,36 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 	public static FieldUpdateResult runSetFieldCommand(CommandContext cmdContext,
 			FieldPopulator fieldPopulator, String fieldValue, boolean noCommit) {
 		String fieldName = fieldPopulator.getFieldName();
-		UpdateResult updateResult = cmdContext.cmdBuilder(SetFieldCommand.class)
-			.set(SetFieldCommand.FIELD_NAME, fieldName)
-			.set(SetFieldCommand.FIELD_VALUE, fieldValue)
-			.set(SetFieldCommand.OVERWRITE, fieldPopulator.getOverwrite())
-			.set(SetFieldCommand.FORCE_UPDATE, fieldPopulator.getForceUpdate())
-			.set(SetFieldCommand.NO_COMMIT, noCommit)
-			.execute();
+		boolean overwriteExistingNonNull = fieldPopulator.overwriteExistingNonNull();
+		boolean overwriteWithNewNull = fieldPopulator.overwriteWithNewNull();
+		
+		if(!overwriteExistingNonNull) {
+			SequenceMode sequenceMode = SequenceModeCommand.getSequenceMode(cmdContext);
+			Project project = sequenceMode.getProject();
+			project.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
+			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
+					Sequence.pkMap(sequenceMode.getSourceName(), sequenceMode.getSequenceID()));
+			Object oldValue = sequence.readProperty(fieldName);
+			if(oldValue != null) {
+				return new FieldUpdateResult(false, fieldName, fieldValue);
+			}
+		}
+		if(!overwriteWithNewNull && fieldValue == null) {
+			return new FieldUpdateResult(false, fieldName, fieldValue);
+		}
+		UpdateResult updateResult;
+		if(fieldValue == null) {
+			updateResult = cmdContext.cmdBuilder(UnsetFieldCommand.class)
+					.set(UnsetFieldCommand.FIELD_NAME, fieldName)
+					.set(UnsetFieldCommand.NO_COMMIT, noCommit)
+					.execute();
+		} else {
+			updateResult = cmdContext.cmdBuilder(SetFieldCommand.class)
+					.set(SetFieldCommand.FIELD_NAME, fieldName)
+					.set(SetFieldCommand.FIELD_VALUE, fieldValue)
+					.set(SetFieldCommand.NO_COMMIT, noCommit)
+					.execute();
+		}
 		if(updateResult.getNumber() == 1) {
 			return new FieldUpdateResult(true, fieldName, fieldValue);
 		}

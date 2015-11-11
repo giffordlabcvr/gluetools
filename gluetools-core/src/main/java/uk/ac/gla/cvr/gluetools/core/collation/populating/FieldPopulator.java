@@ -19,11 +19,11 @@ public interface FieldPopulator {
 		return null;
 	}
 	
-	public default boolean getOverwrite() {
-		return false;
+	public default boolean overwriteExistingNonNull() {
+		return true;
 	}
 
-	public default boolean getForceUpdate() {
+	public default boolean overwriteWithNewNull() {
 		return false;
 	}
 }

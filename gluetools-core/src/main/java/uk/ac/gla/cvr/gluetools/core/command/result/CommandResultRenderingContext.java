@@ -19,4 +19,6 @@ public interface CommandResultRenderingContext {
 	public InputStream getInputStream();
 	
 	public boolean interactiveTables();
+	
+	public Integer floatDecimalPlacePrecision();
 }

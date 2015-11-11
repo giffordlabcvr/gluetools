@@ -180,7 +180,7 @@ public class TableResult extends CommandResult {
 		int numFound = listOfMaps.size();
 		ArrayList<TablePage> tablePages = new ArrayList<TablePage>();
 
-		ArrayList<Map<String,String>> renderedRows = renderAll(listOfMaps);
+		ArrayList<Map<String,String>> renderedRows = renderAll(renderCtx, listOfMaps);
 		
 		Set<String> columnsWhichAllowSpaces = new LinkedHashSet<String>(headers);
 		Map<String, Integer> widths = establishWidths(headers, renderCtx, renderedRows, columnsWhichAllowSpaces);
@@ -267,11 +267,11 @@ public class TableResult extends CommandResult {
 		return widths;
 	}
 
-	private static ArrayList<Map<String, String>> renderAll(List<Map<String, Object>> listOfMaps) {
+	private static ArrayList<Map<String, String>> renderAll(CommandResultRenderingContext renderCtx, List<Map<String, Object>> listOfMaps) {
 		return listOfMaps.stream()
 			.map(unrendered -> {
 				Map<String, String> rendered = new LinkedHashMap<String, String>();
-				unrendered.forEach((k,v) -> {rendered.put(k, renderValue(v));});
+				unrendered.forEach((k,v) -> {rendered.put(k, renderValue(v, renderCtx));});
 				return rendered; })
 			.collect(Collectors.toCollection(() -> new ArrayList<Map<String, String>>(listOfMaps.size())));
 	}
@@ -286,10 +286,17 @@ public class TableResult extends CommandResult {
 	public void updatePreferred(Map<String, Integer> preferredWidths, String header, String content) {
 	}
 	
-	private static String renderValue(Object value) {
+	private static String renderValue(Object value, CommandResultRenderingContext renderCtx) {
 		String cString;
 		if(value == null) {
 			cString = "-";
+		} else if(value instanceof Double) {
+			Integer precision = renderCtx.floatDecimalPlacePrecision();
+			if(precision != null) {
+				cString = String.format("%."+precision.intValue()+"f", ((Double) value).doubleValue());
+			} else {
+				cString = value.toString();
+			}
 		} else {
 			cString = value.toString();
 		}
@@ -330,7 +337,7 @@ public class TableResult extends CommandResult {
 			buf = new StringBuffer();
 			for(int i = 0; i < columnHeaders.size(); i++) {
 				String header = columnHeaders.get(i);
-				buf.append(renderValue(rowData.get(header)));
+				buf.append(renderValue(rowData.get(header), renderCtx));
 				if(i < columnHeaders.size() - 1) {
 					buf.append(delimiter);
 				}

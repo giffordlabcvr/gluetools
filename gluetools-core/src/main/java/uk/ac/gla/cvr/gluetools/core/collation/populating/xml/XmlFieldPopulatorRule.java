@@ -25,14 +25,14 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 	private Pattern nullRegex;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters;
-	private Boolean overwrite;
-	private Boolean forceUpdate;
+	private Boolean overwriteExistingNonNull;
+	private Boolean overwriteWithNewNull;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
 		fieldName = PluginUtils.configureString(configElem, "@fieldName", true);
-		overwrite = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwrite", false)).orElse(false);
-		forceUpdate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "forceUpdate", false)).orElse(false);
+		overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
+		overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
 		nullRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
 				orElse(Pattern.compile(DEFAULT_NULL_REGEX));
@@ -80,12 +80,12 @@ public class XmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, F
 	}
 
 	@Override
-	public boolean getOverwrite() {
-		return overwrite;
+	public boolean overwriteExistingNonNull() {
+		return overwriteExistingNonNull;
 	}
 
 	@Override
-	public boolean getForceUpdate() {
-		return forceUpdate;
+	public boolean overwriteWithNewNull() {
+		return overwriteWithNewNull;
 	}
 }

@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -17,31 +18,42 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"unset", "field"}, 
-	docoptUsages={"<fieldName>"},
+	docoptUsages={"[-C] <fieldName>"},
+	docoptOptions={
+		"-C, --noCommit     Don't commit to the database [default: false]",
+	},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Unset a field value for the sequence", 
 	furtherHelp="After the command has executed, the sequence will have no value for the specified field.") 
-public class UnsetFieldCommand extends SequenceModeCommand<OkResult> {
+public class UnsetFieldCommand extends SequenceModeCommand<UpdateResult> {
 
 	public static final String FIELD_NAME = "fieldName";
+	public static final String NO_COMMIT = "noCommit";
 	
 	private String fieldName;
+	private Boolean noCommit;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
 
 
 	@Override
-	public OkResult execute(CommandContext cmdContext) {
+	public UpdateResult execute(CommandContext cmdContext) {
 		getSequenceMode(cmdContext).getProject()
 		.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
 		Sequence sequence = lookupSequence(cmdContext);
-		sequence.writeProperty(fieldName, null);
-		cmdContext.commit();
-		return CommandResult.OK;
+		Object oldValue = sequence.readProperty(fieldName);
+		if(oldValue != null) {
+			sequence.writeProperty(fieldName, null);
+		}
+		if(!noCommit) {
+			cmdContext.commit();
+		}
+		return new UpdateResult(Sequence.class, oldValue == null ? 0 : 1);
 	}
 
 	@CompleterClass

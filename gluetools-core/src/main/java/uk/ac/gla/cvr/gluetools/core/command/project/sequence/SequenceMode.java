@@ -37,5 +37,15 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Inside
 	public Project getProject() {
 		return project;
 	}
+
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	public String getSequenceID() {
+		return sequenceID;
+	}
+	
+	
 	
 }

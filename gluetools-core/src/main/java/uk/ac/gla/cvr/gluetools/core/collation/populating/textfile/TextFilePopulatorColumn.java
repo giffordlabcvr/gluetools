@@ -28,8 +28,8 @@ public class TextFilePopulatorColumn implements Plugin, FieldPopulator {
 	private Pattern nullRegex;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters;
-	private Boolean overwrite;
-	private Boolean forceUpdate;
+	private Boolean overwriteExistingNonNull;
+	private Boolean overwriteWithNewNull;
 
 	
 	@Override
@@ -48,8 +48,8 @@ public class TextFilePopulatorColumn implements Plugin, FieldPopulator {
 		if(!header.isPresent() && !number.isPresent()) {
 			header = Optional.of(fieldName);
 		}
-		overwrite = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwrite", false)).orElse(false);
-		forceUpdate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "forceUpdate", false)).orElse(false);
+		overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
+		overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
 		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 				PluginUtils.findConfigElements(configElem, "valueConverter"));
 		mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
@@ -89,13 +89,13 @@ public class TextFilePopulatorColumn implements Plugin, FieldPopulator {
 	}
 	
 	@Override
-	public boolean getOverwrite() {
-		return overwrite;
+	public boolean overwriteExistingNonNull() {
+		return overwriteExistingNonNull;
 	}
 
 	@Override
-	public boolean getForceUpdate() {
-		return forceUpdate;
+	public boolean overwriteWithNewNull() {
+		return overwriteWithNewNull;
 	}
 
 }

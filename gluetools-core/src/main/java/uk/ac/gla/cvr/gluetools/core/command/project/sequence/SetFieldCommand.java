@@ -18,29 +18,20 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"set", "field"}, 
-	docoptUsages={"[-o] [-f] [-n] <fieldName> <fieldValue>"},
+	docoptUsages={"[-C] <fieldName> <fieldValue>"},
 	docoptOptions={
-			"-o, --overwrite    Overwrite non-null existing value [default: false]", 
-			"-f, --forceUpdate  Force update, includes setting null [default: false]", 
-			"-n, --noCommit     Don't commit to the database [default: false]",
+			"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Set a field value for the sequence", 
-	furtherHelp=
-		"Unless --overwrite is used, if the field already has a non-null value, no update will take place. "+
-		"By default the command will overwrite any existing value.") 
+	description="Set a field value for the sequence") 
 public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String FIELD_VALUE = "fieldValue";
-	public static final String OVERWRITE = "overwrite";
-	public static final String FORCE_UPDATE = "forceUpdate";
 	public static final String NO_COMMIT = "noCommit";
 	
 	private String fieldName;
 	private String fieldValue;
-	private Boolean overwrite;
-	private Boolean forceUpdate;
 	private Boolean noCommit;
 	
 	@Override
@@ -48,8 +39,6 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 		super.configure(pluginConfigContext, configElem);
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
 		fieldValue = PluginUtils.configureStringProperty(configElem, FIELD_VALUE, true);
-		overwrite = PluginUtils.configureBooleanProperty(configElem, OVERWRITE, true);
-		forceUpdate = PluginUtils.configureBooleanProperty(configElem, FORCE_UPDATE, true);
 		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
 
@@ -59,19 +48,13 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 		Project project = getSequenceMode(cmdContext).getProject();
 		project.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
 		Sequence sequence = lookupSequence(cmdContext);
-		Field field = project.getSequenceField(fieldName);
 		Object oldValue = sequence.readProperty(fieldName);
+		Field field = project.getSequenceField(fieldName);
 		Object newValue = field.getFieldType().getFieldTranslator().valueFromString(fieldValue);
 		if(oldValue != null && newValue != null && oldValue.equals(newValue)) {
 			return new UpdateResult(Sequence.class, 0);
 		}
 		if(oldValue == null && newValue == null) {
-			return new UpdateResult(Sequence.class, 0);
-		}
-		if(oldValue != null && !overwrite) {
-			return new UpdateResult(Sequence.class, 0);
-		}
-		if(newValue == null && !forceUpdate) {
 			return new UpdateResult(Sequence.class, 0);
 		}
 		sequence.writeProperty(fieldName, newValue);

@@ -581,5 +581,15 @@ public class Console implements CommandResultRenderingContext
 		return batchContextStack.isEmpty() // don't use interactive tables in batch mode.
 				&& commandContext.getOptionValue(ConsoleOption.INTERACTIVE_TABLES).equals("true");
 	}
+
+	@Override
+	public Integer floatDecimalPlacePrecision() {
+		String optionValue = commandContext.getOptionValue(ConsoleOption.TABLE_RESULT_DOUBLE_PRECISION);
+		if(optionValue.equals("full")) {
+			return null;
+		} else {
+			return Integer.parseInt(optionValue);
+		}
+	}
 	
 }
