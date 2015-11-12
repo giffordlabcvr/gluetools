@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
+import java.util.Map;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -38,12 +40,18 @@ public class VariationAddCategoryCommand extends VariationModeCommand<CreateResu
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		VariationCategory vcat = GlueDataObject.lookup(cmdContext, VariationCategory.class, VariationCategory.pkMap(vcatName));
-		VcatMembership vcatMembership = GlueDataObject.create(cmdContext, VcatMembership.class, 
-				VcatMembership.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), vcat.getName()), false);
-		vcatMembership.setCategory(vcat);
-		vcatMembership.setVariation(lookupVariation(cmdContext));
-		cmdContext.commit();
-		return new CreateResult(VcatMembership.class, 1);
+		Map<String, String> vcatPkMap = VcatMembership.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), vcat.getName());
+		VcatMembership vcatMembership = GlueDataObject.lookup(cmdContext, VcatMembership.class, 
+				vcatPkMap, true);
+		if(vcatMembership == null) {
+			vcatMembership = GlueDataObject.create(cmdContext, VcatMembership.class, vcatPkMap, false);
+			vcatMembership.setCategory(vcat);
+			vcatMembership.setVariation(lookupVariation(cmdContext));
+			cmdContext.commit();
+			return new CreateResult(VcatMembership.class, 1);
+		} else {
+			return new CreateResult(VcatMembership.class, 0);
+		}
 	
 	}
 

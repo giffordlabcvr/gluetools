@@ -396,6 +396,10 @@ public class SequenceFeatureResult {
 		return aaReferenceDifferenceNotes;
 	}
 
+	public List<VariationNote> getAaVariationNotes() {
+		return aaVariationNotes;
+	}
+
 	
 	
 	

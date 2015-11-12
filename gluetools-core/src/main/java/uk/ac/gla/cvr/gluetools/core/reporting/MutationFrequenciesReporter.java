@@ -42,15 +42,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatu
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult;
+import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentAnalysisCommand.AlignmentAnalysisResult;
 import uk.ac.gla.cvr.gluetools.core.reporting.TransientAnalysisCommand.TransientAnalysisResult;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
+import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -83,7 +86,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	
 	public MutationFrequenciesReporter() {
 		addProvidedCmdClass(TransientAnalysisCommand.class);
-		addProvidedCmdClass(SingleAlignmentAnalysisCommand.class);
+		addProvidedCmdClass(AlignmentAnalysisCommand.class);
 		addProvidedCmdClass(GenerateVariationsCommand.class);
 		addProvidedCmdClass(PreviewVariationsCommand.class);
 		addProvidedCmdClass(ShowMutationFrequenciesReporterCommand.class);
@@ -331,9 +334,10 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		throw new MutationFrequenciesException(MutationFrequenciesException.Code.UNABLE_TO_DETECT_ALIGNMENT_NAME, header);
 	}
 
-	public SingleAlignmentAnalysisResult doSingleAlignmentAnalysis(
+	public AlignmentAnalysisResult doSingleAlignmentAnalysis(
 			CommandContext cmdContext, String alignmentName,
 			boolean recursive, Optional<Expression> whereClause, 
+			String excludeVcatName,
 			String referenceName, 
 			String featureName,
 			boolean excludeX) {
@@ -441,10 +445,18 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			}
 		}
 		
+		
 		for(SequenceResult seqResult: seqResults) {
 			for(SequenceAlignmentResult seqAlmtResult : seqResult.seqAlignmentResults) {
 				if(seqAlmtResult.getReferenceName().equals(referenceName)) {
 					SequenceFeatureResult sequenceFeatureResult = seqAlmtResult.getSequenceFeatureResult(featureName);
+
+					// compute those AA locations where a variation is excluded from the results because it belongs to an excluded
+					// variation category.
+					Set<Integer> excludedVariationCategoryPositions = 
+							computeExcludedVariationCategoryPositions(cmdContext, 
+									referenceName, featureName, sequenceFeatureResult, excludeVcatName);
+
 					List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = sequenceFeatureResult.getAaReferenceDifferenceNotes();
 					for(ReferenceDifferenceNote refDiffNote: aaReferenceDifferenceNotes) {
 						CharSequence mask = refDiffNote.getMask();
@@ -452,9 +464,11 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 						for(int i = refDiffNote.getRefStart(); i <= refDiffNote.getRefEnd(); i++) {
 							MutationFrequencySummary mutFreqSummary = indexToMutationFreqSummary.get(i);
 							mutFreqSummary.totalMembers = mutFreqSummary.totalMembers+1;
-							char memberValue = mask.charAt(maskIndex);
-							if(memberValue != '-') {
-								mutFreqSummary.mutationMembers.compute(new String(new char[]{memberValue}), (k, v) -> v == null ? 1 : v+1);
+							if(!excludedVariationCategoryPositions.contains(i)) {
+								char memberValue = mask.charAt(maskIndex);
+								if(memberValue != '-') {
+									mutFreqSummary.mutationMembers.compute(new String(new char[]{memberValue}), (k, v) -> v == null ? 1 : v+1);
+								}
 							}
 							maskIndex++;
 						}
@@ -472,19 +486,42 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 					return;
 				} else {
 					Map<String, Object> row = new LinkedHashMap<String, Object>();
-					row.put(SingleAlignmentAnalysisResult.CODON, index);
-					row.put(SingleAlignmentAnalysisResult.REF_AMINO_ACID, refValue);
-					row.put(SingleAlignmentAnalysisResult.MUT_AMINO_ACID, mutValue);
-					row.put(SingleAlignmentAnalysisResult.TOTAL_MEMBERS, totalMembers);
-					row.put(SingleAlignmentAnalysisResult.MUTATION_MEMBERS, mutMembers);
+					row.put(AlignmentAnalysisResult.CODON, index);
+					row.put(AlignmentAnalysisResult.REF_AMINO_ACID, refValue);
+					row.put(AlignmentAnalysisResult.MUT_AMINO_ACID, mutValue);
+					row.put(AlignmentAnalysisResult.TOTAL_MEMBERS, totalMembers);
+					row.put(AlignmentAnalysisResult.MUTATION_MEMBERS, mutMembers);
 					rowData.add(row);
 				}
 			});
 			
 		});
-		return new SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult(rowData);
+		return new AlignmentAnalysisCommand.AlignmentAnalysisResult(rowData);
 	}
 	
+	private Set<Integer> computeExcludedVariationCategoryPositions(
+			CommandContext cmdContext,
+			String referenceName, String featureName,
+			SequenceFeatureResult sequenceFeatureResult, String excludeVcatName) {
+		LinkedHashSet<Integer> excludedVariationCategoryPositions = new LinkedHashSet<Integer>();
+		if(excludeVcatName != null) {
+			VariationCategory excludedVcat = GlueDataObject.lookup(cmdContext, VariationCategory.class, VariationCategory.pkMap(excludeVcatName));
+			List<VariationNote> aaVariationNotes = sequenceFeatureResult.getAaVariationNotes();
+			for(VariationNote aaVariationNote: aaVariationNotes) {
+				Variation variation = GlueDataObject.lookup(cmdContext, Variation.class, 
+						Variation.pkMap(referenceName, featureName, aaVariationNote.getVariationName()));
+				boolean isExcluded = variation.getVcatMemberships().stream().anyMatch(vcm -> vcm.getCategory().getAncestors().contains(excludedVcat));
+				if(isExcluded) {
+					for(int i = aaVariationNote.getRefStart(); i <= aaVariationNote.getRefEnd(); i++) {
+						excludedVariationCategoryPositions.add(i);
+					}
+				}
+			}
+			
+		}
+		return excludedVariationCategoryPositions;
+	}
+
 	private static class MutationFrequencySummary {
 		String refValue;
 		Integer totalMembers = 0;
@@ -534,11 +571,11 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			CommandContext cmdContext, String alignmentName, boolean recursive,
 			Optional<Expression> whereClause, String referenceName,
 			String featureName) {
-		SingleAlignmentAnalysisResult analysisResult = doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName, true);
+		AlignmentAnalysisResult analysisResult = doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, null, referenceName, featureName, true);
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		analysisResult.asListOfMaps().forEach(analysisRow -> {
-			Integer mutationMembers = (Integer) analysisRow.get(SingleAlignmentAnalysisResult.MUTATION_MEMBERS);
-			Integer totalMembers = (Integer) analysisRow.get(SingleAlignmentAnalysisResult.TOTAL_MEMBERS);
+			Integer mutationMembers = (Integer) analysisRow.get(AlignmentAnalysisResult.MUTATION_MEMBERS);
+			Integer totalMembers = (Integer) analysisRow.get(AlignmentAnalysisResult.TOTAL_MEMBERS);
 			if( ( (double) mutationMembers / (double) totalMembers ) * 100.0 < generatedVariationPercentThreshold ) {
 				return;
 			}
@@ -562,10 +599,10 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			}
 			Map<String, Object> row = new LinkedHashMap<String, Object>();
 			row.put(PreviewVariationsResult.VARIATION_NAME, stringWriter.toString());
-			row.put(PreviewVariationsResult.REF_START, analysisRow.get(SingleAlignmentAnalysisResult.CODON));
-			row.put(PreviewVariationsResult.REF_END, analysisRow.get(SingleAlignmentAnalysisResult.CODON));
+			row.put(PreviewVariationsResult.REF_START, analysisRow.get(AlignmentAnalysisResult.CODON));
+			row.put(PreviewVariationsResult.REF_END, analysisRow.get(AlignmentAnalysisResult.CODON));
 			row.put(PreviewVariationsResult.REGEX, "["+
-					( (String) analysisRow.get(SingleAlignmentAnalysisResult.MUT_AMINO_ACID) ) + "]");
+					( (String) analysisRow.get(AlignmentAnalysisResult.MUT_AMINO_ACID) ) + "]");
 			row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
 			rowData.add(row);
 		});

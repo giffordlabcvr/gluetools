@@ -14,17 +14,19 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.SingleAlignmentAnalysisResult;
+import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentAnalysisCommand.AlignmentAnalysisResult;
 
 
 @CommandClass(
 		commandWords={"alignment", "analysis"}, 
 		description = "Analyse mutations for members of a single constrained alignment", 
-		docoptUsages = { "<alignmentName> [-r] [-X] [-w <whereClause>] <referenceName> <featureName>" }, 
+		docoptUsages = { "<alignmentName> [-r] [-X] [-w <whereClause>] [-c <vcatName>] <referenceName> <featureName>" }, 
 		docoptOptions = {
 				"-X, --excludeX                                 Exclude mutations to unknown amino acid",
+				"-c, --excludeVcat <vcatName>                   Exclude variations in a certain category",
 				"-r, --recursive                                Include members of descendent alignments",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify included members"},
 		furtherHelp = "The alignment named by <alignmentName> must be constrained to a reference. "+
@@ -41,11 +43,12 @@ import uk.ac.gla.cvr.gluetools.core.reporting.SingleAlignmentAnalysisCommand.Sin
 		"  alignment analysis AL_3 -w \"sequence.source.name = 'ncbi-curated'\" MREF NS3",
 		metaTags = {}	
 )
-public class SingleAlignmentAnalysisCommand 
-	extends ModuleProvidedCommand<SingleAlignmentAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+public class AlignmentAnalysisCommand 
+	extends ModuleProvidedCommand<AlignmentAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String EXCLUDE_X = "excludeX";
+	public static final String EXCLUDE_VCAT = "excludeVcat";
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String REFERENCE_NAME = "referenceName";
@@ -57,6 +60,7 @@ public class SingleAlignmentAnalysisCommand
 	private boolean recursive;
 	private boolean excludeX;
 	private Optional<Expression> whereClause;
+	private String excludeVcatName;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -66,21 +70,23 @@ public class SingleAlignmentAnalysisCommand
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		excludeX = PluginUtils.configureBooleanProperty(configElem, EXCLUDE_X, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
+		excludeVcatName = PluginUtils.configureStringProperty(configElem, EXCLUDE_VCAT, false);
 		referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		
 	}
 
 
 
 	@Override
-	protected SingleAlignmentAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {
-		return modulePlugin.doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName, 
+	protected AlignmentAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {
+		return modulePlugin.doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, excludeVcatName, referenceName, featureName, 
 				excludeX);
 	}
 
 	
 	
-	public static class SingleAlignmentAnalysisResult extends TableResult {
+	public static class AlignmentAnalysisResult extends TableResult {
 
 		public static final String REF_AMINO_ACID = "refAA"; // omit?
 		public static final String CODON = "codon";
@@ -89,7 +95,7 @@ public class SingleAlignmentAnalysisCommand
 		public static final String MUTATION_MEMBERS = "mutationMembers";
 		
 		
-		public SingleAlignmentAnalysisResult(List<Map<String, Object>> rowData) {
+		public AlignmentAnalysisResult(List<Map<String, Object>> rowData) {
 			super("singleAlignmentAnalysisResult", 
 					Arrays.asList(REF_AMINO_ACID, CODON, MUT_AMINO_ACID, MUTATION_MEMBERS, TOTAL_MEMBERS),
 					rowData);
@@ -98,6 +104,11 @@ public class SingleAlignmentAnalysisCommand
 	}
 
 	@CompleterClass
-	public static class Completer extends AlignmentAnalysisCommandCompleter {}
+	public static class Completer extends AlignmentAnalysisCommandCompleter {
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("vcatName", VariationCategory.class, VariationCategory.NAME_PROPERTY);
+		}
+	}
 	
 }
