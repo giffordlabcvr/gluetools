@@ -26,6 +26,7 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(ReferenceValidateCommand.class);
 		registerCommandClass(InheritFeatureLocationCommand.class);
+		registerCommandClass(ClearVariationCommand.class);
 
 		registerCommandClass(ExitCommand.class);
 	}

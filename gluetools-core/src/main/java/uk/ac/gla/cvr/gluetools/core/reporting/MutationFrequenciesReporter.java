@@ -66,8 +66,10 @@ import freemarker.template.TemplateModel;
 @PluginClass(elemName="mutationFrequenciesReporter")
 public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequenciesReporter> {
 
+	public static final String MERGE_GENERATED_VARIATIONS = "mergeGeneratedVariations";
 	public static final String GENERATED_VARIATION_PERCENT_THRESHOLD = "generatedVariationPercentThreshold";
 	public static final String GENERATED_VARIATION_NAME_TEMPLATE = "generatedVariationNameTemplate";
+
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	
 	// transient analysis related.
@@ -75,9 +77,9 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter;
 
 	// variation generation related
-	private List<String> generatedVariationCategories;
 	private Template generatedVariationNameTemplate;
 	private Double generatedVariationPercentThreshold;
+	private boolean mergeGeneratedVariations;
 	
 	public MutationFrequenciesReporter() {
 		addProvidedCmdClass(TransientAnalysisCommand.class);
@@ -97,8 +99,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		if(s2cMinorityVariantFilterElem != null) {
 			s2cMinorityVariantFilter.configure(pluginConfigContext, s2cMinorityVariantFilterElem);
 		}
-		
-		generatedVariationCategories = PluginUtils.configureStringsProperty(configElem, "generatedVariationCategory");
 		Template defaultTemplate = null;
 		try {
 			defaultTemplate = PluginUtils.templateFromString("${refAA}_${codon}_${mutAA}", pluginConfigContext.getFreemarkerConfiguration());
@@ -109,7 +109,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, GENERATED_VARIATION_NAME_TEMPLATE, false))
 				.orElse(defaultTemplate);
 		generatedVariationPercentThreshold = PluginUtils.configureDoubleProperty(configElem, GENERATED_VARIATION_PERCENT_THRESHOLD, 1.0);
-		
+		mergeGeneratedVariations = Optional.
+				ofNullable(PluginUtils.configureBooleanProperty(configElem, MERGE_GENERATED_VARIATIONS, false)).orElse(true);
 	}
 
 	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
@@ -535,12 +536,6 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			String featureName) {
 		SingleAlignmentAnalysisResult analysisResult = doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName, true);
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
-		final String vcats;
-		if(!generatedVariationCategories.isEmpty()) {
-			vcats = String.join(", ", generatedVariationCategories);
-		} else {
-			vcats = null;
-		}
 		analysisResult.asListOfMaps().forEach(analysisRow -> {
 			Integer mutationMembers = (Integer) analysisRow.get(SingleAlignmentAnalysisResult.MUTATION_MEMBERS);
 			Integer totalMembers = (Integer) analysisRow.get(SingleAlignmentAnalysisResult.TOTAL_MEMBERS);
@@ -572,17 +567,11 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			row.put(PreviewVariationsResult.REGEX, "["+
 					( (String) analysisRow.get(SingleAlignmentAnalysisResult.MUT_AMINO_ACID) ) + "]");
 			row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
-			row.put(PreviewVariationsResult.VARIATION_CATEGORIES, vcats);
 			rowData.add(row);
 		});
 		return new PreviewVariationsResult(rowData);
 	}
 
-	public List<String> getGeneratedVariationCategories() {
-		return generatedVariationCategories;
-	}
-	
-	
 	@CommandClass( 
 			commandWords={"show", "configuration"}, 
 			docoptUsages={},
@@ -595,5 +584,12 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	)
 	public static class ConfigureMutationFrequenciesReporterCommand extends SimpleConfigureCommand<MutationFrequenciesReporter> {}
 
+
+	public boolean mergeGeneratedVariations() {
+		return mergeGeneratedVariations;
+	}
+
+	
+	
 	
 }

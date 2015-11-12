@@ -44,7 +44,7 @@ public class Variation extends _Variation {
 	}
 
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getFeatureLoc().getReferenceSequence().getName(), getFeatureLoc().getFeature().getName(), getName());
 	}
 	

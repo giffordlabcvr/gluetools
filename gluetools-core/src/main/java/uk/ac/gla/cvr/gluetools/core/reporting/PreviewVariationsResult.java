@@ -13,13 +13,18 @@ public class PreviewVariationsResult extends TableResult {
 	public static final String REF_END = "refEnd";
 	public static final String REGEX = "regex";
 	public static final String TRANSLATION_FORMAT = "translationFormat";
-	public static final String VARIATION_CATEGORIES = "variationCategories";
 
 	public PreviewVariationsResult(List<Map<String, Object>> rowData) {
-		super("generateVariationsResult", 
-				Arrays.asList(VARIATION_NAME, REF_START, REF_END, REGEX, TRANSLATION_FORMAT, VARIATION_CATEGORIES), rowData);
+		super("previewVariationsResult", 
+				Arrays.asList(VARIATION_NAME, REF_START, REF_END, REGEX, TRANSLATION_FORMAT), rowData);
 	}
 
+	protected PreviewVariationsResult(String rootObjectName,
+			List<String> columnHeaders, List<Map<String, Object>> rowData) {
+		super(rootObjectName, columnHeaders, rowData);
+	}
+
+	
 	
 	
 }

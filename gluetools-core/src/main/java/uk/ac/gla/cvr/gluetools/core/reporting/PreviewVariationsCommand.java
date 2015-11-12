@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 		"  preview variations AL_3 -w \"sequence.source.name = 'ncbi-curated'\" MREF NS3",
 		metaTags = {}	
 )
-public class PreviewVariationsCommand extends VariationsCommand {
+public class PreviewVariationsCommand extends VariationsCommand<PreviewVariationsResult> {
 
 	@Override
 	protected PreviewVariationsResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {

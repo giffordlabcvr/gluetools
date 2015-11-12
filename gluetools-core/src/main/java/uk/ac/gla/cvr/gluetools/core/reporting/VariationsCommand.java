@@ -7,10 +7,11 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class VariationsCommand extends ModuleProvidedCommand<PreviewVariationsResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+public abstract class VariationsCommand<R extends CommandResult> extends ModuleProvidedCommand<R, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	
 	public static final String ALIGNMENT_NAME = "alignmentName";
