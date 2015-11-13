@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +13,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -25,9 +23,7 @@ public abstract class MultiSequenceFieldUpdateCommand extends ProjectModeCommand
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_SEQUENCES = "allSequences";
-	public static final String FIELD_NAME = "fieldName";
 
-	private String fieldName;
 	private Boolean allSequences;
 	private Optional<Expression> whereClause;
 	private int batchSize;
@@ -35,7 +31,6 @@ public abstract class MultiSequenceFieldUpdateCommand extends ProjectModeCommand
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
 		allSequences = PluginUtils.configureBooleanProperty(configElem, ALL_SEQUENCES, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
@@ -49,11 +44,8 @@ public abstract class MultiSequenceFieldUpdateCommand extends ProjectModeCommand
 	}
 
 	
-	@Override
-	public final UpdateResult execute(CommandContext cmdContext) {
-		Project project = getProjectMode(cmdContext).getProject();
-		project.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
 
+	protected final UpdateResult executeUpdates(CommandContext cmdContext) {
 		SelectQuery selectQuery = null;
 		if(whereClause.isPresent()) {
 			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
@@ -69,7 +61,7 @@ public abstract class MultiSequenceFieldUpdateCommand extends ProjectModeCommand
 		int numUpdated = 0;
 		for(Map<String, String> sPkMap: sequencePkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, sPkMap);
-			updateSequence(cmdContext, sequence, fieldName);
+			updateSequence(cmdContext, sequence);
 			numUpdated++;
 			if(numUpdated % batchSize == 0) {
 				cmdContext.commit();
@@ -83,6 +75,6 @@ public abstract class MultiSequenceFieldUpdateCommand extends ProjectModeCommand
 		return new UpdateResult(Sequence.class, numUpdated);
 	}
 
-	protected abstract void updateSequence(CommandContext cmdContext, Sequence sequence, String fieldName);
+	protected abstract void updateSequence(CommandContext cmdContext, Sequence sequence);
 	
 }

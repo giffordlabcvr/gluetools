@@ -69,17 +69,19 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 	public abstract static class SequenceFieldNameCompleter extends AdvancedCmdCompleter {
 		public SequenceFieldNameCompleter() {
 			super();
-			registerVariableInstantiator("fieldName", new VariableInstantiator() {
-				@Override
-				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
-						Map<String, Object> bindings, String prefix) {
-					return 
-							getProjectMode(cmdContext).getProject().getCustomSequenceFieldNames()
-							.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
-				}
-			});
+			registerVariableInstantiator("fieldName", new SequenceFieldInstantiator());
+		}
+	}
+	
+	public static class SequenceFieldInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(
+				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			return 
+					getProjectMode(cmdContext).getProject().getCustomSequenceFieldNames()
+					.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 	}
 
