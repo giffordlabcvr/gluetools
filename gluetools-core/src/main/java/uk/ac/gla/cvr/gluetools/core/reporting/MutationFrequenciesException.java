@@ -18,7 +18,8 @@ public class MutationFrequenciesException extends GlueException {
 		FEATURE_IS_INFORMATIONAL("featureName"),
 		FEATURE_IS_NOT_IN_ANY_ORF("featureName"), 
 		VARIATION_NAME_TEMPLATE_FAILED("errorTxt"), 
-		VARIATION_CANNOT_BE_MERGED("referenceName", "featureName", "variationName");
+		VARIATION_CANNOT_BE_MERGED("referenceName", "featureName", "variationName"), 
+		CODON_IS_NOT_IN_FEATURE_LOCATION("referenceName", "featureName", "codon");
 
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowAnces
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowFeatureTreeCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -58,6 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import freemarker.core.ParseException;
@@ -89,7 +91,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		addProvidedCmdClass(TransientAnalysisCommand.class);
 		addProvidedCmdClass(AlignmentAnalysisCommand.class);
 		addProvidedCmdClass(AlignmentVariationScanCommand.class);
-		addProvidedCmdClass(GenerateVariationsCommand.class);
+		addProvidedCmdClass(GenerateCommonVariationsCommand.class);
+		addProvidedCmdClass(GenerateVariationCommand.class);
 		addProvidedCmdClass(PreviewVariationsCommand.class);
 		addProvidedCmdClass(ShowMutationFrequenciesReporterCommand.class);
 		addProvidedCmdClass(ConfigureMutationFrequenciesReporterCommand.class);
@@ -608,34 +611,42 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			if( ( (double) mutationMembers / (double) totalMembers ) * 100.0 < generatedVariationPercentThreshold ) {
 				return;
 			}
-			TemplateHashModel variableResolver = new TemplateHashModel() {
-				@Override
-				public TemplateModel get(String key) {
-					Object object = analysisRow.get(key);
-					return object == null ? null : new SimpleScalar(object.toString());
-				}
-				@Override
-				public boolean isEmpty() { return false; }
-			};
-			StringWriter stringWriter = new StringWriter();
-			try {
-				generatedVariationNameTemplate.process(variableResolver, stringWriter);
-			} catch (TemplateException te) {
-				throw new MutationFrequenciesException(te, 
-						MutationFrequenciesException.Code.VARIATION_NAME_TEMPLATE_FAILED, te.getLocalizedMessage());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-			Map<String, Object> row = new LinkedHashMap<String, Object>();
-			row.put(PreviewVariationsResult.VARIATION_NAME, stringWriter.toString());
-			row.put(PreviewVariationsResult.REF_START, analysisRow.get(AlignmentAnalysisResult.CODON));
-			row.put(PreviewVariationsResult.REF_END, analysisRow.get(AlignmentAnalysisResult.CODON));
-			row.put(PreviewVariationsResult.REGEX, "["+
-					( (String) analysisRow.get(AlignmentAnalysisResult.MUT_AMINO_ACID) ) + "]");
-			row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
+			Map<String, Object> row = variationPreviewFromAnalysisRow(analysisRow);
 			rowData.add(row);
 		});
 		return new PreviewVariationsResult(rowData);
+	}
+
+	private Map<String, Object> variationPreviewFromAnalysisRow(
+			Map<String, Object> analysisRow) {
+		Integer refStart = (Integer) analysisRow.get(AlignmentAnalysisResult.CODON);
+		Integer refEnd = (Integer) analysisRow.get(AlignmentAnalysisResult.CODON);
+		String mutAA = (String) analysisRow.get(AlignmentAnalysisResult.MUT_AMINO_ACID);
+		TemplateHashModel variableResolver = new TemplateHashModel() {
+			@Override
+			public TemplateModel get(String key) {
+				Object object = analysisRow.get(key);
+				return object == null ? null : new SimpleScalar(object.toString());
+			}
+			@Override
+			public boolean isEmpty() { return false; }
+		};
+		StringWriter stringWriter = new StringWriter();
+		try {
+			generatedVariationNameTemplate.process(variableResolver, stringWriter);
+		} catch (TemplateException te) {
+			throw new MutationFrequenciesException(te, 
+					MutationFrequenciesException.Code.VARIATION_NAME_TEMPLATE_FAILED, te.getLocalizedMessage());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		Map<String, Object> row = new LinkedHashMap<String, Object>();
+		row.put(PreviewVariationsResult.VARIATION_NAME, stringWriter.toString());
+		row.put(PreviewVariationsResult.REF_START, refStart);
+		row.put(PreviewVariationsResult.REF_END, refEnd);
+		row.put(PreviewVariationsResult.REGEX, "["+ mutAA + "]");
+		row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
+		return row;
 	}
 
 	@CommandClass( 
@@ -689,6 +700,44 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		
 		return new AlignmentVariationScanResult(rowData);
 	
+	}
+
+	public PreviewVariationsResult previewSingleCodonVariation(CommandContext cmdContext,
+			String referenceName, String featureName, Integer codon, String mutationAA) {
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		if(feature.isInformational()) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_INFORMATIONAL, featureName);
+		}
+		if(feature.getOrfAncestor() == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_NOT_IN_ANY_ORF, featureName);
+		}
+		ReferenceRealisedFeatureTreeResult featureTreeResult = null;
+		try(ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName)) {
+			featureTreeResult = (ReferenceRealisedFeatureTreeResult) 
+					cmdContext.cmdBuilder(ReferenceShowFeatureTreeCommand.class)
+					.set(ReferenceShowFeatureTreeCommand.REALIZED, true)
+					.execute();
+		}
+		ReferenceRealisedFeatureTreeResult featureTree = (ReferenceRealisedFeatureTreeResult) 
+				featureTreeResult.findFeatureTree(featureName);
+		if(featureTree == null) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_LOCATION_NOT_DEFINED, referenceName, featureName);
+		}
+		
+		List<AaReferenceSegment> aaReferenceSegments = featureTree.getAaReferenceSegments();
+		ReferenceSegment codonLocation = new ReferenceSegment(codon, codon);
+		List<AaReferenceSegment> intersection = ReferenceSegment.intersection(aaReferenceSegments, Collections.singletonList(codonLocation), ReferenceSegment.cloneLeftSegMerger());
+		if(intersection.isEmpty()) {
+			throw new MutationFrequenciesException(MutationFrequenciesException.Code.CODON_IS_NOT_IN_FEATURE_LOCATION, referenceName, featureName, codon);
+		}
+		String refAA = intersection.get(0).getAminoAcids().toString();
+		Map<String, Object> analysisRow = new LinkedHashMap<String, Object>();
+		analysisRow.put(AlignmentAnalysisResult.REF_AMINO_ACID, refAA);
+		analysisRow.put(AlignmentAnalysisResult.CODON, codon);
+		analysisRow.put(AlignmentAnalysisResult.MUT_AMINO_ACID, mutationAA);
+		
+		return new PreviewVariationsResult(Collections.singletonList(variationPreviewFromAnalysisRow(analysisRow)));
+
 	}
 
 	

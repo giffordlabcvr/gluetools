@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,26 +18,31 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationAddCategoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetLocationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetPatternCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesException.Code;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentAnalysisCommandCompleter.VcatNameCompleter;
+import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesException.Code;
 
 
 
 
 @CommandClass(
-		commandWords={"generate", "variations"}, 
-		description = "Generate variations from members of a single constrained alignment", 
-		docoptUsages = { "<alignmentName> [-r] [-w <whereClause>] <referenceName> <featureName> [-c <vcatName> ...]" }, 
+		commandWords={"generate", "variation"}, 
+		description = "Generate variation representing single amino acid mutation", 
+		docoptUsages = { "<referenceName> <featureName> <codon> <mutationAA> [-c <vcatName> ...]" }, 
 		docoptOptions = {
-				"-r, --recursive                                Include members of descendent alignments",
-				"-w <whereClause>, --whereClause <whereClause>  Qualify included members",
 				"-c <vcatName>, --categories <vcatName>         Add variation category"},
 		furtherHelp = "The alignment named by <alignmentName> must be constrained to a reference. "+
 		"The reference sequence named <referenceName> may be the alignment's constraining reference, or "+
@@ -52,21 +58,43 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;import uk.ac.gla.cvr.glu
 		"variations are added to the named categories",
 		metaTags = {CmdMeta.updatesDatabase}	
 )
-public class GenerateVariationsCommand extends VariationsCommand<GenerateVariationsResult> {
+public class GenerateVariationCommand extends ModuleProvidedCommand<GenerateVariationsResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+
+	public static final String REFERENCE_NAME = "referenceName";
+	public static final String FEATURE_NAME = "featureName";
+	public static final String CODON = "codon";
+	public static final String MUTATION_AA = "mutationAA";
 
 	private List<String> vcatNames;
-	
+	private String referenceName;
+	private String featureName;
+	private Integer codon;
+	private String mutationAA;
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		codon = PluginUtils.configureIntProperty(configElem, CODON, true);
 		vcatNames = PluginUtils.configureStringsProperty(configElem, "categories");
+		mutationAA = PluginUtils.configureStringProperty(configElem, MUTATION_AA, true);
 	}
 
 	@Override
 	protected GenerateVariationsResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {
-		PreviewVariationsResult previewVariationsResult = modulePlugin.previewVariations(cmdContext, 
-				getAlignmentName(), isRecursive(), getWhereClause(), getReferenceName(), getFeatureName());
+		PreviewVariationsResult previewVariationsResult = 
+				modulePlugin.previewSingleCodonVariation(cmdContext, referenceName, featureName, codon, mutationAA);
+		return generateVariationsFromPreview(cmdContext, modulePlugin, previewVariationsResult, vcatNames, referenceName, featureName);
+	}
+
+	
+	public static GenerateVariationsResult generateVariationsFromPreview(
+			CommandContext cmdContext,
+			MutationFrequenciesReporter modulePlugin,
+			PreviewVariationsResult previewVariationsResult,
+			List<String> vcatNames, String referenceName, String featureName) {
 		// lookup variation categories in advance.
 		vcatNames.forEach(vcatName -> {
 			GlueDataObject.lookup(cmdContext, VariationCategory.class, VariationCategory.pkMap(vcatName));
@@ -79,8 +107,8 @@ public class GenerateVariationsCommand extends VariationsCommand<GenerateVariati
 		}
 		List<Map<String, Object>> listOfMaps = previewVariationsResult.asListOfMaps();
 		
-		try ( ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", getReferenceName() ) ) {
-			try ( ModeCloser featureLocationMode = cmdContext.pushCommandMode("feature-location", getFeatureName() ) ) {
+		try ( ModeCloser refSeqMode = cmdContext.pushCommandMode("reference", referenceName ) ) {
+			try ( ModeCloser featureLocationMode = cmdContext.pushCommandMode("feature-location", featureName ) ) {
 				listOfMaps.forEach(row -> {
 					String variationName = (String) row.get(PreviewVariationsResult.VARIATION_NAME);
 					Integer refStart = (Integer) row.get(PreviewVariationsResult.REF_START);
@@ -93,7 +121,7 @@ public class GenerateVariationsCommand extends VariationsCommand<GenerateVariati
 					Variation existingVariation = null;
 					if(modulePlugin.mergeGeneratedVariations()) {
 						existingVariation = GlueDataObject.lookup(cmdContext, Variation.class, 
-								Variation.pkMap(getReferenceName(), getFeatureName(), variationName), true);
+								Variation.pkMap(referenceName, featureName, variationName), true);
 						if(existingVariation != null) {
 							if(existingVariation.getRegex().equals(regex) &&
 									existingVariation.getRefStart().equals(refStart) &&
@@ -105,7 +133,7 @@ public class GenerateVariationsCommand extends VariationsCommand<GenerateVariati
 								updatedVcatNames.addAll(vcatNames);
 								vcatNamesString = String.join(", ", updatedVcatNames);
 							} else {
-								throw new MutationFrequenciesException(Code.VARIATION_CANNOT_BE_MERGED, getReferenceName(), getFeatureName(), variationName);
+								throw new MutationFrequenciesException(Code.VARIATION_CANNOT_BE_MERGED, referenceName, featureName, variationName);
 							}
 						}
 					}
@@ -140,28 +168,37 @@ public class GenerateVariationsCommand extends VariationsCommand<GenerateVariati
 		return new GenerateVariationsResult(listOfMaps);
 	}
 
+	
+	
 	@CompleterClass
-	public static class Completer extends AlignmentAnalysisCommandCompleter {
+	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerVariableInstantiator("vcatName", new VariableInstantiator() {
+			registerDataObjectNameLookup("referenceName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@SuppressWarnings("rawtypes")
 				@Override
-				@SuppressWarnings({ "rawtypes", "unchecked" }) 
 				protected List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					Set<String> current = new LinkedHashSet<String>();
-					List<String> currentList = (List<String>) bindings.get("vcatName");
-					if(currentList != null) {
-						current.addAll(currentList);
+					String referenceName = (String) bindings.get("referenceName");
+					ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
+					if(refSeq != null) {
+						List<FeatureLocation> featureLocations = refSeq.getFeatureLocations();
+						List<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>();
+						for(FeatureLocation featureLoc: featureLocations) {
+							Feature feature = featureLoc.getFeature();
+							if(!feature.isInformational() && feature.getOrfAncestor() != null) {
+								suggestions.add(new CompletionSuggestion(feature.getName(), true));
+							}
+						}
+						return suggestions;
 					}
-					List<CompletionSuggestion> allVCatNames = AdvancedCmdCompleter.listNames(cmdContext, prefix, VariationCategory.class, VariationCategory.NAME_PROPERTY);
-					return allVCatNames.stream().filter(cs -> !current.contains(cs.getSuggestedWord())).collect(Collectors.toList());
+					return null;
 				}
 			});
+			registerVariableInstantiator("vcatName", new VcatNameCompleter());
 		}
-		
 	}
-
 }
