@@ -19,6 +19,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
 
 public abstract class GlueDataObject extends CayenneDataObject {
 
+	protected static final int INDENT = 2;
+
 	public abstract void setPKValues(Map <String, String> pkMap);
 
 	public static <C extends GlueDataObject> C lookup(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap) {
@@ -120,5 +122,13 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	}
 
 	protected abstract Map<String, String> pkMap();
+	
+	protected StringBuffer indent(StringBuffer buf, int indent) {
+		for(int i = 0; i < indent; i++) {
+			buf.append(" ");
+		}
+		return buf;
+	}
+	
 	
 }

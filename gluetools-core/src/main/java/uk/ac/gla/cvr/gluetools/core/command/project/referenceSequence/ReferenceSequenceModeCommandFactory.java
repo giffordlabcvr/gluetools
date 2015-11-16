@@ -23,6 +23,7 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ReferenceShowSequenceCommand.class);
 		registerCommandClass(ReferenceShowCreationTimeCommand.class);
 		registerCommandClass(ReferenceShowFeatureTreeCommand.class);
+		registerCommandClass(ReferenceSequenceGenerateGlueConfigCommand.class);
 
 		registerCommandClass(ReferenceValidateCommand.class);
 		registerCommandClass(InheritFeatureLocationCommand.class);

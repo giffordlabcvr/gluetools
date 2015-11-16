@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
@@ -208,5 +209,22 @@ public class FeatureLocation extends _FeatureLocation {
 		}
 		return null;
 	}
+
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, boolean variationsOnly) {
+		if(variationsOnly) {
+			StringBuffer variationsBuf = new StringBuffer();
+			for(Variation variation: getVariations()) {
+				variation.generateGlueConfig(indent+INDENT, variationsBuf);
+			}
+			String variationsConfig = variationsBuf.toString();	
+			if(variationsConfig.length() > 0) {
+				indent(glueConfigBuf, indent).append("feature-location ").append(getFeature().getName()).append("\n");
+				glueConfigBuf.append(variationsConfig);
+				indent(glueConfigBuf, indent+INDENT).append("exit\n");
+			}
+		}
+	}
+
+
 }
 

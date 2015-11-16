@@ -26,6 +26,7 @@ public class ReferenceSequence extends _ReferenceSequence {
 	public static final String SEQ_ID_PATH = 
 			_ReferenceSequence.SEQUENCE_PROPERTY+"."+_Sequence.SEQUENCE_ID_PROPERTY;
 
+
 	
 	public static Map<String, String> pkMap(String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
@@ -112,6 +113,23 @@ public class ReferenceSequence extends _ReferenceSequence {
 		}
 	}
 
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, boolean variationsOnly) {
 
+		if(variationsOnly) {
+			StringBuffer variationsBuf = new StringBuffer();
+			for(FeatureLocation featureLoc: getFeatureLocations()) {
+				featureLoc.generateGlueConfig(indent+INDENT, variationsBuf, variationsOnly);
+			}
+			String variationsConfig = variationsBuf.toString();
+			if(variationsConfig.length() > 0) {
+				indent(glueConfigBuf, indent).append("reference ").append(getName()).append("\n");
+				glueConfigBuf.append(variationsConfig);
+				indent(glueConfigBuf, indent+INDENT).append("exit\n");
+			}
+			
+		}
+	}
+
+	
 	
 }

@@ -27,6 +27,8 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(VariationListCategoryCommand.class);
 		registerCommandClass(VariationAddCategoryCommand.class);
 		registerCommandClass(VariationRemoveCategoryCommand.class);
+		
+		registerCommandClass(VariationGenerateGlueConfigCommand.class);
 
 		registerCommandClass(ExitCommand.class);
 	}

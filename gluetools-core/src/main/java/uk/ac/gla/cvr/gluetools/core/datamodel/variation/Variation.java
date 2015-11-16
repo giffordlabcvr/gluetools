@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
@@ -123,6 +124,28 @@ public class Variation extends _Variation {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
 				getRegexPattern(), getDescription(), getTranslationFormat());
+	}
+
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf) {
+		indent(glueConfigBuf, indent).append("create variation ").append(getName());
+		String description = getDescription();
+		if(description != null) {
+			glueConfigBuf.append("\""+description+"\"");
+		}
+		glueConfigBuf.append("\n");
+		indent(glueConfigBuf, indent).append("variation ").append(getName()).append("\n");
+		String regex = getRegex();
+		if(regex != null) {
+			indent(glueConfigBuf, indent+INDENT).append("set pattern -t "+getTranscriptionType()+" \""+regex+"\"").append("\n");
+		}
+		Integer refStart = getRefStart();
+		if(refStart != null) {
+			indent(glueConfigBuf, indent+INDENT).append("set location "+getRefStart()+" "+getRefEnd()).append("\n");
+		}
+		for(VcatMembership vcm : getVcatMemberships()) {
+			indent(glueConfigBuf, indent+INDENT).append("add category "+vcm.getCategory().getName()).append("\n");
+		}
+		indent(glueConfigBuf, indent+INDENT).append("exit\n");
 	}
 	
 }
