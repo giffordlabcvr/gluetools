@@ -44,9 +44,13 @@ public class DeleteSourceCommand extends ProjectModeCommand<DeleteResult> {
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
+		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName), true);
+		if(source == null) {
+			return new DeleteResult(Source.class, 0);
+		}
 		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
 		List<Map<String, String>> pkMaps = 
-				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
+				source
 				.getSequences()
 				.stream().map(seq -> seq.pkMap())
 				.collect(Collectors.toList());

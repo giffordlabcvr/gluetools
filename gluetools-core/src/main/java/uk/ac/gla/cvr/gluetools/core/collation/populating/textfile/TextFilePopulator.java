@@ -193,7 +193,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 
 	public List<Map<String,Object>> identifySequences(Expression identifyingExp, ConsoleCommandContext cmdContext) {
-		GlueLogger.getGlueLogger().fine("Finding sequences to process");
 		ListResult listResult = cmdContext.cmdBuilder(ListSequenceCommand.class).
 			set(ListSequenceCommand.WHERE_CLAUSE, identifyingExp.toString()).
 			execute();
@@ -204,7 +203,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		if(sequenceMaps.size() > 1 && !updateMultiple) {
 			throw new TextFilePopulatorException(TextFilePopulatorException.Code.MULTIPLE_SEQUENCES_FOUND, identifyingExp.toString());
 		}
-		GlueLogger.getGlueLogger().fine("Found "+sequenceMaps.size()+" sequences to process");
 		return sequenceMaps;
 	}
 
