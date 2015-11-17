@@ -116,15 +116,14 @@ public class ReferenceSequence extends _ReferenceSequence {
 
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		if(glueConfigContext.includeVariations()) {
-			StringBuffer variationsBuf = new StringBuffer();
 			for(FeatureLocation featureLoc: getFeatureLocations()) {
-				featureLoc.generateGlueConfig(indent+INDENT, variationsBuf, glueConfigContext);
-			}
-			String variationsConfig = variationsBuf.toString();
-			if(variationsConfig.length() > 0) {
-				indent(glueConfigBuf, indent).append("reference ").append(getName()).append("\n");
-				glueConfigBuf.append(variationsConfig);
-				indent(glueConfigBuf, indent+INDENT).append("exit\n");
+				StringBuffer featureLocConfigBuf = new StringBuffer();
+				featureLoc.generateGlueConfig(indent+INDENT, featureLocConfigBuf, glueConfigContext);
+				if(featureLocConfigBuf.length() > 0) {
+					indent(glueConfigBuf, indent).append("feature-location ").append(featureLoc.getFeature().getName()).append("\n");
+					glueConfigBuf.append(featureLocConfigBuf.toString());
+					indent(glueConfigBuf, indent+INDENT).append("exit\n");
+				}
 			}
 			
 		}

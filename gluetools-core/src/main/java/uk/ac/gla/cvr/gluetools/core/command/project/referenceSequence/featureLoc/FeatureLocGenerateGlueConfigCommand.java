@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.GlueConfigResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -41,10 +41,10 @@ public class FeatureLocGenerateGlueConfigCommand extends FeatureLocModeCommand<G
 
 	@Override
 	public GlueConfigResult execute(CommandContext cmdContext) {
-		ReferenceSequence refSequence = lookupRefSeq(cmdContext);
+		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
 		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext);
 		glueConfigContext.setIncludeVariations(variations);
-		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, refSequence.generateGlueConfig(glueConfigContext));
+		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, featureLoc.generateGlueConfig(glueConfigContext));
 	}
 
 	@CompleterClass

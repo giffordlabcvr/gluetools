@@ -100,17 +100,9 @@ public class VariationCategory extends _VariationCategory {
 
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
-		indent(glueConfigBuf, indent).append("create variation-category "+getName());
-		String description = getDescription();
-		if(description != null) {
-			glueConfigBuf.append("\""+description+"\"");
-		}
-		glueConfigBuf.append("\n");
-		indent(glueConfigBuf, indent).append("variation-category "+getName()).append("\n");
-		indent(glueConfigBuf, indent+INDENT).append("set notifiability "+getNotifiability()).append("\n");
+		indent(glueConfigBuf, indent).append("set notifiability "+getNotifiability()).append("\n");
 		VariationCategory parent = getParent();
-		if(parent != null) { indent(glueConfigBuf, indent+INDENT).append("set parent "+parent.getName()).append("\n"); }
-		indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
+		if(parent != null) { indent(glueConfigBuf, indent).append("set parent "+parent.getName()).append("\n"); }
 	}
 	
 	

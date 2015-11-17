@@ -129,25 +129,17 @@ public class Variation extends _Variation {
 
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
-		indent(glueConfigBuf, indent).append("create variation ").append(getName());
-		String description = getDescription();
-		if(description != null) {
-			glueConfigBuf.append(" \""+description+"\"");
-		}
-		glueConfigBuf.append("\n");
-		indent(glueConfigBuf, indent).append("variation ").append(getName()).append("\n");
 		String regex = getRegex();
 		if(regex != null) {
-			indent(glueConfigBuf, indent+INDENT).append("set pattern -t "+getTranscriptionType()+" \""+regex+"\"").append("\n");
+			indent(glueConfigBuf, indent).append("set pattern -t "+getTranscriptionType()+" \""+regex+"\"").append("\n");
 		}
 		Integer refStart = getRefStart();
 		if(refStart != null) {
-			indent(glueConfigBuf, indent+INDENT).append("set location "+getRefStart()+" "+getRefEnd()).append("\n");
+			indent(glueConfigBuf, indent).append("set location "+getRefStart()+" "+getRefEnd()).append("\n");
 		}
 		for(VcatMembership vcm : getVcatMemberships()) {
-			indent(glueConfigBuf, indent+INDENT).append("add category "+vcm.getCategory().getName()).append("\n");
+			indent(glueConfigBuf, indent).append("add category "+vcm.getCategory().getName()).append("\n");
 		}
-		indent(glueConfigBuf, indent+INDENT).append("exit\n");
 	}
 	
 }

@@ -101,26 +101,35 @@ public class Project extends _Project {
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf,
 			GlueConfigContext glueConfigContext) {
-		StringBuffer variationCategoriesConfigBuf = new StringBuffer();
 		if(glueConfigContext.includeVariationCategories()) {
 			List<VariationCategory> topologicallySortedVcats = VariationCategory.getTopologicallySortedVcats(glueConfigContext.getCommandContext());
 			for(VariationCategory vcat : topologicallySortedVcats) {
-				vcat.generateGlueConfig(indent+INDENT, variationCategoriesConfigBuf, glueConfigContext);
+				StringBuffer variationCategoryConfigBuf = new StringBuffer();
+				vcat.generateGlueConfig(indent+INDENT, variationCategoryConfigBuf, glueConfigContext);
+				if(variationCategoryConfigBuf.length() > 0) {
+					indent(glueConfigBuf, indent).append("create variation-category "+vcat.getName());
+					String description = vcat.getDescription();
+					if(description != null) {
+						glueConfigBuf.append( "\""+description+"\"");
+					}
+					glueConfigBuf.append("\n");
+					indent(glueConfigBuf, indent).append("variation-category "+vcat.getName()).append("\n");
+					glueConfigBuf.append(variationCategoryConfigBuf.toString());
+					indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
+				}
 			}
 		}
-		StringBuffer variationsConfigBuf = new StringBuffer();
 		if(glueConfigContext.includeVariations()) {
+			StringBuffer refSeqConfigBuf = new StringBuffer();
 			List<ReferenceSequence> refSequences = GlueDataObject.query(glueConfigContext.getCommandContext(), ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
 			for(ReferenceSequence refSequence: refSequences) {
-				refSequence.generateGlueConfig(indent+INDENT, variationsConfigBuf, glueConfigContext);
+				refSequence.generateGlueConfig(indent+INDENT, refSeqConfigBuf, glueConfigContext);
+				if(refSeqConfigBuf.length() > 0) {
+					indent(glueConfigBuf, indent).append("reference "+refSequence.getName()).append("\n");
+					glueConfigBuf.append(refSeqConfigBuf.toString());
+					indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
+				}
 			}
-		}
-		if(variationCategoriesConfigBuf.length() > 0 || variationsConfigBuf.length() > 0) {
-			indent(glueConfigBuf, indent).append("project "+getName()).append("\n");
-			glueConfigBuf.append(variationCategoriesConfigBuf.toString());
-			glueConfigBuf.append(variationsConfigBuf.toString());
-			indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
-
 		}
 	}
 

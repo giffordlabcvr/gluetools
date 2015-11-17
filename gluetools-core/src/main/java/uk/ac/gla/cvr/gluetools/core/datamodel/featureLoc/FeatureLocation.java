@@ -214,15 +214,21 @@ public class FeatureLocation extends _FeatureLocation {
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		if(glueConfigContext.includeVariations()) {
-			StringBuffer variationsBuf = new StringBuffer();
 			for(Variation variation: getVariations()) {
-				variation.generateGlueConfig(indent+INDENT, variationsBuf, glueConfigContext);
-			}
-			String variationsConfig = variationsBuf.toString();	
-			if(variationsConfig.length() > 0) {
-				indent(glueConfigBuf, indent).append("feature-location ").append(getFeature().getName()).append("\n");
-				glueConfigBuf.append(variationsConfig);
-				indent(glueConfigBuf, indent+INDENT).append("exit\n");
+				indent(glueConfigBuf, indent).append("create variation ").append(variation.getName());
+				String description = variation.getDescription();
+				if(description != null) {
+					glueConfigBuf.append(" \""+description+"\"");
+				}
+				glueConfigBuf.append("\n");
+
+				StringBuffer variationConfigBuf = new StringBuffer();
+				variation.generateGlueConfig(indent+INDENT, variationConfigBuf, glueConfigContext);
+				if(variationConfigBuf.length() > 0) {
+					indent(glueConfigBuf, indent).append("variation ").append(variation.getName()).append("\n");
+					glueConfigBuf.append(variationConfigBuf.toString());
+					indent(glueConfigBuf, indent+INDENT).append("exit\n");
+				}
 			}
 		}
 	}
