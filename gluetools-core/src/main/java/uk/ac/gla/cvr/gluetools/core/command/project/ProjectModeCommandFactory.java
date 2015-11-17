@@ -76,6 +76,8 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ExportSequenceCommand.class);
 
 		registerCommandClass(ProjectValidateCommand.class);
+
+		registerCommandClass(ProjectGenerateGlueConfigCommand.class);
 		
 		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");
 		addGroupHelp(Arrays.asList("list"), "List certain objects in this project");

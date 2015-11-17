@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
@@ -210,11 +211,12 @@ public class FeatureLocation extends _FeatureLocation {
 		return null;
 	}
 
-	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, boolean variationsOnly) {
-		if(variationsOnly) {
+	@Override
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
+		if(glueConfigContext.includeVariations()) {
 			StringBuffer variationsBuf = new StringBuffer();
 			for(Variation variation: getVariations()) {
-				variation.generateGlueConfig(indent+INDENT, variationsBuf);
+				variation.generateGlueConfig(indent+INDENT, variationsBuf, glueConfigContext);
 			}
 			String variationsConfig = variationsBuf.toString();	
 			if(variationsConfig.length() > 0) {

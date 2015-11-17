@@ -3,11 +3,17 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.cayenne.query.SelectQuery;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
 
 @GlueDataClass(defaultListColumns = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY})
@@ -91,6 +97,41 @@ public class VariationCategory extends _VariationCategory {
 		} while(current != null);
 		return ancestors;
 	}
+
+	@Override
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
+		indent(glueConfigBuf, indent).append("create variation-category "+getName());
+		String description = getDescription();
+		if(description != null) {
+			glueConfigBuf.append("\""+description+"\"");
+		}
+		glueConfigBuf.append("\n");
+		indent(glueConfigBuf, indent).append("variation-category "+getName()).append("\n");
+		indent(glueConfigBuf, indent+INDENT).append("set notifiability "+getNotifiability()).append("\n");
+		VariationCategory parent = getParent();
+		if(parent != null) { indent(glueConfigBuf, indent+INDENT).append("set parent "+parent.getName()).append("\n"); }
+		indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
+	}
 	
+	
+	public static List<VariationCategory> getTopologicallySortedVcats(CommandContext cmdContext) {
+		List<VariationCategory> allVcats = GlueDataObject.query(cmdContext, VariationCategory.class, new SelectQuery(VariationCategory.class));
+		List<VariationCategory> startVcats = new ArrayList<VariationCategory>();
+		for(VariationCategory vcat: allVcats) {
+			if(vcat.getParent() == null) {
+				startVcats.add(vcat);
+			}
+		}
+		LinkedList<VariationCategory> ordered = new LinkedList<VariationCategory>();
+		LinkedList<VariationCategory> queue = new LinkedList<VariationCategory>();
+		queue.addAll(startVcats);
+		while(!queue.isEmpty()) {
+			VariationCategory vcat = queue.removeFirst();
+			ordered.add(vcat);
+			queue.addAll(0, vcat.getChildren());
+		}
+		return ordered;
+	}
+
 	
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
@@ -113,12 +114,11 @@ public class ReferenceSequence extends _ReferenceSequence {
 		}
 	}
 
-	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, boolean variationsOnly) {
-
-		if(variationsOnly) {
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
+		if(glueConfigContext.includeVariations()) {
 			StringBuffer variationsBuf = new StringBuffer();
 			for(FeatureLocation featureLoc: getFeatureLocations()) {
-				featureLoc.generateGlueConfig(indent+INDENT, variationsBuf, variationsOnly);
+				featureLoc.generateGlueConfig(indent+INDENT, variationsBuf, glueConfigContext);
 			}
 			String variationsConfig = variationsBuf.toString();
 			if(variationsConfig.length() > 0) {

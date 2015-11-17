@@ -129,6 +129,15 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		}
 		return buf;
 	}
+
+	public final String generateGlueConfig(GlueConfigContext glueConfigContext) {
+		StringBuffer glueConfigBuf = new StringBuffer();
+		generateGlueConfig(0, glueConfigBuf, glueConfigContext);
+		return glueConfigBuf.toString();
+	}
+
+	public void generateGlueConfig(int i, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
+	}
 	
 	
 }

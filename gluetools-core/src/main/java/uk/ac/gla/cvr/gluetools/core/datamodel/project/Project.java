@@ -7,13 +7,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.query.SelectQuery;
+
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 
 @GlueDataClass(defaultListColumns = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
@@ -92,6 +98,31 @@ public class Project extends _Project {
 		return validMemberFieldsList;
 	}
 
-	
+	@Override
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf,
+			GlueConfigContext glueConfigContext) {
+		StringBuffer variationCategoriesConfigBuf = new StringBuffer();
+		if(glueConfigContext.includeVariationCategories()) {
+			List<VariationCategory> topologicallySortedVcats = VariationCategory.getTopologicallySortedVcats(glueConfigContext.getCommandContext());
+			for(VariationCategory vcat : topologicallySortedVcats) {
+				vcat.generateGlueConfig(indent+INDENT, variationCategoriesConfigBuf, glueConfigContext);
+			}
+		}
+		StringBuffer variationsConfigBuf = new StringBuffer();
+		if(glueConfigContext.includeVariations()) {
+			List<ReferenceSequence> refSequences = GlueDataObject.query(glueConfigContext.getCommandContext(), ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
+			for(ReferenceSequence refSequence: refSequences) {
+				refSequence.generateGlueConfig(indent+INDENT, variationsConfigBuf, glueConfigContext);
+			}
+		}
+		if(variationCategoriesConfigBuf.length() > 0 || variationsConfigBuf.length() > 0) {
+			indent(glueConfigBuf, indent).append("project "+getName()).append("\n");
+			glueConfigBuf.append(variationCategoriesConfigBuf.toString());
+			glueConfigBuf.append(variationsConfigBuf.toString());
+			indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
+
+		}
+	}
+
 	
 }

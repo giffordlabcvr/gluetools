@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
@@ -126,11 +127,12 @@ public class Variation extends _Variation {
 				getRegexPattern(), getDescription(), getTranslationFormat());
 	}
 
-	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf) {
+	@Override
+	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		indent(glueConfigBuf, indent).append("create variation ").append(getName());
 		String description = getDescription();
 		if(description != null) {
-			glueConfigBuf.append("\""+description+"\"");
+			glueConfigBuf.append(" \""+description+"\"");
 		}
 		glueConfigBuf.append("\n");
 		indent(glueConfigBuf, indent).append("variation ").append(getName()).append("\n");

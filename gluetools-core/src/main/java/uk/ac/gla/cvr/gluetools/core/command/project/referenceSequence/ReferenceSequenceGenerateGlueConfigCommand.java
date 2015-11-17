@@ -7,8 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.GlueConfigResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"generate", "glue-config"},
 		docoptUsages={"-v [-f <fileName>]"},
 		docoptOptions={
-				"-v, --variationsOnly                  Only generate feature location variations", 
+				"-v, --variations                      Generate feature location variations", 
 				"-f <fileName>, --fileName <fileName>  Name of file to output to"},
 		description="Generate GLUE configuration to recreate the reference sequence",
 		furtherHelp="If a <fileName> is supplied, GLUE commands will be saved to that file. "+
@@ -27,31 +27,23 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class ReferenceSequenceGenerateGlueConfigCommand extends ReferenceSequenceModeCommand<GlueConfigResult> {
 	
 	private String fileName;
-	private boolean variationsOnly;
+	private boolean variations;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		fileName = PluginUtils.configureStringProperty(configElem, "fileName", false);
-		variationsOnly = PluginUtils.configureBooleanProperty(configElem, "variationsOnly", true);
+		variations = PluginUtils.configureBooleanProperty(configElem, "variations", true);
 	}
 
 	@Override
 	public GlueConfigResult execute(CommandContext cmdContext) {
-		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		StringBuffer glueConfigBuf = new StringBuffer();
-		ReferenceSequence refSequence = lookupRefSeq(consoleCmdContext);
-		refSequence.generateGlueConfig(0, glueConfigBuf, variationsOnly);
-		boolean outputToConsole = false;
-		String glueConfig = glueConfigBuf.toString();
-		if(fileName == null) {
-			outputToConsole = true;
-		} else {
-			consoleCmdContext.saveBytes(fileName, glueConfig.getBytes());
-		}
-		GlueConfigResult glueConfigResult = new GlueConfigResult(outputToConsole, glueConfig);
-		return glueConfigResult;
+		ReferenceSequence refSequence = lookupRefSeq(cmdContext);
+		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext);
+		glueConfigContext.setIncludeVariations(variations);
+		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, refSequence.generateGlueConfig(glueConfigContext));
 	}
+
 
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {

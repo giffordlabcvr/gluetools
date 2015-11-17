@@ -7,8 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.GlueConfigResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -38,19 +38,8 @@ public class VariationGenerateGlueConfigCommand extends VariationModeCommand<Glu
 
 	@Override
 	public GlueConfigResult execute(CommandContext cmdContext) {
-		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		StringBuffer glueConfigBuf = new StringBuffer();
-		Variation variation = lookupVariation(consoleCmdContext);
-		variation.generateGlueConfig(0, glueConfigBuf);
-		boolean outputToConsole = false;
-		String glueConfig = glueConfigBuf.toString();
-		if(fileName == null) {
-			outputToConsole = true;
-		} else {
-			consoleCmdContext.saveBytes(fileName, glueConfig.getBytes());
-		}
-		GlueConfigResult glueConfigResult = new GlueConfigResult(outputToConsole, glueConfig);
-		return glueConfigResult;
+		Variation variation = lookupVariation(cmdContext);
+		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, variation.generateGlueConfig(new GlueConfigContext(cmdContext)));
 	}
 	
 	@CompleterClass
