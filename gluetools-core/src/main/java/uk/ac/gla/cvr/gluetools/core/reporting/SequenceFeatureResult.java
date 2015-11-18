@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -116,9 +117,22 @@ public class SequenceFeatureResult {
 					}
 				}
 			}
+			final Map<Integer, List<VariationNote>> refStartToVariationNotes = new LinkedHashMap<Integer, List<VariationNote>>();
+			for(VariationNote aaVariationNote: aaVariationNotes) {
+				refStartToVariationNotes.compute(aaVariationNote.getRefStart(), 
+					(k, list) -> 
+					{ 
+						if(list == null) { 
+							list = new ArrayList<VariationNote>(); 
+						} 
+						list.add(aaVariationNote); 
+						return list;
+					});
+			}
+			
 			List<AaReferenceSegment> aaReferenceSegments = featureTreeResult.getAaReferenceSegments();
 			if(aaReferenceSegments != null) {
-				aaReferenceDifferenceNotes = generateAaDifferenceNotes(aaReferenceSegments, aaQueryAlignedSegments);
+				aaReferenceDifferenceNotes = generateAaDifferenceNotes(aaReferenceSegments, aaQueryAlignedSegments, refStartToVariationNotes);
 			}
 		}
 	}
@@ -134,15 +148,17 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(ntRefSeg.getRefEnd(), ntQuerySeg.getRefEnd());
 						CharSequence refNts = ntRefSeg.getNucleotidesSubsequence(refStart, refEnd);
 						CharSequence queryNts = ntQuerySeg.getNucleotidesSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false);
+						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false, null);
 					}
 		}));
 	}
 
-	
+
+
 	private List<ReferenceDifferenceNote> generateAaDifferenceNotes(
 			List<AaReferenceSegment> aaReferenceSegments,
-			List<AaReferenceSegment> aaQueryAlignedSegments) {
+			List<AaReferenceSegment> aaQueryAlignedSegments, 
+			Map<Integer, List<VariationNote>> refStartToVariationNotes) {
 		return ReferenceSegment.intersection(aaReferenceSegments, aaQueryAlignedSegments, 
 				new BiFunction<AaReferenceSegment, AaReferenceSegment, ReferenceDifferenceNote>() {
 					@Override
@@ -151,7 +167,7 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(aaRefSeg.getRefEnd(), aaQuerySeg.getRefEnd());
 						CharSequence refAas = aaRefSeg.getAminoAcidsSubsequence(refStart, refEnd);
 						CharSequence queryAas = aaQuerySeg.getAminoAcidsSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, featureTreeResult.isIncludedInSummary());
+						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, featureTreeResult.isIncludedInSummary(), refStartToVariationNotes);
 					}
 
 		});

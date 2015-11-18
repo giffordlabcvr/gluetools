@@ -32,5 +32,6 @@ public class VariationNote extends SequenceContentNote {
 	public VariationNote clone() {
 		return new VariationNote(getVariationName(), getRefStart(), getRefEnd());
 	}
+
 	
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.IAaReferenceSegment;
@@ -23,10 +24,12 @@ public class VariationDocument {
 	private Pattern regex;
 	private String description;
 	private TranslationFormat transcriptionFormat;
+	private List<String> variationCategories;
 	
 	public VariationDocument(String name, int refStart, int refEnd,
 			Pattern regex, String description,
-			TranslationFormat transcriptionFormat) {
+			TranslationFormat transcriptionFormat, 
+			List<String> variationCategories) {
 		super();
 		this.name = name;
 		this.refStart = refStart;
@@ -34,6 +37,7 @@ public class VariationDocument {
 		this.regex = regex;
 		this.description = description;
 		this.transcriptionFormat = transcriptionFormat;
+		this.variationCategories = variationCategories;
 	}
 
 	public String getName() {
@@ -62,6 +66,11 @@ public class VariationDocument {
 		objBuilder.set("regex", regex.pattern());
 		objBuilder.set("description", description);
 		objBuilder.set("transcriptionType", transcriptionFormat.name());
+		ArrayBuilder vcatArrayBuilder = objBuilder.setArray("variationCategory");
+		for(String variationCategory: variationCategories) {
+			vcatArrayBuilder.add(variationCategory);
+		}
+		
 	}
 	
 	public <S extends INtReferenceSegment> VariationNote generateNtVariationNote(List<S> ntQueryAlignedSegments) {

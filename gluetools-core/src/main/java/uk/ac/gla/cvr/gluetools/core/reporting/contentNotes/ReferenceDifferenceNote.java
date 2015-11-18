@@ -2,6 +2,8 @@ package uk.ac.gla.cvr.gluetools.core.reporting.contentNotes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -17,9 +19,10 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 	private CharSequence mask;
 	private List<DifferenceSummaryNote> differenceSummaryNotes = new ArrayList<DifferenceSummaryNote>();
 
-	public ReferenceDifferenceNote(int refStart, int refEnd, CharSequence refChars, CharSequence queryChars, boolean includeDifferenceSummaryNotes) {
+	public ReferenceDifferenceNote(int refStart, int refEnd, CharSequence refChars, CharSequence queryChars, 
+			boolean includeDifferenceSummaryNotes, Map<Integer, List<VariationNote>> refStartToVariationNotes) {
 		super(refStart, refEnd);
-		init(refStart, refChars, queryChars, includeDifferenceSummaryNotes);
+		init(refStart, refChars, queryChars, includeDifferenceSummaryNotes, refStartToVariationNotes);
 	}
 
 	@Override
@@ -36,7 +39,8 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 	}
 
 	
-	private void init(int refStart, CharSequence refChars, CharSequence queryChars, boolean includeDifferenceSummaryNotes) {
+	private void init(int refStart, CharSequence refChars, CharSequence queryChars, boolean includeDifferenceSummaryNotes, 
+			Map<Integer, List<VariationNote>> refStartToVariationNote) {
 		int refPos = refStart;
 		char[] diffChars = new char[refChars.length()];
 		for(int i = 0; i < refChars.length(); i++) {
@@ -47,8 +51,13 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 			} else {
 				diffChars[i] = queryChar;
 				if(includeDifferenceSummaryNotes) {
+					List<String> variationNames = null;
+					List<VariationNote> variationNotes = refStartToVariationNote.get(i+1);
+					if(variationNotes != null) {
+						variationNames = variationNotes.stream().map(vn -> vn.getVariationName()).collect(Collectors.toList());
+					}
 					String summaryString = new String(new char[]{refChar}) + Integer.toString(refPos) + new String(new char[]{queryChar});
-					differenceSummaryNotes.add(new DifferenceSummaryNote(summaryString, null));
+					differenceSummaryNotes.add(new DifferenceSummaryNote(summaryString, variationNames));
 				}
 			}
 			refPos++;

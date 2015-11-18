@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
@@ -18,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
@@ -26,7 +28,6 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 @GlueDataClass(defaultListColumns = {_Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY})
 public class Variation extends _Variation {
 
-	private TranslationFormat translationFormat;
 	private Pattern regexPattern;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -51,13 +52,6 @@ public class Variation extends _Variation {
 	}
 	
 	public TranslationFormat getTranslationFormat() {
-		if(translationFormat == null) {
-			translationFormat = buildTranslationFormat();
-		}
-		return translationFormat;
-	}
-	
-	private TranslationFormat buildTranslationFormat() {
 		return TranslationUtils.transcriptionFormatFromString(getTranscriptionType());
 	}	
 
@@ -72,6 +66,15 @@ public class Variation extends _Variation {
 	private Pattern buildRegexPattern() {
 		return Pattern.compile(getRegex());
 	}	
+	
+	@Override
+	public void writePropertyDirectly(String propName, Object val) {
+		super.writePropertyDirectly(propName, val);
+		if(propName.equals(REGEX_PROPERTY)) {
+			regexPattern = null;
+		}
+	}
+
 
 	public void validate(CommandContext cmdContext) {
 		FeatureLocation featureLoc = getFeatureLoc();
@@ -124,7 +127,18 @@ public class Variation extends _Variation {
 	public VariationDocument getVariationDocument() {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
-				getRegexPattern(), getDescription(), getTranslationFormat());
+				getRegexPattern(), getDescription(), getTranslationFormat(), 
+				getVariationCategoryNames());
+	}
+
+	public List<String> getVariationCategoryNames() {
+		return getVcatMemberships().stream().
+			map(vcm -> vcm.getCategory().getName()).collect(Collectors.toList());
+	}
+
+	public List<VariationCategory> getVariationCategories() {
+		return getVcatMemberships().stream().
+			map(vcm -> vcm.getCategory()).collect(Collectors.toList());
 	}
 
 	@Override

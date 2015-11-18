@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -304,10 +305,11 @@ public class TableResult extends CommandResult {
 	}
 
 	public static <D extends GlueDataObject> List<Map<String, Object>> listOfMapsFromDataObjects(
-			List<D> results, List<String> propertyPaths) {
+			List<D> results, List<String> headers, 
+			BiFunction<D, String, Object> resolveHeaderFunction) {
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
 		for(D object: results) {
-			listOfMaps.add(MapResult.mapFromDataObject(propertyPaths, object));
+			listOfMaps.add(MapResult.mapFromDataObject(headers, object, resolveHeaderFunction));
 		}
 		return listOfMaps;
 	}

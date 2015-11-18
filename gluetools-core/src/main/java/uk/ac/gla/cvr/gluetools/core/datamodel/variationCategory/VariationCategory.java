@@ -16,26 +16,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
 
-@GlueDataClass(defaultListColumns = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY})
+@GlueDataClass(defaultListColumns = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY, 
+		_VariationCategory.NOTIFIABILITY_PROPERTY})
 public class VariationCategory extends _VariationCategory {
 
 	public static final String PARENT_NAME_PATH = _VariationCategory.PARENT_PROPERTY+"."+_VariationCategory.NAME_PROPERTY;
+	public static final String INHERITED_NOTIFIABILITY = "inheritedNotifiability";
 
 	public enum NotifiabilityLevel {
 		NOTIFIABLE,
 		NOT_NOTIFIABLE
 	}
 	
-	private NotifiabilityLevel notifiabilityLevel;
-
 	public NotifiabilityLevel getNotifiabilityLevel() {
-		if(notifiabilityLevel == null) {
-			notifiabilityLevel = buildNotifiabilityLevel();
-		}
-		return notifiabilityLevel;
-	}
-	
-	private NotifiabilityLevel buildNotifiabilityLevel() {
 		return NotifiabilityLevel.valueOf(getNotifiability());
 	}
 
@@ -125,5 +118,16 @@ public class VariationCategory extends _VariationCategory {
 		return ordered;
 	}
 
+	public NotifiabilityLevel getInheritedNotifiability() {
+		List<VariationCategory> ancestors = getAncestors();
+		NotifiabilityLevel current = getNotifiabilityLevel();
+		for(int i = 1; i < ancestors.size(); i++) {
+			NotifiabilityLevel ancestorNotifiability = ancestors.get(i).getNotifiabilityLevel();
+			if(ancestorNotifiability.ordinal() < current.ordinal()) {
+				current = ancestorNotifiability;
+			}
+		}
+		return current;
+	}
 	
 }

@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
@@ -61,11 +62,22 @@ public class MapResult extends CommandResult {
 	}
 	
 	public static <D extends GlueDataObject> Map<String, Object> mapFromDataObject(
-			List<String> propertyPaths, D object) {
+			List<String> headers, D dataObject, 
+			BiFunction<D, String, Object> resolveHeaderFunction) {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
-		for(String propertyPath: propertyPaths) {
-			map.put(propertyPath, object.readNestedProperty(propertyPath));
+		for(String header: headers) {
+			map.put(header, resolveHeaderFunction.apply(dataObject, header));
 		}
 		return map;
 	}
+	
+	public static class DefaultResolveHeaderFunction<D extends GlueDataObject> implements BiFunction<D, String, Object> {
+		@Override
+		public Object apply(D dataObject, String header) {
+			return dataObject.readNestedProperty(header);
+		}
+		
+	}
+	
+	
 }
