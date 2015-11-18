@@ -120,9 +120,9 @@ public class Project extends _Project {
 			}
 		}
 		if(glueConfigContext.includeVariations()) {
-			StringBuffer refSeqConfigBuf = new StringBuffer();
 			List<ReferenceSequence> refSequences = GlueDataObject.query(glueConfigContext.getCommandContext(), ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
 			for(ReferenceSequence refSequence: refSequences) {
+				StringBuffer refSeqConfigBuf = new StringBuffer();
 				refSequence.generateGlueConfig(indent+INDENT, refSeqConfigBuf, glueConfigContext);
 				if(refSeqConfigBuf.length() > 0) {
 					indent(glueConfigBuf, indent).append("reference "+refSequence.getName()).append("\n");
