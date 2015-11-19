@@ -16,7 +16,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NtMinorityVariant;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusSequenceObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
@@ -26,7 +25,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 
@@ -96,7 +94,7 @@ public class SequenceFeatureResult {
 	}
 
 	private void generateContentNotes() {
-		List<VariationDocument> variationDocuments = featureTreeResult.getVariationDocuments();
+		/* List<VariationDocument> variationDocuments = featureTreeResult.getVariationDocuments();
 		for(VariationDocument variationDocument: variationDocuments) {
 			if(variationDocument.getTranscriptionFormat() == TranslationFormat.NUCLEOTIDE) {
 				VariationNote variationNote = variationDocument.generateNtVariationNote(ntQueryAlignedSegments);
@@ -104,19 +102,19 @@ public class SequenceFeatureResult {
 					ntVariationNotes.add(variationNote);
 				}
 			}
-		}
+		}*/
 		generateNtDifferenceNotes(featureTreeResult.getNtReferenceSegments());
 		
 		
 		if(aaQueryAlignedSegments != null) {
-			for(VariationDocument variationDocument: variationDocuments) {
+			/*for(VariationDocument variationDocument: variationDocuments) {
 				if(variationDocument.getTranscriptionFormat() == TranslationFormat.AMINO_ACID) {
 					VariationNote variationNote = variationDocument.generateAaVariationNote(aaQueryAlignedSegments);
 					if(variationNote != null) {
 						aaVariationNotes.add(variationNote);
 					}
 				}
-			}
+			}*/
 			final Map<Integer, List<VariationNote>> refStartToVariationNotes = new LinkedHashMap<Integer, List<VariationNote>>();
 			for(VariationNote aaVariationNote: aaVariationNotes) {
 				refStartToVariationNotes.compute(aaVariationNote.getRefStart(), 

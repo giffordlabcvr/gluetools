@@ -215,7 +215,8 @@ public class FeatureLocation extends _FeatureLocation {
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		if(glueConfigContext.includeVariations()) {
 			for(Variation variation: getVariations()) {
-				indent(glueConfigBuf, indent).append("create variation ").append(variation.getName());
+				indent(glueConfigBuf, indent).append("create variation ").append(variation.getName())
+					.append(" -t ").append(variation.getTranscriptionType());
 				String description = variation.getDescription();
 				if(description != null) {
 					glueConfigBuf.append(" \""+description+"\"");

@@ -4,6 +4,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 
 /**
@@ -21,6 +22,7 @@ public abstract class _Variation extends GlueDataObject {
     public static final String REGEX_PROPERTY = "regex";
     public static final String TRANSCRIPTION_TYPE_PROPERTY = "transcriptionType";
     public static final String FEATURE_LOC_PROPERTY = "featureLoc";
+    public static final String POSITION_VARIATIONS_PROPERTY = "positionVariations";
     public static final String VCAT_MEMBERSHIPS_PROPERTY = "vcatMemberships";
 
     public static final String FEATURE_PK_COLUMN = "FEATURE";
@@ -75,6 +77,18 @@ public abstract class _Variation extends GlueDataObject {
 
     public FeatureLocation getFeatureLoc() {
         return (FeatureLocation)readProperty(FEATURE_LOC_PROPERTY);
+    }
+
+
+    public void addToPositionVariations(PositionVariation obj) {
+        addToManyTarget(POSITION_VARIATIONS_PROPERTY, obj, true);
+    }
+    public void removeFromPositionVariations(PositionVariation obj) {
+        removeToManyTarget(POSITION_VARIATIONS_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<PositionVariation> getPositionVariations() {
+        return (List<PositionVariation>)readProperty(POSITION_VARIATIONS_PROPERTY);
     }
 
 

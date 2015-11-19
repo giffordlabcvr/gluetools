@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -9,6 +12,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
@@ -49,8 +55,45 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 					getRefSeqName(), getFeatureName(), getVariationName(), Integer.toString(refStart), Integer.toString(refEnd));
 		}
 		Variation variation = lookupVariation(cmdContext);
+		
+		Integer oldRefStart = variation.getRefStart();
+		Integer oldRefEnd = variation.getRefEnd();
+		
 		variation.setRefStart(refStart);
 		variation.setRefEnd(refEnd);
+		
+		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
+		
+		Set<Integer> positionsToRemove = new LinkedHashSet<Integer>();
+		Set<Integer> positionsToAdd = new LinkedHashSet<Integer>();
+
+		if(oldRefStart != null && oldRefEnd != null) {
+			for(int i = oldRefStart; i <= oldRefEnd; i++) {
+				if(i < refStart || i > refEnd) {
+					positionsToRemove.add(i);
+				}
+			}
+		}
+		for(int i = refStart; i <= refEnd; i++) {
+			if( (oldRefStart != null && i >= oldRefStart) 
+				|| (oldRefEnd != null && i > oldRefEnd) ) {
+				continue;
+			}
+			positionsToAdd.add(i);
+		}
+		for(Integer positionToRemove: positionsToRemove) {
+			GlueDataObject.delete(cmdContext, PositionVariation.class, 
+					PositionVariation.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), 
+							positionToRemove, variation.getTranslationFormat()), true);
+		}
+		for(Integer positionToAdd: positionsToAdd) {
+			PositionVariation positionVariation = GlueDataObject.create(cmdContext, PositionVariation.class, 
+					PositionVariation.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), 
+							positionToAdd, variation.getTranslationFormat()), true);
+			positionVariation.setFeatureLocation(featureLoc);
+			positionVariation.setVariation(variation);
+		}
+		
 		cmdContext.commit();
 		return new UpdateResult(Variation.class, 1);
 	}

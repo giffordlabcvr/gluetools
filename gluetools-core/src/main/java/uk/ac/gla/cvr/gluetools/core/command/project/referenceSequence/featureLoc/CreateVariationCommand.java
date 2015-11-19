@@ -15,26 +15,35 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 
 @CommandClass( 
 		commandWords={"create","variation"}, 
-		docoptUsages={"<variationName> [<description>]"},
+		docoptUsages={"<variationName> [-t <type>] [<description>]"},
+		docoptOptions={"-t <type>, --translationType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Create a new feature variation", 
-		furtherHelp="A variation is a known motif which may occur in a sequence aligned to a reference.") 
+		furtherHelp="A variation is a known motif which may occur in a sequence aligned to a reference. "+
+		"The <type> of the variation defines whether its regular expression pattern is matched against the "+
+		"nucleotides in the sequence or against the amino acid translation. If omitted, NUCLEOTIDE is the default.") 
 public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
 	public static final String VARIATON_NAME = "variationName";
 	public static final String DESCRIPTION = "description";
-	
+	public static final String TRANSLATION_TYPE = "translationType";
+
 	private String variationName;
 	private Optional<String> description;
+	private TranslationFormat translationFormat;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		variationName = PluginUtils.configureStringProperty(configElem, VARIATON_NAME, true);
+		translationFormat = Optional.ofNullable(
+				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSLATION_TYPE, false)).
+				orElse(TranslationFormat.NUCLEOTIDE);
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DESCRIPTION, false));
 	}
 
@@ -47,11 +56,18 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 						featureLoc.getReferenceSequence().getName(), 
 						featureLoc.getFeature().getName(), variationName), false);
 		variation.setFeatureLoc(featureLoc);
+		variation.setTranscriptionType(translationFormat.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
 		cmdContext.commit();
 		return new CreateResult(Variation.class, 1);
 	}
 
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {}
+	public static class Completer extends AdvancedCmdCompleter {
+		public Completer() {
+			super();
+			registerEnumLookup("type", TranslationFormat.class);
+		}
+	}
+
 }

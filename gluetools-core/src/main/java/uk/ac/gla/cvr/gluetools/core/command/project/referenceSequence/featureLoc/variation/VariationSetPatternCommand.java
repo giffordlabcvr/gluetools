@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
@@ -15,50 +14,35 @@ import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"set","pattern"}, 
-		docoptUsages={"[-t <type>] <regex>"},
-		docoptOptions={"-t <type>, --translationType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
+		docoptUsages={"<regex>"},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Set the variation's regular expression and type",
-		furtherHelp="The <type> of the variation defines whether the regular expression pttern is matched against the "+
-		"nucleotides in the sequence or against the amino acid translation.") 
+		description="Set the variation's regular expression pattern") 
 public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 
-	public static final String TRANSLATION_TYPE = "translationType";
 	public static final String REGEX = "regex";
 	
-	private TranslationFormat translationFormat;
 	private Pattern regex;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		translationFormat = Optional.ofNullable(
-				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSLATION_TYPE, false)).
-				orElse(TranslationFormat.NUCLEOTIDE);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
 	}
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		Variation variation = lookupVariation(cmdContext);
-		variation.setTranscriptionType(translationFormat.name());
 		variation.setRegex(regex.pattern());
 		cmdContext.commit();
 		return new UpdateResult(Variation.class, 1);
 	}
 
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
-		public Completer() {
-			super();
-			registerEnumLookup("type", TranslationFormat.class);
-		}
-	}
+	public static class Completer extends AdvancedCmdCompleter {}
 
 	
 }

@@ -33,7 +33,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	private ObjectReader objectReader = null;
 	
 	private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
-	private List<VariationDocument> variationDocuments = new ArrayList<VariationDocument>();
 	
 	private ReferenceFeatureTreeResult parentTreeResult;
 	
@@ -135,12 +134,14 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		featureTreeResult.referenceSegments.forEach(refSeg -> {
 			refSeg.toDocument(refSegArray.addObject());
 		});
+		/*
 		ArrayBuilder variationArray = objectBuilder.setArray("variation");
 		for(Variation variation: featureLocation.getVariations()) {
 			VariationDocument variationDocument = variation.getVariationDocument();
 			featureTreeResult.variationDocuments.add(variationDocument);
 			variationDocument.toDocument(variationArray.addObject());
 		}
+		*/
 		return featureTreeResult;
 	}
 	
@@ -182,10 +183,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 
 	public List<ReferenceSegment> getReferenceSegments() {
 		return referenceSegments;
-	}
-
-	public List<VariationDocument> getVariationDocuments() {
-		return variationDocuments;
 	}
 
 	public boolean isInformational() {

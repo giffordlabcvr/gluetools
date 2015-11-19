@@ -187,6 +187,18 @@ submitSequencesAnalysis
 			error(glueWS.raiseErrorDialog(dialogs, "listing sequence formats"));
 
 		    glueWS.runGlueCommand("", {
+		    	list: { "variation-category": {} }
+		    }).success(function(data, status, headers, config) {
+				  console.info('result', data);
+				  var vcatList = tableResultAsObjectList(data);
+
+				  $scope.variationCategories = {};
+				  _.each(vcatList, function(vcatObj, idx, list) { $scope.variationCategories[vcatObj.name] = vcatObj; } ); 
+				  console.info('variationCategories', $scope.variationCategories);
+			}).
+			error(glueWS.raiseErrorDialog(dialogs, "listing variation-categories"));
+
+		    glueWS.runGlueCommand("", {
 		    	list: { alignment: {} }
 		    }).success(function(data, status, headers, config) {
 				  console.info('result', data);

@@ -49,6 +49,13 @@
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
+	<db-entity name="POSITION_VARIATION">
+		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="POSITION" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="TRANSLATION_TYPE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="20"/>
+		<db-attribute name="VARIATION" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="PROJECT_SETTING">
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="VALUE" type="VARCHAR" length="200"/>
@@ -123,6 +130,10 @@
 	<obj-entity name="Module" className="uk.ac.gla.cvr.gluetools.core.datamodel.module.Module" dbEntityName="MODULE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="config" type="byte[]" db-attribute-path="CONFIG"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+	</obj-entity>
+	<obj-entity name="PositionVariation" className="uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation" dbEntityName="POSITION_VARIATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="position" type="java.lang.Integer" db-attribute-path="POSITION"/>
+		<obj-attribute name="translationType" type="java.lang.String" db-attribute-path="TRANSLATION_TYPE"/>
 	</obj-entity>
 	<obj-entity name="ProjectSetting" className="uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting" dbEntityName="PROJECT_SETTING" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
@@ -201,6 +212,10 @@
 	<db-relationship name="feature" source="FEATURE_LOCATION" target="FEATURE" toMany="false">
 		<db-attribute-pair source="FEATURE" target="NAME"/>
 	</db-relationship>
+	<db-relationship name="positionVariations" source="FEATURE_LOCATION" target="POSITION_VARIATION" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
+	</db-relationship>
 	<db-relationship name="referenceSequence" source="FEATURE_LOCATION" target="REFERENCE_SEQUENCE" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="NAME"/>
 	</db-relationship>
@@ -218,6 +233,15 @@
 	<db-relationship name="featureLocation" source="FEATURE_SEGMENT" target="FEATURE_LOCATION" toMany="false">
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
+	</db-relationship>
+	<db-relationship name="featureLocation" source="POSITION_VARIATION" target="FEATURE_LOCATION" toMany="false">
+		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
+	</db-relationship>
+	<db-relationship name="variation" source="POSITION_VARIATION" target="VARIATION" toMany="false">
+		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
+		<db-attribute-pair source="VARIATION" target="NAME"/>
 	</db-relationship>
 	<db-relationship name="alignmentsWhereRefSequence" source="REFERENCE_SEQUENCE" target="ALIGNMENT" toMany="true">
 		<db-attribute-pair source="NAME" target="REF_SEQUENCE"/>
@@ -260,6 +284,11 @@
 		<db-attribute-pair source="REF_SEQUENCE" target="VARIATION_REF_SEQ"/>
 		<db-attribute-pair source="FEATURE" target="VARIATION_FEATURE"/>
 	</db-relationship>
+	<db-relationship name="positionVariations" source="VARIATION" target="POSITION_VARIATION" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="FEATURE" target="FEATURE"/>
+		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
+		<db-attribute-pair source="NAME" target="VARIATION"/>
+	</db-relationship>
 	<db-relationship name="vcatMemberships" source="VARIATION" target="VCAT_MEMBERSHIP" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="VARIATION_NAME"/>
 	</db-relationship>
@@ -293,11 +322,14 @@
 	<obj-relationship name="featureMetatags" source="Feature" target="FeatureMetatag" deleteRule="Cascade" db-relationship-path="metatags"/>
 	<obj-relationship name="parent" source="Feature" target="Feature" deleteRule="Nullify" db-relationship-path="parent"/>
 	<obj-relationship name="feature" source="FeatureLocation" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
+	<obj-relationship name="positionVariations" source="FeatureLocation" target="PositionVariation" deleteRule="Cascade" db-relationship-path="positionVariations"/>
 	<obj-relationship name="referenceSequence" source="FeatureLocation" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="referenceSequence"/>
 	<obj-relationship name="segments" source="FeatureLocation" target="FeatureSegment" deleteRule="Cascade" db-relationship-path="segments"/>
 	<obj-relationship name="variations" source="FeatureLocation" target="Variation" deleteRule="Cascade" db-relationship-path="variations"/>
 	<obj-relationship name="feature" source="FeatureMetatag" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 	<obj-relationship name="featureLocation" source="FeatureSegment" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLocation"/>
+	<obj-relationship name="featureLocation" source="PositionVariation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLocation"/>
+	<obj-relationship name="variation" source="PositionVariation" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignmentsWhereRefSequence"/>
 	<obj-relationship name="featureLocations" source="ReferenceSequence" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="featureLocations"/>
 	<obj-relationship name="sequence" source="ReferenceSequence" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
@@ -308,6 +340,7 @@
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
 	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
 	<obj-relationship name="featureLoc" source="Variation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLoc"/>
+	<obj-relationship name="positionVariations" source="Variation" target="PositionVariation" deleteRule="Cascade" db-relationship-path="positionVariations"/>
 	<obj-relationship name="vcatMemberships" source="Variation" target="VcatMembership" deleteRule="Cascade" db-relationship-path="members"/>
 	<obj-relationship name="children" source="VariationCategory" target="VariationCategory" deleteRule="Deny" db-relationship-path="children"/>
 	<obj-relationship name="memberships" source="VariationCategory" target="VcatMembership" deleteRule="Cascade" db-relationship-path="memberships"/>

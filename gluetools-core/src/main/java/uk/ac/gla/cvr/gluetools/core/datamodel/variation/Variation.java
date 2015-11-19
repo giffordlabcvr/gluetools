@@ -145,7 +145,7 @@ public class Variation extends _Variation {
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		String regex = getRegex();
 		if(regex != null) {
-			indent(glueConfigBuf, indent).append("set pattern -t "+getTranscriptionType()+" \""+regex+"\"").append("\n");
+			indent(glueConfigBuf, indent).append("set pattern \""+regex+"\"").append("\n");
 		}
 		Integer refStart = getRefStart();
 		if(refStart != null) {

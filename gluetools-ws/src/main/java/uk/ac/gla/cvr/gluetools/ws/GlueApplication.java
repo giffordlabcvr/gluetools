@@ -4,6 +4,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.Context;
@@ -18,6 +20,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 import com.mysql.jdbc.AbandonedConnectionCleanupThread;
 
@@ -49,6 +52,11 @@ public class GlueApplication extends ResourceConfig implements ServletContextLis
 			throw new GlueApplicationException("JNDI error. Please ensure the correct webapp config file exists in $CATALINA_BASE/conf/[enginename]/[hostname]/ or elsewhere", e);
 		}
     	GluetoolsEngine.initInstance(configFilePath, migrateSchema);
+		Level glueLogLevel = Level.FINEST;
+		GlueLogger.setLogLevel(glueLogLevel);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setLevel(glueLogLevel);
+		GlueLogger.getGlueLogger().addHandler(handler);
 	}
 
 	@Override

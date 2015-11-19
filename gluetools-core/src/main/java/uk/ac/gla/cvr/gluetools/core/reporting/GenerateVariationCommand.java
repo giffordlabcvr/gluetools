@@ -141,6 +141,7 @@ public class GenerateVariationCommand extends ModuleProvidedCommand<GenerateVari
 					if(!alreadyExists) {
 						cmdContext.cmdBuilder(CreateVariationCommand.class)
 						.set(CreateVariationCommand.VARIATON_NAME, variationName)
+						.set(CreateVariationCommand.TRANSLATION_TYPE, translationType)
 						.execute();
 					}
 					try ( ModeCloser variationMode = cmdContext.pushCommandMode("variation", variationName ) ) {
@@ -151,7 +152,6 @@ public class GenerateVariationCommand extends ModuleProvidedCommand<GenerateVari
 							.execute();
 							cmdContext.cmdBuilder(VariationSetPatternCommand.class)
 							.set(VariationSetPatternCommand.REGEX, regex)
-							.set(VariationSetPatternCommand.TRANSLATION_TYPE, translationType)
 							.execute();
 						}
 						for(String vcatName: vcatNames) {
