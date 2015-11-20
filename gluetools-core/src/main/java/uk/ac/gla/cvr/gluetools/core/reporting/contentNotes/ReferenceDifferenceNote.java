@@ -36,10 +36,10 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 	public ReferenceDifferenceNote(int refStart, int refEnd, CharSequence refChars, CharSequence queryChars, 
 			boolean includeDifferenceSummaryNotes, 
 			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat, 
-			Set<String> variationRestrictions) {
+			Set<String> variationRestrictions, Set<String> vcatRestrictions) {
 		super(refStart, refEnd);
 		init(refStart, refChars, queryChars, includeDifferenceSummaryNotes, cmdContext, referenceName, featureName, translationFormat, 
-				variationRestrictions);
+				variationRestrictions, vcatRestrictions);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 	
 	private void init(int refStart, CharSequence refChars, CharSequence queryChars, boolean includeVariationDocuments, 
 			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat,
-			Set<String> variationRestrictions) {
+			Set<String> variationRestrictions, Set<String> vcatRestrictions) {
 		int refPos = refStart;
 		char[] diffChars = new char[refChars.length()];
 		List<Integer> differencePositions = new ArrayList<Integer>();
@@ -97,6 +97,13 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 				query.addOrdering(new Ordering(PositionVariation.VARIATION_NAME_PATH, SortOrder.ASCENDING));
 				List<PositionVariation> positionVariations = GlueDataObject.query(cmdContext, PositionVariation.class, query);
 				List<Variation> variationsAtPosition = positionVariations.stream().map(PositionVariation::getVariation).collect(Collectors.toList());
+				if(vcatRestrictions != null) {
+					variationsAtPosition = variationsAtPosition.stream()
+							.filter(v -> v.getVariationCategoryNames().stream().anyMatch(vc -> vcatRestrictions.contains(vc)))
+							.collect(Collectors.toList());
+				}
+				
+				
 				variationsAtPosition = variationsAtPosition.stream().filter(v -> !variationNames.contains(v.getName())).collect(Collectors.toList());
 				variationNames.addAll(variationsAtPosition.stream().map(v -> v.getName()).collect(Collectors.toList()));
 				variationsToScan.addAll(variationsAtPosition);

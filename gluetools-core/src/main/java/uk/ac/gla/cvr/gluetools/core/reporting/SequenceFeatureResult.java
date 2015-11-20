@@ -53,7 +53,8 @@ public class SequenceFeatureResult {
 			List<QueryAlignedSegment> seqToRefAlignedSegments, 
 			Map<String, SequenceFeatureResult> featureToSequenceFeatureResult, 
 			Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter, 
-			Set<String> variationRestrictions) {
+			Set<String> variationRestrictions,
+			Set<String> vcatRestrictions) {
 		// intersect the seqToRefAlignedSegments with the reference segments of the feature we are looking at
 		List<QueryAlignedSegment> featureQueryAlignedSegments = 
 				ReferenceSegment.intersection(featureTreeResult.getReferenceSegments(), seqToRefAlignedSegments, 
@@ -79,7 +80,7 @@ public class SequenceFeatureResult {
 				}
 			}
 		}
-		generateContentNotes(cmdContext, variationRestrictions);
+		generateContentNotes(cmdContext, variationRestrictions, vcatRestrictions);
 	}
 
 
@@ -94,46 +95,14 @@ public class SequenceFeatureResult {
 		}
 	}
 
-	private void generateContentNotes(CommandContext cmdContext, Set<String> variationRestrictions) {
-		/* List<VariationDocument> variationDocuments = featureTreeResult.getVariationDocuments();
-		for(VariationDocument variationDocument: variationDocuments) {
-			if(variationDocument.getTranscriptionFormat() == TranslationFormat.NUCLEOTIDE) {
-				VariationNote variationNote = variationDocument.generateNtVariationNote(ntQueryAlignedSegments);
-				if(variationNote != null) {
-					ntVariationNotes.add(variationNote);
-				}
-			}
-		}*/
+	private void generateContentNotes(CommandContext cmdContext, Set<String> variationRestrictions, Set<String> vcatRestrictions) {
 		generateNtDifferenceNotes(featureTreeResult.getNtReferenceSegments());
-		
-		
 		if(aaQueryAlignedSegments != null) {
-			/*for(VariationDocument variationDocument: variationDocuments) {
-				if(variationDocument.getTranscriptionFormat() == TranslationFormat.AMINO_ACID) {
-					VariationNote variationNote = variationDocument.generateAaVariationNote(aaQueryAlignedSegments);
-					if(variationNote != null) {
-						aaVariationNotes.add(variationNote);
-					}
-				}
-			}*/
-			/*final Map<Integer, List<VariationNote>> refStartToVariationNotes = new LinkedHashMap<Integer, List<VariationNote>>();
-			for(VariationNote aaVariationNote: aaVariationNotes) {
-				refStartToVariationNotes.compute(aaVariationNote.getRefStart(), 
-					(k, list) -> 
-					{ 
-						if(list == null) { 
-							list = new ArrayList<VariationNote>(); 
-						} 
-						list.add(aaVariationNote); 
-						return list;
-					});
-			}
-			*/
 			List<AaReferenceSegment> aaReferenceSegments = featureTreeResult.getAaReferenceSegments();
 			if(aaReferenceSegments != null) {
 				aaReferenceDifferenceNotes = generateAaDifferenceNotes(aaReferenceSegments, aaQueryAlignedSegments, 
 						cmdContext, featureTreeResult.getReferenceName(), featureTreeResult.getFeatureName(), TranslationFormat.AMINO_ACID, 
-						variationRestrictions);
+						variationRestrictions, vcatRestrictions);
 			}
 		}
 	}
@@ -149,7 +118,7 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(ntRefSeg.getRefEnd(), ntQuerySeg.getRefEnd());
 						CharSequence refNts = ntRefSeg.getNucleotidesSubsequence(refStart, refEnd);
 						CharSequence queryNts = ntQuerySeg.getNucleotidesSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false, null, null, null, null, null);
+						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false, null, null, null, null, null, null);
 					}
 		}));
 	}
@@ -159,7 +128,8 @@ public class SequenceFeatureResult {
 	private List<ReferenceDifferenceNote> generateAaDifferenceNotes(
 			List<AaReferenceSegment> aaReferenceSegments,
 			List<AaReferenceSegment> aaQueryAlignedSegments, 
-			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat, Set<String> variationRestrictions) {
+			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat, 
+			Set<String> variationRestrictions, Set<String> vcatRestrictions) {
 		return ReferenceSegment.intersection(aaReferenceSegments, aaQueryAlignedSegments, 
 				new BiFunction<AaReferenceSegment, AaReferenceSegment, ReferenceDifferenceNote>() {
 					@Override
@@ -170,7 +140,7 @@ public class SequenceFeatureResult {
 						CharSequence queryAas = aaQuerySeg.getAminoAcidsSubsequence(refStart, refEnd);
 						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, featureTreeResult.isIncludedInSummary(),
 								cmdContext, referenceName, featureName, translationFormat,
-								variationRestrictions);
+								variationRestrictions, vcatRestrictions);
 					}
 
 		});
