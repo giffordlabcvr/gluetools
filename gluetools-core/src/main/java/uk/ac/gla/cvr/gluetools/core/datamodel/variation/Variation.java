@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -128,7 +129,7 @@ public class Variation extends _Variation {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
 				getRegexPattern(), getDescription(), getTranslationFormat(), 
-				getVariationCategoryNames());
+				new LinkedHashSet<String>(getVariationCategoryNames()));
 	}
 
 	public List<String> getVariationCategoryNames() {

@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,12 +25,12 @@ public class VariationDocument {
 	private Pattern regex;
 	private String description;
 	private TranslationFormat transcriptionFormat;
-	private List<String> variationCategories;
+	private LinkedHashSet<String> variationCategories;
 	
 	public VariationDocument(String name, int refStart, int refEnd,
 			Pattern regex, String description,
 			TranslationFormat transcriptionFormat, 
-			List<String> variationCategories) {
+			LinkedHashSet<String> variationCategories) {
 		super();
 		this.name = name;
 		this.refStart = refStart;
@@ -108,6 +109,10 @@ public class VariationDocument {
 			return new VariationNote(getName(), getRefStart(), getRefEnd());
 		}
 		return null;
+	}
+
+	public LinkedHashSet<String> getVariationCategories() {
+		return variationCategories;
 	}
 
 	

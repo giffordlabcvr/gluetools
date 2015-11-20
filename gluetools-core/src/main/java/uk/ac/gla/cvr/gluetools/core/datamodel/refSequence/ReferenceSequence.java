@@ -54,13 +54,13 @@ public class ReferenceSequence extends _ReferenceSequence {
 
 
 	public ReferenceFeatureTreeResult getFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
-		ReferenceFeatureTreeResult featureTree = new ReferenceFeatureTreeResult();
+		ReferenceFeatureTreeResult featureTree = new ReferenceFeatureTreeResult(getName());
 		buildTree(cmdContext, limitingFeature, recursive, featureTree);
 		return featureTree;
 	}
 
 	public ReferenceRealisedFeatureTreeResult getRealisedFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
-		ReferenceRealisedFeatureTreeResult featureTree = new ReferenceRealisedFeatureTreeResult();
+		ReferenceRealisedFeatureTreeResult featureTree = new ReferenceRealisedFeatureTreeResult(getName());
 		buildTree(cmdContext, limitingFeature, recursive, featureTree);
 		return featureTree;
 	}

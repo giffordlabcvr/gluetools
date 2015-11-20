@@ -23,12 +23,12 @@ public class ReferenceRealisedFeatureTreeResult extends ReferenceFeatureTreeResu
 	private List<NtReferenceSegment> ntReferenceSegments = null;
 	private List<AaReferenceSegment> aaReferenceSegments = null;
 
-	protected ReferenceRealisedFeatureTreeResult() {
-		super();
+	protected ReferenceRealisedFeatureTreeResult(String referenceName) {
+		super(referenceName);
 	}
 
-	protected ReferenceRealisedFeatureTreeResult(ReferenceRealisedFeatureTreeResult parentTreeResult, ObjectBuilder objectBuilder) {
-		super(parentTreeResult, objectBuilder);
+	protected ReferenceRealisedFeatureTreeResult(String referenceName, ReferenceRealisedFeatureTreeResult parentTreeResult, ObjectBuilder objectBuilder) {
+		super(referenceName, parentTreeResult, objectBuilder);
 	}
 
 	protected ReferenceRealisedFeatureTreeResult addFeature(Feature feature) {
@@ -103,7 +103,7 @@ public class ReferenceRealisedFeatureTreeResult extends ReferenceFeatureTreeResu
 	protected ReferenceFeatureTreeResult createChildFeatureTreeResult(
 			ReferenceFeatureTreeResult parentFeatureTreeResult,
 			ObjectBuilder objectBuilder) {
-		return new ReferenceRealisedFeatureTreeResult((ReferenceRealisedFeatureTreeResult) parentFeatureTreeResult, objectBuilder);
+		return new ReferenceRealisedFeatureTreeResult(getReferenceName(), (ReferenceRealisedFeatureTreeResult) parentFeatureTreeResult, objectBuilder);
 	}
 	
 	public List<NtReferenceSegment> getNtReferenceSegments() {

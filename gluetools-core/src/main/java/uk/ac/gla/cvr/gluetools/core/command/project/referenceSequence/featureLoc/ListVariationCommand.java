@@ -91,6 +91,8 @@ public class ListVariationCommand extends FeatureLocModeCommand<ListVariationRes
 						.andExp(ExpressionFactory
 								.matchExp(PositionVariation.REF_SEQ_NAME_PATH, getRefSeqName()))
 						.andExp(ExpressionFactory
+								.matchExp(PositionVariation.TRANSLATION_TYPE_PROPERTY, translationFormat.name()))
+						.andExp(ExpressionFactory
 								.greaterOrEqualExp(PositionVariation.POSITION_PROPERTY, refStart))
 						.andExp(ExpressionFactory
 								.lessOrEqualExp(PositionVariation.POSITION_PROPERTY, refEnd))

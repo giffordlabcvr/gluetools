@@ -80,8 +80,8 @@ public class AlignmentAnalysisCommand
 
 	@Override
 	protected AlignmentAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter modulePlugin) {
-		return modulePlugin.doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, excludeVcatName, referenceName, featureName, 
-				excludeX);
+		return modulePlugin.doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, excludeVcatName, 
+				referenceName, featureName, null, excludeX);
 	}
 
 	

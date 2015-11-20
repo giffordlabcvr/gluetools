@@ -14,8 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -33,18 +31,20 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	private ObjectReader objectReader = null;
 	
 	private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
+	private String referenceName;
 	
 	private ReferenceFeatureTreeResult parentTreeResult;
 	
 	private Map<String, ReferenceFeatureTreeResult> featureNameToTreeResult = 
 			new LinkedHashMap<String, ReferenceFeatureTreeResult>();
 
-	protected ReferenceFeatureTreeResult() {
+	protected ReferenceFeatureTreeResult(String referenceName) {
 		super("referenceFeatureTreeResult");
+		this.referenceName = referenceName;
 	}
 
-	protected ReferenceFeatureTreeResult(ReferenceFeatureTreeResult parentTreeResult, ObjectBuilder objectBuilder) {
-		this();
+	protected ReferenceFeatureTreeResult(String referenceName, ReferenceFeatureTreeResult parentTreeResult, ObjectBuilder objectBuilder) {
+		this(referenceName);
 		this.parentTreeResult = parentTreeResult;
 		this.objectBuilder = objectBuilder;
  	 	this.objectReader = objectBuilder.getObjectReader();
@@ -103,11 +103,12 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	protected ReferenceFeatureTreeResult createChildFeatureTreeResult(
 			ReferenceFeatureTreeResult parentFeatureTreeResult,
 			ObjectBuilder objectBuilder) {
-		return new ReferenceFeatureTreeResult(parentFeatureTreeResult, objectBuilder);
+		return new ReferenceFeatureTreeResult(referenceName, parentFeatureTreeResult, objectBuilder);
 	}
 
 	private void featureToDocument(Feature feature, ObjectBuilder objectBuilder) {
 		Set<FeatureMetatag.Type> metatagTypes = feature.getMetatagTypes();
+		objectBuilder.set("referenceName", referenceName);
 		objectBuilder.set("featureName", feature.getName());
 		objectBuilder.set("featureDescription", feature.getDescription());
 		Feature orfAncestor = feature.getOrfAncestor();
@@ -170,6 +171,10 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 
 	public String getFeatureName() {
 		return getObjectReader().stringValue("featureName");
+	}
+
+	public String getReferenceName() {
+		return referenceName;
 	}
 
 	public Set<String> getFeatureMetatags() {

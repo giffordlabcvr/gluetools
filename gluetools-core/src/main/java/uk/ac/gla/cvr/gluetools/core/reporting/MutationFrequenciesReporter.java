@@ -43,8 +43,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceRealisedFeatu
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusMinorityVariantFilter;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
@@ -56,7 +55,6 @@ import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentAnalysisCommand.Alignment
 import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentVariationScanCommand.AlignmentVariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.reporting.TransientAnalysisCommand.TransientAnalysisResult;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
-import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -147,7 +145,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		
 		GlueLogger.getGlueLogger().finest("Generating sequence feature results");
 		// for each sequence, and each alignment in its path, generate SequenceFeatureResults.
-		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, null, null));
+		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, null, null, null));
 		
 		return new TransientAnalysisResult(new ArrayList<AlignmentResult>(almtNameToAlmtResult.values()), seqResults);
 	}
@@ -238,10 +236,10 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	}
 
 	private void generateSequenceFeatureResults(CommandContext cmdContext, Map<String, AlignmentResult> almtNameToAlmtResult,
-			SequenceResult seqResult, Set<String> featureRestrictions, Set<String> referenceRestrictions) {
+			SequenceResult seqResult, Set<String> featureRestrictions, Set<String> referenceRestrictions, Set<String> variationRestrictions) {
 		for(SequenceAlignmentResult sequenceAlignmentResult : seqResult.seqAlignmentResults) {
 			sequenceAlignmentResult.generateSequenceAlignmentFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, 
-					s2cMinorityVariantFilter, featureRestrictions, referenceRestrictions);
+					s2cMinorityVariantFilter, featureRestrictions, referenceRestrictions, variationRestrictions);
 		}
 	}
 	
@@ -366,11 +364,12 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			String excludeVcatName,
 			String referenceName, 
 			String featureName,
+			String variationName,
 			boolean excludeX) {
 		
 		AlgnmentAnalysisResult almtAnalysisResult = doAlignmentAnalysis(
 				cmdContext, alignmentName, recursive, whereClause,
-				referenceName, featureName);
+				referenceName, featureName, variationName);
 		
 		List<AaReferenceSegment> aaReferenceSegments = almtAnalysisResult.featureTreeResult.getAaReferenceSegments();
 		
@@ -390,7 +389,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				if(seqAlmtResult.getReferenceName().equals(referenceName)) {
 					SequenceFeatureResult sequenceFeatureResult = seqAlmtResult.getSequenceFeatureResult(featureName);
 
-					// compute those AA locations where a variation is excluded from the results because it belongs to an excluded
+					// compute those AA locations which are excluded from the results because they match variations belonging to an excluded
 					// variation category.
 					Set<Integer> excludedVariationCategoryPositions = 
 							computeExcludedVariationCategoryPositions(cmdContext, 
@@ -441,7 +440,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private AlgnmentAnalysisResult doAlignmentAnalysis(
 			CommandContext cmdContext, String alignmentName, boolean recursive,
 			Optional<Expression> whereClause, String referenceName,
-			String featureName) {
+			String featureName, 
+			String variationName) {
 		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		if(feature.isInformational()) {
 			throw new MutationFrequenciesException(MutationFrequenciesException.Code.FEATURE_IS_INFORMATIONAL, featureName);
@@ -505,9 +505,18 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			}
 		}
 		
-		Set<String> referenceRestrictions = new LinkedHashSet<String>();
-		referenceRestrictions.add(referenceName);
-		
+		Set<String> referenceRestrictions = null;
+		if(referenceName != null) {
+			referenceRestrictions = new LinkedHashSet<String>();
+			referenceRestrictions.add(referenceName);
+		}
+
+		Set<String> variationRestrictions = null;
+		if(variationName != null) {
+			variationRestrictions = new LinkedHashSet<String>();
+			variationRestrictions.add(variationName);
+		}
+
 		// for each sequence, initialise first sequence alignment result from stored constrained alignment.
 		seqResults.forEach(seqResult -> {
 			SequenceAlignmentResult initialSeqAlmtResult = seqResult.seqAlignmentResults.get(0);
@@ -531,7 +540,9 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		seqResults.forEach(seqResult -> propagateAlignedSegments(cmdContext, almtNameToAlmtResult, seqResult));
 		
 		// for each sequence, and each alignment in its path, generate SequenceFeatureResults.
-		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, featureRestrictions, referenceRestrictions));
+		for(SequenceResult seqResult: seqResults) {
+			generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, featureRestrictions, referenceRestrictions, variationRestrictions);
+		}
 
 		AlgnmentAnalysisResult almtAnalysisResult = new AlgnmentAnalysisResult(featureTreeResult, seqResults);
 		return almtAnalysisResult;
@@ -543,19 +554,18 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			SequenceFeatureResult sequenceFeatureResult, String excludeVcatName) {
 		LinkedHashSet<Integer> excludedVariationCategoryPositions = new LinkedHashSet<Integer>();
 		if(excludeVcatName != null) {
-			VariationCategory excludedVcat = GlueDataObject.lookup(cmdContext, VariationCategory.class, VariationCategory.pkMap(excludeVcatName));
-			List<VariationNote> aaVariationNotes = sequenceFeatureResult.getAaVariationNotes();
-			for(VariationNote aaVariationNote: aaVariationNotes) {
-				Variation variation = GlueDataObject.lookup(cmdContext, Variation.class, 
-						Variation.pkMap(referenceName, featureName, aaVariationNote.getVariationName()));
-				boolean isExcluded = variation.getVcatMemberships().stream().anyMatch(vcm -> vcm.getCategory().getAncestors().contains(excludedVcat));
-				if(isExcluded) {
-					for(int i = aaVariationNote.getRefStart(); i <= aaVariationNote.getRefEnd(); i++) {
-						excludedVariationCategoryPositions.add(i);
+			List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = sequenceFeatureResult.getAaReferenceDifferenceNotes();
+			for(ReferenceDifferenceNote aaReferenceDifferenceNote: aaReferenceDifferenceNotes) {
+				List<VariationDocument> foundVariationDocuments = aaReferenceDifferenceNote.getFoundVariationDocuments();
+				for(VariationDocument foundVariationDocument: foundVariationDocuments) {
+					if(foundVariationDocument.getVariationCategories().contains(excludeVcatName)) {
+						for(int i = foundVariationDocument.getRefStart(); i <= foundVariationDocument.getRefEnd(); i++) {
+							excludedVariationCategoryPositions.add(i);
+						}
+						
 					}
 				}
 			}
-			
 		}
 		return excludedVariationCategoryPositions;
 	}
@@ -609,7 +619,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			CommandContext cmdContext, String alignmentName, boolean recursive,
 			Optional<Expression> whereClause, String referenceName,
 			String featureName) {
-		AlignmentAnalysisResult analysisResult = doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, null, referenceName, featureName, true);
+		AlignmentAnalysisResult analysisResult = 
+				doSingleAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, null, referenceName, featureName, null, true);
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		analysisResult.asListOfMaps().forEach(analysisRow -> {
 			Integer mutationMembers = (Integer) analysisRow.get(AlignmentAnalysisResult.MUTATION_MEMBERS);
@@ -677,7 +688,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 			Optional<Expression> whereClause, String referenceName,
 			String featureName, String variationName) {
 
-		AlgnmentAnalysisResult alignmentAnalysisResult = doAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName);
+		AlgnmentAnalysisResult alignmentAnalysisResult = 
+				doAlignmentAnalysis(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName, variationName);
 	
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		
@@ -686,17 +698,25 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 				if(seqAlignmentResult.getReferenceName().equals(referenceName)) {
 					SequenceFeatureResult sequenceFeatureResult = seqAlignmentResult.getSequenceFeatureResult(featureName);
 					if(sequenceFeatureResult != null) {
-						List<VariationNote> aaVariationNotes = sequenceFeatureResult.getAaVariationNotes();
-						if(aaVariationNotes != null) {
-							for(VariationNote aaVariationNote: aaVariationNotes) {
-								if(aaVariationNote.getVariationName().equals(variationName)) {
-									Map<String, Object> row = new LinkedHashMap<String, Object>();
-									row.put(AlignmentVariationScanResult.ALIGNMENT_NAME, seqResult.getInitialAlignmentName());
-									row.put(AlignmentVariationScanResult.MEMBER_SOURCE, seqResult.getSourceName());
-									row.put(AlignmentVariationScanResult.MEMBER_SEQUENCE_ID, seqResult.getSequenceID());
-									rowData.add(row);
+						List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = sequenceFeatureResult.getAaReferenceDifferenceNotes();
+						boolean found = false;
+						for(ReferenceDifferenceNote aaReferenceDifferenceNote: aaReferenceDifferenceNotes) {
+							for(VariationDocument variationDocument: aaReferenceDifferenceNote.getFoundVariationDocuments()) {
+								if(variationDocument.getName().equals(variationName)) {
+									found = true;
+									break;
 								}
 							}
+							if(found) { 
+								break;
+							}
+						}
+						if(found) {
+							Map<String, Object> row = new LinkedHashMap<String, Object>();
+							row.put(AlignmentVariationScanResult.ALIGNMENT_NAME, seqResult.getInitialAlignmentName());
+							row.put(AlignmentVariationScanResult.MEMBER_SOURCE, seqResult.getSourceName());
+							row.put(AlignmentVariationScanResult.MEMBER_SEQUENCE_ID, seqResult.getSequenceID());
+							rowData.add(row);
 						}
 					}
 				}

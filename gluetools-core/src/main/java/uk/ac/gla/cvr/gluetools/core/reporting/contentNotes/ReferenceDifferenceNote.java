@@ -1,12 +1,26 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.contentNotes;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.Ordering;
+import org.apache.cayenne.query.SelectQuery;
+import org.apache.cayenne.query.SortOrder;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationDocument;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 /**
  * A reference difference note points out that the sequence content differs from a reference at certain locations.
@@ -17,32 +31,35 @@ import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 public class ReferenceDifferenceNote extends SequenceContentNote {
 
 	private CharSequence mask;
-	private List<DifferenceSummaryNote> differenceSummaryNotes = new ArrayList<DifferenceSummaryNote>();
-
+	private List<VariationDocument> foundVariationDocuments = new ArrayList<VariationDocument>();
+	
 	public ReferenceDifferenceNote(int refStart, int refEnd, CharSequence refChars, CharSequence queryChars, 
-			boolean includeDifferenceSummaryNotes, Map<Integer, List<VariationNote>> refStartToVariationNotes) {
+			boolean includeDifferenceSummaryNotes, 
+			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat, 
+			Set<String> variationRestrictions) {
 		super(refStart, refEnd);
-		init(refStart, refChars, queryChars, includeDifferenceSummaryNotes, refStartToVariationNotes);
+		init(refStart, refChars, queryChars, includeDifferenceSummaryNotes, cmdContext, referenceName, featureName, translationFormat, 
+				variationRestrictions);
 	}
 
 	@Override
 	public void toDocument(ObjectBuilder sequenceDifferenceObj) {
 		super.toDocument(sequenceDifferenceObj);
 		sequenceDifferenceObj.set("mask", mask);
-		if(differenceSummaryNotes != null) {
-			ArrayBuilder diffSummaryArray = sequenceDifferenceObj.setArray("differenceSummaryNote");
-			for(DifferenceSummaryNote diffSummNote: differenceSummaryNotes) {
-				diffSummNote.toDocument(diffSummaryArray.addObject());
-			}
+		ArrayBuilder foundVariationsArray = sequenceDifferenceObj.setArray("foundVariation");
+		for(VariationDocument variationDocument: foundVariationDocuments) {
+			variationDocument.toDocument(foundVariationsArray.addObject());
 		}
 
 	}
 
 	
-	private void init(int refStart, CharSequence refChars, CharSequence queryChars, boolean includeDifferenceSummaryNotes, 
-			Map<Integer, List<VariationNote>> refStartToVariationNote) {
+	private void init(int refStart, CharSequence refChars, CharSequence queryChars, boolean includeVariationDocuments, 
+			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat,
+			Set<String> variationRestrictions) {
 		int refPos = refStart;
 		char[] diffChars = new char[refChars.length()];
+		List<Integer> differencePositions = new ArrayList<Integer>();
 		for(int i = 0; i < refChars.length(); i++) {
 			char refChar = refChars.charAt(i);
 			char queryChar = queryChars.charAt(i);
@@ -50,19 +67,53 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 				diffChars[i] = '-';
 			} else {
 				diffChars[i] = queryChar;
-				if(includeDifferenceSummaryNotes) {
-					List<String> variationNames = null;
-					List<VariationNote> variationNotes = refStartToVariationNote.get(i+1);
-					if(variationNotes != null) {
-						variationNames = variationNotes.stream().map(vn -> vn.getVariationName()).collect(Collectors.toList());
-					}
-					String summaryString = new String(new char[]{refChar}) + Integer.toString(refPos) + new String(new char[]{queryChar});
-					differenceSummaryNotes.add(new DifferenceSummaryNote(summaryString, variationNames));
-				}
+				differencePositions.add(refPos);
 			}
 			refPos++;
 		}
 		this.mask = new String(diffChars);
+		if(includeVariationDocuments) {
+			Set<String> variationNames = new LinkedHashSet<String>();
+			List<Variation> variationsToScan = new ArrayList<Variation>();
+
+			for(Integer diffPosition : differencePositions) {
+				Expression exp = ExpressionFactory
+					.matchExp(PositionVariation.FEATURE_NAME_PATH, featureName)
+					.andExp(ExpressionFactory
+							.matchExp(PositionVariation.REF_SEQ_NAME_PATH, referenceName))
+					.andExp(ExpressionFactory
+							.matchExp(PositionVariation.TRANSLATION_TYPE_PROPERTY, translationFormat.name()))
+					.andExp(ExpressionFactory
+							.matchExp(PositionVariation.POSITION_PROPERTY, diffPosition));
+				if(variationRestrictions != null) {
+					Expression variationExp = ExpressionFactory.expFalse();
+					for(String variationName: variationRestrictions) {
+						variationExp = variationExp.orExp(ExpressionFactory.matchExp(PositionVariation.VARIATION_NAME_PATH, variationName));
+					}
+					exp = exp.andExp(variationExp);
+				}
+				SelectQuery query = new SelectQuery(PositionVariation.class, exp);
+				
+				query.addOrdering(new Ordering(PositionVariation.VARIATION_NAME_PATH, SortOrder.ASCENDING));
+				List<PositionVariation> positionVariations = GlueDataObject.query(cmdContext, PositionVariation.class, query);
+				List<Variation> variationsAtPosition = positionVariations.stream().map(PositionVariation::getVariation).collect(Collectors.toList());
+				variationsAtPosition = variationsAtPosition.stream().filter(v -> !variationNames.contains(v.getName())).collect(Collectors.toList());
+				variationNames.addAll(variationsAtPosition.stream().map(v -> v.getName()).collect(Collectors.toList()));
+				variationsToScan.addAll(variationsAtPosition);
+			}
+			
+			for(Variation variation: variationsToScan) {
+				if(refStart <= variation.getRefStart() && refStart+queryChars.length()-1 >= variation.getRefEnd()) {
+					CharSequence input = queryChars.subSequence(variation.getRefStart()-refStart, variation.getRefEnd()-refStart+1);
+					Matcher matcher = variation.getRegexPattern().matcher(input);
+					if(matcher.find()) {
+						foundVariationDocuments.add(variation.getVariationDocument());
+					}
+				}
+			}
+		}
+
+		
 	}
 
 
@@ -86,8 +137,8 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 		setMask(getMask().subSequence(0, getMask().length() - length));
 	}
 
-	public List<DifferenceSummaryNote> getDifferenceSummaryNotes() {
-		return differenceSummaryNotes;
+	public List<VariationDocument> getFoundVariationDocuments() {
+		return foundVariationDocuments;
 	}
 	
 	

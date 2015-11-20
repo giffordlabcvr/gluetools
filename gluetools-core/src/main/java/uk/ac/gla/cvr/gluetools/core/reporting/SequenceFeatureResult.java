@@ -1,9 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -19,20 +19,20 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sam2ConsensusSequenceObje
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.ReferenceDifferenceNote;
-import uk.ac.gla.cvr.gluetools.core.reporting.contentNotes.VariationNote;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 
 public class SequenceFeatureResult {
 	private List<NtQueryAlignedSegment> ntQueryAlignedSegments = new ArrayList<NtQueryAlignedSegment>();
 	private List<AaReferenceSegment> aaQueryAlignedSegments = new ArrayList<AaReferenceSegment>();
-	private List<VariationNote> ntVariationNotes = new ArrayList<VariationNote>();
-	private List<VariationNote> aaVariationNotes = new ArrayList<VariationNote>();
+	/*private List<VariationNote> ntVariationNotes = new ArrayList<VariationNote>();
+	private List<VariationNote> aaVariationNotes = new ArrayList<VariationNote>();*/
 	private List<ReferenceDifferenceNote> ntReferenceDifferenceNotes = new ArrayList<ReferenceDifferenceNote>();
 	private List<ReferenceDifferenceNote> aaReferenceDifferenceNotes = new ArrayList<ReferenceDifferenceNote>();
 	
@@ -52,7 +52,8 @@ public class SequenceFeatureResult {
 			AbstractSequenceObject querySeqObj,
 			List<QueryAlignedSegment> seqToRefAlignedSegments, 
 			Map<String, SequenceFeatureResult> featureToSequenceFeatureResult, 
-			Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter) {
+			Sam2ConsensusMinorityVariantFilter s2cMinorityVariantFilter, 
+			Set<String> variationRestrictions) {
 		// intersect the seqToRefAlignedSegments with the reference segments of the feature we are looking at
 		List<QueryAlignedSegment> featureQueryAlignedSegments = 
 				ReferenceSegment.intersection(featureTreeResult.getReferenceSegments(), seqToRefAlignedSegments, 
@@ -78,7 +79,7 @@ public class SequenceFeatureResult {
 				}
 			}
 		}
-		generateContentNotes();
+		generateContentNotes(cmdContext, variationRestrictions);
 	}
 
 
@@ -93,7 +94,7 @@ public class SequenceFeatureResult {
 		}
 	}
 
-	private void generateContentNotes() {
+	private void generateContentNotes(CommandContext cmdContext, Set<String> variationRestrictions) {
 		/* List<VariationDocument> variationDocuments = featureTreeResult.getVariationDocuments();
 		for(VariationDocument variationDocument: variationDocuments) {
 			if(variationDocument.getTranscriptionFormat() == TranslationFormat.NUCLEOTIDE) {
@@ -115,7 +116,7 @@ public class SequenceFeatureResult {
 					}
 				}
 			}*/
-			final Map<Integer, List<VariationNote>> refStartToVariationNotes = new LinkedHashMap<Integer, List<VariationNote>>();
+			/*final Map<Integer, List<VariationNote>> refStartToVariationNotes = new LinkedHashMap<Integer, List<VariationNote>>();
 			for(VariationNote aaVariationNote: aaVariationNotes) {
 				refStartToVariationNotes.compute(aaVariationNote.getRefStart(), 
 					(k, list) -> 
@@ -127,10 +128,12 @@ public class SequenceFeatureResult {
 						return list;
 					});
 			}
-			
+			*/
 			List<AaReferenceSegment> aaReferenceSegments = featureTreeResult.getAaReferenceSegments();
 			if(aaReferenceSegments != null) {
-				aaReferenceDifferenceNotes = generateAaDifferenceNotes(aaReferenceSegments, aaQueryAlignedSegments, refStartToVariationNotes);
+				aaReferenceDifferenceNotes = generateAaDifferenceNotes(aaReferenceSegments, aaQueryAlignedSegments, 
+						cmdContext, featureTreeResult.getReferenceName(), featureTreeResult.getFeatureName(), TranslationFormat.AMINO_ACID, 
+						variationRestrictions);
 			}
 		}
 	}
@@ -146,7 +149,7 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(ntRefSeg.getRefEnd(), ntQuerySeg.getRefEnd());
 						CharSequence refNts = ntRefSeg.getNucleotidesSubsequence(refStart, refEnd);
 						CharSequence queryNts = ntQuerySeg.getNucleotidesSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false, null);
+						return new ReferenceDifferenceNote(refStart, refEnd, refNts, queryNts, false, null, null, null, null, null);
 					}
 		}));
 	}
@@ -156,7 +159,7 @@ public class SequenceFeatureResult {
 	private List<ReferenceDifferenceNote> generateAaDifferenceNotes(
 			List<AaReferenceSegment> aaReferenceSegments,
 			List<AaReferenceSegment> aaQueryAlignedSegments, 
-			Map<Integer, List<VariationNote>> refStartToVariationNotes) {
+			CommandContext cmdContext, String referenceName, String featureName, TranslationFormat translationFormat, Set<String> variationRestrictions) {
 		return ReferenceSegment.intersection(aaReferenceSegments, aaQueryAlignedSegments, 
 				new BiFunction<AaReferenceSegment, AaReferenceSegment, ReferenceDifferenceNote>() {
 					@Override
@@ -165,7 +168,9 @@ public class SequenceFeatureResult {
 						int refEnd = Math.min(aaRefSeg.getRefEnd(), aaQuerySeg.getRefEnd());
 						CharSequence refAas = aaRefSeg.getAminoAcidsSubsequence(refStart, refEnd);
 						CharSequence queryAas = aaQuerySeg.getAminoAcidsSubsequence(refStart, refEnd);
-						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, featureTreeResult.isIncludedInSummary(), refStartToVariationNotes);
+						return new ReferenceDifferenceNote(refStart, refEnd, refAas, queryAas, featureTreeResult.isIncludedInSummary(),
+								cmdContext, referenceName, featureName, translationFormat,
+								variationRestrictions);
 					}
 
 		});
@@ -369,10 +374,11 @@ public class SequenceFeatureResult {
 				aaReferenceSegment.toDocument(aaRefSegArray.addObject());
 			}
 		}
+		/*
 		ArrayBuilder ntVariationNoteArray = seqFeatureResultObj.setArray("ntVariationNote");
 		for(VariationNote ntVariationNote: ntVariationNotes) {
 			ntVariationNote.toDocument(ntVariationNoteArray.addObject());
-		}
+		}*/
 		ArrayBuilder ntRefDiffArray = seqFeatureResultObj.setArray("ntReferenceDifferenceNote");
 		for(ReferenceDifferenceNote ntRefDiff: ntReferenceDifferenceNotes) {
 			ntRefDiff.toDocument(ntRefDiffArray.addObject());
@@ -381,13 +387,13 @@ public class SequenceFeatureResult {
 		for(NtMinorityVariant ntMinorityVariant: ntMinorityVariants) {
 			ntMinorityVariant.toDocument(ntMinorityVariantArray.addObject());
 		}
-
+		/*
 		if(aaVariationNotes != null) {
 			ArrayBuilder aaVariationNoteArray = seqFeatureResultObj.setArray("aaVariationNote");
 			for(VariationNote aaVariationNote: aaVariationNotes) {
 				aaVariationNote.toDocument(aaVariationNoteArray.addObject());
 			}
-		}
+		}*/
 		if(aaReferenceDifferenceNotes != null) {
 			ArrayBuilder aaRefDiffArray = seqFeatureResultObj.setArray("aaReferenceDifferenceNote");
 			for(ReferenceDifferenceNote aaRefDiff: aaReferenceDifferenceNotes) {
@@ -410,10 +416,10 @@ public class SequenceFeatureResult {
 		return aaReferenceDifferenceNotes;
 	}
 
-	public List<VariationNote> getAaVariationNotes() {
+	/*public List<VariationNote> getAaVariationNotes() {
 		return aaVariationNotes;
 	}
-
+	 */
 	
 	
 	
