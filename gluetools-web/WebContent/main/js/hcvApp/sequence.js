@@ -31,24 +31,26 @@ function generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult) {
 			"featureName":sequenceFeatureResult.featureName,
 			"referenceName":sequenceAlignmentResult.referenceName
 		};
-		var differences = [];
+		var foundVariations = [];
 		for(var j = 0; j < sequenceFeatureResult.aaReferenceDifferenceNote.length; j++) {
 			aaReferenceDifferenceNote = sequenceFeatureResult.aaReferenceDifferenceNote[j];
-			if(aaReferenceDifferenceNote.differenceSummaryNote) {
-				for(var k = 0; k < aaReferenceDifferenceNote.differenceSummaryNote.length; k++) {
-					differences.push(aaReferenceDifferenceNote.differenceSummaryNote[k]);
+			if(aaReferenceDifferenceNote.foundVariation) {
+				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
+					foundVariations.push(aaReferenceDifferenceNote.foundVariation[k]);
 				}
 			}
 		}
-		if(differences.length > 0) {
+		if(foundVariations.length > 0) {
 			if(firstDiffSummary == null) {
 				firstDiffSummary = differenceSummary;
 			}
-			differenceSummary["differences"] = differences;
+			differenceSummary["foundVariations"] = foundVariations;
 			differenceSummariesForAlmtResult.push(differenceSummary);
 		}
 	}
-	firstDiffSummary["rowspan"] = differenceSummariesForAlmtResult.length;
+	if(firstDiffSummary) {
+		firstDiffSummary["rowspan"] = differenceSummariesForAlmtResult.length;
+	}
 	return differenceSummariesForAlmtResult;
 }
 
