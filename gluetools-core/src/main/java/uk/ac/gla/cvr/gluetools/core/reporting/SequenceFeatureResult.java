@@ -184,12 +184,19 @@ public class SequenceFeatureResult {
 	public void translateDirectly(boolean isORF, AbstractSequenceObject seqObj, CommandContext cmdContext) {
 		int firstNtQuerySegRefStart = ntQueryAlignedSegments.get(0).getRefStart();
 		int firstNtRefSegStart = featureTreeResult.getNtReferenceSegments().get(0).getRefStart();
+		
+		
+		
 		if(isORF && firstNtQuerySegRefStart != firstNtRefSegStart) {
 			// query segments fail to cover the start codon, so we can't transcribe.
 			return;
 		} else {
-			int firstQuerySegNtStart = ntQueryAlignedSegments.get(0).getQueryStart();
-			int lastQuerySegNtEnd = ntQueryAlignedSegments.get(ntQueryAlignedSegments.size()-1).getQueryEnd();
+
+			List<NtQueryAlignedSegment> trimmedNtQueryAlignedSegments = trimOutOfReadingFrameStarts(firstNtRefSegStart, ntQueryAlignedSegments);
+
+			
+			int firstQuerySegNtStart = trimmedNtQueryAlignedSegments.get(0).getQueryStart();
+			int lastQuerySegNtEnd = trimmedNtQueryAlignedSegments.get(trimmedNtQueryAlignedSegments.size()-1).getQueryEnd();
 
 			// attempt to transcribe everything between the start and end points.
 			// the point of this is to pick up any possible stop codons or gaps in the gaps between aligned
@@ -203,11 +210,12 @@ public class SequenceFeatureResult {
 				requireMethionineAtStart = false;
 			}
 			boolean translateBeyondPossibleStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_POSSIBLE_STOP).equals("true");
+			boolean translateBeyondDefiniteStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_DEFINITE_STOP).equals("true");
 			
-			String seqFeatureAAs = TranslationUtils.translate(seqFeatureNts, requireMethionineAtStart, false, translateBeyondPossibleStop);
+			String seqFeatureAAs = TranslationUtils.translate(seqFeatureNts, requireMethionineAtStart, false, translateBeyondPossibleStop, translateBeyondDefiniteStop);
 			if(seqFeatureAAs.length() != 0) {
-				int firstSegRefToQueryOffset = ntQueryAlignedSegments.get(0).getReferenceToQueryOffset();
-				for(NtQueryAlignedSegment ntQuerySeg : ntQueryAlignedSegments) {
+				int firstSegRefToQueryOffset = trimmedNtQueryAlignedSegments.get(0).getReferenceToQueryOffset();
+				for(NtQueryAlignedSegment ntQuerySeg : trimmedNtQueryAlignedSegments) {
 					int segReferenceToQueryOffset = ntQuerySeg.getReferenceToQueryOffset();
 					if( (segReferenceToQueryOffset - firstSegRefToQueryOffset) % 3 != 0 ) {
 						continue; // skip any query segments which change the reading frame.
@@ -275,6 +283,22 @@ public class SequenceFeatureResult {
 				}
 			}
 		}
+	}
+
+	private List<NtQueryAlignedSegment> trimOutOfReadingFrameStarts(
+			int firstNtRefSegStart, List<NtQueryAlignedSegment> ntQueryAlignedSegs) {
+		
+		List<NtQueryAlignedSegment> trimmedNtQueryAlignedSegs = new ArrayList<NtQueryAlignedSegment>();
+		for(NtQueryAlignedSegment ntQueryAlignedSeg: ntQueryAlignedSegs) {
+			NtQueryAlignedSegment trimmedNtQueryAlignedSeg = ntQueryAlignedSeg.clone();
+			while(trimmedNtQueryAlignedSeg.getCurrentLength() > 1 && (trimmedNtQueryAlignedSeg.getRefStart() - firstNtRefSegStart) % 3 != 0) {
+				trimmedNtQueryAlignedSeg.truncateLeft(1);
+			}
+			trimmedNtQueryAlignedSegs.add(trimmedNtQueryAlignedSeg);
+		}
+		
+		return trimmedNtQueryAlignedSegs;
+	
 	}
 
 	private List<NtMinorityVariant> findMinorityVariantsInFeature(

@@ -59,13 +59,16 @@ public class TranslationUtils {
 	 * the stop codon.
 	 * If translateBeyondPossibleStopCodon == false and any NTs are encountered which *could* be a stop codon, 
 	 * translation stops before the possible stop codon.
+	 * If translateBeyondDefiniteStopCodon == false and any NTs are encountered which are definitely a stop codon, 
+	 * translation stops before the possible stop codon.
 	 * 
 	 */
 	
 	public static String translate(CharSequence nts,
 			boolean requireMethionineAtStart, 
 			boolean stopAtHyphen,
-			boolean translateBeyondPossibleStopCodon) {
+			boolean translateBeyondPossibleStopCodon, 
+			boolean translateBeyondDefiniteStopCodon) {
 		StringBuffer aas = new StringBuffer();
 		char[] codonNts = new char[3];
 		boolean stopTranscribing = false;
@@ -90,7 +93,7 @@ public class TranslationUtils {
 				} else if(codonNts[0] != 0 && codonNts[1] != 0 && codonNts[2] != 0){
 					aas.append('X'); // unknown AA
 				}
-			} else if(nextAA == '*') {
+			} else if(!translateBeyondDefiniteStopCodon && nextAA == '*') {
 				aas.append(nextAA);
 				stopTranscribing = true;
 			} else {

@@ -196,7 +196,8 @@ public class FeatureLocation extends _FeatureLocation {
 				checkCodonAligned(feature, codon1Start, ntSegment);
 				CharSequence nucleotides = ntSegment.getNucleotides();
 				boolean translateBeyondPossibleStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_POSSIBLE_STOP).equals("true");
-				String aminoAcids = TranslationUtils.translate(nucleotides, true, false, translateBeyondPossibleStop);
+				boolean translateBeyondDefiniteStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_DEFINITE_STOP).equals("true");
+				String aminoAcids = TranslationUtils.translate(nucleotides, true, false, translateBeyondPossibleStop, translateBeyondDefiniteStop);
 				if(aminoAcids.length() != nucleotides.length() / 3) {
 					throw new FeatureLocationException(
 							FeatureLocationException.Code.FEATURE_LOCATION_ORF_TRANSCRIPTION_INCOMPLETE, 

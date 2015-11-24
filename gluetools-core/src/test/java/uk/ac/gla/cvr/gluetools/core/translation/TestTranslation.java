@@ -188,7 +188,7 @@ public class TestTranslation {
 	}
 
 	private static void translationTest(String nucleotides, String expectedAas) {
-		Assert.assertEquals(expectedAas, TranslationUtils.translate(nucleotides, true, true, false));
+		Assert.assertEquals(expectedAas, TranslationUtils.translate(nucleotides, true, true, false, false));
 	}
 		
 
