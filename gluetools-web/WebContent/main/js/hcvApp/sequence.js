@@ -1,17 +1,17 @@
 
-function updateDifferenceStyle(oldDifferenceStyle, newDifferenceStyle) {
-	if(newDifferenceStyle == "difference_NOT_NOTIFIABLE" && oldDifferenceStyle == "difference_NOTIFIABLE") {
+function updateDifferenceStyle(prefix, oldDifferenceStyle, newDifferenceStyle) {
+	if(newDifferenceStyle == prefix+"NOT_NOTIFIABLE" && oldDifferenceStyle == prefix+"NOTIFIABLE") {
 		return oldDifferenceStyle;
 	}
-	return newDifferenceStyle;
+	return prefix+newDifferenceStyle;
 }
 
-function generateAlignmentDifferenceSummaries(sequenceResult) {
+function generateAlignmentDifferenceSummaries(variationCategories, sequenceResult) {
 	var alignmentDifferenceSummaries = [];
 	for(var x = 0; x < sequenceResult.sequenceAlignmentResult.length; x++) {
 		var sequenceAlignmentResult = sequenceResult.sequenceAlignmentResult[x];
 		var differenceSummariesForAlmtResult = 
-			generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult);
+			generateDifferenceSummariesForAlmtResult(variationCategories, sequenceAlignmentResult);
 		for(var y = 0; y < differenceSummariesForAlmtResult.length; y++) {
 			alignmentDifferenceSummaries.push(differenceSummariesForAlmtResult[y]);
 		}
@@ -19,7 +19,7 @@ function generateAlignmentDifferenceSummaries(sequenceResult) {
 	return alignmentDifferenceSummaries;
 }
 
-function generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult) {
+function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceAlignmentResult) {
 	var differenceSummariesForAlmtResult = [];
 	var firstDiffSummary = null;
 	for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
@@ -36,7 +36,19 @@ function generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult) {
 			aaReferenceDifferenceNote = sequenceFeatureResult.aaReferenceDifferenceNote[j];
 			if(aaReferenceDifferenceNote.foundVariation) {
 				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
-					foundVariations.push(aaReferenceDifferenceNote.foundVariation[k]);
+					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
+					var differenceStyle = "differenceSummary";
+					for(var c = 0; c < foundVariation.variationCategory.length; c++) {
+						var vcatName = foundVariation.variationCategory[c];
+						differenceStyle = 
+							updateDifferenceStyle("differenceSummary_", 
+									differenceStyle,
+									variationCategories[vcatName].inheritedNotifiability);
+					}
+					var displayFoundVar = {
+							name: foundVariation.name,
+							differenceStyle: differenceStyle};
+					foundVariations.push(displayFoundVar);
 				}
 			}
 		}
@@ -229,6 +241,11 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 					
 					
 					
+					var v = 0;
+					var foundVariation;
+					if(aaReferenceDiff.foundVariation) {
+						foundVariation = aaReferenceDiff.foundVariation[v];
+										}
 					for(var qrySegAAIndex = aaQuerySegment.refStart; 
 							qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
 						var aaColumn = qrySegAAIndex - minAAIndex;
@@ -237,24 +254,24 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] != "-") {
 							queryAADifferenceStyle[aaColumn] = "difference";
 							if(aaReferenceDiff.foundVariation) {
-								for(var v = 0; v < aaReferenceDiff.foundVariation.length; v++) {
-									var foundVariation = aaReferenceDiff.foundVariation[v];
-									if(foundVariation.refStart <= qrySegAAIndex &&
-											foundVariation.refEnd >= qrySegAAIndex &&
-											foundVariation.variationCategory) {
-										for(var c = 0; c < foundVariation.variationCategory.length; c++) {
-											var vcatName = foundVariation.variationCategory[c];
-											queryAADifferenceStyle[aaColumn] = 
-												updateDifferenceStyle(queryAADifferenceStyle[aaColumn],
-														"difference_"+
-														variationCategories[vcatName].inheritedNotifiability);
-											
-										}
-									}
+								while(v < aaReferenceDiff.foundVariation.length 
+										&& foundVariation.refEnd < qrySegAAIndex) {
+									v++;
+									foundVariation = aaReferenceDiff.foundVariation[v];
+								}
+							}
+							if(foundVariation.refStart <= qrySegAAIndex && foundVariation.refEnd >= qrySegAAIndex &&
+								foundVariation.variationCategory) {
+								for(var c = 0; c < foundVariation.variationCategory.length; c++) {
+									var vcatName = foundVariation.variationCategory[c];
+									queryAADifferenceStyle[aaColumn] = 
+										updateDifferenceStyle("difference_", 
+												queryAADifferenceStyle[aaColumn],
+												variationCategories[vcatName].inheritedNotifiability);
+									
 								}
 							}
 						}
-
 					}
 				}
 			}

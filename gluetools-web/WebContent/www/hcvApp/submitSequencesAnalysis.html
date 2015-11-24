@@ -198,7 +198,7 @@
 					  	<tr ng-repeat="diffSummary in sequenceResult.alignmentDifferenceSummaries">
 					  		<td ng-show="diffSummary.rowspan" rowspan="{{diffSummary.rowspan}}">{{diffSummary.referenceName}}</td>
 					  		<td><a ng-click="switchToDetailView(diffSummary.referenceName, diffSummary.featureName)">{{diffSummary.featureName}} <i class="glyphicon glyphicon-link"></i></a></td>
-					  		<td><span ng-repeat="foundVariation in diffSummary.foundVariations">{{foundVariation.name}} </span></td>
+					  		<td><span class="{{foundVariation.differenceStyle}}" ng-repeat="foundVariation in diffSummary.foundVariations">{{foundVariation.name}} </span></td>
 					  	</tr>
 				  	</tbody>
 				</table>

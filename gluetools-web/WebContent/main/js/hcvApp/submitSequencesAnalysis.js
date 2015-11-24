@@ -67,7 +67,7 @@ submitSequencesAnalysis
 		var refToFeatureTreeMap = $scope.sequenceResult.refToFeatureTreeMap;
 		
 		$scope.sequenceResult.alignmentDifferenceSummaries = 
-			generateAlignmentDifferenceSummaries($scope.sequenceResult);
+			generateAlignmentDifferenceSummaries($scope.variationCategories, $scope.sequenceResult);
 		console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
 
 		$scope.switchToDetailView = function(referenceName, featureName) {

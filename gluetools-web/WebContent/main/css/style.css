@@ -134,6 +134,20 @@ a {
 }
 
 
+.differenceSummary_NOTIFIABLE {
+	color: #CC0000;
+}
+
+.differenceSummary_NOT_NOTIFIABLE {
+	color: #559900;
+}
+
+.differenceSummary {
+	color: #aaaaaa; 
+}
+
+
+
 .analysisSequenceReferenceNTIndex, .analysisSequenceReferenceNT, .analysisSequenceQueryNTIndex, .analysisSequenceQueryNT {
 	font-weight: bold;
 }
