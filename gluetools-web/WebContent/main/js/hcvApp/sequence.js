@@ -9,11 +9,14 @@ function updateDifferenceStyle(prefix, oldDifferenceStyle, newDifferenceStyle) {
 function generateAlignmentDifferenceSummaries(variationCategories, sequenceResult) {
 	var alignmentDifferenceSummaries = [];
 	for(var x = 0; x < sequenceResult.sequenceAlignmentResult.length; x++) {
-		var sequenceAlignmentResult = sequenceResult.sequenceAlignmentResult[x];
-		var differenceSummariesForAlmtResult = 
-			generateDifferenceSummariesForAlmtResult(variationCategories, sequenceAlignmentResult);
-		for(var y = 0; y < differenceSummariesForAlmtResult.length; y++) {
-			alignmentDifferenceSummaries.push(differenceSummariesForAlmtResult[y]);
+		// master alignment only.
+		if(x == sequenceResult.sequenceAlignmentResult.length - 1) {
+			var sequenceAlignmentResult = sequenceResult.sequenceAlignmentResult[x];
+			var differenceSummariesForAlmtResult = 
+				generateDifferenceSummariesForAlmtResult(variationCategories, sequenceAlignmentResult);
+			for(var y = 0; y < differenceSummariesForAlmtResult.length; y++) {
+				alignmentDifferenceSummaries.push(differenceSummariesForAlmtResult[y]);
+			}
 		}
 	}
 	return alignmentDifferenceSummaries;
@@ -22,6 +25,7 @@ function generateAlignmentDifferenceSummaries(variationCategories, sequenceResul
 function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceAlignmentResult) {
 	var differenceSummariesForAlmtResult = [];
 	var firstDiffSummary = null;
+	var lastDiffSummary = null;
 	for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
 		var sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
 		if(!sequenceFeatureResult.aaReferenceDifferenceNote) {
@@ -31,6 +35,7 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 			"featureName":sequenceFeatureResult.featureName,
 			"referenceName":sequenceAlignmentResult.referenceName
 		};
+		lastDiffSummary = differenceSummary;
 		var foundVariations = [];
 		for(var j = 0; j < sequenceFeatureResult.aaReferenceDifferenceNote.length; j++) {
 			aaReferenceDifferenceNote = sequenceFeatureResult.aaReferenceDifferenceNote[j];
@@ -38,12 +43,14 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
 					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
 					var differenceStyle = "differenceSummary";
-					for(var c = 0; c < foundVariation.variationCategory.length; c++) {
-						var vcatName = foundVariation.variationCategory[c];
-						differenceStyle = 
-							updateDifferenceStyle("differenceSummary_", 
-									differenceStyle,
-									variationCategories[vcatName].inheritedNotifiability);
+					if(foundVariation.variationCategory) {
+						for(var c = 0; c < foundVariation.variationCategory.length; c++) {
+							var vcatName = foundVariation.variationCategory[c];
+							differenceStyle = 
+								updateDifferenceStyle("differenceSummary_", 
+										differenceStyle,
+										variationCategories[vcatName].inheritedNotifiability);
+						}
 					}
 					var displayFoundVar = {
 							name: foundVariation.name,
@@ -63,6 +70,10 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 	if(firstDiffSummary) {
 		firstDiffSummary["rowspan"] = differenceSummariesForAlmtResult.length;
 	}
+	if(lastDiffSummary) {
+		lastDiffSummary["master"] = true;
+	}
+	
 	return differenceSummariesForAlmtResult;
 }
 

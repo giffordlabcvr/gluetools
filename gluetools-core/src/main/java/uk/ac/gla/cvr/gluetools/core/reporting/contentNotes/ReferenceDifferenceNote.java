@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.contentNotes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 			Set<String> variationRestrictions, Set<String> vcatRestrictions) {
 		int refPos = refStart;
 		char[] diffChars = new char[refChars.length()];
-		List<Integer> differencePositions = new ArrayList<Integer>();
+		LinkedHashSet<Integer> differencePositions = new LinkedHashSet<Integer>();
 		for(int i = 0; i < refChars.length(); i++) {
 			char refChar = refChars.charAt(i);
 			char queryChar = queryChars.charAt(i);
@@ -115,9 +116,26 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 					Matcher matcher = variation.getRegexPattern().matcher(input);
 					if(matcher.find()) {
 						foundVariationDocuments.add(variation.getVariationDocument());
+						for(int p = variation.getRefStart(); p <= variation.getRefEnd(); p++) {
+							differencePositions.remove(p);
+						}
 					}
 				}
 			}
+			// add "unknown" variation documents for any differences which did not match a variation.
+			for(Integer unknownPos: differencePositions) {
+				char refChar = refChars.charAt(unknownPos-refStart);
+				char queryChar = queryChars.charAt(unknownPos-refStart);
+				
+				if(queryChar == 'X') {
+					continue;
+				}
+				
+				String name = new String(new char[]{refChar})+Integer.toString(unknownPos)+new String(new char[]{queryChar});
+				
+				foundVariationDocuments.add(new VariationDocument(name, unknownPos, unknownPos, null, "Unknown variant", translationFormat, new LinkedHashSet<String>()));
+			}
+			
 		}
 
 		

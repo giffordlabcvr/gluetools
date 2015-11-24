@@ -80,9 +80,11 @@ submitSequencesAnalysis
 
 		}
 		
+		// for now, only show the master reference.
 		for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
 			var sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
-			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features) {
+			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features
+					&& i == $scope.sequenceResult.sequenceAlignmentResult.length-1) {
 				$scope.numReferenceOptions ++;
 				$scope.referenceOptions.push(sequenceAlignmentResult.referenceName);
 			}
