@@ -146,6 +146,7 @@ submitSequencesAnalysis
 			}
 			console.log("sequenceFeatureResult ", sequenceFeatureResult);
 			$scope.sequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
+					$scope.variationCategories,
 					$scope.sequenceResult.selectedFeature, 
 					sequenceFeatureResult);
 			console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);

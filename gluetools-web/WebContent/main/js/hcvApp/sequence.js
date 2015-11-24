@@ -54,17 +54,9 @@ function generateDifferenceSummariesForAlmtResult(sequenceAlignmentResult) {
 	return differenceSummariesForAlmtResult;
 }
 
-function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
+function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeatureResult) {
 	
 	var analysisSequenceRows = [];
-	
-	var variationMap = {};
-
-	if(feature.variation) {
-		for(var x = 0; x < feature.variation.length; x++) {
-			variationMap[feature.variation[x].name] = feature.variation[x];
-		}
-	}
 	
 	var ntReferenceSegmentArray = feature.ntReferenceSegment;
 	var aaReferenceSegmentArray = feature.aaReferenceSegment;
@@ -164,19 +156,6 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 					qrySegQryNTIndex++;
 				}
 			}
-			// commented out until we sort out reporting variation categories through the UI
-			/*
-			if(ntVariationNoteArray) {
-				for(var i = 0 ; i < ntVariationNoteArray.length; i++) {
-					var ntVariationNote = ntVariationNoteArray[i];
-					var variationDifferenceStyle = "difference_"+variationMap[ntVariationNote.variationName].notifiability;
-					for(var variationNtIndex = ntVariationNote.refStart; variationNtIndex <= ntVariationNote.refEnd; variationNtIndex++) {
-						var ntColumn = variationNtIndex - minNTIndex;
-						queryNTDifferenceStyle[ntColumn] = updateDifferenceStyle(queryNTDifferenceStyle[ntColumn], variationDifferenceStyle);
-					}
-				}
-			}
-			*/
 		}
 
 		
@@ -248,7 +227,7 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 						}
 					}
 					
-
+					
 					
 					for(var qrySegAAIndex = aaQuerySegment.refStart; 
 							qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
@@ -256,22 +235,28 @@ function generateAnalysisSequenceRows(feature, sequenceFeatureResult) {
 						var indexInSeg = qrySegAAIndex - aaQuerySegment.refStart;
 						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(indexInSeg);
 						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] != "-") {
-							queryAADifferenceStyle[aaColumn] = "difference"
+							queryAADifferenceStyle[aaColumn] = "difference";
+							if(aaReferenceDiff.foundVariation) {
+								for(var v = 0; v < aaReferenceDiff.foundVariation.length; v++) {
+									var foundVariation = aaReferenceDiff.foundVariation[v];
+									if(foundVariation.refStart <= qrySegAAIndex &&
+											foundVariation.refEnd >= qrySegAAIndex &&
+											foundVariation.variationCategory) {
+										for(var c = 0; c < foundVariation.variationCategory.length; c++) {
+											var vcatName = foundVariation.variationCategory[c];
+											queryAADifferenceStyle[aaColumn] = 
+												updateDifferenceStyle(queryAADifferenceStyle[aaColumn],
+														"difference_"+
+														variationCategories[vcatName].inheritedNotifiability);
+											
+										}
+									}
+								}
+							}
 						}
+
 					}
 				}
-				// commented out until we sort out reporting variation categories through the UI
-				/* if(aaVariationNoteArray) {
-					for(var i = 0 ; i < aaVariationNoteArray.length; i++) {
-						var aaVariationNote = aaVariationNoteArray[i];
-						var variationDifferenceStyle = "difference_"+variationMap[aaVariationNote.variationName].notifiability;
-						for(var variationAaIndex = aaVariationNote.refStart; variationAaIndex <= aaVariationNote.refEnd; variationAaIndex++) {
-							var aaColumn = variationAaIndex - minAAIndex;
-							queryAADifferenceStyle[aaColumn] = updateDifferenceStyle(queryAADifferenceStyle[aaColumn], variationDifferenceStyle);
-						}
-					}
-				} */
-
 			}
 		}		
 
