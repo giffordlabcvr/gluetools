@@ -43,7 +43,7 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
 					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
 					var differenceStyle = "differenceSummary";
-					var popoverContent = "Uncommon / unknown variant";
+					var popoverContent = "Uncommon or unknown variant";
 					if(foundVariation.variationCategory) {
 						popoverContent = "";
 						for(var c = 0; c < foundVariation.variationCategory.length; c++) {
