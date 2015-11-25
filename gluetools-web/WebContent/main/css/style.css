@@ -133,6 +133,13 @@ a {
 	color: #ffffff;
 }
 
+.difference, .difference_NOTIFIABLE, .difference_NOT_NOTIFIABLE {
+	cursor: pointer;
+}
+
+.differenceSummary, .differenceSummary_NOTIFIABLE, .differenceSummary_NOT_NOTIFIABLE {
+	cursor: pointer;
+}
 
 .differenceSummary_NOTIFIABLE {
 	color: #CC0000;
@@ -168,6 +175,9 @@ a {
 	text-align: left;
 }
 
+.popover {
+	width: 240px;
+}
 
 
 

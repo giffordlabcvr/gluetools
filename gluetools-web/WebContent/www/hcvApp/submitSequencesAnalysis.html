@@ -198,7 +198,12 @@
 					  	<tr ng-repeat="diffSummary in sequenceResult.alignmentDifferenceSummaries">
 					  		<td ng-show="diffSummary.rowspan" rowspan="{{diffSummary.rowspan}}">{{diffSummary.referenceName}}</td>
 					  		<td><a ng-click="switchToDetailView(diffSummary.referenceName, diffSummary.featureName)">{{diffSummary.featureName}} <i class="glyphicon glyphicon-link"></i></a></td>
-					  		<td><span class="{{foundVariation.differenceStyle}}" ng-repeat="foundVariation in diffSummary.foundVariations">{{foundVariation.name}} </span></td>
+					  		<td><span 
+					  			popover-placement="bottom" data-trigger="click" 
+					  			popover="{{foundVariation.popoverContent}}" 
+					  			popover-title="{{foundVariation.name}}"
+					  			class="{{foundVariation.differenceStyle}}" 
+					  			ng-repeat="foundVariation in diffSummary.foundVariations">{{foundVariation.name}} </span></td>
 					  	</tr>
 				  	</tbody>
 				</table>
@@ -219,7 +224,14 @@
 
 
 					  	<tr class="analysisSequenceQueryAA">
-					  		<td class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}" colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">{{queryAA}}</td>
+					  		<td colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">
+					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] != null" 
+					  			popover-placement="bottom" 
+					  			data-trigger="click" popover="{{analysisSequenceRow.queryAAPopover[$index].content}}" popover-title="{{analysisSequenceRow.queryAAPopover[$index].title}}">
+					  				<div class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
+					  			</div>
+					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] == null" class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
+					  		</td>
 					  	</tr>
 					  	<tr ng-show="sequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNT">
 					  		<td class="{{analysisSequenceRow.queryNTDifferenceStyle[$index]}}" ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>

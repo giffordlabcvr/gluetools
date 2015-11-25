@@ -43,18 +43,22 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
 					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
 					var differenceStyle = "differenceSummary";
+					var popoverContent = "Uncommon / unknown variant";
 					if(foundVariation.variationCategory) {
+						popoverContent = "";
 						for(var c = 0; c < foundVariation.variationCategory.length; c++) {
 							var vcatName = foundVariation.variationCategory[c];
 							differenceStyle = 
 								updateDifferenceStyle("differenceSummary_", 
 										differenceStyle,
 										variationCategories[vcatName].inheritedNotifiability);
+							popoverContent += variationCategories[vcatName].description + "\n";
 						}
 					}
 					var displayFoundVar = {
 							name: foundVariation.name,
-							differenceStyle: differenceStyle};
+							differenceStyle: differenceStyle,
+							popoverContent: popoverContent};
 					foundVariations.push(displayFoundVar);
 				}
 			}
@@ -201,6 +205,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 			referenceAAs = new Array(numAAs);
 			queryAAs = new Array(numAAs);
 			queryAADifferenceStyle = new Array(numAAs);
+			queryAAPopover = new Array(numAAs);
 			minorityVariantAAs = new Array(numAAs);
 			minorityVariantAAProportions = new Array(numAAs);
 
@@ -209,6 +214,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 				referenceAAs[i] = empty;
 				queryAAs[i] = empty;
 				queryAADifferenceStyle[i] = "";
+				queryAAPopover[i] = null;
 				minorityVariantAAs[i] = empty;
 				minorityVariantAAProportions[i] = empty;
 			}
@@ -256,7 +262,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 					var foundVariation;
 					if(aaReferenceDiff.foundVariation) {
 						foundVariation = aaReferenceDiff.foundVariation[v];
-										}
+					}
 					for(var qrySegAAIndex = aaQuerySegment.refStart; 
 							qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
 						var aaColumn = qrySegAAIndex - minAAIndex;
@@ -264,6 +270,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(indexInSeg);
 						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] != "-") {
 							queryAADifferenceStyle[aaColumn] = "difference";
+							queryAAPopover[aaColumn] = {"content":"Uncommon or unknown variant"};
 							if(aaReferenceDiff.foundVariation) {
 								while(v < aaReferenceDiff.foundVariation.length 
 										&& foundVariation.refEnd < qrySegAAIndex) {
@@ -271,15 +278,19 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 									foundVariation = aaReferenceDiff.foundVariation[v];
 								}
 							}
-							if(foundVariation.refStart <= qrySegAAIndex && foundVariation.refEnd >= qrySegAAIndex &&
-								foundVariation.variationCategory) {
-								for(var c = 0; c < foundVariation.variationCategory.length; c++) {
-									var vcatName = foundVariation.variationCategory[c];
-									queryAADifferenceStyle[aaColumn] = 
-										updateDifferenceStyle("difference_", 
-												queryAADifferenceStyle[aaColumn],
-												variationCategories[vcatName].inheritedNotifiability);
-									
+							if(foundVariation && foundVariation.refStart <= qrySegAAIndex && foundVariation.refEnd >= qrySegAAIndex) {
+								queryAAPopover[aaColumn]["title"] = foundVariation.name;
+								if(foundVariation.variationCategory) {
+									var popoverContent = "";
+									for(var c = 0; c < foundVariation.variationCategory.length; c++) {
+										var vcatName = foundVariation.variationCategory[c];
+										queryAADifferenceStyle[aaColumn] = 
+											updateDifferenceStyle("difference_", 
+													queryAADifferenceStyle[aaColumn],
+													variationCategories[vcatName].inheritedNotifiability);
+										popoverContent += variationCategories[vcatName].description+"\n";
+									}
+									queryAAPopover[aaColumn]["content"] = popoverContent;
 								}
 							}
 						}
@@ -307,6 +318,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 				analysisSequenceRow["referenceAAs"] = referenceAAs.slice(aaStart, aaEnd);
 				analysisSequenceRow["queryAAs"] = queryAAs.slice(aaStart, aaEnd);
 				analysisSequenceRow["queryAADifferenceStyle"] = queryAADifferenceStyle.slice(aaStart, aaEnd);
+				analysisSequenceRow["queryAAPopover"] = queryAAPopover.slice(aaStart, aaEnd);
 				if(aaMinorityVariantArray) {
 					analysisSequenceRow["minorityVariantAAs"] = minorityVariantAAs.slice(aaStart, aaEnd);
 					analysisSequenceRow["minorityVariantAAProportions"] = minorityVariantAAProportions.slice(aaStart, aaEnd);
