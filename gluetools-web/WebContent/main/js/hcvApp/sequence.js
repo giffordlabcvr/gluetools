@@ -42,24 +42,31 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 			if(aaReferenceDifferenceNote.foundVariation) {
 				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
 					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
-					var differenceStyle = "differenceSummary";
-					var popoverContent = "Uncommon or unknown variant";
+					var differenceStyle = "";
+					var popoverContent = "";
 					if(foundVariation.variationCategory) {
-						popoverContent = "";
 						for(var c = 0; c < foundVariation.variationCategory.length; c++) {
 							var vcatName = foundVariation.variationCategory[c];
-							differenceStyle = 
-								updateDifferenceStyle("differenceSummary_", 
-										differenceStyle,
-										variationCategories[vcatName].inheritedNotifiability);
-							popoverContent += variationCategories[vcatName].description + "\n";
+							var vcat = variationCategories[vcatName];
+							if(vcat.excluded != true) {
+								differenceStyle = 
+									updateDifferenceStyle("differenceSummary_", 
+											differenceStyle,
+											vcat.inheritedNotifiability);
+								popoverContent += variationCategories[vcatName].description + "\n";
+							}
 						}
+					} else {
+						differenceStyle = "differenceSummary";
+						popoverContent = "Uncommon or unknown variant";
 					}
-					var displayFoundVar = {
-							name: foundVariation.name,
-							differenceStyle: differenceStyle,
-							popoverContent: popoverContent};
-					foundVariations.push(displayFoundVar);
+					if(differenceStyle != "") {
+						var displayFoundVar = {
+								name: foundVariation.name,
+								differenceStyle: differenceStyle,
+								popoverContent: popoverContent};
+						foundVariations.push(displayFoundVar);
+					}
 				}
 			}
 		}
@@ -269,28 +276,33 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 						var indexInSeg = qrySegAAIndex - aaQuerySegment.refStart;
 						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(indexInSeg);
 						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] != "-") {
-							queryAADifferenceStyle[aaColumn] = "difference";
-							queryAAPopover[aaColumn] = {"content":"Uncommon or unknown variant"};
 							if(aaReferenceDiff.foundVariation) {
 								while(v < aaReferenceDiff.foundVariation.length 
 										&& foundVariation.refEnd < qrySegAAIndex) {
 									v++;
 									foundVariation = aaReferenceDiff.foundVariation[v];
 								}
-							}
+							} 
 							if(foundVariation && foundVariation.refStart <= qrySegAAIndex && foundVariation.refEnd >= qrySegAAIndex) {
+								queryAAPopover[aaColumn] = {};
 								queryAAPopover[aaColumn]["title"] = foundVariation.name;
 								if(foundVariation.variationCategory) {
 									var popoverContent = "";
 									for(var c = 0; c < foundVariation.variationCategory.length; c++) {
 										var vcatName = foundVariation.variationCategory[c];
-										queryAADifferenceStyle[aaColumn] = 
-											updateDifferenceStyle("difference_", 
-													queryAADifferenceStyle[aaColumn],
-													variationCategories[vcatName].inheritedNotifiability);
-										popoverContent += variationCategories[vcatName].description+"\n";
+										var vcat = variationCategories[vcatName];
+										if(vcat.excluded != true) {
+											queryAADifferenceStyle[aaColumn] = 
+												updateDifferenceStyle("difference_", 
+														queryAADifferenceStyle[aaColumn],
+														vcat.inheritedNotifiability);
+											popoverContent += variationCategories[vcatName].description+"\n";
+										}
 									}
 									queryAAPopover[aaColumn]["content"] = popoverContent;
+								} else {
+									queryAADifferenceStyle[aaColumn] = "difference";
+									queryAAPopover[aaColumn]["content"] = "Uncommon or unknown variant";
 								}
 							}
 						}

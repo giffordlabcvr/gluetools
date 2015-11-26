@@ -65,10 +65,42 @@ submitSequencesAnalysis
 		};
 		
 		var refToFeatureTreeMap = $scope.sequenceResult.refToFeatureTreeMap;
-		
-		$scope.sequenceResult.alignmentDifferenceSummaries = 
-			generateAlignmentDifferenceSummaries($scope.variationCategories, $scope.sequenceResult);
-		console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
+
+		$scope.updateSequenceAnalysis = function() {
+			if($scope.sequenceResult.differenceView == "differenceSummary") {
+				$scope.sequenceResult.alignmentDifferenceSummaries = 
+					generateAlignmentDifferenceSummaries($scope.variationCategories, $scope.sequenceResult);
+				console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
+			} else {
+				console.log("sequenceResult ", $scope.sequenceResult);
+				$scope.sequenceResult.analysisSequenceRows = [];
+				if($scope.sequenceResult.selectedFeature.featureDescription == $scope.noneSelected) {
+					return;
+				}
+				var sequenceFeatureResult;
+				var sequenceAlignmentResult;
+				for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
+					if($scope.sequenceResult.sequenceAlignmentResult[i].referenceName == $scope.sequenceResult.selectedReference) {
+						sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
+					}
+				}
+				console.log("sequenceAlignmentResult ", sequenceAlignmentResult);
+				var sequenceFeatureResult;
+				for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
+					if(sequenceAlignmentResult.sequenceFeatureResult[i].featureName == $scope.sequenceResult.selectedFeature.featureName) {
+						sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
+					}
+				}
+				console.log("sequenceFeatureResult ", sequenceFeatureResult);
+				$scope.sequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
+						$scope.variationCategories,
+						$scope.sequenceResult.selectedFeature, 
+						sequenceFeatureResult);
+				console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
+			}
+		}
+
+		$scope.updateSequenceAnalysis();
 
 		$scope.switchToDetailView = function(referenceName, featureName) {
 			$scope.nullifyFeatureOnRefChange = false;
@@ -76,9 +108,13 @@ submitSequencesAnalysis
 			$scope.sequenceResult.selectedFeature = $scope.findFeature(refToFeatureTreeMap[referenceName], featureName);
 			console.log('updated feature to:', $scope.sequenceResult.selectedFeature);
 			$scope.sequenceResult.differenceView = "genomeDetail";
-			$scope.updateSequenceAnalysis();
-
 		}
+
+		$scope.$watch( 'sequenceResult.differenceView', function( newObj, oldObj ) {
+			$scope.updateSequenceAnalysis();
+		}, false);
+
+		
 		
 		// for now, only show the master reference.
 		for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
@@ -126,35 +162,15 @@ submitSequencesAnalysis
 			});
 		}
 
-		$scope.updateSequenceAnalysis = function() {
-			console.log("sequenceResult ", $scope.sequenceResult);
-			$scope.sequenceResult.analysisSequenceRows = [];
-			if($scope.sequenceResult.selectedFeature.featureDescription == $scope.noneSelected) {
-				return;
-			}
-			var sequenceFeatureResult;
-			var sequenceAlignmentResult;
-			for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
-				if($scope.sequenceResult.sequenceAlignmentResult[i].referenceName == $scope.sequenceResult.selectedReference) {
-					sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
-				}
-			}
-			console.log("sequenceAlignmentResult ", sequenceAlignmentResult);
-			var sequenceFeatureResult;
-			for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
-				if(sequenceAlignmentResult.sequenceFeatureResult[i].featureName == $scope.sequenceResult.selectedFeature.featureName) {
-					sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
-				}
-			}
-			console.log("sequenceFeatureResult ", sequenceFeatureResult);
-			$scope.sequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
-					$scope.variationCategories,
-					$scope.sequenceResult.selectedFeature, 
-					sequenceFeatureResult);
-			console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
+		$scope.selectVariationCategories = function() {
+			var dlg = dialogs.create('hcvApp/dialogs/selectVariationCategories.html','selectVariationCategoriesCtrl',$scope.variationCategories,{});
+			dlg.result.then(function(updatedCategories) {
+				$scope.variationCategories = updatedCategories;
+				$scope.updateSequenceAnalysis();
+			});
 		}
-		
 
+		
 	}
 	
 	
@@ -216,7 +232,7 @@ submitSequencesAnalysis
     uploader.filters.push({
         name: 'customFilter',
         fn: function(item /*{File|FileLikeObject}*/, options) {
-            return this.queue.length < 10;
+            return this.queue.length < 200;
         }
     });
 
@@ -326,7 +342,55 @@ submitSequencesAnalysis
 		$modalInstance.dismiss('Dismissed');
 	}; 
 
+})
+.controller('selectVariationCategoriesCtrl',function($scope,$modalInstance,data){
+	$scope.variationCategories = data;
+	$scope.included = [];
+	$scope.excluded = [];
+	addUtilsToScope($scope);
+
+	console.log("variation categories: ", $scope.variationCategories);
+	
+	_.each($scope.variationCategories, function(vcat, key, list) {
+		if(vcat.excluded && vcat.excluded == true) {
+			console.log("excluded vcat: ", vcat.name);
+			$scope.excluded.push(vcat);
+		} else {
+			console.log("included vcat: ", vcat.name);
+			$scope.included.push(vcat);
+		}
+	});
+	
+	$scope.include = function(vcat) {
+		$scope.excluded = _.without($scope.excluded, vcat);
+		$scope.included.push(vcat);
+	}
+
+	$scope.exclude = function(vcat) {
+		$scope.included = _.without($scope.included, vcat);
+		$scope.excluded.push(vcat);
+	}
+
+	$scope.select = function(){
+		var updatedCategories = {};
+		_.each($scope.included, function(vcat, idx, list) {
+			vcat.excluded = false;
+			updatedCategories[vcat.name] = vcat;
+		});
+		_.each($scope.excluded, function(vcat, idx, list) {
+			vcat.excluded = true;
+			updatedCategories[vcat.name] = vcat;
+		});
+		console.log("updatedCategories: ", updatedCategories);
+		$modalInstance.close(updatedCategories);
+	}; 
+
+	$scope.dismiss = function(){
+		$modalInstance.dismiss('Dismissed');
+	}; 
+
 });
+
 
 
 

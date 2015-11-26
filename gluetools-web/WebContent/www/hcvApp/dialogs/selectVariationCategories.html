@@ -1,0 +1,57 @@
+<div class="modal-header">
+	<h3 class="modal-title">
+		Select variation categories
+	</h3>
+		<div class="row">
+			<div class="col-md-6">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Included category</th>
+							<th>Notifiability</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="varCat in included">
+							<td>{{varCat.description}}</td>
+							<td class="differenceSummary_NOTIFIABLE" ng-show="varCat.notifiability == 'NOTIFIABLE'">Notifiable</td>
+							<td class="differenceSummary_NOT_NOTIFIABLE" ng-show="varCat.notifiability == 'NOT_NOTIFIABLE'">Not notifiable</td>
+							<td><button type="button" class="btn btn-primary btn-xs"
+									ng-click="exclude(varCat)"/>
+									<span class="glyphicon glyphicon-ban-circle"></span> Exclude
+								</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col-md-6">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Excluded category</th>
+							<th>Notifiability</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="varCat in excluded">
+							<td>{{varCat.description}}</td>
+							<td class="differenceSummary_NOTIFIABLE" ng-show="varCat.notifiability == 'NOTIFIABLE'">Notifiable</td>
+							<td class="differenceSummary_NOT_NOTIFIABLE" ng-show="varCat.notifiability == 'NOT_NOTIFIABLE'">Not notifiable</td>
+							<td><button type="button" class="btn btn-primary btn-xs"
+									ng-click="include(varCat)"/>
+									<span class="glyphicon glyphicon-ok-circle"></span> Include
+								</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+</div>
+
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="select()">OK</button>
+	<button type="button" class="btn btn-cancel" ng-click="dismiss()">Cancel</button>
+</div>
