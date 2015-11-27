@@ -153,7 +153,7 @@ submitSequencesAnalysis
 		}
 		
 		$scope.selectGenomeFeature = function(sequenceResult) {
-			// removes popovers
+			// remove popovers somehow
 			var dlg = dialogs.create('hcvApp/dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
 			dlg.result.then(function(feature){
 				if(feature != $scope.sequenceResult.selectedFeature) {
