@@ -153,6 +153,7 @@ submitSequencesAnalysis
 		}
 		
 		$scope.selectGenomeFeature = function(sequenceResult) {
+			// removes popovers
 			var dlg = dialogs.create('hcvApp/dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
 			dlg.result.then(function(feature){
 				if(feature != $scope.sequenceResult.selectedFeature) {
@@ -163,6 +164,7 @@ submitSequencesAnalysis
 		}
 
 		$scope.selectVariationCategories = function() {
+			// removes popovers
 			var dlg = dialogs.create('hcvApp/dialogs/selectVariationCategories.html','selectVariationCategoriesCtrl',$scope.variationCategories,{});
 			dlg.result.then(function(updatedCategories) {
 				$scope.variationCategories = updatedCategories;
@@ -347,7 +349,13 @@ submitSequencesAnalysis
 	$scope.variationCategories = data;
 	$scope.included = [];
 	$scope.excluded = [];
+	$scope.unused = [];
 	addUtilsToScope($scope);
+
+	$scope.listSort = function(list) {
+		console.log("list: ", list);
+		return _.sortBy(list, function(vcat) { return vcat.name; } );
+	}
 
 	console.log("variation categories: ", $scope.variationCategories);
 	
@@ -355,30 +363,64 @@ submitSequencesAnalysis
 		if(vcat.excluded && vcat.excluded == true) {
 			console.log("excluded vcat: ", vcat.name);
 			$scope.excluded.push(vcat);
+		} else if(vcat.unused && vcat.unused == true) {
+			console.log("unused vcat: ", vcat.name);
+			$scope.unused.push(vcat);
 		} else {
 			console.log("included vcat: ", vcat.name);
 			$scope.included.push(vcat);
 		}
 	});
+
+	console.log("excluded: ", $scope.excluded);
+	console.log("unused: ", $scope.unused);
+	console.log("included: ", $scope.included);
+
+	$scope.excluded = $scope.listSort($scope.excluded);
+	$scope.unused = $scope.listSort($scope.unused);
+	$scope.included = $scope.listSort($scope.included);
 	
-	$scope.include = function(vcat) {
-		$scope.excluded = _.without($scope.excluded, vcat);
+	
+	$scope.addToIncluded = function(vcat) {
+		$scope.unused = _.without($scope.unused, vcat);
 		$scope.included.push(vcat);
+		$scope.included = $scope.listSort($scope.included);
 	}
 
-	$scope.exclude = function(vcat) {
-		$scope.included = _.without($scope.included, vcat);
+	$scope.addToExcluded = function(vcat) {
+		$scope.unused = _.without($scope.unused, vcat);
 		$scope.excluded.push(vcat);
+		$scope.excluded = $scope.listSort($scope.excluded);
 	}
 
+	$scope.removeFromIncluded = function(vcat) {
+		$scope.included = _.without($scope.included, vcat);
+		$scope.unused.push(vcat);
+		$scope.unused = $scope.listSort($scope.unused);
+	}
+
+	$scope.removeFromExcluded = function(vcat) {
+		$scope.excluded = _.without($scope.excluded, vcat);
+		$scope.unused.push(vcat);
+		$scope.unused = $scope.listSort($scope.unused);
+	}
+
+	
 	$scope.select = function(){
 		var updatedCategories = {};
 		_.each($scope.included, function(vcat, idx, list) {
 			vcat.excluded = false;
+			vcat.unused = false;
 			updatedCategories[vcat.name] = vcat;
 		});
 		_.each($scope.excluded, function(vcat, idx, list) {
 			vcat.excluded = true;
+			vcat.unused = false;
+			updatedCategories[vcat.name] = vcat;
+		});
+		_.each($scope.unused, function(vcat, idx, list) {
+			vcat.excluded = false;
+			vcat.unused = true;
 			updatedCategories[vcat.name] = vcat;
 		});
 		console.log("updatedCategories: ", updatedCategories);

@@ -1,10 +1,4 @@
 
-function updateDifferenceStyle(prefix, oldDifferenceStyle, newDifferenceStyle) {
-	if(newDifferenceStyle == prefix+"NOT_NOTIFIABLE" && oldDifferenceStyle == prefix+"NOTIFIABLE") {
-		return oldDifferenceStyle;
-	}
-	return prefix+newDifferenceStyle;
-}
 
 function generateAlignmentDifferenceSummaries(variationCategories, sequenceResult) {
 	var alignmentDifferenceSummaries = [];
@@ -42,29 +36,12 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 			if(aaReferenceDifferenceNote.foundVariation) {
 				for(var k = 0; k < aaReferenceDifferenceNote.foundVariation.length; k++) {
 					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
-					var differenceStyle = "";
-					var popoverContent = "";
-					if(foundVariation.variationCategory) {
-						for(var c = 0; c < foundVariation.variationCategory.length; c++) {
-							var vcatName = foundVariation.variationCategory[c];
-							var vcat = variationCategories[vcatName];
-							if(vcat.excluded != true) {
-								differenceStyle = 
-									updateDifferenceStyle("differenceSummary_", 
-											differenceStyle,
-											vcat.inheritedNotifiability);
-								popoverContent += variationCategories[vcatName].description + "\n";
-							}
-						}
-					} else {
-						differenceStyle = "differenceSummary";
-						popoverContent = "Uncommon or unknown variant";
-					}
-					if(differenceStyle != "") {
+					var renderingInfo = getVariationRenderingInfo(foundVariation, variationCategories);
+					if(renderingInfo.highlight) {
 						var displayFoundVar = {
-								name: foundVariation.name,
-								differenceStyle: differenceStyle,
-								popoverContent: popoverContent};
+								name: renderingInfo.popoverTitle,
+								differenceStyle: "differenceSummary"+renderingInfo.styleSuffix,
+								popoverContent: renderingInfo.popoverContent};
 						foundVariations.push(displayFoundVar);
 					}
 				}
@@ -282,27 +259,15 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 									v++;
 									foundVariation = aaReferenceDiff.foundVariation[v];
 								}
-							} 
+							}
 							if(foundVariation && foundVariation.refStart <= qrySegAAIndex && foundVariation.refEnd >= qrySegAAIndex) {
-								queryAAPopover[aaColumn] = {};
-								queryAAPopover[aaColumn]["title"] = foundVariation.name;
-								if(foundVariation.variationCategory) {
-									var popoverContent = "";
-									for(var c = 0; c < foundVariation.variationCategory.length; c++) {
-										var vcatName = foundVariation.variationCategory[c];
-										var vcat = variationCategories[vcatName];
-										if(vcat.excluded != true) {
-											queryAADifferenceStyle[aaColumn] = 
-												updateDifferenceStyle("difference_", 
-														queryAADifferenceStyle[aaColumn],
-														vcat.inheritedNotifiability);
-											popoverContent += variationCategories[vcatName].description+"\n";
-										}
-									}
-									queryAAPopover[aaColumn]["content"] = popoverContent;
-								} else {
-									queryAADifferenceStyle[aaColumn] = "difference";
-									queryAAPopover[aaColumn]["content"] = "Uncommon or unknown variant";
+								var renderingInfo = getVariationRenderingInfo(foundVariation, variationCategories);
+								if(renderingInfo.highlight) {
+									queryAAPopover[aaColumn] = {
+											title: renderingInfo.popoverTitle,
+											content: renderingInfo.popoverContent
+									};
+									queryAADifferenceStyle[aaColumn] = "difference"+renderingInfo.styleSuffix;
 								}
 							}
 						}
@@ -343,6 +308,47 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 	}
 	
 }
+
+function getVariationRenderingInfo(foundVariation, variationCategories) {
+	var renderingInfo = {
+			highlight: false
+	};
+	renderingInfo.popoverTitle = foundVariation.name;
+	if(foundVariation.unknown) {
+		renderingInfo.popoverContent = foundVariation.description;
+		renderingInfo.styleSuffix = "";
+		renderingInfo.highlight = true;
+	} else if(foundVariation.variationCategory) {
+		renderingInfo.popoverContent = "";
+		renderingInfo.styleSuffix = "";
+		for(var c = 0; c < foundVariation.variationCategory.length; c++) {
+			var vcatName = foundVariation.variationCategory[c];
+			var vcat = variationCategories[vcatName];
+			if(vcat.excluded == true) {
+				console.log("excluded: ", vcat.name);
+				renderingInfo = {
+					highlight: false
+				};
+				return renderingInfo;
+			}
+			if(vcat.excluded != true && vcat.unused != true) {
+				renderingInfo.styleSuffix =  
+					updateStyleSuffix(renderingInfo.styleSuffix, vcat.inheritedNotifiability);
+				renderingInfo.popoverContent += variationCategories[vcatName].description+"\n";
+				renderingInfo.highlight = true;
+			}
+		}
+	} 
+	return renderingInfo;
+}
+
+function updateStyleSuffix(oldStyleSuffix, newStyleSuffix) {
+	if(newStyleSuffix == "NOT_NOTIFIABLE" && oldStyleSuffix == "NOTIFIABLE") {
+		return oldStyleSuffix;
+	}
+	return newStyleSuffix;
+}
+
 
 function isDifference(reference, query) {
 	var empty = String.fromCharCode(160); // non breaking space.

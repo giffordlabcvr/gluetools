@@ -118,12 +118,12 @@ a {
 	background-color: #ddeecc;
 }
 
-.difference_NOTIFIABLE {
+.differenceNOTIFIABLE {
 	background-color: #CC0000;
 	color: #ffffff;
 }
 
-.difference_NOT_NOTIFIABLE {
+.differenceNOT_NOTIFIABLE {
 	background-color: #559900;
 	color: #ffffff;
 }
@@ -133,19 +133,19 @@ a {
 	color: #ffffff;
 }
 
-.difference, .difference_NOTIFIABLE, .difference_NOT_NOTIFIABLE {
+.difference, .differenceNOTIFIABLE, .differenceNOT_NOTIFIABLE {
 	cursor: pointer;
 }
 
-.differenceSummary, .differenceSummary_NOTIFIABLE, .differenceSummary_NOT_NOTIFIABLE {
+.differenceSummary, .differenceSummaryNOTIFIABLE, .differenceSummaryNOT_NOTIFIABLE {
 	cursor: pointer;
 }
 
-.differenceSummary_NOTIFIABLE {
+.differenceSummaryNOTIFIABLE {
 	color: #CC0000;
 }
 
-.differenceSummary_NOT_NOTIFIABLE {
+.differenceSummaryNOT_NOTIFIABLE {
 	color: #559900;
 }
 

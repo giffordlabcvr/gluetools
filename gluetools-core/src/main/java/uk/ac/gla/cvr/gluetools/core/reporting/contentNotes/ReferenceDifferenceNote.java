@@ -134,7 +134,7 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 				
 				String name = new String(new char[]{refChar})+Integer.toString(unknownPos)+new String(new char[]{queryChar});
 				
-				foundVariationDocuments.add(new VariationDocument(name, unknownPos, unknownPos, null, "Unknown variant", translationFormat, new LinkedHashSet<String>()));
+				foundVariationDocuments.add(new VariationDocument(name, unknownPos, unknownPos, null, "Unknown variant", translationFormat, new LinkedHashSet<String>(), true));
 			}
 			
 			Collections.sort(foundVariationDocuments, new Comparator<VariationDocument>(){

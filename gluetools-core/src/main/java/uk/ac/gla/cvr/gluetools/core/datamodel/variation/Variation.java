@@ -129,7 +129,7 @@ public class Variation extends _Variation {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
 				getRegexPattern(), getDescription(), getTranslationFormat(), 
-				new LinkedHashSet<String>(getVariationCategoryNames()));
+				new LinkedHashSet<String>(getVariationCategoryNames()), false);
 	}
 
 	public List<String> getVariationCategoryNames() {

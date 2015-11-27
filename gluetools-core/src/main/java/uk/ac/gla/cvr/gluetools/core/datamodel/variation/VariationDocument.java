@@ -19,11 +19,13 @@ public class VariationDocument {
 	private String description;
 	private TranslationFormat transcriptionFormat;
 	private LinkedHashSet<String> variationCategories;
+	private boolean unknown;
 	
 	public VariationDocument(String name, int refStart, int refEnd,
 			Pattern regex, String description,
 			TranslationFormat transcriptionFormat, 
-			LinkedHashSet<String> variationCategories) {
+			LinkedHashSet<String> variationCategories, 
+			boolean unknown) {
 		super();
 		this.name = name;
 		this.refStart = refStart;
@@ -32,6 +34,7 @@ public class VariationDocument {
 		this.description = description;
 		this.transcriptionFormat = transcriptionFormat;
 		this.variationCategories = variationCategories;
+		this.unknown = unknown;
 	}
 
 	public String getName() {
@@ -61,6 +64,7 @@ public class VariationDocument {
 			objBuilder.set("regex", regex.pattern());
 		}
 		objBuilder.set("description", description);
+		objBuilder.set("unknown", unknown);
 		objBuilder.set("transcriptionType", transcriptionFormat.name());
 		ArrayBuilder vcatArrayBuilder = objBuilder.setArray("variationCategory");
 		for(String variationCategory: variationCategories) {
@@ -72,6 +76,10 @@ public class VariationDocument {
 	
 	public LinkedHashSet<String> getVariationCategories() {
 		return variationCategories;
+	}
+
+	public boolean isUnknown() {
+		return unknown;
 	}
 
 	
