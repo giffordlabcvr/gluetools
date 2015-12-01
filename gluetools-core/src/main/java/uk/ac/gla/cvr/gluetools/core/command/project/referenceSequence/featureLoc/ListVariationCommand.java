@@ -103,25 +103,32 @@ public class ListVariationCommand extends FeatureLocModeCommand<ListVariationRes
 			variations = positionVariations.stream().map(PositionVariation::getVariation).collect(Collectors.toList());
 		}
 
-		return new ListVariationResult(variations);
+		return new ListVariationResult(cmdContext, variations);
 	}
 
 	
 	public static class ListVariationResult extends ListResult {
 
-		protected ListVariationResult(List<Variation> results) {
+		protected ListVariationResult(CommandContext cmdContext, List<Variation> results) {
 			super(Variation.class, results, 
 					Stream.concat(ListResult.propertyPaths(Variation.class).stream(), 
 							Arrays.asList(VARIATION_CATEGORIES).stream()).collect(Collectors.toList()), 
-							new HeaderResolver());
+							new HeaderResolver(cmdContext));
 		}
 
 		public static class HeaderResolver extends MapResult.DefaultResolveHeaderFunction<Variation> {
 
+			private CommandContext cmdContext;
+			
+			public HeaderResolver(CommandContext cmdContext) {
+				super();
+				this.cmdContext = cmdContext;
+			}
+
 			@Override
 			public Object apply(Variation variation, String header) {
 				if(header.equals(VARIATION_CATEGORIES)) {
-					List<String> vcatNames = variation.getVariationCategoryNames();
+					List<String> vcatNames = variation.getVariationCategoryNames(cmdContext);
 					if(!vcatNames.isEmpty()) {
 						return String.join(", ", vcatNames);
 					} else {

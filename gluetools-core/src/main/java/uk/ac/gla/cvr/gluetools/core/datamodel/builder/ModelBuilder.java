@@ -43,8 +43,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
+import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
@@ -71,12 +73,12 @@ public class ModelBuilder {
 	private static String CAYENNE_NS = "http://cayenne.apache.org/schema/3.0/modelMap";
 	
 
-	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration) {
-		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration));
+	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
+		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration, propertiesConfiguration));
 	}
 	
-	public static ServerRuntime createRootRuntime(DatabaseConfiguration dbConfiguration) {
-		return new ServerRuntime(CORE_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration));
+	public static ServerRuntime createRootRuntime(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
+		return new ServerRuntime(CORE_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration, propertiesConfiguration));
 	}
 
 	public static String getDbSchemaVersionString(ObjectContext metaObjectContext) {
@@ -98,13 +100,21 @@ public class ModelBuilder {
 	}
 
 
-	private static Module dbConfigModule(DatabaseConfiguration dbConfiguration) {
+	private static Module dbConfigModule(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
+		String cacheSize = propertiesConfiguration.getPropertyValue(Constants.QUERY_CACHE_SIZE_PROPERTY);
+		String cacheSizeFinal;
+		if(cacheSize == null) {
+			cacheSizeFinal = "20000";
+		} else {
+			cacheSizeFinal = cacheSize;
+		}
 		Module dbConfigModule = new Module() {
 			  @Override
 			  public void configure(Binder binder) {
 			    MapBuilder<Object> map = binder.bindMap(Constants.PROPERTIES_MAP)
 			       .put(Constants.JDBC_DRIVER_PROPERTY, dbConfiguration.getVendor().getJdbcDriverClass())
-			       .put(Constants.JDBC_URL_PROPERTY, dbConfiguration.getJdbcUrl());
+			       .put(Constants.JDBC_URL_PROPERTY, dbConfiguration.getJdbcUrl())
+			       .put(Constants.QUERY_CACHE_SIZE_PROPERTY, cacheSizeFinal);
 			    dbConfiguration.getUsername().ifPresent(u -> map.put(Constants.JDBC_USERNAME_PROPERTY, u));
 			    dbConfiguration.getPassword().ifPresent(p -> map.put(Constants.JDBC_PASSWORD_PROPERTY, p));
 			  }
@@ -113,7 +123,11 @@ public class ModelBuilder {
 	}
 	
 	
-	public static ServerRuntime createProjectModel(DatabaseConfiguration dbConfiguration, Project project) {
+	public static ServerRuntime createProjectModel(GluetoolsEngine gluetoolsEngine, Project project) {
+		
+		DatabaseConfiguration dbConfiguration = gluetoolsEngine.getDbConfiguration();
+		PropertiesConfiguration propertiesConfiguration = gluetoolsEngine.getPropertiesConfiguration();
+
 		String projectName = project.getName();
 		List<Field> fields = project.getFields();
 		List<String> projectTableNames = new ArrayList<String>();
@@ -206,7 +220,7 @@ public class ModelBuilder {
 
 		ServerRuntime projectRuntime = new ServerRuntime(
 					    projectDomainName, 
-					    dbConfigModule(dbConfiguration),
+					    dbConfigModule(dbConfiguration, propertiesConfiguration),
 					     binder -> binder.bind(ResourceLocator.class)
 					                     .to(GlueResourceLocator.class));
 		// ensure it is created by getting the obj context.
@@ -280,10 +294,10 @@ public class ModelBuilder {
 
 
 	
-	public static void deleteProjectModel(DatabaseConfiguration dbConfiguration, Project project) {
+	public static void deleteProjectModel(GluetoolsEngine gluetoolsEngine, Project project) {
 		ServerRuntime projectRuntime = null;
 		try {
-			projectRuntime = createProjectModel(dbConfiguration, project);
+			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 
 			List<MergerToken> tokens = new ArrayList<MergerToken>();
@@ -300,10 +314,10 @@ public class ModelBuilder {
 		}
 	}
 	
-	public static void addSequenceColumnToModel(DatabaseConfiguration dbConfiguration, Project project, Field field) {
+	public static void addSequenceColumnToModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
 		ServerRuntime projectRuntime = null;
 		try {
-			projectRuntime = createProjectModel(dbConfiguration, project);
+			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 			AddColumnToDb addToken = getAddColumnToken(project, field, mergerContext);
 			addToken.execute(mergerContext);
@@ -336,10 +350,10 @@ public class ModelBuilder {
 		return mergerContext;
 	}
 
-	public static void deleteSequenceColumnFromModel(DatabaseConfiguration dbConfiguration, Project project, Field field) {
+	public static void deleteSequenceColumnFromModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
 		ServerRuntime projectRuntime = null;
 		try {
-			projectRuntime = createProjectModel(dbConfiguration, project);
+			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 			AddColumnToDb addToken = getAddColumnToken(project, field, mergerContext);
 			DropColumnToDb dropToken = new DropColumnToDb(addToken.getEntity(), addToken.getColumn());

@@ -35,7 +35,7 @@ public class DeleteProjectCommand extends RootModeCommand<DeleteResult> {
 		if(project == null) {
 			return new DeleteResult(Project.class, 0);
 		}
-		ModelBuilder.deleteProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project);
+		ModelBuilder.deleteProjectModel(cmdContext.getGluetoolsEngine(), project);
 		DeleteResult result = GlueDataObject.delete(cmdContext, Project.class, Project.pkMap(projectName), true);
 		cmdContext.commit();
 		return result;

@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 
 import java.util.Map;
 
+import org.apache.cayenne.BaseContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -48,6 +49,7 @@ public class VariationAddCategoryCommand extends VariationModeCommand<CreateResu
 			vcatMembership.setCategory(vcat);
 			vcatMembership.setVariation(lookupVariation(cmdContext));
 			cmdContext.commit();
+			((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(VcatMembership.CACHE_GROUP);
 			return new CreateResult(VcatMembership.class, 1);
 		} else {
 			return new CreateResult(VcatMembership.class, 0);

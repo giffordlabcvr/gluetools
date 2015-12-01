@@ -16,6 +16,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VcatMembership;
 		VcatMembership.VARIATION_NAME_PATH, VcatMembership.CATEGORY_NAME_PATH})
 public class VcatMembership extends _VcatMembership {
 
+	public static final String CACHE_GROUP = "VcatMembership";
+	
 
 	public static final String VARIATION_FEATURE_NAME_PATH = 
 			_VcatMembership.VARIATION_PROPERTY+"."+_Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;

@@ -240,10 +240,14 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private void generateSequenceFeatureResults(CommandContext cmdContext, Map<String, AlignmentResult> almtNameToAlmtResult,
 			SequenceResult seqResult, Set<String> featureRestrictions, Set<String> referenceRestrictions, Set<String> variationRestrictions,
 			Set<String> vcatRestrictions) {
+		GlueLogger.getGlueLogger().finest("Generating sequence feature results for sequence "+seqResult.getSequenceID());
+		long startTime = System.currentTimeMillis();
 		for(SequenceAlignmentResult sequenceAlignmentResult : seqResult.seqAlignmentResults) {
 			sequenceAlignmentResult.generateSequenceAlignmentFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, 
 					s2cMinorityVariantFilter, featureRestrictions, referenceRestrictions, variationRestrictions, vcatRestrictions);
 		}
+		long totalTime = System.currentTimeMillis() - startTime;
+		GlueLogger.getGlueLogger().finest("Total time: "+totalTime);
 	}
 	
 

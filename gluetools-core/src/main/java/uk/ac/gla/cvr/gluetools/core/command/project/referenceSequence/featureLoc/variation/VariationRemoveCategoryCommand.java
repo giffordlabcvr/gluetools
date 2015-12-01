@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.BaseContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -47,6 +48,7 @@ public class VariationRemoveCategoryCommand extends VariationModeCommand<DeleteR
 		DeleteResult delResult = GlueDataObject.delete(cmdContext, VcatMembership.class, 
 				VcatMembership.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), vcatName), true);
 		cmdContext.commit();
+		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(VcatMembership.CACHE_GROUP);
 		return delResult;
 	
 	}

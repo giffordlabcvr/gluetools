@@ -8,9 +8,15 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.QueryCacheStrategy;
+import org.apache.cayenne.query.SelectQuery;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
@@ -20,7 +26,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
@@ -125,21 +130,26 @@ public class Variation extends _Variation {
 
 	}	
 
-	public VariationDocument getVariationDocument() {
+	public VariationDocument getVariationDocument(CommandContext cmdContext) {
 		return new VariationDocument(getName(), 
 				getRefStart(), getRefEnd(), 
 				getRegexPattern(), getDescription(), getTranslationFormat(), 
-				new LinkedHashSet<String>(getVariationCategoryNames()), false);
+				new LinkedHashSet<String>(getVariationCategoryNames(cmdContext)), false);
 	}
 
-	public List<String> getVariationCategoryNames() {
-		return getVcatMemberships().stream().
+	public List<String> getVariationCategoryNames(CommandContext cmdContext) {
+		Expression exp = ExpressionFactory.matchExp(VcatMembership.VARIATION_NAME_PATH, getName());
+		exp = exp.andExp(ExpressionFactory.matchExp(VcatMembership.VARIATION_FEATURE_NAME_PATH, getFeatureLoc().getFeature().getName()));
+		exp = exp.andExp(ExpressionFactory.matchExp(VcatMembership.VARIATION_REFSEQ_NAME_PATH, getFeatureLoc().getReferenceSequence().getName()));
+		SelectQuery query = new SelectQuery(VcatMembership.class, exp);
+		query.setCacheGroups(VcatMembership.CACHE_GROUP);
+		query.setCacheStrategy(QueryCacheStrategy.SHARED_CACHE);
+		
+		List<VcatMembership> vcatMemberships = GlueDataObject.query(cmdContext, VcatMembership.class, query);
+		
+		List<String> names = vcatMemberships.stream().
 			map(vcm -> vcm.getCategory().getName()).collect(Collectors.toList());
-	}
-
-	public List<VariationCategory> getVariationCategories() {
-		return getVcatMemberships().stream().
-			map(vcm -> vcm.getCategory()).collect(Collectors.toList());
+		return names;
 	}
 
 	@Override

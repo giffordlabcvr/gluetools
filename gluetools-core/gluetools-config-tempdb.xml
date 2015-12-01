@@ -12,5 +12,9 @@
 			<name>gluetools.core.programs.blast.db.dir</name>
 			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/blastdbs</value>
 		</property>
+		<property>
+			<name>cayenne.querycache.size</name>
+			<value>30000</value>
+		</property>
 	</properties>
 </gluetools>

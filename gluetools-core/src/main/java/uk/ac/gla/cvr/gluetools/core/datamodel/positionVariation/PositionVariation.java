@@ -12,6 +12,9 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 public class PositionVariation extends _PositionVariation {
 
+	
+	public static final String CACHE_GROUP = "PositionVariation";
+	
 	public static final String FEATURE_NAME_PATH = _PositionVariation.FEATURE_LOCATION_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
 	public static final String REF_SEQ_NAME_PATH = _PositionVariation.FEATURE_LOCATION_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+_ReferenceSequence.NAME_PROPERTY;
 	public static final String VARIATION_NAME_PATH = _PositionVariation.VARIATION_PROPERTY+"."+_Variation.NAME_PROPERTY;

@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.cayenne.BaseContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -95,6 +96,7 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 		}
 		
 		cmdContext.commit();
+		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(PositionVariation.CACHE_GROUP);
 		return new UpdateResult(Variation.class, 1);
 	}
 

@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -63,7 +64,10 @@ public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAna
 
 	@Override
 	protected TransientAnalysisResult execute(CommandContext cmdContext, MutationFrequenciesReporter mutationFrequenciesPlugin) {
-		return mutationFrequenciesPlugin.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceData);
+		long startTime = System.currentTimeMillis();
+		TransientAnalysisResult result = mutationFrequenciesPlugin.doTransientAnalysis(cmdContext, headerDetect, alignmentName, sequenceData);
+		GlueLogger.getGlueLogger().finest("Total time for transient analysis: "+(System.currentTimeMillis()-startTime)+"ms");
+		return result;
 	}
 
 	public static class TransientAnalysisResult extends CommandResult {

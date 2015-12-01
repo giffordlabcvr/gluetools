@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.Ordering;
+import org.apache.cayenne.query.QueryCacheStrategy;
 import org.apache.cayenne.query.SelectQuery;
 import org.apache.cayenne.query.SortOrder;
 
@@ -32,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 
 public class ReferenceDifferenceNote extends SequenceContentNote {
 
+	
 	private CharSequence mask;
 	private List<VariationDocument> foundVariationDocuments = new ArrayList<VariationDocument>();
 	
@@ -95,13 +97,16 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 					exp = exp.andExp(variationExp);
 				}
 				SelectQuery query = new SelectQuery(PositionVariation.class, exp);
+				query.setCacheGroups(PositionVariation.CACHE_GROUP);
+				query.setCacheStrategy(QueryCacheStrategy.SHARED_CACHE);
 				
 				query.addOrdering(new Ordering(PositionVariation.VARIATION_NAME_PATH, SortOrder.ASCENDING));
 				List<PositionVariation> positionVariations = GlueDataObject.query(cmdContext, PositionVariation.class, query);
 				List<Variation> variationsAtPosition = positionVariations.stream().map(PositionVariation::getVariation).collect(Collectors.toList());
+				
 				if(vcatRestrictions != null) {
 					variationsAtPosition = variationsAtPosition.stream()
-							.filter(v -> v.getVariationCategoryNames().stream().anyMatch(vc -> vcatRestrictions.contains(vc)))
+							.filter(v -> v.getVariationCategoryNames(cmdContext).stream().anyMatch(vc -> vcatRestrictions.contains(vc)))
 							.collect(Collectors.toList());
 				}
 				
@@ -110,13 +115,13 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 				variationNames.addAll(variationsAtPosition.stream().map(v -> v.getName()).collect(Collectors.toList()));
 				variationsToScan.addAll(variationsAtPosition);
 			}
-			
 			for(Variation variation: variationsToScan) {
 				if(refStart <= variation.getRefStart() && refStart+queryChars.length()-1 >= variation.getRefEnd()) {
 					CharSequence input = queryChars.subSequence(variation.getRefStart()-refStart, variation.getRefEnd()-refStart+1);
 					Matcher matcher = variation.getRegexPattern().matcher(input);
-					if(matcher.find()) {
-						foundVariationDocuments.add(variation.getVariationDocument());
+					boolean findResult = matcher.find();
+					if(findResult) {
+						foundVariationDocuments.add(variation.getVariationDocument(cmdContext));
 						for(int p = variation.getRefStart(); p <= variation.getRefEnd(); p++) {
 							differencePositions.remove(p);
 						}
@@ -136,14 +141,12 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 				
 				foundVariationDocuments.add(new VariationDocument(name, unknownPos, unknownPos, null, "Unknown variant", translationFormat, new LinkedHashSet<String>(), true));
 			}
-			
 			Collections.sort(foundVariationDocuments, new Comparator<VariationDocument>(){
 				@Override
 				public int compare(VariationDocument o1, VariationDocument o2) {
 					return Integer.compare(o1.getRefStart(), o2.getRefStart());
 				}
 			});
-			
 		}
 
 		

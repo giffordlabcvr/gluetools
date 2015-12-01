@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 
 import java.util.Optional;
 
+import org.apache.cayenne.BaseContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -13,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
@@ -59,6 +61,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setTranscriptionType(translationFormat.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
 		cmdContext.commit();
+		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(VcatMembership.CACHE_GROUP);
 		return new CreateResult(Variation.class, 1);
 	}
 

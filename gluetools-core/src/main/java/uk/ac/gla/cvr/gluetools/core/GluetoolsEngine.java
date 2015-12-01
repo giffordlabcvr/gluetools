@@ -118,7 +118,7 @@ public class GluetoolsEngine implements Plugin {
 	private void init(boolean migrateSchema) {
 		ServerRuntime metaRuntime = null;
 		try {
-			metaRuntime = ModelBuilder.createMetaRuntime(dbConfiguration);
+			metaRuntime = ModelBuilder.createMetaRuntime(dbConfiguration, propertiesConfiguration);
 			ObjectContext metaObjectContext = metaRuntime.getContext();
 			dbSchemaVersion = ModelBuilder.getDbSchemaVersionString(metaObjectContext);
 			String currentSchemaVersion = SchemaVersion.currentVersionString;
@@ -134,7 +134,7 @@ public class GluetoolsEngine implements Plugin {
 					throw new ModelBuilderException(Code.SCHEMA_MIGRATION_NOT_IMPLEMENTED, dbSchemaVersion, currentSchemaVersion);
 				}
 			}
-			rootServerRuntime = ModelBuilder.createRootRuntime(dbConfiguration);
+			rootServerRuntime = ModelBuilder.createRootRuntime(dbConfiguration, propertiesConfiguration);
 			rootServerRuntime.getContext(); // just to check that it works.
 			ModelBuilder.setDbSchemaVersionString(metaObjectContext, currentSchemaVersion);
 			metaObjectContext.commitChanges();

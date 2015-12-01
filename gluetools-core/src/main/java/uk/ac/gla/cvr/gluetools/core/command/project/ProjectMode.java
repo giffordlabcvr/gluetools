@@ -20,7 +20,7 @@ public class ProjectMode extends CommandMode<ProjectCommand> implements InsidePr
 	public ProjectMode(CommandContext cmdContext, ProjectCommand command, Project project) {
 		super(command, project.getName());
 		this.project = project;
-		setNewServerRuntime(ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine().getDbConfiguration(), project));
+		setNewServerRuntime(ModelBuilder.createProjectModel(cmdContext.getGluetoolsEngine(), project));
 	}
 	
 	public Project getProject() {
