@@ -17,14 +17,80 @@ submitSequencesAnalysis
 		
 	$scope.sequenceFormats = [];
 	$scope.alignmentNames = [];
+	$scope.analysisResults = null;
+	$scope.selectedSequenceResult = null;
 
 	$scope.showSupportedFormats = function() {
 		dialogs.create('hcvApp/dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
 	}
+
+	$scope.$watch( 'selectedSequenceID', function( newObj, oldObj ) {
+		console.log("selectedSequenceID", $scope.selectedSequenceID);
+		if($scope.analysisResults) {
+			for(var i = 0; i < $scope.analysisResults.transientAnalysisResult.sequenceResult.length; i++) {
+				var seqResult = $scope.analysisResults.transientAnalysisResult.sequenceResult[i];
+				if(seqResult.sequenceID == $scope.selectedSequenceID) {
+					$scope.selectedSequenceResult = seqResult;
+					break;
+				}
+			}
+		}
+		console.log("selectedSequenceResult", $scope.selectedSequenceResult);
+	}, false);
+
+	$scope.$watch( 'selectedSequenceResult', function(newObj, oldObj) {
+
+		if(!$scope.selectedSequenceResult) {
+			return;
+		}
+		console.log('refToFeatureTreeMap:', $scope.selectedSequenceResult.refToFeatureTreeMap);
+		
+		$scope.nullifyFeatureOnRefChange = true;
+		$scope.referenceOptions = [];
+		$scope.noneSelected = "None selected";
+		$scope.numReferenceOptions = 0;
+		$scope.selectedSequenceResult.showNucleotides = "show";
+		$scope.selectedSequenceResult.showMinorityVariants = "show";
+		$scope.selectedSequenceResult.differenceView = "differenceSummary";
+		$scope.selectedSequenceResult.selectedFeature = {
+				featureDescription: $scope.noneSelected
+		};
+		
+		var refToFeatureTreeMap = $scope.selectedSequenceResult.refToFeatureTreeMap;
+
+
+		$scope.updateSequenceAnalysis();
+
+		// for now, only show the master reference.
+		for(var i = 0; i < $scope.selectedSequenceResult.sequenceAlignmentResult.length; i++) {
+			var sequenceAlignmentResult = $scope.selectedSequenceResult.sequenceAlignmentResult[i];
+			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features
+					&& i == $scope.selectedSequenceResult.sequenceAlignmentResult.length-1) {
+				$scope.numReferenceOptions ++;
+				$scope.referenceOptions.push(sequenceAlignmentResult.referenceName);
+			}
+		}
+		if($scope.numReferenceOptions != 1) {
+			// add to front.
+			$scope.referenceOptions.unshift($scope.noneSelected);
+		}
+		
+		if($scope.numReferenceOptions == 1) {
+			$scope.selectedSequenceResult.selectedReference = $scope.referenceOptions[0]; 
+		} else {
+			$scope.selectedSequenceResult.selectedReference = $scope.noneSelected;
+		}
+		
+		$scope.updateFeatureTreeMap();
+	}, false);
+	
 	
 	$scope.showAnalysisResults = function(item) {
 		console.log("show analysis : ", item);
 		console.log("resultArray : ", item.transientAnalysisResult.sequenceResult);
+		if(item.transientAnalysisResult.sequenceResult.length > 0) {
+			$scope.selectedSequenceID = item.transientAnalysisResult.sequenceResult[0].sequenceID;
+		}
 		$scope.analysisResults = item;
 	}
 	
@@ -46,135 +112,99 @@ submitSequencesAnalysis
 	$scope.showAlignmentDetails = function(sequenceResult) {
 		dialogs.create('hcvApp/dialogs/alignmentDetails.html','alignmentDetailsCtrl',sequenceResult,{});
 	}
-	
-	
-	$scope.analysisResultsCtrl = function($scope) {
-		console.log('created controller for ', $scope.sequenceResult);
 
-		console.log('refToFeatureTreeMap:', $scope.sequenceResult.refToFeatureTreeMap);
-		
-		$scope.nullifyFeatureOnRefChange = true;
-		$scope.referenceOptions = [];
-		$scope.noneSelected = "None selected";
-		$scope.numReferenceOptions = 0;
-		$scope.sequenceResult.showNucleotides = "show";
-		$scope.sequenceResult.showMinorityVariants = "show";
-		$scope.sequenceResult.differenceView = "differenceSummary";
-		$scope.sequenceResult.selectedFeature = {
-				featureDescription: $scope.noneSelected
-		};
-		
-		var refToFeatureTreeMap = $scope.sequenceResult.refToFeatureTreeMap;
-
-		$scope.updateSequenceAnalysis = function() {
-			if($scope.sequenceResult.differenceView == "differenceSummary") {
-				$scope.sequenceResult.alignmentDifferenceSummaries = 
-					generateAlignmentDifferenceSummaries($scope.variationCategories, $scope.sequenceResult);
-				console.log("alignmentDifferenceSummaries ", $scope.sequenceResult.alignmentDifferenceSummaries);
-			} else {
-				console.log("sequenceResult ", $scope.sequenceResult);
-				$scope.sequenceResult.analysisSequenceRows = [];
-				if($scope.sequenceResult.selectedFeature.featureDescription == $scope.noneSelected) {
-					return;
-				}
-				var sequenceFeatureResult;
-				var sequenceAlignmentResult;
-				for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
-					if($scope.sequenceResult.sequenceAlignmentResult[i].referenceName == $scope.sequenceResult.selectedReference) {
-						sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
-					}
-				}
-				console.log("sequenceAlignmentResult ", sequenceAlignmentResult);
-				var sequenceFeatureResult;
-				for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
-					if(sequenceAlignmentResult.sequenceFeatureResult[i].featureName == $scope.sequenceResult.selectedFeature.featureName) {
-						sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
-					}
-				}
-				console.log("sequenceFeatureResult ", sequenceFeatureResult);
-				$scope.sequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
-						$scope.variationCategories,
-						$scope.sequenceResult.selectedFeature, 
-						sequenceFeatureResult);
-				console.log("analysisSequenceRows ", $scope.sequenceResult.analysisSequenceRows);
-			}
+	$scope.updateSequenceAnalysis = function() {
+		if(!$scope.selectedSequenceResult) {
+			return;
 		}
-
-		$scope.updateSequenceAnalysis();
-
-		$scope.switchToDetailView = function(referenceName, featureName) {
-			$scope.nullifyFeatureOnRefChange = false;
-			$scope.sequenceResult.selectedReference = referenceName;
-			$scope.sequenceResult.selectedFeature = $scope.findFeature(refToFeatureTreeMap[referenceName], featureName);
-			console.log('updated feature to:', $scope.sequenceResult.selectedFeature);
-			$scope.sequenceResult.differenceView = "genomeDetail";
-		}
-
-		$scope.$watch( 'sequenceResult.differenceView', function( newObj, oldObj ) {
-			$scope.updateSequenceAnalysis();
-		}, false);
-
-		
-		
-		// for now, only show the master reference.
-		for(var i = 0; i < $scope.sequenceResult.sequenceAlignmentResult.length; i++) {
-			var sequenceAlignmentResult = $scope.sequenceResult.sequenceAlignmentResult[i];
-			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features
-					&& i == $scope.sequenceResult.sequenceAlignmentResult.length-1) {
-				$scope.numReferenceOptions ++;
-				$scope.referenceOptions.push(sequenceAlignmentResult.referenceName);
-			}
-		}
-		if($scope.numReferenceOptions != 1) {
-			// add to front.
-			$scope.referenceOptions.unshift($scope.noneSelected);
-		}
-		
-		$scope.$watch( 'sequenceResult.selectedReference', function( newObj, oldObj ) {
-			console.log("selectedReference for "+$scope.sequenceResult.sequenceID+" updated to: ", newObj);
-			if(newObj != $scope.noneSelected) {
-				$scope.sequenceResult.featureTreeResult = $scope.sequenceResult.refToFeatureTreeMap[newObj].features;
-			} else {
-				$scope.sequenceResult.featureTreeResult = null;
-			}
-			if($scope.nullifyFeatureOnRefChange) {
-				$scope.sequenceResult.selectedFeature = {
-						featureDescription: $scope.noneSelected
-				};
-				$scope.updateSequenceAnalysis();
-			}
-			$scope.nullifyFeatureOnRefChange = true;
-		}, false);
-		
-		if($scope.numReferenceOptions == 1) {
-			$scope.sequenceResult.selectedReference = $scope.referenceOptions[0]; 
+		if($scope.selectedSequenceResult.differenceView == "differenceSummary") {
+			$scope.selectedSequenceResult.alignmentDifferenceSummaries = 
+				generateAlignmentDifferenceSummaries($scope.variationCategories, $scope.selectedSequenceResult);
+			console.log("alignmentDifferenceSummaries ", $scope.selectedSequenceResult.alignmentDifferenceSummaries);
 		} else {
-			$scope.sequenceResult.selectedReference = $scope.noneSelected;
-		}
-		
-		$scope.selectGenomeFeature = function(sequenceResult) {
-			// remove popovers somehow
-			var dlg = dialogs.create('hcvApp/dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.sequenceResult,{});
-			dlg.result.then(function(feature){
-				if(feature != $scope.sequenceResult.selectedFeature) {
-					$scope.sequenceResult.selectedFeature = feature;
-					$scope.updateSequenceAnalysis();
+			console.log("selectedSequenceResult ", $scope.selectedSequenceResult);
+			$scope.selectedSequenceResult.analysisSequenceRows = [];
+			if($scope.selectedSequenceResult.selectedFeature.featureDescription == $scope.noneSelected) {
+				return;
+			}
+			var sequenceFeatureResult;
+			var sequenceAlignmentResult;
+			for(var i = 0; i < $scope.selectedSequenceResult.sequenceAlignmentResult.length; i++) {
+				if($scope.selectedSequenceResult.sequenceAlignmentResult[i].referenceName == $scope.selectedSequenceResult.selectedReference) {
+					sequenceAlignmentResult = $scope.selectedSequenceResult.sequenceAlignmentResult[i];
 				}
-			});
+			}
+			console.log("sequenceAlignmentResult ", sequenceAlignmentResult);
+			var sequenceFeatureResult;
+			for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
+				if(sequenceAlignmentResult.sequenceFeatureResult[i].featureName == $scope.selectedSequenceResult.selectedFeature.featureName) {
+					sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
+				}
+			}
+			console.log("sequenceFeatureResult ", sequenceFeatureResult);
+			$scope.selectedSequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
+					$scope.variationCategories,
+					$scope.selectedSequenceResult.selectedFeature, 
+					sequenceFeatureResult);
+			console.log("analysisSequenceRows ", $scope.selectedSequenceResult.analysisSequenceRows);
 		}
+	}
 
-		$scope.selectVariationCategories = function() {
-			// removes popovers
-			var dlg = dialogs.create('hcvApp/dialogs/selectVariationCategories.html','selectVariationCategoriesCtrl',$scope.variationCategories,{});
-			dlg.result.then(function(updatedCategories) {
-				$scope.variationCategories = updatedCategories;
-				$scope.updateSequenceAnalysis();
-			});
+	$scope.switchToDetailView = function(referenceName, featureName) {
+		$scope.nullifyFeatureOnRefChange = false;
+		$scope.selectedSequenceResult.selectedReference = referenceName;
+		$scope.selectedSequenceResult.selectedFeature = $scope.findFeature($scope.selectedSequenceResult.refToFeatureTreeMap[referenceName], featureName);
+		console.log('updated feature to:', $scope.selectedSequenceResult.selectedFeature);
+		$scope.selectedSequenceResult.differenceView = "genomeDetail";
+	}
+
+	$scope.$watch( 'selectedSequenceResult.differenceView', function( newObj, oldObj ) {
+		$scope.updateSequenceAnalysis();
+	}, false);
+
+	$scope.updateFeatureTreeMap = function() {
+		if($scope.selectedSequenceResult.selectedReference != $scope.noneSelected) {
+			$scope.selectedSequenceResult.featureTreeResult = $scope.selectedSequenceResult.refToFeatureTreeMap[$scope.selectedSequenceResult.selectedReference].features;
+		} else {
+			$scope.selectedSequenceResult.featureTreeResult = null;
 		}
-
-		
 	}
 	
+	$scope.$watch( 'selectedSequenceResult.selectedReference', function( newObj, oldObj ) {
+		if(!$scope.selectedSequenceResult) {
+			return;
+		}
+		console.log("selectedReference for "+$scope.selectedSequenceResult.sequenceID+" updated to: ", newObj);
+		$scope.updateFeatureTreeMap();
+		if($scope.nullifyFeatureOnRefChange) {
+			$scope.selectedSequenceResult.selectedFeature = {
+					featureDescription: $scope.noneSelected
+			};
+			$scope.updateSequenceAnalysis();
+		}
+		$scope.nullifyFeatureOnRefChange = true;
+	}, false);
+
+	$scope.selectGenomeFeature = function(selectedSequenceResult) {
+		// remove popovers somehow
+		var dlg = dialogs.create('hcvApp/dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.selectedSequenceResult,{});
+		dlg.result.then(function(feature){
+			if(feature != $scope.selectedSequenceResult.selectedFeature) {
+				$scope.selectedSequenceResult.selectedFeature = feature;
+				$scope.updateSequenceAnalysis();
+			}
+		});
+	}
+
+	$scope.selectVariationCategories = function() {
+		// removes popovers
+		var dlg = dialogs.create('hcvApp/dialogs/selectVariationCategories.html','selectVariationCategoriesCtrl',$scope.variationCategories,{});
+		dlg.result.then(function(updatedCategories) {
+			$scope.variationCategories = updatedCategories;
+			$scope.updateSequenceAnalysis();
+		});
+	}
+
 	
 	$scope.removeAll = function() {
 		$scope.uploader.clearQueue();

@@ -133,55 +133,25 @@
 			</div>
 	
 			<div ng-show="analysisResults">
-				<h3>Anaylsis: {{analysisResults.file.name}}</h3>
-				<div ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult" 
-						ng-controller="analysisResultsCtrl">
-					<h4>{{sequenceResult.sequenceID}} <small><a ng-click="showAlignmentDetails(sequenceResult)">Coverage details <i class="glyphicon glyphicon-link"></i></a></small></h4>
+				<h3>Analysis</h3>
 				<table class="table table-nonfluid">
 					<thead>
 						<tr>
-							<th>Difference view</th>
-							<th ng-show="sequenceResult.differenceView == 'genomeDetail'">Reference sequence</th>
-							<th ng-show="sequenceResult.differenceView == 'genomeDetail'">Genome feature</th>
-							<th ng-show="sequenceResult.differenceView == 'genomeDetail'"></th>
-							<th ng-show="sequenceResult.differenceView == 'genomeDetail'">Nucleotides</th>
-							<th ng-show="sequenceResult.differenceView == 'genomeDetail'">Minority variants</th>
+							<th>File</th>
+							<th>Sequence</th>
+							<th>Coverage</th>
 							<th>Variation categories</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
+							<td>{{analysisResults.file.name}}</td>
 							<td>
-								<div class="btn-group">
-							        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.differenceView" btn-radio="'differenceSummary'">Summary</label>
-							        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.differenceView" btn-radio="'genomeDetail'">Detail</label>
-		    					</div>
-							</td>
-							<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
-								<select name="singleSelect" ng-model="sequenceResult.selectedReference">
-									<option ng-repeat="referenceOption in referenceOptions" value="{{referenceOption}}">{{referenceOption}}</option>
+								<select name="singleSelect" ng-model="selectedSequenceID">
+									<option ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult" value="{{sequenceResult.sequenceID}}">{{sequenceResult.sequenceID}}</option>
 								</select>
 							</td>
-							<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
-								{{sequenceResult.selectedFeature.featureDescription}}
-							</td>
-							<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
-								<button type="button" ng-disabled="sequenceResult.selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(sequenceResult)">
-										Select
-								</button>
-							</td>
-							<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
-								<div class="btn-group">
-							        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.showNucleotides" btn-radio="'show'">Show</label>
-							        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.showNucleotides" btn-radio="'hide'">Hide</label>
-		    					</div>
-							</td>
-							<td ng-show="sequenceResult.differenceView == 'genomeDetail'">
-								<div class="btn-group">
-							        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.showMinorityVariants" btn-radio="'show'">Show</label>
-							        <label class="btn btn-primary btn-xs" ng-model="sequenceResult.showMinorityVariants" btn-radio="'hide'">Hide</label>
-		    					</div>
-							</td>
+							<td><a ng-click="showAlignmentDetails(selectedSequenceResult)">Show coverage details <i class="glyphicon glyphicon-link"></i></a></td>
 							<td>
 								<button type="button" ng-disabled="variationCategories == null" class="btn btn-primary btn-xs" ng-click="selectVariationCategories()">
 										Select
@@ -190,9 +160,56 @@
 						</tr>
 					</tbody>
 				</table>
+				<table class="table table-nonfluid">
+					<thead>
+						<tr>
+							<th>Difference view</th>
+							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Reference sequence</th>
+							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Genome feature</th>
+							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'"></th>
+							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Nucleotides</th>
+							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Minority variants</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<div class="btn-group">
+							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.differenceView" btn-radio="'differenceSummary'">Summary</label>
+							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.differenceView" btn-radio="'genomeDetail'">Detail</label>
+		    					</div>
+							</td>
+							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
+								<select name="singleSelect" ng-model="selectedSequenceResult.selectedReference">
+									<option ng-repeat="referenceOption in referenceOptions" value="{{referenceOption}}">{{referenceOption}}</option>
+								</select>
+							</td>
+							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
+								{{selectedSequenceResult.selectedFeature.featureDescription}}
+							</td>
+							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
+								<button type="button" ng-disabled="selectedSequenceResult.selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(selectedSequenceResult)">
+										Select
+								</button>
+							</td>
+							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
+								<div class="btn-group">
+							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showNucleotides" btn-radio="'show'">Show</label>
+							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showNucleotides" btn-radio="'hide'">Hide</label>
+		    					</div>
+							</td>
+							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
+								<div class="btn-group">
+							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showMinorityVariants" btn-radio="'show'">Show</label>
+							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showMinorityVariants" btn-radio="'hide'">Hide</label>
+		    					</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 				
 				
-				<table ng-show="sequenceResult.differenceView == 'differenceSummary'" class="table" >
+				<table ng-show="selectedSequenceResult.differenceView == 'differenceSummary'" class="table" >
 					<thead>
 						<tr>
 							<th>Reference sequence</th>
@@ -201,7 +218,7 @@
 						</tr>
 					</thead>
 				  	<tbody>
-					  	<tr ng-repeat="diffSummary in sequenceResult.alignmentDifferenceSummaries">
+					  	<tr ng-repeat="diffSummary in selectedSequenceResult.alignmentDifferenceSummaries">
 					  		<td ng-show="diffSummary.rowspan" rowspan="{{diffSummary.rowspan}}">{{diffSummary.referenceName}}</td>
 					  		<td><a ng-click="switchToDetailView(diffSummary.referenceName, diffSummary.featureName)">{{diffSummary.featureName}} <i class="glyphicon glyphicon-link"></i></a></td>
 					  		<td><span 
@@ -213,18 +230,18 @@
 					  	</tr>
 				  	</tbody>
 				</table>
-				<table ng-show="sequenceResult.differenceView == 'genomeDetail'" class="table analysisSequenceTable" >
-				  	<tbody ng-repeat="analysisSequenceRow in sequenceResult.analysisSequenceRows track by $index">
+				<table ng-show="selectedSequenceResult.differenceView == 'genomeDetail'" class="table analysisSequenceTable" >
+				  	<tbody ng-repeat="analysisSequenceRow in selectedSequenceResult.analysisSequenceRows track by $index">
 					  	<tr class="analysisSequenceReferenceAAIndex">
 					  		<td colspan=3 ng-repeat="referenceAAIndex in analysisSequenceRow.referenceAAIndices track by $index">{{referenceAAIndex}}</td>
 					  	</tr>
 					  	<tr class="analysisSequenceReferenceAA">
 					  		<td colspan=3 ng-repeat="referenceAA in analysisSequenceRow.referenceAAs track by $index">{{referenceAA}}</td>
 					  	</tr>
-					  	<tr ng-show="sequenceResult.showNucleotides == 'show'" class="analysisSequenceReferenceNT">
+					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceReferenceNT">
 					  		<td ng-repeat="referenceNT in analysisSequenceRow.referenceNTs track by $index">{{referenceNT}}</td>
 					  	</tr>
-					  	<tr ng-show="sequenceResult.showNucleotides == 'show'" class="analysisSequenceReferenceNTIndex">
+					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceReferenceNTIndex">
 					  		<td ng-repeat="referenceNTIndex in analysisSequenceRow.referenceNTIndices track by $index"><div>{{referenceNTIndex}}</div></td>
 					  	</tr>
 
@@ -239,13 +256,13 @@
 					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] == null" class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
 					  		</td>
 					  	</tr>
-					  	<tr ng-show="sequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNT">
+					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNT">
 					  		<td class="{{analysisSequenceRow.queryNTDifferenceStyle[$index]}}" ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>
 					  	</tr>
-					  	<tr ng-show="sequenceResult.showMinorityVariants == 'show'" class="analysisSequenceMinorityVariantAA" ng-show="analysisSequenceRow.minorityVariantAAs">
+					  	<tr ng-show="selectedSequenceResult.showMinorityVariants == 'show'" class="analysisSequenceMinorityVariantAA" ng-show="analysisSequenceRow.minorityVariantAAs">
 					  		<td colspan=3 ng-repeat="minorityVariantAA in analysisSequenceRow.minorityVariantAAs track by $index">{{minorityVariantAA}}<sup>{{analysisSequenceRow.minorityVariantAAProportions[$index]}}</sup></td>
 					  	</tr>
-					  	<tr ng-show="sequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNTIndex">
+					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNTIndex">
 					  		<td ng-repeat="queryNTIndex in analysisSequenceRow.queryNTIndices track by $index"><div>{{queryNTIndex}}</div></td>
 					  	</tr>
 				  	</tbody>
