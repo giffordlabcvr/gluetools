@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
+import uk.ac.gla.cvr.gluetools.core.sequenceGroup.SequenceGroup;
 
 public abstract class ProjectModeCommand<R extends CommandResult> extends Command<R> {
 
@@ -41,6 +42,15 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	public abstract static class GroupNameCompleter extends AdvancedCmdCompleter {
+		public GroupNameCompleter() {
+			super();
+			registerDataObjectNameLookup("groupName", SequenceGroup.class, SequenceGroup.NAME_PROPERTY);
+		}
+	}
+
+	
 	@SuppressWarnings("rawtypes")
 	public abstract static class FeatureNameCompleter extends AdvancedCmdCompleter {
 		public FeatureNameCompleter() {

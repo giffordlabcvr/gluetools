@@ -44,6 +44,11 @@
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_START" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
 	</db-entity>
+	<db-entity name="GROUP_MEMBER">
+		<db-attribute name="GROUP_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="SEQUENCE_ID" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="SOURCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="MODULE">
 		<db-attribute name="CONFIG" type="BLOB" isMandatory="true"/>
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
@@ -72,20 +77,16 @@
 		<db-attribute name="SEQUENCE_ID" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="SOURCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
+	<db-entity name="SEQUENCE_GROUP">
+		<db-attribute name="LAST_UPDATE_TIME" type="BIGINT" isMandatory="true"/>
+		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="SEQ_ORIG_DATA">
 		<db-attribute name="PACKED_DATA" type="BLOB" isMandatory="true"/>
 		<db-attribute name="SEQUENCE_ID" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="SOURCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="SOURCE">
-		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-	</db-entity>
-	<db-entity name="TARGET">
-		<db-attribute name="SEQUENCE_ID" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="SOURCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="TARGET_SET" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-	</db-entity>
-	<db-entity name="TARGET_SET">
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="VARIATION">
@@ -135,6 +136,8 @@
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="REF_START"/>
 	</obj-entity>
+	<obj-entity name="GroupMember" className="uk.ac.gla.cvr.gluetools.core.groupMember.GroupMember" dbEntityName="GROUP_MEMBER" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+	</obj-entity>
 	<obj-entity name="Module" className="uk.ac.gla.cvr.gluetools.core.datamodel.module.Module" dbEntityName="MODULE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="config" type="byte[]" db-attribute-path="CONFIG"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
@@ -158,12 +161,11 @@
 		<obj-attribute name="format" type="java.lang.String" db-attribute-path="FORMAT"/>
 		<obj-attribute name="sequenceID" type="java.lang.String" db-attribute-path="SEQUENCE_ID"/>
 	</obj-entity>
-	<obj-entity name="Source" className="uk.ac.gla.cvr.gluetools.core.datamodel.source.Source" dbEntityName="SOURCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+	<obj-entity name="SequenceGroup" className="uk.ac.gla.cvr.gluetools.core.sequenceGroup.SequenceGroup" dbEntityName="SEQUENCE_GROUP" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="lastUpdateTime" type="long" db-attribute-path="LAST_UPDATE_TIME"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
-	<obj-entity name="Target" className="uk.ac.gla.cvr.gluetools.core.target.Target" dbEntityName="TARGET" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-	</obj-entity>
-	<obj-entity name="TargetSet" className="uk.ac.gla.cvr.gluetools.core.targetSet.TargetSet" dbEntityName="TARGET_SET" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+	<obj-entity name="Source" className="uk.ac.gla.cvr.gluetools.core.datamodel.source.Source" dbEntityName="SOURCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
 	<obj-entity name="Variation" className="uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation" dbEntityName="VARIATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
@@ -247,6 +249,13 @@
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
 	</db-relationship>
+	<db-relationship name="group" source="GROUP_MEMBER" target="SEQUENCE_GROUP" toMany="false">
+		<db-attribute-pair source="GROUP_NAME" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="sequence" source="GROUP_MEMBER" target="SEQUENCE" toMany="false">
+		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE_ID"/>
+		<db-attribute-pair source="SOURCE" target="SOURCE"/>
+	</db-relationship>
 	<db-relationship name="featureLocation" source="POSITION_VARIATION" target="FEATURE_LOCATION" toMany="false">
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
@@ -270,6 +279,10 @@
 		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE"/>
 		<db-attribute-pair source="SOURCE" target="SOURCE"/>
 	</db-relationship>
+	<db-relationship name="groupsWhereMember" source="SEQUENCE" target="GROUP_MEMBER" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE_ID"/>
+		<db-attribute-pair source="SOURCE" target="SOURCE"/>
+	</db-relationship>
 	<db-relationship name="referenceSequences" source="SEQUENCE" target="REFERENCE_SEQUENCE" toMany="true">
 		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE"/>
 		<db-attribute-pair source="SOURCE" target="SOURCE"/>
@@ -281,9 +294,8 @@
 	<db-relationship name="source" source="SEQUENCE" target="SOURCE" toMany="false">
 		<db-attribute-pair source="SOURCE" target="NAME"/>
 	</db-relationship>
-	<db-relationship name="targets" source="SEQUENCE" target="TARGET" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE_ID"/>
-		<db-attribute-pair source="SOURCE" target="SOURCE"/>
+	<db-relationship name="members" source="SEQUENCE_GROUP" target="GROUP_MEMBER" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="NAME" target="GROUP_NAME"/>
 	</db-relationship>
 	<db-relationship name="sequence" source="SEQ_ORIG_DATA" target="SEQUENCE" toMany="false">
 		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE_ID"/>
@@ -291,16 +303,6 @@
 	</db-relationship>
 	<db-relationship name="sequences" source="SOURCE" target="SEQUENCE" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="SOURCE"/>
-	</db-relationship>
-	<db-relationship name="sequence" source="TARGET" target="SEQUENCE" toMany="false">
-		<db-attribute-pair source="SEQUENCE_ID" target="SEQUENCE_ID"/>
-		<db-attribute-pair source="SOURCE" target="SOURCE"/>
-	</db-relationship>
-	<db-relationship name="targetSet" source="TARGET" target="TARGET_SET" toMany="false">
-		<db-attribute-pair source="TARGET_SET" target="NAME"/>
-	</db-relationship>
-	<db-relationship name="targets" source="TARGET_SET" target="TARGET" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="NAME" target="TARGET_SET"/>
 	</db-relationship>
 	<db-relationship name="featureLoc" source="VARIATION" target="FEATURE_LOCATION" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
@@ -355,6 +357,8 @@
 	<obj-relationship name="variations" source="FeatureLocation" target="Variation" deleteRule="Cascade" db-relationship-path="variations"/>
 	<obj-relationship name="feature" source="FeatureMetatag" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 	<obj-relationship name="featureLocation" source="FeatureSegment" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLocation"/>
+	<obj-relationship name="group" source="GroupMember" target="SequenceGroup" deleteRule="Nullify" db-relationship-path="group"/>
+	<obj-relationship name="sequence" source="GroupMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="featureLocation" source="PositionVariation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLocation"/>
 	<obj-relationship name="variation" source="PositionVariation" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignmentsWhereRefSequence"/>
@@ -362,14 +366,12 @@
 	<obj-relationship name="sequence" source="ReferenceSequence" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="sequence" source="SeqOrigData" target="Sequence" deleteRule="Cascade" db-relationship-path="sequence"/>
 	<obj-relationship name="alignmentMemberships" source="Sequence" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="alignmentsWhereMember"/>
+	<obj-relationship name="groupMemberships" source="Sequence" target="GroupMember" deleteRule="Cascade" db-relationship-path="groupsWhereMember"/>
 	<obj-relationship name="referenceSequences" source="Sequence" target="ReferenceSequence" deleteRule="Deny" db-relationship-path="referenceSequences"/>
 	<obj-relationship name="seqOrigData" source="Sequence" target="SeqOrigData" deleteRule="Cascade" db-relationship-path="seqOrigData"/>
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
-	<obj-relationship name="targets" source="Sequence" target="Target" deleteRule="Cascade" db-relationship-path="targets"/>
+	<obj-relationship name="members" source="SequenceGroup" target="GroupMember" deleteRule="Cascade" db-relationship-path="members"/>
 	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
-	<obj-relationship name="sequence" source="Target" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
-	<obj-relationship name="targetSet" source="Target" target="TargetSet" deleteRule="Nullify" db-relationship-path="targetSet"/>
-	<obj-relationship name="targets" source="TargetSet" target="Target" deleteRule="Cascade" db-relationship-path="targets"/>
 	<obj-relationship name="featureLoc" source="Variation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLoc"/>
 	<obj-relationship name="positionVariations" source="Variation" target="PositionVariation" deleteRule="Cascade" db-relationship-path="positionVariations"/>
 	<obj-relationship name="vcatMemberships" source="Variation" target="VcatMembership" deleteRule="Cascade" db-relationship-path="members"/>
