@@ -1,12 +1,12 @@
-package uk.ac.gla.cvr.gluetools.programs.blast.refdb;
+package uk.ac.gla.cvr.gluetools.programs.blast.dbManager;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class BlastRefSeqDBException extends GlueException {
+public class BlastDbManagerException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		MAKE_BLAST_DB_FAILED("dbsDir", "projectName", "refName", "exitCode", "stdErr");
+		MAKE_BLAST_DB_FAILED("dbDir", "dbTitle", "exitCode", "stdErr");
 		
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -18,11 +18,11 @@ public class BlastRefSeqDBException extends GlueException {
 		}
 	}
 
-	public BlastRefSeqDBException(Code code, Object... errorArgs) {
+	public BlastDbManagerException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public BlastRefSeqDBException(Throwable cause, Code code,
+	public BlastDbManagerException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

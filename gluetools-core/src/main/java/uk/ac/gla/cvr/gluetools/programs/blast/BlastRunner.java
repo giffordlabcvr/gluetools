@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.programs.blast;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResultBuilder.BlastXPath;
-import uk.ac.gla.cvr.gluetools.programs.blast.refdb.BlastRefSeqDB;
-import uk.ac.gla.cvr.gluetools.programs.blast.refdb.BlastRefSeqDB.SingleReferenceDB;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
@@ -56,7 +58,7 @@ public class BlastRunner implements Plugin {
 	
 	@SuppressWarnings("rawtypes")
 	public List<BlastResult> executeBlast(CommandContext cmdContext, String refName, byte[] fastaBytes) {
-		SingleReferenceDB refDB = BlastRefSeqDB.getInstance().ensureSingleReferenceDB(cmdContext, refName);
+		SingleReferenceBlastDB refDB = BlastDbManager.getInstance().ensureSingleReferenceDB(cmdContext, refName);
 		refDB.readLock().lock();
 		ProcessResult blastProcessResult;
 		try {
@@ -66,7 +68,7 @@ public class BlastRunner implements Plugin {
 			commandWords.add(blastNexecutable);
 			// supply reference DB
 			commandWords.add("-db");
-			commandWords.add(refDB.getFilePath().getAbsolutePath());
+			commandWords.add(new File(refDB.getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());
 			// outfmt 14 is XML2
 			commandWords.add("-outfmt");
 			commandWords.add("14");
@@ -75,7 +77,7 @@ public class BlastRunner implements Plugin {
 				commandWords.add(numericOption.getValue().toString());
 			}
 			// run blast based on the ref DB.
-			blastProcessResult = ProcessUtils.runProcess(fastaBytes, commandWords); 
+			blastProcessResult = ProcessUtils.runProcess(new ByteArrayInputStream(fastaBytes), commandWords); 
 		} finally {
 			refDB.readLock().unlock();
 		}

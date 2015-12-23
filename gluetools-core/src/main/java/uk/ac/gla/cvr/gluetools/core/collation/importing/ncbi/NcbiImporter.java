@@ -81,6 +81,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private String giNumberFieldName;
 	private boolean overwriteExisting = false;
 	private Integer maxDownloaded = null;
+	private boolean recurseOnContigs = false;
+	private String isAssemblyFieldName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element ncbiImporterElem) {
@@ -98,6 +100,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		overwriteExisting = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, "overwriteExisting", false)).orElse(false);
 		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, "maxDownloaded", false);
 		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, "giNumberFieldName", "GB_GI_NUMBER");
+		recurseOnContigs = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, "recurseOnContigs", false)).orElse(false);
+		isAssemblyFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, "isAssemblyFieldName", "GB_IS_ASSEMBLY");
 		
 		
 		addProvidedCmdClass(ImportCommand.class);
@@ -116,25 +120,35 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			
 		}
 		if(!specificPrimaryAccessions.isEmpty()) {
-			List<String> disjuncts = specificPrimaryAccessions.stream()
-					.map(primaryAcc -> "\""+primaryAcc+"\"[Primary Accession]")
-					.collect(Collectors.toList());
-			eSearchTerm = String.join(" OR ", disjuncts);
+			eSearchTerm = primaryAccessionsToESearchTerm(specificPrimaryAccessions);
 		}
 	}
 
+	private String primaryAccessionsToESearchTerm(List<String> primaryAccessions) {
+		List<String> disjuncts = primaryAccessions.stream()
+				.map(primaryAcc -> "\""+primaryAcc+"\"[Primary Accession]")
+				.collect(Collectors.toList());
+		return String.join(" OR ", disjuncts);
+	}
+
+	
+	private String contigIDsToESearchTerm(Set<String> contigIDs) {
+		return String.join(" OR ", contigIDs);
+	}
+
+	
 	private void searchTermConfigError() {
 		throw new NcbiImporterException(Code.CONFIG_ERROR, "Exactly one of <eSearchTerm>, <specificGiNumbers> or <specificPrimaryAccessions> must be specified.");
 	}
 
-	private void getGiNumbersMatchingAndExisting(CommandContext cmdContext, 
-			Set<String> giNumbersMatching, Set<String> giNumbersExisting, 
-			boolean cachedGiNumbers) {
-		if(!specificGiNumbers.isEmpty()) {
+	// Return the set of GI numbers for sequences which match the eSearchTerm, or the specific GiNumbers list if applicable.
+	private Set<String> getGiNumbersMatching(CommandContext cmdContext, String eSearchTerm, List<String> specificGiNumbers) {
+		Set<String> giNumbersMatching = new LinkedHashSet<String>();
+		if(specificGiNumbers != null && !specificGiNumbers.isEmpty()) {
 			giNumbersMatching.addAll(specificGiNumbers);
 		} else {
 			try(CloseableHttpClient httpClient = createHttpClient()) {
-				HttpUriRequest eSearchHttpRequest = createESearchRequest();
+				HttpUriRequest eSearchHttpRequest = createESearchRequest(eSearchTerm);
 				GlueLogger.getGlueLogger().finest("Sending eSearch request to NCBI");
 				Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
 				GlueLogger.getGlueLogger().finest("NCBI eSearch response received");
@@ -145,11 +159,17 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 			}
 		}
+		return giNumbersMatching;
+	}
+	
+	// Return the set of GI numbers for sequences that already exist in the source.
+	private Set<String> getGiNumbersExisting(CommandContext cmdContext, boolean cachedGiNumbers, 
+			Set<String> matchingGiNumbers, Set<String> contigIDs) {
+		Set<String> giNumbersExisting = new LinkedHashSet<String>();
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName), true);
 		if(source == null) {
-			return;
+			return giNumbersExisting;
 		}
-
 		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
 		List<Map<String, String>> pkMaps = 
 				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
@@ -176,8 +196,10 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					foundInField++;
 				}
 			}
+			Document gbDocument = null;
 			if(giNumber == null) {
-				giNumber = giNumberFromDocument(((GenbankXmlSequenceObject) sequence.getSequenceObject()).getDocument());
+				gbDocument = ((GenbankXmlSequenceObject) sequence.getSequenceObject()).getDocument();
+				giNumber = giNumberFromDocument(gbDocument);
 				if(giNumber != null) {
 					foundInDocument++;
 					if(cachedGiNumbers) {
@@ -198,6 +220,16 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				}
 				updates = 0;
 			}
+			// collect contig primary accessions from any existing sequence which matches the search query.
+			if(recurseOnContigs && giNumber != null && matchingGiNumbers.contains(giNumber)) {
+				if(gbDocument == null) {
+					gbDocument = ((GenbankXmlSequenceObject) sequence.getSequenceObject()).getDocument();
+				}
+				List<String> contigIdsFromDocument = contigIdsFromDocument(gbDocument);
+				if(contigIdsFromDocument != null) {
+					contigIDs.addAll(contigIdsFromDocument);
+				}
+			}
 		}
 		GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
 		GlueLogger.getGlueLogger().finest("Found "+foundInField+" GI numbers in field, "+foundInDocument+" in document");
@@ -205,6 +237,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			cmdContext.commit();
 			cmdContext.newObjectContext();
 		}
+		return giNumbersExisting;
 	}
 
 	private CloseableHttpClient createHttpClient() {
@@ -215,23 +248,11 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		return httpClient;
 	}
 
-	String getSourceUniqueID() {
-		return "ncbiImporter:"+database+":"+sequenceFormat.name();
-	}
-
-	List<RetrievedSequence> retrieveSequences(List<String> giNumbers) {
-		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
-		int batchStart = 0;
-		int batchEnd;
-		do {
-			batchEnd = Math.min(batchStart+eFetchBatchSize, giNumbers.size());
-			retrievedSequences.addAll(fetchBatch(giNumbers.subList(batchStart, batchEnd)));
-			batchStart = batchEnd;
-		} while(batchEnd < giNumbers.size());
-		return retrievedSequences;
-	}
-
 	private List<RetrievedSequence> fetchBatch(List<String> giNumbers) {
+		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
+		if(giNumbers.isEmpty()) {
+			return retrievedSequences;
+		}
 		Object eFetchResponseObject;
 		try(CloseableHttpClient httpClient = createHttpClient()) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
@@ -248,7 +269,6 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		} catch (IOException e) {
 			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
 		}
-		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
 		List<Object> individualGBFiles = null;
 		switch(sequenceFormat) {
 		case GENBANK_XML:
@@ -293,6 +313,48 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 		return null;
 	}
+	
+	// example 1:
+	// join(gap(100000),gap(10000),gap(2890000),gap(100000),
+	// NT_039490.8:1..4401876,gap(74868),NT_039492.8:1..50286063,
+	// gap(343058),NT_039500.8:1..72389128,gap(100000))
+	//
+	// example 2:
+	// join(AC170751.2:1..105368,AC155323.9:31991..161467,
+	// AC158593.8:15083..216621, complement(AC166081.3:1..115516),
+	// AC153367.5:115523..204838,complement(AC155910.6:1..87555))
+	private List<String> contigIdsFromDocument(Document document) {
+		String contigsString = GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_contig/text()");
+		if(contigsString == null) {
+			return null;
+		}
+		contigsString = contigsString.trim();
+		List<String> contigIDs = new ArrayList<String>();
+		parseContigIDsFromString(contigsString, contigIDs);
+		return contigIDs;
+	}
+
+
+	private void parseContigIDsFromString(String contigsString,
+			List<String> contigIDs) {
+		if(contigsString.startsWith("join(") && contigsString.endsWith(")")) {
+			String[] specifiers = contigsString.substring("join(".length(), contigsString.length()-1).split(",");
+			for(String contigSpecifier: specifiers) {
+				parseContigIDsFromString(contigSpecifier, contigIDs);
+			}
+		} else if(contigsString.startsWith("gap(") && contigsString.endsWith(")")) {
+			return;
+		} else if(contigsString.startsWith("complement(") && contigsString.endsWith(")")) {
+			contigsString.substring("complement(".length(), contigsString.length()-1);
+		} else if(contigsString.matches("[A-Z0-9_\\.]+:\\d+\\.\\.\\d+")) {
+			String version = contigsString.substring(0, contigsString.indexOf(":"));
+			contigIDs.add(version);
+		} else {
+			throw new NcbiImporterException(NcbiImporterException.Code.FORMATTING_ERROR, "eFetch", 
+					"GBSeq_contig contains unknown contig specifier \""+contigsString+"\"");
+		}
+		
+	}
 
 	
 	// lists all the databases
@@ -300,6 +362,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	
 	// meta-data on database nuccore
 	// http://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi?db=nuccore&version=2.0
+
 
 
 	private List<Object> divideDocuments(Document parentDocument) {
@@ -436,7 +499,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	}
 
 	
-	private HttpUriRequest createESearchRequest() {
+	private HttpUriRequest createESearchRequest(String eSearchTerm) {
 		
 		String url = eUtilsBaseURL+"/esearch.fcgi?db="+database+"&retmax="+eSearchRetMax;
 
@@ -481,26 +544,71 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	public NcbiImporterResult doPreview(CommandContext cmdContext) {
 		
-		Set<String> matchingGiNumbers = new LinkedHashSet<String>();
-		Set<String> existingGiNumbers = new LinkedHashSet<String>();
 		boolean cachedGiNumbers = initCachedGiNumbers(cmdContext);
-		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers, cachedGiNumbers);
-		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), 0, 0,
+		Set<String> contigIds = new LinkedHashSet<String>();
+		
+		Set<String> matchingGiNumbers = getGiNumbersMatching(cmdContext, eSearchTerm, specificGiNumbers);
+		int recordsFound = matchingGiNumbers.size();
+		Set<String> existingGiNumbers = getGiNumbersExisting(cmdContext, cachedGiNumbers, matchingGiNumbers, contigIds);
+		matchingGiNumbers.removeAll(existingGiNumbers);
+		int preExistingSkipped = recordsFound - matchingGiNumbers.size();
+		return new NcbiImporterResult(recordsFound, preExistingSkipped, 0, 0,
 				maxDownloaded, overwriteExisting, eSearchRetMax);
 	}
 
 
 	
 	private NcbiImporterResult doImport(CommandContext cmdContext) {
-		Set<String> matchingGiNumbers = new LinkedHashSet<String>();
-		Set<String> existingGiNumbers = new LinkedHashSet<String>();
 		boolean cachedGiNumbers = initCachedGiNumbers(cmdContext);
-		getGiNumbersMatchingAndExisting(cmdContext, matchingGiNumbers, existingGiNumbers, cachedGiNumbers);
+		boolean storeIsAssembly = initStoreIsAssembly(cmdContext);
+		Set<String> matchingGiNumbers = getGiNumbersMatching(cmdContext, eSearchTerm, specificGiNumbers);
+		Set<String> contigIDs = new LinkedHashSet<String>();
+		Set<String> existingGiNumbers = getGiNumbersExisting(cmdContext, cachedGiNumbers, matchingGiNumbers, contigIDs);
+		NcbiImporterResult firstRoundResult = doRetrievalRound(cmdContext, 
+				cachedGiNumbers, storeIsAssembly, 
+				matchingGiNumbers, existingGiNumbers, contigIDs);
+		if(!recurseOnContigs) {
+			return firstRoundResult;
+		}
+		int numGenbankRecordsAdded = firstRoundResult.getNumGenbankRecordsAdded();
+		int numGenbankRecordsFound = firstRoundResult.getNumGenbankRecordsFound();
+		int numGenbankRecordsUpdated = firstRoundResult.getNumGenbankRecordsUpdated();
+		int numGenbankRecordsPreExisting = firstRoundResult.getNumGenbankRecordsPreExisting();
+		Set<String> existingContigIDs = new LinkedHashSet<String>();
+		while(!contigIDs.isEmpty()) {
+			GlueLogger.getGlueLogger().finest("Retrieved sequences reference "+contigIDs.size()+" additional sequences as contigs. These will now be retrieved.");
+			String eSearchTermForRound = contigIDsToESearchTerm(contigIDs);
+			matchingGiNumbers = getGiNumbersMatching(cmdContext, eSearchTermForRound, null);
+			if(existingGiNumbers.containsAll(matchingGiNumbers)) {
+				// if the last eSearch produced only existing GI numbers then the contigIDs which were searched for
+				// do not need to be retrieved again. This prevents a loop.
+				existingContigIDs.addAll(contigIDs);
+			}
+			contigIDs.clear();
+			existingGiNumbers.addAll(getGiNumbersExisting(cmdContext, cachedGiNumbers, matchingGiNumbers, contigIDs));
+			NcbiImporterResult roundResult = doRetrievalRound(cmdContext, 
+					cachedGiNumbers, storeIsAssembly, 
+					matchingGiNumbers, existingGiNumbers, contigIDs);
+			contigIDs.removeAll(existingContigIDs);
+			numGenbankRecordsAdded += roundResult.getNumGenbankRecordsAdded();
+			numGenbankRecordsUpdated += roundResult.getNumGenbankRecordsUpdated();
+		}
+		return new NcbiImporterResult(numGenbankRecordsFound, numGenbankRecordsPreExisting, numGenbankRecordsAdded, numGenbankRecordsUpdated,
+				maxDownloaded, overwriteExisting, eSearchRetMax);
+	}
+
+	private NcbiImporterResult doRetrievalRound(CommandContext cmdContext,
+			boolean cachedGiNumbers, boolean storeIsAssembly, 
+			Set<String> matchingGiNumbers, Set<String> existingGiNumbers, 
+			Set<String> contigIds) {
+		
 		Set<String> retrieveSet = new LinkedHashSet<String>(matchingGiNumbers);
 		GlueLogger.getGlueLogger().fine("NCBI sequences matching search query: "+retrieveSet.size());
+		int fullRetrieveSetSize = retrieveSet.size();
 		if(!overwriteExisting) {
 			retrieveSet.removeAll(existingGiNumbers);
 		}
+		int minimalRetrieveSetSize = retrieveSet.size();
 
 		List<String> retrieveList = new ArrayList<String>(retrieveSet);
 		if(maxDownloaded != null && retrieveList.size() > maxDownloaded) {
@@ -535,12 +643,34 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 						continue;
 					}
 				}
+				Sequence newSequence = null;
+				Document gbXmlDocument = null;
 				createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
 				if(cachedGiNumbers && sequence.format == SequenceFormat.GENBANK_XML) {
-					Sequence newSequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
-					newSequence.writeProperty(giNumberFieldName, 
-							giNumberFromDocument(((GenbankXmlSequenceObject) newSequence.getSequenceObject()).getDocument()));
+					newSequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+					gbXmlDocument = ((GenbankXmlSequenceObject) newSequence.getSequenceObject()).getDocument();
+					newSequence.writeProperty(giNumberFieldName, giNumberFromDocument(gbXmlDocument));
 					cmdContext.commit();
+				}
+				if(recurseOnContigs && sequence.format == SequenceFormat.GENBANK_XML) {
+					if(newSequence == null) {
+						newSequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+					}
+					if(gbXmlDocument == null) {
+						gbXmlDocument = ((GenbankXmlSequenceObject) newSequence.getSequenceObject()).getDocument();
+					}
+					List<String> contigIDsInDocument = contigIdsFromDocument(gbXmlDocument);
+					if(storeIsAssembly) {
+						if(contigIDsInDocument == null) {
+							newSequence.writeProperty(isAssemblyFieldName, false);
+						} else {
+							newSequence.writeProperty(isAssemblyFieldName, true);
+						}
+						cmdContext.commit();
+					}
+					if(contigIDsInDocument != null) {
+						contigIds.addAll(contigIDsInDocument);
+					}
 				}
 				
 				if(preExisting) {
@@ -553,7 +683,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			GlueLogger.getGlueLogger().fine("Sequences updated: "+recordsUpdated+", sequences added: "+recordsAdded);
 			batchStart = batchEnd;
 		} while(batchEnd < giNumbers.size());
-		return new NcbiImporterResult(matchingGiNumbers.size(), existingGiNumbers.size(), recordsAdded, recordsUpdated,
+		return new NcbiImporterResult(matchingGiNumbers.size(), fullRetrieveSetSize-minimalRetrieveSetSize, recordsAdded, recordsUpdated,
 				maxDownloaded, overwriteExisting, eSearchRetMax);
 	}
 
@@ -566,6 +696,17 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 		return cachedGiNumbers;
 	}
+
+	private boolean initStoreIsAssembly(CommandContext cmdContext) {
+		boolean storeIsAssembly = true;
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomSequenceFieldNames();
+		if(!customSequenceFieldNames.contains(isAssemblyFieldName)) {
+			storeIsAssembly = false;
+			GlueLogger.getGlueLogger().warning("No sequence field \""+isAssemblyFieldName+"\" exists in the project. Importer will not record whether sequences are assemblies.");
+		}
+		return storeIsAssembly;
+	}
+
 	
 	
 	class RetrievedSequence {
@@ -578,7 +719,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	public static class NcbiImporterResult extends MapResult {
 
 		public NcbiImporterResult(int numGenbankRecordsFound, 
-				int numGenbankRecordsPreExisting, 
+				int numGenbankRecordsPreExistingSkipped, 
 				int numGenbankRecordsAdded, 
 				int numGenbankRecordsUpdated,
 				Integer maxDownloadedSetting,
@@ -586,13 +727,30 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				Integer eSearchRetMaxSetting) {
 			super("ncbiImporterResult", mapBuilder()
 					.put("numGenbankRecordsFound", numGenbankRecordsFound)
-					.put("numGenbankRecordsPreExisting", numGenbankRecordsPreExisting)
+					.put("numGenbankRecordsPreExistingSkipped", numGenbankRecordsPreExistingSkipped)
 					.put("numGenbankRecordsAdded", numGenbankRecordsAdded)
 					.put("numGenbankRecordsUpdated", numGenbankRecordsUpdated)
 					.put("maxDownloadedSetting", maxDownloadedSetting)
 					.put("overwriteExistingSetting", overwriteExistingSetting)
 					.put("eSearchRetMaxSetting", eSearchRetMaxSetting));
 		}
+		
+		public int getNumGenbankRecordsFound() {
+			return (Integer) super.asMap().get("numGenbankRecordsFound");
+		}
+
+		public int getNumGenbankRecordsPreExisting() {
+			return (Integer) super.asMap().get("numGenbankRecordsPreExistingSkipped");
+		}
+
+		public int getNumGenbankRecordsAdded() {
+			return (Integer) super.asMap().get("numGenbankRecordsAdded");
+		}
+
+		public int getNumGenbankRecordsUpdated() {
+			return (Integer) super.asMap().get("numGenbankRecordsUpdated");
+		}
+
 		
 	}
 	

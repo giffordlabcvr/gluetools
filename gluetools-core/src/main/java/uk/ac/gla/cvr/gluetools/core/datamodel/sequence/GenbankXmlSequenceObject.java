@@ -28,7 +28,15 @@ public class GenbankXmlSequenceObject extends AbstractSequenceObject {
 	}
 
 	private String extractNucleotides() {
-		return GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_sequence/text()").replaceAll("\\s", "").toUpperCase();
+		String seqString = GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_sequence/text()");
+		if(seqString == null) {
+			String primaryAccession = GlueXmlUtils.getXPathString(document, "/GBSeq/GBSeq_primary-accession/text()");
+			if(primaryAccession == null || primaryAccession.length() == 0) {
+				primaryAccession = "unknown";
+			}
+			throw new SequenceException(SequenceException.Code.XML_SEQUENCE_DOES_NOT_CONTAIN_NUCLEOTIDES, primaryAccession);
+		}
+		return seqString.replaceAll("\\s", "").toUpperCase();
 	}
 
 	@Override

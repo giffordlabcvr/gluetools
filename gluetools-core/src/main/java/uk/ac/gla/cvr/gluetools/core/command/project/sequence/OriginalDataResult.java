@@ -4,6 +4,7 @@ import java.util.Base64;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 
 public class OriginalDataResult extends MapResult {
@@ -40,5 +41,12 @@ public class OriginalDataResult extends MapResult {
 	
 	public SequenceFormat getFormat() {
 		return SequenceFormat.valueOf(getFormatString());
+	}
+
+	public AbstractSequenceObject getSequenceObject() {
+		byte[] refSeqBytes = getBase64Bytes();
+		AbstractSequenceObject refSeqObject = getFormat().sequenceObject();
+		refSeqObject.fromOriginalData(refSeqBytes);
+		return refSeqObject;
 	}
 }

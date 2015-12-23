@@ -10,7 +10,8 @@ public class SequenceException extends GlueException {
 		UNKNOWN_SEQUENCE_FORMAT("unknownFormat"),
 		NO_DATA_PROVIDED(),
 		BASE_64_FORMAT_EXCEPTION("errorText"),
-		INVALID_FIELD("invalidField", "validFields"), 
+		INVALID_FIELD("invalidField", "validFields"),
+		XML_SEQUENCE_DOES_NOT_CONTAIN_NUCLEOTIDES("primaryAccession"),
 		UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_BYTES, 
 		UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_FILE_EXTENSION("fileExtension");
 		

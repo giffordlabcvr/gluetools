@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopulator;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
+import uk.ac.gla.cvr.gluetools.core.digs.DigsProber;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -28,6 +29,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(BlastAligner.class);
 		registerPluginClass(FastaAlignmentImporter.class);
 		registerPluginClass(FastaAlignmentExporter.class);
+		registerPluginClass(DigsProber.class);
 	}
 	
 }

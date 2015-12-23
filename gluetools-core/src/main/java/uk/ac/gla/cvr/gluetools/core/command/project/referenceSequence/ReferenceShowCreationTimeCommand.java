@@ -21,7 +21,7 @@ public class ReferenceShowCreationTimeCommand extends ReferenceSequenceModeComma
 	public static class ReferenceShowCreationTimeResult extends MapResult {
 
 		public ReferenceShowCreationTimeResult(String creationTime) {
-			super("showSequenceResult", mapBuilder()
+			super("referenceShowCreationTimeResult", mapBuilder()
 				.put("creationTime", creationTime));
 		}
 

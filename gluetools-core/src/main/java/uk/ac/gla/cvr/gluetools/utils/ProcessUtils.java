@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class ProcessUtils {
 
 	private static final int PROCESS_WAIT_INTERVAL_MS = 5;
-	private static final int DRAIN_BUFFER_SIZE = 8192;
+	private static final int DRAIN_BUFFER_SIZE = 65536;
 
 
 	public static class ProcessResult {
@@ -40,11 +39,11 @@ public class ProcessUtils {
 		}
 	}
 
-	public static ProcessResult runProcess(byte[] inputByteArray, List<String> commandWords) {
-		return runProcess(inputByteArray, commandWords.toArray(new String[]{}));
+	public static ProcessResult runProcess(InputStream inputStream, List<String> commandWords) {
+		return runProcess(inputStream, commandWords.toArray(new String[]{}));
 	}
 	
-	public static ProcessResult runProcess(byte[] inputByteArray, String... commandWords) {
+	public static ProcessResult runProcess(InputStream inputStream, String... commandWords) {
 		if(commandWords.length == 0) {
 			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, 
 					"No command words supplied");
@@ -60,7 +59,6 @@ public class ProcessUtils {
 		}
 		ProcessBuilder processBuilder = new ProcessBuilder(commandWords);
 		Process process = null;
-		ByteArrayInputStream inputBytes = new ByteArrayInputStream(inputByteArray);
 		ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
 		ByteArrayOutputStream errorBytes = new ByteArrayOutputStream();
 		byte[] drainBuffer = new byte[DRAIN_BUFFER_SIZE];
@@ -76,12 +74,13 @@ public class ProcessUtils {
 			InputStream processStdOut = process.getInputStream();
 			InputStream processStdErr = process.getErrorStream();
 			boolean processComplete = false;
-			int inputBytesRead = 0;
 			while(!processComplete) {
 				drainBytes(processStdOut, drainBuffer, outputBytes);
 				drainBytes(processStdErr, drainBuffer, errorBytes);
-				inputBytesRead += drainBytes(inputBytes, drainBuffer, processStdIn);
-				if(inputBytesRead >= inputByteArray.length) { processStdIn.close(); }
+				int inBytes = drainBytes(inputStream, drainBuffer, processStdIn);
+				if(inBytes < 0) { 
+					processStdIn.close(); 
+				}
 				try {
 					processComplete = process.waitFor(PROCESS_WAIT_INTERVAL_MS, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {}
@@ -103,15 +102,13 @@ public class ProcessUtils {
 	
 	
 	private static int drainBytes(InputStream fromStream, byte[] drainBuffer, OutputStream toStream) throws IOException {
-		int numBytes = fromStream.available();
-		if(numBytes > 0) {
-			numBytes = Math.min(numBytes, drainBuffer.length);
-			fromStream.read(drainBuffer, 0, numBytes);
-			toStream.write(drainBuffer, 0, numBytes);
+		int available = fromStream.available();
+		int bytesRead = fromStream.read(drainBuffer, 0, Math.min(drainBuffer.length, available));
+		if(bytesRead > 0) {
+			toStream.write(drainBuffer, 0, bytesRead);
 			toStream.flush();
-			return numBytes;
 		}
-		return numBytes;
+		return bytesRead;
 	}
 
 	

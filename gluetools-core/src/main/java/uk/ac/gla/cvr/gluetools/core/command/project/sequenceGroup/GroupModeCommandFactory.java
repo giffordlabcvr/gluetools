@@ -19,7 +19,8 @@ public class GroupModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AddMemberCommand.class);
 		registerCommandClass(RemoveMemberCommand.class);
 		registerCommandClass(ListMemberCommand.class);
-
+		registerCommandClass(GroupShowLastUpdateTimeCommand.class);
+		
 		registerCommandClass(ExitCommand.class);
 	}
 	
