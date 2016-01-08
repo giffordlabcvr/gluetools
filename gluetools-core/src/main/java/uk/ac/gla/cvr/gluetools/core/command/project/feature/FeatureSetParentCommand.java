@@ -17,6 +17,8 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -42,6 +44,10 @@ public class FeatureSetParentCommand extends FeatureModeCommand<OkResult> {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
+		String inferOrderValue = cmdContext.getProjectSettingValue(ProjectSettingOption.INFER_FEATURE_DISPLAY_ORDER);
+		if(inferOrderValue.equals("true")) {
+			GlueLogger.getGlueLogger().warning("Since project setting "+ProjectSettingOption.INFER_FEATURE_DISPLAY_ORDER+" is in use, parent should be set when the feature is created.");
+		}
 		Feature feature = lookupFeature(cmdContext);
 		Feature parentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(parentFeatureName));
 		feature.setParent(parentFeature);

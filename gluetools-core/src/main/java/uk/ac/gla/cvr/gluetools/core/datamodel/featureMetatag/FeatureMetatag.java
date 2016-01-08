@@ -8,26 +8,35 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatagException.Code;
 
-@GlueDataClass(defaultListColumns = {FeatureMetatag.NAME_PROPERTY})
+@GlueDataClass(defaultListColumns = {FeatureMetatag.NAME_PROPERTY, FeatureMetatag.VALUE_PROPERTY})
 public class FeatureMetatag extends _FeatureMetatag {
 
 	public enum Type {
 		/** 
+		 * boolean
 		 * this feature (and any descendent features) can be translated to amino acids
 		 */
 		OPEN_READING_FRAME,
 		/** 
+		 * boolean
 		 * informational features are in place just to group other features
 		 * */
 		INFORMATIONAL, 
 		/** 
+		 * boolean
 		 * this feature uses its own codon numbering coordinates, rather than inheriting them from an ancestor.
 		 */
 		OWN_CODON_NUMBERING, 
 		/** 
+		 * boolean
 		 * include this feature in the summary view
 		 */
 		INCLUDE_IN_SUMMARY, 
+		/** 
+		 * integer
+		 * what order should this feature be displayed in, relative to other features with the same parent
+		 */
+		DISPLAY_ORDER, 
 	}
 
 	private Type type = null;

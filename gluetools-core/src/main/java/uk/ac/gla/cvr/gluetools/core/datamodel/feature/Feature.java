@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -119,6 +120,18 @@ public class Feature extends _Feature {
 		return getMetatagTypes().contains(FeatureMetatag.Type.INFORMATIONAL);
 	}
 
+	public Integer getDisplayOrder() {
+		Optional<FeatureMetatag> displayOrderMetatag = getMetatag(FeatureMetatag.Type.DISPLAY_ORDER);
+		if(displayOrderMetatag.isPresent()) {
+			return Integer.parseInt(displayOrderMetatag.get().getValue());
+		} else {
+			return null;
+		}
+	}
+
+	public Optional<FeatureMetatag> getMetatag(Type metatagType) {
+		return getFeatureMetatags().stream().filter(mt -> mt.getName().equals(metatagType.name())).findFirst();
+	}
 	
 	public boolean isDescendentOf(Feature ancestorFeature) {
 		Feature parent = getParent();
@@ -141,5 +154,40 @@ public class Feature extends _Feature {
 		return descendents;
 	}
 
+	// includes this feature
+	public List<Feature> getAncestors() {
+		List<Feature> ancestors = new ArrayList<Feature>();
+		Feature current = this;
+		while(current != null) {
+			ancestors.add(0, current);
+			current = current.getParent();
+		}
+		return ancestors;
+	}
+
+	public List<Integer> getDisplayOrderKeyList() {
+		return getAncestors().stream()
+			.map(ancFeat -> { Integer ord = ancFeat.getDisplayOrder(); return ord == null ? Integer.MAX_VALUE : ord;})
+			.collect(Collectors.toList());
+	}
+	
+	public static int compareDisplayOrderKeyLists(List<Integer> list1, List<Integer> list2) {
+		if(list1.isEmpty()) {
+			return -1;
+		}
+		if(list2.isEmpty()) {
+			return 1;
+		}
+		Integer list1Head = list1.get(0);
+		Integer list2Head = list2.get(0);
+		if(list1Head < list2Head) {
+			return -1;
+		}
+		if(list2Head < list1Head) {
+			return 1;
+		}
+		return compareDisplayOrderKeyLists(list1.subList(1, list1.size()), list2.subList(1, list2.size()));
+	}
+	
 	
 }

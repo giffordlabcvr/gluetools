@@ -37,6 +37,7 @@
 	<db-entity name="FEATURE_METATAG">
 		<db-attribute name="FEATURE_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="VALUE" type="VARCHAR" length="50"/>
 	</db-entity>
 	<db-entity name="FEATURE_SEGMENT">
 		<db-attribute name="FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
@@ -131,6 +132,7 @@
 	</obj-entity>
 	<obj-entity name="FeatureMetatag" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag" dbEntityName="FEATURE_METATAG" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
+		<obj-attribute name="value" type="java.lang.String" db-attribute-path="VALUE"/>
 	</obj-entity>
 	<obj-entity name="FeatureSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment" dbEntityName="FEATURE_SEGMENT" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>

@@ -58,4 +58,9 @@ public class FeatureSegment extends _FeatureSegment implements IReferenceSegment
 		copy.setRefEnd(getRefEnd());
 		return copy;
 	}
+
+	public String toString() {
+		return "["+getRefStart()+", "+getRefEnd()+"]";
+	}
+
 }

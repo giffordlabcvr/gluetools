@@ -16,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 
 @CommandClass(
 		commandWords={"build", "target", "group"}, 
-		description = "Ensure the BLAST database for a target group is up-to-date", 
+		description = "Ensure the BLAST database for a target sequence group is up-to-date", 
 		docoptUsages = { "<groupName>" },
 		metaTags = {}	
 )

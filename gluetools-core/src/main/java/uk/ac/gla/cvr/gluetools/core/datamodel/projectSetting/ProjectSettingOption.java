@@ -11,7 +11,8 @@ public enum ProjectSettingOption {
 	TRANSLATE_BEYOND_DEFINITE_STOP("translate-beyond-definite-stop", "If \"true\" translation to proteins will continue beyond a definite stop codon", "false", new String[]{"true", "false"}),
 	// Note, the following setting only affects query / member sequences, not reference sequences.
 	// If we get a case where reference sequence features are incomplete or not contained within an ORF we could change this.
-	TRANSLATE_ORF_DESCENDENTS_DIRECTLY("translate-orf-descendents-directly", "If \"true\", features which descend from ORFs will be translated directly, rather than deriving the translation from that of the ORF", "false", new String[]{"true", "false"});
+	TRANSLATE_ORF_DESCENDENTS_DIRECTLY("translate-orf-descendents-directly", "If \"true\", features which descend from ORFs will be translated directly, rather than deriving the translation from that of the ORF", "false", new String[]{"true", "false"}),
+	INFER_FEATURE_DISPLAY_ORDER("infer-feature-display-order", "If \"true\", feature display order will be inferred from the order in which the features were created.", "false", new String[]{"true", "false"});
 	
 	private final String name;
 	private final String description;

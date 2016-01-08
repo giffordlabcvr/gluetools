@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
@@ -16,37 +17,41 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"set", "metatag"},
-		docoptUsages={"<metatagName>"},
+		docoptUsages={"<metatagName> <metatagValue>"},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Specify that this feature has a metatag",
-		furtherHelp="Metatags are built-in indicators of different feature categories. This command succeeds if the feature already has the metatag."
+		description="Add or update a metatag with a certain name/value",
+		furtherHelp="Metatags are metadata for features."
 	) 
-public class FeatureSetMetatagCommand extends FeatureModeCommand<CreateResult> {
+public class FeatureSetMetatagCommand extends FeatureModeCommand<OkResult> {
 
 	public static final String METATAG_NAME = "metatagName";
+	public static final String METATAG_VALUE = "metatagValue";
+
 	private FeatureMetatag.Type metatagType;
+	private String metatagValue;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		metatagType = PluginUtils.configureEnumProperty(FeatureMetatag.Type.class, configElem, METATAG_NAME, true);
+		metatagValue = PluginUtils.configureStringProperty(configElem, METATAG_VALUE, true);
 	}
 
 	@Override
-	public CreateResult execute(CommandContext cmdContext) {
+	public OkResult execute(CommandContext cmdContext) {
 		Feature feature = lookupFeature(cmdContext);
 		FeatureMetatag featureMetatag = 
 				GlueDataObject.lookup(cmdContext, 
 						FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), true);
-		if(featureMetatag != null) {
-			return new CreateResult(FeatureMetatag.class, 0);
+		if(featureMetatag == null) {
+			featureMetatag = GlueDataObject.create(cmdContext, 
+					FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), false);
+			featureMetatag.setFeature(feature);
 		}
-		featureMetatag = GlueDataObject.create(cmdContext, 
-				FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), false);
-		featureMetatag.setFeature(feature);
+		featureMetatag.setValue(metatagValue);
 		cmdContext.commit();
-		return new CreateResult(FeatureMetatag.class, 1);
+		return new OkResult();
 	}
 
 	@CompleterClass
