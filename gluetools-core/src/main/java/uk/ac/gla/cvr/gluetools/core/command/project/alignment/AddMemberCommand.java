@@ -20,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -28,14 +29,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"add","member"}, 
-	docoptUsages={"<sourceName> <sequenceID>", "(-w <whereClause> | -a)"},
+	docoptUsages={
+			"<sourceName> <sequenceID>", 
+			"-r <refName>",
+			"(-w <whereClause> | -a)"},
 	docoptOptions={
+		"-r <refName>, --refName <refName>              Add a reference sequence",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify added sequences",
 	    "-a, --allSequences                             Add all project sequences"},
 	description="Add sequences as alignment members",
 	metaTags={CmdMeta.updatesDatabase},
 	furtherHelp=
 	"If both <sourceName> and <sequenceID> are specified, a single sequence is added.\n"+
+	"The -r <refName> usage can be used to add a reference sequence.\n"+
 	"The whereClause, if specified, qualifies which sequences are added.\n"+
 	"If allSequences is specified, all sequences in the project will be added.\n"+
 	"Examples:\n"+
@@ -50,10 +56,12 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 	public static final String SEQUENCE_ID = "sequenceID";
 	public static final String SOURCE_NAME = "sourceName";
 	public static final String WHERE_CLAUSE = "whereClause";
+	public static final String REF_NAME = "refName";
 	public static final String ALL_SEQUENCES = "allSequences";
 	
 	private Optional<String> sourceName;
 	private Optional<String> sequenceID;
+	private Optional<String> refName;
 	private Optional<Expression> whereClause;
 	private Boolean allSequences;
 	
@@ -62,12 +70,14 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 		super.configure(pluginConfigContext, configElem);
 		sourceName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SOURCE_NAME, false));
 		sequenceID = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SEQUENCE_ID, false));
+		refName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, REF_NAME, false));
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allSequences = PluginUtils.configureBooleanProperty(configElem, ALL_SEQUENCES, true);
 		if(!(
-				(sourceName.isPresent() && sequenceID.isPresent() && !whereClause.isPresent() && !allSequences)||
-				(!sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && allSequences)||
-				(!sourceName.isPresent() && !sequenceID.isPresent() && whereClause.isPresent() && !allSequences)
+				(!refName.isPresent() && sourceName.isPresent() && sequenceID.isPresent() && !whereClause.isPresent() && !allSequences)||
+				(!refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && allSequences)||
+				(!refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && allSequences)||
+				(refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && !allSequences)
 			)) {
 			usageError();
 		}
@@ -75,7 +85,7 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 
 	private void usageError() {
 		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, 
-				"Either both sourceName and sequenceID or whereClause or allSequences must be specified");
+				"Either both sourceName and sequenceID or whereClause or allSequences or refName must be specified");
 	}
 
 	@Override
@@ -89,6 +99,9 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 		} else if(allSequences) {
 			SelectQuery selectQuery = new SelectQuery(Sequence.class);
 			sequencesToAdd = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
+		} else if(refName.isPresent()) {
+			ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(refName.get()));
+			sequencesToAdd = Arrays.asList(refSeq.getSequence());
 		} else {
 			sequencesToAdd = Arrays.asList(GlueDataObject.lookup(cmdContext, Sequence.class, 
 					Sequence.pkMap(sourceName.get(), sequenceID.get())));
@@ -119,6 +132,7 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 					qualifierValues.put(Sequence.SOURCE_NAME_PATH, bindings.get("sourceName"));
 				}
 			});
+			registerDataObjectNameLookup("refName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 		}
 	}
 
