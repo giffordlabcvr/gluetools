@@ -25,14 +25,14 @@ public class ListFormatSequenceCommand extends ProjectModeCommand<ListFormatSequ
 
 	@Override
 	public ListFormatSequencesResult execute(CommandContext cmdContext) {
-		return new ListFormatSequencesResult(Arrays.asList(SequenceFormat.values()));
+		return new ListFormatSequencesResult(cmdContext, Arrays.asList(SequenceFormat.values()));
 	}
 
 	
 	public static class ListFormatSequencesResult extends TableResult {
 
 
-		public ListFormatSequencesResult(List<SequenceFormat> formats) {
+		public ListFormatSequencesResult(CommandContext cmdContext, List<SequenceFormat> formats) {
 			super("listFormatSequencesResult", Arrays.asList(NAME, DISPLAY_NAME, FORMAT_URL, STD_FILE_EXTENSION), 
 					formats.stream()
 						.map(seqFmt -> {
@@ -40,7 +40,7 @@ public class ListFormatSequenceCommand extends ProjectModeCommand<ListFormatSequ
 							map.put(NAME, seqFmt.name());
 							map.put(DISPLAY_NAME, seqFmt.getDisplayName());
 							map.put(FORMAT_URL, seqFmt.getFormatURL());
-							map.put(STD_FILE_EXTENSION, seqFmt.getStandardFileExtension());
+							map.put(STD_FILE_EXTENSION, seqFmt.getGeneratedFileExtension(cmdContext));
 							return map;
 						})
 						.collect(Collectors.toList()));

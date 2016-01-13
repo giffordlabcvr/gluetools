@@ -1,14 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -20,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -28,22 +22,23 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"remove", "member"}, 
 	description="Remove member sequences",
-	docoptUsages={"<sourceName> <sequenceID>", "(-w <whereClause> | -a)"},
+	docoptUsages={"(-m <sourceName> <sequenceID> | -w <whereClause> | -a)"},
 	metaTags={CmdMeta.updatesDatabase},
 	docoptOptions={
+		"-m, --member                                   Remove specific member",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify removed members",
 	    "-a, --allMembers                               Remove all members"},
 	furtherHelp=
 	"The whereClause, if specified, qualifies which members are removed.\n"+
 	"If allMembers is specified, all members will be removed from the alignment.\n"+
 	"Examples:\n"+
-	"  remove member localSource GH12325\n"+
+	"  remove member -m localSource GH12325\n"+
 	"  remove member -w \"sequence.source.name = 'local'\"\n"+
 	"  remove member -w \"sequence.sequenceID like 'f%' and sequence.CUSTOM_FIELD = 'value1'\"\n"+
 	"  remove member -w \"sequence.sequenceID = '3452467'\"\n"+
 	"  remove member -a\n"+
 	"Note: removing a sequence from the alignment does not delete it from the project.\n"+
-	"Note: if a removed member is the reference of a child alignment, the child alignment's parent is unset."
+	"Note: if a member is the reference of a child alignment, it is not removed."
 ) 
 public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 
@@ -51,11 +46,14 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 	public static final String SEQUENCE_ID = "sequenceID";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
+	public static final String MEMBER = "member";
+
 	
 	private Optional<String> sourceName;
 	private Optional<String> sequenceID;
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
+	private Boolean member;
 
 	
 	@Override
@@ -65,10 +63,11 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 		sequenceID = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SEQUENCE_ID, false));
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
+		member = PluginUtils.configureBooleanProperty(configElem, MEMBER, true);
 		if(!(
-				(sourceName.isPresent() && sequenceID.isPresent() && !whereClause.isPresent() && !allMembers)||
-				(!sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && allMembers)||
-				(!sourceName.isPresent() && !sequenceID.isPresent() && whereClause.isPresent() && !allMembers)
+				(sourceName.isPresent() && sequenceID.isPresent() && member && !whereClause.isPresent() && !allMembers)||
+				(!sourceName.isPresent() && !sequenceID.isPresent() && !member && !whereClause.isPresent() && allMembers)||
+				(!sourceName.isPresent() && !sequenceID.isPresent() && !member && whereClause.isPresent() && !allMembers)
 			)) {
 			usageError();
 		}
@@ -83,39 +82,21 @@ public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 	public DeleteResult execute(CommandContext cmdContext) {
 		
 		Alignment alignment = lookupAlignment(cmdContext);
-		List<AlignmentMember> membersToDelete;
-		if(whereClause.isPresent()) {
-			Expression whereClauseExp = whereClause.get();
-			whereClauseExp = whereClauseExp.andExp(ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName()));
-			membersToDelete = GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, whereClauseExp));
-		} else if(allMembers) {
-			List<AlignmentMember> members = alignment.getMembers();
-			membersToDelete = new ArrayList<AlignmentMember>(members);
-		} else {
-			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(getAlignmentName(), sourceName.get(), sequenceID.get()), true);
-			if(almtMember != null) {
-				membersToDelete = Arrays.asList(almtMember);
-			} else {
-				membersToDelete = Collections.emptyList();
-			}
-		}
-		membersToDelete.forEach(member -> {
-			List<ReferenceSequence> referenceSequences = member.getSequence().getReferenceSequences();
-			for(ReferenceSequence referenceSequence: referenceSequences) {
-				List<Alignment> refSeqAlmts = referenceSequence.getAlignments();
-				for(Alignment refSeqAlmt: refSeqAlmts) {
-					Alignment parent = refSeqAlmt.getParent();
-					if(parent != null && parent.getName().equals(alignment.getName())) {
-						refSeqAlmt.setParent(null);
-					}
-				}
-			}
-			GlueDataObject.delete(cmdContext, AlignmentMember.class, member.pkMap(), true);
-			
-		});
+		List<AlignmentMember> membersToRemove = lookupMembers(cmdContext, whereClause, allMembers, sourceName, sequenceID);
+		removeMembers(cmdContext, alignment, membersToRemove);
 		cmdContext.commit();
-		return new DeleteResult(AlignmentMember.class, membersToDelete.size());
+		return new DeleteResult(AlignmentMember.class, membersToRemove.size());
+	}
+
+	
+	public static void removeMembers(CommandContext cmdContext, Alignment alignment,
+			List<AlignmentMember> membersToRemove) {
+		membersToRemove.forEach(member -> {
+			// if member is the reference of a child of this alignment, do not delete it.
+			if(!isReferenceOfSomeChild(alignment, member)) {
+				GlueDataObject.delete(cmdContext, AlignmentMember.class, member.pkMap(), true);
+			}
+		});
 	}
 	
 	@CompleterClass

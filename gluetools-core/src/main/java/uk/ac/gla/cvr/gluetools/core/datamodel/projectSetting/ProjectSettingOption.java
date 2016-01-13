@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+
 /**
  * Options for project setting commands
  *
@@ -12,7 +14,9 @@ public enum ProjectSettingOption {
 	// Note, the following setting only affects query / member sequences, not reference sequences.
 	// If we get a case where reference sequence features are incomplete or not contained within an ORF we could change this.
 	TRANSLATE_ORF_DESCENDENTS_DIRECTLY("translate-orf-descendents-directly", "If \"true\", features which descend from ORFs will be translated directly, rather than deriving the translation from that of the ORF", "false", new String[]{"true", "false"}),
-	INFER_FEATURE_DISPLAY_ORDER("infer-feature-display-order", "If \"true\", feature display order will be inferred from the order in which the features were created.", "false", new String[]{"true", "false"});
+	INFER_FEATURE_DISPLAY_ORDER("infer-feature-display-order", "If \"true\", feature display order will be inferred from the order in which the features were created.", "false", new String[]{"true", "false"}),
+	EXPORTED_FASTA_EXTENSION("exported-fasta-extension", "The extension format given to exported sequences in FASTA format", FastaSequenceObject.FASTA_DEFAULT_EXTENSION, 
+			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS);
 	
 	private final String name;
 	private final String description;

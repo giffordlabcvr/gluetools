@@ -1,11 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 
+import java.util.Arrays;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.utils.ByteScanningUtils;
 
 public enum SequenceFormat {
 
+
 	// this MUST come before FASTA, so that it detection from bytes happens correctly.
-	SAM2CONSENSUS_EXTENDED("SAM2CONSENSUS extended", null, "s2c") {
+	SAM2CONSENSUS_EXTENDED("SAM2CONSENSUS extended", null, new String[]{"s2c"}, "s2c") {
 		@Override
 		public boolean detectFromBytes(byte[] data) {
 			return data.length > 0 &&
@@ -18,7 +23,9 @@ public enum SequenceFormat {
 		}
 	},
 
-	FASTA("FASTA nucleic acid", "https://en.wikipedia.org/wiki/FASTA_format", "fasta") {
+	FASTA("FASTA nucleic acid", "https://en.wikipedia.org/wiki/FASTA_format", 
+			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS, 
+			FastaSequenceObject.FASTA_DEFAULT_EXTENSION) {
 		@Override
 		public boolean detectFromBytes(byte[] data) {
 			return data.length > 0 &&
@@ -28,9 +35,15 @@ public enum SequenceFormat {
 		public AbstractSequenceObject sequenceObject() {
 			return new FastaSequenceObject();
 		}
+		@Override
+		public String getGeneratedFileExtension(CommandContext cmdContext) {
+			return cmdContext.getProjectSettingValue(ProjectSettingOption.EXPORTED_FASTA_EXTENSION);
+		}
+		
+		
 	},
 	
-	GENBANK_XML("Genbank GBSeq XML", "http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/asn_spec/gbseq.asn.html", "xml") {
+	GENBANK_XML("Genbank GBSeq XML", "http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/asn_spec/gbseq.asn.html", new String[]{"xml"}, "xml") {
 		@Override
 		public boolean detectFromBytes(byte[] data) {
 			return ByteScanningUtils.indexOf(data, "<GBSeq>".getBytes(), 0) >= 0;
@@ -43,15 +56,16 @@ public enum SequenceFormat {
 
 
 
-
 	private String displayName;
 	private String formatURL;
-	private String standardFileExtension;
+	private String[] acceptedFileExtensions;
+	private String generatedFileExtension;
 	
-	private SequenceFormat(String displayName, String formatURL, String standardFileExtension) {
+	private SequenceFormat(String displayName, String formatURL, String[] acceptedFileExtensions, String generatedFileExtension) {
 		this.displayName = displayName;
 		this.formatURL = formatURL;
-		this.standardFileExtension = standardFileExtension;
+		this.acceptedFileExtensions = acceptedFileExtensions;
+		this.generatedFileExtension = generatedFileExtension;
 	}
 	
 	public String getDisplayName() {
@@ -60,8 +74,11 @@ public enum SequenceFormat {
 	public String getFormatURL() {
 		return formatURL;
 	}
-	public String getStandardFileExtension() {
-		return standardFileExtension;
+	public String[] getAcceptedFileExtensions() {
+		return acceptedFileExtensions;
+	}
+	public String getGeneratedFileExtension(CommandContext cmdContext) {
+		return generatedFileExtension;
 	}
 
 	public abstract AbstractSequenceObject sequenceObject();
@@ -79,7 +96,7 @@ public enum SequenceFormat {
 
 	public static SequenceFormat detectFormatFromExtension(String extension) {
 		for(SequenceFormat seqFormat : SequenceFormat.values()) {
-			if(extension.equals(seqFormat.getStandardFileExtension())) {
+			if(Arrays.asList(seqFormat.getAcceptedFileExtensions()).contains(extension)) {
 				return seqFormat;
 			}
 		}

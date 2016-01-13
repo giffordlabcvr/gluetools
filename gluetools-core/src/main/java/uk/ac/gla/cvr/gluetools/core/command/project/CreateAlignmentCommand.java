@@ -14,9 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -83,15 +81,20 @@ public class CreateAlignmentCommand extends ProjectModeCommand<CreateResult> {
 						Alignment.pkMap(parentName));
 			}
 		}
-		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), false);
+		createAlignment(cmdContext, alignmentName, refSequence, parentAlignment);
+		cmdContext.commit();
+		return new CreateResult(Alignment.class, 1);
+	}
+
+	public static Alignment createAlignment(CommandContext cmdContext, String almtName, ReferenceSequence refSequence, Alignment parentAlignment) {
+		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
 		if(refSequence != null) {
 			alignment.setRefSequence(refSequence);
 			if(parentAlignment != null) {
 				alignment.setParent(parentAlignment);
 			}
 		}
-		cmdContext.commit();
-		return new CreateResult(Alignment.class, 1);
+		return alignment;
 	}
 
 	@CompleterClass

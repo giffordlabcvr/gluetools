@@ -49,12 +49,17 @@ public class CreateReferenceSequenceCommand extends ProjectModeCommand<CreateRes
 		
 		Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
 				Sequence.pkMap(sourceName, sequenceID));
+		createRefSequence(cmdContext, refSeqName, sequence);
+		cmdContext.commit();
+		return new CreateResult(ReferenceSequence.class, 1);
+	}
+
+	public static ReferenceSequence createRefSequence(CommandContext cmdContext, String refSeqName, Sequence sequence) {
 		ReferenceSequence refSequence = GlueDataObject.create(cmdContext, ReferenceSequence.class, 
 				ReferenceSequence.pkMap(refSeqName), false);
 		refSequence.setSequence(sequence);
 		refSequence.setCreationTime(System.currentTimeMillis());
-		cmdContext.commit();
-		return new CreateResult(ReferenceSequence.class, 1);
+		return refSequence;
 	}
 
 	@CompleterClass

@@ -10,6 +10,10 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class FastaSequenceObject extends AbstractSequenceObject {
 
+	public static final String FASTA_DEFAULT_EXTENSION = "fasta";
+	public static final String[] FASTA_ACCEPTED_EXTENSIONS = new String[]{"fasta", "fa", "fna", "fas"};
+
+	
 	private String header;
 	private String nucleotides;
 	

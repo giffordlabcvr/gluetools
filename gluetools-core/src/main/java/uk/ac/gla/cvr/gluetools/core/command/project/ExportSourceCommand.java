@@ -104,7 +104,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
 			String sequenceID = sequence.getSequenceID();
 			SequenceFormat seqFormat = sequence.getSequenceFormat();
-			File filePath = new File(sourceName, sequenceID+"."+seqFormat.getStandardFileExtension());
+			File filePath = new File(sourceName, sequenceID+"."+seqFormat.getGeneratedFileExtension(cmdContext));
 			if(incremental && consoleCmdContext.isFile(filePath.toString())) {
 				skipped++;
 			} else {

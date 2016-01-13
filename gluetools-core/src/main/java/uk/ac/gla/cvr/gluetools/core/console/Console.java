@@ -428,6 +428,7 @@ public class Console implements CommandResultRenderingContext
 	}
 
 	public void runBatchCommands(String batchFilePath, List<Object> batchLines, boolean noEcho, boolean noOutput) {
+		String initialModePath = commandContext.getModePath();
 		try {
 			BatchContext batchContext = new BatchContext(batchFilePath, 1);
 			batchContext.batchLineNumber = 1;
@@ -440,11 +441,14 @@ public class Console implements CommandResultRenderingContext
 						ge.putUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK, new LinkedList<BatchContext>(batchContextStack));
 					}
 					throw ge;
-				}
+				} 
 				batchContext.batchLineNumber++;
 			}
 		} finally {
 			batchContextStack.pop();
+			while(!commandContext.getModePath().equals(initialModePath)) {
+				commandContext.popCommandMode();
+			}
 		}
 	}
 
