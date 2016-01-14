@@ -104,6 +104,7 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 	protected Map<String, DNASequence> getQueryIdToNucleotides(ConsoleCommandContext consoleCmdContext) {
 		byte[] sequenceFileBytes = consoleCmdContext.loadBytes(sequenceFileName);
+		FastaUtils.normalizeFastaBytes(consoleCmdContext, sequenceFileBytes);
 		return FastaUtils.parseFasta(sequenceFileBytes);
 	}
 	

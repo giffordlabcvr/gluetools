@@ -125,6 +125,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 
 	public FastaAlignmentImporterResult doImport(ConsoleCommandContext cmdContext, String fileName, String alignmentName, String sourceName) {
 		byte[] fastaFileBytes = cmdContext.loadBytes(fileName);
+		FastaUtils.normalizeFastaBytes(cmdContext, fastaFileBytes);
 		
 		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), updateExistingAlignment);
 

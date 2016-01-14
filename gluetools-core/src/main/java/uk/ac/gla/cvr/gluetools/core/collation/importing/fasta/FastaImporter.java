@@ -47,6 +47,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 	private List<RegexExtractorFormatter> valueConverters = null;
 	private String sourceName;
 	private List<FastaFieldParser> fieldParsers;
+	private boolean skipExistingSequences = false;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -54,6 +55,8 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 		super.configure(pluginConfigContext, configElem);
 		sourceName = Optional.ofNullable(PluginUtils.
 				configureStringProperty(configElem, "sourceName", false)).orElse("local");
+		skipExistingSequences = Optional.ofNullable(PluginUtils.
+				configureBooleanProperty(configElem, "skipExistingSequences", false)).orElse(false);
 		List<Element> idParserElems = PluginUtils.findConfigElements(configElem, "idParser", 0, 1);
 		if(!idParserElems.isEmpty()) {
 			Element idParserElem  = idParserElems.get(0);
@@ -73,11 +76,16 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 
 	public CreateResult doImport(ConsoleCommandContext cmdContext, String fileName) {
 		byte[] fastaBytes = cmdContext.loadBytes(fileName);
+		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		HeaderParser headerParser = new HeaderParser();
 		Map<String, DNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, headerParser);
 		ensureSourceExists(cmdContext, sourceName);
 		idToSequence.forEach((id, seq) -> {
-			String seqString = ">"+id+"\n"+seq.getSequenceAsString()+"\n";
+			if(skipExistingSequences && sequenceExists(cmdContext, sourceName, id)) {
+				return;
+			}
+			String sequenceAsString = seq.getSequenceAsString();
+			String seqString = ">"+id+"\n"+sequenceAsString+"\n";
 			createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
 			
 			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, id);){

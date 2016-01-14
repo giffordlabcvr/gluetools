@@ -15,6 +15,8 @@ import org.biojava.nbio.core.sequence.io.DNASequenceCreator;
 import org.biojava.nbio.core.sequence.io.FastaReader;
 import org.biojava.nbio.core.sequence.io.template.SequenceHeaderParserInterface;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -23,12 +25,24 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 
 public class FastaUtils {
 	
+	public static void normalizeFastaBytes(CommandContext cmdContext, byte[] fastaBytes) {
+		if(cmdContext.getProjectSettingValue(ProjectSettingOption.INTERPRET_FASTA_QUESTIONMARK_AS_N).equals("true")) {
+			for(int i = 0; i < fastaBytes.length; i++) {
+				if(fastaBytes[i] == '?') {
+					fastaBytes[i] = 'N';
+				}
+			}
+		}
+	}
+	
 	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes,
 			SequenceHeaderParserInterface<DNASequence, NucleotideCompound> headerParser) {
+		
 		ByteArrayInputStream bais = new ByteArrayInputStream(fastaBytes);
 		FastaReader<DNASequence, NucleotideCompound> fastaReader = 
 				new FastaReader<DNASequence, NucleotideCompound>(bais, headerParser, 
 						new DNASequenceCreator(AmbiguityDNACompoundSet.getDNACompoundSet()));
+		
 		Map<String, DNASequence> idToSequence;
 		try {
 			idToSequence = fastaReader.process();

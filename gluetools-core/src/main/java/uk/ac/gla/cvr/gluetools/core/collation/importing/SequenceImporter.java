@@ -5,6 +5,8 @@ import java.util.Base64;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSourceCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 
@@ -15,6 +17,10 @@ public abstract class SequenceImporter<P extends SequenceImporter<P>> extends Mo
 			set(CreateSourceCommand.SOURCE_NAME, sourceName).
 			set(CreateSourceCommand.ALLOW_EXISTING, "true").
 			execute();
+	}
+	
+	protected final boolean sequenceExists(CommandContext cmdContext, String sourceName, String sequenceID) {
+		return GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true) != null;
 	}
 	
 	protected final void createSequence(CommandContext cmdContext, String sourceName, String sequenceID, 

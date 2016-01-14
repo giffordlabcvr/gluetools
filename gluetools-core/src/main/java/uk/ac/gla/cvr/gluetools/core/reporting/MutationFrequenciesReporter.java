@@ -125,6 +125,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
 			Boolean headerDetect, Optional<String> alignmentName, byte[] sequenceData) {
 		GlueLogger.getGlueLogger().finest("Creating sequence objects from data");
+		FastaUtils.normalizeFastaBytes(cmdContext, sequenceData); 
 		List<AbstractSequenceObject> seqObjects = FastaUtils.seqObjectsFromSeqData(sequenceData);
 		
 		GlueLogger.getGlueLogger().finest("Initializing sequence result objects");
