@@ -9,14 +9,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerException;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResultBuilder.BlastXPath;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
-import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
@@ -25,6 +23,8 @@ public class BlastRunner implements Plugin {
 
 	public static String 
 		BLASTN_EXECUTABLE_PROPERTY = "gluetools.core.programs.blast.blastn.executable"; 
+	public static String 
+		TBLASTN_EXECUTABLE_PROPERTY = "gluetools.core.programs.blast.tblastn.executable"; 
 
 
 	@SuppressWarnings("rawtypes")
@@ -57,9 +57,8 @@ public class BlastRunner implements Plugin {
 
 	
 	@SuppressWarnings("rawtypes")
-	public List<BlastResult> executeBlast(CommandContext cmdContext, String refName, byte[] fastaBytes) {
-		SingleReferenceBlastDB refDB = BlastDbManager.getInstance().ensureSingleReferenceDB(cmdContext, refName);
-		refDB.readLock().lock();
+	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastDB blastDB, byte[] fastaBytes) {
+		blastDB.readLock().lock();
 		ProcessResult blastProcessResult;
 		try {
 			String blastNexecutable = 
@@ -68,7 +67,7 @@ public class BlastRunner implements Plugin {
 			commandWords.add(blastNexecutable);
 			// supply reference DB
 			commandWords.add("-db");
-			commandWords.add(new File(refDB.getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());
+			commandWords.add(new File(blastDB.getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());
 			// outfmt 14 is XML2
 			commandWords.add("-outfmt");
 			commandWords.add("14");
@@ -79,13 +78,13 @@ public class BlastRunner implements Plugin {
 			// run blast based on the ref DB.
 			blastProcessResult = ProcessUtils.runProcess(new ByteArrayInputStream(fastaBytes), commandWords); 
 		} finally {
-			refDB.readLock().unlock();
+			blastDB.readLock().unlock();
 		}
 		List<Document> resultDocs;
 		try {
 			resultDocs = GlueXmlUtils.documentsFromBytes(blastProcessResult.getOutputBytes());
 		} catch(Exception e) {
-			throw new BlastAlignerException(Code.BLAST_OUTPUT_FORMAT_ERROR, e.getLocalizedMessage());
+			throw new BlastException(BlastException.Code.BLAST_OUTPUT_FORMAT_ERROR, e.getLocalizedMessage());
 		}
 		// use same xPathEngine across results, should save some init time.
 		// guess a faster way may be to use a SAX parser.

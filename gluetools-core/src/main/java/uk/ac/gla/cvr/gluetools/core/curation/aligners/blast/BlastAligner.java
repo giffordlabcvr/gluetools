@@ -1,12 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
@@ -19,18 +16,18 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.programs.blast.BlastHit;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
-import uk.ac.gla.cvr.gluetools.programs.blast.BlastHspComparator;
+import uk.ac.gla.cvr.gluetools.programs.blast.BlastHspFilter;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner;
+import uk.ac.gla.cvr.gluetools.programs.blast.BlastUtils;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="blastAligner")
@@ -121,121 +118,30 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 		if(fastaBytes.length == 0) {
 			blastResults = Collections.emptyList();
 		} else {
-			blastResults = blastRunner.executeBlast(cmdContext, refName, fastaBytes);
+			SingleReferenceBlastDB refDB = BlastDbManager.getInstance().ensureSingleReferenceDB(cmdContext, refName);
+			blastResults = blastRunner.executeBlast(cmdContext, refDB, fastaBytes);
 		}
-		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = blastResultsToAlignedSegmentsMap(refName, blastResults);
+		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = BlastUtils.blastResultsToAlignedSegmentsMap(refName, blastResults, 
+				new MyBlastHspFilter());
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}
 
-	public Map<String, List<QueryAlignedSegment>> blastResultsToAlignedSegmentsMap(String refName, List<BlastResult> blastResults) {
-		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
-		for(BlastResult blastResult: blastResults) {
-			String queryFastaId = blastResult.getQueryFastaId();
-			// find hits on the specified reference
-			List<BlastHit> hits =
-					blastResult.getHits().stream()
-					.filter(hit -> hit.getReferenceName().equals(refName))
-					.collect(Collectors.toList());
-			// merge all hit HSPs together
-			List<BlastHsp> hsps = hits.stream()
-					.map(BlastHit::getHsps)
-					.flatMap(hspList -> hspList.stream())
-					.collect(Collectors.toList());
-			// filter out non-allowed HSPs
-			hsps = hsps.stream()
-					.filter(this::allowedHsp)
-					.collect(Collectors.toList());
-			
-			// sort HSPs according to our comparator.
-			Collections.sort(hsps, new BlastHspComparator());
-			
-			// generate segments from each HSP, and put all these together in a List.
-			List<BlastSegmentList> perHspAlignedSegments = 
-					hsps.stream()
-					.map(hsp -> alignedSegmentsForHsp(hsp))
-					.collect(Collectors.toList());
+	private class MyBlastHspFilter implements BlastHspFilter {
 
-			
-			// merge/rationalise the segments;
-			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
-			// store merged segments against the query fasta ID.
-			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
+		@Override
+		public boolean allowBlastHsp(BlastHsp blastHsp) {
+			if(minimumBitScore.map(m -> blastHsp.getBitScore() < m).orElse(false)) {
+				return false;
+			}
+			if(minimumScore.map(m -> blastHsp.getScore() < m).orElse(false)) {
+				return false;
+			}
+			if(!allowReverseHsps && blastHsp.getQueryTo() < blastHsp.getQueryFrom()) {
+				return false;
+			}
+			return true;
 		}
-		return fastaIdToAlignedSegments;
-	}
-	
-	private BlastSegmentList mergeSegments(
-			List<BlastSegmentList> perHspAlignedSegments) {
-		if(perHspAlignedSegments.isEmpty()) {
-			return new BlastSegmentList();
-		}
-		BlastSegmentList mergedSegments;
-		// start with the segments from the highest scoring HSP
-		BlastSegmentList highestScoringSegments = perHspAlignedSegments.remove(0);
-		mergedSegments = IReferenceSegment.sortByRefStart(highestScoringSegments, BlastSegmentList::new);
-		// fold in segments from other HSPs in descending score order.
-		while(!perHspAlignedSegments.isEmpty()) {
-			BlastSegmentList nextSegments = perHspAlignedSegments.remove(0);
-			nextSegments = IReferenceSegment.sortByRefStart(nextSegments, BlastSegmentList::new);
-			mergedSegments.mergeInSegmentList(nextSegments);
-		}
-		return mergedSegments;
-	}
-
-	
-	
-
-
-	// check the HSP for assumptions
-	private void checkBlastHsp(BlastHsp hsp) {
-		String refName = hsp.getBlastHit().getReferenceName();
-		String queryId = hsp.getBlastHit().getBlastResult().getQueryFastaId();
-
-		String hseq = hsp.getHseq();
-		String qseq = hsp.getQseq();
 		
-		int hqlength = hseq.length();
-		if(hqlength != qseq.length()) {
-			throwUnhandledException(refName, queryId, "hseq and qseq are different lengths"); 
-		}
-		if(hseq.startsWith("-")) {
-			throwUnhandledException(refName, queryId, "hseq starts with a gap"); 
-		}
-		if(qseq.startsWith("-")) {
-			throwUnhandledException(refName, queryId, "qseq starts with a gap"); 
-		}
-		if(hseq.endsWith("-")) {
-			throwUnhandledException(refName, queryId, "hseq ends with a gap"); 
-		}
-		if(qseq.endsWith("-")) {
-			String string = "qseq ends with a gap";
-			throwUnhandledException(refName, queryId, string); 
-		}
-
-	}
-
-	public void throwUnhandledException(String refName, String queryId,
-			String message) {
-		throw new BlastAlignerException(Code.BLAST_ALIGNER_UNHANDLED_CASE, refName, queryId, 
-				message);
 	}
 	
-
-	private BlastSegmentList alignedSegmentsForHsp(BlastHsp hsp) {
-		checkBlastHsp(hsp);
-		return hsp.computeAlignedSegments();
-	}
-	
-	private boolean allowedHsp(BlastHsp hsp) {
-		if(minimumBitScore.map(m -> hsp.getBitScore() < m).orElse(false)) {
-			return false;
-		}
-		if(minimumScore.map(m -> hsp.getScore() < m).orElse(false)) {
-			return false;
-		}
-		if(!allowReverseHsps && hsp.getQueryTo() < hsp.getQueryFrom()) {
-			return false;
-		}
-		return true;
-	}
 }

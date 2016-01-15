@@ -1,24 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionException;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAlignmentImporterException.Code;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -30,45 +20,25 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import freemarker.core.ParseException;
-import freemarker.template.Template;
 
 @PluginClass(elemName="fastaAlignmentImporter")
-public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter> {
+public class FastaAlignmentImporter extends BaseFastaAlignmentImporter<FastaAlignmentImporter> {
 
-	public static final String IGNORE_REGEX_MATCH_FAILURES = "ignoreRegexMatchFailures";
-	public static final String IGNORE_MISSING_SEQUENCES = "ignoreMissingSequences";
 	public static final String SEQUENCE_GAP_REGEX = "sequenceGapRegex";
 	public static final String REQUIRE_TOTAL_COVERAGE = "requireTotalCoverage";
 	public static final String ALLOW_AMBIGUOUS_SEGMENTS = "allowAmbiguousSegments";
-	public static final String UPDATE_EXISTING_MEMBERS = "updateExistingMembers";
-	public static final String UPDATE_EXISTING_ALIGNMENT = "updateExistingAlignment";
-	public static final String ID_CLAUSE_EXTRACTOR_FORMATTER = "idClauseExtractorFormatter";
 	
-	private RegexExtractorFormatter idClauseExtractorFormatter = null;
-	
-	private Boolean ignoreRegexMatchFailures = false;
-	private Boolean ignoreMissingSequences = false;
 	private Boolean requireTotalCoverage = true;
 	private Pattern sequenceGapRegex = null;
-	private Boolean updateExistingMembers = false;
-	private Boolean updateExistingAlignment = false;
 	private Boolean allowAmbiguousSegments = false;
 	
 	public FastaAlignmentImporter() {
@@ -80,138 +50,24 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		ignoreRegexMatchFailures = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, IGNORE_REGEX_MATCH_FAILURES, false))
-				.orElse(false);
-		ignoreMissingSequences = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, IGNORE_MISSING_SEQUENCES, false))
-				.orElse(false);
+		super.configure(pluginConfigContext, configElem);
 		sequenceGapRegex = Optional
 				.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, SEQUENCE_GAP_REGEX, false))
 				.orElse(Pattern.compile("[Nn-]"));
 		requireTotalCoverage = Optional
 				.ofNullable(PluginUtils.configureBooleanProperty(configElem, REQUIRE_TOTAL_COVERAGE, false))
 				.orElse(true);
-		updateExistingMembers = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, UPDATE_EXISTING_MEMBERS, false))
-				.orElse(false);
-		updateExistingAlignment = Optional
-				.ofNullable(PluginUtils.configureBooleanProperty(configElem, UPDATE_EXISTING_ALIGNMENT, false))
-				.orElse(false);
 		allowAmbiguousSegments = Optional
 				.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALLOW_AMBIGUOUS_SEGMENTS, false))
 				.orElse(false);
 		
-		Element extractorElem = PluginUtils.findConfigElement(configElem, ID_CLAUSE_EXTRACTOR_FORMATTER);
-		if(extractorElem != null) {
-			idClauseExtractorFormatter = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, extractorElem);
-		} else {
-			idClauseExtractorFormatter = new RegexExtractorFormatter();
-		}
-		if(idClauseExtractorFormatter.getMatchPattern() == null) {
-			idClauseExtractorFormatter.setMatchPattern(Pattern.compile("(.*)"));
-		}
-		if(idClauseExtractorFormatter.getOutputTemplate() == null) {
-			Template defaultTemplate;
-			try {
-				defaultTemplate = PluginUtils.templateFromString("sequenceID = '${g1}'", pluginConfigContext.getFreemarkerConfiguration());
-			} catch (ParseException e) {
-				throw new RuntimeException(e);
-			}
-			idClauseExtractorFormatter.setOutputTemplate(defaultTemplate);
-		}
-		
 	}
 
-	public FastaAlignmentImporterResult doImport(ConsoleCommandContext cmdContext, String fileName, String alignmentName, String sourceName) {
-		byte[] fastaFileBytes = cmdContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaFileBytes);
-		
-		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), updateExistingAlignment);
 
-		ReferenceSequence refSequence = alignment.getRefSequence();
-		if(refSequence != null) {
-			throw new FastaAlignmentImporterException(Code.ALIGNMENT_IS_CONSTRAINED, alignmentName, refSequence.getName());
-		}
-		
-		Map<String, DNASequence> sequenceMap = FastaUtils.parseFasta(fastaFileBytes);
-		
-		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
-		
-		for(Map.Entry<String, DNASequence> entry: sequenceMap.entrySet()) {
-			String fastaID = entry.getKey();
-			DNASequence dnaSequence = entry.getValue();
-			String whereClauseString = idClauseExtractorFormatter.matchAndConvert(fastaID);
-			if(whereClauseString == null) {
-				if(ignoreRegexMatchFailures) {
-					continue;
-				}
-				throw new FastaAlignmentImporterException(Code.NO_FASTA_ID_REGEX_MATCH, fastaID);
-			}
-			Expression whereClauseExp = null;
-			try {
-				whereClauseExp = Expression.fromString(whereClauseString);
-			} catch(ExpressionException ee) {
-				throw new FastaAlignmentImporterException(Code.INVALID_WHERE_CLAUSE, fastaID, whereClauseString);
-			}
-			if(sourceName != null) {
-				whereClauseExp = ExpressionFactory
-						.matchExp(Sequence.SOURCE_NAME_PATH, sourceName)
-						.andExp(whereClauseExp);
-			}
-			List<Sequence> foundSequences = GlueDataObject.query(cmdContext, Sequence.class, new SelectQuery(Sequence.class, whereClauseExp));
-			if(foundSequences.isEmpty()) {
-				if(ignoreMissingSequences) {
-					continue;
-				}
-				throw new FastaAlignmentImporterException(Code.NO_SEQUENCE_FOUND, fastaID, whereClauseString);
-			}
-			if(foundSequences.size() > 1) {
-				throw new FastaAlignmentImporterException(Code.MULTIPLE_SEQUENCES_FOUND, fastaID, whereClauseString);
-			}
-			Sequence foundSequence = foundSequences.get(0);
-			String memberSourceName = foundSequence.getSource().getName();
-			String memberSequenceID = foundSequence.getSequenceID();
-			AlignmentMember almtMember = 
-					GlueDataObject.create(cmdContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(alignmentName, memberSourceName, memberSequenceID), updateExistingMembers);
-			almtMember.setAlignment(alignment);
-			almtMember.setSequence(foundSequence);
-			
-			List<QueryAlignedSegment> existingSegs = almtMember.getAlignedSegments().stream()
-					.map(AlignedSegment::asQueryAlignedSegment)
-					.collect(Collectors.toList());
-			
-			List<QueryAlignedSegment> queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, dnaSequence.getSequenceAsString(), 
-					fastaID, whereClauseString);
-			for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
-				AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
-						AlignedSegment.pkMap(alignmentName, memberSourceName, memberSequenceID, 
-								queryAlignedSeg.getRefStart(), queryAlignedSeg.getRefEnd(), 
-								queryAlignedSeg.getQueryStart(), queryAlignedSeg.getQueryEnd()), false);
-				alignedSegment.setAlignmentMember(almtMember);
-			}
-			Map<String, Object> memberResultMap = new LinkedHashMap<String, Object>();
-			memberResultMap.put("fastaID", fastaID);
-			memberResultMap.put("sourceName", memberSourceName);
-			memberResultMap.put("sequenceID", memberSequenceID);
-			memberResultMap.put("numSegmentsAdded", new Integer(queryAlignedSegs.size()));
-			resultListOfMaps.add(memberResultMap);
-		}
-		
-		cmdContext.commit();
-		return new FastaAlignmentImporterResult(resultListOfMaps);
-	}
-
-	private static class FastaAlignmentImporterResult extends TableResult {
-		public FastaAlignmentImporterResult(List<Map<String, Object>> rowData) {
-			super("fastaAlignmentImporterResult", Arrays.asList("fastaID", "sourceName", "sequenceID", "numSegmentsAdded"), rowData);
-		}
-	}
-	
-	private List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
+	@Override
+	protected List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
 			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
-			String fastaID, String whereClauseString) {
+			String fastaID) {
 
 		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext);
 		
@@ -226,7 +82,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
     		if(isGapChar(fastaAlignmentNT)) {
     			if(queryAlignedSeg != null) {
     				foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
-							fastaAlignmentNTs, fastaID, whereClauseString,
+							fastaAlignmentNTs, fastaID, foundSequence.pkMap().toString(),
 							foundSequenceNTs, queryAlignedSegs,
 							foundSequenceNtIndex, queryAlignedSeg);
     				queryAlignedSeg = null;
@@ -241,12 +97,12 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
     	}
 		if(queryAlignedSeg != null) {
 			foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
-					fastaAlignmentNTs, fastaID, whereClauseString,
+					fastaAlignmentNTs, fastaID, foundSequence.pkMap().toString(),
 					foundSequenceNTs, queryAlignedSegs,
 					foundSequenceNtIndex, queryAlignedSeg);
 		}
 		if(requireTotalCoverage && foundSequenceNtIndex != foundSequenceNTs.length()+1) {
-			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundSequenceNTs.length(), fastaID, whereClauseString);
+			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundSequenceNTs.length(), fastaID, foundSequence.pkMap().toString());
 		}
 		return queryAlignedSegs;
 	}
@@ -264,7 +120,7 @@ public class FastaAlignmentImporter extends ModulePlugin<FastaAlignmentImporter>
 			throw new FastaAlignmentImporterException(Code.SUBSEQUENCE_NOT_FOUND, refStart, refEnd, fastaID, whereClauseString);
 		}
 		if(requireTotalCoverage && foundIdxOfSubseq != foundSequenceNtIndex) {
-			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundIdxOfSubseq-1, fastaID, whereClauseString);
+			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundIdxOfSubseq-1, fastaID);
 		}
 		if(!allowAmbiguousSegments) {
 			int nextIdxOfSubseq = FastaUtils.find(foundSequenceNTs, subSequence, foundIdxOfSubseq+1);

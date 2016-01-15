@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SequenceGroupBlastDB.SequenceGroupBlastDbKey;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB.SingleReferenceBlastDbKey;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastDB.TemporarySingleSeqBlastDbKey;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
@@ -44,6 +45,24 @@ public class BlastDbManager {
 	public SequenceGroupBlastDB ensureSequenceGroupDB(CommandContext cmdContext, String groupName) {
 		SequenceGroupBlastDbKey blastDbKey = new SequenceGroupBlastDbKey(getProjectName(cmdContext), groupName);
 		return (SequenceGroupBlastDB) ensureBlastDB(cmdContext, blastDbKey);
+	}
+
+	public TemporarySingleSeqBlastDB createTempSingleSeqBlastDB(CommandContext cmdContext, String uuid, String refNTs) {
+		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, refNTs);
+		return (TemporarySingleSeqBlastDB) ensureBlastDB(cmdContext, blastDbKey);
+	}
+
+	public boolean removeTempSingleSeqBlastDB(CommandContext cmdContext, String uuid) {
+		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, "");
+		BlastDB blastDB;
+		synchronized(blastDbsMap) {
+			blastDB = blastDbsMap.remove(blastDbKey);
+			if(blastDB == null) {
+				return false;
+			}
+		}
+		File blastDbDir = getBlastDbDir(cmdContext, blastDB);
+		return blastDbDir.delete();
 	}
 
 	private String getProjectName(CommandContext cmdContext) {

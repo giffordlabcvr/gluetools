@@ -11,6 +11,10 @@
 			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/bin/blastn</value>
 		</property>
 		<property>
+			<name>gluetools.core.programs.blast.tblastn.executable</name>
+			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/bin/tblastn</value>
+		</property>
+		<property>
 			<name>gluetools.core.programs.blast.makeblastdb.executable</name>
 			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
 		</property>
