@@ -7,7 +7,8 @@ public class BlastException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		BLAST_OUTPUT_FORMAT_ERROR("errorText"),
-		BLAST_UNHANDLED_CASE("refSeqId", "querySeqId", "caseDescription");
+		BLAST_UNHANDLED_CASE("refSeqId", "querySeqId", "caseDescription"),
+		UNKNOWN_BLAST_TYPE("blastType");
 
 		private String[] argNames;
 		private Code(String... argNames) {

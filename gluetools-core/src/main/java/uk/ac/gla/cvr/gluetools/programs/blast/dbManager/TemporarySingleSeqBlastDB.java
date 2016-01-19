@@ -12,11 +12,13 @@ public class TemporarySingleSeqBlastDB extends BlastDB {
 	
 	private String uuid;
 	private String referenceNTs;
+	private String refFastaID;
 	private long creationTime;
 	
-	public TemporarySingleSeqBlastDB(String projectName, String uuid, String referenceNTs) {
+	public TemporarySingleSeqBlastDB(String projectName, String uuid, String refFastaID, String referenceNTs) {
 		super(projectName);
 		this.uuid = uuid;
+		this.refFastaID = refFastaID;
 		this.referenceNTs = referenceNTs;
 		this.creationTime = System.currentTimeMillis();
 	}
@@ -25,11 +27,13 @@ public class TemporarySingleSeqBlastDB extends BlastDB {
 
 		private String projectName;
 		private String uuid;
+		private String refFastaID;
 		private String referenceNTs;
 		
-		public TemporarySingleSeqBlastDbKey(String projectName, String uuid, String referenceNTs) {
+		public TemporarySingleSeqBlastDbKey(String projectName, String uuid, String refFastaID, String referenceNTs) {
 			this.projectName = projectName;
 			this.uuid = uuid;
+			this.refFastaID = refFastaID;
 			this.referenceNTs = referenceNTs;
 		}
 
@@ -67,7 +71,7 @@ public class TemporarySingleSeqBlastDB extends BlastDB {
 
 		@Override
 		public TemporarySingleSeqBlastDB createBlastDB() {
-			return new TemporarySingleSeqBlastDB(projectName, uuid, referenceNTs);
+			return new TemporarySingleSeqBlastDB(projectName, uuid, refFastaID, referenceNTs);
 		}
 	}
 
@@ -88,7 +92,7 @@ public class TemporarySingleSeqBlastDB extends BlastDB {
 
 	@Override
 	public InputStream getFastaContentInputStream(CommandContext cmdContext) {
-		String fastaString = FastaUtils.seqIdNtsPairToFasta(uuid, referenceNTs);
+		String fastaString = FastaUtils.seqIdCompoundsPairToFasta(refFastaID, referenceNTs);
 		return new ByteArrayInputStream(fastaString.getBytes());
 	}
 	

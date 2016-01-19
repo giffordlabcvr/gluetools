@@ -52,7 +52,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		StringBuffer stringBuffer = new StringBuffer();
 		sequences.forEach(seq -> {
 			String fastaId = generateFastaId(seq);
-			stringBuffer.append(FastaUtils.seqIdNtsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext)));
+			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
 		cmdContext.saveBytes(fileName, stringBuffer.toString().getBytes());
 		return new OkResult();

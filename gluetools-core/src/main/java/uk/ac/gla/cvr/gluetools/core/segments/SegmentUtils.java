@@ -22,15 +22,15 @@ public class SegmentUtils {
 	}
 	
 	
-	public static String nt(String seq, int position) {
+	public static String base1CharAt(String seq, int position) {
 		return seq.substring(position-1, position);
 	}
 
-	public static char ntChar(String seq, int position) {
+	public static char base1Char(String seq, int position) {
 		return seq.charAt(position-1);
 	}
 
-	public static String subSeq(String seq, int start, int end) {
+	public static String base1SubString(String seq, int start, int end) {
 		if(start <= end) {
 			return seq.substring(start-1, end);
 		} else {

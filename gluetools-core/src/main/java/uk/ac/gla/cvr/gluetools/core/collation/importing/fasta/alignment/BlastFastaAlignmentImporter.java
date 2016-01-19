@@ -35,7 +35,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastD
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="blastFastaAlignmentImporter")
-public class BlastFastaAlignmentImporter extends BaseFastaAlignmentImporter<BlastFastaAlignmentImporter> {
+public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastFastaAlignmentImporter> {
 
 
 	private BlastRunner blastRunner = new BlastRunner();
@@ -84,7 +84,7 @@ public class BlastFastaAlignmentImporter extends BaseFastaAlignmentImporter<Blas
 			}
 		}
 		
-		byte[] alignmentNTsFastaBytes = FastaUtils.seqIdNtsPairToFasta("alignmentRowNTs", 
+		byte[] alignmentNTsFastaBytes = FastaUtils.seqIdCompoundsPairToFasta("alignmentRowNTs", 
 				alignmentRowNTsGapsFilled.toString()).getBytes();
 
 		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext);
@@ -94,7 +94,7 @@ public class BlastFastaAlignmentImporter extends BaseFastaAlignmentImporter<Blas
 		List<BlastResult> blastResults = null;
 		try {
 			TemporarySingleSeqBlastDB tempBlastDB = 
-					blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, foundSequenceNTs);
+					blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, "glueSequenceRef", foundSequenceNTs);
 			blastResults = blastRunner.executeBlast(cmdContext, tempBlastDB, alignmentNTsFastaBytes);
 		} finally {
 			blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);
@@ -103,7 +103,7 @@ public class BlastFastaAlignmentImporter extends BaseFastaAlignmentImporter<Blas
 		List<QueryAlignedSegment> queryAlignedSegs = new ArrayList<QueryAlignedSegment>();
 
 		Map<String, List<QueryAlignedSegment>> blastResultsToAlignedSegmentsMap = 
-				BlastUtils.blastResultsToAlignedSegmentsMap(uuid, blastResults, null);
+				BlastUtils.blastNResultsToAlignedSegmentsMap("glueSequenceRef", blastResults, null);
 		List<QueryAlignedSegment> blastAlignedSegments = blastResultsToAlignedSegmentsMap.get("alignmentRowNTs");
 		if(blastAlignedSegments != null) {
 			for(QueryAlignedSegment queryAlignedSegment: blastAlignedSegments) {

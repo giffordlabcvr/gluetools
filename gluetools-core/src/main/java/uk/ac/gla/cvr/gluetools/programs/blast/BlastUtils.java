@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastSegmentList;
@@ -13,44 +14,82 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 public class BlastUtils {
 
-	public static Map<String, List<QueryAlignedSegment>> blastResultsToAlignedSegmentsMap(String refName, List<BlastResult> blastResults, 
-			BlastHspFilter blastHspFilter) {
-		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
+	public static Map<String, List<QueryAlignedSegment>> blastNResultsToAlignedSegmentsMap(String refName, 
+			List<BlastResult> blastResults, BlastHspFilter blastHspFilter) {
+		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = 
+				new LinkedHashMap<String, List<QueryAlignedSegment>>();
 		for(BlastResult blastResult: blastResults) {
 			String queryFastaId = blastResult.getQueryFastaId();
-			// find hits on the specified reference
-			List<BlastHit> hits =
-					blastResult.getHits().stream()
-					.filter(hit -> hit.getReferenceName().equals(refName))
-					.collect(Collectors.toList());
-			// merge all hit HSPs together
-			List<BlastHsp> hsps = hits.stream()
-					.map(BlastHit::getHsps)
-					.flatMap(hspList -> hspList.stream())
-					.collect(Collectors.toList());
-			if(blastHspFilter != null) {
-				// filter out non-allowed HSPs
-				hsps = hsps.stream()
-						.filter(blastHspFilter::allowBlastHsp)
-						.collect(Collectors.toList());
-			}
-			
-			// sort HSPs according to our comparator.
-			Collections.sort(hsps, new BlastHspComparator());
+			List<BlastHsp> hsps = blastResultToHsps(refName, blastHspFilter, blastResult);
 			
 			// generate segments from each HSP, and put all these together in a List.
 			List<BlastSegmentList> perHspAlignedSegments = 
 					hsps.stream()
-					.map(hsp -> alignedSegmentsForHsp(hsp))
+					.map(hsp -> {
+						checkBlastHsp(hsp);
+						return hsp.computeBlastAlignedSegments(1, Function.identity());
+					})
 					.collect(Collectors.toList());
 	
-			
 			// merge/rationalise the segments;
 			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
 			// store merged segments against the query fasta ID.
 			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
 		}
 		return fastaIdToAlignedSegments;
+	}
+
+	
+	public static Map<String, List<QueryAlignedSegment>> tBlastNResultsToAlignedSegmentsMap(String refName, 
+			List<BlastResult> blastResults, BlastHspFilter blastHspFilter, Function<Integer, Integer> queryAAToNTCoordMapper) {
+		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = 
+				new LinkedHashMap<String, List<QueryAlignedSegment>>();
+		for(BlastResult blastResult: blastResults) {
+			String queryFastaId = blastResult.getQueryFastaId();
+			List<BlastHsp> hsps = blastResultToHsps(refName, blastHspFilter, blastResult);
+			
+			// generate segments from each HSP, and put all these together in a List.
+			List<BlastSegmentList> perHspAlignedSegments = 
+					hsps.stream()
+					.map(hsp -> {
+						checkBlastHsp(hsp);
+						return hsp.computeBlastAlignedSegments(3, queryAAToNTCoordMapper);
+					})
+					.collect(Collectors.toList());
+	
+			// merge/rationalise the segments;
+			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
+			// store merged segments against the query fasta ID.
+			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
+		}
+		return fastaIdToAlignedSegments;
+	}
+
+	
+	
+	
+	protected static List<BlastHsp> blastResultToHsps(String refName,
+			BlastHspFilter blastHspFilter, BlastResult blastResult) {
+		// find hits on the specified reference
+		List<BlastHit> hits =
+				blastResult.getHits().stream()
+				.filter(hit -> hit.getReferenceName().equals(refName))
+				.collect(Collectors.toList());
+		// merge all hit HSPs together
+		List<BlastHsp> hsps = hits.stream()
+				.map(BlastHit::getHsps)
+				.flatMap(hspList -> hspList.stream())
+				.collect(Collectors.toList());
+		if(blastHspFilter != null) {
+			// filter out non-allowed HSPs
+			hsps = hsps.stream()
+					.filter(blastHspFilter::allowBlastHsp)
+					.collect(Collectors.toList());
+		}
+		
+		// sort HSPs according to our comparator.
+		Collections.sort(hsps, new BlastHspComparator());
+		return hsps;
 	}
 
 	private static BlastSegmentList mergeSegments(
@@ -102,11 +141,6 @@ public class BlastUtils {
 	private static void throwUnhandledException(String refName, String queryId, String message) {
 		throw new BlastException(BlastException.Code.BLAST_UNHANDLED_CASE, refName, queryId, 
 				message);
-	}
-
-	private static BlastSegmentList alignedSegmentsForHsp(BlastHsp hsp) {
-		checkBlastHsp(hsp);
-		return hsp.computeAlignedSegments();
 	}
 
 }

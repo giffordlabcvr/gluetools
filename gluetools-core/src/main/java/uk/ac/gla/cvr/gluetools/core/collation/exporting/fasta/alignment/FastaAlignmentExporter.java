@@ -80,7 +80,7 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 			refSeqID = refSeqSeq.getSequenceID();
 			String refFastaID = generateFastaId(refSeqSeq);
 			stringBuffer.append(FastaUtils.
-					seqIdNtsPairToFasta(refFastaID, refSeqSeq.getSequenceObject().getNucleotides(cmdContext)));
+					seqIdCompoundsPairToFasta(refFastaID, refSeqSeq.getSequenceObject().getNucleotides(cmdContext)));
 		}
 		for(AlignmentMember almtMember: almtMembers) {
 			Sequence sequence = almtMember.getSequence();
@@ -108,7 +108,7 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 				nts.append("-");
 				ntIndex++;
 			}
-			stringBuffer.append(FastaUtils.seqIdNtsPairToFasta(fastaId, nts.toString()));
+			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, nts.toString()));
 		}
 		cmdContext.saveBytes(fileName, stringBuffer.toString().getBytes());
 		return new OkResult();

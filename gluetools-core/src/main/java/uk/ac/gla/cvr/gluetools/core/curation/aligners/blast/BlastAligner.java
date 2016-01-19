@@ -121,7 +121,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 			SingleReferenceBlastDB refDB = BlastDbManager.getInstance().ensureSingleReferenceDB(cmdContext, refName);
 			blastResults = blastRunner.executeBlast(cmdContext, refDB, fastaBytes);
 		}
-		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = BlastUtils.blastResultsToAlignedSegmentsMap(refName, blastResults, 
+		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = BlastUtils.blastNResultsToAlignedSegmentsMap(refName, blastResults, 
 				new MyBlastHspFilter());
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}

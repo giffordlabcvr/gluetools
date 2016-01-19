@@ -9,9 +9,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.programs.blast.BlastException.Code;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResultBuilder.BlastXPath;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
@@ -21,6 +23,12 @@ import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class BlastRunner implements Plugin {
 
+	public enum BlastType {
+		BLASTN,
+		TBLASTN
+	}
+	
+	
 	public static String 
 		BLASTN_EXECUTABLE_PROPERTY = "gluetools.core.programs.blast.blastn.executable"; 
 	public static String 
@@ -56,15 +64,31 @@ public class BlastRunner implements Plugin {
 	}
 
 	
+
 	@SuppressWarnings("rawtypes")
 	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastDB blastDB, byte[] fastaBytes) {
+		return executeBlast(cmdContext, BlastType.BLASTN, blastDB, fastaBytes);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
 		blastDB.readLock().lock();
 		ProcessResult blastProcessResult;
 		try {
-			String blastNexecutable = 
-					cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(BLASTN_EXECUTABLE_PROPERTY);
+			String blastExecutable;
+			PropertiesConfiguration propsConfig = cmdContext.getGluetoolsEngine().getPropertiesConfiguration();
+			switch(blastType) {
+			case BLASTN:
+				blastExecutable = propsConfig.getPropertyValue(BLASTN_EXECUTABLE_PROPERTY);
+				break;
+			case TBLASTN:
+				blastExecutable = propsConfig.getPropertyValue(TBLASTN_EXECUTABLE_PROPERTY);
+				break;
+			default:
+				throw new BlastException(Code.UNKNOWN_BLAST_TYPE, blastType.name());
+			}
 			List<String> commandWords = new ArrayList<String>();
-			commandWords.add(blastNexecutable);
+			commandWords.add(blastExecutable);
 			// supply reference DB
 			commandWords.add("-db");
 			commandWords.add(new File(blastDB.getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());

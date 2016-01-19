@@ -47,13 +47,13 @@ public class BlastDbManager {
 		return (SequenceGroupBlastDB) ensureBlastDB(cmdContext, blastDbKey);
 	}
 
-	public TemporarySingleSeqBlastDB createTempSingleSeqBlastDB(CommandContext cmdContext, String uuid, String refNTs) {
-		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, refNTs);
+	public TemporarySingleSeqBlastDB createTempSingleSeqBlastDB(CommandContext cmdContext, String uuid, String refFastaID, String refNTs) {
+		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, refFastaID, refNTs);
 		return (TemporarySingleSeqBlastDB) ensureBlastDB(cmdContext, blastDbKey);
 	}
 
 	public boolean removeTempSingleSeqBlastDB(CommandContext cmdContext, String uuid) {
-		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, "");
+		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, "", "");
 		BlastDB blastDB;
 		synchronized(blastDbsMap) {
 			blastDB = blastDbsMap.remove(blastDbKey);

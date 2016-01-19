@@ -133,7 +133,7 @@ public class SequenceGroupBlastDB extends BlastDB {
 			try (ModeCloser refSeqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 				originalDataResult = cmdContext.cmdBuilder(ShowOriginalDataCommand.class).execute();
 			}
-			String fastaString = FastaUtils.seqIdNtsPairToFasta(sourceName+"#"+sequenceID, 
+			String fastaString = FastaUtils.seqIdCompoundsPairToFasta(sourceName+"#"+sequenceID, 
 					originalDataResult.getSequenceObject().getNucleotides(cmdContext));
 			if(sequencesAdded % 50 == 0 || sequencesAdded == totalSequences) {
 				GlueLogger.getGlueLogger().finest("Added "+sequencesAdded+" sequences to BLAST DB for sequence group "+groupName);

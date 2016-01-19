@@ -5,23 +5,23 @@ import java.util.Comparator;
 public class BlastHspComparator implements Comparator<BlastHsp> {
 
 	/**
-	 * a negative int is returned when hsp1 is considered better, 
-	 * a postive integer is returned when hsp2 is considered better.
+	 * a positive int is returned when hsp1 is considered better, 
+	 * a negative integer is returned when hsp2 is considered better.
 	 */
 	@Override
 	public int compare(BlastHsp hsp1, BlastHsp hsp2) {
 		// for bitScore, higher is better.
-		int bitScoreResult = Double.compare(hsp1.getBitScore(), hsp2.getBitScore());
+		int bitScoreResult = -Double.compare(hsp1.getBitScore(), hsp2.getBitScore());
 		if(bitScoreResult != 0) { 
 			return bitScoreResult;
 		}
 		// for length, higher is better.
-		int lengthResult = Integer.compare(hsp1.getAlignLen(), hsp2.getAlignLen());
+		int lengthResult = -Integer.compare(hsp1.getAlignLen(), hsp2.getAlignLen());
 		if(lengthResult != 0) { 
 			return lengthResult;
 		}
 		// for gaps, lower is better.
-		int gapsResult = -Integer.compare(hsp1.getAlignLen(), hsp2.getAlignLen());
+		int gapsResult = Integer.compare(hsp1.getAlignLen(), hsp2.getAlignLen());
 		if(gapsResult != 0) { 
 			return gapsResult;
 		}

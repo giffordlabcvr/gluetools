@@ -39,7 +39,7 @@ public class FastaSequenceObject extends AbstractSequenceObject {
 
 	@Override
 	public byte[] toOriginalData() {
-		return FastaUtils.seqIdNtsPairToFasta(getHeader(), nucleotides).getBytes();
+		return FastaUtils.seqIdCompoundsPairToFasta(getHeader(), nucleotides).getBytes();
 	}
 
 	@Override

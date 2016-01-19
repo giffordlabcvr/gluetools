@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureComman
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -31,16 +32,19 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaAlignmentImporter")
-public class FastaAlignmentImporter extends BaseFastaAlignmentImporter<FastaAlignmentImporter> {
+public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignmentImporter> {
 
 	public static final String SEQUENCE_GAP_REGEX = "sequenceGapRegex";
 	public static final String REQUIRE_TOTAL_COVERAGE = "requireTotalCoverage";
 	public static final String ALLOW_AMBIGUOUS_SEGMENTS = "allowAmbiguousSegments";
+	public static final String SKIP_ROWS_WITH_MISSING_SEGMENTS = "skipRowsWithMissingSegments";
+
 	
 	private Boolean requireTotalCoverage = true;
 	private Pattern sequenceGapRegex = null;
 	private Boolean allowAmbiguousSegments = false;
-	
+	private Boolean skipRowsWithMissingSegments;
+
 	public FastaAlignmentImporter() {
 		super();
 		addProvidedCmdClass(ShowImporterCommand.class);
@@ -60,8 +64,14 @@ public class FastaAlignmentImporter extends BaseFastaAlignmentImporter<FastaAlig
 		allowAmbiguousSegments = Optional
 				.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALLOW_AMBIGUOUS_SEGMENTS, false))
 				.orElse(false);
+		skipRowsWithMissingSegments = Optional
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, SKIP_ROWS_WITH_MISSING_SEGMENTS, false))
+				.orElse(false);
+
 		
 	}
+
+	
 
 
 	@Override
@@ -82,10 +92,13 @@ public class FastaAlignmentImporter extends BaseFastaAlignmentImporter<FastaAlig
     		if(isGapChar(fastaAlignmentNT)) {
     			if(queryAlignedSeg != null) {
     				foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
-							fastaAlignmentNTs, fastaID, foundSequence.pkMap().toString(),
-							foundSequenceNTs, queryAlignedSegs,
-							foundSequenceNtIndex, queryAlignedSeg);
+    						fastaAlignmentNTs, fastaID, foundSequence.pkMap().toString(),
+    						foundSequenceNTs, queryAlignedSegs,
+    						foundSequenceNtIndex, queryAlignedSeg);
     				queryAlignedSeg = null;
+    				if(foundSequenceNtIndex == -1) {
+    					return null;
+    				}        					
     			}
     		} else {
     			if(queryAlignedSeg == null) {
@@ -117,7 +130,12 @@ public class FastaAlignmentImporter extends BaseFastaAlignmentImporter<FastaAlig
 				.subSequence(fastaAlignmentNTs, refStart, refEnd).toString().toUpperCase();
 		int foundIdxOfSubseq = FastaUtils.find(foundSequenceNTs, subSequence, foundSequenceNtIndex);
 		if(foundIdxOfSubseq == -1) {
-			throw new FastaAlignmentImporterException(Code.SUBSEQUENCE_NOT_FOUND, refStart, refEnd, fastaID, whereClauseString);
+			if(skipRowsWithMissingSegments) {
+				logMissingSegmentSkippedRow(fastaID, refStart, refEnd, whereClauseString);
+				return -1;
+			} else {
+				throw new FastaAlignmentImporterException(Code.SUBSEQUENCE_NOT_FOUND, refStart, refEnd, fastaID, whereClauseString);
+			}
 		}
 		if(requireTotalCoverage && foundIdxOfSubseq != foundSequenceNtIndex) {
 			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundIdxOfSubseq-1, fastaID);
@@ -145,6 +163,13 @@ public class FastaAlignmentImporter extends BaseFastaAlignmentImporter<FastaAlig
 		foundSequenceNtIndex = queryAlignedSeg.getQueryEnd()+1;
 		return foundSequenceNtIndex;
 	}
+	
+	private void logMissingSegmentSkippedRow(String fastaId, int startColumnNumber, int endColumnNumber, String whereClause) {
+		GlueLogger.getGlueLogger().warning("Skipping alignment row "+fastaId+
+				": segment ["+startColumnNumber+", "+endColumnNumber+
+				"] is missing in sequence identified by "+whereClause);
+	}
+
 	
 	private boolean isGapChar(char seqChar) {
 		return sequenceGapRegex.matcher(new String(new char[]{seqChar})).find();

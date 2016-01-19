@@ -94,7 +94,7 @@ public class SingleReferenceBlastDB extends BlastDB {
 	@Override
 	public InputStream getFastaContentInputStream(CommandContext cmdContext) {
 		String referenceSequenceNtString = referenceSequenceNtString(cmdContext, referenceName);
-		String fastaString = FastaUtils.seqIdNtsPairToFasta(referenceName, referenceSequenceNtString);
+		String fastaString = FastaUtils.seqIdCompoundsPairToFasta(referenceName, referenceSequenceNtString);
 		return new ByteArrayInputStream(fastaString.getBytes());
 	}
 

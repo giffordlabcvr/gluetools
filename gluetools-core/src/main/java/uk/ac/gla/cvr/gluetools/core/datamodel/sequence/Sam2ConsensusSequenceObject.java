@@ -247,7 +247,7 @@ public class Sam2ConsensusSequenceObject extends AbstractSequenceObject
 	@Override
 	public byte[] toOriginalData() {
 		StringBuffer buf = new StringBuffer();
-		buf.append(FastaUtils.seqIdNtsPairToFasta(header, nucleotides));
+		buf.append(FastaUtils.seqIdCompoundsPairToFasta(header, nucleotides));
 		buf.append("Position,Consensus,A,T,G,C,N,,A Freq,T Freq,G Freq,C Freq,N Freq,,A Qual,T Qual,G Qual,C Qual,,Coverage,,Entropy\n");
 		for(int i = 0; i < ntLocations.length; i++) {
 			buf.append(i+1).append(",");

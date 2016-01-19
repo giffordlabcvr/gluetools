@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.programs.blast;
 
+import java.util.function.Function;
+
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastSegmentList;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -99,8 +101,9 @@ public class BlastHsp {
 	public BlastHit getBlastHit() {
 		return blastHit;
 	}
-
-	public BlastSegmentList computeAlignedSegments() {
+	
+	
+	public BlastSegmentList computeBlastAlignedSegments(int refIncrement, Function<Integer, Integer> queryCoordMapper) {
 		BlastSegmentList segments = new BlastSegmentList();
 		
 		String hseq = getHseq();
@@ -127,43 +130,47 @@ public class BlastHsp {
 		refEnd = refStart;
 		queryEnd = queryStart;
 
-		char hNtChar;
-		char qNtChar;
+		char hChar;
+		char qChar;
 
-		hNtChar = SegmentUtils.ntChar(hseq, hqseqIndex);
-		qNtChar = SegmentUtils.ntChar(qseq, hqseqIndex);
+		hChar = SegmentUtils.base1Char(hseq, hqseqIndex);
+		qChar = SegmentUtils.base1Char(qseq, hqseqIndex);
 		while(hqseqIndex <= hqlength) {
+			Integer queryEndMapped = queryCoordMapper.apply(queryEnd);
+			Integer lastQueryEndMapped = queryEndMapped-refIncrement;
 			// read a block where neither hseq nor qseq has gaps
-			while(hNtChar != '-' && qNtChar != '-' && hqseqIndex <= hqlength) {
+			while(hChar != '-' && qChar != '-' && hqseqIndex <= hqlength && queryEndMapped == lastQueryEndMapped+refIncrement) {
 				hqseqIndex++;
-				refEnd++;
+				refEnd = refEnd + refIncrement;
 				queryEnd++;
+				lastQueryEndMapped = queryEndMapped;
+				queryEndMapped = queryCoordMapper.apply(queryEnd);
 				if(hqseqIndex <= hqlength) {
-					hNtChar = SegmentUtils.ntChar(hseq, hqseqIndex);
-					qNtChar = SegmentUtils.ntChar(qseq, hqseqIndex);
+					hChar = SegmentUtils.base1Char(hseq, hqseqIndex);
+					qChar = SegmentUtils.base1Char(qseq, hqseqIndex);
 				}
 			} 
 			// at the end of this block add a new segment.
 			BlastAlignedSegment blastAlignedSegment = 
-					new BlastAlignedSegment(refStart, refEnd-1, queryStart, queryEnd-1, this);
+					new BlastAlignedSegment(refStart, refEnd-1, queryCoordMapper.apply(queryStart), (lastQueryEndMapped+refIncrement)-1, this);
 			segments.add(blastAlignedSegment);
 			// set coordinates for the next block
 			refStart = refEnd;
 			queryStart = queryEnd;
 			// move over the hseq/qseq section as long as either side has gaps, 
 			// incrementing refStart/queryStart appropriately
-			while(  (hNtChar == '-' || qNtChar == '-') && 
+			while(  (hChar == '-' || qChar == '-') && 
 					hqseqIndex <= hqlength ) {
-				if(hNtChar != '-') {
-					refStart++;
+				if(hChar != '-') {
+					refStart = refStart + refIncrement;
 				}
-				if(qNtChar != '-') {
+				if(qChar != '-') {
 					queryStart++;
 				}
 				hqseqIndex++;
 				if(hqseqIndex <= hqlength) {
-					hNtChar = SegmentUtils.ntChar(hseq, hqseqIndex);
-					qNtChar = SegmentUtils.ntChar(qseq, hqseqIndex);
+					hChar = SegmentUtils.base1Char(hseq, hqseqIndex);
+					qChar = SegmentUtils.base1Char(qseq, hqseqIndex);
 				}
 			} 
 			refEnd = refStart;

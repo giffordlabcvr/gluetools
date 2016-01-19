@@ -9,11 +9,17 @@ import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.AccessionID;
 import org.biojava.nbio.core.sequence.DNASequence;
+import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AmbiguityDNACompoundSet;
+import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
+import org.biojava.nbio.core.sequence.compound.AminoAcidCompoundSet;
 import org.biojava.nbio.core.sequence.compound.NucleotideCompound;
 import org.biojava.nbio.core.sequence.io.DNASequenceCreator;
 import org.biojava.nbio.core.sequence.io.FastaReader;
+import org.biojava.nbio.core.sequence.io.ProteinSequenceCreator;
 import org.biojava.nbio.core.sequence.io.template.SequenceHeaderParserInterface;
+import org.biojava.nbio.core.sequence.template.AbstractSequence;
+import org.biojava.nbio.core.sequence.template.Compound;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
@@ -52,37 +58,58 @@ public class FastaUtils {
 		return idToSequence;
 	}
 
-	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes) {
-		return parseFasta(fastaBytes, new TrivialHeaderParser());
+	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes,
+			SequenceHeaderParserInterface<ProteinSequence, AminoAcidCompound> headerParser) {
+		
+		ByteArrayInputStream bais = new ByteArrayInputStream(fastaBytes);
+		FastaReader<ProteinSequence, AminoAcidCompound> fastaReader = 
+				new FastaReader<ProteinSequence, AminoAcidCompound>(bais, headerParser, 
+						new ProteinSequenceCreator(AminoAcidCompoundSet.getAminoAcidCompoundSet()));
+		
+		Map<String, ProteinSequence> idToSequence;
+		try {
+			idToSequence = fastaReader.process();
+		} catch (IOException e) {
+			throw new SequenceException(e, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
+		}
+		return idToSequence;
 	}
-	
-	private static class TrivialHeaderParser implements SequenceHeaderParserInterface<DNASequence, NucleotideCompound> {
+
+	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes) {
+		return parseFasta(fastaBytes, new TrivialHeaderParser<DNASequence, NucleotideCompound>());
+	}
+
+	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes) {
+		return parseFastaProtein(fastaBytes, new TrivialHeaderParser<ProteinSequence, AminoAcidCompound>());
+	}
+
+	private static class TrivialHeaderParser<S extends AbstractSequence<C>, C extends Compound> implements SequenceHeaderParserInterface<S, C> {
 		@Override
-		public void parseHeader(String header, DNASequence sequence) {
+		public void parseHeader(String header, S sequence) {
 			sequence.setAccession(new AccessionID(header));
 		}
 	}
 
-	public static byte[] mapToFasta(Map<String, DNASequence> sequenceIdToNucleotides) {
+	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> sequenceIdToNucleotides) {
 		final StringBuffer buf = new StringBuffer();
-		sequenceIdToNucleotides.forEach((seqId, dnaSequence) -> 
-			buf.append(seqIdNtsPairToFasta(seqId, dnaSequence.toString())));
+		sequenceIdToNucleotides.forEach((seqId, abstractSequence) -> 
+			buf.append(seqIdCompoundsPairToFasta(seqId, abstractSequence.toString())));
 		return buf.toString().getBytes();
 	}
 	
 	
-	public static String seqIdNtsPairToFasta(String seqId, String ntsString) {
+	public static String seqIdCompoundsPairToFasta(String seqId, String sequenceAsString) {
 		final StringBuffer buf = new StringBuffer();
 		buf.append(">").append(seqId).append("\n");
 		int start = 0;
 		int blockLen = 70;
-		while(start + blockLen < ntsString.length()) {
-			buf.append(ntsString.substring(start, start+blockLen));
+		while(start + blockLen < sequenceAsString.length()) {
+			buf.append(sequenceAsString.substring(start, start+blockLen));
 			buf.append("\n");
 			start = start+blockLen;
 		}
-		if(start < ntsString.length()) {
-			buf.append(ntsString.substring(start));
+		if(start < sequenceAsString.length()) {
+			buf.append(sequenceAsString.substring(start));
 			buf.append("\n");
 		}
 		return buf.toString();
