@@ -352,6 +352,122 @@ public class TestReferenceSegment {
 	}
 
 	
+	@Test
+	public void testSubtract1() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(5,13)
+						),
+				expectedSubtractResult(
+						"Ref: [4, 4]",
+						"Ref: [14, 17]"
+		));
+	}
+
+	@Test
+	public void testSubtract2() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(4,13)
+						),
+				expectedSubtractResult(
+						"Ref: [14, 17]"
+		));
+	}
+
+	@Test
+	public void testSubtract3() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(3,13)
+						),
+				expectedSubtractResult(
+						"Ref: [14, 17]"
+		));
+	}
+
+	
+	@Test
+	public void testSubtract4() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(7,8)
+						),
+				expectedSubtractResult(
+						"Ref: [4, 6]",
+						"Ref: [12, 17]"
+		));
+	}
+
+	
+	@Test
+	public void testSubtract5() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(1,3),
+						refSeg(7,8)
+						),
+				expectedSubtractResult(
+						"Ref: [4, 6]",
+						"Ref: [12, 17]"
+		));
+	}
+
+	
+	
+	@Test
+	public void testSubtract6() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(14,15)
+						),
+				expectedSubtractResult(
+						"Ref: [4, 8]",
+						"Ref: [12, 13]",
+						"Ref: [16, 17]"
+		));
+	}
+
+	
+	@Test
+	public void testSubtract7() {
+		subtractTest(
+				refSegs(
+						refSeg(4,8),
+						refSeg(12,17)
+						),
+				refSegs(
+						refSeg(2,8)
+						),
+				expectedSubtractResult(
+						"Ref: [12, 17]"
+		));
+	}
+
 	
 	
 	
@@ -370,6 +486,11 @@ public class TestReferenceSegment {
 	private static String[] expectedIntersection(String ... strings) {
 		return strings;
 	}
+
+	private static String[] expectedSubtractResult(String ... strings) {
+		return strings;
+	}
+
 	
 	private void intersectionTest(ReferenceSegment[] segs1, ReferenceSegment[] segs2, String[] expectedIntersection) {
 		List<ReferenceSegment> intersection = 
@@ -378,6 +499,15 @@ public class TestReferenceSegment {
 		Assert.assertEquals(Arrays.asList(expectedIntersection), actualResults);
 	}
 
+	
+	private void subtractTest(ReferenceSegment[] segs1, ReferenceSegment[] segs2, String[] expectedSubtractResult) {
+		List<ReferenceSegment> subtractResult = 
+				ReferenceSegment.subtract(Arrays.asList(segs1), Arrays.asList(segs2));
+		List<String> actualResults = subtractResult.stream().map(s -> s.toString()).collect(Collectors.toList());
+		Assert.assertEquals(Arrays.asList(expectedSubtractResult), actualResults);
+	}
+
+	
 	private void coversTest(ReferenceSegment[] segs1, ReferenceSegment[] segs2, boolean expectedCoverResult) {
 		boolean actualCoverResult = ReferenceSegment.covers(Arrays.asList(segs1), Arrays.asList(segs2));
 		Assert.assertEquals(expectedCoverResult, actualCoverResult);

@@ -94,10 +94,10 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	
 	/**
 	 * Split a segment into two parts, a new left part of length <length>
-	 * which is returned
-	 * This supplied segment is then modified to be the remaining part.
+	 * which is returned.
+	 * The supplied segment is then modified to be the remaining part.
 	 */
-	public static <A extends ReferenceSegment> Plugin truncateLeftSplit(A segment, int length) {
+	public static <A extends IReferenceSegment> A truncateLeftSplit(A segment, int length) {
 		@SuppressWarnings("unchecked")
 		A newSegment = (A) segment.clone();
 		int currentLength = segment.getCurrentLength();
@@ -111,7 +111,7 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	 * which is returned.
 	 * The supplied segment is modified to be the remaining part.
 	 */
-	public static <A extends ReferenceSegment> Plugin truncateRightSplit(A segment, int length) {
+	public static <A extends IReferenceSegment> A truncateRightSplit(A segment, int length) {
 		@SuppressWarnings("unchecked")
 		A newSegment = (A) segment.clone();
 		int currentLength = segment.getCurrentLength();
@@ -120,6 +120,121 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return newSegment;
 	}
 	
+
+	
+	/** 
+	 * given two lists of segments segments1 and segments2
+	 * 
+	 * return a list of new segments which cover those locations which are covered by segments
+	 * in segments1 but not covered by segments in segments2. 
+	 * 
+	 * The returned segments will habe been cloned from segments in list segments1.
+	 */
+	public static <SA extends IReferenceSegment,
+	   SB extends IReferenceSegment> List<SA> 
+	subtract(List<SA> segments1, List<SB> segments2) {
+
+		LinkedList<SA> segments1Linked = cloneSegmentList(segments1);
+		LinkedList<SB> segments2Linked = cloneSegmentList(segments2);
+
+		int nextSeg1Start = updateNextStart(segments1Linked);
+		int nextSeg2Start = updateNextStart(segments2Linked);
+		
+		List<SA> resultSegments = new ArrayList<SA>();
+
+		while(!segments1Linked.isEmpty() || !segments2Linked.isEmpty()) {
+
+			boolean anyChange;
+			// add clones from segments in either list while they are not overlapping
+			do {
+				anyChange = false;
+				// while segment1s are strictly to the left of remaining segment2s, 
+				// add to the result. 
+				while(!segments1Linked.isEmpty() &&
+						segments1Linked.getFirst().getRefEnd() < nextSeg2Start) {
+					SA seg1 = segments1Linked.removeFirst();
+					resultSegments.add(seg1);
+					nextSeg1Start = updateNextStart(segments1Linked);
+					anyChange = true;
+				}
+				// while segment2s are strictly to the left of remaining segment1s, 
+				// skip them 
+				while(!segments2Linked.isEmpty() &&
+						segments2Linked.getFirst().getRefEnd() < nextSeg1Start) {
+					segments2Linked.removeFirst();
+					nextSeg2Start = updateNextStart(segments2Linked);
+					anyChange = true;
+				}
+			} while(anyChange);
+
+			if(!segments1Linked.isEmpty() && !segments2Linked.isEmpty()) {
+				SA seg1 = segments1Linked.getFirst();
+				SB seg2 = segments2Linked.getFirst();
+
+				int seg1Start = nextSeg1Start;
+				int seg1End = seg1.getRefEnd();
+				int seg2Start = nextSeg2Start;
+				int seg2End = seg2.getRefEnd();
+
+				/* [   seg1   ---
+				 *    [  seg2   ---
+				 */
+				if(seg1Start < seg2Start) {
+					if(seg1End < seg2End) {
+						/* [1   seg1   7]
+						 *    [2 seg2     9]
+						 */
+						segments1Linked.removeFirst();
+						seg2.truncateLeft(1 + (seg1End - seg2Start));
+						seg1.truncateRight(1 + (seg1End - seg2Start));
+						resultSegments.add(seg1);
+					} else if(seg1End == seg2End) {
+						/* [1   seg1   7]
+						 *    [2 seg2  7]
+						 */
+						segments1Linked.removeFirst();
+						segments2Linked.removeFirst();
+						seg1.truncateRight(1 + (seg1End - seg2Start));
+						resultSegments.add(seg1);
+					} else {
+						/* [1   seg1      9]
+						 *    [2 seg2  7]
+						 */
+						resultSegments.add(truncateLeftSplit(seg1, seg2Start - seg1Start));
+						seg1.truncateLeft(1 + (seg2End - seg2Start));
+						segments2Linked.removeFirst();
+					}
+				} else {
+					/*    [   seg1   ---
+					 * [  seg2   ---
+					 */
+					if(seg1End < seg2End) {
+						/*    [3   seg1   6]
+						 * [1  seg2          9]
+						 */
+						segments1Linked.removeFirst();
+						seg2.truncateLeft(1 + (seg1End - seg2Start));
+					} else if(seg1End == seg2End) {
+						/*    [3   seg1   6]
+						 * [1  seg2       6]
+						 */
+						segments1Linked.removeFirst();
+						segments2Linked.removeFirst();
+					} else {
+						/*    [3   seg1     9]
+						 * [1  seg2       6]
+						 */
+						seg1.truncateLeft(1 + (seg2End - seg1Start));
+						segments2Linked.removeFirst();
+					}
+				}
+				nextSeg1Start = updateNextStart(segments1Linked);
+				nextSeg2Start = updateNextStart(segments2Linked);
+			}
+		}
+
+		return resultSegments;
+	}
 	
 	
 	
@@ -142,18 +257,8 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 				   SB extends IReferenceSegment> List<N> 
 	intersection(List<SA> segments1, List<SB> segments2, BiFunction<SA, SB, N> segMerger) {
 
-		LinkedList<SA> segments1Linked = new LinkedList<SA>();
-		for(SA seg1: segments1) {
-			@SuppressWarnings("unchecked")
-			SA seg1Copy = (SA) seg1.clone();
-			segments1Linked.add(seg1Copy);
-		}
-		LinkedList<SB> segments2Linked = new LinkedList<SB>();
-		for(SB seg2: segments2) {
-			@SuppressWarnings("unchecked")
-			SB seg2Copy = (SB) seg2.clone();
-			segments2Linked.add(seg2Copy);
-		}
+		LinkedList<SA> segments1Linked = cloneSegmentList(segments1);
+		LinkedList<SB> segments2Linked = cloneSegmentList(segments2);
 
 		List<N> intersectionSegments = new ArrayList<N>();
 
@@ -257,6 +362,17 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 
 
 		return intersectionSegments;
+	}
+	
+	private static <S extends IReferenceSegment> LinkedList<S> cloneSegmentList(
+			List<S> segments1) {
+		LinkedList<S> segments1Linked = new LinkedList<S>();
+		for(S seg1: segments1) {
+			@SuppressWarnings("unchecked")
+			S seg1Copy = (S) seg1.clone();
+			segments1Linked.add(seg1Copy);
+		}
+		return segments1Linked;
 	}
 	
 	public static boolean coversLocation(List<? extends IReferenceSegment> segList, int location) {

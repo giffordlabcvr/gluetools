@@ -66,13 +66,13 @@ public class AlignmentMember extends _AlignmentMember {
 		return results;
 	}
 
-	private Double getMemberNtCoveragePercent(CommandContext cmdContext) {
+	public Double getMemberNtCoveragePercent(CommandContext cmdContext) {
 		int memberLength = getSequence().getSequenceObject().getNucleotides(cmdContext).length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return IQueryAlignedSegment.getQueryNtCoveragePercent(alignedSegments, memberLength);
 	}
 
-	private Double getReferenceNtCoveragePercent(CommandContext cmdContext) {
+	public Double getReferenceNtCoveragePercent(CommandContext cmdContext) {
 		ReferenceSequence refSequence = getAlignment().getRefSequence();
 		if(refSequence == null) {
 			return null;

@@ -32,22 +32,39 @@ import freemarker.template.Template;
 
 public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImporter<I>> extends ModulePlugin<I> {
 
-	public static final String IGNORE_REGEX_MATCH_FAILURES = "ignoreRegexMatchFailures";
-	public static final String IGNORE_MISSING_SEQUENCES = "ignoreMissingSequences";
+	// Boolean. If true, existing alignment members are updated. 
+	// If false, no member matching the implicit where clause may exist and if one does, an exception is thrown.
+	// Either way, a new member is created if necessary.
 	public static final String UPDATE_EXISTING_MEMBERS = "updateExistingMembers";
+	
+	// Boolean. If true, an existing alignment is updated. 
+	// If false, no alignment with the specified name may exist and if one does, an exception is thrown.
+	// Either way, a new alignment is created if necessary.
 	public static final String UPDATE_EXISTING_ALIGNMENT = "updateExistingAlignment";
-	public static final String ID_CLAUSE_EXTRACTOR_FORMATTER = "idClauseExtractorFormatter";
 
+	// regex extractor / formatter which transforms the incoming alignment IDs
+	// into a where-clause to look up the relevant alignment member.
+	// if absent, it is expected to exactly match the sequenceID.
+	public static final String ID_CLAUSE_EXTRACTOR_FORMATTER = "idClauseExtractorFormatter";
+	// Boolean. If true, ignore alignment rows where the ID does not match the regex of the above extractor / formatter.
+	// If false, throw an exception in this case.
+	// (default: false)
+	public static final String IGNORE_REGEX_MATCH_FAILURES = "ignoreRegexMatchFailures";
+	// Boolean. If true, ignore alignment rows no where no sequence could be found.
+	// If false, throw an exception in this case.
+	// (default: false)
+	public static final String IGNORE_MISSING_SEQUENCES = "ignoreMissingSequences";
+
+	
+	
+	
 	
 	private RegexExtractorFormatter idClauseExtractorFormatter = null;
 	
-	private Boolean ignoreRegexMatchFailures = false;
-	private Boolean ignoreMissingSequences = false;
-	private Boolean updateExistingMembers = false;
-	private Boolean updateExistingAlignment = false;
-
-
-	
+	private Boolean ignoreRegexMatchFailures;
+	private Boolean ignoreMissingSequences;
+	private Boolean updateExistingMembers;
+	private Boolean updateExistingAlignment;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,

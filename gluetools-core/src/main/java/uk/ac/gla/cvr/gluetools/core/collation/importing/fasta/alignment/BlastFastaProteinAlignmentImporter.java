@@ -133,11 +133,6 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 
 			queryAlignedSegs = queryAlignedSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
 			
-			
-			AlignmentMember almtMember = createAlignmentMember(cmdContext, alignment, foundSequence);
-			
-			String memberSourceName = foundSequence.getSource().getName();
-			String memberSequenceID = foundSequence.getSequenceID();
 
 			int alignedSegNTs = 0;
 			for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
@@ -154,6 +149,10 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 				GlueLogger.getGlueLogger().warning("Skipping row with fasta ID "+fastaID+" row AA coverage percent "+aaCoveragePct+" < "+minRowCoveragePercent);
 				continue;
 			}
+
+			AlignmentMember almtMember = createAlignmentMember(cmdContext, alignment, foundSequence);
+			String memberSourceName = foundSequence.getSource().getName();
+			String memberSequenceID = foundSequence.getSequenceID();
 
 			for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
 				AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
