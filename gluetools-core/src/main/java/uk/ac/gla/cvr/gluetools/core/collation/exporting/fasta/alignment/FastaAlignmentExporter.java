@@ -165,7 +165,7 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 		public static class Completer extends AdvancedCmdCompleter {
 			public Completer() {
 				super();
-				registerDataObjectNameLookup("aligmentName", Alignment.class, Alignment.NAME_PROPERTY);
+				registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
 				registerPathLookup("fileName", false);
 			}
 		}
