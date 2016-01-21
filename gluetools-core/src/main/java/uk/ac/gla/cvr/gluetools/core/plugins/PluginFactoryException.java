@@ -8,7 +8,7 @@ public class PluginFactoryException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		PLUGIN_CONFIG_FORMAT_ERROR("errorTxt"), 
 		UNKNOWN_ELEMENT_NAME("factory", "elementName"), 
-		PLUGIN_CREATION_FAILED("class");
+		PLUGIN_CREATION_FAILED("class", "errorTxt");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -75,7 +75,6 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 			}
 			refPos++;
 		}
-		this.mask = new String(diffChars);
 		if(includeVariationDocuments) {
 			Set<String> variationNames = new LinkedHashSet<String>();
 			List<Variation> variationsToScan = new ArrayList<Variation>();
@@ -124,6 +123,10 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 						foundVariationDocuments.add(variation.getVariationDocument(cmdContext));
 						for(int p = variation.getRefStart(); p <= variation.getRefEnd(); p++) {
 							differencePositions.remove(p);
+							// ensure the query AAs are mentioned in the mask for the variation match area.
+							int maskIndex = p - refStart;
+							char queryChar = queryChars.charAt(maskIndex);
+							diffChars[maskIndex] = queryChar;
 						}
 					}
 				}
@@ -148,8 +151,7 @@ public class ReferenceDifferenceNote extends SequenceContentNote {
 				}
 			});
 		}
-
-		
+		this.mask = new String(diffChars);
 	}
 
 

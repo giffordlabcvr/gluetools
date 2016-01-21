@@ -429,7 +429,9 @@ public class Console implements CommandResultRenderingContext
 
 	public void runBatchCommands(String batchFilePath, List<Object> batchLines, boolean noEcho, boolean noOutput) {
 		String initialModePath = commandContext.getModePath();
+		boolean requireModeWrappable = commandContext.isRequireModeWrappable();
 		try {
+			commandContext.setRequireModeWrappable(false);
 			BatchContext batchContext = new BatchContext(batchFilePath, 1);
 			batchContext.batchLineNumber = 1;
 			batchContextStack.push(batchContext);
@@ -445,6 +447,7 @@ public class Console implements CommandResultRenderingContext
 				batchContext.batchLineNumber++;
 			}
 		} finally {
+			commandContext.setRequireModeWrappable(requireModeWrappable);
 			batchContextStack.pop();
 			while(!commandContext.getModePath().equals(initialModePath)) {
 				commandContext.popCommandMode();

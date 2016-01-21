@@ -103,7 +103,7 @@ public class PluginFactory<P extends Plugin> {
 		try {
 			plugin = pluginClass.newInstance();
 		} catch(Exception e) {
-			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName());
+			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName(), e.getMessage());
 		}
 		PluginUtils.setValidConfigLocal(element);
 		return plugin;

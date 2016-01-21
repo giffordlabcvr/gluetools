@@ -16,3 +16,4 @@ RemoteSystemsTempFiles
 gluetools-web/build
 .settings
 export.fasta
+build
