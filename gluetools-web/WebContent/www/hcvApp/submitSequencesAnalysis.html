@@ -221,12 +221,13 @@
 					  	<tr ng-repeat="diffSummary in selectedSequenceResult.alignmentDifferenceSummaries">
 					  		<td ng-show="diffSummary.rowspan" rowspan="{{diffSummary.rowspan}}">{{diffSummary.referenceName}}</td>
 					  		<td><a ng-click="switchToDetailView(diffSummary.referenceName, diffSummary.featureName)">{{diffSummary.featureName}} <i class="glyphicon glyphicon-link"></i></a></td>
-					  		<td><span 
+					  		<td>
+							<span 
+							    popover-template="'popoverSummary.html'" 
 					  			popover-placement="bottom" data-trigger="click" 
-					  			popover="{{foundVariation.popoverContent}}" 
-					  			popover-title="{{foundVariation.name}}"
-					  			class="{{foundVariation.differenceStyle}}" 
-					  			ng-repeat="foundVariation in diffSummary.foundVariations">{{foundVariation.name}} </span></td>
+					  			class="{{diffSummElem.differenceStyle}}" 
+					  			ng-repeat="diffSummElem in diffSummary.diffSummElements">{{diffSummElem.foundVariation.name}} </span>
+					  		</td>
 					  	</tr>
 				  	</tbody>
 				</table>
@@ -250,7 +251,9 @@
 					  		<td colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">
 					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] != null" 
 					  			popover-placement="bottom" 
-					  			data-trigger="click" popover="{{analysisSequenceRow.queryAAPopover[$index].content}}" popover-title="{{analysisSequenceRow.queryAAPopover[$index].title}}">
+					  			data-trigger="click" 
+							    popover-template="'popoverAA.html'" 
+					  			>
 					  				<div class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
 					  			</div>
 					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] == null" class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
@@ -270,4 +273,48 @@
 			</div>
 		</div>
 	</div>
+	
+	
+	<script type="text/ng-template" id="popoverSummary.html">
+      <div>
+        <h5>{{diffSummElem.foundVariation.name}}</h5>
+        <div ng-show="diffSummElem.foundVariation.transcriptionType == 'AMINO_ACID' && diffSummElem.foundVariation.refStart != diffSummElem.foundVariation.refEnd">
+          Start codon: {{diffSummElem.foundVariation.refStart}}, end codon: {{diffSummElem.foundVariation.refEnd}}
+        </div>
+        <div ng-show="diffSummElem.foundVariation.transcriptionType == 'AMINO_ACID' && diffSummElem.foundVariation.refStart == diffSummElem.foundVariation.refEnd">
+          Codon: {{diffSummElem.foundVariation.refStart}}
+        </div>
+		<div ng-show="diffSummElem.foundVariation.description && diffSummElem.foundVariation.description.substring(0,4) == 'http'">
+			<a target="_blank" href="{{diffSummElem.foundVariation.description}}">Published variation<i class="glyphicon glyphicon-link"></i></a>
+		</div>
+		<div ng-show="diffSummElem.foundVariation.description && diffSummElem.foundVariation.description.substring(0,4) != 'http'">
+			{{diffSummElem.foundVariation.description}}
+		</div>
+		<div ng-repeat="vcatName in diffSummElem.foundVariation.variationCategory">{{variationCategories[vcatName].description}}</div>
+		</div>
+      </div>
+    </script>
+
+	<script type="text/ng-template" id="popoverAA.html">
+      <div>
+		<div ng-repeat="foundVariation in analysisSequenceRow.queryAAPopover[$index].foundVariations">
+        <h5>{{foundVariation.name}}</h5>
+        <div ng-show="foundVariation.transcriptionType == 'AMINO_ACID' && foundVariation.refStart != foundVariation.refEnd">
+          Start codon: {{foundVariation.refStart}}, end codon: {{foundVariation.refEnd}}
+        </div>
+        <div ng-show="foundVariation.transcriptionType == 'AMINO_ACID' && foundVariation.refStart == foundVariation.refEnd">
+          Codon: {{foundVariation.refStart}}
+        </div>
+		<div ng-show="foundVariation.description && foundVariation.description.substring(0,4) == 'http'">
+			<a target="_blank" href="{{foundVariation.description}}">Published variation<i class="glyphicon glyphicon-link"></i></a>
+		</div>
+		<div ng-show="foundVariation.description && foundVariation.description.substring(0,4) != 'http'">
+			{{foundVariation.description}}
+		</div>
+		<div ng-repeat="vcatName in foundVariation.variationCategory">{{variationCategories[vcatName].description}}</div>
+		</div>
+      </div>
+    </script>
+
+	
 </div>

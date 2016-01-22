@@ -75,7 +75,8 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	public static final String MERGE_GENERATED_VARIATIONS = "mergeGeneratedVariations";
 	public static final String GENERATED_VARIATION_PERCENT_THRESHOLD = "generatedVariationPercentThreshold";
 	public static final String GENERATED_VARIATION_NAME_TEMPLATE = "generatedVariationNameTemplate";
-
+	public static final String GENERATED_VARIATION_DESCRIPTION_TEMPLATE = "generatedVariationDescriptionTemplate";
+	
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	
 	// transient analysis related.
@@ -84,6 +85,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	// variation generation related
 	private Template generatedVariationNameTemplate;
+	private Template generatedVariationDescriptionTemplate;
 	private Double generatedVariationPercentThreshold;
 	private boolean mergeGeneratedVariations;
 	
@@ -120,6 +122,9 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		generatedVariationPercentThreshold = PluginUtils.configureDoubleProperty(configElem, GENERATED_VARIATION_PERCENT_THRESHOLD, 1.0);
 		mergeGeneratedVariations = Optional.
 				ofNullable(PluginUtils.configureBooleanProperty(configElem, MERGE_GENERATED_VARIATIONS, false)).orElse(true);
+		generatedVariationDescriptionTemplate = Optional.ofNullable(
+				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, GENERATED_VARIATION_DESCRIPTION_TEMPLATE, false))
+				.orElse(null);
 	}
 
 	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
@@ -649,6 +654,22 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		Integer refStart = (Integer) analysisRow.get(AlignmentAnalysisResult.CODON);
 		Integer refEnd = (Integer) analysisRow.get(AlignmentAnalysisResult.CODON);
 		String mutAA = (String) analysisRow.get(AlignmentAnalysisResult.MUT_AMINO_ACID);
+		String templatedName = runTemplate(generatedVariationNameTemplate, analysisRow);
+		String templatedDesc = null;
+		if(generatedVariationDescriptionTemplate != null) {
+			templatedDesc = runTemplate(generatedVariationDescriptionTemplate, analysisRow);
+		}
+		Map<String, Object> row = new LinkedHashMap<String, Object>();
+		row.put(PreviewVariationsResult.VARIATION_NAME, templatedName);
+		row.put(PreviewVariationsResult.VARIATION_DESCRIPTION, templatedDesc);
+		row.put(PreviewVariationsResult.REF_START, refStart);
+		row.put(PreviewVariationsResult.REF_END, refEnd);
+		row.put(PreviewVariationsResult.REGEX, "["+ mutAA + "]");
+		row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
+		return row;
+	}
+
+	private String runTemplate(Template template, Map<String, Object> analysisRow) {
 		TemplateHashModel variableResolver = new TemplateHashModel() {
 			@Override
 			public TemplateModel get(String key) {
@@ -660,20 +681,15 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		};
 		StringWriter stringWriter = new StringWriter();
 		try {
-			generatedVariationNameTemplate.process(variableResolver, stringWriter);
+			template.process(variableResolver, stringWriter);
 		} catch (TemplateException te) {
 			throw new MutationFrequenciesException(te, 
 					MutationFrequenciesException.Code.VARIATION_NAME_TEMPLATE_FAILED, te.getLocalizedMessage());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		Map<String, Object> row = new LinkedHashMap<String, Object>();
-		row.put(PreviewVariationsResult.VARIATION_NAME, stringWriter.toString());
-		row.put(PreviewVariationsResult.REF_START, refStart);
-		row.put(PreviewVariationsResult.REF_END, refEnd);
-		row.put(PreviewVariationsResult.REGEX, "["+ mutAA + "]");
-		row.put(PreviewVariationsResult.TRANSLATION_FORMAT, TranslationFormat.AMINO_ACID.name());
-		return row;
+		String templateResult = stringWriter.toString();
+		return templateResult;
 	}
 
 	@CommandClass( 

@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 public class PreviewVariationsResult extends TableResult {
 
 	public static final String VARIATION_NAME = "variationName";
+	public static final String VARIATION_DESCRIPTION = "variationDescription";
 	public static final String REF_START = "refStart";
 	public static final String REF_END = "refEnd";
 	public static final String REGEX = "regex";
@@ -16,7 +17,7 @@ public class PreviewVariationsResult extends TableResult {
 
 	public PreviewVariationsResult(List<Map<String, Object>> rowData) {
 		super("previewVariationsResult", 
-				Arrays.asList(VARIATION_NAME, REF_START, REF_END, REGEX, TRANSLATION_FORMAT), rowData);
+				Arrays.asList(VARIATION_NAME, VARIATION_DESCRIPTION, REF_START, REF_END, REGEX, TRANSLATION_FORMAT), rowData);
 	}
 
 	protected PreviewVariationsResult(String rootObjectName,

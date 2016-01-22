@@ -136,7 +136,9 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 			if(minimumScore.map(m -> blastHsp.getScore() < m).orElse(false)) {
 				return false;
 			}
-			if(!allowReverseHsps && blastHsp.getQueryTo() < blastHsp.getQueryFrom()) {
+			if(!allowReverseHsps && 
+					( (blastHsp.getQueryTo() < blastHsp.getQueryFrom()) ||
+						(blastHsp.getHitTo() < blastHsp.getHitFrom())) ) {
 				return false;
 			}
 			return true;

@@ -30,7 +30,7 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 			"referenceName":sequenceAlignmentResult.referenceName
 		};
 		lastDiffSummary = differenceSummary;
-		var foundVariations = [];
+		var diffSummElements = [];
 		for(var j = 0; j < sequenceFeatureResult.aaReferenceDifferenceNote.length; j++) {
 			aaReferenceDifferenceNote = sequenceFeatureResult.aaReferenceDifferenceNote[j];
 			if(aaReferenceDifferenceNote.foundVariation) {
@@ -38,20 +38,19 @@ function generateDifferenceSummariesForAlmtResult(variationCategories, sequenceA
 					var foundVariation = aaReferenceDifferenceNote.foundVariation[k];
 					var renderingInfo = getVariationRenderingInfo(foundVariation, variationCategories);
 					if(renderingInfo.highlight) {
-						var displayFoundVar = {
-								name: renderingInfo.popoverTitle,
+						var diffSummElem = {
 								differenceStyle: "differenceSummary"+renderingInfo.styleSuffix,
-								popoverContent: renderingInfo.popoverContent};
-						foundVariations.push(displayFoundVar);
+								foundVariation: foundVariation};
+						diffSummElements.push(diffSummElem);
 					}
 				}
 			}
 		}
-		if(foundVariations.length > 0) {
+		if(diffSummElements.length > 0) {
 			if(firstDiffSummary == null) {
 				firstDiffSummary = differenceSummary;
 			}
-			differenceSummary["foundVariations"] = foundVariations;
+			differenceSummary["diffSummElements"] = diffSummElements;
 			differenceSummariesForAlmtResult.push(differenceSummary);
 		}
 	}
@@ -177,6 +176,9 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 		var referenceAAIndices;
 		var referenceAAs;
 		var queryAAs;
+		var queryAADifferenceStyle;
+		var queryAAPopover;
+		var queryAARenderingInfo;
 		var minorityVariantAAs;
 		var minorityVariantAAProportions;
 
@@ -190,6 +192,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 			queryAAs = new Array(numAAs);
 			queryAADifferenceStyle = new Array(numAAs);
 			queryAAPopover = new Array(numAAs);
+			queryAARenderingInfo = new Array(numAAs);
 			minorityVariantAAs = new Array(numAAs);
 			minorityVariantAAProportions = new Array(numAAs);
 
@@ -199,6 +202,7 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 				queryAAs[i] = empty;
 				queryAADifferenceStyle[i] = "";
 				queryAAPopover[i] = null;
+				queryAARenderingInfo[i] = null;
 				minorityVariantAAs[i] = empty;
 				minorityVariantAAProportions[i] = empty;
 			}
@@ -242,33 +246,31 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 					
 					
 					
-					var v = 0;
-					var foundVariation;
 					if(aaReferenceDiff.foundVariation) {
-						foundVariation = aaReferenceDiff.foundVariation[v];
+						for(var f = 0; f < aaReferenceDiff.foundVariation.length; f++) {
+							var foundVariation = aaReferenceDiff.foundVariation[f];
+							for(var foundVarIndex = foundVariation.refStart; foundVarIndex <= foundVariation.refEnd; foundVarIndex++) {
+								var aaColumn = foundVarIndex - minAAIndex;
+								var currentRenderingInfo = queryAARenderingInfo[aaColumn];
+								var newRenderingInfo = getVariationRenderingInfo(foundVariation, variationCategories);
+								queryAARenderingInfo[aaColumn] = mergeRenderingInfos(currentRenderingInfo, newRenderingInfo);
+							}
+						}
 					}
+					
+
 					for(var qrySegAAIndex = aaQuerySegment.refStart; 
 							qrySegAAIndex <= aaQuerySegment.refEnd; qrySegAAIndex++) {
 						var aaColumn = qrySegAAIndex - minAAIndex;
 						var indexInSeg = qrySegAAIndex - aaQuerySegment.refStart;
 						queryAAs[aaColumn] = aaQuerySegment.aminoAcids.charAt(indexInSeg);
 						if(aaReferenceDiff && aaReferenceDiff.mask[indexInSeg] != "-") {
-							if(aaReferenceDiff.foundVariation) {
-								while(v < aaReferenceDiff.foundVariation.length 
-										&& foundVariation.refEnd < qrySegAAIndex) {
-									v++;
-									foundVariation = aaReferenceDiff.foundVariation[v];
-								}
-							}
-							if(foundVariation && foundVariation.refStart <= qrySegAAIndex && foundVariation.refEnd >= qrySegAAIndex) {
-								var renderingInfo = getVariationRenderingInfo(foundVariation, variationCategories);
-								if(renderingInfo.highlight) {
-									queryAAPopover[aaColumn] = {
-											title: renderingInfo.popoverTitle,
-											content: renderingInfo.popoverContent
-									};
-									queryAADifferenceStyle[aaColumn] = "difference"+renderingInfo.styleSuffix;
-								}
+							var renderingInfo = queryAARenderingInfo[aaColumn];
+							if(renderingInfo && renderingInfo.highlight) {
+								queryAAPopover[aaColumn] = {
+										foundVariations: renderingInfo.foundVariations
+								};
+								queryAADifferenceStyle[aaColumn] = "difference"+renderingInfo.styleSuffix;
 							}
 						}
 					}
@@ -311,39 +313,58 @@ function generateAnalysisSequenceRows(variationCategories, feature, sequenceFeat
 
 function getVariationRenderingInfo(foundVariation, variationCategories) {
 	var renderingInfo = {
-			highlight: false
+			highlight: false,
+			styleSuffix: "",
+			foundVariations: []
 	};
-	renderingInfo.popoverTitle = foundVariation.name;
 	if(foundVariation.unknown) {
-		renderingInfo.popoverContent = foundVariation.description;
-		renderingInfo.styleSuffix = "";
 		renderingInfo.highlight = true;
-	} else if(foundVariation.variationCategory) {
-		renderingInfo.popoverContent = "";
 		renderingInfo.styleSuffix = "";
+		renderingInfo.foundVariations = [foundVariation]; 
+	} else if(foundVariation.variationCategory) {
 		for(var c = 0; c < foundVariation.variationCategory.length; c++) {
 			var vcatName = foundVariation.variationCategory[c];
 			var vcat = variationCategories[vcatName];
 			if(vcat.excluded == true) {
-				console.log("excluded: ", vcat.name);
 				renderingInfo = {
-					highlight: false
+					highlight: false,
+					styleSuffix: "",
+					foundVariations: []
 				};
 				return renderingInfo;
 			}
 			if(vcat.excluded != true && vcat.unused != true) {
+				console.log("foundVariation:", foundVariation.name);
+				console.log("styleSuffixBefore:", renderingInfo.styleSuffix);
 				renderingInfo.styleSuffix =  
 					updateStyleSuffix(renderingInfo.styleSuffix, vcat.inheritedNotifiability);
-				renderingInfo.popoverContent += variationCategories[vcatName].description+"\n";
+				console.log("styleSuffixAfter:", renderingInfo.styleSuffix);
 				renderingInfo.highlight = true;
+				renderingInfo.foundVariations = [foundVariation]; 
 			}
 		}
 	} 
 	return renderingInfo;
 }
 
+
+function mergeRenderingInfos(oldRenderingInfo, newRenderingInfo) {
+	if(oldRenderingInfo == null) {
+		return newRenderingInfo;
+	}
+	var mergedRenderingInfo = {};
+	mergedRenderingInfo.styleSuffix =  
+		updateStyleSuffix(oldRenderingInfo.styleSuffix, newRenderingInfo.styleSuffix);
+	mergedRenderingInfo.highlight = oldRenderingInfo.highlight || newRenderingInfo.highlight;
+	mergedRenderingInfo.foundVariations = _.union(oldRenderingInfo.foundVariations, newRenderingInfo.foundVariations);
+	return mergedRenderingInfo;
+}
+
 function updateStyleSuffix(oldStyleSuffix, newStyleSuffix) {
 	if(newStyleSuffix == "NOT_NOTIFIABLE" && oldStyleSuffix == "NOTIFIABLE") {
+		return oldStyleSuffix;
+	}
+	if(newStyleSuffix == "") {
 		return oldStyleSuffix;
 	}
 	return newStyleSuffix;

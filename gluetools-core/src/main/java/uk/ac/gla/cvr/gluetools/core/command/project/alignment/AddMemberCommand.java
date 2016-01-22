@@ -76,7 +76,7 @@ public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
 		if(!(
 				(!refName.isPresent() && sourceName.isPresent() && sequenceID.isPresent() && !whereClause.isPresent() && !allSequences)||
 				(!refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && allSequences)||
-				(!refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && allSequences)||
+				(!refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && whereClause.isPresent() && !allSequences)||
 				(refName.isPresent() && !sourceName.isPresent() && !sequenceID.isPresent() && !whereClause.isPresent() && !allSequences)
 			)) {
 			usageError();

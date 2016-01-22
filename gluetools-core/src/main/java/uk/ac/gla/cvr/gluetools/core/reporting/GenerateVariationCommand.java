@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -24,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationAddCategoryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetLocationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetPatternCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
@@ -111,6 +113,7 @@ public class GenerateVariationCommand extends ModuleProvidedCommand<GenerateVari
 			try ( ModeCloser featureLocationMode = cmdContext.pushCommandMode("feature-location", featureName ) ) {
 				listOfMaps.forEach(row -> {
 					String variationName = (String) row.get(PreviewVariationsResult.VARIATION_NAME);
+					String variationDescription = (String) row.get(PreviewVariationsResult.VARIATION_DESCRIPTION);
 					Integer refStart = (Integer) row.get(PreviewVariationsResult.REF_START);
 					Integer refEnd = (Integer) row.get(PreviewVariationsResult.REF_END);
 					String regex = (String) row.get(PreviewVariationsResult.REGEX);
@@ -139,10 +142,14 @@ public class GenerateVariationCommand extends ModuleProvidedCommand<GenerateVari
 					}
 					
 					if(!alreadyExists) {
-						cmdContext.cmdBuilder(CreateVariationCommand.class)
-						.set(CreateVariationCommand.VARIATON_NAME, variationName)
-						.set(CreateVariationCommand.TRANSLATION_TYPE, translationType)
-						.execute();
+						CommandBuilder<CreateResult, CreateVariationCommand> cmdBuilder = 
+							cmdContext.cmdBuilder(CreateVariationCommand.class)
+							.set(CreateVariationCommand.VARIATON_NAME, variationName)
+							.set(CreateVariationCommand.TRANSLATION_TYPE, translationType);
+						if(variationDescription != null) {
+							cmdBuilder.set(CreateVariationCommand.DESCRIPTION,  variationDescription);
+						}
+						cmdBuilder.execute();
 					}
 					try ( ModeCloser variationMode = cmdContext.pushCommandMode("variation", variationName ) ) {
 						if(!alreadyExists) {
