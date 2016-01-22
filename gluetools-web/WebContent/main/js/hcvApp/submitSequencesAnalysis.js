@@ -244,7 +244,12 @@ submitSequencesAnalysis
 				  var vcatList = tableResultAsObjectList(data);
 
 				  $scope.variationCategories = {};
-				  _.each(vcatList, function(vcatObj, idx, list) { $scope.variationCategories[vcatObj.name] = vcatObj; } ); 
+				  _.each(vcatList, function(vcatObj, idx, list) { 
+					  $scope.variationCategories[vcatObj.name] = vcatObj; 
+					  if(vcatObj.inheritedNotifiability != "NOTIFIABLE") {
+						  vcatObj.unused = true;
+					  }
+				  } ); 
 				  console.info('variationCategories', $scope.variationCategories);
 			}).
 			error(glueWS.raiseErrorDialog(dialogs, "listing variation-categories"));
