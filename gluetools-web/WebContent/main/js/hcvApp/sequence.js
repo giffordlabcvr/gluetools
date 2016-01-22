@@ -334,11 +334,8 @@ function getVariationRenderingInfo(foundVariation, variationCategories) {
 				return renderingInfo;
 			}
 			if(vcat.excluded != true && vcat.unused != true) {
-				console.log("foundVariation:", foundVariation.name);
-				console.log("styleSuffixBefore:", renderingInfo.styleSuffix);
 				renderingInfo.styleSuffix =  
 					updateStyleSuffix(renderingInfo.styleSuffix, vcat.inheritedNotifiability);
-				console.log("styleSuffixAfter:", renderingInfo.styleSuffix);
 				renderingInfo.highlight = true;
 				renderingInfo.foundVariations = [foundVariation]; 
 			}
