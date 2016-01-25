@@ -333,7 +333,7 @@ function getVariationRenderingInfo(foundVariation, variationCategories) {
 				};
 				return renderingInfo;
 			}
-			if(vcat.excluded != true && vcat.unused != true) {
+			if(filterCategory(vcat)) {
 				renderingInfo.styleSuffix =  
 					updateStyleSuffix(renderingInfo.styleSuffix, vcat.inheritedNotifiability);
 				renderingInfo.highlight = true;
@@ -344,6 +344,12 @@ function getVariationRenderingInfo(foundVariation, variationCategories) {
 	return renderingInfo;
 }
 
+function filterCategory(vcat) {
+	if(vcat.excluded != true && vcat.unused != true) {
+		return true;
+	}
+	return false;
+}
 
 function mergeRenderingInfos(oldRenderingInfo, newRenderingInfo) {
 	if(oldRenderingInfo == null) {

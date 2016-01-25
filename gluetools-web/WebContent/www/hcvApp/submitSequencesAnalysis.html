@@ -290,7 +290,8 @@
 		<div ng-show="diffSummElem.foundVariation.description && diffSummElem.foundVariation.description.substring(0,4) != 'http'">
 			{{diffSummElem.foundVariation.description}}
 		</div>
-		<div ng-repeat="vcatName in diffSummElem.foundVariation.variationCategory">{{variationCategories[vcatName].description}}</div>
+		<div ng-repeat="vcatName in diffSummElem.foundVariation.variationCategory">
+			<div ng-show="variationCategories[vcatName].excluded != true && variationCategories[vcatName].unused != true">{{variationCategories[vcatName].description}}</div>
 		</div>
       </div>
     </script>
@@ -311,7 +312,8 @@
 		<div ng-show="foundVariation.description && foundVariation.description.substring(0,4) != 'http'">
 			{{foundVariation.description}}
 		</div>
-		<div ng-repeat="vcatName in foundVariation.variationCategory">{{variationCategories[vcatName].description}}</div>
+		<div ng-repeat="vcatName in foundVariation.variationCategory">
+			<div ng-show="variationCategories[vcatName].excluded != true && variationCategories[vcatName].unused != true">{{variationCategories[vcatName].description}}</div>
 		</div>
       </div>
     </script>
