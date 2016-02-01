@@ -101,7 +101,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	private <R extends AlignerResult, C extends Command<R>> List<Map<String, Object>> getAllAlignResults(
 			CommandContext cmdContext, ArrayList<Map<String, Object>> memberIDs, String refName) {
 		// get the align command's class for the module.
-		Class<C> alignCommandClass = getAlignCommandClass(cmdContext);
+		Class<C> alignCommandClass = Aligner.getAlignCommandClass(cmdContext, alignerModuleName);
 		
 		int membersAligned = 0;
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
@@ -249,19 +249,6 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	}
 
 
-	private <R extends AlignerResult, C extends Command<R>> Class<C> getAlignCommandClass(
-			CommandContext cmdContext) {
-		// Look up the module by name, check it is an aligner, and get its align command class.
-		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(alignerModuleName));
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
-		if(!(modulePlugin instanceof Aligner<?, ?>)) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Module "+alignerModuleName+" is not an aligner");
-		}
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		Class<C> alignCommandClass = 
-				((Aligner) modulePlugin).getAlignCommandClass();
-		return alignCommandClass;
-	}
 	
 	public static class ComputeAlignmentResult extends TableResult {
 		public static final String REMOVED_SEGMENTS = "removedSegments";

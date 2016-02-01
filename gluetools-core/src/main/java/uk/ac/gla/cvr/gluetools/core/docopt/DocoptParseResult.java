@@ -65,6 +65,8 @@ public class DocoptParseResult {
 						@SuppressWarnings("unchecked")
 						ArrayList<String> arrayList = (ArrayList<String>) currentBinding;
 						arrayList.add(arg);
+					} else if(currentBinding instanceof Boolean && ((Boolean) currentBinding)) {
+						result.bindings.put(variableName, arg);
 					}
 					currentNode = transition.getToNode();
 					break;

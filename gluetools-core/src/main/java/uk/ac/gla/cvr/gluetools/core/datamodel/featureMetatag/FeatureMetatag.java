@@ -37,6 +37,11 @@ public class FeatureMetatag extends _FeatureMetatag {
 		 * what order should this feature be displayed in, relative to other features with the same parent
 		 */
 		DISPLAY_ORDER, 
+		/**
+		 * boolean 
+		 * true this feature codes for amino acids
+		 */
+		CODES_AMINO_ACIDS,
 	}
 
 	private Type type = null;

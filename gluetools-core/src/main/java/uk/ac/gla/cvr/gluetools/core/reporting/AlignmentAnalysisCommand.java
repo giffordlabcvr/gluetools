@@ -86,6 +86,8 @@ public class AlignmentAnalysisCommand
 
 	
 	
+
+
 	public static class AlignmentAnalysisResult extends TableResult {
 
 		public static final String REF_AMINO_ACID = "refAA"; // omit?

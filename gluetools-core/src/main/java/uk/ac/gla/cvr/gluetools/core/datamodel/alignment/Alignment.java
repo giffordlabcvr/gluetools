@@ -6,12 +6,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @GlueDataClass(defaultListColumns = {_Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH})
 public class Alignment extends _Alignment {
@@ -50,6 +54,19 @@ public class Alignment extends _Alignment {
 		return new ArrayList<Alignment>(ancestors);
 	}
 
+	public List<ReferenceSequence> getAncestorReferences() {
+		List<ReferenceSequence> ancestorRefs = new ArrayList<ReferenceSequence>();
+		for(Alignment ancAlmt: getAncestors()) {
+			ReferenceSequence ancRef = ancAlmt.getRefSequence();
+			if(ancRef != null) {
+				ancestorRefs.add(ancRef);
+			}
+		}
+		return ancestorRefs;
+	}
+
+	
+	
 	@Override
 	public void setParent(Alignment parent) {
 		if(parent != null) {
@@ -96,6 +113,23 @@ public class Alignment extends _Alignment {
 			descendents.addAll(childAlignment.getDescendents());
 		}
 		return descendents;
+	}
+
+	// given segments aligning a sequence to a specific member of this alignment, translate them to
+	// be aligned to the constraining reference of this alignment.
+	public List<QueryAlignedSegment> translateToRef(
+			CommandContext cmdContext, String memberSourceName, String memberSequenceID,
+			List<QueryAlignedSegment> seqToMemberSegs) {
+		ReferenceSequence refSequence = this.getRefSequence();
+		if(refSequence == null) {
+			throw new AlignmentException(Code.ALIGNMENT_IS_UNCONSTRAINED, this.getName());
+		}
+		AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+				AlignmentMember.pkMap(getName(), memberSourceName, memberSequenceID));
+		List<QueryAlignedSegment> memberToRefSegs = almtMember.getAlignedSegments().stream()
+			.map(seg -> seg.asQueryAlignedSegment())
+			.collect(Collectors.toList());
+		return QueryAlignedSegment.translateSegments(seqToMemberSegs, memberToRefSegs);
 	}
 
 	

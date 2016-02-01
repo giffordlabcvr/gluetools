@@ -8,10 +8,15 @@ import java.util.Map;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner.BlastAlignerResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -156,6 +161,25 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <R extends AlignerResult, C extends Command<R>> Class<C> getAlignCommandClass(
+			CommandContext cmdContext, String alignerModuleName) {
+		// Look up the module by name, check it is an aligner, and get its align command class.
+		Aligner<?, ?> alignerModule = getAligner(cmdContext, alignerModuleName);
+		return (Class<C>) alignerModule.getAlignCommandClass();
+	}
 
+	public static Aligner<?, ?> getAligner(CommandContext cmdContext,
+			String alignerModuleName) {
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(alignerModuleName));
+		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
+		if(!(modulePlugin instanceof Aligner<?, ?>)) {
+			throw new AlignerException(AlignerException.Code.MODULE_IS_NOT_AN_ALIGNER, alignerModuleName);
+		}
+		return (Aligner<?, ?>) modulePlugin;
+	}
 
+	public abstract R doAlign(CommandContext cmdContext, String refName, Map<String, DNASequence> queryIdToNucleotides);
+
+	
 }

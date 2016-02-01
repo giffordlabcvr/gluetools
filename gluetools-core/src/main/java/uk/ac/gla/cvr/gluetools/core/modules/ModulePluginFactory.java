@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.digs.DigsProber;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
@@ -38,6 +39,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(FastaAlignmentExporter.class);
 		registerPluginClass(DigsProber.class);
 		registerPluginClass(GbRefBuilder.class);
+		registerPluginClass(SamReporter.class);
 	}
 	
 }

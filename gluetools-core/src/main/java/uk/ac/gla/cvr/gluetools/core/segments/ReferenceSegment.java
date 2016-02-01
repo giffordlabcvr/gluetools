@@ -442,25 +442,25 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	 * @param segmentsToCover
 	 * @return
 	 */
-	public static boolean covers(List<? extends IReferenceSegment> segmentsOrig, 
-			List<? extends IReferenceSegment> segmentsToCoverOrig) {
-		LinkedList<IReferenceSegment> segments = new LinkedList<IReferenceSegment>(segmentsOrig);
-		LinkedList<ReferenceSegment> segmentsToCover = new LinkedList<ReferenceSegment>();
-		segmentsToCoverOrig.forEach(seg -> segmentsToCover.add(new ReferenceSegment(seg.getRefStart(), seg.getRefEnd())));
+	public static boolean covers(List<? extends IReferenceSegment> segments, 
+			List<? extends IReferenceSegment> segmentsToCover) {
+		LinkedList<IReferenceSegment> segmentsCopy = new LinkedList<IReferenceSegment>(segments);
+		LinkedList<ReferenceSegment> segmentsToCoverCopy = new LinkedList<ReferenceSegment>();
+		segmentsToCover.forEach(seg -> segmentsToCoverCopy.add(new ReferenceSegment(seg.getRefStart(), seg.getRefEnd())));
 		
-		while(!segments.isEmpty() && !segmentsToCover.isEmpty()) {
-			if(segments.isEmpty() && !segmentsToCover.isEmpty()) {
+		while(!segmentsCopy.isEmpty() && !segmentsToCoverCopy.isEmpty()) {
+			if(segmentsCopy.isEmpty() && !segmentsToCoverCopy.isEmpty()) {
 				return false;
 			}
-			if(!segments.isEmpty() && segmentsToCover.isEmpty()) {
+			if(!segmentsCopy.isEmpty() && segmentsToCoverCopy.isEmpty()) {
 				return true;
 			}
-			Integer segRefStart = segments.getFirst().getRefStart();
-			Integer segRefEnd = segments.getFirst().getRefEnd();
-			Integer seg2coverRefStart = segmentsToCover.getFirst().getRefStart();
-			Integer seg2coverRefEnd = segmentsToCover.getFirst().getRefEnd();
+			Integer segRefStart = segmentsCopy.getFirst().getRefStart();
+			Integer segRefEnd = segmentsCopy.getFirst().getRefEnd();
+			Integer seg2coverRefStart = segmentsToCoverCopy.getFirst().getRefStart();
+			Integer seg2coverRefEnd = segmentsToCoverCopy.getFirst().getRefEnd();
 			if(segRefEnd < seg2coverRefStart) {
-				segments.removeFirst(); // first in segments is irrelevant, remove it.
+				segmentsCopy.removeFirst(); // first in segments is irrelevant, remove it.
 			} else if(seg2coverRefEnd < segRefStart) {
 				return false; // first in segmentsToCover is uncovered.
 			} else if(segRefStart <= seg2coverRefStart) {
@@ -471,13 +471,13 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 					/* [1   seg           9]
 					 *    [2 seg2cover 7]
 					 */
-					segmentsToCover.removeFirst(); // seg2cover contained
+					segmentsToCoverCopy.removeFirst(); // seg2cover contained
 				} else {
 					/* [1   seg      7]
 					 *    [2 seg2cover  9]
 					 */
-					segments.removeFirst(); 
-					segmentsToCover.getFirst().truncateLeft((segRefEnd - seg2coverRefStart) + 1 ); 
+					segmentsCopy.removeFirst(); 
+					segmentsToCoverCopy.getFirst().truncateLeft((segRefEnd - seg2coverRefStart) + 1 ); 
 				}
 			} else {
 				/*    [2   seg  ....
@@ -486,10 +486,10 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 				return false; // some part of seg2cover is uncovered.
 			}
 		}
-		if(segments.isEmpty() && !segmentsToCover.isEmpty()) {
+		if(segmentsCopy.isEmpty() && !segmentsToCoverCopy.isEmpty()) {
 			return false;
 		}
-		if(!segments.isEmpty() && segmentsToCover.isEmpty()) {
+		if(!segmentsCopy.isEmpty() && segmentsToCoverCopy.isEmpty()) {
 			return true;
 		}
 		return true; // not sure if this is reachable!

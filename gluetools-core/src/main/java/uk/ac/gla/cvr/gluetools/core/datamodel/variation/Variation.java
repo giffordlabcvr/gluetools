@@ -58,7 +58,7 @@ public class Variation extends _Variation {
 	}
 	
 	public TranslationFormat getTranslationFormat() {
-		return TranslationUtils.transcriptionFormatFromString(getTranscriptionType());
+		return TranslationUtils.translationFormatFromString(getTranscriptionType());
 	}	
 
 	

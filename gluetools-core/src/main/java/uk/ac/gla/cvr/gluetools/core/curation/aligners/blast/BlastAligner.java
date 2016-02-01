@@ -68,7 +68,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 
 		@Override
 		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			return modulePlugin.doBlastAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides());
+			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides());
 		}
 	}
 
@@ -83,7 +83,7 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 
 		@Override
 		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			return modulePlugin.doBlastAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
+			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
 		}
 	}
 
@@ -112,7 +112,8 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 		return BlastAlignCommand.class;
 	}
 
-	public BlastAlignerResult doBlastAlign(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
+	@Override
+	public BlastAlignerResult doAlign(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
 		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
 		List<BlastResult> blastResults;
 		if(fastaBytes.length == 0) {

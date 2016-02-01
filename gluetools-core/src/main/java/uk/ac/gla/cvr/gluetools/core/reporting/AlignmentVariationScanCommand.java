@@ -83,8 +83,9 @@ public class AlignmentVariationScanCommand
 		return modulePlugin.doAlignmentVariationScan(cmdContext, alignmentName, recursive, whereClause, referenceName, featureName, variationName);
 	}
 
-	
-	
+
+
+
 	public static class AlignmentVariationScanResult extends TableResult {
 
 		public static final String ALIGNMENT_NAME = AlignmentMember.ALIGNMENT_NAME_PATH;

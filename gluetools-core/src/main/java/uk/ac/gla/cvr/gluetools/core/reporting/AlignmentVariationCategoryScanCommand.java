@@ -79,6 +79,7 @@ public class AlignmentVariationCategoryScanCommand
 
 	
 	
+
 	public static class AlignmentVariationCategoryScanResult extends TableResult {
 
 		public static final String ALIGNMENT_NAME = AlignmentMember.ALIGNMENT_NAME_PATH;

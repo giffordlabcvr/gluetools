@@ -764,6 +764,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		protected NcbiImporterResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doImport(cmdContext);
 		}
+
 	}
 
 	
@@ -777,6 +778,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		protected NcbiImporterResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doPreview(cmdContext);
 		}
+
 	}
 
 	

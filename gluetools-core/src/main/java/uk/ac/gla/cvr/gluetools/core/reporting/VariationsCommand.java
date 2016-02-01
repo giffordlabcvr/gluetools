@@ -56,5 +56,5 @@ public abstract class VariationsCommand<R extends CommandResult> extends ModuleP
 	protected Optional<Expression> getWhereClause() {
 		return whereClause;
 	}
-	
+
 }

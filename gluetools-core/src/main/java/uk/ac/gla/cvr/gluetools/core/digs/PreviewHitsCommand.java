@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.sequenceGroup.SequenceGroup;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 
 @CommandClass(
-		commandWords={"preview hits"}, 
+		commandWords={"preview", "hits"}, 
 		description = "Show a summary of hits for a given probe and target", 
 		docoptUsages = { "-r <refName> -l <featureLoc> -g <targetGroup>" },
 		docoptOptions = { 

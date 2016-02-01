@@ -2,9 +2,11 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -194,6 +196,24 @@ public class ConsoleCommandContext extends CommandContext {
 		}
 	}
 
+	public static InputStream inputStreamFromFile(File file) {
+		if(!file.exists()) {
+			throw new ConsoleException(Code.FILE_NOT_FOUND, file);
+		}
+		if(!file.isFile()) {
+			throw new ConsoleException(Code.NOT_A_FILE, file);
+		}
+		if(!file.canRead()) {
+			throw new ConsoleException(Code.FILE_NOT_READABLE, file);
+		}
+		try {
+			return new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			throw new ConsoleException(Code.FILE_NOT_FOUND, file);
+		}
+	}
+
+	
 	public boolean isRequireModeWrappable() {
 		return requireModeWrappable;
 	}

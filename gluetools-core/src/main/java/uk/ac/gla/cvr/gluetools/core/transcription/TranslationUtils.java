@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class TranslationUtils {
 
-	public static TranslationFormat transcriptionFormatFromString(String formatString) {
+	public static TranslationFormat translationFormatFromString(String formatString) {
 		try {
 			return TranslationFormat.valueOf(formatString);
 		} catch(IllegalArgumentException iae) {
@@ -48,6 +48,36 @@ public class TranslationUtils {
 		return resultList;
 	}
 
+	/**
+	 * Takes a list of NT coordinate IReferenceSegments.
+	 * Returns a new list of segments, cloned from the supplied list, such that the new list
+	 * contains those parts of the input list segments which contain complete codon-aligned triplets.
+	 * 
+	 * Example: codon1Start = 9
+	 * 
+	 * input = [7,12] [20,32]
+	 * output = [9,11] [21,32] 
+	 * 
+	 */
+	public static <S extends IReferenceSegment> List<S> truncateToCodonAligned(int codon1Start, List<S> inputSegs) {
+		List<S> outputSegs = new ArrayList<S>();
+		for(S inputSeg: inputSegs) {
+			@SuppressWarnings("unchecked")
+			S outputSeg = (S) inputSeg.clone();
+			while(outputSeg.getCurrentLength() >= 3 && !isAtStartOfCodon(codon1Start, outputSeg.getRefStart())) {
+				outputSeg.truncateLeft(1);
+			}
+			while(outputSeg.getCurrentLength() >= 3 && !isAtEndOfCodon(codon1Start, outputSeg.getRefEnd())) {
+				outputSeg.truncateRight(1);
+			}
+			if(outputSeg.getCurrentLength() >= 3) {
+				outputSegs.add(outputSeg);
+			}
+		}
+		return outputSegs;
+	}
+	
+	
 	/**
 	 * Translate nucleotides to amino acids.
 	 * 

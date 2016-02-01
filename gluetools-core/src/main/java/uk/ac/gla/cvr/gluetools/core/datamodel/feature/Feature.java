@@ -120,6 +120,11 @@ public class Feature extends _Feature {
 		return getMetatagTypes().contains(FeatureMetatag.Type.INFORMATIONAL);
 	}
 
+	public boolean codesAminoAcids() {
+		return getMetatagTypes().contains(FeatureMetatag.Type.CODES_AMINO_ACIDS);
+	}
+
+	
 	public Integer getDisplayOrder() {
 		Optional<FeatureMetatag> displayOrderMetatag = getMetatag(FeatureMetatag.Type.DISPLAY_ORDER);
 		if(displayOrderMetatag.isPresent()) {
@@ -188,6 +193,7 @@ public class Feature extends _Feature {
 		}
 		return compareDisplayOrderKeyLists(list1.subList(1, list1.size()), list2.subList(1, list2.size()));
 	}
+
 	
 	
 }

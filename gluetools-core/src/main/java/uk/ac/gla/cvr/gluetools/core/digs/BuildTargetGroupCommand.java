@@ -39,6 +39,7 @@ public class BuildTargetGroupCommand extends ModuleProvidedCommand<OkResult, Dig
 		return new OkResult();
 	}
 
+
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
