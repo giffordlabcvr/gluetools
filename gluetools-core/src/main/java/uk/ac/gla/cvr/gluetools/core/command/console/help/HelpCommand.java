@@ -44,7 +44,7 @@ public class HelpCommand extends Command<ConsoleCommandResult> {
 		if(helpLines.isEmpty()) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
 		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
-			return new HelpSpecificCommandResult(((SpecificCommandHelpLine) helpLines.get(0)).getCmdClass());
+			return new HelpSpecificCommandResult(cmdContext, ((SpecificCommandHelpLine) helpLines.get(0)).getCmdClass());
 		} else {
 			return new HelpCommandResult(helpLines);
 		}

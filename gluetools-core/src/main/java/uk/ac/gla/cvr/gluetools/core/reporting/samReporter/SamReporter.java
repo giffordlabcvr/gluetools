@@ -25,7 +25,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
+		this.alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, false);
 	}
 
 	public String getAlignerModuleName() {

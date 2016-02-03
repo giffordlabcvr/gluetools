@@ -256,6 +256,14 @@ public class ConsoleCommandContext extends CommandContext {
 		return optionLines;
 	}
 
+	public int getTerminalWidth() {
+		return console.getTerminalWidth();
+	}
+
+	public int getTerminalHeight() {
+		return console.getTerminalHeight();
+	}
+
 	
 
 	
