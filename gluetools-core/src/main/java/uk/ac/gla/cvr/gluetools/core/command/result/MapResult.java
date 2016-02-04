@@ -61,7 +61,7 @@ public class MapResult extends CommandResult {
 		return map;
 	}
 	
-	public static <D extends GlueDataObject> Map<String, Object> mapFromDataObject(
+	public static <D> Map<String, Object> mapFromDataObject(
 			List<String> headers, D dataObject, 
 			BiFunction<D, String, Object> resolveHeaderFunction) {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();

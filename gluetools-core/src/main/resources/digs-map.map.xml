@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-map xmlns="http://cayenne.apache.org/schema/3.0/modelMap"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/3.0/modelMap http://cayenne.apache.org/schema/3.0/modelMap.xsd"
+	 project-version="6">
+	<db-entity name="BLAST_results" catalog="TD_Heterocephalus_RT">
+		<db-attribute name="Data_type" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Hit_length" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Organism" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Orientation" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_gene" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_type" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Query_end" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Query_start" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Record_ID" type="INTEGER" isPrimaryKey="true" isMandatory="true" length="10"/>
+		<db-attribute name="Scaffold" type="VARCHAR" length="100"/>
+		<db-attribute name="Subject_end" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Subject_start" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Target_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Timestamp" type="TIMESTAMP" isMandatory="true" length="19"/>
+		<db-attribute name="Version" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<db-entity name="Extracted" catalog="TD_Heterocephalus_RT">
+		<db-attribute name="Align_len" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Assigned_gene" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Assigned_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="BLAST_ID" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Bit_score" type="REAL" isMandatory="true" length="12"/>
+		<db-attribute name="Data_type" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Extract_end" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Extract_start" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Gap_openings" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Identity" type="REAL" isMandatory="true" length="12"/>
+		<db-attribute name="Mismatches" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Organism" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Orientation" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_type" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Query_end" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Query_start" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Record_ID" type="INTEGER" isPrimaryKey="true" isMandatory="true" length="10"/>
+		<db-attribute name="Scaffold" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Sequence" type="LONGVARCHAR" isMandatory="true" length="65535"/>
+		<db-attribute name="Sequence_length" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Subject_end" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Subject_start" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Target_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Timestamp" type="TIMESTAMP" isMandatory="true" length="19"/>
+		<db-attribute name="Version" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="e_value_exp" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="e_value_num" type="REAL" isMandatory="true" length="12"/>
+	</db-entity>
+	<db-entity name="Loci" catalog="TD_Heterocephalus_RT">
+		<db-attribute name="Assigned_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Data_type" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Extract_end" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Extract_start" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Genome_structure" type="LONGVARCHAR" isMandatory="true" length="65535"/>
+		<db-attribute name="Organism" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Orientation" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Record_ID" type="INTEGER" isPrimaryKey="true" isMandatory="true" length="10"/>
+		<db-attribute name="Scaffold" type="VARCHAR" length="100"/>
+		<db-attribute name="Target_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Timestamp" type="TIMESTAMP" isMandatory="true" length="19"/>
+		<db-attribute name="Version" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<db-entity name="Loci_link" catalog="TD_Heterocephalus_RT">
+		<db-attribute name="Extracted_ID" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Locus_ID" type="INTEGER" isMandatory="true" length="10"/>
+		<db-attribute name="Record_ID" type="INTEGER" isPrimaryKey="true" isMandatory="true" length="10"/>
+		<db-attribute name="Timestamp" type="TIMESTAMP" isMandatory="true" length="19"/>
+	</db-entity>
+	<db-entity name="Status" catalog="TD_Heterocephalus_RT">
+		<db-attribute name="Data_type" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Genome_ID" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Organism" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_ID" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_gene" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Probe_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Record_ID" type="INTEGER" isPrimaryKey="true" isMandatory="true" length="10"/>
+		<db-attribute name="Target_name" type="VARCHAR" isMandatory="true" length="100"/>
+		<db-attribute name="Timestamp" type="TIMESTAMP" isMandatory="true" length="19"/>
+		<db-attribute name="Version" type="VARCHAR" isMandatory="true" length="100"/>
+	</db-entity>
+	<obj-entity name="BlastResults" className="uk.ac.gla.cvr.gluetools.core.digs.importer.model.BlastResults" dbEntityName="BLAST_results" superClassName="uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject">
+		<obj-attribute name="dataType" type="java.lang.String" db-attribute-path="Data_type"/>
+		<obj-attribute name="hitLength" type="java.lang.Integer" db-attribute-path="Hit_length"/>
+		<obj-attribute name="organism" type="java.lang.String" db-attribute-path="Organism"/>
+		<obj-attribute name="orientation" type="java.lang.String" db-attribute-path="Orientation"/>
+		<obj-attribute name="probeGene" type="java.lang.String" db-attribute-path="Probe_gene"/>
+		<obj-attribute name="probeName" type="java.lang.String" db-attribute-path="Probe_name"/>
+		<obj-attribute name="probeType" type="java.lang.String" db-attribute-path="Probe_type"/>
+		<obj-attribute name="queryEnd" type="java.lang.Integer" db-attribute-path="Query_end"/>
+		<obj-attribute name="queryStart" type="java.lang.Integer" db-attribute-path="Query_start"/>
+		<obj-attribute name="scaffold" type="java.lang.String" db-attribute-path="Scaffold"/>
+		<obj-attribute name="subjectEnd" type="java.lang.Integer" db-attribute-path="Subject_end"/>
+		<obj-attribute name="subjectStart" type="java.lang.Integer" db-attribute-path="Subject_start"/>
+		<obj-attribute name="targetName" type="java.lang.String" db-attribute-path="Target_name"/>
+		<obj-attribute name="timestamp" type="java.util.Date" db-attribute-path="Timestamp"/>
+		<obj-attribute name="version" type="java.lang.String" db-attribute-path="Version"/>
+	</obj-entity>
+	<obj-entity name="Extracted" className="uk.ac.gla.cvr.gluetools.core.digs.importer.model.Extracted" dbEntityName="Extracted" superClassName="uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject">
+		<obj-attribute name="alignLen" type="java.lang.Integer" db-attribute-path="Align_len"/>
+		<obj-attribute name="assignedGene" type="java.lang.String" db-attribute-path="Assigned_gene"/>
+		<obj-attribute name="assignedName" type="java.lang.String" db-attribute-path="Assigned_name"/>
+		<obj-attribute name="bitScore" type="java.lang.Float" db-attribute-path="Bit_score"/>
+		<obj-attribute name="blastId" type="java.lang.Integer" db-attribute-path="BLAST_ID"/>
+		<obj-attribute name="dataType" type="java.lang.String" db-attribute-path="Data_type"/>
+		<obj-attribute name="eValueExp" type="java.lang.Integer" db-attribute-path="e_value_exp"/>
+		<obj-attribute name="eValueNum" type="java.lang.Float" db-attribute-path="e_value_num"/>
+		<obj-attribute name="extractEnd" type="java.lang.Integer" db-attribute-path="Extract_end"/>
+		<obj-attribute name="extractStart" type="java.lang.Integer" db-attribute-path="Extract_start"/>
+		<obj-attribute name="gapOpenings" type="java.lang.Integer" db-attribute-path="Gap_openings"/>
+		<obj-attribute name="identity" type="java.lang.Float" db-attribute-path="Identity"/>
+		<obj-attribute name="mismatches" type="java.lang.Integer" db-attribute-path="Mismatches"/>
+		<obj-attribute name="organism" type="java.lang.String" db-attribute-path="Organism"/>
+		<obj-attribute name="orientation" type="java.lang.String" db-attribute-path="Orientation"/>
+		<obj-attribute name="probeType" type="java.lang.String" db-attribute-path="Probe_type"/>
+		<obj-attribute name="queryEnd" type="java.lang.Integer" db-attribute-path="Query_end"/>
+		<obj-attribute name="queryStart" type="java.lang.Integer" db-attribute-path="Query_start"/>
+		<obj-attribute name="scaffold" type="java.lang.String" db-attribute-path="Scaffold"/>
+		<obj-attribute name="sequence" type="java.lang.String" db-attribute-path="Sequence"/>
+		<obj-attribute name="sequenceLength" type="java.lang.Integer" db-attribute-path="Sequence_length"/>
+		<obj-attribute name="subjectEnd" type="java.lang.Integer" db-attribute-path="Subject_end"/>
+		<obj-attribute name="subjectStart" type="java.lang.Integer" db-attribute-path="Subject_start"/>
+		<obj-attribute name="targetName" type="java.lang.String" db-attribute-path="Target_name"/>
+		<obj-attribute name="timestamp" type="java.util.Date" db-attribute-path="Timestamp"/>
+		<obj-attribute name="version" type="java.lang.String" db-attribute-path="Version"/>
+	</obj-entity>
+	<obj-entity name="Loci" className="uk.ac.gla.cvr.gluetools.core.digs.importer.model.Loci" dbEntityName="Loci" superClassName="uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject">
+		<obj-attribute name="assignedName" type="java.lang.String" db-attribute-path="Assigned_name"/>
+		<obj-attribute name="dataType" type="java.lang.String" db-attribute-path="Data_type"/>
+		<obj-attribute name="extractEnd" type="java.lang.Integer" db-attribute-path="Extract_end"/>
+		<obj-attribute name="extractStart" type="java.lang.Integer" db-attribute-path="Extract_start"/>
+		<obj-attribute name="genomeStructure" type="java.lang.String" db-attribute-path="Genome_structure"/>
+		<obj-attribute name="organism" type="java.lang.String" db-attribute-path="Organism"/>
+		<obj-attribute name="orientation" type="java.lang.String" db-attribute-path="Orientation"/>
+		<obj-attribute name="scaffold" type="java.lang.String" db-attribute-path="Scaffold"/>
+		<obj-attribute name="targetName" type="java.lang.String" db-attribute-path="Target_name"/>
+		<obj-attribute name="timestamp" type="java.util.Date" db-attribute-path="Timestamp"/>
+		<obj-attribute name="version" type="java.lang.String" db-attribute-path="Version"/>
+	</obj-entity>
+	<obj-entity name="LociLink" className="uk.ac.gla.cvr.gluetools.core.digs.importer.model.LociLink" dbEntityName="Loci_link" superClassName="uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject">
+		<obj-attribute name="extractedId" type="java.lang.Integer" db-attribute-path="Extracted_ID"/>
+		<obj-attribute name="locusId" type="java.lang.Integer" db-attribute-path="Locus_ID"/>
+		<obj-attribute name="timestamp" type="java.util.Date" db-attribute-path="Timestamp"/>
+	</obj-entity>
+	<obj-entity name="Status" className="uk.ac.gla.cvr.gluetools.core.digs.importer.model.Status" dbEntityName="Status" superClassName="uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject">
+		<obj-attribute name="dataType" type="java.lang.String" db-attribute-path="Data_type"/>
+		<obj-attribute name="genomeId" type="java.lang.String" db-attribute-path="Genome_ID"/>
+		<obj-attribute name="organism" type="java.lang.String" db-attribute-path="Organism"/>
+		<obj-attribute name="probeGene" type="java.lang.String" db-attribute-path="Probe_gene"/>
+		<obj-attribute name="probeId" type="java.lang.String" db-attribute-path="Probe_ID"/>
+		<obj-attribute name="probeName" type="java.lang.String" db-attribute-path="Probe_name"/>
+		<obj-attribute name="targetName" type="java.lang.String" db-attribute-path="Target_name"/>
+		<obj-attribute name="timestamp" type="java.util.Date" db-attribute-path="Timestamp"/>
+		<obj-attribute name="version" type="java.lang.String" db-attribute-path="Version"/>
+	</obj-entity>
+</data-map>

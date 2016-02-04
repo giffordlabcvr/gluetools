@@ -23,6 +23,18 @@
 			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/blastdbs</value>
 		</property>
 		<property>
+			<name>gluetools.core.digs.db.jdbc.url</name>
+			<value>jdbc:mysql://localhost:3666</value>
+		</property>
+		<property>
+			<name>gluetools.core.digs.db.username</name>
+			<value>root</value>
+		</property>
+		<property>
+			<name>gluetools.core.digs.db.password</name>
+			<value>alpha1234</value>
+		</property>
+		<property>
 			<name>cayenne.querycache.size</name>
 			<value>30000</value>
 		</property>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<domain project-version="6">
+	<map name="digs-map"/>
+	
+	<node name="digs-node"
+		 factory="org.apache.cayenne.configuration.server.XMLPoolingDataSourceFactory"
+		 schema-update-strategy="org.apache.cayenne.access.dbsync.ThrowOnPartialSchemaStrategy"
+		>
+		<map-ref name="digs-map"/>
+		<data-source>
+			<connectionPool min="1" max="1"/>
+		</data-source>
+	</node>
+</domain>

@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopula
 import uk.ac.gla.cvr.gluetools.core.collation.referenceBuilder.GbRefBuilder;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.digs.DigsProber;
+import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
@@ -38,6 +39,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(BlastFastaProteinAlignmentImporter.class);
 		registerPluginClass(FastaAlignmentExporter.class);
 		registerPluginClass(DigsProber.class);
+		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
 		registerPluginClass(SamReporter.class);
 	}

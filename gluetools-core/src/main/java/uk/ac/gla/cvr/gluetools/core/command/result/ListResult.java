@@ -27,7 +27,7 @@ public class ListResult extends TableResult {
 	}
 
 	
-	protected <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results, List<String> headers, 
+	protected <D> ListResult(Class<D> objectClass, List<D> results, List<String> headers, 
 			BiFunction<D, String, Object> resolveHeaderFunction) {
 		super(LIST_RESULT, headers, listOfMapsFromDataObjects(results, headers, resolveHeaderFunction));
 		getDocumentBuilder().set(OBJECT_TYPE, objectClass.getSimpleName());

@@ -158,6 +158,16 @@ task datamodel(dependsOn: 'checkCayenneTools') << {
 	ant.cgen(map: mapFile3, destDir: destDir, usepkgpath: true, superpkg: superPkg)
 }
 
+// uses cayenne to generate the datamodel classes.
+task datamodelDigs(dependsOn: 'checkCayenneTools') << {
+	String destDir = 'src/main/java'
+	String superPkg = 'uk.ac.gla.cvr.gluetools.core.digs.importer.model.auto'
+	String mapFile1 = 'src/main/resources/digs-map.map.xml'
+	ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+}
+
+
+
 dependencies {
    	compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
     cgen group: 'org.apache.cayenne', name: 'cayenne-tools', version: '3.1'

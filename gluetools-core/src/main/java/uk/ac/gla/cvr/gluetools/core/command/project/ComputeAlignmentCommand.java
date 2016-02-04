@@ -188,19 +188,21 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		// according to the aligner result.
 		int numRemovedSegments = 0;
 		int numAddedSegments = 0;
-		try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			try(ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSeqId)) {
-				numRemovedSegments = cmdContext.cmdBuilder(RemoveAlignedSegmentCommand.class)
-						.set(RemoveAlignedSegmentCommand.ALL_SEGMENTS, true)
-						.execute().getNumber();
-				for(IQueryAlignedSegment alignedSegment: memberAlignedSegments) {
-					CreateResult addSegResult = cmdContext.cmdBuilder(AddAlignedSegmentCommand.class)
-					.set(AddAlignedSegmentCommand.REF_START, alignedSegment.getRefStart())
-					.set(AddAlignedSegmentCommand.REF_END, alignedSegment.getRefEnd())
-					.set(AddAlignedSegmentCommand.MEMBER_START, alignedSegment.getQueryStart())
-					.set(AddAlignedSegmentCommand.MEMBER_END, alignedSegment.getQueryEnd())
-					.execute();
-					numAddedSegments = numAddedSegments + addSegResult.getNumber();
+		if(memberAlignedSegments != null) {
+			try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
+				try(ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSeqId)) {
+					numRemovedSegments = cmdContext.cmdBuilder(RemoveAlignedSegmentCommand.class)
+							.set(RemoveAlignedSegmentCommand.ALL_SEGMENTS, true)
+							.execute().getNumber();
+					for(IQueryAlignedSegment alignedSegment: memberAlignedSegments) {
+						CreateResult addSegResult = cmdContext.cmdBuilder(AddAlignedSegmentCommand.class)
+								.set(AddAlignedSegmentCommand.REF_START, alignedSegment.getRefStart())
+								.set(AddAlignedSegmentCommand.REF_END, alignedSegment.getRefEnd())
+								.set(AddAlignedSegmentCommand.MEMBER_START, alignedSegment.getQueryStart())
+								.set(AddAlignedSegmentCommand.MEMBER_END, alignedSegment.getQueryEnd())
+								.execute();
+						numAddedSegments = numAddedSegments + addSegResult.getNumber();
+					}
 				}
 			}
 		}

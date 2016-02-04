@@ -304,7 +304,7 @@ public class TableResult extends CommandResult {
 		return cString;
 	}
 
-	public static <D extends GlueDataObject> List<Map<String, Object>> listOfMapsFromDataObjects(
+	public static <D> List<Map<String, Object>> listOfMapsFromDataObjects(
 			List<D> results, List<String> headers, 
 			BiFunction<D, String, Object> resolveHeaderFunction) {
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();

@@ -23,8 +23,6 @@ import org.apache.cayenne.access.DataNode;
 import org.apache.cayenne.configuration.Constants;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.cayenne.dba.TypesMapping;
-import org.apache.cayenne.di.Binder;
-import org.apache.cayenne.di.MapBuilder;
 import org.apache.cayenne.di.Module;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -55,6 +53,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
+import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils.XmlNamespaceContext;
 
@@ -108,21 +107,15 @@ public class ModelBuilder {
 		} else {
 			cacheSizeFinal = cacheSize;
 		}
-		Module dbConfigModule = new Module() {
-			  @Override
-			  public void configure(Binder binder) {
-			    MapBuilder<Object> map = binder.bindMap(Constants.PROPERTIES_MAP)
-			       .put(Constants.JDBC_DRIVER_PROPERTY, dbConfiguration.getVendor().getJdbcDriverClass())
-			       .put(Constants.JDBC_URL_PROPERTY, dbConfiguration.getJdbcUrl())
-			       .put(Constants.QUERY_CACHE_SIZE_PROPERTY, cacheSizeFinal);
-			    dbConfiguration.getUsername().ifPresent(u -> map.put(Constants.JDBC_USERNAME_PROPERTY, u));
-			    dbConfiguration.getPassword().ifPresent(p -> map.put(Constants.JDBC_PASSWORD_PROPERTY, p));
-			  }
-		};
-		return dbConfigModule;
+	    String jdbcDriverClass = dbConfiguration.getVendor().getJdbcDriverClass();
+		String jdbcUrl = dbConfiguration.getJdbcUrl();
+	    Optional<String> username = dbConfiguration.getUsername();
+	    Optional<String> password = dbConfiguration.getPassword();
+
+	    return CayenneUtils.createCayenneDbConfigModule(cacheSizeFinal, jdbcDriverClass,
+				jdbcUrl, username, password);
 	}
-	
-	
+
 	public static ServerRuntime createProjectModel(GluetoolsEngine gluetoolsEngine, Project project) {
 		
 		DatabaseConfiguration dbConfiguration = gluetoolsEngine.getDbConfiguration();
