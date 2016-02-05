@@ -2,8 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamReader;
 
 import java.io.IOException;

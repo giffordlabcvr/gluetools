@@ -11,7 +11,8 @@ public class DigsImporterException extends GlueException {
 		DIGS_DB_JDBC_PASSWORD_NOT_DEFINED(),
 		DIGS_DB_ERROR("errorTxt"),
 		EXPRESSION_ERROR("qualifier", "errorTxt"),
-		;
+		ID_TEMPLATE_FAILED("errorTxt"),
+		NO_SUCH_SEQUENCE_FIELD("fieldName");
 
 		private String[] argNames;
 		private Code(String... argNames) {

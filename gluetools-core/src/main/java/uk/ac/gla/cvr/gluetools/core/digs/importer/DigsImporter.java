@@ -1,8 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.digs.importer;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,17 +21,36 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.query.SelectQuery;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporterException.Code;
+import uk.ac.gla.cvr.gluetools.core.digs.importer.ImportExtractedFieldRule.FieldMissingAction;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.model.Extracted;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import freemarker.core.ParseException;
+import freemarker.template.SimpleScalar;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="digsImporter")
 public class DigsImporter extends ModulePlugin<DigsImporter> {
@@ -49,12 +69,52 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 		DIGS_MAP_RESOURCE = "digs-map.map.xml";
 	
 	
+	public static String SEQUENCE_ID_TEMPLATE = "sequenceIdTemplate";
+	
+	private Template sequenceIdTemplate;
+	
+	private Map<String, ImportExtractedFieldRule> extractedFieldToRule = new LinkedHashMap<String, ImportExtractedFieldRule>();
+	
+	
 	public DigsImporter() {
 		super();
 		addProvidedCmdClass(ListExtractedCommand.class);
 		addProvidedCmdClass(ImportExtractedCommand.class);
 		addProvidedCmdClass(ListDigsDbsCommand.class);
+		for(String extractedField : Extracted.ALL_PROPERTIES) {
+			ImportExtractedFieldRule importExtractedFieldRule = new ImportExtractedFieldRule();
+			importExtractedFieldRule.setExtractedField(extractedField);
+			extractedFieldToRule.put(extractedField, importExtractedFieldRule);
+		}
 	}
+
+	
+	
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		Template defaultTemplate = null;
+		try {
+			defaultTemplate = PluginUtils.templateFromString("${"+Extracted.BLAST_ID_PROPERTY+"}", pluginConfigContext.getFreemarkerConfiguration());
+		} catch(ParseException pe) {
+			throw new RuntimeException(pe);
+		}
+		sequenceIdTemplate = Optional.ofNullable(
+				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, SEQUENCE_ID_TEMPLATE, false))
+				.orElse(defaultTemplate);
+		List<Element> importExtractedRuleElems = PluginUtils.findConfigElements(configElem, ImportExtractedFieldRule.EXTRACTED_FIELD_RULE);
+		List<ImportExtractedFieldRule> importExtractedRules = PluginFactory.createPlugins(pluginConfigContext, 
+				ImportExtractedFieldRule.class, importExtractedRuleElems);
+		for(ImportExtractedFieldRule importExtractedFieldRule: importExtractedRules) {
+			extractedFieldToRule.put(importExtractedFieldRule.getExtractedField(), importExtractedFieldRule);
+		}
+	}
+
+
+
+
 
 	private <C extends DigsObject> List<C> query(ObjectContext digsObjectContext, Class<C> objClass, SelectQuery query) {
 		List<?> queryResult = null;
@@ -98,19 +158,71 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 		}
 	}
 	
-	public ImportExtractedResult importHits(CommandContext cmdContext, String digsDbName) {
-		List<Extracted> extracted = listExtracted(cmdContext, digsDbName, Optional.ofNullable(null));
-		List<Map<String, Object>> rowData = extracted.stream()
-				.map(extr -> {
-					Map<String, Object> map = new LinkedHashMap<String, Object>();
-					map.put(ImportExtractedResult.BLAST_ID, extr.getBlastId());
-					map.put(ImportExtractedResult.SEQUENCE, extr.getSequence());
-					return map;
-				})
-				.collect(Collectors.toList());
-		return new ImportExtractedResult(rowData);
+	public CreateResult importHits(CommandContext cmdContext, String digsDbName, String sourceName, Optional<Expression> whereClause) {
+		List<Extracted> extracteds = listExtracted(cmdContext, digsDbName, whereClause);
+		int numSequences = 0;
+		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName), true);
+		if(source == null) {
+			source = GlueDataObject.create(cmdContext, Source.class, Source.pkMap(sourceName), false);
+		}
+		cmdContext.commit();
+		
+		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
+		extractedFieldToRule.values().forEach(rule -> {
+			String sequenceFieldToUse = rule.getSequenceFieldToUse();
+			FieldMissingAction fieldMissingAction = rule.getFieldMissingAction();
+			if(!projectMode.getProject().getCustomSequenceFieldNames().contains(sequenceFieldToUse)) {
+				if(fieldMissingAction == FieldMissingAction.ERROR) {
+					throw new DigsImporterException(DigsImporterException.Code.NO_SUCH_SEQUENCE_FIELD, sequenceFieldToUse);
+				}
+				if(fieldMissingAction == FieldMissingAction.WARN) {
+					GlueLogger.getGlueLogger().warning("No such sequence field: "+sequenceFieldToUse);
+				}
+			}
+		});
+		
+		for(Extracted extracted: extracteds) {
+			String sequenceId = runIdTemplate(sequenceIdTemplate, extracted);
+			Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceId, false);
+			sequence.setFormat(SequenceFormat.FASTA.name());
+			byte[] originalData = FastaUtils.seqIdCompoundsPairToFasta(sequenceId, extracted.getSequence()).getBytes();
+			sequence.setOriginalData(originalData);
+			sequence.setSource(source);
+			extractedFieldToRule.values().forEach(rule -> {
+				rule.updateSequence(cmdContext, extracted, sequence, rule.getSequenceFieldToUse());
+			});
+			numSequences++;
+		}
+		cmdContext.commit();
+		return new CreateResult(Sequence.class, numSequences);
 	}
 
+	
+	
+	private String runIdTemplate(Template template, Extracted extracted) {
+		TemplateHashModel variableResolver = new TemplateHashModel() {
+			@Override
+			public TemplateModel get(String key) {
+				Object object = extracted.readNestedProperty(key);
+				return object == null ? null : new SimpleScalar(object.toString());
+			}
+			@Override
+			public boolean isEmpty() { return false; }
+		};
+		StringWriter stringWriter = new StringWriter();
+		try {
+			template.process(variableResolver, stringWriter);
+		} catch (TemplateException te) {
+			throw new DigsImporterException(te, 
+					DigsImporterException.Code.ID_TEMPLATE_FAILED, te.getLocalizedMessage());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		String templateResult = stringWriter.toString();
+		return templateResult;
+	}
+
+	
 	public static List<String> listDigsDatabases(CommandContext cmdContext) {
 		
 		String digsDbBaseUrl = getDigsBaseUrl(cmdContext);
