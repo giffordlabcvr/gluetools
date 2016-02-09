@@ -12,6 +12,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -26,43 +28,59 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(
-		commandWords={"template", "module"}, 
-		docoptUsages={"<moduleType> <moduleName>"},
-		description="Create a module with default configuration",
+		commandWords={"create", "module"}, 
+		docoptUsages={"(-t <moduleType> | -f <fileName>) <moduleName>"},
+		description="Create a module",
+		docoptOptions={
+				"-t <moduleType>, --type <moduleType>  Default config for a specific module type", 
+				"-f <fileName>, --fileName <fileName>  Config from an XML file"},
 		furtherHelp="Creates a module of the specified type, with the default configuration for that module type.",
-		metaTags={ CmdMeta.updatesDatabase } ) 
+		metaTags={ CmdMeta.updatesDatabase, CmdMeta.consoleOnly } ) 
 	
-public class TemplateModuleCommand extends Command<CreateResult> {
+public class CreateModuleCommand extends Command<CreateResult> {
 
 	public static final String MODULE_TYPE = "moduleType";
+	public static final String FILE_NAME = "fileName";
 	public static final String MODULE_NAME = "moduleName";
 	
 	private String moduleType;
 	private String moduleName;
+	private String fileName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.moduleType = PluginUtils.configureStringProperty(configElem, MODULE_TYPE, true);
+		this.moduleType = PluginUtils.configureStringProperty(configElem, MODULE_TYPE, false);
+		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
 		this.moduleName = PluginUtils.configureStringProperty(configElem, MODULE_NAME, true);
+		if(moduleType == null && fileName == null) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <moduleType> or <fileName> must be specified.");
+		}
 	}
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		
-		ModulePluginFactory pluginFactory = PluginFactory.get(ModulePluginFactory.creator);
-		if(!pluginFactory.getElementNames().contains(moduleType)) {
-			throw new ModuleException(ModuleException.Code.NO_SUCH_MODULE_TYPE, moduleType);
+		byte[] config = null;
+		
+		if(moduleType != null) {
+			ModulePluginFactory pluginFactory = PluginFactory.get(ModulePluginFactory.creator);
+			if(!pluginFactory.getElementNames().contains(moduleType)) {
+				throw new ModuleException(ModuleException.Code.NO_SUCH_MODULE_TYPE, moduleType);
+			}
+			
+			// create document with just a single type element in it.
+			Document document = GlueXmlUtils.newDocument();
+			document.appendChild(document.createElement(moduleType));
+			config = GlueXmlUtils.prettyPrint(document);
+		} else {
+			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+			config = consoleCmdContext.loadBytes(fileName);
 		}
 		
-		// create document with just a single type element in it.
-		Document document = GlueXmlUtils.newDocument();
-		document.appendChild(document.createElement(moduleType));
-		
-		
 		Module module = GlueDataObject.create(cmdContext, Module.class, Module.pkMap(moduleName), false);
-		module.setConfig(GlueXmlUtils.prettyPrint(document));
+		module.setConfig(config);
 		cmdContext.commit();
 		return new CreateResult(Module.class, 1);
 	}
@@ -84,6 +102,7 @@ public class TemplateModuleCommand extends Command<CreateResult> {
 							.collect(Collectors.toList());
 				}
 			});
+			registerPathLookup("fileName", false);
 		}
 		
 	}

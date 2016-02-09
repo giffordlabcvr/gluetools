@@ -20,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException.Code;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -28,8 +29,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"import","module"}, 
 	docoptUsages={"[-r] <moduleName> <fileName>"},
 	docoptOptions={"-r, --reload  If module exists, reload its config"},
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase},
-	description="Create a new module, importing config from a file") 
+	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+	description="DEPRECATED: Create a new module, importing config from a file") 
 public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 
 	private String moduleName;
@@ -46,7 +47,8 @@ public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		
+		GlueLogger.getGlueLogger().warning("Command \"import module\" is deprecated. To create a new module, use command \"create module\". "+
+				"To update an existing module's config, use command \"import configuration\" in the relevant module's command mode.");
 		Module module = null;
 		boolean moduleExisted = false;
 		if(reload) {

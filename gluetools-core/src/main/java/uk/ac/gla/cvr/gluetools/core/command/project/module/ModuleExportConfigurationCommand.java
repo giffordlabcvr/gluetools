@@ -13,11 +13,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@CommandClass(commandWords="export",
+@CommandClass(commandWords={"export", "configuration"},
 	docoptUsages="<fileName>",
 	description = "Export module configuration to a file", 
 	metaTags = { CmdMeta.consoleOnly } )
-public class ModuleExportCommand extends ModuleDocumentCommand<OkResult> {
+public class ModuleExportConfigurationCommand extends ModuleDocumentCommand<OkResult> {
 
 	private static final String FILE_NAME = "fileName";
 	private String fileName;
