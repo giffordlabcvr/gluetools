@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -48,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentVariationScanCommand.Alig
 		metaTags = {}	
 )
 public class AlignmentVariationScanCommand 
-	extends ModuleProvidedCommand<AlignmentVariationScanResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+	extends ModulePluginCommand<AlignmentVariationScanResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String RECURSIVE = "recursive";

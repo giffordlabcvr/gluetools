@@ -25,11 +25,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
@@ -57,6 +54,16 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	private boolean updateMultiple;
 	private Pattern columnDelimiterRegex;
 	
+	public TextFilePopulator() {
+		super();
+		addModulePluginCmdClass(PopulateCommand.class);
+		addSimplePropertyName(SKIP_MISSING);
+		addSimplePropertyName(UPDATE_MULTIPLE);
+		addSimplePropertyName(COLUMN_DELIMITER_REGEX);
+		
+	}
+
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
@@ -75,10 +82,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		if(!numberColumns.isEmpty() && !headerColumns.isEmpty()) {
 			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Either all columns must be numbered or none may be");
 		}
-		
-		addProvidedCmdClass(PopulateCommand.class);
-		addProvidedCmdClass(ShowPopulatorCommand.class);
-		addProvidedCmdClass(ConfigurePopulatorCommand.class);
 	}
 
 	
@@ -219,7 +222,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			"The <batchSize> argument allows you to control how often updates are committed to the database "+
 					"during the import. The default is every 250 text file lines. A larger <batchSize> means fewer database "+
 					"accesses, but requires more Java heap memory.") 
-	public static class PopulateCommand extends ModuleProvidedCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModulePluginCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 
 		private Integer batchSize;
 		private String fileName;
@@ -246,19 +249,5 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 		
 	}
-
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this populator") 
-	public static class ShowPopulatorCommand extends ShowConfigCommand<TextFilePopulator> {}
-	
-	
-	@SimpleConfigureCommandClass(
-			propertyNames={SKIP_MISSING, 
-					UPDATE_MULTIPLE, 
-					COLUMN_DELIMITER_REGEX}
-	)
-	public static class ConfigurePopulatorCommand extends SimpleConfigureCommand<TextFilePopulator> {}
 
 }

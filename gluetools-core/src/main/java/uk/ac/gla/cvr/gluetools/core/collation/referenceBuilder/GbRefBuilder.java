@@ -30,7 +30,7 @@ public class GbRefBuilder extends ModulePlugin<GbRefBuilder> {
 	
 	public GbRefBuilder() {
 		super();
-		addProvidedCmdClass(BuildReferenceCommand.class);
+		addModulePluginCmdClass(BuildReferenceCommand.class);
 	}
 
 	@Override

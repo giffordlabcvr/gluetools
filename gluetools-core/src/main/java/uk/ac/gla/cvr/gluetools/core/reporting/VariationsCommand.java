@@ -5,13 +5,13 @@ import java.util.Optional;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class VariationsCommand<R extends CommandResult> extends ModuleProvidedCommand<R, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+public abstract class VariationsCommand<R extends CommandResult> extends ModulePluginCommand<R, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	
 	public static final String ALIGNMENT_NAME = "alignmentName";

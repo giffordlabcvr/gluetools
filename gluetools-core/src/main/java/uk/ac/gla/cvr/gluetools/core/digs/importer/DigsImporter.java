@@ -10,9 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.CayenneRuntimeException;
@@ -24,6 +26,7 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -34,13 +37,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporterException.Code;
-import uk.ac.gla.cvr.gluetools.core.digs.importer.ImportExtractedFieldRule.FieldMissingAction;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.model.DigsObject;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.model.Extracted;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
@@ -52,9 +55,11 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModel;
 
-@PluginClass(elemName="digsImporter")
+@PluginClass(elemName=DigsImporter.ELEM_NAME)
 public class DigsImporter extends ModulePlugin<DigsImporter> {
 
+	public static final String ELEM_NAME = "digsImporter";
+ 	
 	
 	public static String 
 		DIGS_DB_JDBC_URL_PROPERTY = "gluetools.core.digs.db.jdbc.url"; 
@@ -78,14 +83,14 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 	
 	public DigsImporter() {
 		super();
-		addProvidedCmdClass(ListExtractedCommand.class);
-		addProvidedCmdClass(ImportExtractedCommand.class);
-		addProvidedCmdClass(ListDigsDbsCommand.class);
-		for(String extractedField : Extracted.ALL_PROPERTIES) {
-			ImportExtractedFieldRule importExtractedFieldRule = new ImportExtractedFieldRule();
-			importExtractedFieldRule.setExtractedField(extractedField);
-			extractedFieldToRule.put(extractedField, importExtractedFieldRule);
-		}
+		addModulePluginCmdClass(ListExtractedCommand.class);
+		addModulePluginCmdClass(ImportExtractedCommand.class);
+		addModulePluginCmdClass(ListDigsDbsCommand.class);
+		addModulePluginCmdClass(SynchroniseFieldsExtractedCommand.class);
+		addModulePluginCmdClass(CheckFieldsExtractedCommand.class);
+		addModuleDocumentCmdClass(ShowMappingExtractedCommand.class);
+		addModuleDocumentCmdClass(UpdateMappingExtractedCommand.class);
+		addSimplePropertyName(SEQUENCE_ID_TEMPLATE);
 	}
 
 	
@@ -101,19 +106,47 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 		} catch(ParseException pe) {
 			throw new RuntimeException(pe);
 		}
-		sequenceIdTemplate = Optional.ofNullable(
+		this.sequenceIdTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, SEQUENCE_ID_TEMPLATE, false))
 				.orElse(defaultTemplate);
-		List<Element> importExtractedRuleElems = PluginUtils.findConfigElements(configElem, ImportExtractedFieldRule.EXTRACTED_FIELD_RULE);
-		List<ImportExtractedFieldRule> importExtractedRules = PluginFactory.createPlugins(pluginConfigContext, 
-				ImportExtractedFieldRule.class, importExtractedRuleElems);
-		for(ImportExtractedFieldRule importExtractedFieldRule: importExtractedRules) {
-			extractedFieldToRule.put(importExtractedFieldRule.getExtractedField(), importExtractedFieldRule);
+		this.extractedFieldToRule = initRulesMap(pluginConfigContext, configElem);
+		Set<String> glueSequenceFields = new LinkedHashSet<String>();
+		for(ImportExtractedFieldRule importExtractedFieldRule: initRulesMap(pluginConfigContext, configElem).values()) {
+			if(importExtractedFieldRule.getGlueFieldRequirement() != ImportExtractedFieldRule.GlueFieldRequirement.IGNORE) {
+				String sequenceFieldToUse = importExtractedFieldRule.getSequenceFieldToUse();
+				if(glueSequenceFields.contains(sequenceFieldToUse)) {
+					throw new PluginConfigException(PluginConfigException.Code.CONFIG_CONSTRAINT_VIOLATION, "Multiple rules map to GLUE sequence field "+sequenceFieldToUse);
+				}
+				glueSequenceFields.add(sequenceFieldToUse);
+			}
 		}
+
 	}
 
 
 
+
+	public static Map<String, ImportExtractedFieldRule> initRulesMap(
+			PluginConfigContext pluginConfigContext, Element configElem) {
+		Map<String, ImportExtractedFieldRule> extractedFieldToRule = new LinkedHashMap<String, ImportExtractedFieldRule>();
+		List<Element> importExtractedRuleElems = PluginUtils.findConfigElements(configElem, ImportExtractedFieldRule.EXTRACTED_FIELD_RULE);
+		List<ImportExtractedFieldRule> importExtractedRules = PluginFactory.createPlugins(pluginConfigContext, 
+				ImportExtractedFieldRule.class, importExtractedRuleElems);
+		for(String extractedField : Extracted.ALL_PROPERTIES) {
+			ImportExtractedFieldRule importExtractedFieldRule = new ImportExtractedFieldRule();
+			importExtractedFieldRule.setExtractedField(extractedField);
+			extractedFieldToRule.put(extractedField, importExtractedFieldRule);
+		}
+		for(ImportExtractedFieldRule importExtractedFieldRule: importExtractedRules) {
+			extractedFieldToRule.put(importExtractedFieldRule.getExtractedField(), importExtractedFieldRule);
+		}
+		return extractedFieldToRule;
+	}
+
+
+	public List<ImportExtractedFieldRule> getImportExtractedFieldRules() {
+		return new ArrayList<ImportExtractedFieldRule>(extractedFieldToRule.values());
+	}
 
 
 	private <C extends DigsObject> List<C> query(ObjectContext digsObjectContext, Class<C> objClass, SelectQuery query) {
@@ -159,6 +192,16 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 	}
 	
 	public CreateResult importHits(CommandContext cmdContext, String digsDbName, String sourceName, Optional<Expression> whereClause) {
+		
+		ProjectMode projectMode = (ProjectMode) cmdContext.popCommandMode();
+		String projectName = projectMode.getProject().getName();
+		// run the command in schema-project mode
+		try(ModeCloser modeCloser = cmdContext.pushCommandMode("schema-project", projectName)) {
+			CheckFieldsExtractedCommand.checkFields(cmdContext, this);
+		} finally {
+			cmdContext.pushCommandMode(projectMode);
+		}
+		
 		List<Extracted> extracteds = listExtracted(cmdContext, digsDbName, whereClause);
 		int numSequences = 0;
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName), true);
@@ -166,20 +209,6 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 			source = GlueDataObject.create(cmdContext, Source.class, Source.pkMap(sourceName), false);
 		}
 		cmdContext.commit();
-		
-		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-		extractedFieldToRule.values().forEach(rule -> {
-			String sequenceFieldToUse = rule.getSequenceFieldToUse();
-			FieldMissingAction fieldMissingAction = rule.getFieldMissingAction();
-			if(!projectMode.getProject().getCustomSequenceFieldNames().contains(sequenceFieldToUse)) {
-				if(fieldMissingAction == FieldMissingAction.ERROR) {
-					throw new DigsImporterException(DigsImporterException.Code.NO_SUCH_SEQUENCE_FIELD, sequenceFieldToUse);
-				}
-				if(fieldMissingAction == FieldMissingAction.WARN) {
-					GlueLogger.getGlueLogger().warning("No such sequence field: "+sequenceFieldToUse);
-				}
-			}
-		});
 		
 		for(Extracted extracted: extracteds) {
 			String sequenceId = runIdTemplate(sequenceIdTemplate, extracted);

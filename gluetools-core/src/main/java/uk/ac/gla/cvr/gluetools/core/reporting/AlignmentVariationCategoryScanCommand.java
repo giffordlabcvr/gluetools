@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -42,7 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentVariationCategoryScanComm
 		metaTags = {}	
 )
 public class AlignmentVariationCategoryScanCommand 
-	extends ModuleProvidedCommand<AlignmentVariationCategoryScanResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+	extends ModulePluginCommand<AlignmentVariationCategoryScanResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String RECURSIVE = "recursive";

@@ -23,12 +23,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand.SequenceFieldNameInstantiator;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
@@ -48,6 +44,11 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 
 	private List<XmlPopulatorRule> rules;
 	
+	public GenbankXmlPopulator() {
+		super();
+		addModulePluginCmdClass(PopulateCommand.class);
+	}
+
 	protected List<XmlPopulatorRule> getRules() {
 		return rules;
 	}
@@ -59,9 +60,6 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(populatorRuleFactory.getElementNames());
 		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
-		addProvidedCmdClass(PopulateCommand.class);
-		addProvidedCmdClass(ShowPopulatorCommand.class);
-		addProvidedCmdClass(ConfigurePopulatorCommand.class);
 	}
 
 	private void populate(CommandContext cmdContext, String sourceName, String sequenceID, String format, 
@@ -156,7 +154,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 					"accesses, but requires more Java heap memory. "+
 					"If <fieldName> arguments are supplied, the populator will not update any field unless it appears in the <fieldName> list. "+
 					"If no <fieldName> arguments are supplied, the populator may update any field.") 
-	public static class PopulateCommand extends ModuleProvidedCommand<PopulateResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModulePluginCommand<PopulateResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
 
 		public static final String BATCH_SIZE = "batchSize";
 		public static final String WHERE_CLAUSE = "whereClause";
@@ -194,18 +192,6 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		}
 		
 	}
-
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this populator") 
-	public static class ShowPopulatorCommand extends ShowConfigCommand<GenbankXmlPopulator> {}
-	
-	
-	@SimpleConfigureCommandClass(
-			propertyNames={"whereClause"}
-	)
-	public static class ConfigurePopulatorCommand extends SimpleConfigureCommand<GenbankXmlPopulator> {}
 
 	
 }

@@ -23,18 +23,18 @@ public class ImportExtractedFieldRule implements Plugin {
 	
 	public static final String EXTRACTED_FIELD = "extractedField";
 	public static final String SEQUENCE_FIELD = "sequenceField";
-	public static final String FIELD_MISSING_ACTION = "fieldMissingAction";
+	public static final String GLUE_FIELD_REQUIREMENT = "glueFieldRequirement";
 
 	
-	public enum FieldMissingAction {
+	public enum GlueFieldRequirement {
 		WARN, 
 		IGNORE, 
-		ERROR
+		REQUIRE
 	}
 
 	private String extractedField;
 	private String sequenceField;
-	private FieldMissingAction fieldMissingAction = FieldMissingAction.WARN;
+	private GlueFieldRequirement glueFieldRequirement = GlueFieldRequirement.WARN;
 
 	
 	public void setExtractedField(String extractedField) {
@@ -54,8 +54,8 @@ public class ImportExtractedFieldRule implements Plugin {
 			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, EXTRACTED_FIELD, "Field options: "+extractedFieldOptions, extractedField);
 		}
 		sequenceField = PluginUtils.configureStringProperty(configElem, SEQUENCE_FIELD, false);
-		fieldMissingAction = Optional.of(PluginUtils
-				.configureEnumProperty(FieldMissingAction.class, configElem, FIELD_MISSING_ACTION, false)).orElse(FieldMissingAction.WARN);
+		glueFieldRequirement = Optional.of(PluginUtils
+				.configureEnumProperty(GlueFieldRequirement.class, configElem, GLUE_FIELD_REQUIREMENT, false)).orElse(GlueFieldRequirement.WARN);
 		
 	}
 	
@@ -90,8 +90,8 @@ public class ImportExtractedFieldRule implements Plugin {
 		return sequenceField.toString();
 	}
 
-	public FieldMissingAction getFieldMissingAction() {
-		return fieldMissingAction;
+	public GlueFieldRequirement getGlueFieldRequirement() {
+		return glueFieldRequirement;
 	}
 
 	

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -346,7 +347,35 @@ public class GlueXmlUtils {
 		
 	}
 	
-	
+	public static void stripWhitespace(Node node) {
+		NodeList childNodes = node.getChildNodes();
+		// check if this node has any children which are elements.
+		boolean anyChildElements = false;
+		for(int i = 0; i< childNodes.getLength(); i++) {
+			if(childNodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				anyChildElements = true;
+				break;
+			}
+		}
+		List<Node> nodesToRemove = new LinkedList<Node>();
+		if(anyChildElements) {
+			for(int i = 0; i< childNodes.getLength(); i++) {
+				Node childNode = childNodes.item(i);
+				if(childNode.getNodeType() == Node.ELEMENT_NODE) {
+					stripWhitespace(childNode);
+				} else if(childNode.getNodeType() == Node.TEXT_NODE) {
+					Text childText = (Text) childNode;
+					if(childText.getNodeValue().trim().isEmpty()) {
+						nodesToRemove.add(childNode);
+					}
+				}
+			}
+			for(Node childNode: nodesToRemove) {
+				node.removeChild(childNode);
+			}
+		}
+		
+	}
 	
 		/*
 		XPath xpath = XPathFactory.newInstance().newXPath();

@@ -16,11 +16,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
@@ -37,13 +34,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="fastaAlignmentExporter")
 public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignmentExporter> {
 	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		addProvidedCmdClass(ExportCommand.class);
-		addProvidedCmdClass(ShowExporterCommand.class);
-		addProvidedCmdClass(ConfigureExporterCommand.class);
+	public FastaAlignmentExporter() {
+		super();
+		addModulePluginCmdClass(ExportCommand.class);
 	}
 
 	public OkResult doExport(ConsoleCommandContext cmdContext, String fileName, 
@@ -128,7 +121,7 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 			description="Export alignment to a FASTA file", 
 			furtherHelp="The file is saved to a location relative to the current load/save directory. "+
 			"If --includeReference is specified, the reference sequence will be included and will be the first sequence in the output.") 
-	public static class ExportCommand extends ModuleProvidedCommand<OkResult, FastaAlignmentExporter> implements ProvidedProjectModeCommand {
+	public static class ExportCommand extends ModulePluginCommand<OkResult, FastaAlignmentExporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		private String alignmentName;
@@ -171,20 +164,6 @@ public class FastaAlignmentExporter extends AbstractFastaExporter<FastaAlignment
 		}
 
 	}
-	
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this exporter") 
-	public static class ShowExporterCommand extends ShowConfigCommand<FastaAlignmentExporter> {}
-
-	@SimpleConfigureCommandClass(
-			propertyNames={"idTemplate"}
-	)
-	public static class ConfigureExporterCommand extends SimpleConfigureCommand<FastaAlignmentExporter> {
-		
-	}
-
 
 	
 	

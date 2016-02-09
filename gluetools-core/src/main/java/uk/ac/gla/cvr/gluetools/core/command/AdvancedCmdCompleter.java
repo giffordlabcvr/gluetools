@@ -13,7 +13,9 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
 
@@ -43,6 +45,22 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 	}
 
+	private class StaticStringListInstantiator extends VariableInstantiator {
+		private List<String> staticStringList;
+		@SuppressWarnings("unused")
+		public StaticStringListInstantiator(List<String> staticStringList) {
+			super();
+			this.staticStringList = staticStringList;
+		}
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			return staticStringList.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+		}
+	}
+
+	
 	protected abstract class QualifiedDataObjectNameInstantiator extends VariableInstantiator {
 		private Class<? extends GlueDataObject> theClass;
 		private String nameProperty;
@@ -111,6 +129,10 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		return variableInstantiator;
 	}
 
+	protected void registerStringListLookup(String variableName, List<String> staticStringList) {
+		registerVariableInstantiator(variableName, new StaticStringListInstantiator(staticStringList));
+	}
+	
 	protected void registerDataObjectNameLookup(String variableName, Class<? extends GlueDataObject> theClass, String nameProperty) {
 		registerVariableInstantiator(variableName, new SimpleDataObjectNameInstantiator(theClass, nameProperty));
 	}
@@ -245,5 +267,43 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 				}).collect(Collectors.toList());
 		return suggestions;
 	}
+	
+	
+	public final static class SequenceFieldNameInstantiator extends VariableInstantiator {
+		
+		private boolean customOnly = false;
+		
+		public SequenceFieldNameInstantiator() {
+			this(false);
+		}
+
+		public SequenceFieldNameInstantiator(boolean customOnly) {
+			super();
+			this.customOnly = customOnly;
+		}
+
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(
+				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			return getSequenceFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+		}
+
+		protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
+			if(customOnly) {
+				return getProject(cmdContext).getCustomSequenceFieldNames();
+			} else {
+				return getProject(cmdContext).getAllSequenceFieldNames();
+			}
+		}
+
+		private Project getProject(ConsoleCommandContext cmdContext) {
+			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+			Project project = insideProjectMode.getProject();
+			return project;
+		}
+	}
+
 
 }

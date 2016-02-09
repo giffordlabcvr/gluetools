@@ -25,11 +25,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -42,6 +39,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="fastaImporter")
 public class FastaImporter extends SequenceImporter<FastaImporter> implements FieldPopulator {
 
+	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";
+	private static final String SOURCE_NAME = "sourceName";
+	
 	private Pattern nullRegex = null;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters = null;
@@ -49,14 +49,21 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 	private List<FastaFieldParser> fieldParsers;
 	private boolean skipExistingSequences = false;
 
+	public FastaImporter() {
+		super();
+		addModulePluginCmdClass(ImportCommand.class);
+		addSimplePropertyName(SKIP_EXISTING_SEQUENCES);
+		addSimplePropertyName(SOURCE_NAME);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		sourceName = Optional.ofNullable(PluginUtils.
-				configureStringProperty(configElem, "sourceName", false)).orElse("local");
+				configureStringProperty(configElem, SOURCE_NAME, false)).orElse("local");
 		skipExistingSequences = Optional.ofNullable(PluginUtils.
-				configureBooleanProperty(configElem, "skipExistingSequences", false)).orElse(false);
+				configureBooleanProperty(configElem, SKIP_EXISTING_SEQUENCES, false)).orElse(false);
 		List<Element> idParserElems = PluginUtils.findConfigElements(configElem, "idParser", 0, 1);
 		if(!idParserElems.isEmpty()) {
 			Element idParserElem  = idParserElems.get(0);
@@ -69,9 +76,6 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 		}
 		List<Element> fieldParserElems = PluginUtils.findConfigElements(configElem, "fieldParser");
 		fieldParsers = PluginFactory.createPlugins(pluginConfigContext, FastaFieldParser.class, fieldParserElems);
-		addProvidedCmdClass(ImportCommand.class);
-		addProvidedCmdClass(ShowImporterCommand.class);
-		addProvidedCmdClass(ConfigureImporterCommand.class);
 	}
 
 	public CreateResult doImport(ConsoleCommandContext cmdContext, String fileName) {
@@ -127,7 +131,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 			description="Import sequences from a FASTA file", 
 			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
-	public static class ImportCommand extends ModuleProvidedCommand<CreateResult, FastaImporter> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModulePluginCommand<CreateResult, FastaImporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		
@@ -152,17 +156,6 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 
 	}
 		
-
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<FastaImporter> {}
-
-	@SimpleConfigureCommandClass(
-			propertyNames={"sourceName"}
-	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<FastaImporter> {}
 
 	@Override
 	public RegexExtractorFormatter getMainExtractor() {

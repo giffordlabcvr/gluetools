@@ -21,6 +21,11 @@ public class GroupHelpLine extends HelpLine {
 	public String getDescription() {
 		return description;
 	}
+
+	@Override
+	public String joinedCommandWords() {
+		return super.joinedCommandWords()+" ...";
+	}
 	
 
 }

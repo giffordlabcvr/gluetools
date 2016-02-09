@@ -15,7 +15,7 @@ public class ProjectSchemaModeCommandFactory extends BaseCommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
-		registerCommandClass(TableSequencesCommand.class);
+		registerCommandClass(TableCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}
 	

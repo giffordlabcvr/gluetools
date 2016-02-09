@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.ProjectSchemaModeCommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences.TableSequencesModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table.TableSequencesModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -271,8 +272,10 @@ private static Multiton factories = new Multiton();
 	public List<CompletionSuggestion> getCommandWordSuggestions(ConsoleCommandContext cmdContext, List<String> lookupBasis, 
 			String prefix, boolean commandCompleters, boolean requireModeWrappable) {
 		refreshCommandTree(cmdContext);
-		return rootNode.getCommandWordSuggestions(cmdContext, new LinkedList<String>(lookupBasis), prefix, commandCompleters, 
-				requireModeWrappable);
+		ArrayList<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>(rootNode.getCommandWordSuggestions(cmdContext, 
+				new LinkedList<String>(lookupBasis), prefix, commandCompleters, requireModeWrappable));
+		Collections.sort(suggestions);
+		return suggestions;
 	}
 	
 	protected void refreshCommandTree(CommandContext cmdContext) {}

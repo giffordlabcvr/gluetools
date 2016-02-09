@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 
 import org.w3c.dom.Element;
 
@@ -6,17 +6,17 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
-import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.TableSequencesCommand;
+import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.TableCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = TableSequencesModeCommandFactory.class)
-public class TableSequencesMode extends CommandMode<TableSequencesCommand> {
+public class TableMode extends CommandMode<TableCommand> {
 
 	
 	private Project project;
 	
-	public TableSequencesMode(CommandContext cmdContext, Project project, TableSequencesCommand command, String sequencesWord) {
-		super(command, sequencesWord);
+	public TableMode(CommandContext cmdContext, Project project, TableCommand command, String tableName) {
+		super(command, tableName);
 		this.project = project;
 	}
 
@@ -25,9 +25,13 @@ public class TableSequencesMode extends CommandMode<TableSequencesCommand> {
 	public void addModeConfigToCommandElem(Class<? extends Command> cmdClass,
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
-		if(TableSequencesModeCommand.class.isAssignableFrom(cmdClass)) {
+		if(TableModeCommand.class.isAssignableFrom(cmdClass)) {
 			appendModeConfigToElem(elem, "projectName", project.getName());
 		}
+	}
+
+	public Project getProject() {
+		return project;
 	}
 
 	

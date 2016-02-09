@@ -32,8 +32,8 @@ public class DigsProber extends ModulePlugin<DigsProber> {
 
 	public DigsProber() {
 		super();
-		addProvidedCmdClass(BuildTargetGroupCommand.class);
-		addProvidedCmdClass(PreviewHitsCommand.class);
+		addModulePluginCmdClass(BuildTargetGroupCommand.class);
+		addModulePluginCmdClass(PreviewHitsCommand.class);
 	}
 
 	

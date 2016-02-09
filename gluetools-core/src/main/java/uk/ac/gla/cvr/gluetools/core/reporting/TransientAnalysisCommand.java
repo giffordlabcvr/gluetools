@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		},
 		metaTags = { CmdMeta.consumesBinary }	
 )
-public class TransientAnalysisCommand extends ModuleProvidedCommand<TransientAnalysisCommand.TransientAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+public class TransientAnalysisCommand extends ModulePluginCommand<TransientAnalysisCommand.TransientAnalysisResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 	
 
 	public static final String HEADER_DETECT = "headerDetect";

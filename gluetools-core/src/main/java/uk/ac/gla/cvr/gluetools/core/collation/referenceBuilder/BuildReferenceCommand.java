@@ -10,7 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -26,7 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		metaTags = {CmdMeta.updatesDatabase},
 		furtherHelp = "The named sequence must exist and be in Genbank XML format."
 )
-public class BuildReferenceCommand extends ModuleProvidedCommand<CreateResult, GbRefBuilder> implements ProvidedProjectModeCommand {
+public class BuildReferenceCommand extends ModulePluginCommand<CreateResult, GbRefBuilder> implements ProvidedProjectModeCommand {
 
 	private static final String SOURCE_NAME = "sourceName";
 	private static final String SEQUENCE_ID = "sequenceID";

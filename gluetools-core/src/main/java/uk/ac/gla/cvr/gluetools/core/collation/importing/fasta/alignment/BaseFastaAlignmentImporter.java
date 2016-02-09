@@ -66,6 +66,14 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 	private Boolean updateExistingMembers;
 	private Boolean updateExistingAlignment;
 	
+	public BaseFastaAlignmentImporter() {
+		super();
+		addSimplePropertyName(IGNORE_REGEX_MATCH_FAILURES);
+		addSimplePropertyName(IGNORE_MISSING_SEQUENCES);
+		addSimplePropertyName(UPDATE_EXISTING_MEMBERS);
+		addSimplePropertyName(UPDATE_EXISTING_ALIGNMENT); 
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {

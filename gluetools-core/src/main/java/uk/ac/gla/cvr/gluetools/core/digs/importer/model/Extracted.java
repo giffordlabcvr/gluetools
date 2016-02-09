@@ -24,12 +24,9 @@ public class Extracted extends _Extracted {
 		    _Extracted.QUERY_END_PROPERTY,
 		    _Extracted.QUERY_START_PROPERTY,
 		    _Extracted.SCAFFOLD_PROPERTY,
-		    _Extracted.SEQUENCE_PROPERTY,
-		    _Extracted.SEQUENCE_LENGTH_PROPERTY,
 		    _Extracted.SUBJECT_END_PROPERTY,
 		    _Extracted.SUBJECT_START_PROPERTY,
 		    _Extracted.TARGET_NAME_PROPERTY,
-		    _Extracted.TIMESTAMP_PROPERTY,
 		    _Extracted.VERSION_PROPERTY,
 	};
 	

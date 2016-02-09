@@ -12,9 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -33,27 +30,36 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="blastAligner")
 public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, BlastAligner> {
 
+	private static final String ALLOW_REVERSE_HSPS = "allowReverseHsps";
+	private static final String MINIMUM_SCORE = "minimumScore";
+	private static final String MINIMUM_BIT_SCORE = "minimumBitScore";
+	
 	private BlastRunner blastRunner = new BlastRunner();
 	private Optional<Double> minimumBitScore;
 	private Optional<Integer> minimumScore;
 	private Boolean allowReverseHsps;
 	
 	
+	public BlastAligner() {
+		super();
+		addModulePluginCmdClass(BlastAlignCommand.class);
+		addModulePluginCmdClass(BlastFileAlignCommand.class);
+		addSimplePropertyName(ALLOW_REVERSE_HSPS);
+		addSimplePropertyName(MINIMUM_BIT_SCORE);
+		addSimplePropertyName(MINIMUM_SCORE);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		minimumBitScore = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "minimumBitScore", false));
-		minimumScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "minimumScore", false));
-		allowReverseHsps = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "allowReverseHsps", false)).orElse(false);
+		minimumBitScore = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MINIMUM_BIT_SCORE, false));
+		minimumScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MINIMUM_SCORE, false));
+		allowReverseHsps = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALLOW_REVERSE_HSPS, false)).orElse(false);
 		
 		Element blastRunnerElem = PluginUtils.findConfigElement(configElem, "blastRunner");
 		if(blastRunnerElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, blastRunnerElem, blastRunner);
 		}
-		addProvidedCmdClass(ShowAlignerCommand.class);
-		addProvidedCmdClass(ConfigureAlignerCommand.class);
-		addProvidedCmdClass(BlastAlignCommand.class);
-		addProvidedCmdClass(BlastFileAlignCommand.class);
 	}
 	
 	
@@ -95,17 +101,6 @@ public class BlastAligner extends Aligner<BlastAligner.BlastAlignerResult, Blast
 
 	}
 	
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this aligner") 
-	public static class ShowAlignerCommand extends ShowConfigCommand<BlastAligner> {}
-
-	@SimpleConfigureCommandClass(
-			propertyNames={}
-	)
-	public static class ConfigureAlignerCommand extends SimpleConfigureCommand<BlastAligner> {}
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class<? extends Aligner.AlignCommand> getAlignCommandClass() {

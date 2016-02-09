@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 
 @CommandClass( 
@@ -17,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 		docoptOptions={},
 		metaTags={},
 		description="Validate that a project is correctly defined.", 
-		furtherHelp="Also validates the project's reference sequences and features") 
+		furtherHelp="Currently, this validates the project's reference sequences, features and modules") 
 public class ProjectValidateCommand extends ProjectModeCommand<OkResult> {
 
 	@Override
@@ -28,6 +29,9 @@ public class ProjectValidateCommand extends ProjectModeCommand<OkResult> {
 		List<ReferenceSequence> refSeqs = 
 				GlueDataObject.query(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
 		refSeqs.forEach(refSeq -> refSeq.validate(cmdContext));
+		List<Module> modules = 
+				GlueDataObject.query(cmdContext, Module.class, new SelectQuery(Module.class));
+		modules.forEach(module -> module.validate(cmdContext));
 		return new OkResult();
 	}
 	

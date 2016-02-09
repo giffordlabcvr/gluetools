@@ -1,6 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
-public class CompletionSuggestion {
+public class CompletionSuggestion implements Comparable<CompletionSuggestion>{
 
 	private String suggestedWord;
 	private boolean completed;
@@ -17,6 +17,11 @@ public class CompletionSuggestion {
 
 	public boolean isCompleted() {
 		return completed;
+	}
+
+	@Override
+	public int compareTo(CompletionSuggestion o) {
+		return suggestedWord.compareTo(o.suggestedWord);
 	}
 	
 }

@@ -16,9 +16,9 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	
 	public SamReporter() {
 		super();
-		addProvidedCmdClass(SamVariationsScanCommand.class);
-		addProvidedCmdClass(SamNucleotidesCommand.class);
-		addProvidedCmdClass(SamAminoAcidsCommand.class);
+		addModulePluginCmdClass(SamVariationsScanCommand.class);
+		addModulePluginCmdClass(SamNucleotidesCommand.class);
+		addModulePluginCmdClass(SamAminoAcidsCommand.class);
 	}
 
 	@Override

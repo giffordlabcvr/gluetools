@@ -13,11 +13,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
@@ -42,9 +39,7 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 
 	public BlastFastaAlignmentImporter() {
 		super();
-		addProvidedCmdClass(ShowImporterCommand.class);
-		addProvidedCmdClass(ImportCommand.class);
-		addProvidedCmdClass(ConfigureImporterCommand.class);
+		addModulePluginCmdClass(ImportCommand.class);
 	}
 
 	@Override
@@ -125,7 +120,7 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory. "+
 			"An existing unconstrained alignment will be updated with new members, or a new unconstrained alignment will be created.") 
-	public static class ImportCommand extends ModuleProvidedCommand<FastaAlignmentImporterResult, BlastFastaAlignmentImporter> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModulePluginCommand<FastaAlignmentImporterResult, BlastFastaAlignmentImporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		private String alignmentName;
@@ -156,17 +151,5 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 
 	}
 	
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<BlastFastaAlignmentImporter> {}
-
-	
-	@SimpleConfigureCommandClass(
-			propertyNames={IGNORE_REGEX_MATCH_FAILURES, IGNORE_MISSING_SEQUENCES, 
-					UPDATE_EXISTING_MEMBERS, UPDATE_EXISTING_ALIGNMENT}
-	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<BlastFastaAlignmentImporter> {}
 	
 }

@@ -1,14 +1,21 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder;
@@ -22,7 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<fieldName>"},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Delete a field from the table") 
-public class DeleteSequenceFieldCommand extends TableSequencesModeCommand<DeleteResult> {
+public class DeleteFieldCommand extends TableModeCommand<DeleteResult> {
 
 	private String fieldName;
 	
@@ -47,7 +54,19 @@ public class DeleteSequenceFieldCommand extends TableSequencesModeCommand<Delete
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerDataObjectNameLookup("fieldName", Field.class, Field.NAME_PROPERTY);
+			registerVariableInstantiator("fieldName", new VariableInstantiator() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					TableMode tableMode = (TableMode) cmdContext.peekCommandMode();
+					String projectName = tableMode.getProject().getName();
+					List<Field> fields = GlueDataObject.query(cmdContext, Field.class, new SelectQuery(Field.class, ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, projectName)));
+					return fields.stream().map(f -> new CompletionSuggestion(f.getName(), true)).collect(Collectors.toList());
+				}
+			});
 		}
 	}
 

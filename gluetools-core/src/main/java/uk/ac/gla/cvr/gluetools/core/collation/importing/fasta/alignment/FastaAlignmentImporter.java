@@ -15,11 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
@@ -47,9 +44,11 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 
 	public FastaAlignmentImporter() {
 		super();
-		addProvidedCmdClass(ShowImporterCommand.class);
-		addProvidedCmdClass(ImportCommand.class);
-		addProvidedCmdClass(ConfigureImporterCommand.class);
+		addModulePluginCmdClass(ImportCommand.class);
+		addSimplePropertyName(SEQUENCE_GAP_REGEX);
+		addSimplePropertyName(REQUIRE_TOTAL_COVERAGE);
+		addSimplePropertyName(ALLOW_AMBIGUOUS_SEGMENTS);
+		addSimplePropertyName(SKIP_ROWS_WITH_MISSING_SEGMENTS);
 	}
 
 	@Override
@@ -185,7 +184,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory. "+
 			"An existing unconstrained alignment will be updated with new members, or a new unconstrained alignment will be created.") 
-	public static class ImportCommand extends ModuleProvidedCommand<FastaAlignmentImporterResult, FastaAlignmentImporter> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModulePluginCommand<FastaAlignmentImporterResult, FastaAlignmentImporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		private String alignmentName;
@@ -216,17 +215,6 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 
 	}
 	
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<FastaAlignmentImporter> {}
-
 	
-	@SimpleConfigureCommandClass(
-			propertyNames={IGNORE_REGEX_MATCH_FAILURES, IGNORE_MISSING_SEQUENCES, SEQUENCE_GAP_REGEX, 
-					REQUIRE_TOTAL_COVERAGE, UPDATE_EXISTING_MEMBERS, UPDATE_EXISTING_ALIGNMENT}
-	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<FastaAlignmentImporter> {}
 	
 }

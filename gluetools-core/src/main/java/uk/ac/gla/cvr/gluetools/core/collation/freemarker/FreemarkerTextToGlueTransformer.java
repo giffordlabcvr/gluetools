@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
@@ -50,7 +50,7 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 
 	public FreemarkerTextToGlueTransformer() {
 		super();
-		addProvidedCmdClass(TransformCommand.class);
+		addModulePluginCmdClass(TransformCommand.class);
 	}
 
 	@Override
@@ -201,7 +201,7 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 			description="Read a CSV file and transform to GLUE using a template", 
 			metaTags = { CmdMeta.consoleOnly }
 	) 
-	public static class TransformCommand extends ModuleProvidedCommand<CommandResult, FreemarkerTextToGlueTransformer> implements ProvidedProjectModeCommand {
+	public static class TransformCommand extends ModulePluginCommand<CommandResult, FreemarkerTextToGlueTransformer> implements ProvidedProjectModeCommand {
 
 		private String inputFile;
 		private String outputFile;

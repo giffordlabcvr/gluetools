@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.console.help;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -46,6 +47,7 @@ public class HelpCommand extends Command<ConsoleCommandResult> {
 		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
 			return new HelpSpecificCommandResult(cmdContext, ((SpecificCommandHelpLine) helpLines.get(0)).getCmdClass());
 		} else {
+			Collections.sort(helpLines);
 			return new HelpCommandResult(helpLines);
 		}
 	}

@@ -19,13 +19,19 @@ import freemarker.template.TemplateModel;
 
 public class AbstractFastaExporter<T extends AbstractFastaExporter<T>> extends ModulePlugin<T> {
 
+	private static final String ID_TEMPLATE = "idTemplate";
 	private Template idTemplate;
 	
+	public AbstractFastaExporter() {
+		super();
+		addSimplePropertyName(ID_TEMPLATE);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		idTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "idTemplate", false);
+		idTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false);
 	}
 
 	protected String generateFastaId(Sequence seq) {

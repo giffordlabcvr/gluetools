@@ -55,13 +55,18 @@ public class PluginFactory<P extends Plugin> {
 	}
 	
 	public P createFromElement(PluginConfigContext pluginConfigContext, Element element)  {
+		P plugin = instantiateFromElement(element);
+		configurePlugin(pluginConfigContext, element, plugin);
+		return plugin;
+	}
+
+	public P instantiateFromElement(Element element) {
 		String elementName = element.getNodeName();
 		Class<? extends P> pluginClass = classForElementName(elementName);
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
 		P plugin = instantiatePlugin(element, pluginClass);
-		configurePlugin(pluginConfigContext, element, plugin);
 		return plugin;
 	}
 

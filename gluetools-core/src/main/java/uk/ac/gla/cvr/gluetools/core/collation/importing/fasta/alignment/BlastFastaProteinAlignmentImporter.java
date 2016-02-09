@@ -19,11 +19,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
@@ -60,9 +57,8 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 
 	public BlastFastaProteinAlignmentImporter() {
 		super();
-		addProvidedCmdClass(ShowImporterCommand.class);
-		addProvidedCmdClass(ImportCommand.class);
-		addProvidedCmdClass(ConfigureImporterCommand.class);
+		addModulePluginCmdClass(ImportCommand.class);
+		addSimplePropertyName(MIN_ROW_COVERAGE_PERCENT);
 	}
 
 	@Override
@@ -217,7 +213,7 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 			metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 			furtherHelp="The file is loaded from a location relative to the current load/save directory. "+
 			"An existing unconstrained alignment will be updated with new members, or a new unconstrained alignment will be created.") 
-	public static class ImportCommand extends ModuleProvidedCommand<FastaProteinAlignmentImporterResult, BlastFastaProteinAlignmentImporter> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModulePluginCommand<FastaProteinAlignmentImporterResult, BlastFastaProteinAlignmentImporter> implements ProvidedProjectModeCommand {
 
 		private String fileName;
 		private String alignmentName;
@@ -248,19 +244,6 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 
 	}
 	
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<BlastFastaProteinAlignmentImporter> {}
-
-	
-	@SimpleConfigureCommandClass(
-			propertyNames={IGNORE_REGEX_MATCH_FAILURES, IGNORE_MISSING_SEQUENCES, 
-					UPDATE_EXISTING_MEMBERS, UPDATE_EXISTING_ALIGNMENT}
-	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<BlastFastaProteinAlignmentImporter> {}
-
 
 	
 }

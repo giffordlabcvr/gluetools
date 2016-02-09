@@ -41,11 +41,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -62,6 +59,19 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @PluginClass(elemName="ncbiImporter")
 public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
+	private static final String IS_ASSEMBLY_FIELD_NAME = "isAssemblyFieldName";
+	private static final String RECURSE_ON_CONTIGS = "recurseOnContigs";
+	private static final String GI_NUMBER_FIELD_NAME = "giNumberFieldName";
+	private static final String MAX_DOWNLOADED = "maxDownloaded";
+	private static final String OVERWRITE_EXISTING = "overwriteExisting";
+	private static final String SEQUENCE_ID_FIELD = "sequenceIdField";
+	private static final String SEQUENCE_FORMAT = "sequenceFormat";
+	private static final String E_FETCH_BATCH_SIZE = "eFetchBatchSize";
+	private static final String E_SEARCH_RET_MAX = "eSearchRetMax";
+	private static final String E_SEARCH_TERM = "eSearchTerm";
+	private static final String SOURCE_NAME = "sourceName";
+	private static final String DATABASE = "database";
+	
 	private static String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 
 	public enum SequenceIdField {
@@ -84,30 +94,45 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private boolean recurseOnContigs = false;
 	private String isAssemblyFieldName;
 	
+	public NcbiImporter() {
+		super();
+		addModulePluginCmdClass(ImportCommand.class);
+		addModulePluginCmdClass(PreviewCommand.class);
+		addSimplePropertyName(DATABASE);
+		addSimplePropertyName(E_FETCH_BATCH_SIZE);
+		addSimplePropertyName(E_SEARCH_RET_MAX);
+		addSimplePropertyName(E_SEARCH_TERM);
+		addSimplePropertyName(GI_NUMBER_FIELD_NAME);
+		addSimplePropertyName(SOURCE_NAME);
+		addSimplePropertyName(SEQUENCE_ID_FIELD);
+		addSimplePropertyName(SEQUENCE_FORMAT);
+		addSimplePropertyName(IS_ASSEMBLY_FIELD_NAME);
+		addSimplePropertyName(OVERWRITE_EXISTING);
+		addSimplePropertyName(RECURSE_ON_CONTIGS);
+		addSimplePropertyName(MAX_DOWNLOADED);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element ncbiImporterElem) {
-		database = PluginUtils.configureStringProperty(ncbiImporterElem, "database", "nuccore");
+		database = PluginUtils.configureStringProperty(ncbiImporterElem, DATABASE, "nuccore");
 		sourceName = Optional.ofNullable(PluginUtils.
-				configureStringProperty(ncbiImporterElem, "sourceName", false)).orElse("ncbi-"+database);
-		eSearchTerm = PluginUtils.configureStringProperty(ncbiImporterElem, "eSearchTerm", false);
+				configureStringProperty(ncbiImporterElem, SOURCE_NAME, false)).orElse("ncbi-"+database);
+		eSearchTerm = PluginUtils.configureStringProperty(ncbiImporterElem, E_SEARCH_TERM, false);
 		specificGiNumbers = PluginUtils.configureStrings(ncbiImporterElem, "specificGiNumbers/giNumber/text()", false);
 		specificPrimaryAccessions = PluginUtils.configureStrings(ncbiImporterElem, "specificPrimaryAccessions/primaryAccession/text()", false);
-		eSearchRetMax = PluginUtils.configureIntProperty(ncbiImporterElem, "eSearchRetMax", 4000);
-		eFetchBatchSize = PluginUtils.configureIntProperty(ncbiImporterElem, "eFetchBatchSize", 200);
-		sequenceFormat = PluginUtils.configureEnumProperty(SequenceFormat.class, ncbiImporterElem, "sequenceFormat", true);
+		eSearchRetMax = PluginUtils.configureIntProperty(ncbiImporterElem, E_SEARCH_RET_MAX, 4000);
+		eFetchBatchSize = PluginUtils.configureIntProperty(ncbiImporterElem, E_FETCH_BATCH_SIZE, 200);
+		sequenceFormat = Optional.ofNullable(PluginUtils.configureEnumProperty(SequenceFormat.class, ncbiImporterElem, SEQUENCE_FORMAT, false)).
+				orElse(SequenceFormat.GENBANK_XML);
 		sequenceIdField = Optional.ofNullable(PluginUtils.configureEnumProperty(SequenceIdField.class, 
-				ncbiImporterElem, "sequenceIdField", false)).orElse(SequenceIdField.GI_NUMBER);
-		overwriteExisting = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, "overwriteExisting", false)).orElse(false);
-		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, "maxDownloaded", false);
-		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, "giNumberFieldName", "GB_GI_NUMBER");
-		recurseOnContigs = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, "recurseOnContigs", false)).orElse(false);
-		isAssemblyFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, "isAssemblyFieldName", "GB_IS_ASSEMBLY");
+				ncbiImporterElem, SEQUENCE_ID_FIELD, false)).orElse(SequenceIdField.GI_NUMBER);
+		overwriteExisting = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, OVERWRITE_EXISTING, false)).orElse(false);
+		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, MAX_DOWNLOADED, false);
+		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, GI_NUMBER_FIELD_NAME, "GB_GI_NUMBER");
+		recurseOnContigs = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, RECURSE_ON_CONTIGS, false)).orElse(false);
+		isAssemblyFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, IS_ASSEMBLY_FIELD_NAME, "GB_IS_ASSEMBLY");
 		
 		
-		addProvidedCmdClass(ImportCommand.class);
-		addProvidedCmdClass(PreviewCommand.class);
-		addProvidedCmdClass(ShowImporterCommand.class);
-		addProvidedCmdClass(ConfigureImporterCommand.class);
 		if(!(
 				(eSearchTerm != null && specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty()) ||
 				(eSearchTerm == null && !specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty()) ||
@@ -759,7 +784,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			docoptUsages={""},
 			metaTags={CmdMeta.updatesDatabase},
 			description="Import sequence data from NCBI into the project") 
-	public static class ImportCommand extends ModuleProvidedCommand<NcbiImporterResult, NcbiImporter> implements ProvidedProjectModeCommand {
+	public static class ImportCommand extends ModulePluginCommand<NcbiImporterResult, NcbiImporter> implements ProvidedProjectModeCommand {
 		@Override
 		protected NcbiImporterResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doImport(cmdContext);
@@ -773,28 +798,12 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			docoptUsages={""},
 			metaTags={},
 			description="Preview the NCBI results") 
-	public static class PreviewCommand extends ModuleProvidedCommand<NcbiImporterResult, NcbiImporter> implements ProvidedProjectModeCommand {
+	public static class PreviewCommand extends ModulePluginCommand<NcbiImporterResult, NcbiImporter> implements ProvidedProjectModeCommand {
 		@Override
 		protected NcbiImporterResult execute(CommandContext cmdContext, NcbiImporter importerPlugin) {
 			return importerPlugin.doPreview(cmdContext);
 		}
 
 	}
-
-	
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this importer") 
-	public static class ShowImporterCommand extends ShowConfigCommand<NcbiImporter> {}
-
-	@SimpleConfigureCommandClass(
-			propertyNames={"sourceName", "database", "eSearchTerm", 
-					"sequenceFormat", "eSearchRetMax", "eFetchBatchSize", 
-					"overwriteExisting", "maxDownloaded"}
-	)
-	public static class ConfigureImporterCommand extends SimpleConfigureCommand<NcbiImporter> {}
-
-
 
 }

@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 
 import org.w3c.dom.Element;
 
@@ -23,7 +23,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Create a new field in the table",
 	metaTags={CmdMeta.updatesDatabase},
 	furtherHelp="The field name must be a valid database identifier, e.g. MY_FIELD_1") 
-public class CreateSequenceFieldCommand extends TableSequencesModeCommand<CreateResult> {
+public class CreateFieldCommand extends TableModeCommand<CreateResult> {
+
+	public static final String MAX_LENGTH = "maxLength";
+	public static final String TYPE = "type";
+	public static final String FIELD_NAME = "fieldName";
 
 	private String fieldName;
 	private FieldType type;
@@ -32,9 +36,9 @@ public class CreateSequenceFieldCommand extends TableSequencesModeCommand<Create
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fieldName = PluginUtils.configureIdentifierProperty(configElem, "fieldName", true);
-		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, "type", true);
-		maxLength = PluginUtils.configureIntProperty(configElem, "maxLength", false);
+		fieldName = PluginUtils.configureIdentifierProperty(configElem, FIELD_NAME, true);
+		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, TYPE, true);
+		maxLength = PluginUtils.configureIntProperty(configElem, MAX_LENGTH, false);
 		if(type == FieldType.VARCHAR && maxLength == null) {
 			maxLength = 50;
 		}

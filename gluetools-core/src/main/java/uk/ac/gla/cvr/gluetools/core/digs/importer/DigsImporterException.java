@@ -12,7 +12,9 @@ public class DigsImporterException extends GlueException {
 		DIGS_DB_ERROR("errorTxt"),
 		EXPRESSION_ERROR("qualifier", "errorTxt"),
 		ID_TEMPLATE_FAILED("errorTxt"),
-		NO_SUCH_SEQUENCE_FIELD("fieldName");
+		NO_SUCH_SEQUENCE_FIELD("extractedField", "fieldName"),
+		SEQUENCE_FIELD_WRONG_TYPE("extractedField", "sequenceFieldToUse", "actualType", "requiredType"),
+		SEQUENCE_FIELD_INSUFFICIENT_LENGTH("extractedField", "sequenceFieldToUse", "actualLength", "requiredLength");
 
 		private String[] argNames;
 		private Code(String... argNames) {

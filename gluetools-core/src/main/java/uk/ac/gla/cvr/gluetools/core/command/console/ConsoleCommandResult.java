@@ -19,7 +19,7 @@ public class ConsoleCommandResult extends MapResult {
 	}
 	
 	@Override
-	protected final void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		String text = getDocumentReader().stringValue("resultText");
 		if(wrap) {
 			int terminalWidth = renderCtx.getTerminalWidth();

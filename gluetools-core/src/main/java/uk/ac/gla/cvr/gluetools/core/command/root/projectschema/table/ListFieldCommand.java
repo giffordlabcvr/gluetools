@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 	commandWords={"list", "field"},
 	docoptUsages={""},
 	description="List the fields in the table") 
-public class ListSequenceFieldCommand extends TableSequencesModeCommand<ListResult> {
+public class ListFieldCommand extends TableModeCommand<ListResult> {
 
 	
 	

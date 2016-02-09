@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -49,7 +49,7 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 			"}";
 	
 	public static abstract class AlignCommand<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> 
-		extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
+		extends ModulePluginCommand<R, P> implements ProvidedProjectModeCommand {
 
 		public static final String REFERENCE_NAME = "referenceName";
 		public static final String SEQUENCE = "sequence";
@@ -90,7 +90,7 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 	
 	public static abstract class FileAlignCommand<R extends Aligner.AlignerResult, P extends ModulePlugin<P>> 
-	extends ModuleProvidedCommand<R, P> implements ProvidedProjectModeCommand {
+	extends ModulePluginCommand<R, P> implements ProvidedProjectModeCommand {
 
 	public static final String REFERENCE_NAME = "referenceName";
 	public static final String SEQUENCE_FILE_NAME = "sequenceFileName";

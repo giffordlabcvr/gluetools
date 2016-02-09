@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 
 import org.w3c.dom.Element;
 
@@ -7,7 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class TableSequencesModeCommand<R extends CommandResult> extends Command<R> {
+public abstract class TableModeCommand<R extends CommandResult> extends Command<R> {
 
 	private String projectName;
 	

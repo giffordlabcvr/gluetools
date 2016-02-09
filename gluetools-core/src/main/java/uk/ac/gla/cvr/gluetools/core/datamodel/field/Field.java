@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 
 // TODO create field should have a default value option.
-@GlueDataClass(defaultListColumns = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY})
+@GlueDataClass(defaultListColumns = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY, _Field.MAX_LENGTH_PROPERTY})
 public class Field extends _Field {
 
 	private FieldType fieldType = null;

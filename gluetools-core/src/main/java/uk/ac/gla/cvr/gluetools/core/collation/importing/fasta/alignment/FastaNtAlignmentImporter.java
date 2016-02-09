@@ -32,6 +32,12 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 	private Double minRowCoveragePercent;
 	private Double minRowCorrectPercent;
 
+	public FastaNtAlignmentImporter() {
+		super();
+		addSimplePropertyName(MIN_ROW_CORRECT_PERCENT);
+		addSimplePropertyName(MIN_ROW_COVERAGE_PERCENT);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);

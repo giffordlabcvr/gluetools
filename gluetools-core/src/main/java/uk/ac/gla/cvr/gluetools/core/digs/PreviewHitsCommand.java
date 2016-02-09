@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
@@ -34,7 +34,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 				"-g <targetGroup>, --targetGroup <targetGroup>  Target group name"},
 		metaTags = {}	
 )
-public class PreviewHitsCommand extends ModuleProvidedCommand<OkResult, DigsProber> implements ProvidedProjectModeCommand {
+public class PreviewHitsCommand extends ModulePluginCommand<OkResult, DigsProber> implements ProvidedProjectModeCommand {
 
 	private static final String REFERENCE_NAME = "refName";
 	private static final String FEATURE_LOC = "featureLoc";

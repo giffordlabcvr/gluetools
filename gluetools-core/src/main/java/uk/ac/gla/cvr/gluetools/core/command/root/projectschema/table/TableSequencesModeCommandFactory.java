@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.tablesequences;
+package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
@@ -15,9 +15,9 @@ public class TableSequencesModeCommandFactory extends BaseCommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
-		registerCommandClass(CreateSequenceFieldCommand.class);
-		registerCommandClass(DeleteSequenceFieldCommand.class);
-		registerCommandClass(ListSequenceFieldCommand.class);
+		registerCommandClass(CreateFieldCommand.class);
+		registerCommandClass(DeleteFieldCommand.class);
+		registerCommandClass(ListFieldCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}
 	

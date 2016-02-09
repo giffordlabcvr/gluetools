@@ -19,16 +19,12 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListAlignmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.TranslateSegmentsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.TranslateSegmentsCommand.TranslateSegmentsResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowAncestorsCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ShowConfigCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.SimpleConfigureCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowFeatureTreeCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
@@ -90,16 +86,20 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private boolean mergeGeneratedVariations;
 	
 	public MutationFrequenciesReporter() {
-		addProvidedCmdClass(TransientAnalysisCommand.class);
-		addProvidedCmdClass(AlignmentAnalysisCommand.class);
-		addProvidedCmdClass(AlignmentVariationScanCommand.class);
-		addProvidedCmdClass(AlignmentVariationCategoryScanCommand.class);
-		addProvidedCmdClass(GenerateCommonVariationsCommand.class);
-		addProvidedCmdClass(GenerateVariationCommand.class);
-		addProvidedCmdClass(PreviewVariationsCommand.class);
-		addProvidedCmdClass(ShowMutationFrequenciesReporterCommand.class);
-		addProvidedCmdClass(ConfigureMutationFrequenciesReporterCommand.class);
+		addModulePluginCmdClass(TransientAnalysisCommand.class);
+		addModulePluginCmdClass(AlignmentAnalysisCommand.class);
+		addModulePluginCmdClass(AlignmentVariationScanCommand.class);
+		addModulePluginCmdClass(AlignmentVariationCategoryScanCommand.class);
+		addModulePluginCmdClass(GenerateCommonVariationsCommand.class);
+		addModulePluginCmdClass(GenerateVariationCommand.class);
+		addModulePluginCmdClass(PreviewVariationsCommand.class);
 
+		addSimplePropertyName(ALIGNER_MODULE_NAME);
+		addSimplePropertyName(GENERATED_VARIATION_DESCRIPTION_TEMPLATE);
+		addSimplePropertyName(GENERATED_VARIATION_NAME_TEMPLATE);
+		addSimplePropertyName(GENERATED_VARIATION_PERCENT_THRESHOLD);
+		addSimplePropertyName(MERGE_GENERATED_VARIATIONS);
+		
 	}
 
 	@Override
@@ -692,17 +692,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 		return templateResult;
 	}
 
-	@CommandClass( 
-			commandWords={"show", "configuration"}, 
-			docoptUsages={},
-			description="Show the current configuration of this reporter") 
-	public static class ShowMutationFrequenciesReporterCommand extends ShowConfigCommand<MutationFrequenciesReporter> {}
-
 	
-	@SimpleConfigureCommandClass(
-			propertyNames={ALIGNER_MODULE_NAME, GENERATED_VARIATION_NAME_TEMPLATE, GENERATED_VARIATION_PERCENT_THRESHOLD}
-	)
-	public static class ConfigureMutationFrequenciesReporterCommand extends SimpleConfigureCommand<MutationFrequenciesReporter> {}
 
 
 	public boolean mergeGeneratedVariations() {

@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleProvidedCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationAddCategoryCommand;
@@ -60,7 +60,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesException.Code;
 		"variations are added to the named categories",
 		metaTags = {CmdMeta.updatesDatabase}	
 )
-public class GenerateVariationCommand extends ModuleProvidedCommand<GenerateVariationsResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
+public class GenerateVariationCommand extends ModulePluginCommand<GenerateVariationsResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
 
 	public static final String REFERENCE_NAME = "referenceName";
 	public static final String FEATURE_NAME = "featureName";
