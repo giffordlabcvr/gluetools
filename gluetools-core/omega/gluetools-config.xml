@@ -1,0 +1,26 @@
+<gluetools>
+	<database>
+		<username>gluetools</username>
+		<password>gluetools</password>
+		<vendor>MySQL</vendor>
+		<jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS</jdbcUrl>	
+	</database>
+	<properties>
+		<property>
+			<name>gluetools.core.programs.blast.blastn.executable</name>
+			<value>/usr/bin/blastn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.makeblastdb.executable</name>
+			<value>/usr/bin/makeblastdb</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.db.dir</name>
+			<value>/home/sing01j/gluetools/blastdbs</value>
+		</property>
+		<property>
+			<name>cayenne.querycache.size</name>
+			<value>30000</value>
+		</property>
+	</properties>
+</gluetools>
