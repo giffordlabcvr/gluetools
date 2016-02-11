@@ -10,6 +10,11 @@ remotes {
     user = 'js460b'
     identity = file('/Users/joshsinger/.ssh/gluehome_id_rsa')
   }
+  omega {
+    host = 'omega.cvr.gla.ac.uk'
+    user = 'sing01j'
+    identity = file('/Users/joshsinger/.ssh/omega_id_rsa')
+  }
 }
 
 buildscript {
@@ -86,6 +91,30 @@ task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
   }
 }
 
+// gluetools core jar on Omega
+task deployJarOmega(dependsOn: ['jarAll']) {
+  ext.jarFile = new File(buildDir, '/libs/'+project.name+"-all-"+version+'.jar')
+  ext.deployJarOmegaTouchfile = new File(buildDir, '/deployJarOmega.touchfile')
+  inputs.file jarFile
+  outputs.file deployJarOmegaTouchfile
+  doLast {
+	  println "Uploading "+jarFile.name
+	  ssh.run {
+	    session(remotes.omega) {
+	      execute 'rm /home/sing01j/gluetools/lib/*.jar'
+	      put from: jarFile, into: '/home/sing01j/gluetools/lib/'
+	      execute 'chmod a+r /home/sing01j/gluetools/lib/*'
+	    }
+	  }
+	  deployJarOmegaTouchfile.delete()
+	  buildDir.mkdirs()
+	  deployJarOmegaTouchfile.createNewFile()
+  }
+}
+
+
+
+
 // HCV project 
 task deployHcvProject(dependsOn: ['deployJar']) {
   ext.jarFileName = project.name+"-all-"+version+'.jar'
@@ -118,6 +147,43 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	  deployHcvProjectTouchfile.createNewFile()
   }
 }
+
+
+// HCV project 
+task deployHcvProjectOmega(dependsOn: ['deployJar']) {
+  ext.jarFileName = project.name+"-all-"+version+'.jar'
+  ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
+  ext.deployHcvProjectOmegaTouchfile = new File(buildDir, '/deployHcvProjectOmega.touchfile')
+  inputs.dir hcvProjectDir
+  outputs.file deployHcvProjectOmegaTouchfile
+  doLast {
+	  println "Uploading GLUE project: "+hcvProjectDir.name
+	  ssh.run {
+	    session(remotes.omega) {
+	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**" }
+	      ext.projectDestDir = '/home/sing01j/gluetools/projects/HCV'
+	      execute 'rm -rf '+projectDestDir
+	      execute 'mkdir '+projectDestDir
+	      projectFileTree.visit {element ->
+	    	ext.destFile = new File(projectDestDir, element.relativePath.pathString)
+	      	if(element.directory) {
+	    		execute 'mkdir -p '+destFile.path
+	 	    } else {
+	    		ext.srcFile = new File(hcvProjectDir, element.relativePath.pathString)
+	 	      	put from: srcFile.path, into: destFile.path
+	 	    }
+		  }
+	      execute 'cd /home/sing01j/gluetools/projects/HCV ; /home/sing01j/gluetools/bin/gluetools -n -f hcvProject.glue'
+	    }
+	  }
+	  deployHcvProjectOmegaTouchfile.delete()
+	  buildDir.mkdirs()
+	  deployHcvProjectOmegaTouchfile.createNewFile()
+  }
+}
+
+
+
 
 
 

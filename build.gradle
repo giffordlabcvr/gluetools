@@ -13,7 +13,7 @@ project('gluetools-ws') {
 }
 
 
-task deployAll(dependsOn: [':gluetools-core:deployJar', ':gluetools-core:deployHcvProject', ':gluetools-ws:deployWar', ':gluetools-web:deployWebAppWar']) {
+task deployAll(dependsOn: [':gluetools-core:deployJar', ':gluetools-core:deployJarOmega', ':gluetools-core:deployHcvProject', ':gluetools-core:deployHcvProjectOmega', ':gluetools-ws:deployWar', ':gluetools-web:deployWebAppWar']) {
 }
 
 configure(subprojects.findAll {it.name != 'gluetools-web'}) {
