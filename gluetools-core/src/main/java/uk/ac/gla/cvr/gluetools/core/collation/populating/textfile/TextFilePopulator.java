@@ -32,7 +32,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -110,12 +109,12 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			processLine(populatorContext, line);
 			holder.linesProcessed++;
 			if(holder.linesProcessed % batchSize == 0) {
-				GlueLogger.getGlueLogger().fine("Processed "+holder.linesProcessed+" lines");
+				log("Processed "+holder.linesProcessed+" lines");
 				cmdContext.commit();
 				cmdContext.newObjectContext();
 			}
 		});
-		GlueLogger.getGlueLogger().fine("Processed "+holder.linesProcessed+" lines");
+		log("Processed "+holder.linesProcessed+" lines");
 		cmdContext.commit();
 		return CommandResult.OK;
 	}

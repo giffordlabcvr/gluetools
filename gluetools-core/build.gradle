@@ -126,7 +126,7 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	  println "Uploading GLUE project: "+hcvProjectDir.name
 	  ssh.run {
 	    session(remotes.gluehome) {
-	      ext.projectFileTree = fileTree(dir: hcvProjectDir, include: '**/*', exclude: 'ncbi-curated/**')
+	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**" }
 	      ext.projectDestDir = '/opt/gluehome/hcvGlue'
 	      execute 'rm -rf '+projectDestDir
 	      execute 'mkdir '+projectDestDir

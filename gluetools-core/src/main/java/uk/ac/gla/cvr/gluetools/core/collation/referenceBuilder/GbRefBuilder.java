@@ -48,7 +48,7 @@ public class GbRefBuilder extends ModulePlugin<GbRefBuilder> {
 		}
 		GenbankXmlSequenceObject gbXmlSeqObj = (GenbankXmlSequenceObject) sequence.getSequenceObject();
 		Document gbXmlDoc = gbXmlSeqObj.getDocument();
-		GlueLogger.getGlueLogger().finest("Creating reference "+refName+
+		log("Creating reference "+refName+
 				" from GB XML (sourceName:"+sourceName+
 				", sequenceID:"+sequenceID+")");
 		CreateResult createResult = cmdContext.cmdBuilder(CreateReferenceSequenceCommand.class)
@@ -64,7 +64,7 @@ public class GbRefBuilder extends ModulePlugin<GbRefBuilder> {
 				for(GbFeatureLocationRule gbFeatureLocationRule: gbFeatureLocationRules) {
 					String ruleFeatureName = gbFeatureLocationRule.getFeatureName();
 					if(!createdFeatureLocations.contains(ruleFeatureName)) {
-						boolean featureCreated = gbFeatureLocationRule.run(cmdContext, featureElem);
+						boolean featureCreated = gbFeatureLocationRule.run(cmdContext, featureElem, this);
 						if(featureCreated) {
 							createdFeatureLocations.add(ruleFeatureName);
 						}

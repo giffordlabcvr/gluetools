@@ -122,6 +122,14 @@ public class PluginUtils {
 		return defaultValue;
 	}
 
+	public static String configureStringProperty(Element configElem, String propertyName, List<String> allowedValues, boolean required) {
+		String result = configureStringProperty(configElem, propertyName, required);
+		if(result != null && !allowedValues.contains(result)) {
+			throw new PluginConfigException(PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
+					"Allowed values: "+allowedValues, result);
+		}
+		return result;
+	}
 
 	public static String configureStringProperty(Element configElem, String propertyName, boolean required) {
 		List<Element> propertyElems = GlueXmlUtils.findChildElements(configElem, propertyName);

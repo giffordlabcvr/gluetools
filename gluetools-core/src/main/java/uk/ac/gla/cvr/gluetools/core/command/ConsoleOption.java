@@ -27,11 +27,7 @@ public enum ConsoleOption {
 	INTERACTIVE_TABLES("interactive-tables", "If \"true\" table results may be browsed interactively", "true", new String[]{"true", "false"}),
 	CMD_RESULT_FORMAT("cmd-result-format", "Configures the format for command results on the console", "text", new String[]{"text", "xml", "json", "tab", "csv"}),
 	TABLE_RESULT_DOUBLE_PRECISION("table-result-float-precision", "Configures the decimal places precision for floating point numbers in table, tab and csv results", "full", new String[]{"full", "1", "2", "3", "4"}),
-	LOG_LEVEL("log-level", "Configures the level of detail in the GLUE logger category", null, new String[]{
-			Level.OFF.getName(), Level.SEVERE.getName(), Level.WARNING.getName(), Level.INFO.getName(),
-			Level.CONFIG.getName(), Level.FINE.getName(), Level.FINER.getName(), Level.FINEST.getName(),
-			Level.ALL.getName()
-	}) {
+	LOG_LEVEL("log-level", "Configures the level of detail in the GLUE logger category", null, GlueLogger.ALL_LOG_LEVELS) {
 		@Override
 		public String getDefaultValue() {
 			return GlueLogger.getGlueLogger().getLevel().getName();

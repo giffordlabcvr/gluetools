@@ -197,10 +197,10 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 				
 				records.x++;
 				if(records.x % 10000 == 0) {
-					GlueLogger.getGlueLogger().finest("Processed "+records.x+" reads aligned to SAM reference");
+					samReporter.log("Processed "+records.x+" reads aligned to SAM reference");
 				}
 			});
-			GlueLogger.getGlueLogger().finest("Processed "+records.x+" reads aligned to SAM reference");
+			samReporter.log("Processed "+records.x+" reads aligned to SAM reference");
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);

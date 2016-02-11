@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleUpdateDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.ImportExtractedFieldRule.GlueFieldRequirement;
@@ -31,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 				"-w, --warn     Emit warning if field <glueSequenceField> does not exist",
 				"-r, --require  Field <glueSequenceField> must exist, emit error otherwise"}
 )
-public class UpdateMappingExtractedCommand extends ModuleDocumentCommand<UpdateResult> {
+public class UpdateMappingExtractedCommand extends ModuleDocumentCommand<UpdateResult> implements ModuleUpdateDocumentCommand {
 
 	private String digsExtractedField;
 	private boolean ignore;
@@ -63,8 +64,8 @@ public class UpdateMappingExtractedCommand extends ModuleDocumentCommand<UpdateR
 	}
 
 	@Override
-	protected UpdateResult execute(CommandContext cmdContext, Module module) {
-		Document configDoc = module.getConfigDoc();
+	protected UpdateResult processDocument(CommandContext cmdContext,
+			Module module, Document configDoc) {
 		Node existing = GlueXmlUtils.getXPathNode(configDoc, "/"+DigsImporter.ELEM_NAME+"/"+
 				ImportExtractedFieldRule.EXTRACTED_FIELD_RULE+
 				"["+ImportExtractedFieldRule.EXTRACTED_FIELD+"/text() = '"+digsExtractedField+"']");
@@ -85,9 +86,6 @@ public class UpdateMappingExtractedCommand extends ModuleDocumentCommand<UpdateR
 		if(glueSequenceField != null) {
 			GlueXmlUtils.appendElementWithText(newElem, ImportExtractedFieldRule.SEQUENCE_FIELD, glueSequenceField);
 		}
-		GlueXmlUtils.stripWhitespace(configDoc);
-		module.setConfig(GlueXmlUtils.prettyPrint(configDoc));
-		cmdContext.commit();
 		return new UpdateResult(Module.class, 1);
 	}
 
@@ -101,6 +99,7 @@ public class UpdateMappingExtractedCommand extends ModuleDocumentCommand<UpdateR
 		}
 		
 	}
+
 	
 
 }

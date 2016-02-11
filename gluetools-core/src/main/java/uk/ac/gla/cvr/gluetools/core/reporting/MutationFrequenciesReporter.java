@@ -104,6 +104,7 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
 		s2cMinorityVariantFilter = new Sam2ConsensusMinorityVariantFilter();
 		Element s2cMinorityVariantFilterElem = PluginUtils.findConfigElement(configElem, "sam2ConsensusMinorityVariantFilter");
@@ -129,29 +130,29 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 
 	public TransientAnalysisResult doTransientAnalysis(CommandContext cmdContext,
 			Boolean headerDetect, Optional<String> alignmentName, byte[] sequenceData) {
-		GlueLogger.getGlueLogger().finest("Creating sequence objects from data");
+		log("Creating sequence objects from data");
 		FastaUtils.normalizeFastaBytes(cmdContext, sequenceData); 
 		List<AbstractSequenceObject> seqObjects = FastaUtils.seqObjectsFromSeqData(sequenceData);
 		
-		GlueLogger.getGlueLogger().finest("Initializing sequence result objects");
+		log("Initializing sequence result objects");
 		// initialize a sequence result for each sequence object, including
 		// selecting an initial alignment
 		List<SequenceResult> seqResults = initSequenceResults(cmdContext, headerDetect, alignmentName, seqObjects);
 		
-		GlueLogger.getGlueLogger().finest("Generating alignment results");
+		log("Generating alignment results");
 		// generate alignment results for all alignments involved
 		Map<String, AlignmentResult> almtNameToAlmtResult = new LinkedHashMap<String, AlignmentResult>();
 		addAlmtResultsFromSeqResults(almtNameToAlmtResult, cmdContext, seqResults);
 		
-		GlueLogger.getGlueLogger().finest("Generating initial alignments");
+		log("Generating initial alignments");
 		// generate the initial segments aligning each sequence to the selected reference.
 		generateInitialAlignments(cmdContext, seqResults, almtNameToAlmtResult);
 		
-		GlueLogger.getGlueLogger().finest("Propagating aligned segments");
+		log("Propagating aligned segments");
 		// for each sequence fill in seqToRefAlignedSegments for the rest of the path to the root of the tree.
 		seqResults.forEach(seqResult -> propagateAlignedSegments(cmdContext, almtNameToAlmtResult, seqResult));
 		
-		GlueLogger.getGlueLogger().finest("Generating sequence feature results");
+		log("Generating sequence feature results");
 		// for each sequence, and each alignment in its path, generate SequenceFeatureResults.
 		seqResults.forEach(seqResult -> generateSequenceFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, null, null, null, null));
 		
@@ -246,14 +247,14 @@ public class MutationFrequenciesReporter extends ModulePlugin<MutationFrequencie
 	private void generateSequenceFeatureResults(CommandContext cmdContext, Map<String, AlignmentResult> almtNameToAlmtResult,
 			SequenceResult seqResult, Set<String> featureRestrictions, Set<String> referenceRestrictions, Set<String> variationRestrictions,
 			Set<String> vcatRestrictions) {
-		GlueLogger.getGlueLogger().finest("Generating sequence feature results for sequence "+seqResult.getSequenceID());
+		log("Generating sequence feature results for sequence "+seqResult.getSequenceID());
 		long startTime = System.currentTimeMillis();
 		for(SequenceAlignmentResult sequenceAlignmentResult : seqResult.seqAlignmentResults) {
 			sequenceAlignmentResult.generateSequenceAlignmentFeatureResults(cmdContext, almtNameToAlmtResult, seqResult, 
 					s2cMinorityVariantFilter, featureRestrictions, referenceRestrictions, variationRestrictions, vcatRestrictions);
 		}
 		long totalTime = System.currentTimeMillis() - startTime;
-		GlueLogger.getGlueLogger().finest("Total time: "+totalTime);
+		log("Total time: "+totalTime);
 	}
 	
 

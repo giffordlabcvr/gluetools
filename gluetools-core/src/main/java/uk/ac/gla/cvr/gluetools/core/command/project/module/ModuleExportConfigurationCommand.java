@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -29,8 +30,8 @@ public class ModuleExportConfigurationCommand extends ModuleDocumentCommand<OkRe
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 	}
 
-	@Override
-	protected OkResult execute(CommandContext cmdContext, Module module) {
+	protected OkResult processDocument(CommandContext cmdContext,
+			Module module, Document modulePluginDoc) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		consoleCmdContext.saveBytes(fileName, module.getConfig());
 		return new OkResult();
@@ -43,5 +44,5 @@ public class ModuleExportConfigurationCommand extends ModuleDocumentCommand<OkRe
 			registerPathLookup("fileName", false);
 		}
 	}
-	
+
 }

@@ -30,7 +30,7 @@ public class GbFeatureLocationRule implements Plugin {
 		gbQualifierValuePattern = PluginUtils.configureRegexPatternProperty(configElem, "gbQualifierValuePattern", false);
 	}
 
-	public boolean run(CommandContext cmdContext, Element featureElem) {
+	public boolean run(CommandContext cmdContext, Element featureElem, GbRefBuilder gbRefBuilder) {
 		String featureKey = GlueXmlUtils.getXPathString(featureElem, "GBFeature_key/text()");
 		if(gbFeatureKeyPattern != null && !gbFeatureKeyPattern.matcher(featureKey).find()) {
 			return false;
@@ -59,9 +59,9 @@ public class GbFeatureLocationRule implements Plugin {
 			return false;
 		}
 		
-		GlueLogger.getGlueLogger().finest("Creating feature location "+featureName+" from GB feature with featureKey:"+featureKey);
+		gbRefBuilder.log("Creating feature location "+featureName+" from GB feature with featureKey:"+featureKey);
 		if(qualifierName != null && qualifierValue != null) {
-			GlueLogger.getGlueLogger().finest("Matching qualifier name:"+qualifierName+", value:"+qualifierValue);
+			gbRefBuilder.log("Matching qualifier name:"+qualifierName+", value:"+qualifierValue);
 		}
 		cmdContext.cmdBuilder(AddFeatureLocCommand.class)
 			.set(AddFeatureLocCommand.FEATURE_NAME, featureName)
@@ -75,7 +75,7 @@ public class GbFeatureLocationRule implements Plugin {
 					from = from+1; // hack to work around this kind of thing: join(1801..2082,2082..2546)
 				}
 				Integer to = Integer.parseInt(GlueXmlUtils.getXPathString(intervalElem, "GBInterval_to/text()"));
-				GlueLogger.getGlueLogger().finest("Adding segment from GB interval: ["+from+", "+to+"]");
+				gbRefBuilder.log("Adding segment from GB interval: ["+from+", "+to+"]");
 				cmdContext.cmdBuilder(AddFeatureSegmentCommand.class)
 				.set(AddFeatureSegmentCommand.REF_START, from)
 				.set(AddFeatureSegmentCommand.REF_END, to)

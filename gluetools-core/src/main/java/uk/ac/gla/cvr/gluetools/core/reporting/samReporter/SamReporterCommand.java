@@ -151,7 +151,7 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 					.collect(Collectors.toList());
 		} else {
 			String samConsensusFastaID = "samConsensus";
-			Map<String, DNASequence> samConsensusFastaMap = getSamConsensus(cmdContext, samConsensusFastaID);
+			Map<String, DNASequence> samConsensusFastaMap = getSamConsensus(cmdContext, samReporter, samConsensusFastaID);
 			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
 			AlignerResult alignerResult = aligner.doAlign(cmdContext, tipAlmtRef.getName(), samConsensusFastaMap);
 			samRefToGlueRefSegs = alignerResult.getQueryIdToAlignedSegments().get(samConsensusFastaID);
@@ -165,8 +165,8 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 					refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID(), samRefToGlueRefSegs);
 			currentAlignment = parentAlmt;
 		}
-		GlueLogger.getGlueLogger().finest("SAM reference to tip alignment reference mapping:");
-		GlueLogger.getGlueLogger().finest(samRefToGlueRefSegs.toString());
+		samReporter.log("SAM reference to tip alignment reference mapping:");
+		samReporter.log(samRefToGlueRefSegs.toString());
 		return samRefToGlueRefSegs;
 	}
 
@@ -178,17 +178,17 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		return SamReaderFactory.makeDefault().open(SamInputResource.of(samInputStream));
 	}
 	
-	private Map<String, DNASequence> getSamConsensus(CommandContext cmdContext, String fastaID) {
+	private Map<String, DNASequence> getSamConsensus(CommandContext cmdContext, SamReporter samReporter, String fastaID) {
 		Map<String, DNASequence> samConsensusFastaMap;
 		try(SamReader samReader = newSamReader(cmdContext)) {
 
 			SAMSequenceRecord samReference = SamUtils.findReference(samReader, fileName, samRefName);
 
-			GlueLogger.getGlueLogger().finest("Determining consensus sequence from NGS file "+fileName);
-			GlueLogger.getGlueLogger().finest("SAM reference: "+samReference.getSequenceName());
+			samReporter.log("Determining consensus sequence from NGS file "+fileName);
+			samReporter.log("SAM reference: "+samReference.getSequenceName());
 			String ngsConsensusFastaString = ">"+fastaID+"\n"+SamUtils.getNgsConsensus(samReader, samReference.getSequenceName());
 
-			// GlueLogger.getGlueLogger().finest("NGS consensus FASTA:\n"+ngsConsensusFastaString);
+			// samReporter.log("NGS consensus FASTA:\n"+ngsConsensusFastaString);
 
 			samConsensusFastaMap = FastaUtils.parseFasta(ngsConsensusFastaString.getBytes());
 		} catch (IOException e) {

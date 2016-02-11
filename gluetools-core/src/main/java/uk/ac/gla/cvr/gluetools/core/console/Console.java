@@ -355,6 +355,7 @@ public class Console implements CommandResultRenderingContext
 		}
 		this.out = new PrintWriter(reader.getOutput());
 		reader.setPrompt(GLUE_PROMPT);
+		reader.setExpandEvents(false);
 		GlueLogger.getGlueLogger().setUseParentHandlers(false);
 		ConsoleLoggerHandler handler = new ConsoleLoggerHandler(this);
 		handler.setFormatter(new GlueLoggingFormatter());

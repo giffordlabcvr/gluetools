@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +32,8 @@ public abstract class CommandCompleter {
 			return null;
 		}
 		try {
-			return (CommandCompleter) completerClass.getConstructor().newInstance();
+			Constructor<?> constructor = completerClass.getConstructor();
+			return (CommandCompleter) constructor.newInstance();
 		} catch(Exception e) {
 			GlueLogger.getGlueLogger().warning("Failed to instantiate command completer class "+completerClass.getCanonicalName());
 			GlueLogger.getGlueLogger().warning(e.getClass().getCanonicalName()+": "+e.getMessage());

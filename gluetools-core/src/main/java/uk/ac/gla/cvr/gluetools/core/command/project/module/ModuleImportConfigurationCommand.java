@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -29,8 +30,10 @@ public class ModuleImportConfigurationCommand extends ModuleDocumentCommand<Upda
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 	}
 
+	// do the commit here rather than implementing the ModuleUpdateDocumentCommand marker interface.
 	@Override
-	protected UpdateResult execute(CommandContext cmdContext, Module module) {
+	protected UpdateResult processDocument(CommandContext cmdContext,
+			Module module, Document modulePluginDoc) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		byte[] config = consoleCmdContext.loadBytes(fileName);
 		module.setConfig(config);
@@ -45,5 +48,6 @@ public class ModuleImportConfigurationCommand extends ModuleDocumentCommand<Upda
 			registerPathLookup("fileName", false);
 		}
 	}
-	
+
+
 }

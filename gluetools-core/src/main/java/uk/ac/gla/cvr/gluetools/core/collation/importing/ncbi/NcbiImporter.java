@@ -114,6 +114,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element ncbiImporterElem) {
+		super.configure(pluginConfigContext, ncbiImporterElem);
 		database = PluginUtils.configureStringProperty(ncbiImporterElem, DATABASE, "nuccore");
 		sourceName = Optional.ofNullable(PluginUtils.
 				configureStringProperty(ncbiImporterElem, SOURCE_NAME, false)).orElse("ncbi-"+database);
@@ -174,12 +175,12 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		} else {
 			try(CloseableHttpClient httpClient = createHttpClient()) {
 				HttpUriRequest eSearchHttpRequest = createESearchRequest(eSearchTerm);
-				GlueLogger.getGlueLogger().finest("Sending eSearch request to NCBI");
+				log("Sending eSearch request to NCBI");
 				Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
-				GlueLogger.getGlueLogger().finest("NCBI eSearch response received");
+				log("NCBI eSearch response received");
 				checkForESearchErrors(eSearchResponseDoc);
 				giNumbersMatching.addAll(GlueXmlUtils.getXPathStrings(eSearchResponseDoc, "/eSearchResult/IdList/Id/text()"));
-				GlueLogger.getGlueLogger().finest(giNumbersMatching.size()+" GI numbers returned in eSearch response");
+				log(giNumbersMatching.size()+" GI numbers returned in eSearch response");
 			} catch (IOException e) {
 				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eSearch", e.getLocalizedMessage());
 			}
@@ -195,18 +196,18 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		if(source == null) {
 			return giNumbersExisting;
 		}
-		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
+		log("Finding sequences in source "+sourceName);
 		List<Map<String, String>> pkMaps = 
 				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
 				.getSequences()
 				.stream().map(seq -> seq.pkMap())
 				.collect(Collectors.toList());
-		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");
+		log("Found "+pkMaps.size()+" sequences.");
 		int updates = 0;
 		int foundInField = 0; 
 		int foundInDocument = 0;
 		int numChecked = 0;
-		GlueLogger.getGlueLogger().finest("Checking for GI numbers in sequences in source \""+sourceName+"\"");
+		log("Checking for GI numbers in sequences in source \""+sourceName+"\"");
 		for(Map<String, String> pkMap: pkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
 			numChecked++;
@@ -237,8 +238,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				giNumbersExisting.add(giNumber);
 			}
 			if(numChecked % eFetchBatchSize == 0) {
-				GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
-				GlueLogger.getGlueLogger().finest(foundInField+" GI numbers in field, "+foundInDocument+" in document");
+				log("Existing sequences found: "+giNumbersExisting.size());
+				log(foundInField+" GI numbers in field, "+foundInDocument+" in document");
 				if(updates > 0) {
 					cmdContext.commit();
 					cmdContext.newObjectContext();
@@ -256,8 +257,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				}
 			}
 		}
-		GlueLogger.getGlueLogger().fine("Existing sequences found: "+giNumbersExisting.size());
-		GlueLogger.getGlueLogger().finest("Found "+foundInField+" GI numbers in field, "+foundInDocument+" in document");
+		log("Existing sequences found: "+giNumbersExisting.size());
+		log("Found "+foundInField+" GI numbers in field, "+foundInDocument+" in document");
 		if(updates > 0) {
 			cmdContext.commit();
 			cmdContext.newObjectContext();
@@ -283,9 +284,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
 			switch(sequenceFormat) {
 			case GENBANK_XML:
-				GlueLogger.getGlueLogger().finest("Requesting "+giNumbers.size()+" sequences from NCBI via eFetch");
+				log("Requesting "+giNumbers.size()+" sequences from NCBI via eFetch");
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
-				GlueLogger.getGlueLogger().finest("NCBI eFetch response received");
+				log("NCBI eFetch response received");
 				break;
 			default:
 				throw new NcbiImporterException(NcbiImporterException.Code.CANNOT_PROCESS_SEQUENCE_FORMAT, 
@@ -601,7 +602,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		int numGenbankRecordsPreExisting = firstRoundResult.getNumGenbankRecordsPreExisting();
 		Set<String> existingContigIDs = new LinkedHashSet<String>();
 		while(!contigIDs.isEmpty()) {
-			GlueLogger.getGlueLogger().finest("Retrieved sequences reference "+contigIDs.size()+" additional sequences as contigs. These will now be retrieved.");
+			log("Retrieved sequences reference "+contigIDs.size()+" additional sequences as contigs. These will now be retrieved.");
 			String eSearchTermForRound = contigIDsToESearchTerm(contigIDs);
 			matchingGiNumbers = getGiNumbersMatching(cmdContext, eSearchTermForRound, null);
 			if(existingGiNumbers.containsAll(matchingGiNumbers)) {
@@ -628,7 +629,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			Set<String> contigIds) {
 		
 		Set<String> retrieveSet = new LinkedHashSet<String>(matchingGiNumbers);
-		GlueLogger.getGlueLogger().fine("NCBI sequences matching search query: "+retrieveSet.size());
+		log("NCBI sequences matching search query: "+retrieveSet.size());
 		int fullRetrieveSetSize = retrieveSet.size();
 		if(!overwriteExisting) {
 			retrieveSet.removeAll(existingGiNumbers);
@@ -639,7 +640,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		if(maxDownloaded != null && retrieveList.size() > maxDownloaded) {
 			retrieveList = retrieveList.subList(0, maxDownloaded);
 		}
-		GlueLogger.getGlueLogger().fine("NCBI sequences to download: "+retrieveList.size());
+		log("NCBI sequences to download: "+retrieveList.size());
 		List<String> giNumbers = new ArrayList<String>(retrieveList);
 		int batchStart = 0;
 		int batchEnd;
@@ -705,7 +706,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				}
 			}
 			cmdContext.newObjectContext();
-			GlueLogger.getGlueLogger().fine("Sequences updated: "+recordsUpdated+", sequences added: "+recordsAdded);
+			log("Sequences updated: "+recordsUpdated+", sequences added: "+recordsAdded);
 			batchStart = batchEnd;
 		} while(batchEnd < giNumbers.size());
 		return new NcbiImporterResult(matchingGiNumbers.size(), fullRetrieveSetSize-minimalRetrieveSetSize, recordsAdded, recordsUpdated,

@@ -77,6 +77,7 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
 		ignoreRegexMatchFailures = Optional
 				.ofNullable(PluginUtils.configureBooleanProperty(configElem, IGNORE_REGEX_MATCH_FAILURES, false))
 				.orElse(false);
@@ -158,7 +159,7 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 		List<Sequence> foundSequences = GlueDataObject.query(cmdContext, Sequence.class, new SelectQuery(Sequence.class, whereClauseExp));
 		if(foundSequences.isEmpty()) {
 			if(ignoreMissingSequences) {
-				GlueLogger.getGlueLogger().warning("No sequences found matching "+whereClauseExp);
+				log("No sequences found matching "+whereClauseExp);
 				return null;
 			}
 			throw new FastaAlignmentImporterException(Code.NO_SEQUENCE_FOUND, fastaID, whereClauseString);

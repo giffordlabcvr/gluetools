@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -34,15 +37,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"export", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u ) ] [-b <batchSize>] <sourceName>"
+		"[ ( -i | -u ) ] [-b <batchSize>] <sourceName> [-w <whereClause>]"
 	}, 
 	docoptOptions={
-		"-i, --incremental                        Add to directory, don't overwrite",
-		"-u, --update                             Add to directory, overwrite",
-		"-b <batchSize>, --batchSize <batchSize>  Batch size [default: 250]"},
+		"-i, --incremental                              Add to directory, don't overwrite",
+		"-u, --update                                   Add to directory, overwrite",
+		"-b <batchSize>, --batchSize <batchSize>        Batch size [default: 250]",
+		"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
+	},
 	metaTags = { CmdMeta.consoleOnly },
 	furtherHelp=
 			"Saves sequences to a directory called <sourceName>, relative to the current load-save-path. "+
+			"The optional whereClause qualifies which sequences are exported.\n"+
 			"If the --incremental or --update option is used, the directory may already exist. Otherwise "+
 			"it should not exist. If it doesn't exist it will be created by the command."+
 			"This sequence data, one file per sequence, will be written to the files in the directory. "+
@@ -60,12 +66,15 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String INCREMENTAL = "incremental";
 	public static final String UPDATE = "update";
+	public static final String WHERE_CLAUSE = "whereClause";
 
 
 	private String sourceName;
 	private Integer batchSize;
 	private Boolean incremental;
 	private Boolean update;
+	private Optional<Expression> whereClause;
+
 
 	
 	@Override
@@ -78,6 +87,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		if(incremental && update) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify both --incremental and --update");
 		}
+		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 
 	}
 
@@ -89,9 +99,13 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" already exists");
 		}
 		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
-		List<Map<String, String>> pkMaps = 
-				GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName))
-				.getSequences()
+		Expression exp = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
+		if(whereClause.isPresent()) {
+			exp = exp.andExp(whereClause.get());
+		}
+		List<Sequence> sequences = 
+				GlueDataObject.query(cmdContext, Sequence.class, new SelectQuery(Sequence.class, exp));
+		List<Map<String, String>> pkMaps = sequences
 				.stream().map(seq -> seq.pkMap())
 				.collect(Collectors.toList());
 		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");

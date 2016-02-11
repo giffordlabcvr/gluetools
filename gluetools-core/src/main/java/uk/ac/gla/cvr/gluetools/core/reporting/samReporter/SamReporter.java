@@ -19,6 +19,8 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addModulePluginCmdClass(SamVariationsScanCommand.class);
 		addModulePluginCmdClass(SamNucleotidesCommand.class);
 		addModulePluginCmdClass(SamAminoAcidsCommand.class);
+		addSimplePropertyName(ALIGNER_MODULE_NAME);
+		
 	}
 
 	@Override

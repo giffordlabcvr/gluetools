@@ -93,7 +93,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 	
 	private PopulateResult populate(CommandContext cmdContext, int batchSize, 
 			Optional<Expression> whereClause, boolean updateDB, List<String> fieldNames) {
-		GlueLogger.getGlueLogger().fine("Finding sequences to process");
+		log("Finding sequences to process");
 		CommandBuilder<ListResult, ListSequenceCommand> cmdBuilder = cmdContext.cmdBuilder(ListSequenceCommand.class);
 		whereClause.ifPresent(wc ->
 			cmdBuilder.set(ListSequenceCommand.WHERE_CLAUSE, wc.toString())
@@ -104,7 +104,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		ListResult listResult = cmdBuilder.execute();
 		List<Map<String,Object>> sequenceMaps = listResult.asListOfMaps();
 		List<Map<String,Object>> rowData = new LinkedList<Map<String, Object>>();
-		GlueLogger.getGlueLogger().fine("Found "+sequenceMaps.size()+" sequences to process");
+		log("Found "+sequenceMaps.size()+" sequences to process");
 		int sequencesProcessed = 0;
 		for(Map<String,Object> sequenceMap: sequenceMaps) {
 			String sourceName = (String) sequenceMap.get(Sequence.SOURCE_NAME_PATH);
@@ -113,14 +113,14 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			populate(cmdContext, sourceName, sequenceID, format, rowData, fieldNames);
 			sequencesProcessed++;
 			if(sequencesProcessed % batchSize == 0) {
-				GlueLogger.getGlueLogger().fine("Processed "+sequencesProcessed+" sequences");
+				log("Processed "+sequencesProcessed+" sequences");
 				if(updateDB) {
 					cmdContext.commit();
 				} 
 				cmdContext.newObjectContext();
 			}
 		}
-		GlueLogger.getGlueLogger().fine("Processed "+sequencesProcessed+" sequences");
+		log("Processed "+sequencesProcessed+" sequences");
 		if(updateDB) {
 			cmdContext.commit();
 		}

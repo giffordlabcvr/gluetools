@@ -52,7 +52,6 @@ public class SequenceAlignmentResult {
 		if(referenceRestrictions == null || referenceRestrictions.contains(alignmentResult.getReferenceName())) {
 			ReferenceRealisedFeatureTreeResult rootResult = alignmentResult.getReferenceFeatureTreeResult();
 			for(ReferenceRealisedFeatureTreeResult rootChildTree: rootResult.getChildTrees()) {
-				//GlueLogger.getGlueLogger().finest("Generating results for reference: "+rootChildTree.getReferenceName()+", feature: "+rootChildTree.getFeatureName());
 				generateFeatureResult(cmdContext, rootChildTree, seqResult.getSeqObj(), s2cMinorityVariantFilter, 
 						featureRestrictions, variationRestrictions, vcatRestrictions);
 			}

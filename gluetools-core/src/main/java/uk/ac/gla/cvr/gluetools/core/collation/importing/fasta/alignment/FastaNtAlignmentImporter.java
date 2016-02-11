@@ -143,11 +143,11 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 			resultListOfMaps.add(memberResultMap);
 			alignmentRows++;
 			if(alignmentRows % 25 == 0) {
-				GlueLogger.getGlueLogger().finest("Imported "+alignmentRows+" alignment rows");
+				log("Imported "+alignmentRows+" alignment rows");
 			}
 			
 		}
-		GlueLogger.getGlueLogger().finest("Imported "+alignmentRows+" alignment rows");
+		log("Imported "+alignmentRows+" alignment rows");
 		
 		cmdContext.commit();
 		return new FastaAlignmentImporterResult(resultListOfMaps);

@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
+import org.w3c.dom.Document;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandResult;
@@ -14,7 +16,8 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 public final class ModuleShowConfigurationCommand extends ModuleDocumentCommand<ConsoleCommandResult> {
 
 	@Override
-	protected final ConsoleCommandResult execute(CommandContext cmdContext, Module module) {
-		return new ConsoleCommandResult(new String(GlueXmlUtils.prettyPrint(module.getConfigDoc())));
+	protected ConsoleCommandResult processDocument(CommandContext cmdContext,
+			Module module, Document modulePluginDoc) {
+		return new ConsoleCommandResult(new String(GlueXmlUtils.prettyPrint(modulePluginDoc)));
 	}
 }
