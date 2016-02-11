@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		docoptUsages={"(-t <moduleType> | -f <fileName>) <moduleName>"},
 		description="Create a module",
 		docoptOptions={
-				"-t <moduleType>, --type <moduleType>  Default config for a specific module type", 
+				"-t <moduleType>, --moduleType <moduleType>  Default config for a specific module type", 
 				"-f <fileName>, --fileName <fileName>  Config from an XML file"},
 		furtherHelp="Creates a module of the specified type, with the default configuration for that module type.",
 		metaTags={ CmdMeta.updatesDatabase, CmdMeta.consoleOnly } ) 
