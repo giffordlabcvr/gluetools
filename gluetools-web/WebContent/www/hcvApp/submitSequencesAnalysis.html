@@ -4,8 +4,6 @@
 <div ng-app="submitSequencesAnalysis">
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
 		<h2>{{pageTitle}}</h2>
-		{{pageExplanation}}
-	
 		<div>
 			<h3>{{selectFilesHeader}} <small><a ng-click="showSupportedFormats()">Supported sequence file formats <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
 			<p></p>			
@@ -147,9 +145,11 @@
 						<tr>
 							<td>{{analysisResults.file.name}}</td>
 							<td>
-								<select name="singleSelect" ng-model="selectedSequenceID">
-									<option ng-repeat="sequenceResult in analysisResults.transientAnalysisResult.sequenceResult" value="{{sequenceResult.sequenceID}}">{{sequenceResult.sequenceID}}</option>
-								</select>
+							
+							<select ng-model="selectedSequenceResult" 
+								ng-options="sequenceResult.sequenceID for sequenceResult in analysisResults.transientAnalysisResult.sequenceResult">
+						    </select>
+							
 							</td>
 							<td><a ng-click="showAlignmentDetails(selectedSequenceResult)">Show coverage details <i class="glyphicon glyphicon-link"></i></a></td>
 							<td>
@@ -180,8 +180,8 @@
 		    					</div>
 							</td>
 							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
-								<select name="singleSelect" ng-model="selectedSequenceResult.selectedReference">
-									<option ng-repeat="referenceOption in referenceOptions" value="{{referenceOption}}">{{referenceOption}}</option>
+								<select name="singleSelect" ng-model="selectedSequenceResult.selectedReference"
+									ng-options="referenceOption for referenceOption in referenceOptions">
 								</select>
 							</td>
 							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">

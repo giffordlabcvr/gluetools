@@ -24,20 +24,6 @@ submitSequencesAnalysis
 		dialogs.create('hcvApp/dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
 	}
 
-	$scope.$watch( 'selectedSequenceID', function( newObj, oldObj ) {
-		console.log("selectedSequenceID", $scope.selectedSequenceID);
-		if($scope.analysisResults) {
-			for(var i = 0; i < $scope.analysisResults.transientAnalysisResult.sequenceResult.length; i++) {
-				var seqResult = $scope.analysisResults.transientAnalysisResult.sequenceResult[i];
-				if(seqResult.sequenceID == $scope.selectedSequenceID) {
-					$scope.selectedSequenceResult = seqResult;
-					break;
-				}
-			}
-		}
-		console.log("selectedSequenceResult", $scope.selectedSequenceResult);
-	}, false);
-
 	$scope.$watch( 'selectedSequenceResult', function(newObj, oldObj) {
 
 		if(!$scope.selectedSequenceResult) {
@@ -80,6 +66,7 @@ submitSequencesAnalysis
 		} else {
 			$scope.selectedSequenceResult.selectedReference = $scope.noneSelected;
 		}
+		console.log("selectedReference: ", $scope.selectedSequenceResult.selectedReference);
 		
 		$scope.updateFeatureTreeMap();
 	}, false);
@@ -88,10 +75,10 @@ submitSequencesAnalysis
 	$scope.showAnalysisResults = function(item) {
 		console.log("show analysis : ", item);
 		console.log("resultArray : ", item.transientAnalysisResult.sequenceResult);
-		if(item.transientAnalysisResult.sequenceResult.length > 0) {
-			$scope.selectedSequenceID = item.transientAnalysisResult.sequenceResult[0].sequenceID;
-		}
 		$scope.analysisResults = item;
+		if(item.transientAnalysisResult.sequenceResult.length >= 0) {
+			$scope.selectedSequenceResult = item.transientAnalysisResult.sequenceResult[0];
+		}
 	}
 	
 	$scope.findFeature = function(featureTree, featureName) {
