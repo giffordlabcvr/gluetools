@@ -275,10 +275,6 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		
 	}
 
-	protected class IntHolder {
-		int x;
-	}
-
 	protected SamRecordFilter getSamRecordFilter(SamReader samReader, SamReporter samReporter) {
 		return new SamReporterRecordFilter(samReader, samReporter);
 	}

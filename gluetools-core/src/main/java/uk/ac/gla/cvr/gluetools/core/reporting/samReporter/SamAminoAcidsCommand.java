@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -104,7 +104,7 @@ public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult
 			
 			SamRecordFilter samRecordFilter = getSamRecordFilter(samReader, samReporter);
 
-	        final IntHolder records = new IntHolder();
+	        final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
 			
 			samReader.forEach(samRecord -> {
 				if(!samRecordFilter.recordPasses(samRecord)) {
@@ -128,12 +128,10 @@ public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult
 						codon++;
 					}
 				}
-				records.x++;
-				if(records.x % 10000 == 0) {
-					samReporter.log("Processed "+records.x+" reads aligned to SAM reference");
-				}
+				recordsCounter.processedRecord();
+				recordsCounter.logRecordsProcessed();
 			});
-			samReporter.log("Processed "+records.x+" reads aligned to SAM reference");
+			recordsCounter.logTotalRecordsProcessed();
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
