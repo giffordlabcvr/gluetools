@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -24,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -35,19 +38,31 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 @CommandClass(
 		commandWords={"amino-acids"}, 
 		description = "Translate AAs in a SAM/BAM file", 
-		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE },
+		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE_2 },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
+				"-p <readPctFilter>, --readPctFilter <readPctFilter>  Read percentage filter",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref sequence",
 				"-a <alignmentName>, --alignmentName <alignmentName>  Tip alignment",
 				"-r <refName>, --refName <refName>                    GLUE reference name",
 				"-f <featureName>, --featureName <featureName>        GLUE feature name"},
-		furtherHelp = SamNucleotidesCommand.SAM_REPORTER_CMD_FURTHER_HELP+
-			"The translated amino acids will be limited to this feature location.",
+		furtherHelp = 
+			SamNucleotidesCommand.SAM_REPORTER_CMD_FURTHER_HELP+
+			"\nThe translated amino acids will be limited to the specified feature location."+
+			SamReporterCommand.SAM_REPORTER_CMD_READ_PCT_HELP,
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult> 
 	implements ProvidedProjectModeCommand{
+
+	private Double readPctFilter;
+
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		readPctFilter = configureReadPercentFilter(configElem);
+	}
 
 
 	@Override
@@ -141,6 +156,7 @@ public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult
 		
 		for(Integer codon: mappedCodons) {
 			RefCodonInfo refCodonInfo = glueRefCodonToInfo.get(codon);
+			refCodonInfo.applyReadPctFilter(readPctFilter);
 			refCodonInfo.aaToReadCount.forEachEntry(new TCharIntProcedure() {
 				@Override
 				public boolean execute(char aminoAcid, int numReads) {
@@ -169,6 +185,19 @@ public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult
 		TCharIntMap aaToReadCount = new TCharIntHashMap();
 		public void addAaRead(char aaChar) {
 			aaToReadCount.adjustOrPutValue(aaChar, 1, 1);
+		}
+		public void applyReadPctFilter(Double readPctFilter) {
+			int[] values = aaToReadCount.values();
+			int totalReadsAtCodon = 0;
+			for(int value: values) {
+				totalReadsAtCodon += value;
+			}
+			for(char aa : aaToReadCount.keys()) {
+				int numReadsWithAA = aaToReadCount.get(aa);
+				if((100.0 * numReadsWithAA / (double) totalReadsAtCodon) < readPctFilter) {
+					aaToReadCount.remove(aa);
+				}
+			}
 		}
 	}
 

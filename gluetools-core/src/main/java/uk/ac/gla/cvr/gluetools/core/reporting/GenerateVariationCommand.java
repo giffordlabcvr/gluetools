@@ -50,14 +50,10 @@ import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesException.Code;
 		"The reference sequence named <referenceName> may be the alignment's constraining reference, or "+
 		"the constraining reference of any ancestor alignment. The named reference sequence must have a "+
 		"location defined for the feature named by <featureName>, this must be a non-informational feature. "+
-		"If --recursive is used, the set of alignment members will be expanded to include members of the named "+
-		"alignment's child alignments, and those of their child aligments etc. This can therefore be used to generate "+
-		"variations from across a whole evolutionary clade. "+
-		"If a <whereClause> is supplied, this can qualify further the set of "+
-		"included alignment members. Example: \n"+
-		"  generate variations AL_3 -w \"sequence.source.name = 'ncbi-curated'\" MREF NS3\n"+
 		"One or more named variation categories may be specified, using the --vcatName option. If so, the generated "+
-		"variations are added to the named categories",
+		"variations are added to the named categories\n"+
+		"Example: \n"+
+		"  generate variation REF_A NS2 98 L -c common_in_genoA\n",
 		metaTags = {CmdMeta.updatesDatabase}	
 )
 public class GenerateVariationCommand extends ModulePluginCommand<GenerateVariationsResult, MutationFrequenciesReporter> implements ProvidedProjectModeCommand {
@@ -90,7 +86,6 @@ public class GenerateVariationCommand extends ModulePluginCommand<GenerateVariat
 				modulePlugin.previewSingleCodonVariation(cmdContext, referenceName, featureName, codon, mutationAA);
 		return generateVariationsFromPreview(cmdContext, modulePlugin, previewVariationsResult, vcatNames, referenceName, featureName);
 	}
-
 	
 	public static GenerateVariationsResult generateVariationsFromPreview(
 			CommandContext cmdContext,

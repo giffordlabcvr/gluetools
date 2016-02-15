@@ -27,7 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 @CommandClass(
 		commandWords={"nucleotides"}, 
 		description = "Extract nucleotides from a SAM/BAM file", 
-		docoptUsages = { SamNucleotidesCommand.SAM_REPORTER_CMD_USAGE },
+		docoptUsages = { SamNucleotidesCommand.SAM_REPORTER_CMD_USAGE_1 },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref sequence",

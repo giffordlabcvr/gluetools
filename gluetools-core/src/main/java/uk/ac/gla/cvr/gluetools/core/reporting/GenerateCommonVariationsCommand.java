@@ -31,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"variations from across a whole evolutionary clade. "+
 		"If a <whereClause> is supplied, this can qualify further the set of "+
 		"included alignment members. Example: \n"+
-		"  generate variations AL_3 -w \"sequence.source.name = 'ncbi-curated'\" MREF NS3\n"+
+		"  generate common variations AL_3 -w \"sequence.source.name = 'ncbi-curated'\" MREF NS3\n"+
 		"One or more named variation categories may be specified, using the --vcatName option. If so, the generated "+
 		"variations are added to the named categories",
 		metaTags = {CmdMeta.updatesDatabase}	

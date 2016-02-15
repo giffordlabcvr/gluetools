@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -36,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -48,14 +48,24 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 	public static final String FILE_NAME = "fileName";
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String SAM_REF_NAME = "samRefName";
+	public static final String READ_PCT_FILTER = "readPctFilter";
 	public static final String REFERENCE_NAME = "refName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String MEMBER_SOURCE = "memberSource";
 	public static final String MEMBER_SEQ_ID = "memberSeqId";
 	
-	protected static final String SAM_REPORTER_CMD_USAGE = 
+	protected static final String SAM_REPORTER_CMD_USAGE_1 = 
 			"-i <fileName> [-s <samRefName>] -r <refName> -f <featureName> -a <alignmentName> [<memberSource> <memberSeqId>]";
 
+	protected static final String SAM_REPORTER_CMD_USAGE_2 = 
+			"-i <fileName> [-p <readPctFilter>] [-s <samRefName>] -r <refName> -f <featureName> -a <alignmentName> [<memberSource> <memberSeqId>]";
+
+	protected static final String SAM_REPORTER_CMD_READ_PCT_HELP = "\nThe <readPctFilter> argument defines a percentege threshold. "+
+			"Matching reads will only be counted in the command results if the group of reads "+
+			"which match make up a percentage higher than the threshold. The percentage is calculated as a fraction of "+
+			"those reads which cover the relevant region.";
+
+	
 	protected static final String SAM_REPORTER_CMD_FURTHER_HELP = 
 			"The input file <fileName> is loaded from the current load/save path. "+
 		 	"It may be in SAM or BAM format.\n"+
@@ -279,6 +289,11 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		return new SamReporterRecordFilter(samReader, samReporter);
 	}
 	
+	protected Double configureReadPercentFilter(Element configElem) {
+		return Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, READ_PCT_FILTER, false))
+				.orElse(new Double(10.0));
+	}
+
 	private class SamReporterRecordFilter implements SamRecordFilter {
 
 		private int samRefIndex;

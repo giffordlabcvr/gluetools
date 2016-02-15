@@ -7,6 +7,8 @@ import htsjdk.samtools.SamReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -14,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.comparators.ComparatorChain;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -24,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
@@ -38,21 +44,31 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE },
+		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE_2 },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
+				"-p <readPctFilter>, --readPctFilter <readPctFilter>  Read percentage filter",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref sequence",
 				"-a <alignmentName>, --alignmentName <alignmentName>  Tip alignment",
 				"-r <refName>, --refName <refName>                    GLUE reference name",
 				"-f <featureName>, --featureName <featureName>        GLUE feature name"},
 		furtherHelp = 
-			SamReporterCommand.SAM_REPORTER_CMD_FURTHER_HELP+
-			" The variation scan will be limited to variations defined on this feature location.",
+				SamReporterCommand.SAM_REPORTER_CMD_FURTHER_HELP+
+				"\nThe variation scan will be limited to variations defined on the specified feature location."+
+				SamReporterCommand.SAM_REPORTER_CMD_READ_PCT_HELP,
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsScanResult> 
 	implements ProvidedProjectModeCommand{
 
+	private Double readPctFilter;
+
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		readPctFilter = configureReadPercentFilter(configElem);
+	}
 
 	@Override
 	protected SamVariationsScanResult execute(
@@ -64,7 +80,18 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 
 		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
 		
-		List<Variation> variations = scannedFeatureLoc.getVariations();
+		List<Variation> variations = new ArrayList<Variation>(scannedFeatureLoc.getVariations());
+		Collections.sort(variations, new Comparator<Variation>(){
+			@Override
+			public int compare(Variation v1, Variation v2) {
+				int refStartCompareResult = Integer.compare(v1.getRefStart(), v2.getRefStart());
+				if(refStartCompareResult != 0) {
+					return refStartCompareResult;
+				}
+				return v1.getName().compareTo(v2.getName());
+			}
+		});
+		
 		boolean anyAaVariations = variations.stream().anyMatch(var -> var.getTranslationFormat() == TranslationFormat.AMINO_ACID);
 		
 		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, scannedRef);
@@ -204,24 +231,22 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 			throw new RuntimeException(e);
 		}
 
-
- 		
-		
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		for(VariationInfo variationInfo : variationInfos) {
+			int readsConfirmedPresent = variationInfo.readsConfirmedPresent;
+			int readsConfirmedAbsent = variationInfo.readsConfirmedAbsent;
+			int totalReadsForVariation = readsConfirmedPresent + readsConfirmedAbsent;
+			if((100.0 * readsConfirmedPresent / (double) totalReadsForVariation) < readPctFilter) {
+				continue;
+			}
 			Map<String, Object> row = new LinkedHashMap<String, Object>();
 			row.put(SamVariationsScanResult.VARIATION_NAME, variationInfo.variation.getName());
-			row.put(SamVariationsScanResult.READS_CONFIRMED_PRESENT, variationInfo.readsConfirmedPresent);
-			row.put(SamVariationsScanResult.READS_CONFIRMED_ABSENT, variationInfo.readsConfirmedAbsent);
+			row.put(SamVariationsScanResult.READS_CONFIRMED_PRESENT, readsConfirmedPresent);
+			row.put(SamVariationsScanResult.READS_CONFIRMED_ABSENT, readsConfirmedAbsent);
 			rowData.add(row);
 		}
-
 		return new SamVariationsScanResult(rowData);
-
-		
-
-
-}
+	}
 
 	
 	private class VariationInfo {
