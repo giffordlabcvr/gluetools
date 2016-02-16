@@ -5,6 +5,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -42,5 +43,11 @@ public abstract class MemberModeCommand<R extends CommandResult> extends Alignme
 				Sequence.pkMap(getSourceName(), getSequenceID()));
 		return sequence;
 	}
-	
+
+	protected AlignmentMember lookupMember(CommandContext cmdContext) {
+		AlignmentMember alignmentMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class,
+				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
+		return alignmentMember;
+	}
+
 }

@@ -10,7 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = AlignmentModeCommandFactory.class)
-public class AlignmentMode extends CommandMode<AlignmentCommand> implements InsideProjectMode {
+public class AlignmentMode extends CommandMode<AlignmentCommand> implements InsideProjectMode, InsideAlignmentMode {
 	
 	private String alignmentName;
 	private Project project;

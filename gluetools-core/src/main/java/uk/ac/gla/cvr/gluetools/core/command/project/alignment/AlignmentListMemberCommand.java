@@ -20,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -28,9 +29,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"list", "member"},
-		docoptUsages={"[-w <whereClause>] [<fieldName> ...]"},
+		docoptUsages={"[-r] [-w <whereClause>] [<fieldName> ...]"},
 		docoptOptions={
-			"-w <whereClause>, --whereClause <whereClause>  Qualify result set"},
+				"-r, --recursive                                Include descendent members",
+				"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
+			},
 		description="List member sequences or field values",
 		furtherHelp=
 		"The optional whereClause qualifies which alignment member are displayed.\n"+
@@ -41,16 +44,21 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"  list member -w \"sequence.sequenceID like 'f%' and sequence.CUSTOM_FIELD = 'value1'\"\n"+
 		"  list member sequence.sequenceID sequence.CUSTOM_FIELD"
 	) 
-public class ListMemberCommand extends AlignmentModeCommand<ListResult> {
+public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult> {
 
+	public static final String RECURSIVE = "recursive";
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
+	
+	private Boolean recursive;
 	private Optional<Expression> whereClause;
 	private List<String> fieldNames;
+	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
 		if(fieldNames.isEmpty()) {
@@ -65,12 +73,20 @@ public class ListMemberCommand extends AlignmentModeCommand<ListResult> {
 			getAlignmentMode(cmdContext).getProject().checkValidMemberFieldNames(fieldNames);
 		}
 		
-		Expression matchAlignmentName = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName());
+		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName());
+		if(recursive) {
+			List<Alignment> descendents = lookupAlignment(cmdContext).getDescendents();
+			for(Alignment descAlignment: descendents) {
+				matchAlignmentOrDescendent = matchAlignmentOrDescendent.orExp(
+						ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, descAlignment.getName()));
+			}
+		}
+		
 		SelectQuery selectQuery = null;
 		if(whereClause.isPresent()) {
-			selectQuery = new SelectQuery(AlignmentMember.class, whereClause.get().andExp(matchAlignmentName));
+			selectQuery = new SelectQuery(AlignmentMember.class, whereClause.get().andExp(matchAlignmentOrDescendent));
 		} else {
-			selectQuery = new SelectQuery(AlignmentMember.class, matchAlignmentName);
+			selectQuery = new SelectQuery(AlignmentMember.class, matchAlignmentOrDescendent);
 		}
 		List<AlignmentMember> members = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
 		if(fieldNames == null) {

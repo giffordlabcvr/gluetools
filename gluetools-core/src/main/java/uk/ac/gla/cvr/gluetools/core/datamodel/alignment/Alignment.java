@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @GlueDataClass(defaultListColumns = {_Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH})
@@ -130,6 +131,53 @@ public class Alignment extends _Alignment {
 			.map(seg -> seg.asQueryAlignedSegment())
 			.collect(Collectors.toList());
 		return QueryAlignedSegment.translateSegments(seqToMemberSegs, memberToRefSegs);
+	}
+
+	public ReferenceSequence getAncConstrainingRef(CommandContext cmdContext, String referenceName) {
+		ReferenceSequence ancConstrainingRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), false);
+		List<String> ancestorRefNames = getAncestorReferences()
+				.stream().map(ref -> ref.getName()).collect(Collectors.toList());
+		
+		if(!ancestorRefNames.contains(ancConstrainingRef.getName())) {
+        	throw new AlignmentException(AlignmentException.Code.REFERENCE_DOES_NOT_CONSTRAIN_ANCESTOR, referenceName, this.getName());
+		}
+
+		return ancConstrainingRef;
+	}
+
+	public ReferenceSequence getConstrainingRef() {
+		ReferenceSequence constrainingRef = getRefSequence();
+		if(constrainingRef == null) {
+        	throw new AlignmentException(AlignmentException.Code.ALIGNMENT_IS_UNCONSTRAINED, this.getName());
+		}
+		return constrainingRef;
+	}
+
+	public List<QueryAlignedSegment> translateToAncConstrainingRef(CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToConstrainingRefSags, ReferenceSequence ancConstrainingRef) {
+		Alignment currentAlignment = this;
+		ReferenceSequence constrainingRef = currentAlignment.getConstrainingRef();
+		// translate segments up the tree until we get to the ancestor constraining reference.
+		while(!constrainingRef.getName().equals(ancConstrainingRef.getName())) {
+			Sequence refSeqSeq = constrainingRef.getSequence();
+			Alignment parentAlmt = currentAlignment.getParent();
+			queryToConstrainingRefSags = parentAlmt.translateToRef(cmdContext, 
+					refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID(), queryToConstrainingRefSags);
+			currentAlignment = parentAlmt;
+			constrainingRef = currentAlignment.getConstrainingRef();
+		}
+		return queryToConstrainingRefSags;
+	}
+
+	public List<ReferenceSequence> getAncConstrainingRefs() {
+		List<ReferenceSequence> ancConstrainingRefs = new ArrayList<ReferenceSequence>();
+		for(Alignment almt: getAncestors()) {
+			ReferenceSequence refSequence = almt.getRefSequence();
+			if(refSequence != null) {
+				ancConstrainingRefs.add(refSequence);
+			}
+		}
+		return ancConstrainingRefs;
 	}
 
 	

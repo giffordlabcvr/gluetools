@@ -17,8 +17,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ListMemberCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AddAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.RemoveAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
@@ -228,11 +228,11 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 
 	private List<Map<String, Object>> getMemberSequenceIdMaps(CommandContext cmdContext) {
 		try (ModeCloser refMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			CommandBuilder<ListResult, ListMemberCommand> cmdBuilder = cmdContext.cmdBuilder(ListMemberCommand.class);
+			CommandBuilder<ListResult, AlignmentListMemberCommand> cmdBuilder = cmdContext.cmdBuilder(AlignmentListMemberCommand.class);
 			if(whereClause != null) {
-				cmdBuilder.set(ListMemberCommand.WHERE_CLAUSE, whereClause.toString());
+				cmdBuilder.set(AlignmentListMemberCommand.WHERE_CLAUSE, whereClause.toString());
 			}
-			cmdBuilder.setArray(ListMemberCommand.FIELD_NAME)
+			cmdBuilder.setArray(AlignmentListMemberCommand.FIELD_NAME)
 				.add(AlignmentMember.SOURCE_NAME_PATH)
 				.add(AlignmentMember.SEQUENCE_ID_PATH);
 			return cmdBuilder.execute().asListOfMaps();
@@ -242,7 +242,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 
 	private String getRefSequenceName(CommandContext cmdContext) {
 		try (ModeCloser refMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			return cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute().getReferenceName();
+			return cmdContext.cmdBuilder(AlignmentShowReferenceSequenceCommand.class).execute().getReferenceName();
 		}
 	}
 

@@ -89,7 +89,7 @@ public class MemberCommand extends AlignmentModeCommand<OkResult>  {
 			} 
 		}
 		Project project = getAlignmentMode(cmdContext).getProject();
-		cmdContext.pushCommandMode(new MemberMode(project, this, sequence.getSource().getName(), sequence.getSequenceID()));
+		cmdContext.pushCommandMode(new MemberMode(project, this, getAlignmentName(), sequence.getSource().getName(), sequence.getSequenceID()));
 		return CommandResult.OK;
 	}
 	

@@ -51,7 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  add member -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
 	"  add member -w \"sequenceID = '3452467'\""
 ) 
-public class AddMemberCommand extends AlignmentModeCommand<CreateResult> {
+public class AlignmentAddMemberCommand extends AlignmentModeCommand<CreateResult> {
 
 	public static final String SEQUENCE_ID = "sequenceID";
 	public static final String SOURCE_NAME = "sourceName";

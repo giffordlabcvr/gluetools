@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -16,6 +17,8 @@ import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -119,6 +122,46 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 		}
 
 	}
+	
+	
+	
+	public static abstract class FeatureOfAncConstrainingRefCompleter extends AdvancedCmdCompleter {
+		public FeatureOfAncConstrainingRefCompleter() {
+			super();
+			registerVariableInstantiator("refName", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					InsideAlignmentMode insideAlignmentMode = (InsideAlignmentMode) cmdContext.peekCommandMode();
+					String almtName = insideAlignmentMode.getAlignmentName();
+					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
+					return alignment.getAncConstrainingRefs().stream()
+							.map(ancCR -> new CompletionSuggestion(ancCR.getName(), true))
+							.collect(Collectors.toList());
+				}
+			});
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String referenceName = (String) bindings.get("refName");
+					ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
+					if(referenceSequence != null) {
+						return referenceSequence.getFeatureLocations().stream()
+								.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
+		}
+	}
+
+
 	
 	
 }

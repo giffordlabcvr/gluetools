@@ -127,31 +127,13 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 	}
 
 
-	protected ReferenceSequence getScannedRef(CommandContext cmdContext, Alignment tipAlignment) {
-		ReferenceSequence scannedReference = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), false);
-		List<String> ancestorRefNames = tipAlignment.getAncestorReferences()
-				.stream().map(ref -> ref.getName()).collect(Collectors.toList());
-		
-		if(!ancestorRefNames.contains(scannedReference.getName())) {
-        	throw new SamReporterCommandException(SamReporterCommandException.Code.REFERENCE_DOES_NOT_CONSTRAIN_ANCESTOR, referenceName, alignmentName);
-		}
-
-		return scannedReference;
-	}
 
 
-	protected ReferenceSequence getConstrainingRef(Alignment alignment) {
-		ReferenceSequence constrainingRef = alignment.getRefSequence();
-		if(constrainingRef == null) {
-        	throw new SamReporterCommandException(SamReporterCommandException.Code.ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
-		}
-		return constrainingRef;
-	}
 
 	protected List<QueryAlignedSegment> getSamRefToGlueRefSegs(CommandContext cmdContext,
 			SamReporter samReporter, Alignment tipAlignment,
 			ReferenceSequence tipAlmtRef,
-			ReferenceSequence scannedReference) {
+			ReferenceSequence ancConstrainingRef) {
 		List<QueryAlignedSegment> samRefToGlueRefSegs;
 		if(memberSource != null && memberSeqId != null) {
 			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class,
@@ -166,15 +148,7 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 			AlignerResult alignerResult = aligner.doAlign(cmdContext, tipAlmtRef.getName(), samConsensusFastaMap);
 			samRefToGlueRefSegs = alignerResult.getQueryIdToAlignedSegments().get(samConsensusFastaID);
 		}
-		Alignment currentAlignment = tipAlignment;
-		// translate segments up the tree until we get to the scanned reference.
-		while(!currentAlignment.getRefSequence().getName().equals(scannedReference.getName())) {
-			Sequence refSeqSeq = currentAlignment.getRefSequence().getSequence();
-			Alignment parentAlmt = currentAlignment.getParent();
-			samRefToGlueRefSegs = parentAlmt.translateToRef(cmdContext, 
-					refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID(), samRefToGlueRefSegs);
-			currentAlignment = parentAlmt;
-		}
+		samRefToGlueRefSegs = tipAlignment.translateToAncConstrainingRef(cmdContext, samRefToGlueRefSegs, ancConstrainingRef);
 		samReporter.log("SAM reference to tip alignment reference mapping:");
 		samReporter.log(samRefToGlueRefSegs.toString());
 		return samRefToGlueRefSegs;
@@ -315,6 +289,10 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 			return true;
 		}
 		
+	}
+
+	protected String getReferenceName() {
+		return referenceName;
 	}
 
 	

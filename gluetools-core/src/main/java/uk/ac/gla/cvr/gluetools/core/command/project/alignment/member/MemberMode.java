@@ -5,21 +5,24 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.InsideAlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.MemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = MemberModeCommandFactory.class)
-public class MemberMode extends CommandMode<MemberCommand> implements InsideProjectMode {
+public class MemberMode extends CommandMode<MemberCommand> implements InsideProjectMode, InsideAlignmentMode {
 
 	
 	private Project project;
+	private String almtName;
 	private String sourceName;
 	private String sequenceID;
 	
-	public MemberMode(Project project, MemberCommand command, String sourceName, String sequenceID) {
+	public MemberMode(Project project, MemberCommand command, String almtName, String sourceName, String sequenceID) {
 		super(command, sourceName, sequenceID);
 		this.project = project;
+		this.almtName = almtName;
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;
 	}
@@ -41,5 +44,8 @@ public class MemberMode extends CommandMode<MemberCommand> implements InsideProj
 		return project;
 	}
 
+	public String getAlignmentName() {
+		return almtName;
+	}
 	
 }

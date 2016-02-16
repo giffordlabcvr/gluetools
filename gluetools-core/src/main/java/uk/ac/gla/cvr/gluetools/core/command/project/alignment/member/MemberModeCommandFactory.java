@@ -20,6 +20,7 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ListAlignedSegmentCommand.class);
 		
 		registerCommandClass(MemberShowStatisticsCommand.class);
+		registerCommandClass(MemberAminoAcidsCommand.class);
 		
 		registerCommandClass(ExitCommand.class);
 	}

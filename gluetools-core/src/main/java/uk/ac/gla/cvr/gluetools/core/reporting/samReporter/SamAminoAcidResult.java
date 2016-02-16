@@ -6,7 +6,7 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 
-public class SamAminoAcidsResult extends TableResult {
+public class SamAminoAcidResult extends TableResult {
 
 	public static final String 
 		GLUE_REFERENCE_CODON = "glueReferenceCodon",
@@ -15,7 +15,7 @@ public class SamAminoAcidsResult extends TableResult {
 		READS_WITH_AA = "readsWithAA";
 
 
-	public SamAminoAcidsResult(List<Map<String, Object>> rowData) {
+	public SamAminoAcidResult(List<Map<String, Object>> rowData) {
 		super("samAminoAcidsResult", 
 				Arrays.asList(
 						GLUE_REFERENCE_CODON, 

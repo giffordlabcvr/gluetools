@@ -7,8 +7,9 @@ public class FeatureException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		PARENT_RELATIONSHIP_LOOP("loopNames"), 
-		FEATURE_WITH_OWN_CODON_NUMBERING_NOT_IN_ORF("featureName");
-		
+		FEATURE_WITH_OWN_CODON_NUMBERING_NOT_IN_ORF("featureName"),
+		FEATURE_DOES_NOT_CODE_AMINO_ACIDS("featureName");
+
 		private String[] argNames;
 		private Code(String... argNames) {
 			this.argNames = argNames;

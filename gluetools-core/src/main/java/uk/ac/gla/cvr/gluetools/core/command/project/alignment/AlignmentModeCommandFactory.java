@@ -16,21 +16,23 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 
-		registerCommandClass(AddMemberCommand.class);
-		registerCommandClass(RemoveMemberCommand.class);
-		registerCommandClass(ListMemberCommand.class);
+		registerCommandClass(AlignmentAddMemberCommand.class);
+		registerCommandClass(AlignmentRemoveMemberCommand.class);
+		registerCommandClass(AlignmentListMemberCommand.class);
 		registerCommandClass(MemberCommand.class);
-		registerCommandClass(ShowReferenceSequenceCommand.class);
+		registerCommandClass(AlignmentShowReferenceSequenceCommand.class);
 		registerCommandClass(AlignmentShowStatisticsCommand.class);
 
 		registerCommandClass(AlignmentSetParentCommand.class);
 		registerCommandClass(AlignmentUnsetParentCommand.class);
 		registerCommandClass(AlignmentListChildrenCommand.class);
+		registerCommandClass(AlignmentListDescendentCommand.class);
 		registerCommandClass(AlignmentShowParentCommand.class);
 		registerCommandClass(AlignmentShowAncestorsCommand.class);
 
 		registerCommandClass(AlignmentExtractChildCommand.class);
 		registerCommandClass(AlignmentDemoteMemberCommand.class);
+		registerCommandClass(AlignmentAminoAcidFrequencyCommand.class);
 		
 		registerCommandClass(ExitCommand.class);
 	}

@@ -97,7 +97,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 				GlueDataObject.delete(cmdContext, AlignmentMember.class, member.pkMap(), true);
 			}
 			// TODO Here we should copy aligned segments in some clever way 
-			AddMemberCommand.addMember(cmdContext, childAlignment, sequence);
+			AlignmentAddMemberCommand.addMember(cmdContext, childAlignment, sequence);
 		});
 		cmdContext.commit();
 		return new OkResult();

@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"Note: removing a sequence from the alignment does not delete it from the project.\n"+
 	"Note: if a member is the reference of a child alignment, it is not removed."
 ) 
-public class RemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
+public class AlignmentRemoveMemberCommand extends AlignmentModeCommand<DeleteResult> {
 
 	public static final String SOURCE_NAME = "sourceName";
 	public static final String SEQUENCE_ID = "sequenceID";

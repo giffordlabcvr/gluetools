@@ -45,10 +45,10 @@ public class SamNucleotidesCommand extends SamReporterCommand<SamNucleotidesResu
 				CommandContext cmdContext,
 				SamReporter samReporter) {
 		Alignment tipAlignment = getTipAlignment(cmdContext);
-		ReferenceSequence constrainingRef = getConstrainingRef(tipAlignment);
-		ReferenceSequence scannedRef = getScannedRef(cmdContext, tipAlignment);
+		ReferenceSequence constrainingRef = tipAlignment.getConstrainingRef();
+		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName());
 
-		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, scannedRef);
+		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, ancConstrainingRef);
 		
 		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
 		List<ReferenceSegment> featureRefSegs = scannedFeatureLoc.getSegments().stream()

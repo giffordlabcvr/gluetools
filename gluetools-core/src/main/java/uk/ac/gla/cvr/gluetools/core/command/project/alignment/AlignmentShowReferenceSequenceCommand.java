@@ -12,7 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 		docoptOptions={},
 		description="Return the name of the alignment's reference sequence"
 )
-public class ShowReferenceSequenceCommand extends AlignmentModeCommand<ShowReferenceSequenceCommand.ShowReferenceResult> {
+public class AlignmentShowReferenceSequenceCommand extends AlignmentModeCommand<AlignmentShowReferenceSequenceCommand.ShowReferenceResult> {
 
 	
 	@Override

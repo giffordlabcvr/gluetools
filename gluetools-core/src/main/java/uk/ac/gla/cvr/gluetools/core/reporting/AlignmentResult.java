@@ -6,7 +6,7 @@ import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.ShowReferenceSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowReferenceSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowFeatureTreeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
@@ -39,8 +39,8 @@ public class AlignmentResult {
 		
 		// go into alignment and find reference sequence name
 		try (ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			ShowReferenceSequenceCommand.ShowReferenceResult showReferenceResult = 
-					cmdContext.cmdBuilder(ShowReferenceSequenceCommand.class).execute();
+			AlignmentShowReferenceSequenceCommand.ShowReferenceResult showReferenceResult = 
+					cmdContext.cmdBuilder(AlignmentShowReferenceSequenceCommand.class).execute();
 			this.referenceName = showReferenceResult.getReferenceName();
 		}
 

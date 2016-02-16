@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.comparators.ComparatorChain;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -75,8 +74,8 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 				CommandContext cmdContext,
 				SamReporter samReporter) {
 		Alignment tipAlignment = getTipAlignment(cmdContext);
-		ReferenceSequence constrainingRef = getConstrainingRef(tipAlignment);
-		ReferenceSequence scannedRef = getScannedRef(cmdContext, tipAlignment);
+		ReferenceSequence constrainingRef = tipAlignment.getConstrainingRef();
+		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName());
 
 		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
 		
@@ -94,7 +93,7 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 		
 		boolean anyAaVariations = variations.stream().anyMatch(var -> var.getTranslationFormat() == TranslationFormat.AMINO_ACID);
 		
-		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, scannedRef);
+		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, ancConstrainingRef);
 
 		List<ReferenceSegment> featureRefSegs = scannedFeatureLoc.getSegments().stream()
 				.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());

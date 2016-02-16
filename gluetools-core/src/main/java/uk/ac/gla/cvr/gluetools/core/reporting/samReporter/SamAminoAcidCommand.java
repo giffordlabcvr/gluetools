@@ -36,8 +36,8 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 
 @CommandClass(
-		commandWords={"amino-acids"}, 
-		description = "Translate AAs in a SAM/BAM file", 
+		commandWords={"amino-acid"}, 
+		description = "Translate amino acids in a SAM/BAM file", 
 		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE_2 },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
@@ -52,7 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 			SamReporterCommand.SAM_REPORTER_CMD_READ_PCT_HELP,
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult> 
+public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult> 
 	implements ProvidedProjectModeCommand{
 
 	private Double readPctFilter;
@@ -66,23 +66,21 @@ public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult
 
 
 	@Override
-	protected SamAminoAcidsResult execute(
+	protected SamAminoAcidResult execute(
 				CommandContext cmdContext,
 				SamReporter samReporter) {
 
 		Alignment tipAlignment = getTipAlignment(cmdContext);
-		ReferenceSequence constrainingRef = getConstrainingRef(tipAlignment);
-		ReferenceSequence scannedRef = getScannedRef(cmdContext, tipAlignment);
+		ReferenceSequence constrainingRef = tipAlignment.getConstrainingRef();
+		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName());
 
 		
 		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
 		
 		Feature scannedFeature = scannedFeatureLoc.getFeature();
-		if(!scannedFeature.codesAminoAcids()) {
-			throw new SamReporterCommandException(SamReporterCommandException.Code.FEATURE_DOES_NOT_CODE_AMINO_ACIDS, scannedFeature.getName());
-		}
+		scannedFeature.checkCodesAminoAcids();
 		
-		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, scannedRef);
+		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, ancConstrainingRef);
 		
 		List<ReferenceSegment> featureRefSegs = scannedFeatureLoc.getSegments().stream()
 			.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
@@ -161,17 +159,17 @@ public class SamAminoAcidsCommand extends SamReporterCommand<SamAminoAcidsResult
 				@Override
 				public boolean execute(char aminoAcid, int numReads) {
 					Map<String, Object> row = new LinkedHashMap<String, Object>();
-					row.put(SamAminoAcidsResult.GLUE_REFERENCE_CODON, codon);
-					row.put(SamAminoAcidsResult.SAM_REFERENCE_BASE, refCodonInfo.samRefNT);
-					row.put(SamAminoAcidsResult.AMINO_ACID, new String(new char[]{aminoAcid}));
-					row.put(SamAminoAcidsResult.READS_WITH_AA, numReads);
+					row.put(SamAminoAcidResult.GLUE_REFERENCE_CODON, codon);
+					row.put(SamAminoAcidResult.SAM_REFERENCE_BASE, refCodonInfo.samRefNT);
+					row.put(SamAminoAcidResult.AMINO_ACID, new String(new char[]{aminoAcid}));
+					row.put(SamAminoAcidResult.READS_WITH_AA, numReads);
 					rowData.add(row);
 					return true;
 				}
 			});
 		}
 		
-		return new SamAminoAcidsResult(rowData);
+		return new SamAminoAcidResult(rowData);
 		
 	}
 

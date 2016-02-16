@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterCommandException;
 
 @GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY})
 public class Feature extends _Feature {
@@ -192,6 +193,13 @@ public class Feature extends _Feature {
 			return 1;
 		}
 		return compareDisplayOrderKeyLists(list1.subList(1, list1.size()), list2.subList(1, list2.size()));
+	}
+
+	public void checkCodesAminoAcids() {
+		if(!codesAminoAcids()) {
+			throw new FeatureException(FeatureException.Code.FEATURE_DOES_NOT_CODE_AMINO_ACIDS, getName());
+		}
+		
 	}
 
 	

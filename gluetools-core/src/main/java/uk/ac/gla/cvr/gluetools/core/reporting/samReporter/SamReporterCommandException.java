@@ -7,9 +7,7 @@ public class SamReporterCommandException extends GlueException {
 	
 	public enum Code implements GlueErrorCode {
 
-		ALIGNMENT_IS_UNCONSTRAINED("alignmentName"),
-		REFERENCE_DOES_NOT_CONSTRAIN_ANCESTOR("referenceName", "alignmentName"),
-		FEATURE_DOES_NOT_CODE_AMINO_ACIDS("featureName");
+		XX; // dummy entry
 
 		private String[] argNames;
 		private Code(String... argNames) {

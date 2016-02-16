@@ -8,6 +8,7 @@ public class AlignmentException extends GlueException {
 		
 		PARENT_RELATIONSHIP_LOOP("alignmentNames"),
 		REFERENCE_NOT_MEMBER_OF_PARENT("alignmentName", "parentAlignmentName", "referenceName"),
+		REFERENCE_DOES_NOT_CONSTRAIN_ANCESTOR("referenceName", "alignmentName"),
 		ALIGNMENT_NOT_CHILD_OF_PARENT("alignmentName", "parentAlignmentName"),
 		ALIGNMENT_IS_UNCONSTRAINED("alignmentName");
 

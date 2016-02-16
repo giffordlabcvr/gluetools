@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
@@ -13,8 +14,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-@GlueDataClass(defaultListColumns = {AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
+@GlueDataClass(defaultListColumns = {AlignmentMember.ALIGNMENT_NAME_PATH, AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
 public class AlignmentMember extends _AlignmentMember {
 	
 	public enum MemberStatistic {
@@ -82,5 +84,9 @@ public class AlignmentMember extends _AlignmentMember {
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return IQueryAlignedSegment.getReferenceNtCoveragePercent(alignedSegments, referenceLength);
 	}
-
+	
+	public List<QueryAlignedSegment> segmentsAsQueryAlignedSegments() {
+		return getAlignedSegments().stream().map(seg -> seg.asQueryAlignedSegment()).collect(Collectors.toList());
+	}
+	
 }

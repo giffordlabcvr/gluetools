@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
@@ -235,6 +236,12 @@ public class FeatureLocation extends _FeatureLocation {
 		}
 	}
 
+	
+	public List<ReferenceSegment> segmentsAsReferenceSegments() {
+		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
+	}
+
+	
 
 }
 
