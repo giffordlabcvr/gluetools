@@ -58,7 +58,7 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
+		recursive = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, RECURSIVE, false)).orElse(false);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
 		if(fieldNames.isEmpty()) {

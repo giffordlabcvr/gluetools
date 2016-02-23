@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.digs.DigsProber;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
+import uk.ac.gla.cvr.gluetools.core.reporting.custom.RavFinder;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -42,6 +43,11 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
 		registerPluginClass(SamReporter.class);
+		
+		// custom!
+		registerPluginClass(RavFinder.class);
+		
+		
 	}
 	
 }

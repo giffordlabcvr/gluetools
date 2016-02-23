@@ -11,7 +11,8 @@ public class AlignmentAminoAcidFrequencyResult extends TableResult {
 	public static final String 
 		CODON = "codon",
 		AMINO_ACID = "aminoAcid",
-		NUM_MEMBERS = "numMembers";
+		NUM_MEMBERS = "numMembers",
+		PERCENTAGE_MEMBERS = "pctMembers";
 
 
 	public AlignmentAminoAcidFrequencyResult(List<Map<String, Object>> rowData) {
@@ -19,7 +20,8 @@ public class AlignmentAminoAcidFrequencyResult extends TableResult {
 				Arrays.asList(
 						CODON, 
 						AMINO_ACID, 
-						NUM_MEMBERS), 
+						NUM_MEMBERS, 
+						PERCENTAGE_MEMBERS), 
 				rowData);
 	}
 

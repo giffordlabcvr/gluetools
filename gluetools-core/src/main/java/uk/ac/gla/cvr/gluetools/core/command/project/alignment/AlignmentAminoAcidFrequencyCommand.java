@@ -128,6 +128,8 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 						resultRow.put(AlignmentAminoAcidFrequencyResult.CODON, codon);
 						resultRow.put(AlignmentAminoAcidFrequencyResult.AMINO_ACID, new String(new char[]{aa}));
 						resultRow.put(AlignmentAminoAcidFrequencyResult.NUM_MEMBERS, numMembers);
+						double pctMembers = 100.0 * numMembers / (double) refCodonInfo.membersAtCodon;
+						resultRow.put(AlignmentAminoAcidFrequencyResult.PERCENTAGE_MEMBERS, pctMembers);
 						resultRowData.add(resultRow);
 						return true;
 					}
@@ -149,8 +151,10 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	
 	private class RefCodonInfo {
 		TCharIntMap aaToMemberCount = new TCharIntHashMap();
+		int membersAtCodon = 0;
 		public void addAaMamber(char aaChar) {
 			aaToMemberCount.adjustOrPutValue(aaChar, 1, 1);
+			membersAtCodon++;
 		}
 	}
 

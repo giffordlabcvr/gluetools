@@ -14,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterCommandException;
 
 @GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY})
 public class Feature extends _Feature {
