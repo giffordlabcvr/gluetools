@@ -40,11 +40,12 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass( 
 		commandWords={"derive","alignment"}, 
-		docoptUsages={"<sourceAlmtName> <targetAlmtName> [-r] (-w <whereClause> | -a) [-m <mergeStrategy>]"},
+		docoptUsages={"<sourceAlmtName> <targetAlmtName> [-r] [-e] (-w <whereClause> | -a) [-m <mergeStrategy>]"},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>        Select source  members",
 			    "-a, --allMembers                                     Select all source members",
 			    "-r, --allowMissingReference                          Warn instead of failing",
+			    "-e, --existingMembersOnly                            Derive only for existing",
 			    "-m <mergeStrategy>, --mergeStrategy <mergeStrategy>  Segment merge strategy"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Derive constrained alignment segments from an unconstrained alignment", 
@@ -54,8 +55,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"If it is not a member, an exception will be thrown, unless <allowMissingReference> is specified, "+
 		"in which case a warning is emitted.\n"+
 		"The <whereClause> selects members from the source alignment. These members will be "+
-		"added to the target alignment if they do not exist. Any aligned segments these members have in the "+
-		"target alignment will be deleted. New aligned segments will be added to the target alignment, derived "+
+		"added to the target alignment if they do not exist, unless <existingMembersOnly> is specified. "+
+		"New aligned segments will be added to the target alignment, derived "+
 		"from the homology between the member and reference sequence in the source alignment. \n"+
 		"The <mergeStrategy> option governs how new segments derived from the source alignment "+
 		"are merged with any segments in any existing alignment member of the target alignment.\n"+
@@ -75,6 +76,7 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 	public static final String MERGE_STRATEGY = "mergeStrategy";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
+	public static final String EXISTING_MEMBERS_ONLY = "existingMembersOnly";
 	public static final String ALLOW_MISSING_REFERENCE = "allowMissingReference";
 
 	
@@ -83,6 +85,7 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
 	private Boolean allowMissingReference;
+	private Boolean existingMembersOnly;
 	private SegmentMergeStrategy segmentMergeStrategy;
 
 	public enum SegmentMergeStrategy {
@@ -109,6 +112,7 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 				.ofNullable(PluginUtils.configureEnumProperty(SegmentMergeStrategy.class, configElem, MERGE_STRATEGY, false))
 				.orElse(SegmentMergeStrategy.MERGE_PREFER_EXISTING);
 		allowMissingReference = PluginUtils.configureBooleanProperty(configElem, ALLOW_MISSING_REFERENCE, true);
+		existingMembersOnly = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXISTING_MEMBERS_ONLY, false)).orElse(false);
 
 	}
 
@@ -165,10 +169,19 @@ public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCo
 			String memberSourceName = memberSeq.getSource().getName();
 			String memberSeqID = memberSeq.getSequenceID();
 			
-			AlignmentMember targetAlmtMember = GlueDataObject.create(cmdContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
-			targetAlmtMember.setAlignment(targetAlignment);
-			targetAlmtMember.setSequence(memberSeq);
+			AlignmentMember targetAlmtMember;
+			if(existingMembersOnly) {
+				targetAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+						AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
+				if(targetAlmtMember == null) {
+					continue;
+				}
+			} else {
+				targetAlmtMember = GlueDataObject.create(cmdContext, AlignmentMember.class, 
+						AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
+				targetAlmtMember.setAlignment(targetAlignment);
+				targetAlmtMember.setSequence(memberSeq);
+			}
 			
 			double prevRefCoverage = targetAlmtMember.getReferenceNtCoveragePercent(cmdContext);
 			
