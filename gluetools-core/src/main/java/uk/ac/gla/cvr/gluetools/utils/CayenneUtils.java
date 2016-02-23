@@ -6,6 +6,8 @@ import org.apache.cayenne.configuration.Constants;
 import org.apache.cayenne.di.Binder;
 import org.apache.cayenne.di.MapBuilder;
 import org.apache.cayenne.di.Module;
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionException;
 
 public class CayenneUtils {
 
@@ -26,4 +28,16 @@ public class CayenneUtils {
 		return dbConfigModule;
 	}
 
+	public static Expression parseExpression(String expressionString) {
+		Expression expression = null;
+		if(expressionString != null) {
+			try {
+				expression = Expression.fromString(expressionString);
+			} catch(ExpressionException ee) {
+				throw new CayenneUtilsException(CayenneUtilsException.Code.INVALID_CAYENNE_EXPRESSION, expressionString, ee.getLocalizedMessage());
+			}
+		}
+		return expression;
+	}
+	
 }
