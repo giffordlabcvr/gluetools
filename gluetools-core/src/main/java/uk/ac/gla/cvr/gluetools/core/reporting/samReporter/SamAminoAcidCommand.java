@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -38,30 +39,26 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE_2 },
+		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE },
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
-				"-p <readPctFilter>, --readPctFilter <readPctFilter>  Read percentage filter",
-				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref sequence",
-				"-a <alignmentName>, --alignmentName <alignmentName>  Tip alignment",
-				"-r <refName>, --refName <refName>                    GLUE reference name",
-				"-f <featureName>, --featureName <featureName>        GLUE feature name"},
+				"-i <fileName>, --fileName <fileName>             SAM/BAM input file",
+				"-s <samRefName>, --samRefName <samRefName>       Specific SAM ref sequence",
+				"-a, --autoAlign                                  Auto-align to tip alignment",
+				"-m, --specificMember                             Specify tip alignment member",
+				"-r <refName>, --refName <refName>                GLUE reference name",
+				"-f <featureName>, --featureName <featureName>    GLUE feature name"},
 		furtherHelp = 
 			SamNucleotidesCommand.SAM_REPORTER_CMD_FURTHER_HELP+
-			"\nThe translated amino acids will be limited to the specified feature location."+
-			SamReporterCommand.SAM_REPORTER_CMD_READ_PCT_HELP,
+			"\nThe translated amino acids will be limited to the specified feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult> 
 	implements ProvidedProjectModeCommand{
 
-	private Double readPctFilter;
-
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		readPctFilter = configureReadPercentFilter(configElem);
 	}
 
 
@@ -70,17 +67,18 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 				CommandContext cmdContext,
 				SamReporter samReporter) {
 
-		Alignment tipAlignment = getTipAlignment(cmdContext);
+		AlignmentMember tipAlignmentMember = getTipAlignmentMember(cmdContext, samReporter);
+		Alignment tipAlignment = getTipAlignment(cmdContext, tipAlignmentMember);
 		ReferenceSequence constrainingRef = tipAlignment.getConstrainingRef();
-		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName());
+		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName(samReporter));
 
 		
-		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
+		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext, samReporter);
 		
 		Feature scannedFeature = scannedFeatureLoc.getFeature();
 		scannedFeature.checkCodesAminoAcids();
 		
-		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, ancConstrainingRef);
+		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignmentMember, constrainingRef, ancConstrainingRef);
 		
 		List<ReferenceSegment> featureRefSegs = scannedFeatureLoc.getSegments().stream()
 			.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
@@ -154,15 +152,16 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 		
 		for(Integer codon: mappedCodons) {
 			RefCodonInfo refCodonInfo = glueRefCodonToInfo.get(codon);
-			refCodonInfo.applyReadPctFilter(readPctFilter);
 			refCodonInfo.aaToReadCount.forEachEntry(new TCharIntProcedure() {
 				@Override
 				public boolean execute(char aminoAcid, int numReads) {
 					Map<String, Object> row = new LinkedHashMap<String, Object>();
-					row.put(SamAminoAcidResult.GLUE_REFERENCE_CODON, codon);
+					row.put(SamAminoAcidResult.CODON, codon);
 					row.put(SamAminoAcidResult.SAM_REFERENCE_BASE, refCodonInfo.samRefNT);
 					row.put(SamAminoAcidResult.AMINO_ACID, new String(new char[]{aminoAcid}));
 					row.put(SamAminoAcidResult.READS_WITH_AA, numReads);
+					row.put(SamAminoAcidResult.PERCENT_AA_READS, 
+							100.0 * numReads / (double) refCodonInfo.totalReadsAtCodon);
 					rowData.add(row);
 					return true;
 				}
@@ -180,22 +179,11 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 
 	private class RefCodonInfo {
 		private int samRefNT;
+		private int totalReadsAtCodon = 0;
 		TCharIntMap aaToReadCount = new TCharIntHashMap();
 		public void addAaRead(char aaChar) {
 			aaToReadCount.adjustOrPutValue(aaChar, 1, 1);
-		}
-		public void applyReadPctFilter(Double readPctFilter) {
-			int[] values = aaToReadCount.values();
-			int totalReadsAtCodon = 0;
-			for(int value: values) {
-				totalReadsAtCodon += value;
-			}
-			for(char aa : aaToReadCount.keys()) {
-				int numReadsWithAA = aaToReadCount.get(aa);
-				if((100.0 * numReadsWithAA / (double) totalReadsAtCodon) < readPctFilter) {
-					aaToReadCount.remove(aa);
-				}
-			}
+			totalReadsAtCodon++;
 		}
 	}
 

@@ -7,7 +7,10 @@ public class SamReporterCommandException extends GlueException {
 	
 	public enum Code implements GlueErrorCode {
 
-		XX; // dummy entry
+		NO_GLUE_REFERENCE_DEFINED(), 
+		TIP_ALIGNMENT_MEMBER_NOT_FOUND("samReferenceName", "whereClause"),
+		TIP_ALIGNMENT_MEMBER_EXTRACTOR_FAILED("samReferenceName"),
+		AMBIGUOUS_TIP_ALIGNMENT_MEMBER_DEFINED();
 
 		private String[] argNames;
 		private Code(String... argNames) {

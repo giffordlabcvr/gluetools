@@ -9,19 +9,21 @@ import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 public class SamAminoAcidResult extends TableResult {
 
 	public static final String 
-		GLUE_REFERENCE_CODON = "glueReferenceCodon",
+		CODON = "codon",
 		SAM_REFERENCE_BASE = "samReferenceBase",
 		AMINO_ACID = "aminoAcid",
-		READS_WITH_AA = "readsWithAA";
+		READS_WITH_AA = "readsWithAA",
+		PERCENT_AA_READS = "pctAaReads";
 
 
 	public SamAminoAcidResult(List<Map<String, Object>> rowData) {
 		super("samAminoAcidsResult", 
 				Arrays.asList(
-						GLUE_REFERENCE_CODON, 
+						CODON, 
 						SAM_REFERENCE_BASE, 
 						AMINO_ACID, 
-						READS_WITH_AA), 
+						READS_WITH_AA, 
+						PERCENT_AA_READS), 
 				rowData);
 	}
 

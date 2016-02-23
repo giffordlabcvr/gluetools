@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
@@ -27,13 +28,14 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 @CommandClass(
 		commandWords={"nucleotides"}, 
 		description = "Extract nucleotides from a SAM/BAM file", 
-		docoptUsages = { SamNucleotidesCommand.SAM_REPORTER_CMD_USAGE_1 },
+		docoptUsages = { SamNucleotidesCommand.SAM_REPORTER_CMD_USAGE },
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
-				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref sequence",
-				"-a <alignmentName>, --alignmentName <alignmentName>  Tip alignment",
-				"-r <refName>, --refName <refName>                    GLUE reference name",
-				"-f <featureName>, --featureName <featureName>        GLUE feature name"},
+				"-i <fileName>, --fileName <fileName>             SAM/BAM input file",
+				"-s <samRefName>, --samRefName <samRefName>       Specific SAM ref sequence",
+				"-a, --autoAlign                                  Auto-align to tip alignment",
+				"-m, --specificMember                             Specify tip alignment member",
+				"-r <refName>, --refName <refName>                GLUE reference name",
+				"-f <featureName>, --featureName <featureName>    GLUE feature name"},
 		furtherHelp = SamNucleotidesCommand.SAM_REPORTER_CMD_FURTHER_HELP+
 		    " The nucleotides will be limited to variations defined on this feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
@@ -44,13 +46,14 @@ public class SamNucleotidesCommand extends SamReporterCommand<SamNucleotidesResu
 	protected SamNucleotidesResult execute(
 				CommandContext cmdContext,
 				SamReporter samReporter) {
-		Alignment tipAlignment = getTipAlignment(cmdContext);
+		AlignmentMember tipAlignmentMember = getTipAlignmentMember(cmdContext, samReporter);
+		Alignment tipAlignment = getTipAlignment(cmdContext, tipAlignmentMember);
 		ReferenceSequence constrainingRef = tipAlignment.getConstrainingRef();
-		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName());
+		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName(samReporter));
 
-		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, ancConstrainingRef);
+		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignmentMember, constrainingRef, ancConstrainingRef);
 		
-		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
+		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext, samReporter);
 		List<ReferenceSegment> featureRefSegs = scannedFeatureLoc.getSegments().stream()
 			.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
 

@@ -17,18 +17,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
@@ -43,41 +41,32 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE_2 },
+		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE },
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
-				"-p <readPctFilter>, --readPctFilter <readPctFilter>  Read percentage filter",
-				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref sequence",
-				"-a <alignmentName>, --alignmentName <alignmentName>  Tip alignment",
-				"-r <refName>, --refName <refName>                    GLUE reference name",
-				"-f <featureName>, --featureName <featureName>        GLUE feature name"},
+				"-i <fileName>, --fileName <fileName>             SAM/BAM input file",
+				"-s <samRefName>, --samRefName <samRefName>       Specific SAM ref sequence",
+				"-a, --autoAlign                                  Auto-align to tip alignment",
+				"-m, --specificMember                             Specify tip alignment member",
+				"-r <refName>, --refName <refName>                GLUE reference name",
+				"-f <featureName>, --featureName <featureName>    GLUE feature name"},
 		furtherHelp = 
 				SamReporterCommand.SAM_REPORTER_CMD_FURTHER_HELP+
-				"\nThe variation scan will be limited to variations defined on the specified feature location."+
-				SamReporterCommand.SAM_REPORTER_CMD_READ_PCT_HELP,
+				"\nThe variation scan will be limited to variations defined on the specified feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsScanResult> 
 	implements ProvidedProjectModeCommand{
 
-	private Double readPctFilter;
-
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		readPctFilter = configureReadPercentFilter(configElem);
-	}
-
 	@Override
 	protected SamVariationsScanResult execute(
 				CommandContext cmdContext,
 				SamReporter samReporter) {
-		Alignment tipAlignment = getTipAlignment(cmdContext);
+		AlignmentMember tipAlignmentMember = getTipAlignmentMember(cmdContext, samReporter);
+		Alignment tipAlignment = getTipAlignment(cmdContext, tipAlignmentMember);
 		ReferenceSequence constrainingRef = tipAlignment.getConstrainingRef();
-		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName());
+		ReferenceSequence ancConstrainingRef = tipAlignment.getAncConstrainingRef(cmdContext, getReferenceName(samReporter));
 
-		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext);
+		FeatureLocation scannedFeatureLoc = getScannedFeatureLoc(cmdContext, samReporter);
 		
 		List<Variation> variations = new ArrayList<Variation>(scannedFeatureLoc.getVariations());
 		Collections.sort(variations, new Comparator<Variation>(){
@@ -93,7 +82,8 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 		
 		boolean anyAaVariations = variations.stream().anyMatch(var -> var.getTranslationFormat() == TranslationFormat.AMINO_ACID);
 		
-		List<QueryAlignedSegment> samRefToGlueRefSegsFull = getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignment, constrainingRef, ancConstrainingRef);
+		List<QueryAlignedSegment> samRefToGlueRefSegsFull = 
+				getSamRefToGlueRefSegs(cmdContext, samReporter, tipAlignmentMember, constrainingRef, ancConstrainingRef);
 
 		List<ReferenceSegment> featureRefSegs = scannedFeatureLoc.getSegments().stream()
 				.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
@@ -235,13 +225,14 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 			int readsConfirmedPresent = variationInfo.readsConfirmedPresent;
 			int readsConfirmedAbsent = variationInfo.readsConfirmedAbsent;
 			int totalReadsForVariation = readsConfirmedPresent + readsConfirmedAbsent;
-			if((100.0 * readsConfirmedPresent / (double) totalReadsForVariation) < readPctFilter) {
-				continue;
-			}
+			double presentPct = 100.0 * readsConfirmedPresent / (double) totalReadsForVariation;
+			double absentPct = 100.0 * readsConfirmedAbsent / (double) totalReadsForVariation;
 			Map<String, Object> row = new LinkedHashMap<String, Object>();
 			row.put(SamVariationsScanResult.VARIATION_NAME, variationInfo.variation.getName());
-			row.put(SamVariationsScanResult.READS_CONFIRMED_PRESENT, readsConfirmedPresent);
-			row.put(SamVariationsScanResult.READS_CONFIRMED_ABSENT, readsConfirmedAbsent);
+			row.put(SamVariationsScanResult.READS_PRESENT, readsConfirmedPresent);
+			row.put(SamVariationsScanResult.PCT_PRESENT, presentPct);
+			row.put(SamVariationsScanResult.READS_ABSENT, readsConfirmedAbsent);
+			row.put(SamVariationsScanResult.PCT_ABSENT, absentPct);
 			rowData.add(row);
 		}
 		return new SamVariationsScanResult(rowData);

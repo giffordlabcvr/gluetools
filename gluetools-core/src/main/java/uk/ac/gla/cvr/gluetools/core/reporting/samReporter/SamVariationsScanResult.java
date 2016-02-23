@@ -10,15 +10,20 @@ public class SamVariationsScanResult extends TableResult {
 
 	public static final String 
 		VARIATION_NAME = "variationName",
-		READS_CONFIRMED_PRESENT = "readsConfirmedPresent",
-		READS_CONFIRMED_ABSENT = "readsConfirmedAbsent";
+		READS_PRESENT = "readsPresent",
+		PCT_PRESENT = "pctPresent",
+		READS_ABSENT = "readsAbsent",
+		PCT_ABSENT = "pctAbsent";
 	
 	
 	public SamVariationsScanResult(List<Map<String, Object>> rowData) {
 		super("samVariationsScanResult", 
 				Arrays.asList(
 						VARIATION_NAME, 
-						READS_CONFIRMED_PRESENT, READS_CONFIRMED_ABSENT), 
+						READS_PRESENT, 
+						PCT_PRESENT, 
+						READS_ABSENT,
+						PCT_ABSENT), 
 				rowData);
 	}
 
