@@ -6,7 +6,7 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 
-public class SamVariationsScanResult extends TableResult {
+public class SamVariationScanResult extends TableResult {
 
 	public static final String 
 		VARIATION_NAME = "variationName",
@@ -16,7 +16,7 @@ public class SamVariationsScanResult extends TableResult {
 		PCT_ABSENT = "pctAbsent";
 	
 	
-	public SamVariationsScanResult(List<Map<String, Object>> rowData) {
+	public SamVariationScanResult(List<Map<String, Object>> rowData) {
 		super("samVariationsScanResult", 
 				Arrays.asList(
 						VARIATION_NAME, 

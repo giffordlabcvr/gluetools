@@ -70,6 +70,29 @@ task deployGlueConfig {
   }
 }
 
+// config for Glue which tells it where to find its database. 
+task deployGlueConfigOmega {
+  ext.omegaDir = new File(projectDir, 'omega')
+  ext.glueConfigFile = new File(omegaDir, 'gluetools-config.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigOmega.touchfile')
+  inputs.file glueConfigFile
+  outputs.file glueConfigTouchfile
+  doLast {
+	  println "Uploading "+glueConfigFile.name
+	  ssh.run {
+	    session(remotes.omega) {
+	      execute 'mkdir -p /home/sing01j/gluetools/conf'
+	      execute 'chmod a+rw /home/sing01j/gluetools/conf'
+	      put from: glueConfigFile, into: '/home/sing01j/gluetools/conf'
+	    }
+	  }
+	  glueConfigTouchfile.delete()
+	  buildDir.mkdirs()
+	  glueConfigTouchfile.createNewFile()
+  }
+}
+
+
 // gluetools core jar. 
 task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
   ext.jarFile = new File(buildDir, '/libs/'+project.name+"-all-"+version+'.jar')
@@ -126,15 +149,17 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	  println "Uploading GLUE project: "+hcvProjectDir.name
 	  ssh.run {
 	    session(remotes.gluehome) {
-	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**" }
+	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**", "ravFinding/**" }
 	      ext.projectDestDir = '/opt/gluehome/hcvGlue'
 	      execute 'rm -rf '+projectDestDir
 	      execute 'mkdir '+projectDestDir
 	      projectFileTree.visit {element ->
 	    	ext.destFile = new File(projectDestDir, element.relativePath.pathString)
 	      	if(element.directory) {
+				println "Making directory: "+destFile.path
 	    		execute 'mkdir -p '+destFile.path
 	 	    } else {
+				println "Uploading: "+destFile.path
 	    		ext.srcFile = new File(hcvProjectDir, element.relativePath.pathString)
 	 	      	put from: srcFile.path, into: destFile.path
 	 	    }
@@ -150,7 +175,7 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 
 
 // HCV project 
-task deployHcvProjectOmega(dependsOn: ['deployJarOmega']) {
+task deployHcvProjectOmega(dependsOn: ['deployJarOmega', 'deployGlueConfigOmega']) {
   ext.jarFileName = project.name+"-all-"+version+'.jar'
   ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
   ext.deployHcvProjectOmegaTouchfile = new File(buildDir, '/deployHcvProjectOmega.touchfile')
@@ -160,15 +185,17 @@ task deployHcvProjectOmega(dependsOn: ['deployJarOmega']) {
 	  println "Uploading GLUE project: "+hcvProjectDir.name
 	  ssh.run {
 	    session(remotes.omega) {
-	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**" }
+	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**", "ravFinding/**" }
 	      ext.projectDestDir = '/home/sing01j/gluetools/projects/HCV'
 	      execute 'rm -rf '+projectDestDir
 	      execute 'mkdir '+projectDestDir
 	      projectFileTree.visit {element ->
 	    	ext.destFile = new File(projectDestDir, element.relativePath.pathString)
 	      	if(element.directory) {
+				println "Making directory: "+destFile.path
 	    		execute 'mkdir -p '+destFile.path
 	 	    } else {
+				println "Uploading: "+destFile.path
 	    		ext.srcFile = new File(hcvProjectDir, element.relativePath.pathString)
 	 	      	put from: srcFile.path, into: destFile.path
 	 	    }

@@ -6,7 +6,7 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 
-public class SamNucleotidesResult extends TableResult {
+public class SamNucleotideResult extends TableResult {
 
 	public static final String 
 		GLUE_REFERENCE_NT = "glueReferenceNt",
@@ -17,7 +17,7 @@ public class SamNucleotidesResult extends TableResult {
 		READS_WITH_T = "readsWithT";
 
 
-	public SamNucleotidesResult(List<Map<String, Object>> rowData) {
+	public SamNucleotideResult(List<Map<String, Object>> rowData) {
 		super("samNucleotidesResult", 
 				Arrays.asList(
 						SAM_REFERENCE_NT, GLUE_REFERENCE_NT, 

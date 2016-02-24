@@ -48,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 				"-r <refName>, --refName <refName>                GLUE reference name",
 				"-f <featureName>, --featureName <featureName>    GLUE feature name"},
 		furtherHelp = 
-			SamNucleotidesCommand.SAM_REPORTER_CMD_FURTHER_HELP+
+			SamNucleotideCommand.SAM_REPORTER_CMD_FURTHER_HELP+
 			"\nThe translated amino acids will be limited to the specified feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
 )

@@ -28,8 +28,8 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	
 	public SamReporter() {
 		super();
-		addModulePluginCmdClass(SamVariationsScanCommand.class);
-		addModulePluginCmdClass(SamNucleotidesCommand.class);
+		addModulePluginCmdClass(SamVariationScanCommand.class);
+		addModulePluginCmdClass(SamNucleotideCommand.class);
 		addModulePluginCmdClass(SamAminoAcidCommand.class);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 		addSimplePropertyName(READ_LOG_INTERVAL);

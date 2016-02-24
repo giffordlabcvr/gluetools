@@ -26,9 +26,9 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
 @CommandClass(
-		commandWords={"nucleotides"}, 
+		commandWords={"nucleotide"}, 
 		description = "Extract nucleotides from a SAM/BAM file", 
-		docoptUsages = { SamNucleotidesCommand.SAM_REPORTER_CMD_USAGE },
+		docoptUsages = { SamNucleotideCommand.SAM_REPORTER_CMD_USAGE },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>             SAM/BAM input file",
 				"-s <samRefName>, --samRefName <samRefName>       Specific SAM ref sequence",
@@ -36,14 +36,14 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 				"-m, --specificMember                             Specify tip alignment member",
 				"-r <refName>, --refName <refName>                GLUE reference name",
 				"-f <featureName>, --featureName <featureName>    GLUE feature name"},
-		furtherHelp = SamNucleotidesCommand.SAM_REPORTER_CMD_FURTHER_HELP+
+		furtherHelp = SamNucleotideCommand.SAM_REPORTER_CMD_FURTHER_HELP+
 		    " The nucleotides will be limited to variations defined on this feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamNucleotidesCommand extends SamReporterCommand<SamNucleotidesResult> implements ProvidedProjectModeCommand{
+public class SamNucleotideCommand extends SamReporterCommand<SamNucleotideResult> implements ProvidedProjectModeCommand{
 
 	@Override
-	protected SamNucleotidesResult execute(
+	protected SamNucleotideResult execute(
 				CommandContext cmdContext,
 				SamReporter samReporter) {
 		AlignmentMember tipAlignmentMember = getTipAlignmentMember(cmdContext, samReporter);
@@ -115,18 +115,18 @@ public class SamNucleotidesCommand extends SamReporterCommand<SamNucleotidesResu
 				int refToQueryOffset = seg.getReferenceToQueryOffset();
 				if(refNtInfo != null) {
 					Map<String, Object> row = new LinkedHashMap<String, Object>();
-					row.put(SamNucleotidesResult.GLUE_REFERENCE_NT, i);
-					row.put(SamNucleotidesResult.SAM_REFERENCE_NT, i+refToQueryOffset);
-					row.put(SamNucleotidesResult.READS_WITH_A, refNtInfo.readsWithA);
-					row.put(SamNucleotidesResult.READS_WITH_C, refNtInfo.readsWithC);
-					row.put(SamNucleotidesResult.READS_WITH_G, refNtInfo.readsWithG);
-					row.put(SamNucleotidesResult.READS_WITH_T, refNtInfo.readsWithT);
+					row.put(SamNucleotideResult.GLUE_REFERENCE_NT, i);
+					row.put(SamNucleotideResult.SAM_REFERENCE_NT, i+refToQueryOffset);
+					row.put(SamNucleotideResult.READS_WITH_A, refNtInfo.readsWithA);
+					row.put(SamNucleotideResult.READS_WITH_C, refNtInfo.readsWithC);
+					row.put(SamNucleotideResult.READS_WITH_G, refNtInfo.readsWithG);
+					row.put(SamNucleotideResult.READS_WITH_T, refNtInfo.readsWithT);
 					rowData.add(row);
 				}
 			}
 		}
 		
-		return new SamNucleotidesResult(rowData);
+		return new SamNucleotideResult(rowData);
 		
 	}
 	

@@ -8,11 +8,15 @@
 	<properties>
 		<property>
 			<name>gluetools.core.programs.blast.blastn.executable</name>
-			<value>/usr/bin/blastn</value>
+			<value>/home/sing01j/blast/ncbi-blast-2.2.31+/bin/blastn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.tblastn.executable</name>
+			<value>/home/sing01j/blast/ncbi-blast-2.2.31+/bin/tblastn</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.blast.makeblastdb.executable</name>
-			<value>/usr/bin/makeblastdb</value>
+			<value>/home/sing01j/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.blast.db.dir</name>

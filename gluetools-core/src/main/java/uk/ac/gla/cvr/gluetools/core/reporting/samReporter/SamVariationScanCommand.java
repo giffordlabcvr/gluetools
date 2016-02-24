@@ -39,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 
 @CommandClass(
-		commandWords={"variation", "scan"}, 
+		commandWords={"variation-scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
 		docoptUsages = { SamReporterCommand.SAM_REPORTER_CMD_USAGE },
 		docoptOptions = { 
@@ -54,11 +54,11 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 				"\nThe variation scan will be limited to variations defined on the specified feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsScanResult> 
+public class SamVariationScanCommand extends SamReporterCommand<SamVariationScanResult> 
 	implements ProvidedProjectModeCommand{
 
 	@Override
-	protected SamVariationsScanResult execute(
+	protected SamVariationScanResult execute(
 				CommandContext cmdContext,
 				SamReporter samReporter) {
 		AlignmentMember tipAlignmentMember = getTipAlignmentMember(cmdContext, samReporter);
@@ -228,14 +228,14 @@ public class SamVariationsScanCommand extends SamReporterCommand<SamVariationsSc
 			double presentPct = 100.0 * readsConfirmedPresent / (double) totalReadsForVariation;
 			double absentPct = 100.0 * readsConfirmedAbsent / (double) totalReadsForVariation;
 			Map<String, Object> row = new LinkedHashMap<String, Object>();
-			row.put(SamVariationsScanResult.VARIATION_NAME, variationInfo.variation.getName());
-			row.put(SamVariationsScanResult.READS_PRESENT, readsConfirmedPresent);
-			row.put(SamVariationsScanResult.PCT_PRESENT, presentPct);
-			row.put(SamVariationsScanResult.READS_ABSENT, readsConfirmedAbsent);
-			row.put(SamVariationsScanResult.PCT_ABSENT, absentPct);
+			row.put(SamVariationScanResult.VARIATION_NAME, variationInfo.variation.getName());
+			row.put(SamVariationScanResult.READS_PRESENT, readsConfirmedPresent);
+			row.put(SamVariationScanResult.PCT_PRESENT, presentPct);
+			row.put(SamVariationScanResult.READS_ABSENT, readsConfirmedAbsent);
+			row.put(SamVariationScanResult.PCT_ABSENT, absentPct);
 			rowData.add(row);
 		}
-		return new SamVariationsScanResult(rowData);
+		return new SamVariationScanResult(rowData);
 	}
 
 	
