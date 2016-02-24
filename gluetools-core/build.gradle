@@ -150,7 +150,7 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 
 
 // HCV project 
-task deployHcvProjectOmega(dependsOn: ['deployJar']) {
+task deployHcvProjectOmega(dependsOn: ['deployJarOmega']) {
   ext.jarFileName = project.name+"-all-"+version+'.jar'
   ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
   ext.deployHcvProjectOmegaTouchfile = new File(buildDir, '/deployHcvProjectOmega.touchfile')
