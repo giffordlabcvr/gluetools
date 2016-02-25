@@ -50,7 +50,7 @@ public class ListExtractedCommand extends DigsImporterCommand<ListExtractedResul
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
 		if(fieldNames.isEmpty()) {
-			fieldNames = Arrays.asList(_Extracted.BLAST_ID_PROPERTY); // default fields
+			fieldNames = Arrays.asList(_Extracted.RECORD_ID_PROPERTY, _Extracted.BLAST_ID_PROPERTY, _Extracted.ORGANISM_PROPERTY, _Extracted.SCAFFOLD_PROPERTY, _Extracted.SEQUENCE_LENGTH_PROPERTY); // default fields
 		}
 
 	}

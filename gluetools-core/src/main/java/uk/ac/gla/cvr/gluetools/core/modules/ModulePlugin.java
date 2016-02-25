@@ -11,8 +11,8 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleExportConfigurationCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleImportConfigurationCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleSaveConfigurationCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleLoadConfigurationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleSetSimplePropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleShowConfigurationCommand;
@@ -40,8 +40,8 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 		addModuleDocumentCmdClass(ModuleSetSimplePropertyCommand.class);
 		addModuleDocumentCmdClass(ModuleUnsetSimplePropertyCommand.class);
 		addModuleDocumentCmdClass(ModuleShowSimplePropertyCommand.class);
-		addModuleDocumentCmdClass(ModuleExportConfigurationCommand.class);
-		addModuleDocumentCmdClass(ModuleImportConfigurationCommand.class);
+		addModuleDocumentCmdClass(ModuleSaveConfigurationCommand.class);
+		addModuleDocumentCmdClass(ModuleLoadConfigurationCommand.class);
 		addSimplePropertyName(LOG_LEVEL);
 	}
 	

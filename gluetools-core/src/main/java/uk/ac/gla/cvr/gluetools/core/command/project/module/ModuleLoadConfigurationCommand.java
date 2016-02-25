@@ -14,11 +14,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@CommandClass(commandWords={"import", "configuration"},
+@CommandClass(commandWords={"load", "configuration"},
 	docoptUsages="<fileName>",
-	description = "Import module configuration from a file", 
+	description = "Load module configuration from a file", 
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase } )
-public class ModuleImportConfigurationCommand extends ModuleDocumentCommand<UpdateResult> {
+public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<UpdateResult> {
 
 	private static final String FILE_NAME = "fileName";
 	private String fileName;

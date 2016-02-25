@@ -49,6 +49,8 @@ public class ArrayBuilder {
 			return addNull();
 		} else if(value instanceof Double) {
 			return addDouble(((Double) value).doubleValue());
+		} else if(value instanceof Float) {
+			return addDouble(((Float) value).doubleValue());
 		} else if(value instanceof Integer) {
 			return addInt(((Integer) value).intValue());
 		} else if(value instanceof Boolean) {

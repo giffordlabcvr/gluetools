@@ -102,7 +102,7 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 		super.configure(pluginConfigContext, configElem);
 		Template defaultTemplate = null;
 		try {
-			defaultTemplate = PluginUtils.templateFromString("${"+Extracted.BLAST_ID_PROPERTY+"}", pluginConfigContext.getFreemarkerConfiguration());
+			defaultTemplate = PluginUtils.templateFromString("${"+Extracted.RECORD_ID_PROPERTY+"}", pluginConfigContext.getFreemarkerConfiguration());
 		} catch(ParseException pe) {
 			throw new RuntimeException(pe);
 		}

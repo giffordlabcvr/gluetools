@@ -30,6 +30,7 @@ public abstract class _Extracted extends DigsObject {
     public static final String PROBE_TYPE_PROPERTY = "probeType";
     public static final String QUERY_END_PROPERTY = "queryEnd";
     public static final String QUERY_START_PROPERTY = "queryStart";
+    public static final String RECORD_ID_PROPERTY = "recordId";
     public static final String SCAFFOLD_PROPERTY = "scaffold";
     public static final String SEQUENCE_PROPERTY = "sequence";
     public static final String SEQUENCE_LENGTH_PROPERTY = "sequenceLength";
@@ -165,6 +166,13 @@ public abstract class _Extracted extends DigsObject {
     }
     public Integer getQueryStart() {
         return (Integer)readProperty(QUERY_START_PROPERTY);
+    }
+
+    public void setRecordId(Integer recordId) {
+        writeProperty(RECORD_ID_PROPERTY, recordId);
+    }
+    public Integer getRecordId() {
+        return (Integer)readProperty(RECORD_ID_PROPERTY);
     }
 
     public void setScaffold(String scaffold) {

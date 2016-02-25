@@ -118,6 +118,7 @@
 		<obj-attribute name="probeType" type="java.lang.String" db-attribute-path="Probe_type"/>
 		<obj-attribute name="queryEnd" type="java.lang.Integer" db-attribute-path="Query_end"/>
 		<obj-attribute name="queryStart" type="java.lang.Integer" db-attribute-path="Query_start"/>
+		<obj-attribute name="recordId" type="java.lang.Integer" db-attribute-path="Record_ID"/>
 		<obj-attribute name="scaffold" type="java.lang.String" db-attribute-path="Scaffold"/>
 		<obj-attribute name="sequence" type="java.lang.String" db-attribute-path="Sequence"/>
 		<obj-attribute name="sequenceLength" type="java.lang.Integer" db-attribute-path="Sequence_length"/>
