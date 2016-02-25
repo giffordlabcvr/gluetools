@@ -70,7 +70,7 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
 		if(fieldNames != null) {
-			getAlignmentMode(cmdContext).getProject().checkValidMemberFieldNames(fieldNames);
+			getAlignmentMode(cmdContext).getProject().checkListableMemberField(fieldNames);
 		}
 		
 		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName());
@@ -111,7 +111,7 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 					return getMemberFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 				}
 				protected List<String> getMemberFieldNames(ConsoleCommandContext cmdContext) {
-					return getProject(cmdContext).getValidMemberFields();
+					return getProject(cmdContext).getListableMemberFields();
 				}
 				private Project getProject(ConsoleCommandContext cmdContext) {
 					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();

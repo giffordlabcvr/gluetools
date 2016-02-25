@@ -30,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -100,7 +101,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		}
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		Project project = projectMode.getProject();
-		List<String> definedFieldNames = project.getAllSequenceFieldNames();
+		List<String> definedFieldNames = project.getListableFieldNames(ConfigurableTable.sequence);
 		checkFieldsExist(headerColumns, definedFieldNames);
 		checkFieldsExist(numberColumns, definedFieldNames);
 		LinesProcessedHolder holder = new LinesProcessedHolder();

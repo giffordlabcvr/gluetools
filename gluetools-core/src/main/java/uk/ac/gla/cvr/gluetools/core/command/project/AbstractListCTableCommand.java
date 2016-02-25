@@ -8,7 +8,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -20,26 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-@CommandClass( 
-	commandWords={"list", "sequence"},
-	docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [<fieldName> ...]"},
-	docoptOptions={
-		"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
-		"-p <pageSize>, --pageSize <pageSize>           Tune ORM page size",
-		"-l <fetchLimit>, --fetchLimit <fetchLimit>     Limit max number of records",
-		"-o <fetchOffset>, --fetchOffset <fetchOffset>  Record number offset"},
-	description="List sequences or sequence field values",
-	furtherHelp=
-	"The <pageSize> option is for performance tuning. The default page size\n"+
-	"is 250 records.\n"+
-	"The optional whereClause qualifies which sequences are displayed.\n"+
-	"Where fieldNames are specified, only these field values will be displayed.\n"+
-	"Examples:\n"+
-	"  list sequence -w \"source.name = 'local'\"\n"+
-	"  list sequence -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
-	"  list sequence sequenceID CUSTOM_FIELD"
-) 
-public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
+public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -51,6 +31,12 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 	private int pageSize;
 	private Optional<Integer> fetchLimit;
 	private Optional<Integer> fetchOffset;
+	private ConfigurableTable cTable;
+	
+	protected AbstractListCTableCommand(ConfigurableTable cTable) {
+		super();
+		this.cTable = cTable;
+	}
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -69,9 +55,9 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 	public ListResult execute(CommandContext cmdContext) {
 		SelectQuery selectQuery;
 		if(whereClause.isPresent()) {
-			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
+			selectQuery = new SelectQuery(cTable.getClass(), whereClause.get());
 		} else {
-			selectQuery = new SelectQuery(Sequence.class);
+			selectQuery = new SelectQuery(cTable.getClass());
 		}
 		selectQuery.setPageSize(pageSize);
 		fetchLimit.ifPresent(limit -> selectQuery.setFetchLimit(limit));
@@ -80,7 +66,7 @@ public class ListSequenceCommand extends ProjectModeCommand<ListResult> {
 		if(fieldNames == null) {
 			return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery);
 		} else {
-			project.checkListableFieldNames(ConfigurableTable.sequence, fieldNames);
+			project.checkListableFieldNames(cTable, fieldNames);
 			return CommandUtils.runListCommand(cmdContext, Sequence.class, selectQuery, fieldNames);
 		}
 	}

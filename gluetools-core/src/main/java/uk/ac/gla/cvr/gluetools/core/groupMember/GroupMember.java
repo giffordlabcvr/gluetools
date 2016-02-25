@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._SequenceGroup;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 
-@GlueDataClass(defaultListColumns = {GroupMember.SOURCE_NAME_PATH, GroupMember.SEQUENCE_ID_PATH})
+@GlueDataClass(defaultListedFields = {GroupMember.SOURCE_NAME_PATH, GroupMember.SEQUENCE_ID_PATH})
 public class GroupMember extends _GroupMember {
 
 	public static final String GROUP_NAME_PATH = 

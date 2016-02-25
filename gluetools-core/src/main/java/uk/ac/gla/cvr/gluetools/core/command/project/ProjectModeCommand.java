@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -90,7 +91,7 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return 
-					getProjectMode(cmdContext).getProject().getCustomSequenceFieldNames()
+					getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence)
 					.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 	}

@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.project;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,13 +17,14 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 
-@GlueDataClass(defaultListColumns = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
+@GlueDataClass(defaultListedFields = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
 
 	public static Map<String, String> pkMap(String name) {
@@ -33,29 +36,50 @@ public class Project extends _Project {
 		setName(idMap.get(NAME_PROPERTY));
 	}
 	
-	public Field getSequenceField(String fieldName) {
-		return getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
+	public Field getCustomField(ConfigurableTable cTable, String fieldName) {
+		return getFields().stream()
+				.filter(f -> f.getTable().equals(cTable.name()))
+				.filter(f -> f.getName().equals(fieldName))
+				.findFirst().orElse(null);
 	}
 
-	public List<String> getCustomSequenceFieldNames() {
-		return getFields().stream().map(Field::getName).collect(Collectors.toList());
+	public List<String> getCustomFieldNames(ConfigurableTable cTable) {
+		return getFields().stream()
+				.filter(f -> f.getTable().equals(cTable.name()))
+				.map(Field::getName)
+				.collect(Collectors.toList());
 	}
 
-	public List<String> getAllSequenceFieldNames() {
-		List<String> fieldNames = getCustomSequenceFieldNames();
-		fieldNames.add(Sequence.SOURCE_NAME_PATH);
-		fieldNames.add(Sequence.SEQUENCE_ID_PROPERTY);
-		fieldNames.add(Sequence.FORMAT_PROPERTY);
-		return fieldNames;
+	public List<String> getListableFieldNames(ConfigurableTable cTable) {
+		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
+		List<String> listableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInFields()));
+		listableFields.addAll(getCustomFieldNames(cTable));
+		return listableFields;
 	}
 
+	public List<String> getModifiableFieldNames(ConfigurableTable cTable) {
+		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
+		List<String> listableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInFields()));
+		listableFields.addAll(getCustomFieldNames(cTable));
+		return listableFields;
+	}
+	
+	public FieldType getModifiableFieldType(ConfigurableTable cTable, String fieldName) {
+		Field customField = getCustomField(cTable, fieldName);
+		if(customField != null) {
+			return customField.getFieldType();
+		}
+		// assume built in modifiable fields are of string type.
+		return FieldType.VARCHAR;
+	}
+	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 
-	public void checkValidSequenceFieldNames(List<String> fieldNames) {
-		List<String> validFieldNamesList = getAllSequenceFieldNames();
+	public void checkListableFieldNames(ConfigurableTable cTable, List<String> fieldNames) {
+		List<String> validFieldNamesList = getListableFieldNames(cTable);
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
@@ -66,8 +90,20 @@ public class Project extends _Project {
 		}
 	}
 
-	public void checkValidCustomSequenceFieldNames(List<String> fieldNames) {
-		List<String> validFieldNamesList = getCustomSequenceFieldNames();
+	public void checkCustomFieldNames(ConfigurableTable cTable, List<String> fieldNames) {
+		List<String> validFieldNamesList = getCustomFieldNames(cTable);
+		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
+		if(fieldNames != null) {
+			fieldNames.forEach(f-> {
+				if(!validFieldNames.contains(f)) {
+					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validFieldNamesList);
+				}
+			});
+		}
+	}
+
+	public void checkModifiableFieldNames(ConfigurableTable cTable, List<String> fieldNames) {
+		List<String> validFieldNamesList = getModifiableFieldNames(cTable);
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
@@ -79,8 +115,8 @@ public class Project extends _Project {
 	}
 
 	
-	public void checkValidMemberFieldNames(List<String> fieldNames) {
-		List<String> validMemberFieldsList = getValidMemberFields();
+	public void checkListableMemberField(List<String> fieldNames) {
+		List<String> validMemberFieldsList = getListableMemberFields();
 		Set<String> validMemberFields = new LinkedHashSet<String>(validMemberFieldsList);
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
@@ -92,8 +128,8 @@ public class Project extends _Project {
 
 	}
 
-	public List<String> getValidMemberFields() {
-		List<String> validMemberFieldsList = getAllSequenceFieldNames().stream().
+	public List<String> getListableMemberFields() {
+		List<String> validMemberFieldsList = getListableFieldNames(ConfigurableTable.sequence).stream().
 			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList());
 		return validMemberFieldsList;
 	}

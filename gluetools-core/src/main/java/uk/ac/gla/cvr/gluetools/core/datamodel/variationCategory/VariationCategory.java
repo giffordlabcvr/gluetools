@@ -16,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
 
-@GlueDataClass(defaultListColumns = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY, 
+@GlueDataClass(defaultListedFields = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY, 
 		_VariationCategory.NOTIFIABILITY_PROPERTY})
 public class VariationCategory extends _VariationCategory {
 
@@ -45,7 +45,7 @@ public class VariationCategory extends _VariationCategory {
 
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 

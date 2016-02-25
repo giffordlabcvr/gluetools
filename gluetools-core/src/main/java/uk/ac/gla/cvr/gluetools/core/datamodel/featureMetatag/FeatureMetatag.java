@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatagException.Code;
 
-@GlueDataClass(defaultListColumns = {FeatureMetatag.NAME_PROPERTY, FeatureMetatag.VALUE_PROPERTY})
+@GlueDataClass(defaultListedFields = {FeatureMetatag.NAME_PROPERTY, FeatureMetatag.VALUE_PROPERTY})
 public class FeatureMetatag extends _FeatureMetatag {
 
 	public enum Type {
@@ -85,7 +85,7 @@ public class FeatureMetatag extends _FeatureMetatag {
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getFeature().getName(), getName());
 	}
 

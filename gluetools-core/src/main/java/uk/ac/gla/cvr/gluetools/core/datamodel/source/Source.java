@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 
 // TODO have a default source which always exists. Command arguments which require a source-name default to this.
 // TODO add description fields where necessary to this and other object types. Update creation commands as neccessary. Allow set description as necessary.
-@GlueDataClass(defaultListColumns = {_Source.NAME_PROPERTY})
+@GlueDataClass(defaultListedFields = {_Source.NAME_PROPERTY})
 public class Source extends _Source {
 
 	public static Map<String, String> pkMap(String name) {
@@ -23,7 +23,7 @@ public class Source extends _Source {
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 

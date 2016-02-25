@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VcatMembership;
 
-@GlueDataClass(defaultListColumns = { 
+@GlueDataClass(defaultListedFields = { 
 		VcatMembership.VARIATION_REFSEQ_NAME_PATH, VcatMembership.VARIATION_FEATURE_NAME_PATH,
 		VcatMembership.VARIATION_NAME_PATH, VcatMembership.CATEGORY_NAME_PATH})
 public class VcatMembership extends _VcatMembership {

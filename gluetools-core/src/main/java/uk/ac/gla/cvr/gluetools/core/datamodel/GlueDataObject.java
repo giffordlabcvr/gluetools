@@ -121,7 +121,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		return readResult.toString();
 	}
 
-	protected abstract Map<String, String> pkMap();
+	public abstract Map<String, String> pkMap();
 	
 	protected StringBuffer indent(StringBuffer buf, int indent) {
 		for(int i = 0; i < indent; i++) {

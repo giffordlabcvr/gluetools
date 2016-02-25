@@ -12,7 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-@GlueDataClass(defaultListColumns = {
+@GlueDataClass(defaultListedFields = {
 		_AlignedSegment.REF_START_PROPERTY, 
 		_AlignedSegment.REF_END_PROPERTY, 
 		_AlignedSegment.MEMBER_START_PROPERTY, 

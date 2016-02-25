@@ -15,6 +15,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
@@ -292,9 +293,9 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 		protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
 			if(customOnly) {
-				return getProject(cmdContext).getCustomSequenceFieldNames();
+				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.sequence);
 			} else {
-				return getProject(cmdContext).getAllSequenceFieldNames();
+				return getProject(cmdContext).getListableFieldNames(ConfigurableTable.sequence);
 			}
 		}
 

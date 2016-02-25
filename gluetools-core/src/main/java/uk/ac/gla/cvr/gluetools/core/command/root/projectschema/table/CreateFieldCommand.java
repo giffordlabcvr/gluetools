@@ -47,12 +47,13 @@ public class CreateFieldCommand extends TableModeCommand<CreateResult> {
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
 		
-		Field field = GlueDataObject.create(cmdContext, Field.class, Field.pkMap(getProjectName(), fieldName), false);
+		Field field = GlueDataObject.create(cmdContext, Field.class, Field.pkMap(getProjectName(), getTableName(), fieldName), false);
 		Project project = GlueDataObject.lookup(cmdContext, Project.class, Project.pkMap(getProjectName()));
 		field.setProject(project);
 		field.setType(type.name());
+		field.setTable(getTableName());
 		field.setMaxLength(maxLength);
-		ModelBuilder.addSequenceColumnToModel(cmdContext.getGluetoolsEngine(), project, field);
+		ModelBuilder.addTableColumnToModel(cmdContext.getGluetoolsEngine(), project, field);
 		cmdContext.commit();
 		return new CreateResult(Field.class, 1);
 	}

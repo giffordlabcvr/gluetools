@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.UnsetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -47,7 +48,7 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		if(!overwriteExistingNonNull) {
 			SequenceMode sequenceMode = SequenceModeCommand.getSequenceMode(cmdContext);
 			Project project = sequenceMode.getProject();
-			project.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
+			project.checkCustomFieldNames(ConfigurableTable.sequence, Collections.singletonList(fieldName));
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
 					Sequence.pkMap(sequenceMode.getSourceName(), sequenceMode.getSequenceID()));
 			Object oldValue = sequence.readProperty(fieldName);

@@ -18,7 +18,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-@GlueDataClass(defaultListColumns = {_Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH})
+@GlueDataClass(
+		defaultListedFields = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH }, 
+		listableBuiltInFields = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH, Alignment.DESCRIPTION_PROPERTY }, 
+		modifiableBuiltInFields = { Alignment.DESCRIPTION_PROPERTY }
+		)
 public class Alignment extends _Alignment {
 	
 	public static final String REF_SEQ_NAME_PATH = 
@@ -37,7 +41,7 @@ public class Alignment extends _Alignment {
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 	

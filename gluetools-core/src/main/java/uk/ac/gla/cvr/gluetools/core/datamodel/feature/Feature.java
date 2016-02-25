@@ -15,7 +15,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
 
-@GlueDataClass(defaultListColumns = {_Feature.NAME_PROPERTY, Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY})
+@GlueDataClass(
+		defaultListedFields = { _Feature.NAME_PROPERTY, 
+				Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY }, 
+		listableBuiltInFields = { _Feature.NAME_PROPERTY, 
+				Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY }, 
+		modifiableBuiltInFields = { _Feature.DESCRIPTION_PROPERTY } )
 public class Feature extends _Feature {
 
 	public static final String PARENT_NAME_PATH = _Feature.PARENT_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -34,7 +39,7 @@ public class Feature extends _Feature {
 
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 

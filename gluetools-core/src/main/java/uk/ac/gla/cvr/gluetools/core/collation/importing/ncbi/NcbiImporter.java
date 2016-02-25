@@ -46,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.GenbankXmlSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -715,7 +716,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	private boolean initCachedGiNumbers(CommandContext cmdContext) {
 		boolean cachedGiNumbers = true;
-		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomSequenceFieldNames();
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence);
 		if(!customSequenceFieldNames.contains(giNumberFieldName)) {
 			cachedGiNumbers = false;
 			GlueLogger.getGlueLogger().warning("No sequence field \""+giNumberFieldName+"\" exists in the project. Importer performance will be impeded as a result.");
@@ -725,7 +726,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	private boolean initStoreIsAssembly(CommandContext cmdContext) {
 		boolean storeIsAssembly = true;
-		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomSequenceFieldNames();
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence);
 		if(!customSequenceFieldNames.contains(isAssemblyFieldName)) {
 			storeIsAssembly = false;
 			GlueLogger.getGlueLogger().warning("No sequence field \""+isAssemblyFieldName+"\" exists in the project. Importer will not record whether sequences are assemblies.");

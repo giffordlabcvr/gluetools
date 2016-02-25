@@ -14,10 +14,12 @@ public class TableMode extends CommandMode<TableCommand> {
 
 	
 	private Project project;
+	private String tableName;
 	
 	public TableMode(CommandContext cmdContext, Project project, TableCommand command, String tableName) {
 		super(command, tableName);
 		this.project = project;
+		this.tableName = tableName;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -26,7 +28,8 @@ public class TableMode extends CommandMode<TableCommand> {
 			Element elem) {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(TableModeCommand.class.isAssignableFrom(cmdClass)) {
-			appendModeConfigToElem(elem, "projectName", project.getName());
+			appendModeConfigToElem(elem, TableModeCommand.PROJECT_NAME, project.getName());
+			appendModeConfigToElem(elem, TableModeCommand.TABLE_NAME, tableName);
 		}
 	}
 

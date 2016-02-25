@@ -52,7 +52,7 @@ public class ListResult extends TableResult {
 	
 	
 	public static <D extends GlueDataObject> List<String> propertyPaths(Class<D> objectClass) {
-		return Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListColumns());
+		return Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListedFields());
 	}
 	
 	

@@ -6,7 +6,7 @@ import java.util.Map;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ProjectSetting;
 
-@GlueDataClass(defaultListColumns = {ProjectSetting.NAME_PROPERTY, ProjectSetting.VALUE_PROPERTY})
+@GlueDataClass(defaultListedFields = {ProjectSetting.NAME_PROPERTY, ProjectSetting.VALUE_PROPERTY})
 public class ProjectSetting extends _ProjectSetting {
 
 	private ProjectSettingOption option;
@@ -47,7 +47,7 @@ public class ProjectSetting extends _ProjectSetting {
 	}
 
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 

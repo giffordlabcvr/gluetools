@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
@@ -35,7 +36,7 @@ public class ShowFieldCommand extends SequenceModeCommand<FieldValueResult> {
 	@Override
 	public FieldValueResult execute(CommandContext cmdContext) {
 		Project project = getSequenceMode(cmdContext).getProject();
-		List<String> customFieldNames = project.getCustomSequenceFieldNames();
+		List<String> customFieldNames = project.getCustomFieldNames(ConfigurableTable.sequence);
 		Sequence sequence = lookupSequence(cmdContext);
 		if(!customFieldNames.contains(fieldName)) {
 			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);

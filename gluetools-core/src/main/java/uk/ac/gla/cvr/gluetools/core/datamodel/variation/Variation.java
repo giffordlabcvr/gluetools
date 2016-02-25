@@ -31,7 +31,12 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
-@GlueDataClass(defaultListColumns = {_Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY})
+@GlueDataClass(
+		defaultListedFields = { _Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, 
+				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
+		listableBuiltInFields = { _Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
+				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
+		modifiableBuiltInFields = { _Variation.DESCRIPTION_PROPERTY })		
 public class Variation extends _Variation {
 
 	private Pattern regexPattern;

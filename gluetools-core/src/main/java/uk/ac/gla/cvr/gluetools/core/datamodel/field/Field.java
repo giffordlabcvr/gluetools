@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 
 // TODO create field should have a default value option.
-@GlueDataClass(defaultListColumns = {_Field.NAME_PROPERTY, _Field.TYPE_PROPERTY, _Field.MAX_LENGTH_PROPERTY})
+@GlueDataClass(defaultListedFields = {_Field.TABLE_PROPERTY, _Field.NAME_PROPERTY, _Field.TYPE_PROPERTY, _Field.MAX_LENGTH_PROPERTY})
 public class Field extends _Field {
 
 	private FieldType fieldType = null;
@@ -20,9 +20,10 @@ public class Field extends _Field {
 		return fieldType;
 	}
 	
-	public static Map<String, String> pkMap(String projectName, String name) {
+	public static Map<String, String> pkMap(String projectName, String table, String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
 		idMap.put(PROJECT_PROPERTY+"."+_Project.NAME_PROPERTY, projectName);
+		idMap.put(TABLE_PROPERTY, table);
 		idMap.put(NAME_PROPERTY, name);
 		return idMap;
 	}
@@ -30,11 +31,12 @@ public class Field extends _Field {
 	@Override
 	public void setPKValues(Map<String, String> pkMap) {
 		setName(pkMap.get(NAME_PROPERTY));
+		setTable(pkMap.get(TABLE_PROPERTY));
 	}
 
 	@Override
-	protected Map<String, String> pkMap() {
-		return pkMap(getProject().getName(), getName());
+	public Map<String, String> pkMap() {
+		return pkMap(getProject().getName(), getTable(), getName());
 	}
 	
 }

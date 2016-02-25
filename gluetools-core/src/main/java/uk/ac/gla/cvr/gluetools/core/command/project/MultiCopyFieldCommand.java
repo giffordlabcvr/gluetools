@@ -11,24 +11,24 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
-		commandWords={"copy","sequence-field"}, 
-		docoptUsages={"(-w <whereClause> | -a) <fromFieldName> <toFieldName> [-b <batchSize>]"},
+		commandWords={"multi-copy", "field"}, 
+		docoptUsages={"<cTable> (-w <whereClause> | -a) <fromFieldName> <toFieldName> [-b <batchSize>]"},
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
-				"-w <whereClause>, --whereClause <whereClause>  Qualify updated sequences", 
-				"-a, --allSequences                             Update all sequences",
+				"-w <whereClause>, --whereClause <whereClause>  Qualify updated objects", 
+				"-a, --allObjects                               Update all objects",
 				"-b <batchSize>, --batchSize <batchSize>        Update batch size" },
-		description="Copy values between fields for multiple sequences", 
+		description="Copy values between fields for multiple objects", 
 		furtherHelp="Updates to the database are committed in batches, the default batch size is 250.") 
-public class CopySequenceFieldCommand extends MultiSequenceFieldUpdateCommand {
+public class MultiCopyFieldCommand extends MultiFieldUpdateCommand {
 
 	public static final String FROM_FIELD_NAME = "fromFieldName";
 	public static final String TO_FIELD_NAME = "toFieldName";
@@ -46,11 +46,9 @@ public class CopySequenceFieldCommand extends MultiSequenceFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkValidCustomSequenceFieldNames(Arrays.asList(fromFieldName, toFieldName));
-		Field fromField = project.getSequenceField(fromFieldName);
-		Field toField = project.getSequenceField(toFieldName);
-		FieldType fromFieldType = fromField.getFieldType();
-		FieldType toFieldType = toField.getFieldType();
+		project.checkModifiableFieldNames(getCTable(), Arrays.asList(fromFieldName, toFieldName));
+		FieldType fromFieldType = project.getModifiableFieldType(getCTable(), fromFieldName);
+		FieldType toFieldType = project.getModifiableFieldType(getCTable(), toFieldName);
 		if(!fromFieldType.equals(toFieldType)) {
 			throw new ProjectModeCommandException(Code.INCOMPATIBLE_TYPES_FOR_COPY, fromFieldName, fromFieldType.name(), toFieldName, toFieldType.name());
 		}
@@ -58,17 +56,18 @@ public class CopySequenceFieldCommand extends MultiSequenceFieldUpdateCommand {
 	}
 	
 	@Override
-	protected void updateSequence(CommandContext cmdContext, Sequence sequence) {
-		Object fromValue = sequence.readProperty(fromFieldName);
-		sequence.writeProperty(toFieldName, fromValue);
+	protected void updateObject(CommandContext cmdContext, GlueDataObject object) {
+		Object fromValue = object.readProperty(fromFieldName);
+		object.writeProperty(toFieldName, fromValue);
 	}
 
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerVariableInstantiator("fromFieldName", new SequenceFieldInstantiator());
-			registerVariableInstantiator("toFieldName", new SequenceFieldInstantiator());
+			registerEnumLookup("cTable", ConfigurableTable.class);
+			registerVariableInstantiator("fromFieldName", new ModifiableFieldInstantiator());
+			registerVariableInstantiator("toFieldName", new ModifiableFieldInstantiator());
 		}
 	}
 	

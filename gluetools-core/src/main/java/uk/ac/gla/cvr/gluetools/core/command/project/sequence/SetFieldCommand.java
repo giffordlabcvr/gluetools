@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -46,10 +47,10 @@ public class SetFieldCommand extends SequenceModeCommand<UpdateResult> {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getSequenceMode(cmdContext).getProject();
-		project.checkValidCustomSequenceFieldNames(Collections.singletonList(fieldName));
+		project.checkCustomFieldNames(ConfigurableTable.sequence, Collections.singletonList(fieldName));
 		Sequence sequence = lookupSequence(cmdContext);
 		Object oldValue = sequence.readProperty(fieldName);
-		Field field = project.getSequenceField(fieldName);
+		Field field = project.getCustomField(ConfigurableTable.sequence, fieldName);
 		Object newValue = field.getFieldType().getFieldTranslator().valueFromString(fieldValue);
 		if(oldValue != null && newValue != null && oldValue.equals(newValue)) {
 			return new UpdateResult(Sequence.class, 0);

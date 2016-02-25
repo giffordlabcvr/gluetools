@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-@GlueDataClass(defaultListColumns = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY})
+@GlueDataClass(defaultListedFields = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY})
 public class FeatureSegment extends _FeatureSegment implements IReferenceSegment {
 	
 	public static final String REF_SEQ_NAME_PATH = 
@@ -40,7 +40,7 @@ public class FeatureSegment extends _FeatureSegment implements IReferenceSegment
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(
 				getFeatureLocation().getReferenceSequence().getName(), 
 				getFeatureLocation().getFeature().getName(),

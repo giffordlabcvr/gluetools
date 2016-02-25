@@ -22,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@GlueDataClass(defaultListColumns = {_Module.NAME_PROPERTY})
+@GlueDataClass(defaultListedFields = {_Module.NAME_PROPERTY})
 public class Module extends _Module {
 
 
@@ -107,7 +107,7 @@ public class Module extends _Module {
 	
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getName());
 	}
 

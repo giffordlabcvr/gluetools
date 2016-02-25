@@ -42,7 +42,7 @@ public class PositionVariation extends _PositionVariation {
 	}
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getFeatureLocation().getReferenceSequence().getName(), 
 				getFeatureLocation().getFeature().getName(), 
 				getVariation().getName(), 

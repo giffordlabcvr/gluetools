@@ -17,11 +17,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 	description="List the fields in the table") 
 public class ListFieldCommand extends TableModeCommand<ListResult> {
 
-	
+
 	
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, getProjectName());
+		exp = exp.andExp(ExpressionFactory.matchExp(Field.TABLE_PROPERTY, getTableName()));
 		return CommandUtils.runListCommand(cmdContext, Field.class, new SelectQuery(Field.class, exp));
 	}
 

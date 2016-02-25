@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
@@ -103,7 +104,7 @@ public class CopySequenceCommand extends ProjectModeCommand<CopySequenceCommand.
 				row.put("fromSourceName", sequence.getSource().getName());
 				row.put("toSourceName", toSource.getName());
 				rowData.add(row);
-				List<String> customFieldNames = getProjectMode(cmdContext).getProject().getCustomSequenceFieldNames();
+				List<String> customFieldNames = getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence);
 				Map<String, Object> customFieldValues = new LinkedHashMap<String, Object>();
 				for(String fieldName: customFieldNames) {
 					customFieldValues.put(fieldName, sequence.readProperty(fieldName));

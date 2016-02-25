@@ -62,7 +62,7 @@ public class ListMemberCommand extends GroupModeCommand<ListResult> {
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
 		if(fieldNames != null) {
-			getGroupMode(cmdContext).getProject().checkValidMemberFieldNames(fieldNames);
+			getGroupMode(cmdContext).getProject().checkListableMemberField(fieldNames);
 		}
 		
 		Expression matchGroupName = ExpressionFactory.matchExp(GroupMember.GROUP_NAME_PATH, getGroupName());
@@ -95,7 +95,7 @@ public class ListMemberCommand extends GroupModeCommand<ListResult> {
 					return getMemberFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 				}
 				protected List<String> getMemberFieldNames(ConsoleCommandContext cmdContext) {
-					return getProject(cmdContext).getValidMemberFields();
+					return getProject(cmdContext).getListableMemberFields();
 				}
 				private Project getProject(ConsoleCommandContext cmdContext) {
 					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();

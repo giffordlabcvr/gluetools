@@ -6,7 +6,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,10 +49,14 @@ import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
@@ -71,7 +77,27 @@ public class ModelBuilder {
 
 	private static String CAYENNE_NS = "http://cayenne.apache.org/schema/3.0/modelMap";
 	
+	// tables within a project where fields can be added / deleted.
+	public enum ConfigurableTable { 
+		sequence(Sequence.class),
+		variation(Variation.class),
+		feature(Feature.class),
+		alignment(Alignment.class);
+		
+		private Class<? extends GlueDataObject> dataObjectClass;
 
+		private ConfigurableTable(Class <? extends GlueDataObject> dataObjectClass) {
+			this.dataObjectClass = dataObjectClass;
+		}
+
+		public Class<? extends GlueDataObject> getDataObjectClass() {
+			return dataObjectClass;
+		}
+		
+	};
+	
+	public static final String configurableTablesString = "[sequence, variation, feature, alignment]";
+	
 	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
 		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration, propertiesConfiguration));
 	}
@@ -151,29 +177,46 @@ public class ModelBuilder {
 		XmlNamespaceContext namespaceContext = new GlueXmlUtils.XmlNamespaceContext();
 		namespaceContext.addNamespace("cay", CAYENNE_NS);
 		xPath.setNamespaceContext(namespaceContext);
-		{
-			XPathExpression xPathExpression = 
-					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='SEQUENCE']");
-			Element sequenceTableElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
-			fields.forEach(f -> {
-				Element dbAttributeElem = GlueXmlUtils.appendElementNS(sequenceTableElem, CAYENNE_NS, "db-attribute");
-				dbAttributeElem.setAttribute("name", f.getName());
-				dbAttributeElem.setAttribute("type", f.getFieldType().cayenneType());
-				Optional.ofNullable(f.getMaxLength()).ifPresent(
-						len -> { dbAttributeElem.setAttribute("length", Integer.toString(len)); });
-			});
+		
+		Map<ConfigurableTable, List<Field>> cTableToFields = new LinkedHashMap<ConfigurableTable, List<Field>>();
+
+		for(ConfigurableTable cTable : ConfigurableTable.values()) {
+			cTableToFields.put(cTable, new LinkedList<Field>());
 		}
-		{
-			XPathExpression xPathExpression = 
-					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='Sequence']");
-			Element sequenceObjElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
-			fields.forEach(f -> {
-				Element objAttributeElem = GlueXmlUtils.appendElementNS(sequenceObjElem, CAYENNE_NS, "obj-attribute");
-				objAttributeElem.setAttribute("name", f.getName());
-				objAttributeElem.setAttribute("db-attribute-path", f.getName());
-				objAttributeElem.setAttribute("type", f.getFieldType().javaType());
-			});
+		
+		for(Field f: fields) {
+			ConfigurableTable cTable = ConfigurableTable.valueOf(f.getTable());
+			cTableToFields.get(cTable).add(f);
 		}
+		
+		
+		for(ConfigurableTable cTable : ConfigurableTable.values()) {
+			List<Field> cTableFields = cTableToFields.get(cTable);
+			{
+				XPathExpression xPathExpression = 
+						GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+cTable.name()+"']");
+				Element sequenceTableElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+				cTableFields.forEach(f -> {
+					Element dbAttributeElem = GlueXmlUtils.appendElementNS(sequenceTableElem, CAYENNE_NS, "db-attribute");
+					dbAttributeElem.setAttribute("name", f.getName());
+					dbAttributeElem.setAttribute("type", f.getFieldType().cayenneType());
+					Optional.ofNullable(f.getMaxLength()).ifPresent(
+							len -> { dbAttributeElem.setAttribute("length", Integer.toString(len)); });
+				});
+			}
+			{
+				XPathExpression xPathExpression = 
+						GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='"+cTable.getDataObjectClass().getSimpleName()+"']");
+				Element sequenceObjElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+				cTableFields.forEach(f -> {
+					Element objAttributeElem = GlueXmlUtils.appendElementNS(sequenceObjElem, CAYENNE_NS, "obj-attribute");
+					objAttributeElem.setAttribute("name", f.getName());
+					objAttributeElem.setAttribute("db-attribute-path", f.getName());
+					objAttributeElem.setAttribute("type", f.getFieldType().javaType());
+				});
+			}
+		}
+		
 		{
 			XPathExpression xPathExpression = 
 					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship");
@@ -307,7 +350,7 @@ public class ModelBuilder {
 		}
 	}
 	
-	public static void addSequenceColumnToModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+	public static void addTableColumnToModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
 		ServerRuntime projectRuntime = null;
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
@@ -322,16 +365,16 @@ public class ModelBuilder {
 	}
 
 	private static AddColumnToDb getAddColumnToken(Project project, Field field, MergerContext mergerContext) {
-		DbEntity sequenceTable = 
-				mergerContext.getDataMap().getDbEntity(specializeTableName("SEQUENCE", project.getName()));
+		DbEntity tableToModify = 
+				mergerContext.getDataMap().getDbEntity(specializeTableName(field.getTable(), project.getName()));
 		DbAttribute column = new DbAttribute(field.getName());
 		column.setType(TypesMapping.getSqlTypeByName(field.getFieldType().cayenneType()));
 		Integer maxLength = field.getMaxLength();
 		if(maxLength != null) {
 			column.setMaxLength(maxLength);
 		}
-		column.setEntity(sequenceTable);
-		return new AddColumnToDb(sequenceTable, column);
+		column.setEntity(tableToModify);
+		return new AddColumnToDb(tableToModify, column);
 	}
 
 	private static MergerContext getMergerContext(Project project,
@@ -343,7 +386,7 @@ public class ModelBuilder {
 		return mergerContext;
 	}
 
-	public static void deleteSequenceColumnFromModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+	public static void deleteTableColumnFromModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
 		ServerRuntime projectRuntime = null;
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);

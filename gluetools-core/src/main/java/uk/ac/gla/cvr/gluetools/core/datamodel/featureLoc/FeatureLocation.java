@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 
-@GlueDataClass(defaultListColumns = {FeatureLocation.FEATURE_NAME_PATH})
+@GlueDataClass(defaultListedFields = {FeatureLocation.FEATURE_NAME_PATH})
 public class FeatureLocation extends _FeatureLocation {
 	
 	public static final String REF_SEQ_NAME_PATH = 
@@ -47,7 +47,7 @@ public class FeatureLocation extends _FeatureLocation {
 
 	
 	@Override
-	protected Map<String, String> pkMap() {
+	public Map<String, String> pkMap() {
 		return pkMap(getReferenceSequence().getName(), getFeature().getName());
 	}
 	
