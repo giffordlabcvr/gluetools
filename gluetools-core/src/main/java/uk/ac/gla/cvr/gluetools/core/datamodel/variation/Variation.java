@@ -32,10 +32,10 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 @GlueDataClass(
-		defaultListedFields = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
-		listableBuiltInFields = { _Variation.NAME_PROPERTY, Variation.TRANSCRIPTION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
-				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY, _Variation.TRANSCRIPTION_TYPE_PROPERTY },
-		modifiableBuiltInFields = { _Variation.DESCRIPTION_PROPERTY })		
+		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
+		listableBuiltInProperties = { _Variation.NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
+				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
+		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY })		
 public class Variation extends _Variation {
 
 	private Pattern regexPattern;
@@ -62,7 +62,7 @@ public class Variation extends _Variation {
 	}
 	
 	public TranslationFormat getTranslationFormat() {
-		return TranslationUtils.translationFormatFromString(getTranscriptionType());
+		return TranslationUtils.translationFormatFromString(getTranslationType());
 	}	
 
 	

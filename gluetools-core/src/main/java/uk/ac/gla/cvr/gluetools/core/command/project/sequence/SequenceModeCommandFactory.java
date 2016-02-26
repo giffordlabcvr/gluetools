@@ -15,9 +15,11 @@ public class SequenceModeCommandFactory extends BaseCommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
-		registerCommandClass(SetFieldCommand.class);
-		registerCommandClass(UnsetFieldCommand.class);
-		registerCommandClass(ShowFieldCommand.class);
+		registerCommandClass(SequenceSetFieldCommand.class);
+		registerCommandClass(SequenceUnsetFieldCommand.class);
+		registerCommandClass(SequenceShowPropertyCommand.class);
+		registerCommandClass(SequenceListPropertyCommand.class);
+
 		registerCommandClass(ShowOriginalDataCommand.class);
 		registerCommandClass(SequenceShowLengthCommand.class);
 		registerCommandClass(ShowNucleotidesCommand.class);

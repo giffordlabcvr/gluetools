@@ -9,8 +9,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 
 @GlueDataClass(
-		defaultListedFields = {Sequence.SOURCE_NAME_PATH, _Sequence.SEQUENCE_ID_PROPERTY },
-		listableBuiltInFields = {Sequence.SOURCE_NAME_PATH, _Sequence.SEQUENCE_ID_PROPERTY, _Sequence.FORMAT_PROPERTY } )
+		defaultListedProperties = {Sequence.SOURCE_NAME_PATH, _Sequence.SEQUENCE_ID_PROPERTY },
+		listableBuiltInProperties = {Sequence.SOURCE_NAME_PATH, _Sequence.SEQUENCE_ID_PROPERTY, _Sequence.FORMAT_PROPERTY } )
 public class Sequence extends _Sequence {
 
 	public static final String SOURCE_NAME_PATH = _Sequence.SOURCE_PROPERTY+"."+_Source.NAME_PROPERTY;

@@ -16,11 +16,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
 
 @GlueDataClass(
-		defaultListedFields = { _Feature.NAME_PROPERTY, 
+		defaultListedProperties = { _Feature.NAME_PROPERTY, 
 				Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY }, 
-		listableBuiltInFields = { _Feature.NAME_PROPERTY, 
+		listableBuiltInProperties = { _Feature.NAME_PROPERTY, 
 				Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY }, 
-		modifiableBuiltInFields = { _Feature.DESCRIPTION_PROPERTY } )
+		modifiableBuiltInProperties = { _Feature.DESCRIPTION_PROPERTY } )
 public class Feature extends _Feature {
 
 	public static final String PARENT_NAME_PATH = _Feature.PARENT_PROPERTY+"."+_Feature.NAME_PROPERTY;

@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.Comparator;
-
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocListVariationCommand;

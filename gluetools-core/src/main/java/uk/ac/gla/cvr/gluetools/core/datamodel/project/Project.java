@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 
-@GlueDataClass(defaultListedFields = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
+@GlueDataClass(defaultListedProperties = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
 
 	public static Map<String, String> pkMap(String name) {
@@ -50,16 +50,16 @@ public class Project extends _Project {
 				.collect(Collectors.toList());
 	}
 
-	public List<String> getListableFieldNames(ConfigurableTable cTable) {
+	public List<String> getListableProperties(ConfigurableTable cTable) {
 		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
-		List<String> listableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInFields()));
-		listableFields.addAll(getCustomFieldNames(cTable));
-		return listableFields;
+		List<String> listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
+		listableProperties.addAll(getCustomFieldNames(cTable));
+		return listableProperties;
 	}
 
 	public List<String> getModifiableFieldNames(ConfigurableTable cTable) {
 		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
-		List<String> listableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInFields()));
+		List<String> listableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInProperties()));
 		listableFields.addAll(getCustomFieldNames(cTable));
 		return listableFields;
 	}
@@ -78,13 +78,13 @@ public class Project extends _Project {
 		return pkMap(getName());
 	}
 
-	public void checkListableFieldNames(ConfigurableTable cTable, List<String> fieldNames) {
-		List<String> validFieldNamesList = getListableFieldNames(cTable);
-		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
-		if(fieldNames != null) {
-			fieldNames.forEach(f-> {
-				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validFieldNamesList);
+	public void checkListableProperties(ConfigurableTable cTable, List<String> propertyNames) {
+		List<String> listableProperties = getListableProperties(cTable);
+		Set<String> validPropertyNames = new LinkedHashSet<String>(listableProperties);
+		if(propertyNames != null) {
+			propertyNames.forEach(f-> {
+				if(!validPropertyNames.contains(f)) {
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, listableProperties);
 				}
 			});
 		}
@@ -96,7 +96,7 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validFieldNamesList);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList);
 				}
 			});
 		}
@@ -108,7 +108,7 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validFieldNamesList);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList);
 				}
 			});
 		}
@@ -121,7 +121,7 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validMemberFields.contains(f)) {
-					throw new ProjectModeCommandException(Code.INVALID_FIELD, f, validMemberFieldsList);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validMemberFieldsList);
 				}
 			});
 		}
@@ -129,7 +129,7 @@ public class Project extends _Project {
 	}
 
 	public List<String> getListableMemberFields() {
-		List<String> validMemberFieldsList = getListableFieldNames(ConfigurableTable.SEQUENCE).stream().
+		List<String> validMemberFieldsList = getListableProperties(ConfigurableTable.SEQUENCE).stream().
 			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList());
 		return validMemberFieldsList;
 	}

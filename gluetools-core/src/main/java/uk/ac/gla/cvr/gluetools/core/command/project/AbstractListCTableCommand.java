@@ -60,7 +60,7 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
 					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-					List<String> listableFieldNames = insideProjectMode.getProject().getListableFieldNames(cTable);
+					List<String> listableFieldNames = insideProjectMode.getProject().getListableProperties(cTable);
 					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
 				}
 			});
@@ -138,7 +138,7 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 			if(fieldNames == null) {
 				return new ListResult(dataObjectClass, resultDataObjects);
 			} else {
-				project.checkListableFieldNames(cTable, fieldNames);
+				project.checkListableProperties(cTable, fieldNames);
 				return new ListResult(dataObjectClass, resultDataObjects, fieldNames);
 			}
 		}

@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatagException.Code;
 
-@GlueDataClass(defaultListedFields = {FeatureMetatag.NAME_PROPERTY, FeatureMetatag.VALUE_PROPERTY})
+@GlueDataClass(defaultListedProperties = {FeatureMetatag.NAME_PROPERTY, FeatureMetatag.VALUE_PROPERTY})
 public class FeatureMetatag extends _FeatureMetatag {
 
 	public enum Type {

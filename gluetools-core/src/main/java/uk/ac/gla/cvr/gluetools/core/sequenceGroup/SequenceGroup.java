@@ -6,7 +6,7 @@ import java.util.Map;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._SequenceGroup;
 
-@GlueDataClass(defaultListedFields = {_SequenceGroup.NAME_PROPERTY})
+@GlueDataClass(defaultListedProperties = {_SequenceGroup.NAME_PROPERTY})
 public class SequenceGroup extends _SequenceGroup {
 
 	

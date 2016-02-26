@@ -6,7 +6,7 @@ public class TranslationException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		UNKNOWN_TRANSLATION_TYPE("unknownTranscriptionType");
+		UNKNOWN_TRANSLATION_TYPE("unknownTranslationType");
 
 		private String[] argNames;
 		private Code(String... argNames) {

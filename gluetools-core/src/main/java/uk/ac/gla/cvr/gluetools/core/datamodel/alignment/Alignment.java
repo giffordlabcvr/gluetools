@@ -19,9 +19,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @GlueDataClass(
-		defaultListedFields = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH }, 
-		listableBuiltInFields = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH, Alignment.DESCRIPTION_PROPERTY }, 
-		modifiableBuiltInFields = { Alignment.DESCRIPTION_PROPERTY }
+		defaultListedProperties = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH }, 
+		listableBuiltInProperties = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH, Alignment.DESCRIPTION_PROPERTY }, 
+		modifiableBuiltInProperties = { Alignment.DESCRIPTION_PROPERTY }
 		)
 public class Alignment extends _Alignment {
 	

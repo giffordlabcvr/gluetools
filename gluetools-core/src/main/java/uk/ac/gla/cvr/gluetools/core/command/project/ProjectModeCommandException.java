@@ -5,7 +5,7 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class ProjectModeCommandException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		INVALID_FIELD("invalidField", "validFields"),
+		INVALID_PROPERTY("invalidProperty", "validProperties"),
 		INCOMPATIBLE_TYPES_FOR_COPY("fromFieldName", "toFieldName");
 		
 		private String[] argNames;

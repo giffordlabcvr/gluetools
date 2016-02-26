@@ -24,7 +24,7 @@ public class VariationShowPatternCommand extends VariationModeCommand<VariationS
 
 		public VariationShowPatternResult(TranslationFormat transcriptionType, String regex) {
 			super("variationShowPatternResult", mapBuilder()
-					.put(Variation.TRANSCRIPTION_TYPE_PROPERTY, transcriptionType.name())
+					.put(Variation.TRANSLATION_TYPE_PROPERTY, transcriptionType.name())
 					.put(Variation.REGEX_PROPERTY, regex)
 					);
 		}

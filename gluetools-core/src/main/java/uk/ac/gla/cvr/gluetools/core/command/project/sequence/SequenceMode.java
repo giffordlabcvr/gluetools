@@ -3,14 +3,19 @@ package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 @CommandModeClass(commandFactoryClass = SequenceModeCommandFactory.class)
-public class SequenceMode extends CommandMode<SequenceCommand> implements InsideProjectMode {
+public class SequenceMode extends CommandMode<SequenceCommand> implements ConfigurableObjectMode {
 
 	private Project project;
 	private String sourceName;
@@ -46,6 +51,19 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Inside
 		return sequenceID;
 	}
 	
-	
+	@Override
+	public GlueDataObject getConfigurableObject(CommandContext cmdContext) {
+		return lookupSequence(cmdContext);
+	}
+
+	protected Sequence lookupSequence(CommandContext cmdContext) {
+		return GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(getSourceName(), getSequenceID()));
+	}
+
+	@Override
+	public ConfigurableTable getConfigurableTable() {
+		return ConfigurableTable.SEQUENCE;
+	}
+
 	
 }

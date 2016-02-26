@@ -295,7 +295,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			if(customOnly) {
 				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.SEQUENCE);
 			} else {
-				return getProject(cmdContext).getListableFieldNames(ConfigurableTable.SEQUENCE);
+				return getProject(cmdContext).getListableProperties(ConfigurableTable.SEQUENCE);
 			}
 		}
 

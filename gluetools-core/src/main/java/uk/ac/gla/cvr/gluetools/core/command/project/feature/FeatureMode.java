@@ -3,14 +3,18 @@ package uk.ac.gla.cvr.gluetools.core.command.project.feature;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.FeatureCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = FeatureModeCommandFactory.class)
-public class FeatureMode extends CommandMode<FeatureCommand> implements InsideProjectMode {
+public class FeatureMode extends CommandMode<FeatureCommand> implements ConfigurableObjectMode {
 
 	
 	private String featureName;
@@ -39,6 +43,20 @@ public class FeatureMode extends CommandMode<FeatureCommand> implements InsidePr
 	@Override
 	public Project getProject() {
 		return project;
+	}
+
+	@Override
+	public ConfigurableTable getConfigurableTable() {
+		return ConfigurableTable.FEATURE;
+	}
+
+	@Override
+	public GlueDataObject getConfigurableObject(CommandContext cmdContext) {
+		return lookupFeature(cmdContext);
+	}
+
+	protected Feature lookupFeature(CommandContext cmdContext) {
+		return GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 	}
 
 	

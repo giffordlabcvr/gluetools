@@ -3,14 +3,18 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.VariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
 @CommandModeClass(commandFactoryClass = VariationModeCommandFactory.class)
-public class VariationMode extends CommandMode<VariationCommand> implements InsideProjectMode {
+public class VariationMode extends CommandMode<VariationCommand> implements ConfigurableObjectMode {
 
 	
 	private String refSeqName;
@@ -51,6 +55,21 @@ public class VariationMode extends CommandMode<VariationCommand> implements Insi
 	@Override
 	public Project getProject() {
 		return project;
+	}
+
+	
+	@Override
+	public GlueDataObject getConfigurableObject(CommandContext cmdContext) {
+		return lookupVariation(cmdContext);
+	}
+
+	protected Variation lookupVariation(CommandContext cmdContext) {
+		return GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(getRefSeqName(), getFeatureName(), getVariationName()));
+	}
+
+	@Override
+	public ConfigurableTable getConfigurableTable() {
+		return ConfigurableTable.VARIATION;
 	}
 
 	

@@ -20,7 +20,7 @@ public abstract class _Variation extends GlueDataObject {
     public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
     public static final String REGEX_PROPERTY = "regex";
-    public static final String TRANSCRIPTION_TYPE_PROPERTY = "transcriptionType";
+    public static final String TRANSLATION_TYPE_PROPERTY = "translationType";
     public static final String FEATURE_LOC_PROPERTY = "featureLoc";
     public static final String POSITION_VARIATIONS_PROPERTY = "positionVariations";
     public static final String VCAT_MEMBERSHIPS_PROPERTY = "vcatMemberships";
@@ -64,11 +64,11 @@ public abstract class _Variation extends GlueDataObject {
         return (String)readProperty(REGEX_PROPERTY);
     }
 
-    public void setTranscriptionType(String transcriptionType) {
-        writeProperty(TRANSCRIPTION_TYPE_PROPERTY, transcriptionType);
+    public void setTranslationType(String translationType) {
+        writeProperty(TRANSLATION_TYPE_PROPERTY, translationType);
     }
-    public String getTranscriptionType() {
-        return (String)readProperty(TRANSCRIPTION_TYPE_PROPERTY);
+    public String getTranslationType() {
+        return (String)readProperty(TRANSLATION_TYPE_PROPERTY);
     }
 
     public void setFeatureLoc(FeatureLocation featureLoc) {

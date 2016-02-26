@@ -98,7 +98,7 @@
 		<db-attribute name="REF_SEQUENCE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="REF_START" type="INTEGER"/>
 		<db-attribute name="REGEX" type="VARCHAR" length="1000"/>
-		<db-attribute name="TRANSCRIPTION_TYPE" type="VARCHAR" length="50"/>
+		<db-attribute name="TRANSLATION_TYPE" type="VARCHAR" length="50"/>
 	</db-entity>
 	<db-entity name="VARIATION_CATEGORY">
 		<db-attribute name="DESCRIPTION" type="VARCHAR" length="1000"/>
@@ -176,7 +176,7 @@
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="REF_END"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="REF_START"/>
 		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="REGEX"/>
-		<obj-attribute name="transcriptionType" type="java.lang.String" db-attribute-path="TRANSCRIPTION_TYPE"/>
+		<obj-attribute name="translationType" type="java.lang.String" db-attribute-path="TRANSLATION_TYPE"/>
 	</obj-entity>
 	<obj-entity name="VariationCategory" className="uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory" dbEntityName="VARIATION_CATEGORY" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>

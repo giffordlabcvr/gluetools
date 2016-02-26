@@ -6,7 +6,7 @@ import java.util.Map;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ProjectSetting;
 
-@GlueDataClass(defaultListedFields = {ProjectSetting.NAME_PROPERTY, ProjectSetting.VALUE_PROPERTY})
+@GlueDataClass(defaultListedProperties = {ProjectSetting.NAME_PROPERTY, ProjectSetting.VALUE_PROPERTY})
 public class ProjectSetting extends _ProjectSetting {
 
 	private ProjectSettingOption option;

@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 
-@GlueDataClass(defaultListedFields = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH})
+@GlueDataClass(defaultListedProperties = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH})
 public class ReferenceSequence extends _ReferenceSequence {
 
 	public static final String SEQ_SOURCE_NAME_PATH = 

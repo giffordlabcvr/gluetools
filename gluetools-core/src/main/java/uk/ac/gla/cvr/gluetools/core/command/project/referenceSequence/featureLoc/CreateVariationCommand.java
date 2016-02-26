@@ -58,7 +58,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 						featureLoc.getReferenceSequence().getName(), 
 						featureLoc.getFeature().getName(), variationName), false);
 		variation.setFeatureLoc(featureLoc);
-		variation.setTranscriptionType(translationFormat.name());
+		variation.setTranslationType(translationFormat.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
 		cmdContext.commit();
 		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(VcatMembership.CACHE_GROUP);

@@ -7,8 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFor
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SetFieldCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.UnsetFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceSetFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceUnsetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
@@ -61,15 +61,15 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		}
 		UpdateResult updateResult;
 		if(fieldValue == null) {
-			updateResult = cmdContext.cmdBuilder(UnsetFieldCommand.class)
-					.set(UnsetFieldCommand.FIELD_NAME, fieldName)
-					.set(UnsetFieldCommand.NO_COMMIT, noCommit)
+			updateResult = cmdContext.cmdBuilder(SequenceUnsetFieldCommand.class)
+					.set(SequenceUnsetFieldCommand.FIELD_NAME, fieldName)
+					.set(SequenceUnsetFieldCommand.NO_COMMIT, noCommit)
 					.execute();
 		} else {
-			updateResult = cmdContext.cmdBuilder(SetFieldCommand.class)
-					.set(SetFieldCommand.FIELD_NAME, fieldName)
-					.set(SetFieldCommand.FIELD_VALUE, fieldValue)
-					.set(SetFieldCommand.NO_COMMIT, noCommit)
+			updateResult = cmdContext.cmdBuilder(SequenceSetFieldCommand.class)
+					.set(SequenceSetFieldCommand.FIELD_NAME, fieldName)
+					.set(SequenceSetFieldCommand.FIELD_VALUE, fieldValue)
+					.set(SequenceSetFieldCommand.NO_COMMIT, noCommit)
 					.execute();
 		}
 		if(updateResult.getNumber() == 1) {

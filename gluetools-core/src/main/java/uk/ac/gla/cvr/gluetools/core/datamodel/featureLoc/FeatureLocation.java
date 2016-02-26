@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 
-@GlueDataClass(defaultListedFields = {FeatureLocation.FEATURE_NAME_PATH})
+@GlueDataClass(defaultListedProperties = {FeatureLocation.FEATURE_NAME_PATH})
 public class FeatureLocation extends _FeatureLocation {
 	
 	public static final String REF_SEQ_NAME_PATH = 
@@ -217,7 +217,7 @@ public class FeatureLocation extends _FeatureLocation {
 		if(glueConfigContext.includeVariations()) {
 			for(Variation variation: getVariations()) {
 				indent(glueConfigBuf, indent).append("create variation ").append(variation.getName())
-					.append(" -t ").append(variation.getTranscriptionType());
+					.append(" -t ").append(variation.getTranslationType());
 				String description = variation.getDescription();
 				if(description != null) {
 					glueConfigBuf.append(" \""+description+"\"");

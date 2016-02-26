@@ -22,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@GlueDataClass(defaultListedFields = {_Module.NAME_PROPERTY})
+@GlueDataClass(defaultListedProperties = {_Module.NAME_PROPERTY})
 public class Module extends _Module {
 
 

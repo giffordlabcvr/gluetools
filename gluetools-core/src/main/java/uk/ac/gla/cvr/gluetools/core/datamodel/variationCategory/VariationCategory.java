@@ -16,7 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._VariationCategory;
 
-@GlueDataClass(defaultListedFields = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY, 
+@GlueDataClass(defaultListedProperties = {_VariationCategory.NAME_PROPERTY, VariationCategory.PARENT_NAME_PATH, _VariationCategory.DESCRIPTION_PROPERTY, 
 		_VariationCategory.NOTIFIABILITY_PROPERTY})
 public class VariationCategory extends _VariationCategory {
 
