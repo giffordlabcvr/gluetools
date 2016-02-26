@@ -36,7 +36,7 @@ public class ShowFieldCommand extends SequenceModeCommand<FieldValueResult> {
 	@Override
 	public FieldValueResult execute(CommandContext cmdContext) {
 		Project project = getSequenceMode(cmdContext).getProject();
-		List<String> customFieldNames = project.getCustomFieldNames(ConfigurableTable.sequence);
+		List<String> customFieldNames = project.getCustomFieldNames(ConfigurableTable.SEQUENCE);
 		Sequence sequence = lookupSequence(cmdContext);
 		if(!customFieldNames.contains(fieldName)) {
 			throw new SequenceException(Code.INVALID_FIELD, fieldName, customFieldNames);

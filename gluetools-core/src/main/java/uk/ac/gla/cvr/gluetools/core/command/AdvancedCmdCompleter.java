@@ -293,9 +293,9 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 		protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
 			if(customOnly) {
-				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.sequence);
+				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.SEQUENCE);
 			} else {
-				return getProject(cmdContext).getListableFieldNames(ConfigurableTable.sequence);
+				return getProject(cmdContext).getListableFieldNames(ConfigurableTable.SEQUENCE);
 			}
 		}
 

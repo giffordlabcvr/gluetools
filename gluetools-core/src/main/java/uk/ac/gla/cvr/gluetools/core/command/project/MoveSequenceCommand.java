@@ -101,7 +101,7 @@ public class MoveSequenceCommand extends ProjectModeCommand<MoveSequenceCommand.
 				row.put("fromSourceName", sequence.getSource().getName());
 				row.put("toSourceName", toSource.getName());
 				rowData.add(row);
-				List<String> customFieldNames = getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence);
+				List<String> customFieldNames = getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.SEQUENCE);
 				Map<String, Object> customFieldValues = new LinkedHashMap<String, Object>();
 				for(String fieldName: customFieldNames) {
 					customFieldValues.put(fieldName, sequence.readProperty(fieldName));

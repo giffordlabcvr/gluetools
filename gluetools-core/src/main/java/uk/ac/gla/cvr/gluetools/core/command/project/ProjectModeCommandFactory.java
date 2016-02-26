@@ -67,6 +67,9 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteVariationCategoryCommand.class);
 		registerCommandClass(ListVariationCategoryCommand.class);
 
+		
+		registerCommandClass(ListVariationCommand.class);
+		
 		registerCommandClass(ProjectSetSettingCommand.class);
 		registerCommandClass(ProjectUnsetSettingCommand.class);
 		registerCommandClass(ProjectShowSettingCommand.class);

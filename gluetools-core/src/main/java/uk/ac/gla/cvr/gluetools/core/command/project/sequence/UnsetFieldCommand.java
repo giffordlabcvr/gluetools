@@ -43,7 +43,7 @@ public class UnsetFieldCommand extends SequenceModeCommand<UpdateResult> {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		getSequenceMode(cmdContext).getProject()
-		.checkCustomFieldNames(ConfigurableTable.sequence, Collections.singletonList(fieldName));
+		.checkCustomFieldNames(ConfigurableTable.SEQUENCE, Collections.singletonList(fieldName));
 		Sequence sequence = lookupSequence(cmdContext);
 		Object oldValue = sequence.readProperty(fieldName);
 		if(oldValue != null) {

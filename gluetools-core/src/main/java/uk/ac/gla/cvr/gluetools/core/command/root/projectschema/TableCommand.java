@@ -42,10 +42,10 @@ public class TableCommand extends ProjectSchemaModeCommand<OkResult>  {
 			GlueLogger.getGlueLogger().warning("Command \"table SEQUENCES\" is deprecated in favour of \"table sequence\" please update your GLUE scripts accordingly.");
 			this.cTableName = "sequence";
 		}
-		if(cTableName.equals("SEQUENCE")) {
-			GlueLogger.getGlueLogger().warning("Command \"table SEQUENCE\" is deprecated in favour of \"table sequence\" please update your GLUE scripts accordingly.");
-			this.cTableName = "sequence";
-		}
+//		if(cTableName.equals("SEQUENCE")) {
+//			GlueLogger.getGlueLogger().warning("Command \"table SEQUENCE\" is deprecated in favour of \"table sequence\" please update your GLUE scripts accordingly.");
+//			this.cTableName = "sequence";
+//		}
 		try {
 			Enum.valueOf(ModelBuilder.ConfigurableTable.class, cTableName);
 		} catch(IllegalArgumentException iae) {

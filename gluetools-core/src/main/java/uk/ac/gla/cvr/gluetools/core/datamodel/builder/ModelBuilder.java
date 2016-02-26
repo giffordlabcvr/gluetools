@@ -79,10 +79,10 @@ public class ModelBuilder {
 	
 	// tables within a project where fields can be added / deleted.
 	public enum ConfigurableTable { 
-		sequence(Sequence.class),
-		variation(Variation.class),
-		feature(Feature.class),
-		alignment(Alignment.class);
+		SEQUENCE(Sequence.class),
+		VARIATION(Variation.class),
+		FEATURE(Feature.class),
+		ALIGNMENT(Alignment.class);
 		
 		private Class<? extends GlueDataObject> dataObjectClass;
 

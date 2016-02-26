@@ -48,7 +48,7 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		if(!overwriteExistingNonNull) {
 			SequenceMode sequenceMode = SequenceModeCommand.getSequenceMode(cmdContext);
 			Project project = sequenceMode.getProject();
-			project.checkCustomFieldNames(ConfigurableTable.sequence, Collections.singletonList(fieldName));
+			project.checkCustomFieldNames(ConfigurableTable.SEQUENCE, Collections.singletonList(fieldName));
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
 					Sequence.pkMap(sequenceMode.getSourceName(), sequenceMode.getSequenceID()));
 			Object oldValue = sequence.readProperty(fieldName);
