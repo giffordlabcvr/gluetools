@@ -206,6 +206,12 @@ public class Feature extends _Feature {
 		
 	}
 
-	
+	public String getCodonLabelerModule() {
+		FeatureMetatag rendererMetatag = getMetatag(Type.CODON_LABELER_MODULE).orElse(null);
+		if(rendererMetatag != null) {
+			return rendererMetatag.getValue();
+		}
+		return null;
+	}
 	
 }

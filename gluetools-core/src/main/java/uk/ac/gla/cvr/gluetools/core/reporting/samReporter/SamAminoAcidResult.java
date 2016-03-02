@@ -10,7 +10,7 @@ public class SamAminoAcidResult extends TableResult {
 
 	public static final String 
 		CODON = "codon",
-		SAM_REFERENCE_BASE = "samReferenceBase",
+		SAM_REF_NT = "samReferenceNt",
 		AMINO_ACID = "aminoAcid",
 		READS_WITH_AA = "readsWithAA",
 		PERCENT_AA_READS = "pctAaReads";
@@ -20,7 +20,7 @@ public class SamAminoAcidResult extends TableResult {
 		super("samAminoAcidsResult", 
 				Arrays.asList(
 						CODON, 
-						SAM_REFERENCE_BASE, 
+						SAM_REF_NT, 
 						AMINO_ACID, 
 						READS_WITH_AA, 
 						PERCENT_AA_READS), 

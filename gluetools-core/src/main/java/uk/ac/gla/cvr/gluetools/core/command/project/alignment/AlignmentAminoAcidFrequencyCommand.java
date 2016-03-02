@@ -22,8 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidsCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidsResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -105,14 +105,14 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 					AlignmentMember.pkMap(memberAlignmentName, memberSourceName, memberSequenceID), false);
 			
-			MemberAminoAcidsResult memberAminoAcidsResult = 
-					MemberAminoAcidsCommand.memberAminoAcids(cmdContext, almtMember, 
+			MemberAminoAcidResult memberAminoAcidsResult = 
+					MemberAminoAcidCommand.memberAminoAcids(cmdContext, almtMember, 
 							ancConstrainingRef, scannedFeatureLoc);
 			
 			List<Map<String, Object>> memberAaRows = memberAminoAcidsResult.asListOfMaps();
 			for(Map<String, Object> memberAaRow: memberAaRows) {
-				Integer codon = (Integer) memberAaRow.get(MemberAminoAcidsResult.CODON);
-				char aa = ((String) memberAaRow.get(MemberAminoAcidsResult.AMINO_ACID)).charAt(0);
+				Integer codon = (Integer) memberAaRow.get(MemberAminoAcidResult.CODON);
+				char aa = ((String) memberAaRow.get(MemberAminoAcidResult.AMINO_ACID)).charAt(0);
 				codonToRefCodonInfo.get(codon).addAaMamber(aa);
 			}
 		}

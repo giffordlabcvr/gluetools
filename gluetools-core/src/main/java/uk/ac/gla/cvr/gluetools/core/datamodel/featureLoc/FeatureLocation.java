@@ -240,6 +240,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
 	}
 
+
 	
 
 }

@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabelerException;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.freemarker.FreemarkerTextToGlueTransformer;
@@ -17,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.custom.RavFinder;
+import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -43,6 +46,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
 		registerPluginClass(SamReporter.class);
+		registerPluginClass(FastaSequenceReporter.class);
+		registerPluginClass(Kuiken2006CodonLabeler.class);
 		
 		// custom!
 		registerPluginClass(RavFinder.class);

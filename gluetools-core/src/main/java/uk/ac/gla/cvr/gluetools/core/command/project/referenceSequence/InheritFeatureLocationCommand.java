@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		commandWords={"inherit", "feature-location"}, 
 		docoptUsages={"[-r] [-s] <alignmentName> <featureName>"},
 		docoptOptions={"-r, --recursive  Add locations for the feature's descendents",
-					   "-s, --spanGaps  New locations should span any gaps in the alignment"},
+					   "-s, --spanGaps   New locations should span any gaps in the alignment"},
 		description="Inherit a feature location from parent reference", 
 		furtherHelp="This command adds feature locations to the reference sequence, based on the feature locations "+
 		"of a given alignment's reference sequence. A location for the named feature and each of its ancestors will be added, as long as "+

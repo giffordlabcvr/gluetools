@@ -1,22 +1,32 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.alignment;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 @GlueDataClass(
 		defaultListedProperties = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH }, 
@@ -185,4 +195,34 @@ public class Alignment extends _Alignment {
 	}
 
 	
+	public List<LabeledCodon> labelCodons(CommandContext cmdContext, String featureName, int ntStart, int ntEnd) {
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		ReferenceSequence referenceSequence = getConstrainingRef();
+		FeatureLocation featureLoc = 
+				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceSequence.getName(), featureName));
+		String labelerModuleName = feature.getCodonLabelerModule();
+		List<LabeledCodon> labeledCodons;
+		if(labelerModuleName == null) {
+			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+			labeledCodons = new ArrayList<LabeledCodon>();
+			for(int i = ntStart; i <= ntEnd; i++) {
+				if(TranslationUtils.isAtStartOfCodon(codon1Start, i)) {
+					labeledCodons.add(new LabeledCodon(Integer.toString(TranslationUtils.getCodon(codon1Start, i)), i));
+				}
+			}
+		} else {
+			Module rendererModule = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(labelerModuleName));
+			CodonLabeler codonLabeler = (CodonLabeler) (rendererModule.getModulePlugin(cmdContext.getGluetoolsEngine()));
+			labeledCodons = codonLabeler.numberCodons(cmdContext, this, featureName, ntStart, ntEnd);
+		}
+		return labeledCodons;
+	}
+
+	public Alignment getAncestorWithReferenceName(String referenceName) {
+		Optional<Alignment> ancestor = getAncestors().stream()
+				.filter(anc -> (anc.getRefSequence() != null && anc.getRefSequence().getName().equals(referenceName)))
+				.findFirst();
+		return ancestor.orElse(null);
+	}
 }
+

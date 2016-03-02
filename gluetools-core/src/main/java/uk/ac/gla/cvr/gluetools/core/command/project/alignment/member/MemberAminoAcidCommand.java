@@ -27,15 +27,15 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 
 @CommandClass(
-		commandWords={"amino-acids"}, 
-		description = "Translate the amino acids for a given feature location", 
+		commandWords={"amino-acid"}, 
+		description = "Translate a member sequence feature to amino acids", 
 		docoptUsages = { "<refName> <featureName>" },
 		furtherHelp = 
 		"The <refName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
 		"The <featureName> arguments names a feature which is defined on this reference.",
 		metaTags = {}	
 )
-public class MemberAminoAcidsCommand extends MemberModeCommand<MemberAminoAcidsResult> {
+public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidResult> {
 
 	public static final String REFERENCE_NAME = "refName";
 	public static final String FEATURE_NAME = "featureName";
@@ -52,7 +52,7 @@ public class MemberAminoAcidsCommand extends MemberModeCommand<MemberAminoAcidsR
 	}
 
 	@Override
-	public MemberAminoAcidsResult execute(CommandContext cmdContext) {
+	public MemberAminoAcidResult execute(CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
@@ -63,7 +63,7 @@ public class MemberAminoAcidsCommand extends MemberModeCommand<MemberAminoAcidsR
 		return memberAminoAcids(cmdContext, almtMember, ancConstrainingRef, scannedFeatureLoc);
 	}
 
-	public static MemberAminoAcidsResult memberAminoAcids(CommandContext cmdContext,
+	public static MemberAminoAcidResult memberAminoAcids(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc) {
 		Alignment alignment = almtMember.getAlignment();
 		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
@@ -92,14 +92,14 @@ public class MemberAminoAcidsCommand extends MemberModeCommand<MemberAminoAcidsR
 			for(int i = 0; i < segAAs.length(); i++) {
 				char segAA = segAAs.charAt(i);
 				Map<String, Object> row = new LinkedHashMap<String, Object>();
-				row.put(MemberAminoAcidsResult.CODON, codon);
-				row.put(MemberAminoAcidsResult.AMINO_ACID, new String(new char[]{segAA}));
+				row.put(MemberAminoAcidResult.CODON, codon);
+				row.put(MemberAminoAcidResult.AMINO_ACID, new String(new char[]{segAA}));
 				rowData.add(row);
 				codon++;
 			}
 		}
 
-		return new MemberAminoAcidsResult(rowData);
+		return new MemberAminoAcidResult(rowData);
 	}
 
 	@CompleterClass

@@ -42,6 +42,11 @@ public class FeatureMetatag extends _FeatureMetatag {
 		 * true this feature codes for amino acids
 		 */
 		CODES_AMINO_ACIDS,
+		/**
+		 * string 
+		 * name of a module which labels codons within the feature to a preferred labeling scheme
+		 */
+		CODON_LABELER_MODULE,
 	}
 
 	private Type type = null;

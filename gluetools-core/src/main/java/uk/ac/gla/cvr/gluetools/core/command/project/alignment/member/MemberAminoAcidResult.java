@@ -6,14 +6,14 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 
-public class MemberAminoAcidsResult extends TableResult {
+public class MemberAminoAcidResult extends TableResult {
 
 	public static final String 
 		CODON = "codon",
 		AMINO_ACID = "aminoAcid";
 
 
-	public MemberAminoAcidsResult(List<Map<String, Object>> rowData) {
+	public MemberAminoAcidResult(List<Map<String, Object>> rowData) {
 		super("memberAminoAcidsResult", 
 				Arrays.asList(
 						CODON, 

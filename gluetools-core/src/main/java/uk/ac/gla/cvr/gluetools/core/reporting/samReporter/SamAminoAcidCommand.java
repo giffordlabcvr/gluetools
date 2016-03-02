@@ -91,19 +91,17 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 
 		List<QueryAlignedSegment> samRefToGlueRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToGlueRefSegs);
 
-		List<Integer> mappedCodons = new LinkedList<Integer>();
-		final TIntObjectMap<RefCodonInfo> glueRefCodonToInfo = new TIntObjectHashMap<RefCodonInfo>();
+		List<Integer> mappedSamRefNts = new LinkedList<Integer>();
+		final TIntObjectMap<RefCodonInfo> samRefNtToCodonInfo = new TIntObjectHashMap<RefCodonInfo>();
 		
 		// prepopulate the results map with empty RefCodonInfo objects.
 		for(QueryAlignedSegment samRefToGlueRefSeg: samRefToGlueRefSegsCodonAligned) {
 			int samRefNt = samRefToGlueRefSeg.getQueryStart();
-			int codon = TranslationUtils.getCodon(codon1Start, samRefToGlueRefSeg.getRefStart());
 			while(samRefNt <= samRefToGlueRefSeg.getQueryEnd()) {
-				mappedCodons.add(codon);
 				RefCodonInfo refCodonInfo = new RefCodonInfo();
 				refCodonInfo.samRefNT = samRefNt;
-				glueRefCodonToInfo.put(codon, refCodonInfo);
-				codon++;
+				samRefNtToCodonInfo.put(samRefNt, refCodonInfo);
+				mappedSamRefNts.add(samRefNt);
 				samRefNt += 3;
 			}
 		}
@@ -134,7 +132,7 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 					int codon = TranslationUtils.getCodon(codon1Start, readToGlueRefSeg.getRefStart());
 					for(int i = 0; i < segAAs.length(); i++) {
 						char segAA = segAAs.charAt(i);
-						RefCodonInfo refCodonInfo = glueRefCodonToInfo.get(codon);
+						RefCodonInfo refCodonInfo = samRefNtToCodonInfo.get(codon);
 						refCodonInfo.addAaRead(segAA);
 						codon++;
 					}
@@ -150,14 +148,13 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 		
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		
-		for(Integer codon: mappedCodons) {
-			RefCodonInfo refCodonInfo = glueRefCodonToInfo.get(codon);
+		for(Integer samRefNt: mappedSamRefNts) {
+			RefCodonInfo refCodonInfo = samRefNtToCodonInfo.get(samRefNt);
 			refCodonInfo.aaToReadCount.forEachEntry(new TCharIntProcedure() {
 				@Override
 				public boolean execute(char aminoAcid, int numReads) {
 					Map<String, Object> row = new LinkedHashMap<String, Object>();
-					row.put(SamAminoAcidResult.CODON, codon);
-					row.put(SamAminoAcidResult.SAM_REFERENCE_BASE, refCodonInfo.samRefNT);
+					row.put(SamAminoAcidResult.SAM_REF_NT, refCodonInfo.samRefNT);
 					row.put(SamAminoAcidResult.AMINO_ACID, new String(new char[]{aminoAcid}));
 					row.put(SamAminoAcidResult.READS_WITH_AA, numReads);
 					row.put(SamAminoAcidResult.PERCENT_AA_READS, 
