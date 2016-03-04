@@ -72,7 +72,7 @@ public class FindRavsCommand extends ModulePluginCommand<FindRavsResult, RavFind
 		AlignmentAminoAcidFrequencyResult genotypeFrequencyResult;
 		try(ModeCloser modeCloser = cmdContext.pushCommandMode("alignment", genotypeAlignmentName)) {
 			genotypeFrequencyResult = cmdContext.cmdBuilder(AlignmentAminoAcidFrequencyCommand.class)
-			.set(AlignmentAminoAcidFrequencyCommand.REFERENCE_NAME, "H77_AF009606")
+			.set(AlignmentAminoAcidFrequencyCommand.AC_REF_NAME, "H77_AF009606")
 			.set(AlignmentAminoAcidFrequencyCommand.RECURSIVE, true)
 			.set(AlignmentAminoAcidFrequencyCommand.WHERE_CLAUSE, "sequence.source.name = 'ncbi-curated'")
 			.set(AlignmentAminoAcidFrequencyCommand.FEATURE_NAME, featureName)
@@ -84,14 +84,14 @@ public class FindRavsCommand extends ModulePluginCommand<FindRavsResult, RavFind
 		try(ModeCloser modeCloser = cmdContext.pushCommandMode("module", "samReporter")) {
 			samAminoAcidResult = cmdContext.cmdBuilder(SamAminoAcidCommand.class)
 			.set(SamAminoAcidCommand.FILE_NAME, fileName)
-			.set(SamAminoAcidCommand.REFERENCE_NAME, "H77_AF009606")
+			.set(SamAminoAcidCommand.AC_REF_NAME, "H77_AF009606")
 			.set(SamAminoAcidCommand.FEATURE_NAME, featureName)
 			.execute();
 		}
 		
 		Map<VariantKey, Map<String,Object>> samFileVariants = new LinkedHashMap<VariantKey, Map<String, Object>>();
 		for(Map<String,Object> samResultRow: samAminoAcidResult.asListOfMaps()) {
-			int codon = (Integer) samResultRow.get(SamAminoAcidResult.CODON);
+			int codon = (Integer) samResultRow.get(SamAminoAcidResult.CODON_LABEL);
 			String aa = (String) samResultRow.get(SamAminoAcidResult.AMINO_ACID);
 			Double pctReads = (Double) samResultRow.get(SamAminoAcidResult.PERCENT_AA_READS);
 			if(pctReads < ravFinder.getReadsMinPct()) {

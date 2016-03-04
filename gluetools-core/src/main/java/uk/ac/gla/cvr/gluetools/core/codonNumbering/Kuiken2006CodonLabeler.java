@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 @PluginClass(elemName="kuiken2006CodonLabeler")
@@ -41,9 +40,6 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 
 	@Override
 	public List<LabeledCodon> numberCodons(CommandContext cmdContext, Alignment alignment, String featureName, int ntStart, int ntEnd) {
-		if(rootReferenceName == null) {
-			throw new Kuiken2006CodonLabelerException(Code.NO_ROOT_REFERENCE_DEFINED);
-		}
 		ReferenceSequence constrainingRef = alignment.getConstrainingRef();
 		ReferenceSequence rootReference = alignment.getAncConstrainingRef(cmdContext, rootReferenceName);
 		FeatureLocation constrainingFeatureLoc = 

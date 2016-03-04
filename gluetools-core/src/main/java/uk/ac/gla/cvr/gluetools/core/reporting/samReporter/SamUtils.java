@@ -1,10 +1,21 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+
+import org.biojava.nbio.core.sequence.DNASequence;
+
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
 	
@@ -107,6 +118,46 @@ public class SamUtils {
 		return samReference;
 	}
 
+	public static SamReader newSamReader(ConsoleCommandContext consoleCmdContext, String fileName) {
+		InputStream samInputStream = 
+				ConsoleCommandContext.inputStreamFromFile(consoleCmdContext.fileStringToFile(fileName));
+		return SamReaderFactory.makeDefault().open(SamInputResource.of(samInputStream));
+	}
+
+	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String samRefName, String fileName, String fastaID) {
+		Map<String, DNASequence> samConsensusFastaMap;
+		try(SamReader samReader = newSamReader(cmdContext, fileName)) {
+
+			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
+
+			String ngsConsensusFastaString = ">"+fastaID+"\n"+SamUtils.getNgsConsensus(samReader, samReference.getSequenceName());
+
+			samConsensusFastaMap = FastaUtils.parseFasta(ngsConsensusFastaString.getBytes());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return samConsensusFastaMap;
+	}
+
+	public static class ReferenceBasedRecordFilter implements SamRecordFilter {
+
+		private int samRefIndex;
+		
+		public ReferenceBasedRecordFilter(SamReader samReader, String fileName, String samRefName) {
+			super();
+			SAMSequenceRecord samReference = SamUtils.findReference(samReader, fileName, samRefName);
+	        this.samRefIndex = samReference.getSequenceIndex();
+		}
+
+		@Override
+		public boolean recordPasses(SAMRecord samRecord) {
+			if(samRecord.getReferenceIndex() != samRefIndex) {
+				return false;
+			}
+			return true;
+		}
+		
+	}
 
 	
 	

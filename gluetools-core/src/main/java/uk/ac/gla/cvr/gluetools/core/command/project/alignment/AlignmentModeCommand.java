@@ -128,7 +128,7 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 	public static abstract class FeatureOfAncConstrainingRefCompleter extends AdvancedCmdCompleter {
 		public FeatureOfAncConstrainingRefCompleter() {
 			super();
-			registerVariableInstantiator("refName", new VariableInstantiator() {
+			registerVariableInstantiator("acRefName", new VariableInstantiator() {
 				@Override
 				protected List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
@@ -148,7 +148,7 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					String referenceName = (String) bindings.get("refName");
+					String referenceName = (String) bindings.get("acRefName");
 					ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
 					if(referenceSequence != null) {
 						return referenceSequence.getFeatureLocations().stream()

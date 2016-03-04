@@ -10,13 +10,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -35,7 +34,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceException.Code;
@@ -50,10 +48,10 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a FASTA file", 
-		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> -t <targetRefName> -a <tipAlmtName>" },
+		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> -t <targetRefName> [-a <tipAlmtName>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
-				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining reference",
+				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 				"-f <featureName>, --featureName <featureName>        Feature to translate",
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
@@ -61,8 +59,10 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
 		        "translates a section of the query sequence to amino acids based on the target reference sequence's "+
-				"place in the alignment tree. The target reference sequence must be a member of a specified constrained 'tip alignment'. "+
-		        "The <refName> argument specifies an 'ancestor-constraining' reference sequence. "+
+				"place in the alignment tree. The target reference sequence must be a member of a constrained "+
+		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
+		        "inferred from the target reference if possible. "+
+		        "The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
 				"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
 				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
 				"The translated amino acids will be limited to the specified feature location. ",
@@ -92,8 +92,8 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, true);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
+		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
 
 		super.configure(pluginConfigContext, configElem);
 	}
@@ -107,19 +107,14 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
-		Alignment tipAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(tipAlmtName));
+		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
-		// check that tip alignment is constrained
-		tipAlmt.getConstrainingRef();
+		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(tipAlmtName);
+		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
 		Alignment ancestorAlignment = tipAlmt.getAncestorWithReferenceName(acRefName);
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
-
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
-
-		AlignmentMember tipAlmtMember = getTipAlmtMember(cmdContext, targetRef, tipAlmt);
-
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
 
@@ -142,10 +137,10 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 
 
 		// trim down to the feature area.
-		List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
-				.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
+		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+		
 		List<QueryAlignedSegment> queryToAncConstrRefSegs = 
-					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
 			
 		// truncate to codon aligned
 		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
@@ -154,49 +149,37 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 
 		final Translator translator = new CommandContextTranslator(cmdContext);
 
-		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
-		
+		// build a map from anc ref NT to labeled codon;
 		int ntStart = Integer.MAX_VALUE;
 		int ntEnd = Integer.MIN_VALUE;
-		
+		for(QueryAlignedSegment qaSeg: queryToAncConstrRefSegsCodonAligned) {
+			ntStart = Math.min(ntStart, qaSeg.getRefStart());
+			ntEnd = Math.max(ntEnd, qaSeg.getRefEnd());
+		}
+		List<LabeledCodon> labeledCodons = ancestorAlignment.labelCodons(cmdContext, featureName, ntStart, ntEnd);
+		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
+		for(LabeledCodon labeledCodon: labeledCodons) {
+			ancRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
+		}
+
+
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
+
 		String fastaNTs = fastaNTSeq.getSequenceAsString();
 		for(QueryAlignedSegment queryToGlueRefSeg: queryToAncConstrRefSegsCodonAligned) {
 			CharSequence nts = SegmentUtils.base1SubString(fastaNTs, queryToGlueRefSeg.getQueryStart(), queryToGlueRefSeg.getQueryEnd());
 			String segAAs = translator.translate(nts);
-			int nt = queryToGlueRefSeg.getRefStart();
+			int refNt = queryToGlueRefSeg.getRefStart();
+			int queryNt = queryToGlueRefSeg.getQueryStart();
 			for(int i = 0; i < segAAs.length(); i++) {
-				String segAA = segAAs.substring(i,  i+1);
-				Map<String, Object> row = new LinkedHashMap<String, Object>();
-				row.put(FastaSequenceAminoAcidResult.AMINO_ACID, segAA);
-				row.put(FastaSequenceAminoAcidResult.NT_START, nt);
-				rowData.add(row);
-				ntStart = Math.min(ntStart, nt);
-				ntEnd = Math.max(ntEnd, nt+2);
-				nt = nt+3;
+				String segAA = segAAs.substring(i, i+1);
+				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), segAA), queryNt));
+				refNt = refNt+3;
+				queryNt = queryNt+3;
 			}
 		}
 
-		List<LabeledCodon> labeledCodons = ancestorAlignment.labelCodons(cmdContext, featureName, ntStart, ntEnd);
-		TIntObjectMap<LabeledCodon> ntStartToLabeled = new TIntObjectHashMap<LabeledCodon>();
-		for(LabeledCodon labeledCodon: labeledCodons) {
-			ntStartToLabeled.put(labeledCodon.getNtStart(), labeledCodon);
-		}
-		
-		for(Map<String, Object> row: rowData) {
-			Integer rowNtStart = (Integer) row.get(FastaSequenceAminoAcidResult.NT_START);
-			LabeledCodon labeledCodon = ntStartToLabeled.get(rowNtStart);
-			row.put(FastaSequenceAminoAcidResult.CODON, labeledCodon == null ? null : labeledCodon.getLabel());
-		}
-		
-		return new FastaSequenceAminoAcidResult(rowData);
-		
-	}
-
-	private AlignmentMember getTipAlmtMember(CommandContext cmdContext, ReferenceSequence targetRef, Alignment tipAlignment) {
-		Sequence targetRefSeq = targetRef.getSequence();
-		return GlueDataObject.lookup(cmdContext, 
-				AlignmentMember.class, 
-				AlignmentMember.pkMap(tipAlignment.getName(), targetRefSeq.getSource().getName(), targetRefSeq.getSequenceID()));
+		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}
 
@@ -251,11 +234,11 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 					if(targetRefName != null) {
 						ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName), true);
 						if(targetRef != null) {
-							Sequence targetRefSeq = targetRef.getSequence();
-							Expression exp = ExpressionFactory.matchExp(AlignmentMember.SEQUENCE_ID_PATH, targetRefSeq.getSequenceID());
-							exp = exp.andExp(ExpressionFactory.matchExp(AlignmentMember.SOURCE_NAME_PATH, targetRefSeq.getSource().getName()));
-							List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, exp));
-							return almtMembers.stream().map(am -> new CompletionSuggestion(am.getAlignment().getName(), true)).collect(Collectors.toList());
+							return targetRef.getSequence().getAlignmentMemberships().stream()
+									.map(am -> am.getAlignment())
+									.filter(a -> a.isConstrained())
+									.map(a -> new CompletionSuggestion(a.getName(), true))
+									.collect(Collectors.toList());
 						}
 					}
 					return null;

@@ -1,24 +1,26 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class MemberAminoAcidResult extends TableResult {
+public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid> {
 
 	public static final String 
-		CODON = "codon",
+		CODON_LABEL = "codonLabel",
+		MEMBER_NT = "memberNt",
+		AC_REF_NT = "acRefNt",
 		AMINO_ACID = "aminoAcid";
 
 
-	public MemberAminoAcidResult(List<Map<String, Object>> rowData) {
+	public MemberAminoAcidResult(List<LabeledQueryAminoAcid> rowData) {
 		super("memberAminoAcidsResult", 
-				Arrays.asList(
-						CODON, 
-						AMINO_ACID), 
-				rowData);
+				rowData, 
+				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getLabel()),
+				column(MEMBER_NT, lqaa -> lqaa.getQueryNt()),
+				column(AC_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
+				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()));
 	}
 
 }

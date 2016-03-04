@@ -6,16 +6,19 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequenceException.Code;
 
 @GlueDataClass(defaultListedProperties = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH})
 public class ReferenceSequence extends _ReferenceSequence {
@@ -129,6 +132,38 @@ public class ReferenceSequence extends _ReferenceSequence {
 		}
 	}
 
+	public AlignmentMember getUniqueConstrainedAlignment() {
+		List<AlignmentMember> constrainedAlignmentMemberships = getConstrainedAlignmentMemberships();
+		if(constrainedAlignmentMemberships.size() == 0) {
+			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_MEMBER_OF_NO_CONSTRAINED_ALIGNMENTS, getName());
+		}
+		if(constrainedAlignmentMemberships.size() > 1) {
+			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_MEMBER_OF_MULTIPLE_CONSTRAINED_ALIGNMENTS, getName());
+		}
+		return constrainedAlignmentMemberships.get(0);
+	}
+
+	public List<AlignmentMember> getConstrainedAlignmentMemberships() {
+		return getSequence().getAlignmentMemberships()
+				.stream()
+				.filter(am -> am.getAlignment().isConstrained())
+				.collect(Collectors.toList());
+	}
+
+
+	// get memberhsip of a specific constrained alignment
+	// if no alignment is specified, assume there is a unique such alignment membership and return that.
+	public AlignmentMember getConstrainedAlignmentMembership(String tipAlmtName) {
+		if(tipAlmtName == null) {
+			return getUniqueConstrainedAlignment();
+		} else {
+			return getConstrainedAlignmentMemberships().stream()
+					.filter(am -> am.getAlignment().getName().equals(tipAlmtName))
+					.findFirst()
+					.orElseThrow(() -> new ReferenceSequenceException(
+							Code.REFERENCE_SEQUENCE_NOT_MEMBER_OF_CONSTRAINED_ALIGNMENT, getName(), tipAlmtName));
+		}
+	}
 	
 	
 }

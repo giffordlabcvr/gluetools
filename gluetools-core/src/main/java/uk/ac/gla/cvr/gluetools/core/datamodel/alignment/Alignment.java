@@ -1,10 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.alignment;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +23,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 
 @GlueDataClass(
@@ -223,6 +220,10 @@ public class Alignment extends _Alignment {
 				.filter(anc -> (anc.getRefSequence() != null && anc.getRefSequence().getName().equals(referenceName)))
 				.findFirst();
 		return ancestor.orElse(null);
+	}
+	
+	public boolean isConstrained() {
+		return getRefSequence() != null;
 	}
 }
 

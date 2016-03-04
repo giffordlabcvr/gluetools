@@ -12,16 +12,12 @@ public class LabeledCodon {
 		this.ntStart = ntStart;
 	}
 
-
 	public String getLabel() {
 		return label;
 	}
 
-
 	public int getNtStart() {
 		return ntStart;
 	}
-	
-	
 	
 }

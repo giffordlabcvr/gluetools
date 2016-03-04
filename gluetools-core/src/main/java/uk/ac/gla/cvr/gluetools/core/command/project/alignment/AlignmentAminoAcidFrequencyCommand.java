@@ -39,13 +39,16 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 @CommandClass(
 		commandWords={"amino-acid", "frequency"}, 
 		description = "Compute amino acid frequencies for a given feature location", 
-		docoptUsages = { "[-r] [-w <whereClause>] <refName> <featureName>" },
+		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName>" },
 		docoptOptions = { 
-				"-r, --recursive                                Include descendent members",
-				"-w <whereClause>, --whereClause <whereClause>  Qualify members"},
+		"-c, --recursive                                Include descendent members",
+		"-w <whereClause>, --whereClause <whereClause>  Qualify members",
+		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
+		"-f <featureName>, --featureName <featureName>  Feature to translate"
+		},
 		furtherHelp = 
-		"The <refName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
-		"The <featureName> arguments names a feature which is defined on this reference.",
+		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
+		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference.",
 				metaTags = {}	
 )
 public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<AlignmentAminoAcidFrequencyResult> {
@@ -53,7 +56,7 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
-	public static final String REFERENCE_NAME = "refName";
+	public static final String AC_REF_NAME = "acRefName";
 	public static final String FEATURE_NAME = "featureName";
 	
 	private Boolean recursive;
@@ -66,7 +69,7 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		this.referenceName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
@@ -111,7 +114,7 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			
 			List<Map<String, Object>> memberAaRows = memberAminoAcidsResult.asListOfMaps();
 			for(Map<String, Object> memberAaRow: memberAaRows) {
-				Integer codon = (Integer) memberAaRow.get(MemberAminoAcidResult.CODON);
+				Integer codon = (Integer) memberAaRow.get(MemberAminoAcidResult.CODON_LABEL);
 				char aa = ((String) memberAaRow.get(MemberAminoAcidResult.AMINO_ACID)).charAt(0);
 				codonToRefCodonInfo.get(codon).addAaMamber(aa);
 			}

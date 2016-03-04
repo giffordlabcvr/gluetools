@@ -1,12 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -28,16 +32,21 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
-		description = "Translate a member sequence feature to amino acids", 
-		docoptUsages = { "<refName> <featureName>" },
+		description = "Translate a member sequence to amino acids", 
+		docoptUsages = { "-r <acRefName> -f <featureName>" },
+		docoptOptions = { 
+		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
+		"-f <featureName>, --featureName <featureName>  Feature to translate",
+		},
 		furtherHelp = 
-		"The <refName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
-		"The <featureName> arguments names a feature which is defined on this reference.",
+		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
+		"The <featureName> argument names a feature location which is defined on this reference. "+
+		"The result will be confined to this feature location",
 		metaTags = {}	
 )
 public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidResult> {
 
-	public static final String REFERENCE_NAME = "refName";
+	public static final String AC_REF_NAME = "acRefName";
 	public static final String FEATURE_NAME = "featureName";
 
 	private String referenceName;
@@ -47,7 +56,7 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		this.referenceName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 	}
 
@@ -64,42 +73,61 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 	}
 
 	public static MemberAminoAcidResult memberAminoAcids(CommandContext cmdContext,
-			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc) {
-		Alignment alignment = almtMember.getAlignment();
-		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
-		List<QueryAlignedSegment> memberToAncConstrainingRefSegs = alignment.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
-
-		List<ReferenceSegment> featureLocRefSegs = scannedFeatureLoc.segmentsAsReferenceSegments();
+			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc) {
+		Alignment tipAlmt = almtMember.getAlignment();
 		
-		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrainingRefSegs, featureLocRefSegs,
+		Alignment ancestorAlignment = tipAlmt.getAncestorWithReferenceName(ancConstrainingRef.getName());
+
+		
+		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
+		List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
+
+		// trim down to the feature area.
+		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+		
+		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
 				ReferenceSegment.cloneLeftSegMerger());
 		
-		int codon1Start = scannedFeatureLoc.getCodon1Start(cmdContext);
-		List<QueryAlignedSegment> memberToFeatureLocRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegs);
+		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+		List<QueryAlignedSegment> memberToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegs);
 
 		final Translator translator = new CommandContextTranslator(cmdContext);
 
 		Sequence memberSequence = almtMember.getSequence();
 		AbstractSequenceObject memberSeqObj = memberSequence.getSequenceObject();
-		
-		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 
-		for(QueryAlignedSegment memberToRefSeg: memberToFeatureLocRefSegsCodonAligned) {
+		
+		// build a map from anc ref NT to labeled codon;
+		int ntStart = Integer.MAX_VALUE;
+		int ntEnd = Integer.MIN_VALUE;
+		for(QueryAlignedSegment qaSeg: memberToAncConstrRefSegsCodonAligned) {
+			ntStart = Math.min(ntStart, qaSeg.getRefStart());
+			ntEnd = Math.max(ntEnd, qaSeg.getRefEnd());
+		}
+		List<LabeledCodon> labeledCodons = ancestorAlignment.labelCodons(cmdContext, featureLoc.getFeature().getName(), ntStart, ntEnd);
+		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
+		for(LabeledCodon labeledCodon: labeledCodons) {
+			ancRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
+		}
+		
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
+
+		for(QueryAlignedSegment memberToAncConstrRefSeg: memberToAncConstrRefSegsCodonAligned) {
 			CharSequence nts = memberSeqObj.subSequence(cmdContext, 
-					memberToRefSeg.getQueryStart(), memberToRefSeg.getQueryEnd());
+					memberToAncConstrRefSeg.getQueryStart(), memberToAncConstrRefSeg.getQueryEnd());
 			String segAAs = translator.translate(nts);
-			int codon = TranslationUtils.getCodon(codon1Start, memberToRefSeg.getRefStart());
+			int refNt = memberToAncConstrRefSeg.getRefStart();
+			int memberNt = memberToAncConstrRefSeg.getQueryStart();
 			for(int i = 0; i < segAAs.length(); i++) {
-				char segAA = segAAs.charAt(i);
-				Map<String, Object> row = new LinkedHashMap<String, Object>();
-				row.put(MemberAminoAcidResult.CODON, codon);
-				row.put(MemberAminoAcidResult.AMINO_ACID, new String(new char[]{segAA}));
-				rowData.add(row);
-				codon++;
+				String segAA = segAAs.substring(i, i+1);
+				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(
+						new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), segAA), memberNt));
+				refNt = refNt+3;
+				memberNt = memberNt+3;
 			}
 		}
 
-		return new MemberAminoAcidResult(rowData);
+		return new MemberAminoAcidResult(labeledQueryAminoAcids);
 	}
 
 	@CompleterClass
