@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
@@ -131,8 +132,20 @@ public class ReferenceSequence extends _ReferenceSequence {
 			
 		}
 	}
+	
+	public Alignment getUniqueAlignmentThisConstrains() {
+		List<Alignment> alignmentsThisConstrains = getAlignments();
+		if(alignmentsThisConstrains.size() == 0) {
+			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_DOES_NOT_CONSTRAIN_ANY_ALIGNMENT, getName());
+		}
+		if(alignmentsThisConstrains.size() > 1) {
+			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_CONSTRAINS_MULTIPLE_ALIGNMENTS, getName());
+		}
+		return alignmentsThisConstrains.get(0);
+	}
+	
 
-	public AlignmentMember getUniqueConstrainedAlignment() {
+	public AlignmentMember getUniqueConstrainedAlignmentMemberships() {
 		List<AlignmentMember> constrainedAlignmentMemberships = getConstrainedAlignmentMemberships();
 		if(constrainedAlignmentMemberships.size() == 0) {
 			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_MEMBER_OF_NO_CONSTRAINED_ALIGNMENTS, getName());
@@ -155,7 +168,7 @@ public class ReferenceSequence extends _ReferenceSequence {
 	// if no alignment is specified, assume there is a unique such alignment membership and return that.
 	public AlignmentMember getConstrainedAlignmentMembership(String tipAlmtName) {
 		if(tipAlmtName == null) {
-			return getUniqueConstrainedAlignment();
+			return getUniqueConstrainedAlignmentMemberships();
 		} else {
 			return getConstrainedAlignmentMemberships().stream()
 					.filter(am -> am.getAlignment().getName().equals(tipAlmtName))

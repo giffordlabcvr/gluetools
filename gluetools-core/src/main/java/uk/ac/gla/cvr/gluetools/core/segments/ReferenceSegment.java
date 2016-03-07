@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -364,6 +365,14 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return intersectionSegments;
 	}
 	
+	public static Integer minRefStart(List<? extends IReferenceSegment> segList) {
+		return segList.stream().map(s -> s.getRefStart()).min(Integer::compare).orElse(null);
+	}
+
+	public static Integer maxRefEnd(List<? extends IReferenceSegment> segList) {
+		return segList.stream().map(s -> s.getRefEnd()).max(Integer::compare).orElse(null);
+	}
+
 	private static <S extends IReferenceSegment> LinkedList<S> cloneSegmentList(
 			List<S> segments1) {
 		LinkedList<S> segments1Linked = new LinkedList<S>();

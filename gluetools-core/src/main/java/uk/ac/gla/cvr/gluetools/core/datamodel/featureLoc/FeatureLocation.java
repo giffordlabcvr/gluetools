@@ -1,11 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
@@ -15,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -41,10 +47,63 @@ public class FeatureLocation extends _FeatureLocation {
 		return idMap;
 	}
 
+	
+	private List<LabeledCodon> labeledCodons;
+	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	private Map<String, LabeledCodon> labelToLabeledCodon;
+	
+	
 	@Override
 	public void setPKValues(Map<String, String> pkMap) {
 	}
 
+
+	public List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
+		if(labeledCodons == null) {
+			Feature feature = getFeature();
+			String labelerModuleName = feature.getCodonLabelerModule();
+			if(labelerModuleName == null) {
+				Integer codon1Start = getCodon1Start(cmdContext);
+				Integer ntStart = ReferenceSegment.minRefStart(getSegments());
+				Integer ntEnd = ReferenceSegment.maxRefEnd(getSegments());
+				// default case: no labeler module.
+				labeledCodons = new ArrayList<LabeledCodon>();
+				for(int i = ntStart; i <= ntEnd; i++) {
+					if(TranslationUtils.isAtStartOfCodon(codon1Start, i)) {
+						labeledCodons.add(new LabeledCodon(Integer.toString(TranslationUtils.getCodon(codon1Start, i)), i));
+					}
+				}
+			} else {
+				Module rendererModule = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(labelerModuleName));
+				CodonLabeler codonLabeler = (CodonLabeler) (rendererModule.getModulePlugin(cmdContext.getGluetoolsEngine()));
+				labeledCodons = codonLabeler.numberCodons(cmdContext, this);
+			}
+		}
+		return labeledCodons;
+	}
+	
+	public TIntObjectMap<LabeledCodon> getRefNtToLabeledCodon(CommandContext cmdContext) {
+		if(refNtToLabeledCodon == null) {
+			refNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
+			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
+			for(LabeledCodon labeledCodon: labeledCodons) {
+				refNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
+			}
+		}
+		return refNtToLabeledCodon;
+	}
+	
+	public Map<String, LabeledCodon> getLabelToLabeledCodon(CommandContext cmdContext) {
+		if(labelToLabeledCodon == null) {
+			labelToLabeledCodon = new LinkedHashMap<String, LabeledCodon>();
+			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
+			for(LabeledCodon labeledCodon: labeledCodons) {
+				labelToLabeledCodon.put(labeledCodon.getLabel(), labeledCodon);
+			}
+		}
+		return labelToLabeledCodon;
+	}
+	
 	
 	@Override
 	public Map<String, String> pkMap() {
@@ -240,6 +299,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
 	}
 
+	
 
 	
 

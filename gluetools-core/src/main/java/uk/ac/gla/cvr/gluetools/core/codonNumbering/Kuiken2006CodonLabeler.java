@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabelerExcepti
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -39,13 +40,17 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 	}
 
 	@Override
-	public List<LabeledCodon> numberCodons(CommandContext cmdContext, Alignment alignment, String featureName, int ntStart, int ntEnd) {
-		ReferenceSequence constrainingRef = alignment.getConstrainingRef();
+	public List<LabeledCodon> numberCodons(CommandContext cmdContext, FeatureLocation constrainingFeatureLoc) {
+		Integer ntStart = ReferenceSegment.minRefStart(constrainingFeatureLoc.getSegments());
+		Integer ntEnd = ReferenceSegment.maxRefEnd(constrainingFeatureLoc.getSegments());
+
+		Feature feature = constrainingFeatureLoc.getFeature();
+		ReferenceSequence constrainingRef = constrainingFeatureLoc.getReferenceSequence();
+		Alignment alignment = constrainingRef.getUniqueAlignmentThisConstrains();
+
 		ReferenceSequence rootReference = alignment.getAncConstrainingRef(cmdContext, rootReferenceName);
-		FeatureLocation constrainingFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(constrainingRef.getName(), featureName));
 		FeatureLocation rootFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(rootReference.getName(), featureName));
+				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(rootReference.getName(), feature.getName()));
 		
 		List<QueryAlignedSegment> constrainingRefToSelfSegs = constrainingFeatureLoc.getSegments().stream()
 				.map(seg -> new QueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getRefStart(), seg.getRefEnd()))

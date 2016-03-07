@@ -1,9 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +113,6 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
-		Alignment ancestorAlignment = tipAlmt.getAncestorWithReferenceName(acRefName);
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
@@ -148,20 +147,12 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 		List<QueryAlignedSegment> queryToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToAncConstrRefSegs);
 
 		final Translator translator = new CommandContextTranslator(cmdContext);
-
-		// build a map from anc ref NT to labeled codon;
-		int ntStart = Integer.MAX_VALUE;
-		int ntEnd = Integer.MIN_VALUE;
-		for(QueryAlignedSegment qaSeg: queryToAncConstrRefSegsCodonAligned) {
-			ntStart = Math.min(ntStart, qaSeg.getRefStart());
-			ntEnd = Math.max(ntEnd, qaSeg.getRefEnd());
+		
+		if(queryToAncConstrRefSegsCodonAligned.isEmpty()) {
+			return new FastaSequenceAminoAcidResult(Collections.emptyList());
 		}
-		List<LabeledCodon> labeledCodons = ancestorAlignment.labelCodons(cmdContext, featureName, ntStart, ntEnd);
-		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
-		for(LabeledCodon labeledCodon: labeledCodons) {
-			ancRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
-		}
-
+		
+		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
 

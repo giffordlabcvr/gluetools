@@ -11,6 +11,7 @@ import htsjdk.samtools.SamReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +124,6 @@ public class SamAminoAcidCommand extends ModulePluginCommand<SamAminoAcidResult,
 		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(tipAlmtName);
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
-		Alignment ancestorAlignment = tipAlmt.getAncestorWithReferenceName(acRefName);
 
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
 		Feature feature = featureLoc.getFeature();
@@ -162,18 +162,11 @@ public class SamAminoAcidCommand extends ModulePluginCommand<SamAminoAcidResult,
 
 		List<QueryAlignedSegment> samRefToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToAncConstrRefSegs);
 
-		// build a map from anc constraining ref NT to labeled codon;
-		int ancConstrRefMinNt = Integer.MAX_VALUE;
-		int ancConstrRefMaxNt = Integer.MIN_VALUE;
-		for(QueryAlignedSegment qaSeg: samRefToAncConstrRefSegsCodonAligned) {
-			ancConstrRefMinNt = Math.min(ancConstrRefMinNt, qaSeg.getRefStart());
-			ancConstrRefMaxNt = Math.max(ancConstrRefMaxNt, qaSeg.getRefEnd());
+		if(samRefToAncConstrRefSegsCodonAligned.isEmpty()) {
+			return new SamAminoAcidResult(Collections.emptyList());
 		}
-		List<LabeledCodon> labeledCodons = ancestorAlignment.labelCodons(cmdContext, featureName, ancConstrRefMinNt, ancConstrRefMaxNt);
-		TIntObjectMap<LabeledCodon> ancConstrRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
-		for(LabeledCodon labeledCodon: labeledCodons) {
-			ancConstrRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
-		}
+		
+		TIntObjectMap<LabeledCodon> ancConstrRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 
 		// build a map from anc constr ref NT to AA read count.
 		TIntObjectMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();

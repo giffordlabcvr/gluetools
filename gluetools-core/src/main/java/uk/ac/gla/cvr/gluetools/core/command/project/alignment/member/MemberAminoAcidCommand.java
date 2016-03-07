@@ -1,9 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -65,19 +65,16 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
-		FeatureLocation scannedFeatureLoc = 
+		FeatureLocation featureLoc = 
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
-		Feature feature = scannedFeatureLoc.getFeature();
+		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
-		return memberAminoAcids(cmdContext, almtMember, ancConstrainingRef, scannedFeatureLoc);
+		return memberAminoAcids(cmdContext, almtMember, ancConstrainingRef, featureLoc);
 	}
 
 	public static MemberAminoAcidResult memberAminoAcids(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc) {
 		Alignment tipAlmt = almtMember.getAlignment();
-		
-		Alignment ancestorAlignment = tipAlmt.getAncestorWithReferenceName(ancConstrainingRef.getName());
-
 		
 		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
 		List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
@@ -96,20 +93,12 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 		Sequence memberSequence = almtMember.getSequence();
 		AbstractSequenceObject memberSeqObj = memberSequence.getSequenceObject();
 
-		
-		// build a map from anc ref NT to labeled codon;
-		int ntStart = Integer.MAX_VALUE;
-		int ntEnd = Integer.MIN_VALUE;
-		for(QueryAlignedSegment qaSeg: memberToAncConstrRefSegsCodonAligned) {
-			ntStart = Math.min(ntStart, qaSeg.getRefStart());
-			ntEnd = Math.max(ntEnd, qaSeg.getRefEnd());
-		}
-		List<LabeledCodon> labeledCodons = ancestorAlignment.labelCodons(cmdContext, featureLoc.getFeature().getName(), ntStart, ntEnd);
-		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
-		for(LabeledCodon labeledCodon: labeledCodons) {
-			ancRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
+		if(memberToAncConstrRefSegsCodonAligned.isEmpty()) {
+			return new MemberAminoAcidResult(Collections.emptyList());
 		}
 		
+		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
 
 		for(QueryAlignedSegment memberToAncConstrRefSeg: memberToAncConstrRefSegsCodonAligned) {
