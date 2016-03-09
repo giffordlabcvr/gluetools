@@ -6,7 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
 @CommandClass( 
-		commandWords={"show","location"}, 
+		commandWords={"show", "location"}, 
 		docoptUsages={""},
 		docoptOptions={},
 		metaTags={},

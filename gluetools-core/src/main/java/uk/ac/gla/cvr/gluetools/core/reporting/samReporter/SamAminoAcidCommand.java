@@ -195,7 +195,7 @@ public class SamAminoAcidCommand extends ModulePluginCommand<SamAminoAcidResult,
 				if(!samRecordFilter.recordPasses(samRecord)) {
 					return;
 				}
-				List<QueryAlignedSegment> readToSamRefSegs = getReadToSamRefSegs(samRecord);
+				List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
 				List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToAncConstrRefSegs);
 				
 				List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, readToAncConstrRefSegs);
@@ -240,18 +240,6 @@ public class SamAminoAcidCommand extends ModulePluginCommand<SamAminoAcidResult,
 		
 		return new SamAminoAcidResult(rowData);
 		
-	}
-
-	private List<QueryAlignedSegment> getReadToSamRefSegs(SAMRecord samRecord) {
-		List<QueryAlignedSegment> readToSamRefSegs = new ArrayList<QueryAlignedSegment>();
-		samRecord.getAlignmentBlocks().forEach(almtBlock -> {
-			int samRefStart = almtBlock.getReferenceStart();
-			int samRefEnd = samRefStart + almtBlock.getLength()-1;
-			int readStart = almtBlock.getReadStart();
-			int readEnd = readStart + almtBlock.getLength()-1;
-			readToSamRefSegs.add(new QueryAlignedSegment(samRefStart, samRefEnd, readStart, readEnd));
-		});
-		return readToSamRefSegs;
 	}
 
 	private class AminoAcidReadCount {

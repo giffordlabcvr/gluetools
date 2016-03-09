@@ -249,10 +249,13 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		}
 		return getStart.apply(alignedSegments.getFirst());
 	}
+
+
 	
 	public QueryAlignedSegment clone() {
 		return new QueryAlignedSegment(getRefStart(), getRefEnd(), queryStart, queryEnd);
 	}
 
+	
 	
 }

@@ -1,5 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import htsjdk.samtools.SAMRecord;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -11,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @PluginClass(elemName="samReporter")
 public class SamReporter extends ModulePlugin<SamReporter> {
@@ -80,6 +85,18 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		public void logTotalRecordsProcessed() {
 			log(Level.FINE, "Total reads processed: "+numRecords);
 		}
+	}
+
+	public List<QueryAlignedSegment> getReadToSamRefSegs(SAMRecord samRecord) {
+		List<QueryAlignedSegment> readToSamRefSegs = new ArrayList<QueryAlignedSegment>();
+		samRecord.getAlignmentBlocks().forEach(almtBlock -> {
+			int samRefStart = almtBlock.getReferenceStart();
+			int samRefEnd = samRefStart + almtBlock.getLength()-1;
+			int readStart = almtBlock.getReadStart();
+			int readEnd = readStart + almtBlock.getLength()-1;
+			readToSamRefSegs.add(new QueryAlignedSegment(samRefStart, samRefEnd, readStart, readEnd));
+		});
+		return readToSamRefSegs;
 	}
 
 

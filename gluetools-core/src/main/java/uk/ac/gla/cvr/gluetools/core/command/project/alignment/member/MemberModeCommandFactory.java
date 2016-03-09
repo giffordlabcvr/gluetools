@@ -21,6 +21,7 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 		
 		registerCommandClass(MemberShowStatisticsCommand.class);
 		registerCommandClass(MemberAminoAcidCommand.class);
+		registerCommandClass(MemberVariationScanCommand.class);
 		
 		registerCommandClass(ExitCommand.class);
 	}

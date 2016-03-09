@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
 
+import gnu.trove.map.TIntObjectMap;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -13,6 +15,7 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.QueryCacheStrategy;
 import org.apache.cayenne.query.SelectQuery;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
@@ -38,7 +41,11 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY })		
 public class Variation extends _Variation {
 
+	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("[NACGT]+");
+	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("[ACDEFGHIKLMNOPQRSTUVWYX*]+");
+	
 	private Pattern regexPattern;
+	private Boolean isSimpleMatch = null;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
 	public static final String REF_SEQ_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+_ReferenceSequence.NAME_PROPERTY;
@@ -65,6 +72,31 @@ public class Variation extends _Variation {
 		return TranslationUtils.translationFormatFromString(getTranslationType());
 	}	
 
+	public Boolean isSimpleMatch() {
+		if(isSimpleMatch == null) {
+			isSimpleMatch = buildIsSimpleMatch();
+		}
+		return isSimpleMatch;
+	}
+	
+	private Boolean buildIsSimpleMatch() {
+		String regex = getRegex();
+		int ntLength = (getRefEnd()-getRefStart())+1;
+		if(getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
+			if(ntLength == regex.length() && SIMPLE_NT_PATTERN.matcher(regex).find()) {
+				return true;
+			}
+			return false;
+		} else {
+			if(ntLength/3 == regex.length() && SIMPLE_AA_PATTERN.matcher(regex).find()) {
+				return true;
+			}
+			return false;
+		}
+	}	
+	
+
+	
 	
 	public Pattern getRegexPattern() {
 		if(regexPattern == null) {
@@ -101,34 +133,31 @@ public class Variation extends _Variation {
 					refSeq.getName(), feature.getName(), getName());
 		}
 		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
-		TranslationFormat transcriptionFormat = getTranslationFormat();
-		if(transcriptionFormat == TranslationFormat.NUCLEOTIDE) {
+		TranslationFormat translationFormat = getTranslationFormat();
+		if(translationFormat == TranslationFormat.NUCLEOTIDE) {
 			if(!ReferenceSegment.covers(featureLocSegments, 
 					Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
 				throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
 						refSeq.getName(), feature.getName(), getName(), 
 						Integer.toString(refStart), Integer.toString(refEnd));
 			}
-		} else if(transcriptionFormat == TranslationFormat.AMINO_ACID) {
-			Feature orfAncestor = feature.getOrfAncestor();
-			if(orfAncestor == null) {
-				throw new VariationException(Code.AMINO_ACID_VARIATION_MUST_BE_DEFINED_IN_ORF, 
-						refSeq.getName(), feature.getName(), getName(), transcriptionFormat.name());
+		} else if(translationFormat == TranslationFormat.AMINO_ACID) {
+			if(!featureLoc.getFeature().codesAminoAcids()) {
+				throw new VariationException(Code.AMINO_ACID_VARIATION_MUST_BE_DEFINED_ON_CODING_FEATURE, 
+						refSeq.getName(), feature.getName(), getName());
 			}
 			FeatureLocation codonNumberingAncestorLocation = featureLoc.getCodonNumberingAncestorLocation(cmdContext);
 			if(codonNumberingAncestorLocation == null) {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_HAS_NO_CODON_NUMBERING_ANCESTOR, 
-						refSeq.getName(), feature.getName(), getName(), transcriptionFormat.name());
+						refSeq.getName(), feature.getName(), getName(), translationFormat.name());
 			}
-			Integer maxCodonNumber = codonNumberingAncestorLocation.getOwnCodonNumberingMax(cmdContext);
-			if(refStart < 1 || refEnd > maxCodonNumber) {
-				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
-						refSeq.getName(), feature.getName(), getName(), 
-						codonNumberingAncestorLocation.getFeature().getName(),
-						Integer.toString(refStart), Integer.toString(refEnd), maxCodonNumber);
+			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+			if(! ( 
+					TranslationUtils.isAtEndOfCodon(codon1Start, refEnd) && 
+					TranslationUtils.isAtStartOfCodon(codon1Start, refStart))) {
+				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
+						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}
-
-			
 			
 		}
 
@@ -164,11 +193,64 @@ public class Variation extends _Variation {
 		}
 		Integer refStart = getRefStart();
 		if(refStart != null) {
-			indent(glueConfigBuf, indent).append("set location "+getRefStart()+" "+getRefEnd()).append("\n");
+			if(getTranslationFormat() == TranslationFormat.AMINO_ACID) {
+				TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getFeatureLoc().getRefNtToLabeledCodon(glueConfigContext.getCommandContext());
+				indent(glueConfigBuf, indent).append("set location -c "+
+						refNtToLabeledCodon.get(getRefStart()).getLabel()+" "+
+						refNtToLabeledCodon.get(getRefEnd()-2).getLabel()).append("\n");
+				
+			} else {			
+				indent(glueConfigBuf, indent).append("set location -n "+getRefStart()+" "+getRefEnd()).append("\n");
+			}
 		}
 		for(VcatMembership vcm : getVcatMemberships()) {
 			indent(glueConfigBuf, indent).append("add category "+vcm.getCategory().getName()).append("\n");
 		}
+	}
+
+	public VariationScanResult scanProteinTranslation(CharSequence proteinTranslation) {
+		TranslationFormat translationFormat = getTranslationFormat();
+		boolean result;
+		if(translationFormat == TranslationFormat.AMINO_ACID) {
+			if(isSimpleMatch()) {
+				result = charSequencesEqual(getRegex(), proteinTranslation);
+			} else {
+				Pattern regexPattern = getRegexPattern();
+				result = regexPattern.matcher(proteinTranslation).find();
+			}
+		} else {
+			return null;
+		}
+		return new VariationScanResult(this, result, !result);
+	}
+
+	private boolean charSequencesEqual(CharSequence seq1, CharSequence seq2) {
+		if(seq1.length() != seq2.length()) {
+			return false;
+		}
+		for(int i = 0; i < seq1.length(); i++) {
+			if(seq1.charAt(i) != seq2.charAt(i)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	
+	public VariationScanResult scanNucleotides(CharSequence nucleotides) {
+		TranslationFormat translationFormat = getTranslationFormat();
+		boolean result;
+		if(translationFormat == TranslationFormat.NUCLEOTIDE) {
+			if(isSimpleMatch()) {
+				result = charSequencesEqual(getRegex(), nucleotides);
+			} else {
+				Pattern regexPattern = getRegexPattern();
+				result = regexPattern.matcher(nucleotides).find();
+			}
+		} else {
+			return null;
+		}
+		return new VariationScanResult(this, result, !result);
 	}
 	
 }

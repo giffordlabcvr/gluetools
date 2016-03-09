@@ -149,8 +149,8 @@ public class GenerateVariationCommand extends ModulePluginCommand<GenerateVariat
 					try ( ModeCloser variationMode = cmdContext.pushCommandMode("variation", variationName ) ) {
 						if(!alreadyExists) {
 							cmdContext.cmdBuilder(VariationSetLocationCommand.class)
-							.set(VariationSetLocationCommand.REF_START, refStart)
-							.set(VariationSetLocationCommand.REF_END, refEnd)
+							.set(VariationSetLocationCommand.NT_START, refStart)
+							.set(VariationSetLocationCommand.NT_END, refEnd)
 							.execute();
 							cmdContext.cmdBuilder(VariationSetPatternCommand.class)
 							.set(VariationSetPatternCommand.REGEX, regex)

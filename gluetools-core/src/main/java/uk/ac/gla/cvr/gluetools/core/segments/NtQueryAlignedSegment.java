@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
+import java.util.function.BiFunction;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
@@ -70,6 +72,14 @@ public class NtQueryAlignedSegment extends QueryAlignedSegment implements INtTra
 	public int ntIndexAtRefLoction(int refLocation) {
 		int refToQueryOffset = getRefStart() - getQueryStart();
 		return refLocation+refToQueryOffset;
+	}
+	
+	public static BiFunction<NtQueryAlignedSegment, NtQueryAlignedSegment, NtQueryAlignedSegment> mergeAbuttingFunction() {
+		return (seg1, seg2) -> {
+			String nucleotides = seg1.getNucleotides().toString() + seg2.getNucleotides().toString();
+			return new NtQueryAlignedSegment(seg1.getRefStart(), seg2.getRefEnd(), seg1.getQueryStart(), seg2.getQueryEnd(), nucleotides);
+		};
+
 	}
 	
 }

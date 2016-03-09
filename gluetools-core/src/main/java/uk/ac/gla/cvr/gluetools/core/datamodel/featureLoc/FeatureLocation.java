@@ -4,10 +4,20 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.exp.parser.ASTObjPath;
+import org.apache.cayenne.query.SelectQuery;
+import org.apache.commons.collections.Transformer;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -21,14 +31,20 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.transcription.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 
 
 @GlueDataClass(defaultListedProperties = {FeatureLocation.FEATURE_NAME_PATH})
@@ -59,8 +75,9 @@ public class FeatureLocation extends _FeatureLocation {
 
 
 	public List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
+		Feature feature = getFeature();
+		feature.checkCodesAminoAcids();
 		if(labeledCodons == null) {
-			Feature feature = getFeature();
 			String labelerModuleName = feature.getCodonLabelerModule();
 			if(labelerModuleName == null) {
 				Integer codon1Start = getCodon1Start(cmdContext);
@@ -102,6 +119,15 @@ public class FeatureLocation extends _FeatureLocation {
 			}
 		}
 		return labelToLabeledCodon;
+	}
+	
+	public LabeledCodon getFirstLabeledCodon(CommandContext cmdContext) {
+		return getLabeledCodons(cmdContext).get(0);
+	}
+
+	public LabeledCodon getLastLabeledCodon(CommandContext cmdContext) {
+		List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
+		return labeledCodons.get(labeledCodons.size() - 1);
 	}
 	
 	
@@ -299,9 +325,115 @@ public class FeatureLocation extends _FeatureLocation {
 		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
 	}
 
-	
 
-	
+	public List<VariationScanResult> variationScan(
+			CommandContext cmdContext,
+			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs,
+			Expression variationWhereClause) {
+		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
+		
+		List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegsMerged = 
+				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, NtQueryAlignedSegment.mergeAbuttingFunction());
+		
+		for(NtQueryAlignedSegment ntQaSeg: queryToFeatureLocRefNtSegsMerged) {
+			List<Variation> variationsToScan = getVariationsForSegment(cmdContext, ntQaSeg, variationWhereClause);
+			
+			variationScanResults.addAll(variationScanSegment(cmdContext, ntQaSeg, variationsToScan));
+		}
+		return variationScanResults;
+	}
 
+
+	public List<Variation> getVariationsQualified(CommandContext cmdContext, Expression variationWhereClauseExtra) {
+		Expression variationWhereClause = 
+				ExpressionFactory.matchExp(Variation.FEATURE_NAME_PATH, getFeature().getName())
+				.andExp(ExpressionFactory.matchExp(Variation.REF_SEQ_NAME_PATH, getReferenceSequence().getName()));
+
+		if(variationWhereClauseExtra != null) {
+			variationWhereClause = variationWhereClause.andExp(variationWhereClauseExtra);
+		}
+
+		return GlueDataObject.query(cmdContext, Variation.class, new SelectQuery(Variation.class, variationWhereClause));
+	}
+	
+	public List<Variation> getVariationsForSegment(CommandContext cmdContext,
+			IReferenceSegment refSeg, Expression variationWhereClauseOrig) {
+		Expression positionVariationWhereClause = 
+				ExpressionFactory.matchExp(PositionVariation.FEATURE_NAME_PATH, getFeature().getName())
+				.andExp(ExpressionFactory.matchExp(PositionVariation.REF_SEQ_NAME_PATH, getReferenceSequence().getName()))
+				.andExp(ExpressionFactory.greaterOrEqualExp(PositionVariation.POSITION_PROPERTY, refSeg.getRefStart()))
+				.andExp(ExpressionFactory.lessOrEqualExp(PositionVariation.POSITION_PROPERTY, refSeg.getRefEnd()));
+
+		if(variationWhereClauseOrig != null) {
+			// transform the whereClause so that it traverses the association from PositionVariation to Variation.
+			Expression variationWhereClause = variationWhereClauseOrig.transform(new Transformer() {
+				@Override
+				public Object transform(Object input) {
+					if(input instanceof ASTObjPath) {
+						ASTObjPath astObjPath = (ASTObjPath) input;
+						return new ASTObjPath(PositionVariation.VARIATION_PROPERTY+"."+astObjPath.getOperand(0));
+					}
+					return input;
+				}});
+				positionVariationWhereClause = positionVariationWhereClause.andExp(variationWhereClause);
+		}
+
+		List<PositionVariation> positionVariations = GlueDataObject.query(cmdContext, 
+				PositionVariation.class, new SelectQuery(PositionVariation.class, positionVariationWhereClause));
+		Set<Variation> variationsToScan = new LinkedHashSet<Variation>();
+		variationsToScan.addAll(positionVariations.stream().map(pv -> pv.getVariation()).collect(Collectors.toList()));
+		return new ArrayList<Variation>(variationsToScan);
+	}
+
+
+	public List<VariationScanResult> variationScanSegment(CommandContext cmdContext,
+			NtQueryAlignedSegment ntQaSeg, Collection<Variation> variationsToScan) {
+		Translator translator = new CommandContextTranslator(cmdContext);
+		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
+		
+		String fullProteinTranslation = null;
+		Integer proteinTranslationRefNtStart = 0;
+		Integer proteinTranslationRefNtEnd = 0;
+		if(getFeature().codesAminoAcids()) {
+			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(getCodon1Start(cmdContext), Arrays.asList(ntQaSeg));
+			if(ntQaSegsCdnAligned.isEmpty()) {
+				fullProteinTranslation = "";
+			} else {
+				NtQueryAlignedSegment ntQaSegCdnAligned = ntQaSegsCdnAligned.get(0);
+				fullProteinTranslation = translator.translate(ntQaSegCdnAligned.getNucleotides());
+				proteinTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
+				proteinTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
+			}
+		}
+		
+		for(Variation variationToScan: variationsToScan) {
+			Integer refStart = variationToScan.getRefStart();
+			Integer refEnd = variationToScan.getRefEnd();
+			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
+				if(!( refStart >= proteinTranslationRefNtStart && refEnd <= proteinTranslationRefNtEnd )) {
+					continue;
+				}
+				int startAA = (refStart - proteinTranslationRefNtStart) / 3;
+				int endAA = ( (refEnd-2) - proteinTranslationRefNtStart) / 3;
+				CharSequence proteinTranslationForVariation = fullProteinTranslation.subSequence(startAA, endAA+1);
+				variationScanResults.add(variationToScan.scanProteinTranslation(proteinTranslationForVariation));
+			} else if(variationToScan.getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
+				if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
+					continue;
+				}
+				ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
+				List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
+						ReferenceSegment.cloneLeftSegMerger());
+				if(intersection.isEmpty()) {
+					continue;
+				}
+				NtQueryAlignedSegment intersectionSeg = intersection.get(0);
+				CharSequence nucleotides = intersectionSeg.getNucleotides();
+				variationScanResults.add(variationToScan.scanNucleotides(nucleotides));
+			}
+		}
+		
+		return variationScanResults;
+	}
 }
 

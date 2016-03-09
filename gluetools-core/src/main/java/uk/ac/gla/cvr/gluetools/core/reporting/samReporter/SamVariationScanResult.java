@@ -1,12 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class SamVariationScanResult extends TableResult {
+public class SamVariationScanResult extends BaseTableResult<VariationScanReadCount> {
 
 	public static final String 
 		VARIATION_NAME = "variationName",
@@ -16,15 +14,14 @@ public class SamVariationScanResult extends TableResult {
 		PCT_ABSENT = "pctAbsent";
 	
 	
-	public SamVariationScanResult(List<Map<String, Object>> rowData) {
+	public SamVariationScanResult(List<VariationScanReadCount> rowData) {
 		super("samVariationsScanResult", 
-				Arrays.asList(
-						VARIATION_NAME, 
-						READS_PRESENT, 
-						PCT_PRESENT, 
-						READS_ABSENT,
-						PCT_ABSENT), 
-				rowData);
+				rowData,
+				column(VARIATION_NAME, vsrc -> vsrc.getVariationName()), 
+				column(READS_PRESENT, vsrc -> vsrc.getReadsWherePresent()), 
+				column(PCT_PRESENT, vsrc -> vsrc.getPctWherePresent()), 
+				column(READS_ABSENT, vsrc -> vsrc.getReadsWhereAbsent()),
+				column(PCT_ABSENT, vsrc -> vsrc.getPctWhereAbsent()));
 	}
 
 }

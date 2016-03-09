@@ -1,7 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -504,5 +504,26 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return true; // not sure if this is reachable!
 	}
 
+
+	
+	public static <SA extends IReferenceSegment> List<SA> mergeAbutting(List<SA> segments, BiFunction<SA, SA, SA> segMerger) {
+		if(segments.isEmpty()) {
+			return Collections.emptyList();
+		}
+		LinkedList<SA> segmentsCopy = new LinkedList<SA>(segments);
+		ArrayList<SA> result = new ArrayList<SA>();
+		SA currentMerged = segmentsCopy.remove(0);
+		while(!segmentsCopy.isEmpty()) {
+			SA next = segmentsCopy.remove(0);
+			if(currentMerged.abutsRight(next)) {
+				currentMerged = segMerger.apply(currentMerged, next);
+			} else {
+				result.add(currentMerged);
+				currentMerged = next;
+			}
+		}
+		result.add(currentMerged);
+		return result;
+	}
 	
 }
