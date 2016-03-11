@@ -78,7 +78,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
 			String fastaID) {
 
-		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext).toUpperCase();
+		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext);
 		
 		List<QueryAlignedSegment> queryAlignedSegs = new ArrayList<QueryAlignedSegment>();
     	
