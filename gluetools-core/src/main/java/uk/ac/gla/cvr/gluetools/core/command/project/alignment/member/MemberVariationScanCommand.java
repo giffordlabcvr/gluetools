@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;

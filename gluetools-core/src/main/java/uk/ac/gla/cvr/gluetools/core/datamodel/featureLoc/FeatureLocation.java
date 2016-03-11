@@ -6,18 +6,14 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.exp.parser.ASTObjPath;
 import org.apache.cayenne.query.SelectQuery;
 import org.apache.cayenne.query.SortOrder;
-import org.apache.commons.collections.Transformer;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -31,7 +27,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;

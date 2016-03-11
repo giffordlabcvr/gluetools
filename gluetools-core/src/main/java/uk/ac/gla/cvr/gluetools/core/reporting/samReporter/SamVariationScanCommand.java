@@ -4,18 +4,13 @@ import htsjdk.samtools.SamReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -23,10 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -81,44 +73,19 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 			"The <whereClause> may be used to qualify which variations are scanned for. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamVariationScanCommand extends ModulePluginCommand<SamVariationScanResult, SamReporter> 
+public class SamVariationScanCommand extends SamReporterCommand<SamVariationScanResult> 
 	implements ProvidedProjectModeCommand{
-
-	
-	public static final String FILE_NAME = "fileName";
-	public static final String SAM_REF_NAME = "samRefName";
-
-	public static final String AC_REF_NAME = "acRefName";
-	public static final String FEATURE_NAME = "featureName";
-	public static final String AUTO_ALIGN = "autoAlign";
-	
-	public static final String TARGET_REF_NAME = "targetRefName";
-	public static final String TIP_ALMT_NAME = "tipAlmtName";
 
 	public static final String WHERE_CLAUSE = "whereClause";
 	
-	private String fileName;
-	private String samRefName;
-	private String acRefName;
-	private String featureName;
-	private boolean autoAlign;
-	private String targetRefName;
-	private String tipAlmtName;
 	private Expression whereClause;
 
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
-		this.samRefName = PluginUtils.configureStringProperty(configElem, SAM_REF_NAME, false);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		this.autoAlign = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, AUTO_ALIGN, false)).orElse(false);
-		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
-		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
-		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 		super.configure(pluginConfigContext, configElem);
+		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 	}
 
 
@@ -126,12 +93,12 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 	protected SamVariationScanResult execute(CommandContext cmdContext, SamReporter samReporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
-		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(tipAlmtName);
+		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(getTargetRefName()));
+		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(getTipAlmtName());
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
-		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
+		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
 		Feature feature = featureLoc.getFeature();
 
 		boolean codesAminoAcids = feature.codesAminoAcids();
@@ -139,19 +106,7 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 		Translator translator = codesAminoAcids ? new CommandContextTranslator(cmdContext) : null;
 
 		
-		List<QueryAlignedSegment> samRefToTargetRefSegs;
-		if(autoAlign) {
-			// auto-align consensus to target ref
-			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
-			Map<String, DNASequence> samConsensus = SamUtils.getSamConsensus(consoleCmdContext, samRefName, fileName, "samConsensus");
-			AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), samConsensus);
-			// extract segments from aligner result
-			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");
-		} else {
-			// sam ref is same sequence as target ref, so just a single self-mapping segment.
-			int targetRefLength = targetRef.getSequence().getSequenceObject().getNucleotides(consoleCmdContext).length();
-			samRefToTargetRefSegs = Arrays.asList(new QueryAlignedSegment(1, targetRefLength, 1, targetRefLength));
-		}
+		List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef);
 		
 		// translate segments to tip alignment reference
 		List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
@@ -176,9 +131,9 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
         	variationSegmentTree.add(variation);
         }
         
-		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, fileName)) {
+		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
 			
-			SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, fileName, samRefName);
+			SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSamRefName());
 
 	        final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
 			

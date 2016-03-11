@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +7,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
@@ -26,7 +22,6 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;

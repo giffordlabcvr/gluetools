@@ -18,13 +18,11 @@ import java.util.Optional;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
