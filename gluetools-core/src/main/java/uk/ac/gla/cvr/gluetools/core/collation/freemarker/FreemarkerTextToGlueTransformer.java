@@ -105,6 +105,10 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 					rowFieldValues.put(columnNames[j], new TextStringValueModel(rowValues[j]));
 				}
 			}
+			// fill in missing columns
+			for(int j = rowValues.length; j < columnNames.length; j++) {
+				rowFieldValues.put(columnNames[j], new TextStringValueModel(""));
+			}
 			csvRowModels.add(new TextRowModel(rowFieldValues));
 		}
 		return new TextFileModel(new TextRowsModel(csvRowModels));
