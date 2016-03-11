@@ -63,30 +63,6 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	public String toString() { return
 		"Ref: ["+getRefStart()+", "+getRefEnd()+"]";
 	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + refEnd;
-		result = prime * result + refStart;
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ReferenceSegment other = (ReferenceSegment) obj;
-		if (refEnd != other.refEnd)
-			return false;
-		if (refStart != other.refStart)
-			return false;
-		return true;
-	}
 
 	
 	public ReferenceSegment clone() {

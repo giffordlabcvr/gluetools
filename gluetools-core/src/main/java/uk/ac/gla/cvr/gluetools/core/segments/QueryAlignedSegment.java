@@ -95,36 +95,6 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return queryStart - getRefStart() == other.queryStart - other.getRefStart();
 	}
 	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + queryEnd;
-		result = prime * result + queryStart;
-		result = prime * result + getRefEnd();
-		result = prime * result + getRefStart();
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		QueryAlignedSegment other = (QueryAlignedSegment) obj;
-		if (queryEnd != other.queryEnd)
-			return false;
-		if (queryStart != other.queryStart)
-			return false;
-		if (getRefEnd() != other.getRefEnd())
-			return false;
-		if (getRefStart() != other.getRefStart())
-			return false;
-		return true;
-	}
-
 	public void toDocument(ObjectBuilder builder) {
 		super.toDocument(builder);
 		builder
