@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -226,6 +227,12 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return new QueryAlignedSegment(getRefStart(), getRefEnd(), queryStart, queryEnd);
 	}
 
-	
+	public static BiFunction<QueryAlignedSegment, QueryAlignedSegment, QueryAlignedSegment> mergeAbuttingFunction() {
+		return (seg1, seg2) -> {
+			return new QueryAlignedSegment(seg1.getRefStart(), seg2.getRefEnd(), seg1.getQueryStart(), seg2.getQueryEnd());
+		};
+
+	}
+
 	
 }

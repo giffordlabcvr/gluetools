@@ -74,12 +74,13 @@ public class NtQueryAlignedSegment extends QueryAlignedSegment implements INtTra
 		return refLocation+refToQueryOffset;
 	}
 	
-	public static BiFunction<NtQueryAlignedSegment, NtQueryAlignedSegment, NtQueryAlignedSegment> mergeAbuttingFunction() {
+	public static BiFunction<NtQueryAlignedSegment, NtQueryAlignedSegment, NtQueryAlignedSegment> ntMergeAbuttingFunction() {
 		return (seg1, seg2) -> {
 			String nucleotides = seg1.getNucleotides().toString() + seg2.getNucleotides().toString();
 			return new NtQueryAlignedSegment(seg1.getRefStart(), seg2.getRefEnd(), seg1.getQueryStart(), seg2.getQueryEnd(), nucleotides);
 		};
 
 	}
+
 	
 }

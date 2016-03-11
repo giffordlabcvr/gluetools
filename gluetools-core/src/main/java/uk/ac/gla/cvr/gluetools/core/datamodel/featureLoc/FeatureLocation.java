@@ -5,7 +5,6 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +16,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.exp.parser.ASTObjPath;
 import org.apache.cayenne.query.SelectQuery;
+import org.apache.cayenne.query.SortOrder;
 import org.apache.commons.collections.Transformer;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
@@ -328,21 +328,23 @@ public class FeatureLocation extends _FeatureLocation {
 
 	public List<VariationScanResult> variationScan(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs,
-			Expression variationWhereClause) {
+			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs, List<Variation> variationsToScan) {
+		Translator translator = null;
+		Integer codon1Start = null;
+		if(getFeature().codesAminoAcids()) {
+			translator = new CommandContextTranslator(cmdContext);
+			codon1Start = getCodon1Start(cmdContext);
+		}
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 		
 		List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegsMerged = 
-				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, NtQueryAlignedSegment.mergeAbuttingFunction());
+				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, NtQueryAlignedSegment.ntMergeAbuttingFunction());
 		
 		for(NtQueryAlignedSegment ntQaSeg: queryToFeatureLocRefNtSegsMerged) {
-			List<Variation> variationsToScan = getVariationsForSegment(cmdContext, ntQaSeg, variationWhereClause);
-			
-			variationScanResults.addAll(variationScanSegment(cmdContext, ntQaSeg, variationsToScan));
+			variationScanResults.addAll(variationScanSegment(translator, codon1Start, ntQaSeg, variationsToScan));
 		}
 		return variationScanResults;
 	}
-
 
 	public List<Variation> getVariationsQualified(CommandContext cmdContext, Expression variationWhereClauseExtra) {
 		Expression variationWhereClause = 
@@ -352,50 +354,21 @@ public class FeatureLocation extends _FeatureLocation {
 		if(variationWhereClauseExtra != null) {
 			variationWhereClause = variationWhereClause.andExp(variationWhereClauseExtra);
 		}
-
-		return GlueDataObject.query(cmdContext, Variation.class, new SelectQuery(Variation.class, variationWhereClause));
+		SelectQuery query = new SelectQuery(Variation.class, variationWhereClause);
+		query.addOrdering(Variation.REF_START_PROPERTY, SortOrder.ASCENDING);
+		query.addOrdering(Variation.NAME_PROPERTY, SortOrder.ASCENDING);
+		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 	
-	public List<Variation> getVariationsForSegment(CommandContext cmdContext,
-			IReferenceSegment refSeg, Expression variationWhereClauseOrig) {
-		Expression positionVariationWhereClause = 
-				ExpressionFactory.matchExp(PositionVariation.FEATURE_NAME_PATH, getFeature().getName())
-				.andExp(ExpressionFactory.matchExp(PositionVariation.REF_SEQ_NAME_PATH, getReferenceSequence().getName()))
-				.andExp(ExpressionFactory.greaterOrEqualExp(PositionVariation.POSITION_PROPERTY, refSeg.getRefStart()))
-				.andExp(ExpressionFactory.lessOrEqualExp(PositionVariation.POSITION_PROPERTY, refSeg.getRefEnd()));
-
-		if(variationWhereClauseOrig != null) {
-			// transform the whereClause so that it traverses the association from PositionVariation to Variation.
-			Expression variationWhereClause = variationWhereClauseOrig.transform(new Transformer() {
-				@Override
-				public Object transform(Object input) {
-					if(input instanceof ASTObjPath) {
-						ASTObjPath astObjPath = (ASTObjPath) input;
-						return new ASTObjPath(PositionVariation.VARIATION_PROPERTY+"."+astObjPath.getOperand(0));
-					}
-					return input;
-				}});
-				positionVariationWhereClause = positionVariationWhereClause.andExp(variationWhereClause);
-		}
-
-		List<PositionVariation> positionVariations = GlueDataObject.query(cmdContext, 
-				PositionVariation.class, new SelectQuery(PositionVariation.class, positionVariationWhereClause));
-		Set<Variation> variationsToScan = new LinkedHashSet<Variation>();
-		variationsToScan.addAll(positionVariations.stream().map(pv -> pv.getVariation()).collect(Collectors.toList()));
-		return new ArrayList<Variation>(variationsToScan);
-	}
-
-
-	public List<VariationScanResult> variationScanSegment(CommandContext cmdContext,
-			NtQueryAlignedSegment ntQaSeg, Collection<Variation> variationsToScan) {
-		Translator translator = new CommandContextTranslator(cmdContext);
+	public List<VariationScanResult> variationScanSegment(Translator translator, Integer codon1Start,
+			NtQueryAlignedSegment ntQaSeg, List<Variation> variationsToScan) {
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 		
 		String fullProteinTranslation = null;
 		Integer proteinTranslationRefNtStart = 0;
 		Integer proteinTranslationRefNtEnd = 0;
 		if(getFeature().codesAminoAcids()) {
-			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(getCodon1Start(cmdContext), Arrays.asList(ntQaSeg));
+			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, Arrays.asList(ntQaSeg));
 			if(ntQaSegsCdnAligned.isEmpty()) {
 				fullProteinTranslation = "";
 			} else {

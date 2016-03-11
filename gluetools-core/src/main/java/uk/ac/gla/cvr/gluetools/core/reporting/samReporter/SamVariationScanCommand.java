@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import htsjdk.samtools.SamReader;
 
 import java.io.IOException;
@@ -10,12 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -46,12 +42,13 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCou
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.transcription.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 
 @CommandClass(
-		commandWords={"variation-scan"}, 
+		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
 		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> [-l] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>]" },
 		docoptOptions = { 
@@ -136,8 +133,12 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
 		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
 
+		boolean codesAminoAcids = feature.codesAminoAcids();
+		Integer codon1Start = codesAminoAcids ? featureLoc.getCodon1Start(cmdContext) : null;
+		Translator translator = codesAminoAcids ? new CommandContextTranslator(cmdContext) : null;
+
+		
 		List<QueryAlignedSegment> samRefToTargetRefSegs;
 		if(autoAlign) {
 			// auto-align consensus to target ref
@@ -168,35 +169,19 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 
         Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
 
+        // build a segment tree of the variations.
+        List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+        ReferenceSegmentTree<Variation> variationSegmentTree = new ReferenceSegmentTree<Variation>();
+        for(Variation variation: variationsToScan) {
+        	variationSegmentTree.add(variation);
+        }
+        
 		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, fileName)) {
 			
 			SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, fileName, samRefName);
 
 	        final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
 			
-	        
-	        List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
-	        
-	        Integer codon1Start = null;
-	        if(featureLoc.getFeature().codesAminoAcids()) {
-	        	codon1Start = featureLoc.getCodon1Start(cmdContext);
-	        }
-	        
-	        TIntObjectMap<List<Variation>> refNtToVariations = new TIntObjectHashMap<List<Variation>>();
-	        for(Variation variation: variationsToScan) {
-	        	for(int i = variation.getRefStart(); i <= variation.getRefEnd(); i++) {
-	        		if(variation.getTranslationFormat() == TranslationFormat.AMINO_ACID && 
-	        				!TranslationUtils.isAtStartOfCodon(codon1Start, i)) {
-	        			continue;
-	        		}
-	        		List<Variation> variations = refNtToVariations.get(i);
-	        		if(variations == null) {
-	        			variations = new LinkedList<Variation>();
-	        			refNtToVariations.put(i,  variations);
-	        		}
-	        		variations.add(variation);
-	        	}
-	        }
 	        
 			samReader.forEach(samRecord -> {
 				if(!samRecordFilter.recordPasses(samRecord)) {
@@ -207,29 +192,24 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 				
 				final String readString = samRecord.getReadString().toUpperCase();
 
-				List<NtQueryAlignedSegment> readToAncConstrRefNtSegs =
-						readToAncConstrRefSegs.stream()
-						.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
-								SegmentUtils.base1SubString(readString, seg.getQueryStart(), seg.getQueryEnd())))
-						.collect(Collectors.toList());
-				
-				List<NtQueryAlignedSegment> readToAncConstrRefNtSegsMerged = 
-						ReferenceSegment.mergeAbutting(readToAncConstrRefNtSegs, NtQueryAlignedSegment.mergeAbuttingFunction());
-				
+				List<QueryAlignedSegment> readToAncConstrRefSegsMerged = 
+						ReferenceSegment.mergeAbutting(readToAncConstrRefSegs, QueryAlignedSegment.mergeAbuttingFunction());
+
 				List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
-				
-				
-				for(NtQueryAlignedSegment readToAncConstrRefNtSeg: readToAncConstrRefNtSegsMerged) {
-					Set<Variation> variationsToScanForSegment = new LinkedHashSet<Variation>();
-					for(int i = readToAncConstrRefNtSeg.getRefStart(); i <= readToAncConstrRefNtSeg.getRefEnd(); i++) {
-						List<Variation> variationsAtRefNt = refNtToVariations.get(i);
-						if(variationsAtRefNt != null) {
-							variationsToScanForSegment.addAll(variationsAtRefNt);
-						}
+				for(QueryAlignedSegment readToAncConstrRefSeg: readToAncConstrRefSegsMerged) {
+
+					List<Variation> variationsToScanForSegment = new LinkedList<Variation>();
+					variationSegmentTree.findOverlapping(readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), variationsToScanForSegment);
+					if(!variationsToScanForSegment.isEmpty()) {
+						NtQueryAlignedSegment readToAncConstrRefNtSeg = 
+								new NtQueryAlignedSegment(
+										readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd(),
+										SegmentUtils.base1SubString(readString, readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd()));
+
+						variationScanResults.addAll(featureLoc.variationScanSegment(translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment));
 					}
-					variationScanResults.addAll(featureLoc.variationScanSegment(cmdContext, readToAncConstrRefNtSeg, variationsToScanForSegment));
 				}
-			
+				
 				for(VariationScanResult variationScanResult: variationScanResults) {
 					Variation variation = variationScanResult.getVariation();
 					VariationInfo variationInfo = variationNameToInfo.get(variation.getName());
@@ -254,20 +234,7 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 		}
 		
 		List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(variationNameToInfo.values());
-		
-		Comparator<VariationInfo> comparator = new Comparator<VariationInfo>(){
-			@Override
-			public int compare(VariationInfo o1, VariationInfo o2) {
-				int refStartCpResult = Integer.compare(o1.variation.getRefStart(), o2.variation.getRefStart());
-				if(refStartCpResult != 0) {
-					return refStartCpResult;
-				}
-				return o1.variation.getName().compareTo(o2.variation.getName());
-			}
-		};
-		
-		Collections.sort(variationInfos, comparator);
-		
+	
 		List<VariationScanReadCount> rowData = 
 				variationInfos.stream()
 				.map(vInfo -> {
@@ -297,10 +264,6 @@ public class SamVariationScanCommand extends ModulePluginCommand<SamVariationSca
 	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {}
-
-
-
-
 
 
 	

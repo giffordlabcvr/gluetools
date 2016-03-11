@@ -72,10 +72,21 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 		if(fieldNames != null) {
 			getAlignmentMode(cmdContext).getProject().checkListableMemberField(fieldNames);
 		}
-		
-		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName());
+
+		List<AlignmentMember> members = listMembers(cmdContext, lookupAlignment(cmdContext), recursive, whereClause);
+		if(fieldNames == null) {
+			return new ListResult(AlignmentMember.class, members);
+		} else {
+			return new ListResult(AlignmentMember.class, members, fieldNames);
+		}
+	}
+
+
+	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
+			Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
+		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName());
 		if(recursive) {
-			List<Alignment> descendents = lookupAlignment(cmdContext).getDescendents();
+			List<Alignment> descendents = alignment.getDescendents();
 			for(Alignment descAlignment: descendents) {
 				matchAlignmentOrDescendent = matchAlignmentOrDescendent.orExp(
 						ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, descAlignment.getName()));
@@ -89,11 +100,7 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 			selectQuery = new SelectQuery(AlignmentMember.class, matchAlignmentOrDescendent);
 		}
 		List<AlignmentMember> members = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
-		if(fieldNames == null) {
-			return new ListResult(AlignmentMember.class, members);
-		} else {
-			return new ListResult(AlignmentMember.class, members, fieldNames);
-		}
+		return members;
 	}
 
 	

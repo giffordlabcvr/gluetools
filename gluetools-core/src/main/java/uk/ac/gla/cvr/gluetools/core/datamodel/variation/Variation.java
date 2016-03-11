@@ -30,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
@@ -39,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 		listableBuiltInProperties = { _Variation.NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
 				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
 		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY })		
-public class Variation extends _Variation {
+public class Variation extends _Variation implements IReferenceSegment {
 
 	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("[NACGT]+");
 	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("[ACDEFGHIKLMNOPQRSTUVWYX*]+");
@@ -251,6 +252,10 @@ public class Variation extends _Variation {
 			return null;
 		}
 		return new VariationScanResult(this, result, !result);
+	}
+	
+	public Variation clone() {
+		throw new RuntimeException("Variation.clone() not supported");
 	}
 	
 }

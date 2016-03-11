@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.reporting;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -9,19 +8,13 @@ import java.util.Optional;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.AlignmentVariationScanCommand.AlignmentVariationScanResult;
@@ -104,27 +97,6 @@ public class AlignmentVariationScanCommand
 	public static class Completer extends AlignmentAnalysisCommandCompleter {
 		public Completer() {
 			super();
-			registerVariableInstantiator("variationName", new VariableInstantiator() {
-				@SuppressWarnings("rawtypes")
-				@Override
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext,
-						Class<? extends Command> cmdClass, Map<String, Object> bindings,
-						String prefix) {
-					String referenceName = (String) bindings.get("referenceName");
-					String featureName = (String) bindings.get("featureName");
-					FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), true);
-					if(featureLoc != null) {
-						List<Variation> variations = featureLoc.getVariations();
-						List<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>();
-						for(Variation variation: variations) {
-							suggestions.add(new CompletionSuggestion(variation.getName(), true));
-						}
-						return suggestions;
-					}
-					return null;
-				}
-			});
 		}
 	}
 	

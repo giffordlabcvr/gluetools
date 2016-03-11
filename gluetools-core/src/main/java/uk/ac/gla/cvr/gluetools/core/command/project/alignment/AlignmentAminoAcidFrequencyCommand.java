@@ -77,14 +77,8 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	
 	@Override
 	public AlignmentAminoAcidFrequencyResult execute(CommandContext cmdContext) {
-		CommandBuilder<ListResult, AlignmentListMemberCommand> listMemberBuilder = 
-				cmdContext.cmdBuilder(AlignmentListMemberCommand.class)
-				.set(AlignmentListMemberCommand.RECURSIVE, recursive);
-		if(whereClause.isPresent()) {
-			listMemberBuilder.set(AlignmentListMemberCommand.WHERE_CLAUSE, whereClause.get().toString());
-		}
-		ListResult listMemberResult = listMemberBuilder.execute();
 		Alignment alignment = lookupAlignment(cmdContext);
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
 		FeatureLocation scannedFeatureLoc = 
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
@@ -100,14 +94,7 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			}
 		}
 		
-		List<Map<String, Object>> memberRows = listMemberResult.asListOfMaps();
-		for(Map<String, Object> memberRow: memberRows) {
-			String memberAlignmentName = (String) memberRow.get(AlignmentMember.ALIGNMENT_NAME_PATH);
-			String memberSourceName = (String) memberRow.get(AlignmentMember.SOURCE_NAME_PATH);
-			String memberSequenceID = (String) memberRow.get(AlignmentMember.SEQUENCE_ID_PATH);
-			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(memberAlignmentName, memberSourceName, memberSequenceID), false);
-			
+		for(AlignmentMember almtMember: almtMembers) {
 			MemberAminoAcidResult memberAminoAcidsResult = 
 					MemberAminoAcidCommand.memberAminoAcids(cmdContext, almtMember, 
 							ancConstrainingRef, scannedFeatureLoc);

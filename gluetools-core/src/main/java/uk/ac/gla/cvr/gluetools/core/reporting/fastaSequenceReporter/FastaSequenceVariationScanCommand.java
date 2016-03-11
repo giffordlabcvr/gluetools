@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
@@ -27,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -98,6 +101,10 @@ public class FastaSequenceVariationScanCommand extends ModulePluginCommand<Fasta
 	@Override
 	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter) {
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+
+		List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+		
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		
 		Entry<String, DNASequence> fastaEntry = getFastaEntry(consoleCmdContext);
@@ -110,10 +117,8 @@ public class FastaSequenceVariationScanCommand extends ModulePluginCommand<Fasta
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
-		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
 
+		
 		// align query to target reference
 		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
 		Map<String, DNASequence> fastaIDToSequence = new LinkedHashMap<String, DNASequence>();
@@ -147,20 +152,8 @@ public class FastaSequenceVariationScanCommand extends ModulePluginCommand<Fasta
 				.collect(Collectors.toList());
 
 		
-		List<VariationScanResult> variationScanResults = featureLoc.variationScan(cmdContext, queryToAncConstrRefNtSegs, whereClause);
-		
-		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>(){
-			@Override
-			public int compare(VariationScanResult o1, VariationScanResult o2) {
-				int refStartCpResult = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
-				if(refStartCpResult != 0) {
-					return refStartCpResult;
-				}
-				return o1.getVariation().getName().compareTo(o2.getVariation().getName());
-			}
-		};
-
-		Collections.sort(variationScanResults, comparator);
+		List<VariationScanResult> variationScanResults = featureLoc.variationScan(cmdContext, queryToAncConstrRefNtSegs, variationsToScan);
+		VariationScanResult.sortVariationScanResults(variationScanResults);
 		
 		return new FastaSequenceVariationScanResult(variationScanResults);
 	}

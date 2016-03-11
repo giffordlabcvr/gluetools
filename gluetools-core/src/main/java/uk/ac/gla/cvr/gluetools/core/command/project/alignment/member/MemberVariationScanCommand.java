@@ -1,15 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -17,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -66,12 +69,25 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
 		FeatureLocation featureLoc = 
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
-		return memberVariationScan(cmdContext, almtMember, ancConstrainingRef, featureLoc, whereClause);
+		List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause.orExp(null));
+		List<VariationScanResult> scanResults = memberVariationScan(cmdContext, almtMember, ancConstrainingRef, featureLoc, variationsToScan);
+		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>() {
+			@Override
+			public int compare(VariationScanResult o1, VariationScanResult o2) {
+				int comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
+				if(comp == 0) {
+					comp = o1.getVariation().getName().compareTo(o2.getVariation().getName());
+				}
+				return comp;
+			}
+		};
+		Collections.sort(scanResults, comparator);
+		return new MemberVariationScanResult(scanResults);
 	}
 
-	public static MemberVariationScanResult memberVariationScan(CommandContext cmdContext,
+	public static List<VariationScanResult> memberVariationScan(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc,
-			Expression whereClause) {
+			List<Variation> variationsToScan) {
 		Alignment tipAlmt = almtMember.getAlignment();
 		
 		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
@@ -93,10 +109,12 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 						memberSeqObj.getNucleotides(cmdContext, seg.getQueryStart(), seg.getQueryEnd())))
 				.collect(Collectors.toList());
 		
-		List<VariationScanResult> variationScanResults = featureLoc.
-				variationScan(cmdContext, memberToFeatureLocRefNtSegs, whereClause);
 		
-		return new MemberVariationScanResult(variationScanResults);
+		List<VariationScanResult> variationScanResults = featureLoc.
+				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan);
+		VariationScanResult.sortVariationScanResults(variationScanResults);
+
+		return variationScanResults;
 	}
 
 	@CompleterClass

@@ -1,28 +1,29 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class SamNucleotideResult extends TableResult {
+public class SamNucleotideResult extends BaseTableResult<NucleotideReadCount> {
 
 	public static final String 
-		GLUE_REFERENCE_NT = "glueReferenceNt",
-		SAM_REFERENCE_NT = "samReferenceNt",
+		SAM_REFERENCE_NT = "samRefNt",
+		AC_REFERENCE_NT = "acRefNt",
 		READS_WITH_A = "readsWithA",
 		READS_WITH_C = "readsWithC",
 		READS_WITH_G = "readsWithG",
 		READS_WITH_T = "readsWithT";
 
 
-	public SamNucleotideResult(List<Map<String, Object>> rowData) {
+	public SamNucleotideResult(List<NucleotideReadCount> rowData) {
 		super("samNucleotidesResult", 
-				Arrays.asList(
-						SAM_REFERENCE_NT, GLUE_REFERENCE_NT, 
-						READS_WITH_A, READS_WITH_C, READS_WITH_G, READS_WITH_T), 
-				rowData);
+				rowData,
+				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),
+				column(AC_REFERENCE_NT, nrc -> nrc.getAcRefNt()), 
+				column(READS_WITH_A, nrc -> nrc.getReadsWithA()),
+				column(READS_WITH_C, nrc -> nrc.getReadsWithC()), 
+				column(READS_WITH_G, nrc -> nrc.getReadsWithG()), 
+				column(READS_WITH_T, nrc -> nrc.getReadsWithT()));
 	}
 
 }
