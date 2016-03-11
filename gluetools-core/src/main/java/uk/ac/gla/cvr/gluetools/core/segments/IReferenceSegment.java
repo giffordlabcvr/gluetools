@@ -48,6 +48,19 @@ public interface IReferenceSegment {
 		setRefEnd(getRefEnd()-length);
 	}
 
+	public default boolean overlaps(int refStart, int refEnd) {
+		if(getRefStart() <= refStart && getRefEnd() >= refEnd) {
+			return true;
+		}
+		if(getRefStart() >= refStart && getRefStart() <= refEnd) {
+			return true;
+		}
+		if(getRefEnd() >= refStart && getRefEnd() <= refEnd) {
+			return true;
+		}
+		return false;
+	}
+	
 	public IReferenceSegment clone();
 	
 	
