@@ -99,10 +99,7 @@ public class CreateAlignmentCommand extends ProjectModeCommand<CreateResult> {
 
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
-		
-		
-		
-		protected Completer() {
+		public Completer() {
 			super();
 			registerDataObjectNameLookup("refSeqName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("parentName", new VariableInstantiator() {
