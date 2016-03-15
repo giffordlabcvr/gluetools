@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jdk.nashorn.internal.parser.TokenKind;
 import jline.console.completer.Completer;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
@@ -30,13 +31,38 @@ public class ConsoleCompleter implements Completer {
 	@Override
 	public int complete(String buffer, int cursor, List<CharSequence> candidates) {
 		List<Token> tokens;
+		int cursorOffset = 0;
+		boolean backslashAtEnd = false;
 		try {
 			tokens = Lexer.lex(buffer);
 		} catch(ConsoleException ce) {
-			if(!ce.getCode().equals(ConsoleException.Code.SYNTAX_ERROR)) {
-				throw ce;
+			if(ce.getCode().equals(ConsoleException.Code.SYNTAX_ERROR)) {
+				cursorOffset = 1;
+				try {
+					tokens = Lexer.lex(buffer+"\"");
+				} catch(ConsoleException ce2) {
+					try {
+						tokens = Lexer.lex(buffer+"'");
+					} catch(ConsoleException ce3) {
+						if(buffer.endsWith("\\")) {
+							cursorOffset = 0;
+							backslashAtEnd = true;
+							try {
+								tokens = Lexer.lex(buffer.substring(0, buffer.length()-1)+"\"");
+							} catch(ConsoleException ce4) {
+								try {
+									tokens = Lexer.lex(buffer.substring(0, buffer.length()-1)+"'");
+								} catch(ConsoleException ce5) {
+									throw ce;
+								}
+							}
+						} else {
+							throw ce;
+						}
+					}
+				}
 			} else {
-				return -1;
+				throw ce;
 			}
 		}
 		if(tokens.stream().filter(t -> t.getType() == TokenType.SINGLELINECOMMENT).findFirst().isPresent()) {
@@ -46,6 +72,7 @@ public class ConsoleCompleter implements Completer {
 		int suggestionPos;
 		List<Token> lookupBasisTokens;
 		String prefix;
+		TokenType finalTokenType = TokenType.WORD;
 		if(meaningfulTokens.isEmpty()) {
 			suggestionPos = cursor;
 			lookupBasisTokens = new LinkedList<Token>();
@@ -53,15 +80,16 @@ public class ConsoleCompleter implements Completer {
 		} else {
 			// if the cursor is not after the last meaningful token, return no matches.
 			Token lastMeaningfulToken = meaningfulTokens.get(meaningfulTokens.size()-1);
+			finalTokenType = lastMeaningfulToken.getType();
 			int endOfLMT = lastMeaningfulToken.getPosition() + lastMeaningfulToken.getData().length();
-			if(cursor < endOfLMT) {
+			if(cursor + cursorOffset < endOfLMT) {
 				return -1;
 			}
 			// cursor is just after the end of the last meaningful token
-			if(cursor == endOfLMT) {
+			if(cursor + cursorOffset == endOfLMT) {
 				suggestionPos = lastMeaningfulToken.getPosition();
 				lookupBasisTokens = meaningfulTokens.subList(0, meaningfulTokens.size()-1);
-				prefix = lastMeaningfulToken.getData();
+				prefix = lastMeaningfulToken.getType().render(lastMeaningfulToken.getData());
 			} else {
 				// spaces between last meaningful token and cursor.
 				suggestionPos = cursor;
@@ -71,11 +99,12 @@ public class ConsoleCompleter implements Completer {
 		}
 		List<String> lookupBasis = lookupBasisTokens.stream().map(Token::render).collect(Collectors.toList());
 		
-		return completeAux(candidates, suggestionPos, prefix, lookupBasis, false);
+		return completeAux(candidates, suggestionPos, prefix, lookupBasis, false, finalTokenType, backslashAtEnd);
 	}
 
 	private int completeAux(List<CharSequence> candidates, int suggestionPos,
-			String prefix, List<String> lookupBasis, boolean requireModeWrappable) {
+			String prefix, List<String> lookupBasis, boolean requireModeWrappable, TokenType finalTokenType, 
+			boolean backslashAtEnd) {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
 		CommandMode<?> cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
@@ -103,7 +132,7 @@ public class ConsoleCompleter implements Completer {
 			try {
 				enterModeCommand.execute(cmdContext);
 				enterModeSucceded = true;
-				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true);
+				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true, finalTokenType, backslashAtEnd);
 			} catch(DataModelException dme) {
 				if(dme.getCode() == DataModelException.Code.OBJECT_NOT_FOUND) {
 					// enter mode command failed because we were unable to look up the object.
@@ -124,15 +153,40 @@ public class ConsoleCompleter implements Completer {
 			if(suggestions.isEmpty()) {
 				return -1;
 			} else {
-				candidates.addAll(suggestions.stream().map(s -> {
-					if(s.isCompleted()) {
-						return s.getSuggestedWord()+" ";
+				List<String> unfilteredCandidates = suggestions.stream().map(s -> {
+					String suggestedWord = s.getSuggestedWord();
+					boolean completed = s.isCompleted();
+					suggestedWord = escapeSuggestion(finalTokenType, suggestedWord, completed);
+					if(completed) {
+						return suggestedWord+" ";
 					} else {
-						return s.getSuggestedWord();
-					}}).collect(Collectors.toList()));
+						return suggestedWord;
+					}}).collect(Collectors.toList());
+
+				String escapedPrefix = escapeSuggestion(finalTokenType, prefix, false) + (backslashAtEnd ? "\\" : "");
+				List<String> filteredCandidates = unfilteredCandidates.stream().filter(s -> s.startsWith(escapedPrefix)).collect(Collectors.toList());
+				candidates.addAll(filteredCandidates);
 				return suggestionPos;
 			} 
 		}
+	}
+
+	private String escapeSuggestion(TokenType finalTokenType,
+			String suggestedWord, boolean completed) {
+		if(finalTokenType == TokenType.DOUBLEQUOTED) {
+			suggestedWord = Lexer.toDoubleQuoted(suggestedWord);
+			if(!completed) {
+				suggestedWord = suggestedWord.substring(0, suggestedWord.length()-1);
+			}
+		} else if(finalTokenType == TokenType.SINGLEQUOTED) {
+			suggestedWord = Lexer.toSingleQuoted(suggestedWord);
+			if(!completed) {
+				suggestedWord = suggestedWord.substring(0, suggestedWord.length()-1);
+			}
+		} else {
+			suggestedWord = Lexer.escaped(suggestedWord);
+		}
+		return suggestedWord;
 	}
 
 

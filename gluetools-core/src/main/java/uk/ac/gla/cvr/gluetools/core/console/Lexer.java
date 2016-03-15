@@ -21,16 +21,21 @@ public class Lexer {
 		DOUBLEQUOTED("\"(?:[^\"\\\\]|\\\\.)*\"") {
 			@Override
 			protected String render(String data) {
-				return data.substring(1, data.length()-1).replace("\\\"", "\"");
+				return data.substring(1, data.length()-1).replace("\\\"", "\"").replace("\\\\", "\\");
 			}
 		},
 		SINGLEQUOTED("'(?:[^'\\\\]|\\\\.)*'") {
 			@Override
 			protected String render(String data) {
-				return data.substring(1, data.length()-1).replace("\'", "'");
+				return data.substring(1, data.length()-1).replace("\'", "'").replace("\\\\", "\\");
 			}
 		},
-		OTHER("[^ \t\f\r\n\"']+"),
+		WORD("(?:[^ \\\\'\"]|\\\\.)+"){
+			@Override
+			protected String render(String data) {
+				return data.replace("\\ ", " ").replace("\\'", "'").replace("\\\"", "\"").replace("\\\\", "\\");
+			}
+		},
 		WHITESPACE("[ \t\f\r\n]+");
 
 		public final String pattern;
@@ -120,4 +125,17 @@ public class Lexer {
 		return tokens;		
 	}
 
+	public static String toSingleQuoted(String input) {
+		return "'"+input.replace("'", "\\'").replace("\\\\", "\\")+"'";
+	}
+
+	public static String toDoubleQuoted(String input) {
+		return "\""+input.replace("\"", "\\\"").replace("\\\\", "\\")+"\"";
+	}
+
+	public static String escaped(String input) {
+		return input.replace("'", "\\'").replace("\"", "\\\"").replace(" ", "\\ ").replace("\\\\", "\\");
+	}
+
+	
 }
