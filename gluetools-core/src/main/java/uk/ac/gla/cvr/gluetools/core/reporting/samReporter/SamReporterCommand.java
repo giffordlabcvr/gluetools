@@ -48,7 +48,7 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.autoAlign = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, AUTO_ALIGN, false)).orElse(false);
-		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
+		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
 		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
 		super.configure(pluginConfigContext, configElem);
 	}
@@ -76,7 +76,7 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		return fileName;
 	}
 
-	protected String getSamRefName() {
+	protected String getSuppliedSamRefName() {
 		return samRefName;
 	}
 
@@ -88,8 +88,8 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		return featureName;
 	}
 
-	protected String getTargetRefName() {
-		return targetRefName;
+	protected String getTargetRefName(CommandContext cmdContext, SamReporter samReporter, String samRefName) {
+		return samReporter.targetRefNameFromSamRefName(cmdContext, samRefName, targetRefName);
 	}
 
 	protected String getTipAlmtName() {

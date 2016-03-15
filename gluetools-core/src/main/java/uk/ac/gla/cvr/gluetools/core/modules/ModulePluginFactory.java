@@ -20,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.custom.RavFinder;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
+import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
@@ -47,6 +48,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(SamReporter.class);
 		registerPluginClass(FastaSequenceReporter.class);
 		registerPluginClass(Kuiken2006CodonLabeler.class);
+		registerPluginClass(TextToQueryTransformer.class);
 		
 		// custom!
 		registerPluginClass(RavFinder.class);

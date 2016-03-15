@@ -42,7 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> [-l] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>]" },
+		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> [-l] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
@@ -59,6 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
 			"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 			"file only names a single reference sequence.\n"+
 			"The translation is based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+			"If <targetRefName> is not supplied, it may be inferred from the SAM reference name, if the module is appropriately configured. "+
 			"By default, the SAM file is assumed to align reads against this target reference, i.e. the target GLUE reference "+
 			"is the reference sequence  mentioned in the SAM file. "+
 			"Alternatively the --autoAlign option may be used; this will generate a pairwise alignment between the SAM file "+
@@ -93,7 +94,16 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 	protected SamVariationScanResult execute(CommandContext cmdContext, SamReporter samReporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(getTargetRefName()));
+		String samRefName;
+		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
+			samRefName = SamUtils.findReference(samReader, getFileName(), getSuppliedSamRefName()).getSequenceName();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
+				ReferenceSequence.pkMap(getTargetRefName(consoleCmdContext, samReporter, samRefName)));
+		
 		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(getTipAlmtName());
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
@@ -133,7 +143,7 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
         
 		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
 			
-			SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSamRefName());
+			SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
 
 	        final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
 			

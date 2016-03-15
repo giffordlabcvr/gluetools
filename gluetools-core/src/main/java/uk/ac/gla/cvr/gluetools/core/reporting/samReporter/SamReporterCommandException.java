@@ -7,10 +7,9 @@ public class SamReporterCommandException extends GlueException {
 	
 	public enum Code implements GlueErrorCode {
 
-		NO_GLUE_REFERENCE_DEFINED(), 
-		TIP_ALIGNMENT_MEMBER_NOT_FOUND("samReferenceName", "whereClause"),
-		TIP_ALIGNMENT_MEMBER_EXTRACTOR_FAILED("samReferenceName"),
-		AMBIGUOUS_TIP_ALIGNMENT_MEMBER_DEFINED();
+		NO_TARGET_REFERENCE_DEFINED(),
+		TARGET_REFERENCE_NOT_FOUND("samReferenceName"),
+		TARGET_REFERENCE_AMBIGUOUS("samReferenceName", "targetRefNames");
 
 		private String[] argNames;
 		private Code(String... argNames) {
