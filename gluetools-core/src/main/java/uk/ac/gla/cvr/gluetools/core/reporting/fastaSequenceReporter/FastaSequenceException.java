@@ -8,10 +8,9 @@ public class FastaSequenceException extends GlueException {
 
 		MULTIPLE_FASTA_FILE_SEQUENCES("fileName"), 
 		NO_FASTA_FILE_SEQUENCES("fileName"),
-		NO_GLUE_REFERENCE_DEFINED,
-		TIP_ALIGNMENT_MEMBER_NOT_FOUND("fastaID", "whereClause"),
-		TIP_ALIGNMENT_MEMBER_EXTRACTOR_FAILED("fastaID"),
-		AMBIGUOUS_TIP_ALIGNMENT_MEMBER_DEFINED();
+		NO_TARGET_REFERENCE_DEFINED(),
+		TARGET_REFERENCE_NOT_FOUND("fastaId"),
+		TARGET_REFERENCE_AMBIGUOUS("fastaId", "targetRefNames");
 
 		private String[] argNames;
 		private Code(String... argNames) {

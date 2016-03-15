@@ -15,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
@@ -28,17 +27,15 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>]" },
+		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
@@ -49,7 +46,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
-		        "scans a section of the query sequence for variations based on the target reference sequence's "+
+		        "scans a section of the query "+
+				"If <targetRefName> is not supplied, it may be inferred from the FASTA sequence ID, if the module is appropriately configured. "+
+				"sequence for variations based on the target reference sequence's "+
 				"place in the alignment tree. The target reference sequence must be a member of a constrained "+
 		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
 		        "inferred from the target reference if possible. "+
@@ -60,43 +59,24 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"If <whereClause> is used, this qualifies the set of variations which are scanned for.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class FastaSequenceVariationScanCommand extends ModulePluginCommand<FastaSequenceVariationScanResult, FastaSequenceReporter> 
+public class FastaSequenceVariationScanCommand extends FastaSequenceReporterCommand<FastaSequenceVariationScanResult> 
 	implements ProvidedProjectModeCommand{
-
-	public static final String FILE_NAME = "fileName";
-
-	public static final String AC_REF_NAME = "acRefName";
-	public static final String FEATURE_NAME = "featureName";
-	
-	public static final String TARGET_REF_NAME = "targetRefName";
-	public static final String TIP_ALMT_NAME = "tipAlmtName";
 
 	public static final String WHERE_CLAUSE = "whereClause";
 
-	private String fileName;
-	private String acRefName;
-	private String featureName;
-	private String tipAlmtName;
-	private String targetRefName;
 	private Expression whereClause;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
-		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
-		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
-
 		super.configure(pluginConfigContext, configElem);
+		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 	}
 
 	@Override
 	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter) {
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
 
 		List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
 		
@@ -106,12 +86,13 @@ public class FastaSequenceVariationScanCommand extends ModulePluginCommand<Fasta
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
+		String targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID, getTargetRefName());
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
-		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(tipAlmtName);
+		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(getTipAlmtName());
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
-		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
+		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
 		
 		// align query to target reference
@@ -152,22 +133,6 @@ public class FastaSequenceVariationScanCommand extends ModulePluginCommand<Fasta
 		
 		return new FastaSequenceVariationScanResult(variationScanResults);
 	}
-
-	private Entry<String, DNASequence> getFastaEntry(
-			ConsoleCommandContext consoleCmdContext) {
-		byte[] fastaFileBytes = consoleCmdContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(consoleCmdContext, fastaFileBytes);
-		Map<String, DNASequence> headerToSeq = FastaUtils.parseFasta(fastaFileBytes);
-		if(headerToSeq.size() > 1) {
-			throw new FastaSequenceException(Code.MULTIPLE_FASTA_FILE_SEQUENCES, fileName);
-		}
-		if(headerToSeq.size() == 0) {
-			throw new FastaSequenceException(Code.NO_FASTA_FILE_SEQUENCES, fileName);
-		}
-		Entry<String, DNASequence> singleEntry = headerToSeq.entrySet().iterator().next();
-		return singleEntry;
-	}
-
 
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {}

@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -24,7 +23,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
@@ -34,21 +32,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a FASTA file", 
-		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> -t <targetRefName> [-a <tipAlmtName>]" },
+		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-t <targetRefName>] [-a <tipAlmtName>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
@@ -59,7 +53,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
 		        "translates a section of the query sequence to amino acids based on the target reference sequence's "+
-				"place in the alignment tree. The target reference sequence must be a member of a constrained "+
+				"place in the alignment tree. "+
+				"If <targetRefName> is not supplied, it may be inferred from the FASTA sequence ID, if the module is appropriately configured. "+
+				"The target reference sequence must be a member of a constrained "+
 		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
 		        "inferred from the target reference if possible. "+
 		        "The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
@@ -68,35 +64,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"The translated amino acids will be limited to the specified feature location. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequenceAminoAcidResult, FastaSequenceReporter> 
+public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<FastaSequenceAminoAcidResult> 
 	implements ProvidedProjectModeCommand{
 
-	public static final String FILE_NAME = "fileName";
-
-	public static final String AC_REF_NAME = "acRefName";
-	public static final String FEATURE_NAME = "featureName";
-	
-	public static final String TARGET_REF_NAME = "targetRefName";
-	public static final String TIP_ALMT_NAME = "tipAlmtName";
-
-
-	private String fileName;
-	private String acRefName;
-	private String featureName;
-	private String tipAlmtName;
-	private String targetRefName;
-	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
-		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
-
-		super.configure(pluginConfigContext, configElem);
-	}
 
 	@Override
 	protected FastaSequenceAminoAcidResult execute(CommandContext cmdContext,
@@ -107,13 +77,14 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
+		String targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID, getTargetRefName());
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
-		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(tipAlmtName);
+		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(getTipAlmtName());
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
-		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, acRefName);
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
 
@@ -173,22 +144,6 @@ public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequ
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}
-
-	private Entry<String, DNASequence> getFastaEntry(
-			ConsoleCommandContext consoleCmdContext) {
-		byte[] fastaFileBytes = consoleCmdContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(consoleCmdContext, fastaFileBytes);
-		Map<String, DNASequence> headerToSeq = FastaUtils.parseFasta(fastaFileBytes);
-		if(headerToSeq.size() > 1) {
-			throw new FastaSequenceException(Code.MULTIPLE_FASTA_FILE_SEQUENCES, fileName);
-		}
-		if(headerToSeq.size() == 0) {
-			throw new FastaSequenceException(Code.NO_FASTA_FILE_SEQUENCES, fileName);
-		}
-		Entry<String, DNASequence> singleEntry = headerToSeq.entrySet().iterator().next();
-		return singleEntry;
-	}
-
 
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {

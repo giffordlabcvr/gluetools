@@ -28,7 +28,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 
 	private String alignerModuleName;
 	// optional -- Module of type textToQueryTransformer.
-	// Transforms SAM reference name to a where clause identifying the tip alignment reference.
+	// Transforms SAM reference name to a where clause identifying the target reference.
 	private String samRefTextToReferenceQueryModuleName;
 	private Integer readLogInterval;
 	
