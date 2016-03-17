@@ -113,11 +113,6 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		Map<String, String> featureLocPkMap = FeatureLocation.pkMap(thisRefSeq.getName(), featureName);
 		FeatureLocation currentFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, featureLocPkMap, true);
 		if(currentFeatureLoc == null && !currentFeature.isInformational()) {
-			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class,  featureLocPkMap, false);
-			currentFeatureLoc.setFeature(currentFeature);
-			currentFeatureLoc.setReferenceSequence(thisRefSeq);
-			cmdContext.commit();
-			
 			// intersect the aligned segments of this ref seq in the parent alignment with the
 			// feature location segments of the parent ref seq for this feature.
 			List<ReferenceSegment> parentFeatureLocSegs = featureTreeResult.getReferenceSegments();
@@ -139,6 +134,16 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			}
 			
 			int numAddedSegments = 0;
+			
+			if(intersection.size() == 0) {
+				return; // no segments // nothing added.
+			}
+			
+			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class,  featureLocPkMap, false);
+			currentFeatureLoc.setFeature(currentFeature);
+			currentFeatureLoc.setReferenceSequence(thisRefSeq);
+			cmdContext.commit();
+
 			// add segments to the new feature location based on the query start/end points of the intersection result.
 			for(QueryAlignedSegment intersectSeg: intersection) {
 				FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
@@ -148,6 +153,9 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 				cmdContext.commit();
 				numAddedSegments++;
 			}
+
+
+			
 			Map<String, Object> resultRow = new LinkedHashMap<String, Object>();
 			resultRow.put(ADDED_FEATURE_NAME, featureName);
 			resultRow.put(NUM_ADDED_SEGMENTS, new Integer(numAddedSegments));

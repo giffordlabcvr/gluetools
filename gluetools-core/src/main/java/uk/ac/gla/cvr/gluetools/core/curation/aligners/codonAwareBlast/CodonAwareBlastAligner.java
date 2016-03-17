@@ -132,7 +132,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 	
 	public static class CodonAwareBlastAlignerResult extends Aligner.AlignerResult {
 		public CodonAwareBlastAlignerResult(Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments) {
-			super("blastAlignerResult", fastaIdToAlignedSegments);
+			super("codonAwareBlastAlignerResult", fastaIdToAlignedSegments);
 		}
 	}
 

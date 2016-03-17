@@ -30,7 +30,7 @@ public class Lexer {
 				return data.substring(1, data.length()-1).replace("\'", "'").replace("\\\\", "\\");
 			}
 		},
-		WORD("(?:[^ \\\\'\"]|\\\\.)+"){
+		WORD("(?:[^ \t\f\r\n\\\\'\"]|\\\\.)+"){
 			@Override
 			protected String render(String data) {
 				return data.replace("\\ ", " ").replace("\\'", "'").replace("\\\"", "\"").replace("\\\\", "\\");

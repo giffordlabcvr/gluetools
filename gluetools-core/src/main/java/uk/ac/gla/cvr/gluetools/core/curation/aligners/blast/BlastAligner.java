@@ -107,34 +107,38 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 				fastaIdToAlignedSegments = BlastUtils.blastNResultsToAlignedSegmentsMap(refName, blastResults, 
 						new MyBlastHspFilter());
 			} else {
-				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName));
-				List<ReferenceSegment> refSegs = featureLoc.segmentsAsReferenceSegments();
-				if(refSegs.size() == 0) {
+				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName), true);
+				if(featureLoc == null) {
 					fastaIdToAlignedSegments = Collections.emptyMap();
-				} else if(refSegs.size() > 1) {
-					throw new AlignerException(Code.CANNOT_ALIGN_AGAINST_DISCONTIGUOUS_FEATURE_LOCATION, refName, featureName);
+				} else {
+					List<ReferenceSegment> refSegs = featureLoc.segmentsAsReferenceSegments();
+					if(refSegs.size() == 0) {
+						fastaIdToAlignedSegments = Collections.emptyMap();
+					} else if(refSegs.size() > 1) {
+						throw new AlignerException(Code.CANNOT_ALIGN_AGAINST_DISCONTIGUOUS_FEATURE_LOCATION, refName, featureName);
+					} else {
+						ReferenceSegment refSeg = refSegs.get(0);
+						CharSequence refNTs = featureLoc.getReferenceSequence().getSequence().getSequenceObject()
+								.getNucleotides(cmdContext, refSeg.getRefStart(), refSeg.getRefEnd());
+						String uuid = UUID.randomUUID().toString();
+						String blastRefName = refName+":"+featureName;
+						List<BlastResult> blastResults;
+						try {
+							BlastDB refDB = blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, blastRefName, refNTs.toString());
+							blastResults = getBlastRunner().executeBlast(cmdContext, refDB, fastaBytes);
+						} finally {
+							blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);
+						}
+						fastaIdToAlignedSegments = BlastUtils.blastNResultsToAlignedSegmentsMap(blastRefName, blastResults, new MyBlastHspFilter());
+						int offset = refSeg.getRefStart()-1;
+						fastaIdToAlignedSegments.forEach( (fastaId, alignedSegments) -> {
+							alignedSegments.forEach(seg -> {
+								seg.translateRef(offset);
+							});
+						});
+					}
 				}
-				ReferenceSegment refSeg = refSegs.get(0);
-				CharSequence refNTs = featureLoc.getReferenceSequence().getSequence().getSequenceObject()
-					.getNucleotides(cmdContext, refSeg.getRefStart(), refSeg.getRefEnd());
-				String uuid = UUID.randomUUID().toString();
-				String blastRefName = refName+":"+featureName;
-				List<BlastResult> blastResults;
-				try {
-					BlastDB refDB = blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, blastRefName, refNTs.toString());
-					blastResults = getBlastRunner().executeBlast(cmdContext, refDB, fastaBytes);
-				} finally {
-					blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);
-				}
-				fastaIdToAlignedSegments = BlastUtils.blastNResultsToAlignedSegmentsMap(blastRefName, blastResults, new MyBlastHspFilter());
-				int offset = refSeg.getRefStart()-1;
-				fastaIdToAlignedSegments.forEach( (fastaId, alignedSegments) -> {
-					alignedSegments.forEach(seg -> {
-						seg.translateRef(offset);
-					});
-				});
 			}
-			
 		}
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}

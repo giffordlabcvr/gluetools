@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopula
 import uk.ac.gla.cvr.gluetools.core.collation.referenceBuilder.GbRefBuilder;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
 import uk.ac.gla.cvr.gluetools.core.digs.DigsProber;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -40,6 +41,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(MutationFrequenciesReporter.class);
 		registerPluginClass(BlastAligner.class);
 		registerPluginClass(CodonAwareBlastAligner.class);
+		registerPluginClass(CompoundAligner.class);
 		
 		registerPluginClass(FastaAlignmentImporter.class);
 		registerPluginClass(BlastFastaAlignmentImporter.class);

@@ -5,8 +5,6 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner.BlastAlignCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner.BlastFileAlignCommand;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;

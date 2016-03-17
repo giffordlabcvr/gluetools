@@ -105,7 +105,7 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 	 * return a list of new segments which cover those locations which are covered by segments
 	 * in segments1 but not covered by segments in segments2. 
 	 * 
-	 * The returned segments will habe been cloned from segments in list segments1.
+	 * The returned segments will have been cloned from segments in list segments1.
 	 */
 	public static <SA extends IReferenceSegment,
 	   SB extends IReferenceSegment> List<SA> 
