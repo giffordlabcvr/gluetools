@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
@@ -11,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SequenceGroupBlastDB.SequenceGroupBlastDbKey;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB.SingleReferenceBlastDbKey;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporaryMultiSeqBlastDB.TemporaryMultiSeqBlastDbKey;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastDB.TemporarySingleSeqBlastDbKey;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
@@ -52,6 +56,12 @@ public class BlastDbManager {
 		return (TemporarySingleSeqBlastDB) ensureBlastDB(cmdContext, blastDbKey);
 	}
 
+	public TemporaryMultiSeqBlastDB createTempMultiSeqBlastDB(CommandContext cmdContext, String uuid, Map<String, DNASequence> sequences) {
+		TemporaryMultiSeqBlastDbKey blastDbKey = new TemporaryMultiSeqBlastDbKey(getProjectName(cmdContext), uuid, sequences);
+		return (TemporaryMultiSeqBlastDB) ensureBlastDB(cmdContext, blastDbKey);
+	}
+
+	
 	public boolean removeTempSingleSeqBlastDB(CommandContext cmdContext, String uuid) {
 		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, "", "");
 		BlastDB blastDB;
@@ -65,6 +75,21 @@ public class BlastDbManager {
 		return blastDbDir.delete();
 	}
 
+	
+	public boolean removeTempMultiSeqBlastDB(CommandContext cmdContext, String uuid) {
+		TemporaryMultiSeqBlastDbKey blastDbKey = new TemporaryMultiSeqBlastDbKey(getProjectName(cmdContext), uuid, null);
+		BlastDB blastDB;
+		synchronized(blastDbsMap) {
+			blastDB = blastDbsMap.remove(blastDbKey);
+			if(blastDB == null) {
+				return false;
+			}
+		}
+		File blastDbDir = getBlastDbDir(cmdContext, blastDB);
+		return blastDbDir.delete();
+	}
+
+	
 	private String getProjectName(CommandContext cmdContext) {
 		return ((ProjectMode) cmdContext.peekCommandMode()).getProject().getName();
 	}
@@ -138,6 +163,7 @@ public class BlastDbManager {
 			}
 		}
 	}
+
 
 
 	

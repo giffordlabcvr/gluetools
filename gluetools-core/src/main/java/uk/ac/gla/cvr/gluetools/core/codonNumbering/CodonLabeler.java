@@ -7,6 +7,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 
 public interface CodonLabeler {
 
-	public List<LabeledCodon> numberCodons(CommandContext cmdContext, FeatureLocation constrainingFeatureLoc);
+	public List<LabeledCodon> labelCodons(CommandContext cmdContext, FeatureLocation constrainingFeatureLoc);
 	
 }

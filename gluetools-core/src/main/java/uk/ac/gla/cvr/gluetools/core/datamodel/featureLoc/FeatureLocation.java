@@ -88,7 +88,7 @@ public class FeatureLocation extends _FeatureLocation {
 			} else {
 				Module rendererModule = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(labelerModuleName));
 				CodonLabeler codonLabeler = (CodonLabeler) (rendererModule.getModulePlugin(cmdContext.getGluetoolsEngine()));
-				labeledCodons = codonLabeler.numberCodons(cmdContext, this);
+				labeledCodons = codonLabeler.labelCodons(cmdContext, this);
 			}
 		}
 		return labeledCodons;

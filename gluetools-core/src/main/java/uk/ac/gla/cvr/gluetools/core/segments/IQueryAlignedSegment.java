@@ -70,5 +70,10 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 		setQueryEnd(getQueryEnd()+offset);
 	}
 
+	public default void translateRef(int offset) {
+		setRefStart(getRefStart()+offset);
+		setRefEnd(getRefEnd()+offset);
+	}
+
 	
 }

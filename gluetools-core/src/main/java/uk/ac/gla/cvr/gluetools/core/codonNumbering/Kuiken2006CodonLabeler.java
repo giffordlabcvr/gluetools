@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -11,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabelerExcepti
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -40,60 +40,79 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 	}
 
 	@Override
-	public List<LabeledCodon> numberCodons(CommandContext cmdContext, FeatureLocation constrainingFeatureLoc) {
-		Integer ntStart = ReferenceSegment.minRefStart(constrainingFeatureLoc.getSegments());
-		Integer ntEnd = ReferenceSegment.maxRefEnd(constrainingFeatureLoc.getSegments());
+	public List<LabeledCodon> labelCodons(CommandContext cmdContext, FeatureLocation featureLoc) {
+		Integer ntStart = ReferenceSegment.minRefStart(featureLoc.getSegments());
+		Integer ntEnd = ReferenceSegment.maxRefEnd(featureLoc.getSegments());
 
-		Feature feature = constrainingFeatureLoc.getFeature();
-		ReferenceSequence constrainingRef = constrainingFeatureLoc.getReferenceSequence();
-		Alignment alignment = constrainingRef.getUniqueAlignmentThisConstrains();
+		Feature feature = featureLoc.getFeature();
+		ReferenceSequence tipReference = featureLoc.getReferenceSequence();
 
-		ReferenceSequence rootReference = alignment.getAncConstrainingRef(cmdContext, rootReferenceName);
-		FeatureLocation rootFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(rootReference.getName(), feature.getName()));
-		
-		List<QueryAlignedSegment> constrainingRefToSelfSegs = constrainingFeatureLoc.getSegments().stream()
-				.map(seg -> new QueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getRefStart(), seg.getRefEnd()))
-				.collect(Collectors.toList());
-		
-		List<QueryAlignedSegment> constrainingRefToRootFull = 
-				alignment.translateToAncConstrainingRef(cmdContext, constrainingRefToSelfSegs, rootReference);
-		
-		List<QueryAlignedSegment> constrainingRefToRootInverted = constrainingRefToRootFull.stream()
-				.map(s -> s.invert()).collect(Collectors.toList());
-		
-		ReferenceSegment areaOfInterest = new ReferenceSegment(ntStart, ntEnd);
+		Integer tipCodon1Start = featureLoc.getCodon1Start(cmdContext);
+		Integer rootCodon1Start;
 
-		Integer constrainingCodon1Start = constrainingFeatureLoc.getCodon1Start(cmdContext);
-		Integer rootCodon1Start = rootFeatureLoc.getCodon1Start(cmdContext);
-		
-		constrainingRefToRootInverted = 
-				ReferenceSegment.intersection(constrainingRefToRootInverted, Arrays.asList(areaOfInterest), ReferenceSegment.cloneLeftSegMerger());
+		List<QueryAlignedSegment> tipRefFeatureToRootRefSegs;
+		if(tipReference.getName().equals(rootReferenceName)) {
+			tipRefFeatureToRootRefSegs = new ArrayList<QueryAlignedSegment>(Arrays.asList(new QueryAlignedSegment(ntStart, ntEnd, ntStart, ntEnd)));
+			rootCodon1Start = tipCodon1Start;
+		} else {
+			AlignmentMember tipAlmtMember = null;
 
-		List<QueryAlignedSegment> constrainingRefToRootSegs = constrainingRefToRootInverted.stream()
-				.map(s -> s.invert()).collect(Collectors.toList());
-		
+			List<Alignment> almtsConstrainedByTipRef = tipReference.getAlignments();
+			if(almtsConstrainedByTipRef.size() == 1) {
+				// this reference constrains a single alignment.
+				Alignment almtConstrainedByRef = almtsConstrainedByTipRef.get(0);
+				Alignment parent = almtConstrainedByRef.getParent();
+				if(parent != null) {
+					tipAlmtMember = tipReference.getConstrainedAlignmentMembership(parent.getName());
+				}
+			}
+			if(tipAlmtMember == null) {
+				tipAlmtMember = tipReference.getUniqueConstrainedAlignmentMembership();
+			}
+
+			Alignment tipAlignment = tipAlmtMember.getAlignment();
+
+			ReferenceSequence rootReference = tipAlignment.getAncConstrainingRef(cmdContext, rootReferenceName);
+			FeatureLocation rootFeatureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(rootReference.getName(), feature.getName()));
+
+			ReferenceSequence constrainingReference = tipAlignment.getConstrainingRef();
+			FeatureLocation constrainingFeatureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(constrainingReference.getName(), feature.getName()));
+
+
+			List<QueryAlignedSegment> tipRefToConstrainingRefSegs = tipAlmtMember.segmentsAsQueryAlignedSegments();
+
+			List<QueryAlignedSegment> tipRefFeatureToConstrRefSegs = 
+					ReferenceSegment.intersection(tipRefToConstrainingRefSegs, constrainingFeatureLoc.getSegments(), ReferenceSegment.cloneLeftSegMerger());
+
+			tipRefFeatureToRootRefSegs = 
+					tipAlignment.translateToAncConstrainingRef(cmdContext, tipRefFeatureToConstrRefSegs, rootReference);
+
+			rootCodon1Start = rootFeatureLoc.getCodon1Start(cmdContext);
+		}
+
 		List<LabeledCodon> numberedCodons = new ArrayList<LabeledCodon>();
-		
+
 		Integer lastRootLocation = null;
 		Integer lastConstrainingRefLocation = null;
 		QueryAlignedSegment currentSegment = null;
-		
-		
-		if(constrainingRefToRootSegs.isEmpty() || constrainingRefToRootSegs.get(0).getQueryStart() > ntStart) {
+
+
+		if(tipRefFeatureToRootRefSegs.isEmpty() || tipRefFeatureToRootRefSegs.get(0).getQueryStart() > ntStart) {
 			throw new Kuiken2006CodonLabelerException(Code.GAP_AT_START, rootReferenceName, ntStart);
 		}
-		
+
 		for(int i = ntStart; i <= ntEnd; i++) {
 			if(currentSegment != null) {
 				if(i > currentSegment.getQueryEnd()) {
 					currentSegment = null;
 				} 
 			}
-			if(currentSegment == null && !constrainingRefToRootSegs.isEmpty()) {
-				if(i >= constrainingRefToRootSegs.get(0).getQueryStart() &&
-						i <= constrainingRefToRootSegs.get(0).getQueryEnd()) {
-					currentSegment = constrainingRefToRootSegs.remove(0);
+			if(currentSegment == null && !tipRefFeatureToRootRefSegs.isEmpty()) {
+				if(i >= tipRefFeatureToRootRefSegs.get(0).getQueryStart() &&
+						i <= tipRefFeatureToRootRefSegs.get(0).getQueryEnd()) {
+					currentSegment = tipRefFeatureToRootRefSegs.remove(0);
 				}
 			}
 			if(currentSegment != null) {
@@ -102,13 +121,13 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 			}	
 			LabeledCodon labeledCodon = null;
 			if(currentSegment != null) {
-				if(TranslationUtils.isAtStartOfCodon(constrainingCodon1Start, i)) {
+				if(TranslationUtils.isAtStartOfCodon(tipCodon1Start, i)) {
 					int rootCodon = TranslationUtils.getCodon(rootCodon1Start, 
 							i+currentSegment.getQueryToReferenceOffset());
 					labeledCodon = new LabeledCodon(Integer.toString(rootCodon), i);
 				}
 			} else {
-				if(TranslationUtils.isAtStartOfCodon(constrainingCodon1Start, i)) {
+				if(TranslationUtils.isAtStartOfCodon(tipCodon1Start, i)) {
 					int diff = i-lastConstrainingRefLocation;
 					int lastRootCodon = TranslationUtils.getCodon(rootCodon1Start, lastRootLocation);
 					int constrainingCodon = TranslationUtils.getCodon(rootCodon1Start, lastRootLocation+diff);

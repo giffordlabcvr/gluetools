@@ -6,7 +6,9 @@ public class AlignerException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		MODULE_IS_NOT_AN_ALIGNER("moduleName");
+		MODULE_IS_NOT_AN_ALIGNER("moduleName"),
+		CANNOT_ALIGN_AGAINST_DISCONTIGUOUS_FEATURE_LOCATION("refName", "featureName"),
+		FEATURE_NAME_REQUIRED();
 
 		private String[] argNames;
 		private Code(String... argNames) {

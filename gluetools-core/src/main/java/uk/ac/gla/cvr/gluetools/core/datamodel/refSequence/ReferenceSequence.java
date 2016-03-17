@@ -145,7 +145,7 @@ public class ReferenceSequence extends _ReferenceSequence {
 	}
 	
 
-	public AlignmentMember getUniqueConstrainedAlignmentMemberships() {
+	public AlignmentMember getUniqueConstrainedAlignmentMembership() {
 		List<AlignmentMember> constrainedAlignmentMemberships = getConstrainedAlignmentMemberships();
 		if(constrainedAlignmentMemberships.size() == 0) {
 			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_MEMBER_OF_NO_CONSTRAINED_ALIGNMENTS, getName());
@@ -168,7 +168,7 @@ public class ReferenceSequence extends _ReferenceSequence {
 	// if no alignment is specified, assume there is a unique such alignment membership and return that.
 	public AlignmentMember getConstrainedAlignmentMembership(String tipAlmtName) {
 		if(tipAlmtName == null) {
-			return getUniqueConstrainedAlignmentMemberships();
+			return getUniqueConstrainedAlignmentMembership();
 		} else {
 			return getConstrainedAlignmentMemberships().stream()
 					.filter(am -> am.getAlignment().getName().equals(tipAlmtName))

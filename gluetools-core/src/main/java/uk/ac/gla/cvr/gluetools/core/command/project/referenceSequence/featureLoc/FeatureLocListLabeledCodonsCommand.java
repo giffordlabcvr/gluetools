@@ -5,8 +5,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 
 @CommandClass(
 		commandWords={"list", "labeled-codon"}, 
-		docoptUsages={},
-		docoptOptions={},
+		docoptUsages = { "" },
+		docoptOptions = { },
 		description="List the labeled codons on this feature location"
 )
 public class FeatureLocListLabeledCodonsCommand extends FeatureLocModeCommand<FeatureLocListLabeledCodonsResult> {

@@ -27,6 +27,7 @@ public class FeatureLocModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(FeatureLocGenerateGlueConfigCommand.class);
 		registerCommandClass(FeatureLocValidateCommand.class);
 		registerCommandClass(FeatureLocListLabeledCodonsCommand.class);
+		registerCommandClass(FeatureLocAminoAcidCommand.class);
 		
 		registerCommandClass(ExitCommand.class);
 	}
