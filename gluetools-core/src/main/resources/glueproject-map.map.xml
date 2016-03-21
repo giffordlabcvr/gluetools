@@ -106,6 +106,12 @@
 		<db-attribute name="NOTIFIABILITY" type="VARCHAR" isMandatory="true" length="50"/>
 		<db-attribute name="PARENT_NAME" type="VARCHAR" length="50"/>
 	</db-entity>
+	<db-entity name="VAR_ALMT_NOTE">
+		<db-attribute name="ALIGNMENT_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="FEATURE_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="REFERENCE_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="VARIATION_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="VCAT_MEMBERSHIP">
 		<db-attribute name="CATEGORY_NAME" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="VARIATION_FEATURE" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
@@ -170,6 +176,8 @@
 	<obj-entity name="Source" className="uk.ac.gla.cvr.gluetools.core.datamodel.source.Source" dbEntityName="SOURCE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
 	</obj-entity>
+	<obj-entity name="VarAlmtNote" className="uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote" dbEntityName="VAR_ALMT_NOTE" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+	</obj-entity>
 	<obj-entity name="Variation" className="uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation" dbEntityName="VARIATION" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="DESCRIPTION"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="NAME"/>
@@ -201,6 +209,9 @@
 	</db-relationship>
 	<db-relationship name="refSequence" source="ALIGNMENT" target="REFERENCE_SEQUENCE" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="variationNotes" source="ALIGNMENT" target="VAR_ALMT_NOTE" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="NAME" target="ALIGNMENT_NAME"/>
 	</db-relationship>
 	<db-relationship name="alignedSegments" source="ALIGNMENT_MEMBER" target="ALIGNED_SEGMENT" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="ALIGNMENT" target="ALIGNMENT"/>
@@ -306,6 +317,11 @@
 	<db-relationship name="sequences" source="SOURCE" target="SEQUENCE" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="NAME" target="SOURCE"/>
 	</db-relationship>
+	<db-relationship name="almtVarNotes" source="VARIATION" target="VAR_ALMT_NOTE" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="REF_SEQUENCE" target="REFERENCE_NAME"/>
+		<db-attribute-pair source="FEATURE" target="FEATURE_NAME"/>
+		<db-attribute-pair source="NAME" target="VARIATION_NAME"/>
+	</db-relationship>
 	<db-relationship name="featureLoc" source="VARIATION" target="FEATURE_LOCATION" toMany="false">
 		<db-attribute-pair source="REF_SEQUENCE" target="REF_SEQUENCE"/>
 		<db-attribute-pair source="FEATURE" target="FEATURE"/>
@@ -332,6 +348,14 @@
 	<db-relationship name="parent" source="VARIATION_CATEGORY" target="VARIATION_CATEGORY" toMany="false">
 		<db-attribute-pair source="PARENT_NAME" target="NAME"/>
 	</db-relationship>
+	<db-relationship name="alignment" source="VAR_ALMT_NOTE" target="ALIGNMENT" toMany="false">
+		<db-attribute-pair source="ALIGNMENT_NAME" target="NAME"/>
+	</db-relationship>
+	<db-relationship name="variation" source="VAR_ALMT_NOTE" target="VARIATION" toMany="false">
+		<db-attribute-pair source="REFERENCE_NAME" target="REF_SEQUENCE"/>
+		<db-attribute-pair source="FEATURE_NAME" target="FEATURE"/>
+		<db-attribute-pair source="VARIATION_NAME" target="NAME"/>
+	</db-relationship>
 	<db-relationship name="category" source="VCAT_MEMBERSHIP" target="VARIATION_CATEGORY" toMany="false">
 		<db-attribute-pair source="CATEGORY_NAME" target="NAME"/>
 	</db-relationship>
@@ -345,6 +369,7 @@
 	<obj-relationship name="members" source="Alignment" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="members"/>
 	<obj-relationship name="parent" source="Alignment" target="Alignment" deleteRule="Nullify" db-relationship-path="parent"/>
 	<obj-relationship name="refSequence" source="Alignment" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="refSequence"/>
+	<obj-relationship name="varAlmtNotes" source="Alignment" target="VarAlmtNote" deleteRule="Cascade" db-relationship-path="variationNotes"/>
 	<obj-relationship name="alignedSegments" source="AlignmentMember" target="AlignedSegment" deleteRule="Cascade" db-relationship-path="alignedSegments"/>
 	<obj-relationship name="alignment" source="AlignmentMember" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>
 	<obj-relationship name="sequence" source="AlignmentMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
@@ -374,8 +399,11 @@
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
 	<obj-relationship name="members" source="SequenceGroup" target="GroupMember" deleteRule="Cascade" db-relationship-path="members"/>
 	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
+	<obj-relationship name="alignment" source="VarAlmtNote" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>
+	<obj-relationship name="variation" source="VarAlmtNote" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="featureLoc" source="Variation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="featureLoc"/>
 	<obj-relationship name="positionVariations" source="Variation" target="PositionVariation" deleteRule="Cascade" db-relationship-path="positionVariations"/>
+	<obj-relationship name="varAlmtNotes" source="Variation" target="VarAlmtNote" deleteRule="Cascade" db-relationship-path="almtVarNotes"/>
 	<obj-relationship name="vcatMemberships" source="Variation" target="VcatMembership" deleteRule="Cascade" db-relationship-path="members"/>
 	<obj-relationship name="children" source="VariationCategory" target="VariationCategory" deleteRule="Deny" db-relationship-path="children"/>
 	<obj-relationship name="memberships" source="VariationCategory" target="VcatMembership" deleteRule="Cascade" db-relationship-path="memberships"/>

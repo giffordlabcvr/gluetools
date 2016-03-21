@@ -56,6 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
@@ -82,7 +83,8 @@ public class ModelBuilder {
 		SEQUENCE(Sequence.class),
 		VARIATION(Variation.class),
 		FEATURE(Feature.class),
-		ALIGNMENT(Alignment.class);
+		ALIGNMENT(Alignment.class),
+		VAR_ALMT_NOTE(VarAlmtNote.class);
 		
 		private Class<? extends GlueDataObject> dataObjectClass;
 
@@ -96,7 +98,7 @@ public class ModelBuilder {
 		
 	};
 	
-	public static final String configurableTablesString = "[sequence, variation, feature, alignment]";
+	public static final String configurableTablesString = "[sequence, variation, feature, alignment, var-almt-note]";
 	
 	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
 		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration, propertiesConfiguration));

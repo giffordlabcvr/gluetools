@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 
 /**
@@ -23,6 +24,7 @@ public abstract class _Variation extends GlueDataObject {
     public static final String TRANSLATION_TYPE_PROPERTY = "translationType";
     public static final String FEATURE_LOC_PROPERTY = "featureLoc";
     public static final String POSITION_VARIATIONS_PROPERTY = "positionVariations";
+    public static final String VAR_ALMT_NOTES_PROPERTY = "varAlmtNotes";
     public static final String VCAT_MEMBERSHIPS_PROPERTY = "vcatMemberships";
 
     public static final String FEATURE_PK_COLUMN = "FEATURE";
@@ -89,6 +91,18 @@ public abstract class _Variation extends GlueDataObject {
     @SuppressWarnings("unchecked")
     public List<PositionVariation> getPositionVariations() {
         return (List<PositionVariation>)readProperty(POSITION_VARIATIONS_PROPERTY);
+    }
+
+
+    public void addToVarAlmtNotes(VarAlmtNote obj) {
+        addToManyTarget(VAR_ALMT_NOTES_PROPERTY, obj, true);
+    }
+    public void removeFromVarAlmtNotes(VarAlmtNote obj) {
+        removeToManyTarget(VAR_ALMT_NOTES_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<VarAlmtNote> getVarAlmtNotes() {
+        return (List<VarAlmtNote>)readProperty(VAR_ALMT_NOTES_PROPERTY);
     }
 
 

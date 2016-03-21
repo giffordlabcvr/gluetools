@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.varAlmtNote;
 
 import org.w3c.dom.Element;
 
@@ -18,9 +18,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Unset a field value for the variation", 
-	furtherHelp="After the command has executed, the variation will have no value for the specified field.") 
-public class VariationUnsetFieldCommand extends VariationModeCommand<UpdateResult> {
+	description="Unset a field value for the variation-alignment note", 
+	furtherHelp="After the command has executed, the feature will have no value for the specified field.") 
+public class VarAlmtNoteUnsetFieldCommand extends VarAlmtNoteModeCommand<UpdateResult> {
 
 	public static final String FIELD_NAME = PropertyCommandDelegate.FIELD_NAME;
 	public static final String NO_COMMIT = PropertyCommandDelegate.NO_COMMIT;
