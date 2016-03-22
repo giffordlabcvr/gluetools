@@ -24,8 +24,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 
 public class SequenceFeatureResult {

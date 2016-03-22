@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.transcription;
+package uk.ac.gla.cvr.gluetools.core.translation;
 
 import java.util.ArrayList;
 import java.util.List;

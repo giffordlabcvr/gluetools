@@ -3,8 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.translation;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
-
 
 public class TestTranslation {
 

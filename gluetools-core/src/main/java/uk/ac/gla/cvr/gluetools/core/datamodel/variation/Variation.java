@@ -32,8 +32,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @GlueDataClass(
 		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },

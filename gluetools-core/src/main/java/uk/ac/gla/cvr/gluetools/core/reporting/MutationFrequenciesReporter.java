@@ -55,7 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import freemarker.core.ParseException;
 import freemarker.template.SimpleScalar;

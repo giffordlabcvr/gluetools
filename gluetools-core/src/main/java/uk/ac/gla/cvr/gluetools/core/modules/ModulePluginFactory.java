@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.modules;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.freemarker.FreemarkerTextToGlueTransformer;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BlastFastaAlignmentImporter;
@@ -47,6 +48,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(BlastFastaAlignmentImporter.class);
 		registerPluginClass(BlastFastaProteinAlignmentImporter.class);
 		registerPluginClass(FastaAlignmentExporter.class);
+		registerPluginClass(FastaProteinAlignmentExporter.class);
 		registerPluginClass(DigsProber.class);
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);

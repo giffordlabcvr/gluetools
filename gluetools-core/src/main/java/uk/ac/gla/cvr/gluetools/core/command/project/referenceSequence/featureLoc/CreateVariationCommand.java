@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 
 @CommandClass( 

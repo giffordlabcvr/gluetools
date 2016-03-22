@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @CommandClass(
 		commandWords={"amino-acid", "frequency"}, 

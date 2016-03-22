@@ -32,9 +32,9 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCou
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 

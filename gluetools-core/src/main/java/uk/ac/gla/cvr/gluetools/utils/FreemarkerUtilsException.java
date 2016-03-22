@@ -1,12 +1,14 @@
-package uk.ac.gla.cvr.gluetools.core.transcription;
+package uk.ac.gla.cvr.gluetools.utils;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class TranslationException extends GlueException {
+public class FreemarkerUtilsException extends GlueException {
 
+	
 	public enum Code implements GlueErrorCode {
-		
-		UNKNOWN_TRANSLATION_TYPE("unknownTranslationType");
+
+		INVALID_FREEMARKER_TEMPLATE("templateString", "errorTxt"),
+		FREEMARKER_TEMPLATE_FAILED("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -18,13 +20,13 @@ public class TranslationException extends GlueException {
 		}
 	}
 
-	public TranslationException(Code code, Object... errorArgs) {
+	public FreemarkerUtilsException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public TranslationException(Throwable cause, Code code,
+	public FreemarkerUtilsException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}
-
+	
 }

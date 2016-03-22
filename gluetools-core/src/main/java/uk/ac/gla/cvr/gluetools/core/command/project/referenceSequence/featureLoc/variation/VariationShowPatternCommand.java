@@ -4,7 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"show","pattern"}, 

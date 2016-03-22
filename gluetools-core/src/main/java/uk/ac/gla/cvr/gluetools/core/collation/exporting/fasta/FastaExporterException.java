@@ -5,7 +5,8 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class FastaExporterException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		NULL_IDENTIFIER("fastaHeader");
+		CANNOT_SPECIFY_FEATURE_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName"),
+		CANNOT_SPECIFY_RECURSIVE_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

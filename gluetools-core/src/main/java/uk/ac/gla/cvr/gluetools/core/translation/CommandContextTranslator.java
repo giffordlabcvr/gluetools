@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.transcription;
+package uk.ac.gla.cvr.gluetools.core.translation;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;

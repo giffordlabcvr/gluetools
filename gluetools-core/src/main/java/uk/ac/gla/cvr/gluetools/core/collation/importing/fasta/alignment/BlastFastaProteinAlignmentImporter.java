@@ -35,7 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner.BlastType;

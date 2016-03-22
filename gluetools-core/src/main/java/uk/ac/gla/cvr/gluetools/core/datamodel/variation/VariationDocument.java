@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 /**
  * Representation of a variation definition which is easy to serialize, and which can be used for computation.

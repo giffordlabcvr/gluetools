@@ -36,10 +36,10 @@ import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.transcription.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationFormat;
-import uk.ac.gla.cvr.gluetools.core.transcription.TranslationUtils;
-import uk.ac.gla.cvr.gluetools.core.transcription.Translator;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 
 @GlueDataClass(defaultListedProperties = {FeatureLocation.FEATURE_NAME_PATH})
