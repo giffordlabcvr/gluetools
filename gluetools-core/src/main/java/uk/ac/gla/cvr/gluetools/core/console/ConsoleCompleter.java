@@ -32,6 +32,7 @@ public class ConsoleCompleter implements Completer {
 		List<Token> tokens;
 		int cursorOffset = 0;
 		boolean backslashAtEnd = false;
+		boolean quoteWasAdded = false;
 		try {
 			tokens = Lexer.lex(buffer);
 		} catch(ConsoleException ce) {
@@ -39,18 +40,22 @@ public class ConsoleCompleter implements Completer {
 				cursorOffset = 1;
 				try {
 					tokens = Lexer.lex(buffer+"\"");
+					quoteWasAdded = true;
 				} catch(ConsoleException ce2) {
 					try {
 						tokens = Lexer.lex(buffer+"'");
+						quoteWasAdded = true;
 					} catch(ConsoleException ce3) {
 						if(buffer.endsWith("\\")) {
 							cursorOffset = 0;
 							backslashAtEnd = true;
 							try {
 								tokens = Lexer.lex(buffer.substring(0, buffer.length()-1)+"\"");
+								quoteWasAdded = true;
 							} catch(ConsoleException ce4) {
 								try {
 									tokens = Lexer.lex(buffer.substring(0, buffer.length()-1)+"'");
+									quoteWasAdded = true;
 								} catch(ConsoleException ce5) {
 									throw ce;
 								}
@@ -98,12 +103,12 @@ public class ConsoleCompleter implements Completer {
 		}
 		List<String> lookupBasis = lookupBasisTokens.stream().map(Token::render).collect(Collectors.toList());
 		
-		return completeAux(candidates, suggestionPos, prefix, lookupBasis, false, finalTokenType, backslashAtEnd);
+		return completeAux(candidates, suggestionPos, prefix, lookupBasis, false, finalTokenType, backslashAtEnd, quoteWasAdded);
 	}
 
 	private int completeAux(List<CharSequence> candidates, int suggestionPos,
 			String prefix, List<String> lookupBasis, boolean requireModeWrappable, TokenType finalTokenType, 
-			boolean backslashAtEnd) {
+			boolean backslashAtEnd, boolean quoteWasAdded) {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
 		CommandMode<?> cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
@@ -131,7 +136,7 @@ public class ConsoleCompleter implements Completer {
 			try {
 				enterModeCommand.execute(cmdContext);
 				enterModeSucceded = true;
-				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true, finalTokenType, backslashAtEnd);
+				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true, finalTokenType, backslashAtEnd, quoteWasAdded);
 			} catch(DataModelException dme) {
 				if(dme.getCode() == DataModelException.Code.OBJECT_NOT_FOUND) {
 					// enter mode command failed because we were unable to look up the object.
@@ -155,14 +160,14 @@ public class ConsoleCompleter implements Completer {
 				List<String> unfilteredCandidates = suggestions.stream().map(s -> {
 					String suggestedWord = s.getSuggestedWord();
 					boolean completed = s.isCompleted();
-					suggestedWord = escapeSuggestion(finalTokenType, suggestedWord, completed);
+					suggestedWord = escapeSuggestion(finalTokenType, suggestedWord, quoteWasAdded, completed);
 					if(completed) {
 						return suggestedWord+" ";
 					} else {
 						return suggestedWord;
 					}}).collect(Collectors.toList());
 
-				String escapedPrefix = escapeSuggestion(finalTokenType, prefix, false) + (backslashAtEnd ? "\\" : "");
+				String escapedPrefix = escapeSuggestion(finalTokenType, prefix, quoteWasAdded, false) + (backslashAtEnd ? "\\" : "");
 				List<String> filteredCandidates = unfilteredCandidates.stream().filter(s -> s.startsWith(escapedPrefix)).collect(Collectors.toList());
 				candidates.addAll(filteredCandidates);
 				return suggestionPos;
@@ -171,13 +176,13 @@ public class ConsoleCompleter implements Completer {
 	}
 
 	private String escapeSuggestion(TokenType finalTokenType,
-			String suggestedWord, boolean completed) {
-		if(finalTokenType == TokenType.DOUBLEQUOTED) {
+			String suggestedWord, boolean quoteWasAdded, boolean completed) {
+		if(quoteWasAdded && finalTokenType == TokenType.DOUBLEQUOTED) {
 			suggestedWord = Lexer.toDoubleQuoted(suggestedWord);
 			if(!completed) {
 				suggestedWord = suggestedWord.substring(0, suggestedWord.length()-1);
 			}
-		} else if(finalTokenType == TokenType.SINGLEQUOTED) {
+		} else if(quoteWasAdded && finalTokenType == TokenType.SINGLEQUOTED) {
 			suggestedWord = Lexer.toSingleQuoted(suggestedWord);
 			if(!completed) {
 				suggestedWord = suggestedWord.substring(0, suggestedWord.length()-1);
