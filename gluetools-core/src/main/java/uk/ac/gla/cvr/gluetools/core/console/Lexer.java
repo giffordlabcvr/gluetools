@@ -125,6 +125,13 @@ public class Lexer {
 		return tokens;		
 	}
 
+	public static String quotifyIfNecessary(String input) {
+		if(input.contains(" ") || input.contains("'") || input.contains("\\") || input.contains("\"")) {
+			return toDoubleQuoted(input);
+		}
+		return input;
+	}
+	
 	public static String toSingleQuoted(String input) {
 		return "'"+input.replace("'", "\\'").replace("\\\\", "\\")+"'";
 	}

@@ -31,11 +31,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"import", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u ) ] [-b <batchSize>] <sourcePath>"
+		"[ ( -i | -u ) ] [-s] [-b <batchSize>] <sourcePath>"
 	}, 
 	docoptOptions={
 			"-i, --incremental                        Add to source, don't overwrite",
 			"-u, --update                             Add to source, overwrite",
+			"-s, --suppressSkipWarning                Don't warn when a file is skipped",
 			"-b <batchSize>, --batchSize <batchSize>  Commit batch size [default: 250]"},
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 	furtherHelp=
@@ -57,11 +58,13 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String INCREMENTAL = "incremental";
 	public static final String UPDATE = "update";
+	public static final String SUPPRESS_SKIP_WARNING = "suppressSkipWarning";
 
 	private String sourcePath;
 	private Integer batchSize;
 	private Boolean incremental;
 	private Boolean update;
+	private Boolean suppressSkipWarning;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -73,6 +76,7 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 		if(incremental && update) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify both --incremental and --update");
 		}
+		suppressSkipWarning = PluginUtils.configureBooleanProperty(configElem, SUPPRESS_SKIP_WARNING, true);
 	}
 
 	@Override
@@ -99,24 +103,40 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 		int sequencesAdded = 0;
 		int skipped = 0;
 		for(String fileName: fileNames) {
+			boolean importFile = true;
 			File filePath = new File(fullPath, fileName);
 			int lastIndexOfDot = fileName.lastIndexOf('.');
 			if(lastIndexOfDot == -1) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "File "+
-						filePath.getPath()+" has no extension");
+				if(!suppressSkipWarning) {
+					GlueLogger.getGlueLogger().warning("Skipping file "+filePath.getPath()+": it has no extension");
+				}
+				importFile = false;
 			}
 			if(lastIndexOfDot == 0) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Cannot get sequenceID from file "+
-						filePath.getPath());
+				if(!suppressSkipWarning) {
+					GlueLogger.getGlueLogger().warning("Skipping file "+filePath.getPath()+": it starts with a '.'");
+				}
+				importFile = false;
 			}
-			String sequenceID = fileName.substring(0, lastIndexOfDot);
-			String extension = fileName.substring(lastIndexOfDot+1, fileName.length());
-			SequenceFormat seqFormat = SequenceFormat.detectFormatFromExtension(extension);
-			
-			if(incremental && 
-					GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true) != null) {
-				skipped++;
-			} else {
+			SequenceFormat seqFormat = null;
+			String sequenceID = null;
+			if(importFile) {
+				sequenceID = fileName.substring(0, lastIndexOfDot);
+				String extension = fileName.substring(lastIndexOfDot+1, fileName.length());
+				seqFormat = SequenceFormat.detectFormatFromExtension(extension, true);
+				if(seqFormat == null) {
+					if(!suppressSkipWarning) {
+						GlueLogger.getGlueLogger().warning("Skipping file "+filePath.getPath()+": unknown sequence format");
+					}
+					importFile = false;
+				}
+
+				if(incremental && 
+						GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true) != null) {
+					importFile = false;
+				} 
+			}
+			if(importFile) {
 				if(update) {
 					GlueDataObject.delete(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
 				}
@@ -133,6 +153,8 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 				fileResult.put("sequenceFormat", seqFormat.name());
 				rowData.add(fileResult);
 				sequencesAdded++;
+			} else {
+				skipped++;
 			}
 			if( (sequencesAdded+skipped) % batchSize.intValue() == 0) {
 				if(sequencesAdded != lastCommitSequencesAdded) {

@@ -90,6 +90,7 @@ public class Console implements CommandResultRenderingContext
 		try {
 			handleLine(line, false, true);
 		} catch(GlueException ge) {
+			commandContext.newObjectContext(); // due to error, the current object context may lack integrity.
 			handleGlueException(ge);
 		}
 	}

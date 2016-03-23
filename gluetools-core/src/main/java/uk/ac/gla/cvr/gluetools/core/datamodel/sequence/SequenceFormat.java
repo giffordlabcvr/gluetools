@@ -95,10 +95,17 @@ public enum SequenceFormat {
 	}
 
 	public static SequenceFormat detectFormatFromExtension(String extension) {
+		return detectFormatFromExtension(extension, false);
+	}
+	
+	public static SequenceFormat detectFormatFromExtension(String extension, boolean allowNull) {
 		for(SequenceFormat seqFormat : SequenceFormat.values()) {
 			if(Arrays.asList(seqFormat.getAcceptedFileExtensions()).contains(extension)) {
 				return seqFormat;
 			}
+		}
+		if(allowNull) {
+			return null;
 		}
 		throw new SequenceException(SequenceException.Code.UNABLE_TO_DETERMINE_SEQUENCE_FORMAT_FROM_FILE_EXTENSION, extension);
 	}

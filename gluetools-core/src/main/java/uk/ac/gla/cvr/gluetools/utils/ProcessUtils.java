@@ -7,6 +7,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import uk.ac.gla.cvr.gluetools.core.console.Lexer;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class ProcessUtils {
 
@@ -61,6 +65,10 @@ public class ProcessUtils {
 		Process process = null;
 		ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
 		ByteArrayOutputStream errorBytes = new ByteArrayOutputStream();
+		List<String> quotifiedCmdList = processBuilder.command().stream()
+				.map(arg -> Lexer.quotifyIfNecessary(arg))
+				.collect(Collectors.toList());
+		GlueLogger.getGlueLogger().fine("Running external process: "+String.join(" ", quotifiedCmdList));
 		byte[] drainBuffer = new byte[DRAIN_BUFFER_SIZE];
 		try {
 			try {
