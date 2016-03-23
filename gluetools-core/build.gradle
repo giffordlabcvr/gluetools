@@ -15,6 +15,11 @@ remotes {
     user = 'sing01j'
     identity = file('/Users/joshsinger/.ssh/omega_id_rsa')
   }
+  alpha {
+    host = 'alpha.cvr.gla.ac.uk'
+    user = 'sing01j'
+    identity = file('/Users/joshsinger/.ssh/alpha_id_rsa')
+  }
 }
 
 buildscript {
@@ -134,6 +139,28 @@ task deployJarOmega(dependsOn: ['jarAll']) {
 	  deployJarOmegaTouchfile.createNewFile()
   }
 }
+
+// gluetools core jar on Alpha
+task deployJarAlpha(dependsOn: ['jarAll']) {
+  ext.jarFile = new File(buildDir, '/libs/'+project.name+"-all-"+version+'.jar')
+  ext.deployJarAlphaTouchfile = new File(buildDir, '/deployJarAlpha.touchfile')
+  inputs.file jarFile
+  outputs.file deployJarAlphaTouchfile
+  doLast {
+	  println "Uploading "+jarFile.name
+	  ssh.run {
+	    session(remotes.alpha) {
+	      execute 'rm /home2/sing01j/gluetools/lib/*.jar'
+	      put from: jarFile, into: '/home2/sing01j/gluetools/lib/'
+	      execute 'chmod a+r /home2/sing01j/gluetools/lib/*'
+	    }
+	  }
+	  deployJarAlphaTouchfile.delete()
+	  buildDir.mkdirs()
+	  deployJarAlphaTouchfile.createNewFile()
+  }
+}
+
 
 
 
