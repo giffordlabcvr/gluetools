@@ -63,11 +63,11 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 				Alignment almtConstrainedByRef = almtsConstrainedByTipRef.get(0);
 				Alignment parent = almtConstrainedByRef.getParent();
 				if(parent != null) {
-					tipAlmtMember = tipReference.getConstrainedAlignmentMembership(parent.getName());
+					tipAlmtMember = tipReference.getTipAlignmentMembership(parent.getName());
 				}
 			}
 			if(tipAlmtMember == null) {
-				tipAlmtMember = tipReference.getUniqueConstrainedAlignmentMembership();
+				tipAlmtMember = tipReference.getUniqueTipAlignmentMembership();
 			}
 
 			Alignment tipAlignment = tipAlmtMember.getAlignment();

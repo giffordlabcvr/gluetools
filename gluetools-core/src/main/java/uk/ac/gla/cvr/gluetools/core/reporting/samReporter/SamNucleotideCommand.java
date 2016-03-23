@@ -76,7 +76,7 @@ public class SamNucleotideCommand extends SamReporterCommand<SamNucleotideResult
 		}
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 				ReferenceSequence.pkMap(getTargetRefName(consoleCmdContext, samReporter, samRefName)));
-		AlignmentMember tipAlmtMember = targetRef.getConstrainedAlignmentMembership(getTipAlmtName());
+		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
