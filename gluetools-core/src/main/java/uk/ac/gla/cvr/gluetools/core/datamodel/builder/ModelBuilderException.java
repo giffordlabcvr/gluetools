@@ -8,7 +8,8 @@ public class ModelBuilderException extends GlueException {
 		
 		PROJECT_TABLE_MISSING("projectName", "tableName"), 
 		SCHEMA_VERSION_LATER_THAN_CURRENT("dbSchemaVersion", "currentSchemaVersion"),
-		SCHEMA_MIGRATION_NOT_IMPLEMENTED("dbSchemaVersion", "currentSchemaVersion"), 
+		SCHEMA_MIGRATION_NOT_IMPLEMENTED("dbSchemaVersion", "currentSchemaVersion", 
+				"mysqlLine", "username", "password", "dbName"), 
 		MIGRATE_SCHEMA_OPTION_REMINDER("dbSchemaVersion", "currentSchemaVersion");
 
 		private String[] argNames;

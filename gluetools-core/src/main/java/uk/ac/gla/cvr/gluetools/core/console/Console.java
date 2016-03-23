@@ -40,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLoggingFormatter;
@@ -361,7 +362,13 @@ public class Console implements CommandResultRenderingContext
 		ConsoleLoggerHandler handler = new ConsoleLoggerHandler(this);
 		handler.setFormatter(new GlueLoggingFormatter());
 		GlueLogger.getGlueLogger().addHandler(handler);
-		GluetoolsEngine gluetoolsEngine = GluetoolsEngine.initInstance(configFilePath, this.migrateSchema);
+		GluetoolsEngine gluetoolsEngine = null;
+		try {
+			gluetoolsEngine = GluetoolsEngine.initInstance(configFilePath, this.migrateSchema);
+		} catch(ModelBuilderException mbe) {
+			System.err.println(mbe.getLocalizedMessage());
+			System.exit(1);
+		}
 		this.commandContext = new ConsoleCommandContext(gluetoolsEngine, this);
 		if(inlineConsoleOptions != null) {
 			inlineConsoleOptions.forEach((optionName, optionValue) -> {

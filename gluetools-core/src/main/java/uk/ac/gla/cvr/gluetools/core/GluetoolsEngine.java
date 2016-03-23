@@ -131,7 +131,22 @@ public class GluetoolsEngine implements Plugin {
 						throw new ModelBuilderException(Code.MIGRATE_SCHEMA_OPTION_REMINDER, dbSchemaVersion, currentSchemaVersion);
 					}
 				} else {
-					throw new ModelBuilderException(Code.SCHEMA_MIGRATION_NOT_IMPLEMENTED, dbSchemaVersion, currentSchemaVersion);
+					String osName = System.getProperty("os.name");
+					String mysqlLine = "/path/to/mysql";
+					if(osName.equals("Linux")) {
+						mysqlLine = "mysql";
+					} else if(osName.equals("Mac OS X")) {
+						mysqlLine = "/usr/local/mysql/bin/mysql";
+					}
+					String username = dbConfiguration.getUsername().orElse("<username>");
+					String password = dbConfiguration.getPassword().orElse("<password>");
+					String dbName = "<dbName>";
+					String jdbcUrl = dbConfiguration.getJdbcUrl();
+					if(jdbcUrl.contains("/")) {
+						dbName = jdbcUrl.substring(jdbcUrl.lastIndexOf("/")+1);
+					}
+					throw new ModelBuilderException(Code.SCHEMA_MIGRATION_NOT_IMPLEMENTED, 
+							dbSchemaVersion, currentSchemaVersion, mysqlLine, username, password, dbName);
 				}
 			}
 			rootServerRuntime = ModelBuilder.createRootRuntime(dbConfiguration, propertiesConfiguration);
