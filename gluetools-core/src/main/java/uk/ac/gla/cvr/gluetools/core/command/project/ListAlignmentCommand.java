@@ -21,18 +21,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list alignment -w \"name like 'NS%'\"\n"+
-		"  list alignment -w \"CUSTOM_FIELD = 'value1'\"\n"+
-		"  list alignment name CUSTOM_FIELD") 
+		"  list alignment -w \"custom_field = 'value1'\"\n"+
+		"  list alignment name custom_field") 
 public class ListAlignmentCommand extends AbstractListCTableCommand<Alignment> {
 
 	public ListAlignmentCommand() {
-		super(ConfigurableTable.ALIGNMENT);
+		super(ConfigurableTable.alignment);
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.ALIGNMENT);
+			super(ConfigurableTable.alignment);
 		}
 	}
 

@@ -17,11 +17,11 @@ public abstract class _PositionVariation extends GlueDataObject {
     public static final String FEATURE_LOCATION_PROPERTY = "featureLocation";
     public static final String VARIATION_PROPERTY = "variation";
 
-    public static final String FEATURE_PK_COLUMN = "FEATURE";
-    public static final String POSITION_PK_COLUMN = "POSITION";
-    public static final String REF_SEQUENCE_PK_COLUMN = "REF_SEQUENCE";
-    public static final String TRANSLATION_TYPE_PK_COLUMN = "TRANSLATION_TYPE";
-    public static final String VARIATION_PK_COLUMN = "VARIATION";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String POSITION_PK_COLUMN = "position";
+    public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
+    public static final String TRANSLATION_TYPE_PK_COLUMN = "translation_type";
+    public static final String VARIATION_NAME_PK_COLUMN = "variation_name";
 
     public void setPosition(Integer position) {
         writeProperty(POSITION_PROPERTY, position);

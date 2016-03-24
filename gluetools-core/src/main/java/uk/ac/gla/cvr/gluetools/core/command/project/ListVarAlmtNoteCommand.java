@@ -21,18 +21,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list var-almt-note -w \"alignment.name like 'AL_3%'\"\n"+
-		"  list var-almt-note -w \"CUSTOM_FIELD = 'value1'\"\n"+
-		"  list var-almt-note alignment.name CUSTOM_FIELD") 
+		"  list var-almt-note -w \"custom_field = 'value1'\"\n"+
+		"  list var-almt-note alignment.name custom_field") 
 public class ListVarAlmtNoteCommand extends AbstractListCTableCommand<VarAlmtNote> {
 
 	public ListVarAlmtNoteCommand() {
-		super(ConfigurableTable.VAR_ALMT_NOTE);
+		super(ConfigurableTable.var_almt_note);
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.VAR_ALMT_NOTE);
+			super(ConfigurableTable.var_almt_note);
 		}
 	}
 

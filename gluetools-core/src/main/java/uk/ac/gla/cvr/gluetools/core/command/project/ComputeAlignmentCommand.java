@@ -54,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 		furtherHelp = "Computes the aligned segments of certain members of the specified alignment, using a given aligner module. "+
 		"If <whereClause> is not specified, all members of the alignment are re-aligned. "+
 		"Alignment members are aligned in batches, according to <batchSize>. Default <batchSize> is 50."+
-		" Example: compute alignment AL1 blastAligner -w \"sequence.GENOTYPE = 4\""
+		" Example: compute alignment AL1 blastAligner -w \"sequence.genotype = 4\""
 )
 public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignmentCommand.ComputeAlignmentResult> {
 

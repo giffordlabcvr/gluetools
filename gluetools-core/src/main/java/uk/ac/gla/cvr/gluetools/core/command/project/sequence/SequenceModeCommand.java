@@ -61,7 +61,7 @@ public abstract class SequenceModeCommand<R extends CommandResult> extends Comma
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					return 
-							getSequenceMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.SEQUENCE)
+							getSequenceMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence)
 							.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 				}
 			});

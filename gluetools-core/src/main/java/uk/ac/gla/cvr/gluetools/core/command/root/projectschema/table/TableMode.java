@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.TableCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = TableSequencesModeCommandFactory.class)
@@ -14,12 +15,12 @@ public class TableMode extends CommandMode<TableCommand> {
 
 	
 	private Project project;
-	private String tableName;
+	private ConfigurableTable cTable;
 	
-	public TableMode(CommandContext cmdContext, Project project, TableCommand command, String tableName) {
-		super(command, tableName);
+	public TableMode(CommandContext cmdContext, Project project, TableCommand command, ConfigurableTable cTable) {
+		super(command, cTable.name());
 		this.project = project;
-		this.tableName = tableName;
+		this.cTable = cTable;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -29,7 +30,7 @@ public class TableMode extends CommandMode<TableCommand> {
 		super.addModeConfigToCommandElem(cmdClass, elem);
 		if(TableModeCommand.class.isAssignableFrom(cmdClass)) {
 			appendModeConfigToElem(elem, TableModeCommand.PROJECT_NAME, project.getName());
-			appendModeConfigToElem(elem, TableModeCommand.TABLE_NAME, tableName);
+			appendModeConfigToElem(elem, TableModeCommand.TABLE_NAME, cTable.name());
 		}
 	}
 

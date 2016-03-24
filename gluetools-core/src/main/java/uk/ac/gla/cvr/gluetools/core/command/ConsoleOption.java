@@ -27,6 +27,7 @@ public enum ConsoleOption {
 	INTERACTIVE_TABLES("interactive-tables", "If \"true\" table results may be browsed interactively", "true", new String[]{"true", "false"}),
 	CMD_RESULT_FORMAT("cmd-result-format", "Configures the format for command results on the console", "text", new String[]{"text", "xml", "json", "tab", "csv"}),
 	TABLE_RESULT_DOUBLE_PRECISION("table-result-float-precision", "Configures the decimal places precision for floating point numbers in table, tab and csv results", "full", new String[]{"full", "1", "2", "3", "4"}),
+	COMPLETER_OPTIONS_DISPLAY("completer-options-display", "Configures whether long, short, or both forms of options are displayed during command completion", "short_only", new String[]{"short_only", "long_only", "both"}),
 	LOG_LEVEL("log-level", "Configures the level of detail in the GLUE logger category", null, GlueLogger.ALL_LOG_LEVELS) {
 		@Override
 		public String getDefaultValue() {

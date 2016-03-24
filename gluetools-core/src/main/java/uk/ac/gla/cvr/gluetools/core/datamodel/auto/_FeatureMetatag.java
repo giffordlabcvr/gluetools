@@ -15,8 +15,8 @@ public abstract class _FeatureMetatag extends GlueDataObject {
     public static final String VALUE_PROPERTY = "value";
     public static final String FEATURE_PROPERTY = "feature";
 
-    public static final String FEATURE_NAME_PK_COLUMN = "FEATURE_NAME";
-    public static final String NAME_PK_COLUMN = "NAME";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String NAME_PK_COLUMN = "name";
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);

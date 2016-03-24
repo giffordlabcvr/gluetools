@@ -15,10 +15,10 @@ public abstract class _VarAlmtNote extends GlueDataObject {
     public static final String ALIGNMENT_PROPERTY = "alignment";
     public static final String VARIATION_PROPERTY = "variation";
 
-    public static final String ALIGNMENT_NAME_PK_COLUMN = "ALIGNMENT_NAME";
-    public static final String FEATURE_NAME_PK_COLUMN = "FEATURE_NAME";
-    public static final String REFERENCE_NAME_PK_COLUMN = "REFERENCE_NAME";
-    public static final String VARIATION_NAME_PK_COLUMN = "VARIATION_NAME";
+    public static final String ALIGNMENT_NAME_PK_COLUMN = "alignment_name";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
+    public static final String VARIATION_NAME_PK_COLUMN = "variation_name";
 
     public void setAlignment(Alignment alignment) {
         setToOneTarget(ALIGNMENT_PROPERTY, alignment, true);

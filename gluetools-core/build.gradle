@@ -176,7 +176,7 @@ task deployHcvProject(dependsOn: ['deployJar']) {
 	  println "Uploading GLUE project: "+hcvProjectDir.name
 	  ssh.run {
 	    session(remotes.gluehome) {
-	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**", "ravFinding/**" }
+	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**" }
 	      ext.projectDestDir = '/opt/gluehome/hcvGlue'
 	      execute 'rm -rf '+projectDestDir
 	      execute 'mkdir '+projectDestDir
@@ -212,7 +212,7 @@ task deployHcvProjectOmega(dependsOn: ['deployJarOmega', 'deployGlueConfigOmega'
 	  println "Uploading GLUE project: "+hcvProjectDir.name
 	  ssh.run {
 	    session(remotes.omega) {
-	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**", "samBam/**", "ravFinding/**" }
+	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "ncbi-curated/**" }
 	      ext.projectDestDir = '/home/sing01j/gluetools/projects/HCV'
 	      execute 'rm -rf '+projectDestDir
 	      execute 'mkdir '+projectDestDir

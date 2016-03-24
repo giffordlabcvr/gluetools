@@ -88,13 +88,13 @@ public class DocoptFSM {
 				break;
 			case OPTION:
 				String optionWithMinus = currentToken.getData();
-				Node nextNode = currentNode.literalToNew(optionWithMinus);
+				Node nextNode = currentNode.optionToNew(optionWithMinus);
 				Character optionLetter = optionWithMinus.charAt(1);
 				String optionWord = optionMap.get(optionLetter);
 				if(optionWord == null) {
 					throw new RuntimeException("Missing option documentation: "+optionWithMinus);
 				}
-				currentNode.literalTo(nextNode, "--"+optionWord);
+				currentNode.optionTo(nextNode, "--"+optionWord);
 				currentNode = nextNode;
 				break;
 			default:
@@ -147,6 +147,14 @@ public class DocoptFSM {
 		public Node literalToNew(String literal) {
 			Node newNode = new Node();
 			literalTo(newNode, literal);
+			return newNode;
+		}
+		public void optionTo(Node toNode, String option) {
+			transitions.add(new OptionTransition(toNode, option));
+		}
+		public Node optionToNew(String option) {
+			Node newNode = new Node();
+			optionTo(newNode, option);
 			return newNode;
 		}
 
@@ -213,6 +221,21 @@ public class DocoptFSM {
 		}
 	}
 
+	public static class OptionTransition extends Transition {
+		private String option;
+		public OptionTransition(Node toNode, String option) {
+			super(toNode);
+			this.option = option;
+		}
+		public String getOption() {
+			return option;
+		}
+		public String toString() {
+			return "option:"+option;
+		}
+	}
+
+	
 	public static class VariableTransition extends Transition {
 		private String variableName;
 		public VariableTransition(Node toNode, String variableName) {

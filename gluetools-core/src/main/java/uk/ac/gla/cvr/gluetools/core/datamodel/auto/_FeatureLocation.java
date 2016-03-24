@@ -23,8 +23,8 @@ public abstract class _FeatureLocation extends GlueDataObject {
     public static final String SEGMENTS_PROPERTY = "segments";
     public static final String VARIATIONS_PROPERTY = "variations";
 
-    public static final String FEATURE_PK_COLUMN = "FEATURE";
-    public static final String REF_SEQUENCE_PK_COLUMN = "REF_SEQUENCE";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
 
     public void setFeature(Feature feature) {
         setToOneTarget(FEATURE_PROPERTY, feature, true);

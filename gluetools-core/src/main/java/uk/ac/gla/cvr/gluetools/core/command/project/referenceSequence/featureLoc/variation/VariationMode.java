@@ -69,7 +69,7 @@ public class VariationMode extends CommandMode<VariationCommand> implements Conf
 
 	@Override
 	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.VARIATION;
+		return ConfigurableTable.variation;
 	}
 
 	

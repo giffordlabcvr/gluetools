@@ -68,7 +68,7 @@ public class VarAlmtNoteMode extends CommandMode<VariationAlmtNoteCommand> imple
 
 	@Override
 	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.VAR_ALMT_NOTE;
+		return ConfigurableTable.var_almt_note;
 	}
 
 	@Override

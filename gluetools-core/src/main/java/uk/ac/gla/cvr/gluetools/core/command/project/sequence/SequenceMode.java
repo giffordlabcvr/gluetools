@@ -61,7 +61,7 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Config
 
 	@Override
 	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.SEQUENCE;
+		return ConfigurableTable.sequence;
 	}
 
 	

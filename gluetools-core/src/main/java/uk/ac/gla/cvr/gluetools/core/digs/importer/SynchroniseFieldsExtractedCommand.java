@@ -29,7 +29,7 @@ public class SynchroniseFieldsExtractedCommand extends DigsImporterFieldsCommand
 	protected SynchroniseFieldsExtractedResult execute(CommandContext cmdContext, DigsImporter digsImporter) {
 		List<ImportExtractedFieldRule> importExtractedFieldRules = digsImporter.getImportExtractedFieldRules();
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
-		try(ModeCloser modeCloser = cmdContext.pushCommandMode("table", "SEQUENCE")) {
+		try(ModeCloser modeCloser = cmdContext.pushCommandMode("table", "sequence")) {
 			Map<String, Map<String, Object>> glueSeqFieldNameToFieldProperties = getExistingFieldProperties(cmdContext);
 			for(ImportExtractedFieldRule rule: importExtractedFieldRules) {
 				Map<String, Object> row = new LinkedHashMap<String, Object>();

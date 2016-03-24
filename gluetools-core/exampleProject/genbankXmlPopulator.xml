@@ -1,6 +1,6 @@
 <genbankXmlPopulator>
 	<gbPrimaryAccession>
-		<fieldPopulator fieldName="GB_PRIMARY_ACCESSION">
+		<fieldPopulator fieldName="gb_primary_accession">
 			<!-- Null existing values will always be overwritten. 
 		         If overwriteExistingNonNull is set to true, non-null existing field values will also be overwritten. 
 		         Default if omitted is true -->
@@ -11,37 +11,37 @@
 		</fieldPopulator>
 	</gbPrimaryAccession>
 	<gbAccessionVersion>
-		<fieldPopulator fieldName="GB_ACCESSION_VERSION"/>
+		<fieldPopulator fieldName="gb_accession_version"/>
 	</gbAccessionVersion>
 	<gbLocus>
-		<fieldPopulator fieldName="GB_LOCUS"/>
+		<fieldPopulator fieldName="gb_locus"/>
 	</gbLocus>
 	<gbOtherID>
-		<fieldPopulator fieldName="GB_GI_NUMBER">
+		<fieldPopulator fieldName="gb_gi_number">
 			<matchPattern>gi\|(\d+)</matchPattern>
 			<outputTemplate>${g1}</outputTemplate>
 		</fieldPopulator>
 	</gbOtherID>
 	<gbTaxonomy>
-		<fieldPopulator fieldName="GB_TAXONOMY"/>
+		<fieldPopulator fieldName="gb_taxonomy"/>
 	</gbTaxonomy>
 	<gbLength>
-		<fieldPopulator fieldName="GB_LENGTH"/>
+		<fieldPopulator fieldName="gb_length"/>
 	</gbLength>
 	<gbUpdateDate>
-		<fieldPopulator fieldName="GB_UPDATE_DATE"/>
+		<fieldPopulator fieldName="gb_update_date"/>
 	</gbUpdateDate>
 	<gbCreateDate>
-		<fieldPopulator fieldName="GB_CREATE_DATE"/>
+		<fieldPopulator fieldName="gb_create_date"/>
 	</gbCreateDate>
 	<gbOrganism>
-		<fieldPopulator fieldName="GB_ORGANISM">
+		<fieldPopulator fieldName="gb_organism">
 			<valueConverter>
 				<matchPattern>.*Hepatitis C [vV]irus.*</matchPattern>
 				<outputTemplate>Hepatitis C virus</outputTemplate>
 			</valueConverter>
 		</fieldPopulator>
-		<fieldPopulator fieldName="GB_RECOMBINANT">
+		<fieldPopulator fieldName="gb_recombinant">
 				<matchPattern>[Rr]ecombinant</matchPattern>
 				<outputTemplate>true</outputTemplate>
 		</fieldPopulator>
@@ -54,16 +54,16 @@
 	</gbDivision>
 	<gbFeature key="source">
 		<gbQualifier name="isolate">
-			<fieldPopulator fieldName="GB_ISOLATE"/>
+			<fieldPopulator fieldName="gb_isolate"/>
 		</gbQualifier>
 		<gbQualifier name="country">
-			<fieldPopulator fieldName="GB_COUNTRY">
+			<fieldPopulator fieldName="gb_country">
 				<matchPattern>([A-Za-z ]+)(?::.*)?</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="host">
-			<fieldPopulator fieldName="GB_HOST">
+			<fieldPopulator fieldName="gb_host">
 				<valueConverter>
 					<matchPattern>.*Homo [sS]apiens.*</matchPattern>
 					<outputTemplate>Homo sapiens</outputTemplate>
@@ -71,33 +71,33 @@
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="note">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>genotype:?\s+([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>genotype:?\s+[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_RECOMBINANT">
+			<fieldPopulator fieldName="gb_recombinant">
 				<matchPattern>[Rr]ecombinant</matchPattern>
 				<outputTemplate>true</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>subtype\s+([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>subtype\s+[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="genotype">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
@@ -107,74 +107,74 @@
 		Had a look at ViPR (www.viprbrc.org), they are also treating serotype as 
 		genotype / subtype -->
 		<gbQualifier name="serotype">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 	
 		<gbQualifier name="type">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="subtype">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>([1-9])[a-z]+</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="organism">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>subtype\s+([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>subtype\s+[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
 		</gbQualifier>
 		<gbQualifier name="strain">
-			<fieldPopulator fieldName="GB_GENOTYPE">
+			<fieldPopulator fieldName="gb_genotype">
 				<matchPattern>([1-9])</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_SUBTYPE">
+			<fieldPopulator fieldName="gb_subtype">
 				<matchPattern>[1-9]([a-zA-Z]+)</matchPattern>
 				<outputTemplate>${g1?lower_case}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_RECOMBINANT">
+			<fieldPopulator fieldName="gb_recombinant">
 				<matchPattern>[Rr]ecombinant</matchPattern>
 				<outputTemplate>true</outputTemplate>
 			</fieldPopulator>		
-			<fieldPopulator fieldName="GB_RECOMBINANT">
+			<fieldPopulator fieldName="gb_recombinant">
 				<matchPattern>RF</matchPattern>
 				<outputTemplate>true</outputTemplate>
 			</fieldPopulator>		
 		</gbQualifier>
 		<gbQualifier name="collection_date">
-			<fieldPopulator fieldName="GB_COLLECTION_MONTH_DAY">
+			<fieldPopulator fieldName="gb_collection_month_day">
 				<matchPattern>(\d{2})-[A-Za-z]{3}-\d{4}</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_COLLECTION_MONTH">
+			<fieldPopulator fieldName="gb_collection_month">
 				<matchPattern>\d{2}-([A-Za-z]{3})-\d{4}</matchPattern>
 				<outputTemplate>${g1?upper_case}</outputTemplate>
 			</fieldPopulator>
-			<fieldPopulator fieldName="GB_COLLECTION_YEAR">
+			<fieldPopulator fieldName="gb_collection_year">
 				<matchPattern>(\d{4})</matchPattern>
 				<outputTemplate>${g1}</outputTemplate>
 			</fieldPopulator>

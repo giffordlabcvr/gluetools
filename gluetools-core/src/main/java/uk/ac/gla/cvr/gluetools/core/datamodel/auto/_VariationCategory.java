@@ -21,7 +21,7 @@ public abstract class _VariationCategory extends GlueDataObject {
     public static final String MEMBERSHIPS_PROPERTY = "memberships";
     public static final String PARENT_PROPERTY = "parent";
 
-    public static final String NAME_PK_COLUMN = "NAME";
+    public static final String NAME_PK_COLUMN = "name";
 
     public void setDescription(String description) {
         writeProperty(DESCRIPTION_PROPERTY, description);

@@ -7,25 +7,25 @@ schema-project EXAMPLE_PROJECT
   table SEQUENCES
 
     # fields which will be populated from GenBank XML
-    create field GB_GI_NUMBER VARCHAR
-    create field GB_PRIMARY_ACCESSION VARCHAR
-    create field GB_ACCESSION_VERSION VARCHAR
-    create field GB_LOCUS VARCHAR
-    create field GB_LENGTH INTEGER
-    create field GB_GENOTYPE VARCHAR
-    create field GB_SUBTYPE VARCHAR
-    create field GB_RECOMBINANT BOOLEAN
+    create field gb_gi_number VARCHAR
+    create field gb_primary_accession VARCHAR
+    create field gb_accession_version VARCHAR
+    create field gb_locus VARCHAR
+    create field gb_length INTEGER
+    create field gb_genotype VARCHAR
+    create field gb_subtype VARCHAR
+    create field gb_recombinant BOOLEAN
     create field GB_PATENT_RELATED BOOLEAN
-    create field GB_ORGANISM VARCHAR
-    create field GB_ISOLATE VARCHAR
-    create field GB_TAXONOMY VARCHAR 200
-    create field GB_HOST VARCHAR 
-    create field GB_COUNTRY VARCHAR
-    create field GB_COLLECTION_YEAR INTEGER 
-    create field GB_COLLECTION_MONTH VARCHAR
-    create field GB_COLLECTION_MONTH_DAY INTEGER
-    create field GB_CREATE_DATE DATE
-    create field GB_UPDATE_DATE DATE
+    create field gb_organism VARCHAR
+    create field gb_isolate VARCHAR
+    create field gb_taxonomy VARCHAR 200
+    create field gb_host VARCHAR 
+    create field gb_country VARCHAR
+    create field gb_collection_year INTEGER 
+    create field gb_collection_month VARCHAR
+    create field gb_collection_month_day INTEGER
+    create field gb_create_date DATE
+    create field gb_update_date DATE
 
     # fields which will be populated from FASTA header
     create field HEADER_1 VARCHAR 50
@@ -46,7 +46,7 @@ project EXAMPLE_PROJECT
 
   # manually set a field on this sequence
   sequence local localGenbank1
-    set field GB_HOST "a creature"
+    set field gb_host "a creature"
     exit
     
   # create an ncbi-importer module from XML config
@@ -129,9 +129,9 @@ project EXAMPLE_PROJECT
   import sequence sequencesToAlign seqToAlign2 FASTA sequencesToAlign/seq2.fasta
   import sequence sequencesToAlign seqToAlign3 FASTA sequencesToAlign/seq3.fasta
   
-  sequence sequencesToAlign seqToAlign1 set field GB_PRIMARY_ACCESSION XY99901
-  sequence sequencesToAlign seqToAlign2 set field GB_PRIMARY_ACCESSION XY99902
-  sequence sequencesToAlign seqToAlign3 set field GB_PRIMARY_ACCESSION XY99903
+  sequence sequencesToAlign seqToAlign1 set field gb_primary_accession XY99901
+  sequence sequencesToAlign seqToAlign2 set field gb_primary_accession XY99902
+  sequence sequencesToAlign seqToAlign3 set field gb_primary_accession XY99903
   
   create module --fileName  fasta-alignment-importer fastaAlignmentImporter.xml
   

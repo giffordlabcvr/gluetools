@@ -39,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"The optional whereClause allows a sequence to be specified via its field values.\n"+
 	"If this query returns multiple or zero sequences, the command fails.\n"+
 	"Examples:\n"+
-	"  sequence -w \"GB_PRIMARY_ACCESSION = 'GR195721'\"\n"+
+	"  sequence -w \"gb_primary_accession = 'GR195721'\"\n"+
 	"  sequence mySource 12823121")
 @EnterModeCommandClass(
 		commandModeClass = SequenceMode.class)

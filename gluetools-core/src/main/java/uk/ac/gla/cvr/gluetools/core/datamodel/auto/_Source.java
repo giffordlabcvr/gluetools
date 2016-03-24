@@ -16,7 +16,7 @@ public abstract class _Source extends GlueDataObject {
     public static final String NAME_PROPERTY = "name";
     public static final String SEQUENCES_PROPERTY = "sequences";
 
-    public static final String NAME_PK_COLUMN = "NAME";
+    public static final String NAME_PK_COLUMN = "name";
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);

@@ -27,9 +27,9 @@ public abstract class _Variation extends GlueDataObject {
     public static final String VAR_ALMT_NOTES_PROPERTY = "varAlmtNotes";
     public static final String VCAT_MEMBERSHIPS_PROPERTY = "vcatMemberships";
 
-    public static final String FEATURE_PK_COLUMN = "FEATURE";
-    public static final String NAME_PK_COLUMN = "NAME";
-    public static final String REF_SEQUENCE_PK_COLUMN = "REF_SEQUENCE";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String NAME_PK_COLUMN = "name";
+    public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
 
     public void setDescription(String description) {
         writeProperty(DESCRIPTION_PROPERTY, description);

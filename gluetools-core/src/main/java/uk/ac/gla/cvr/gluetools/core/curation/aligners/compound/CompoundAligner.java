@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.curation.aligners.compound;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +77,7 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 			alignerResults.add(aligner.doAlign(cmdContext, refName, queryIdToNucleotides));
 		}
 		
-		Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
+		final Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
 		for(String queryId: queryIdToNucleotides.keySet()) {
 			List<QueryAlignedSegment> finalAlignedSegs = new ArrayList<QueryAlignedSegment>();
 			Comparator<IReferenceSegment> segmentComparator = new Comparator<IReferenceSegment>() {
@@ -89,6 +88,9 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 			
 			for(AlignerResult alignerResult: alignerResults) {
 				List<QueryAlignedSegment> alignerSegsForQuery = alignerResult.getQueryIdToAlignedSegments().get(queryId);
+				if(alignerSegsForQuery == null) {
+					alignerSegsForQuery = new ArrayList<QueryAlignedSegment>();
+				}
 				finalAlignedSegs.addAll(ReferenceSegment.subtract(alignerSegsForQuery, finalAlignedSegs));
 				Collections.sort(finalAlignedSegs, segmentComparator);
 			}

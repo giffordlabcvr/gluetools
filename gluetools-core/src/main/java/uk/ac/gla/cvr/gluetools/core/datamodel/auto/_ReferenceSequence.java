@@ -21,7 +21,7 @@ public abstract class _ReferenceSequence extends GlueDataObject {
     public static final String FEATURE_LOCATIONS_PROPERTY = "featureLocations";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
-    public static final String NAME_PK_COLUMN = "NAME";
+    public static final String NAME_PK_COLUMN = "name";
 
     public void setCreationTime(long creationTime) {
         writeProperty(CREATION_TIME_PROPERTY, creationTime);

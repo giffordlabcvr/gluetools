@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<projectName> [<description>]"},
 	description="Create a new project",
 	metaTags={CmdMeta.updatesDatabase},
-	furtherHelp="The project name must be a valid database identifier, e.g. MY_PROJECT_1") 
+	furtherHelp="The project name must be a valid database identifier, e.g. my_project_1") 
 public class CreateProjectCommand extends RootModeCommand<CreateResult> {
 
 	private String projectName;

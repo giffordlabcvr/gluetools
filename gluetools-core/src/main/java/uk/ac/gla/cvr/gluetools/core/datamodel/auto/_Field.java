@@ -17,9 +17,9 @@ public abstract class _Field extends GlueDataObject {
     public static final String TYPE_PROPERTY = "type";
     public static final String PROJECT_PROPERTY = "project";
 
-    public static final String NAME_PK_COLUMN = "NAME";
-    public static final String PROJECT_PK_COLUMN = "PROJECT";
-    public static final String TABLE_NAME_PK_COLUMN = "TABLE_NAME";
+    public static final String NAME_PK_COLUMN = "name";
+    public static final String PROJECT_NAME_PK_COLUMN = "project_name";
+    public static final String TABLE_NAME_PK_COLUMN = "table_name";
 
     public void setMaxLength(Integer maxLength) {
         writeProperty(MAX_LENGTH_PROPERTY, maxLength);

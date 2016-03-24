@@ -17,7 +17,7 @@ public abstract class _SequenceGroup extends GlueDataObject {
     public static final String NAME_PROPERTY = "name";
     public static final String MEMBERS_PROPERTY = "members";
 
-    public static final String NAME_PK_COLUMN = "NAME";
+    public static final String NAME_PK_COLUMN = "name";
 
     public void setLastUpdateTime(long lastUpdateTime) {
         writeProperty(LAST_UPDATE_TIME_PROPERTY, lastUpdateTime);

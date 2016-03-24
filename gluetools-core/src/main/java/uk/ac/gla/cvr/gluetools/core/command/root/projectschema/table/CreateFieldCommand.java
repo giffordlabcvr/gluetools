@@ -22,7 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<fieldName> <type> [<maxLength>]"},
 	description="Create a new field in the table",
 	metaTags={CmdMeta.updatesDatabase},
-	furtherHelp="The field name must be a valid database identifier, e.g. MY_FIELD_1") 
+	furtherHelp="The field name must be a valid database identifier, e.g. my_field_1") 
 public class CreateFieldCommand extends TableModeCommand<CreateResult> {
 
 	public static final String MAX_LENGTH = "maxLength";

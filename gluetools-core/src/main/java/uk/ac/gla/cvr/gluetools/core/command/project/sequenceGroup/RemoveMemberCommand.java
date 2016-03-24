@@ -38,7 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.sequenceGroup.SequenceGroup;
 	"Examples:\n"+
 	"  remove member localSource GH12325\n"+
 	"  remove member -w \"sequence.source.name = 'local'\"\n"+
-	"  remove member -w \"sequence.sequenceID like 'f%' and sequence.CUSTOM_FIELD = 'value1'\"\n"+
+	"  remove member -w \"sequence.sequenceID like 'f%' and sequence.custom_field = 'value1'\"\n"+
 	"  remove member -w \"sequence.sequenceID = '3452467'\"\n"+
 	"  remove member -a\n"+
 	"Note: removing a sequence from the group does not delete it from the project."

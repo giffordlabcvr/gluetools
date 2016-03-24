@@ -68,7 +68,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"they overlap, mappings from new segments are preferred.\n"+
 		"The default is OVERWRITE.\n"+
 		"Example:\n"+
-		"  derive alignment AL_MASTER AL_GENOTYPE_3 -w \"sequence.sequenceID = '3452467'\" -m OVERWRITE") 
+		"  derive alignment AL_MASTER AL_genotype_3 -w \"sequence.sequenceID = '3452467'\" -m OVERWRITE") 
 public class DeriveAlignmentCommand extends ProjectModeCommand<DeriveAlignmentCommand.DeriveAlignmentResult> {
 
 	public static final String SOURCE_ALMT_NAME = "sourceAlmtName";

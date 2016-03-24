@@ -22,20 +22,20 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 	"Where fieldNames are specified, only these field values will be displayed.\n"+
 	"Examples:\n"+
 	"  list sequence -w \"source.name = 'local'\"\n"+
-	"  list sequence -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
-	"  list sequence sequenceID CUSTOM_FIELD"
+	"  list sequence -w \"sequenceID like 'f%' and custom_field = 'value1'\"\n"+
+	"  list sequence sequenceID custom_field"
 ) 
 public class ListSequenceCommand extends AbstractListCTableCommand<Sequence> {
 
 	
 	public ListSequenceCommand() {
-		super(ConfigurableTable.SEQUENCE);
+		super(ConfigurableTable.sequence);
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.SEQUENCE);
+			super(ConfigurableTable.sequence);
 		}
 	}
 

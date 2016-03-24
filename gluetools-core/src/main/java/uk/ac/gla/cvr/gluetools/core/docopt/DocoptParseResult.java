@@ -7,11 +7,18 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.LiteralTransition;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
+import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.OptionTransition;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Transition;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.VariableTransition;
 
 public class DocoptParseResult {
 
+	public enum OptionsDisplay {
+		BOTH,
+		SHORT_ONLY,
+		LONG_ONLY
+	}
+	
 	private Map<String, Object> bindings = new LinkedHashMap<String, Object>();
 	private List<String> nextLiterals = new ArrayList<String>();
 	private String nextVariable;
@@ -31,7 +38,7 @@ public class DocoptParseResult {
 	private DocoptParseResult() {
 	}
 
-	public static DocoptParseResult parse(List<String> args, Map<Character, String> optionsMap, Node startNode) {
+	public static DocoptParseResult parse(List<String> args, Map<Character, String> optionsMap, Node startNode, OptionsDisplay optionsDisplay) {
 		Node currentNode = startNode;
 		DocoptParseResult result = new DocoptParseResult();
 		for(String arg: args) {
@@ -40,13 +47,13 @@ public class DocoptParseResult {
 				return result;
 			}
 			for(Transition transition: nonNullTransitions) {
-				if(transition instanceof LiteralTransition) {
-					String literal = ((LiteralTransition) transition).getLiteral();
-					if(literal.equals(arg)) {
-						if(literal.startsWith("--")) {
-							result.bindings.put(literal.replace("--", ""), true);
-						} else if(literal.startsWith("-")) {
-							result.bindings.put(optionsMap.get(literal.charAt(1)), true);
+				if(transition instanceof OptionTransition) {
+					String option = ((OptionTransition) transition).getOption();
+					if(option.equals(arg)) {
+						if(option.startsWith("--")) {
+							result.bindings.put(option.replace("--", ""), true);
+						} else if(option.startsWith("-")) {
+							result.bindings.put(optionsMap.get(option.charAt(1)), true);
 						}
 						currentNode = transition.getToNode();
 						break;
@@ -82,7 +89,16 @@ public class DocoptParseResult {
 			} else if(finalTransition instanceof VariableTransition) {
 				String variableName = ((VariableTransition) finalTransition).getVariableName();
 				result.nextVariable = variableName;
-			}	
+			} else if(finalTransition instanceof OptionTransition) {
+				String option = ((OptionTransition) finalTransition).getOption();
+				if(option.startsWith("--")) {
+					if(optionsDisplay == OptionsDisplay.BOTH || optionsDisplay == OptionsDisplay.LONG_ONLY) {
+						result.nextLiterals.add(option);
+					}
+				} else if(optionsDisplay == OptionsDisplay.BOTH || optionsDisplay == OptionsDisplay.SHORT_ONLY) {
+					result.nextLiterals.add(option);
+				}
+			} 	
 		}
 		// System.out.println("nonNullTransitions: "+finalNonNullTransitions);
 		return result;

@@ -13,7 +13,7 @@ public abstract class _ProjectSetting extends GlueDataObject {
     public static final String NAME_PROPERTY = "name";
     public static final String VALUE_PROPERTY = "value";
 
-    public static final String NAME_PK_COLUMN = "NAME";
+    public static final String NAME_PK_COLUMN = "name";
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);

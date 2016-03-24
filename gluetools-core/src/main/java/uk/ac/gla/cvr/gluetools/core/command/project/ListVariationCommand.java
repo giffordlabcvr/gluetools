@@ -22,19 +22,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list variation -w \"name like 'NS%'\"\n"+
-		"  list variation -w \"CUSTOM_FIELD = 'value1'\"\n"+
-		"  list variation name CUSTOM_FIELD") 
+		"  list variation -w \"custom_field = 'value1'\"\n"+
+		"  list variation name custom_field") 
 public class ListVariationCommand extends AbstractListCTableCommand<Variation> {
 
 	public ListVariationCommand() {
-		super(ConfigurableTable.VARIATION);
+		super(ConfigurableTable.variation);
 		setSortComparator(new VariationSortComparator());
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.VARIATION);
+			super(ConfigurableTable.variation);
 		}
 	}
 

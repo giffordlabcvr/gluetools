@@ -9,7 +9,7 @@
     <matchPattern><![CDATA[xxx\.(?<primaryAcc>\w+)\.yyy]]></matchPattern>
     <!-- optional: if omitted the template sequenceID = '{$g1}' is used, which will match
          group 1 with the GLUE sequence ID -->
-    <outputTemplate>GB_PRIMARY_ACCESSION = '${primaryAcc}'</outputTemplate>
+    <outputTemplate>gb_primary_accession = '${primaryAcc}'</outputTemplate>
   </idClauseExtractorFormatter>
   <!-- If false, the import command will throw an acception if the FASTA ID does not match the matchPattern
        If true, it will just ignore these FASTA alignment sequences -->

@@ -17,13 +17,13 @@ public abstract class _AlignedSegment extends GlueDataObject {
     public static final String REF_START_PROPERTY = "refStart";
     public static final String ALIGNMENT_MEMBER_PROPERTY = "alignmentMember";
 
-    public static final String ALIGNMENT_PK_COLUMN = "ALIGNMENT";
-    public static final String MEMBER_END_PK_COLUMN = "MEMBER_END";
-    public static final String MEMBER_START_PK_COLUMN = "MEMBER_START";
-    public static final String REF_END_PK_COLUMN = "REF_END";
-    public static final String REF_START_PK_COLUMN = "REF_START";
-    public static final String SEQUENCE_PK_COLUMN = "SEQUENCE";
-    public static final String SOURCE_PK_COLUMN = "SOURCE";
+    public static final String ALIGNMENT_NAME_PK_COLUMN = "alignment_name";
+    public static final String MEMBER_END_PK_COLUMN = "member_end";
+    public static final String MEMBER_START_PK_COLUMN = "member_start";
+    public static final String REF_END_PK_COLUMN = "ref_end";
+    public static final String REF_START_PK_COLUMN = "ref_start";
+    public static final String SEQUENCE_ID_PK_COLUMN = "sequence_id";
+    public static final String SOURCE_NAME_PK_COLUMN = "source_name";
 
     public void setMemberEnd(Integer memberEnd) {
         writeProperty(MEMBER_END_PROPERTY, memberEnd);

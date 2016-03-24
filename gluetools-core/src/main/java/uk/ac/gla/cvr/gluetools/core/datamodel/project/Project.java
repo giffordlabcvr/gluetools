@@ -128,7 +128,7 @@ public class Project extends _Project {
 	}
 
 	public List<String> getListableMemberFields() {
-		List<String> validMemberFieldsList = getListableProperties(ConfigurableTable.SEQUENCE).stream().
+		List<String> validMemberFieldsList = getListableProperties(ConfigurableTable.sequence).stream().
 			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList());
 		return validMemberFieldsList;
 	}

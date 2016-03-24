@@ -14,8 +14,8 @@ public abstract class _SeqOrigData extends GlueDataObject {
     public static final String PACKED_DATA_PROPERTY = "packedData";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
-    public static final String SEQUENCE_ID_PK_COLUMN = "SEQUENCE_ID";
-    public static final String SOURCE_PK_COLUMN = "SOURCE";
+    public static final String SEQUENCE_ID_PK_COLUMN = "sequence_id";
+    public static final String SOURCE_NAME_PK_COLUMN = "source_name";
 
     public void setPackedData(byte[] packedData) {
         writeProperty(PACKED_DATA_PROPERTY, packedData);

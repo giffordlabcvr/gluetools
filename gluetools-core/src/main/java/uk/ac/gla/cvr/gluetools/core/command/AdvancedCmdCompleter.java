@@ -19,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
+import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult.OptionsDisplay;
 
 public class AdvancedCmdCompleter extends CommandCompleter {
 
@@ -154,7 +155,15 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		Map<Character, String> optionsMap = cmdUsage.optionsMap();
 		Node startNode = cmdUsage.createFSM(optionsMap);
-		DocoptParseResult parseResult = DocoptParseResult.parse(argStrings, optionsMap, startNode);
+		String optionsDisplayString = cmdContext.getOptionValue(ConsoleOption.COMPLETER_OPTIONS_DISPLAY);
+		DocoptParseResult.OptionsDisplay optionsDisplay = DocoptParseResult.OptionsDisplay.valueOf(optionsDisplayString.toUpperCase());
+		if(optionsDisplay == OptionsDisplay.SHORT_ONLY && prefix.startsWith("--")) {
+			optionsDisplay = OptionsDisplay.BOTH;
+		}
+		if(optionsDisplay == OptionsDisplay.LONG_ONLY && prefix.matches("^-[a-zA-Z]$")) {
+			optionsDisplay = OptionsDisplay.BOTH;
+		}
+		DocoptParseResult parseResult = DocoptParseResult.parse(argStrings, optionsMap, startNode, optionsDisplay);
 		String variableName = parseResult.getNextVariable();
 		List<CompletionSuggestion> results = new ArrayList<CompletionSuggestion>();
 		if(variableName != null) {
@@ -293,9 +302,9 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 		protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
 			if(customOnly) {
-				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.SEQUENCE);
+				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.sequence);
 			} else {
-				return getProject(cmdContext).getListableProperties(ConfigurableTable.SEQUENCE);
+				return getProject(cmdContext).getListableProperties(ConfigurableTable.sequence);
 			}
 		}
 

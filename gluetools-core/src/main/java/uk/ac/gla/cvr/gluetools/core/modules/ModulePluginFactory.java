@@ -16,11 +16,9 @@ import uk.ac.gla.cvr.gluetools.core.collation.referenceBuilder.GbRefBuilder;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
-import uk.ac.gla.cvr.gluetools.core.digs.DigsProber;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
-import uk.ac.gla.cvr.gluetools.core.reporting.custom.RavFinder;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
@@ -49,16 +47,12 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(BlastFastaProteinAlignmentImporter.class);
 		registerPluginClass(FastaAlignmentExporter.class);
 		registerPluginClass(FastaProteinAlignmentExporter.class);
-		registerPluginClass(DigsProber.class);
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
 		registerPluginClass(SamReporter.class);
 		registerPluginClass(FastaSequenceReporter.class);
 		registerPluginClass(Kuiken2006CodonLabeler.class);
 		registerPluginClass(TextToQueryTransformer.class);
-		
-		// custom!
-		registerPluginClass(RavFinder.class);
 		
 		
 	}

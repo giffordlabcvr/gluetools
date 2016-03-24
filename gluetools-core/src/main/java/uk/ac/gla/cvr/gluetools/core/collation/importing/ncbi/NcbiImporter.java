@@ -130,9 +130,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				ncbiImporterElem, SEQUENCE_ID_FIELD, false)).orElse(SequenceIdField.GI_NUMBER);
 		overwriteExisting = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, OVERWRITE_EXISTING, false)).orElse(false);
 		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, MAX_DOWNLOADED, false);
-		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, GI_NUMBER_FIELD_NAME, "GB_GI_NUMBER");
+		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, GI_NUMBER_FIELD_NAME, "gb_gi_number");
 		recurseOnContigs = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, RECURSE_ON_CONTIGS, false)).orElse(false);
-		isAssemblyFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, IS_ASSEMBLY_FIELD_NAME, "GB_IS_ASSEMBLY");
+		isAssemblyFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, IS_ASSEMBLY_FIELD_NAME, "gb_is_assembly");
 		
 		
 		if(!(
@@ -716,7 +716,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	private boolean initCachedGiNumbers(CommandContext cmdContext) {
 		boolean cachedGiNumbers = true;
-		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.SEQUENCE);
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence);
 		if(!customSequenceFieldNames.contains(giNumberFieldName)) {
 			cachedGiNumbers = false;
 			GlueLogger.getGlueLogger().warning("No sequence field \""+giNumberFieldName+"\" exists in the project. Importer performance will be impeded as a result.");
@@ -726,7 +726,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	private boolean initStoreIsAssembly(CommandContext cmdContext) {
 		boolean storeIsAssembly = true;
-		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.SEQUENCE);
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence);
 		if(!customSequenceFieldNames.contains(isAssemblyFieldName)) {
 			storeIsAssembly = false;
 			GlueLogger.getGlueLogger().warning("No sequence field \""+isAssemblyFieldName+"\" exists in the project. Importer will not record whether sequences are assemblies.");

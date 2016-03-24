@@ -29,7 +29,7 @@ public class CheckFieldsExtractedCommand extends DigsImporterFieldsCommand<OkRes
 
 	public static void checkFields(CommandContext cmdContext, DigsImporter digsImporter) {
 		List<ImportExtractedFieldRule> importExtractedFieldRules = digsImporter.getImportExtractedFieldRules();
-		try(ModeCloser modeCloser = cmdContext.pushCommandMode("table", "SEQUENCE")) {
+		try(ModeCloser modeCloser = cmdContext.pushCommandMode("table", "sequence")) {
 			Map<String, Map<String, Object>> glueSeqFieldNameToFieldProperties = getExistingFieldProperties(cmdContext);
 			for(ImportExtractedFieldRule rule: importExtractedFieldRules) {
 				String extractedField = rule.getExtractedField();

@@ -15,10 +15,10 @@ public abstract class _VcatMembership extends GlueDataObject {
     public static final String CATEGORY_PROPERTY = "category";
     public static final String VARIATION_PROPERTY = "variation";
 
-    public static final String CATEGORY_NAME_PK_COLUMN = "CATEGORY_NAME";
-    public static final String VARIATION_FEATURE_PK_COLUMN = "VARIATION_FEATURE";
-    public static final String VARIATION_NAME_PK_COLUMN = "VARIATION_NAME";
-    public static final String VARIATION_REF_SEQ_PK_COLUMN = "VARIATION_REF_SEQ";
+    public static final String CATEGORY_NAME_PK_COLUMN = "category_name";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
+    public static final String VARIATION_NAME_PK_COLUMN = "variation_name";
 
     public void setCategory(VariationCategory category) {
         setToOneTarget(CATEGORY_PROPERTY, category, true);

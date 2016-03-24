@@ -101,7 +101,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		}
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		Project project = projectMode.getProject();
-		List<String> definedFieldNames = project.getListableProperties(ConfigurableTable.SEQUENCE);
+		List<String> definedFieldNames = project.getListableProperties(ConfigurableTable.sequence);
 		checkFieldsExist(headerColumns, definedFieldNames);
 		checkFieldsExist(numberColumns, definedFieldNames);
 		LinesProcessedHolder holder = new LinesProcessedHolder();

@@ -13,7 +13,7 @@ public abstract class _SchemaVersion extends GlueDataObject {
     public static final String ID_PROPERTY = "id";
     public static final String SCHEMA_VERSION_PROPERTY = "schemaVersion";
 
-    public static final String ID_PK_COLUMN = "ID";
+    public static final String ID_PK_COLUMN = "id";
 
     public void setId(int id) {
         writeProperty(ID_PROPERTY, id);

@@ -15,9 +15,9 @@ public abstract class _GroupMember extends GlueDataObject {
     public static final String GROUP_PROPERTY = "group";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
-    public static final String GROUP_NAME_PK_COLUMN = "GROUP_NAME";
-    public static final String SEQUENCE_ID_PK_COLUMN = "SEQUENCE_ID";
-    public static final String SOURCE_PK_COLUMN = "SOURCE";
+    public static final String GROUP_NAME_PK_COLUMN = "group_name";
+    public static final String SEQUENCE_ID_PK_COLUMN = "sequence_id";
+    public static final String SOURCE_NAME_PK_COLUMN = "source_name";
 
     public void setGroup(SequenceGroup group) {
         setToOneTarget(GROUP_PROPERTY, group, true);

@@ -80,11 +80,11 @@ public class ModelBuilder {
 	
 	// tables within a project where fields can be added / deleted.
 	public enum ConfigurableTable { 
-		SEQUENCE(Sequence.class),
-		VARIATION(Variation.class),
-		FEATURE(Feature.class),
-		ALIGNMENT(Alignment.class),
-		VAR_ALMT_NOTE(VarAlmtNote.class);
+		sequence(Sequence.class),
+		variation(Variation.class),
+		feature(Feature.class),
+		alignment(Alignment.class),
+		var_almt_note(VarAlmtNote.class);
 		
 		private Class<? extends GlueDataObject> dataObjectClass;
 
@@ -98,7 +98,7 @@ public class ModelBuilder {
 		
 	};
 	
-	public static final String configurableTablesString = "[sequence, variation, feature, alignment, var-almt-note]";
+	public static final String configurableTablesString = "[sequence, variation, feature, alignment, var_almt_note]";
 	
 	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
 		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration, propertiesConfiguration));

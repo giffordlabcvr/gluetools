@@ -19,9 +19,9 @@ public abstract class _AlignmentMember extends GlueDataObject {
     public static final String ALIGNMENT_PROPERTY = "alignment";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
-    public static final String ALIGNMENT_PK_COLUMN = "ALIGNMENT";
-    public static final String SEQUENCE_PK_COLUMN = "SEQUENCE";
-    public static final String SOURCE_PK_COLUMN = "SOURCE";
+    public static final String ALIGNMENT_NAME_PK_COLUMN = "alignment_name";
+    public static final String SEQUENCE_ID_PK_COLUMN = "sequence_id";
+    public static final String SOURCE_NAME_PK_COLUMN = "source_name";
 
     public void addToAlignedSegments(AlignedSegment obj) {
         addToManyTarget(ALIGNED_SEGMENTS_PROPERTY, obj, true);

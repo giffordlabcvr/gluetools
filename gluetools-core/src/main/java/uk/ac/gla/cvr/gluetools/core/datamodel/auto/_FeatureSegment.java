@@ -15,10 +15,10 @@ public abstract class _FeatureSegment extends GlueDataObject {
     public static final String REF_START_PROPERTY = "refStart";
     public static final String FEATURE_LOCATION_PROPERTY = "featureLocation";
 
-    public static final String FEATURE_PK_COLUMN = "FEATURE";
-    public static final String REF_END_PK_COLUMN = "REF_END";
-    public static final String REF_SEQUENCE_PK_COLUMN = "REF_SEQUENCE";
-    public static final String REF_START_PK_COLUMN = "REF_START";
+    public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
+    public static final String REF_END_PK_COLUMN = "ref_end";
+    public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
+    public static final String REF_START_PK_COLUMN = "ref_start";
 
     public void setRefEnd(Integer refEnd) {
         writeProperty(REF_END_PROPERTY, refEnd);

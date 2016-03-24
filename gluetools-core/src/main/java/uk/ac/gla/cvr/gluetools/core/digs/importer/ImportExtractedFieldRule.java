@@ -74,9 +74,9 @@ public class ImportExtractedFieldRule implements Plugin {
 	
 	public static String extractedFieldToSequenceField(String extractedField) {
 		StringBuffer sequenceField = new StringBuffer();
-		sequenceField.append("DIGS_");
+		sequenceField.append("digs_");
 		if(extractedField.contains("_")) {
-			sequenceField.append(extractedField.toUpperCase());
+			sequenceField.append(extractedField.toLowerCase());
 		} else {
 			for(int i = 0; i < extractedField.length(); i++) {
 				char c = extractedField.charAt(i);
@@ -84,7 +84,7 @@ public class ImportExtractedFieldRule implements Plugin {
 						&& Character.isLowerCase(extractedField.charAt(i-1))) {
 					sequenceField.append("_");
 				}
-				sequenceField.append(Character.toUpperCase(c));
+				sequenceField.append(Character.toLowerCase(c));
 			}
 		}
 		return sequenceField.toString();

@@ -3,7 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -95,7 +95,8 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 			blastDbManager.removeTempMultiSeqBlastDB(cmdContext, uuid);
 		}
 		
-		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
+		final Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = 
+				initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
 		Function<Integer, Integer> queryAAToNTCoordMapper = new Function<Integer, Integer>() {
 			@Override
 			public Integer apply(Integer t) {
@@ -108,6 +109,9 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 							new MyBlastHspFilter(), queryAAToNTCoordMapper);
 			
 			List<QueryAlignedSegment> alignedSegs = alignedSegsMap.get(queryAAFastaID);
+			if(alignedSegs == null) {
+				alignedSegs = new ArrayList<QueryAlignedSegment>();
+			}
 			
 			fastaIdToAlignedSegments.put(queryId, alignedSegs.stream()
 					.map(qas -> qas.invert())

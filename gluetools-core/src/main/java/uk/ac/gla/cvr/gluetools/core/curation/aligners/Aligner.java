@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.curation.aligners;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -180,5 +181,12 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 	public abstract R doAlign(CommandContext cmdContext, String refName, Map<String, DNASequence> queryIdToNucleotides);
 
-	
+	protected Map<String, List<QueryAlignedSegment>> initFastaIdToAlignedSegments(Collection<String> queryIds) {
+		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
+		for(String queryId: queryIds) {
+			fastaIdToAlignedSegments.put(queryId, new ArrayList<QueryAlignedSegment>());
+		}
+		return fastaIdToAlignedSegments;
+	}
+
 }

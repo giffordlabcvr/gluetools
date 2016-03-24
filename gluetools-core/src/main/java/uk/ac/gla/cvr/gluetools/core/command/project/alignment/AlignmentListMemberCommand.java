@@ -41,8 +41,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list member -w \"sequence.source.name = 'local'\"\n"+
-		"  list member -w \"sequence.sequenceID like 'f%' and sequence.CUSTOM_FIELD = 'value1'\"\n"+
-		"  list member sequence.sequenceID sequence.CUSTOM_FIELD"
+		"  list member -w \"sequence.sequenceID like 'f%' and sequence.custom_field = 'value1'\"\n"+
+		"  list member sequence.sequenceID sequence.custom_field"
 	) 
 public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult> {
 

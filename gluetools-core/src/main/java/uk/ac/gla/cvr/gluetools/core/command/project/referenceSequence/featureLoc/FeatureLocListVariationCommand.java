@@ -36,8 +36,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list variation -w \"name like 'NS%'\"\n"+
-		"  list variation -w \"CUSTOM_FIELD = 'value1'\"\n"+
-		"  list variation name CUSTOM_FIELD")
+		"  list variation -w \"custom_field = 'value1'\"\n"+
+		"  list variation name custom_field")
 public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListResult> {
 	
 	private AbstractListCTableDelegate<Variation> listCTableDelegate = new AbstractListCTableDelegate<Variation>();
@@ -45,7 +45,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 	
 	public FeatureLocListVariationCommand() {
 		super();
-		listCTableDelegate.setcTable(ConfigurableTable.VARIATION);
+		listCTableDelegate.setcTable(ConfigurableTable.variation);
 		listCTableDelegate.setSortComparator(new VariationSortComparator());
 	}
 
@@ -81,7 +81,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 	@CompleterClass
 	public static class Completer extends AbstractListCTableCommand.FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.VARIATION);
+			super(ConfigurableTable.variation);
 		}
 	}
 

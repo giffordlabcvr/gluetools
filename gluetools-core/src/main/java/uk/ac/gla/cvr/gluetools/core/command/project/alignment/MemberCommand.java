@@ -34,7 +34,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"The optional whereClause allows a member to be specified via its field values.\n"+
 	"If this query returns multiple or zero members, the command fails.\n"+
 	"Examples:\n"+
-	"  member -w \"sequence.GB_PRIMARY_ACCESSION = 'GR195721'\"\n"+
+	"  member -w \"sequence.gb_primary_accession = 'GR195721'\"\n"+
 	"  member mySource 12823121") 
 @EnterModeCommandClass(
 		commandModeClass = MemberMode.class)

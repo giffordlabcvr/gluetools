@@ -42,7 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.sequenceGroup.SequenceGroup;
 	"  add member localSource GW12371\n"+
 	"  add member -a\n"+
 	"  add member -w \"source.name = 'local'\"\n"+
-	"  add member -w \"sequenceID like 'f%' and CUSTOM_FIELD = 'value1'\"\n"+
+	"  add member -w \"sequenceID like 'f%' and custom_field = 'value1'\"\n"+
 	"  add member -w \"sequenceID = '3452467'\""
 ) 
 public class AddMemberCommand extends GroupModeCommand<CreateResult> {
