@@ -1,10 +1,10 @@
-delete project EXAMPLE_PROJECT
+delete project example_project
 
-create project EXAMPLE_PROJECT "GLUE example project"
+create project example_project "GLUE example project"
 
 # add some fields to the sequence table of this project
-schema-project EXAMPLE_PROJECT
-  table SEQUENCES
+schema-project example_project
+  table sequence
 
     # fields which will be populated from GenBank XML
     create field gb_gi_number VARCHAR
@@ -15,7 +15,7 @@ schema-project EXAMPLE_PROJECT
     create field gb_genotype VARCHAR
     create field gb_subtype VARCHAR
     create field gb_recombinant BOOLEAN
-    create field GB_PATENT_RELATED BOOLEAN
+    create field gb_patent_related BOOLEAN
     create field gb_organism VARCHAR
     create field gb_isolate VARCHAR
     create field gb_taxonomy VARCHAR 200
@@ -28,12 +28,12 @@ schema-project EXAMPLE_PROJECT
     create field gb_update_date DATE
 
     # fields which will be populated from FASTA header
-    create field HEADER_1 VARCHAR 50
-    create field HEADER_2 VARCHAR 50
+    create field header_1 VARCHAR 50
+    create field header_2 VARCHAR 50
 
     # fields which will be populated from a tab-delimited file.
-    create field CUSTOM_FIELD_X INTEGER
-    create field CUSTOM_FIELD_Y VARCHAR 200
+    create field custom_field_x INTEGER
+    create field custom_field_y VARCHAR 200
     exit
   exit
  
@@ -133,12 +133,12 @@ project EXAMPLE_PROJECT
   sequence sequencesToAlign seqToAlign2 set field gb_primary_accession XY99902
   sequence sequencesToAlign seqToAlign3 set field gb_primary_accession XY99903
   
-  create module --fileName  fasta-alignment-importer fastaAlignmentImporter.xml
+  create module --fileName fastaAlignmentImporter.xml fasta-alignment-importer 
   
   module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentA.fasta
   module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentB.fasta
   
   create module --fileName fastaAlignmentExporter.xml fasta-alignment-exporter
   
-  module fasta-alignment-exporter export alignment AL_1 -i -a -f exportAlignment.fasta
+  module fasta-alignment-exporter export AL_1 -a -p 
   

@@ -47,7 +47,7 @@
 		</fieldPopulator>
 	</gbOrganism>
 	<gbDivision>
-		<fieldPopulator fieldName="GB_PATENT_RELATED">
+		<fieldPopulator fieldName="gb_patent_related">
 			<matchPattern>PAT</matchPattern>
 			<outputTemplate>true</outputTemplate>
 		</fieldPopulator>

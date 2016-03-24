@@ -4,9 +4,9 @@
 		<matchPattern>([^\.]+)\..*</matchPattern>
 		<outputTemplate>${g1}</outputTemplate>
 	</idParser>
-	<!-- Set field HEADER_1 on the sequence to the string between the first and second dots -->
+	<!-- Set field header_1 on the sequence to the string between the first and second dots -->
 	<fieldParser>
-		<fieldName>HEADER_1</fieldName>
+		<fieldName>header_1</fieldName>
 		<matchPattern>(?:[^\.]+\.){1}([^\.]+)</matchPattern>
 		<outputTemplate>${g1}</outputTemplate>
 		<!-- Null existing values will always be overwritten. 
@@ -17,9 +17,9 @@
 	         Default if omitted is false -->
 	    <overwriteWithNewNull>false</overwriteWithNewNull>
 	</fieldParser>
-	<!-- Set field HEADER_2 on the sequence to the string after the second dot -->
+	<!-- Set field header_2 on the sequence to the string after the second dot -->
 	<fieldParser>
-		<fieldName>HEADER_2</fieldName>
+		<fieldName>header_2</fieldName>
 		<matchPattern>(?:[^\.]+\.){2}([^\.]+)</matchPattern>
 		<outputTemplate>${g1}</outputTemplate>
 	</fieldParser>

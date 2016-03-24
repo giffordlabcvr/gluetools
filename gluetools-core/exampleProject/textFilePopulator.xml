@@ -7,7 +7,7 @@
 	</textFileColumn>
 	<textFileColumn>
 		<number>1</number>
-		<fieldName>CUSTOM_FIELD_X</fieldName>
+		<fieldName>custom_field_x</fieldName>
 	</textFileColumn>
 	<textFileColumn>
 		<number>2</number>
@@ -18,7 +18,7 @@
 		<!-- If overwriteWithNewNull is set to true, the field value will be updated, even if the new value is null.
 		     Default if omitted is false -->
 		<overwriteWithNewNull>false</overwriteWithNewNull>
-		<fieldName>CUSTOM_FIELD_Y</fieldName>
+		<fieldName>custom_field_y</fieldName>
 		<nullRegex>n/a</nullRegex>
 	</textFileColumn>
 </textFilePopulator>
