@@ -9,11 +9,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 
 @GlueDataClass(
 		defaultListedProperties = { _Feature.NAME_PROPERTY, 
@@ -206,10 +209,12 @@ public class Feature extends _Feature {
 		
 	}
 
-	public String getCodonLabelerModule() {
-		FeatureMetatag rendererMetatag = getMetatag(Type.CODON_LABELER_MODULE).orElse(null);
-		if(rendererMetatag != null) {
-			return rendererMetatag.getValue();
+	public CodonLabeler getCodonLabelerModule(CommandContext cmdContext) {
+		FeatureMetatag codonLabelerModuleName = getMetatag(Type.CODON_LABELER_MODULE).orElse(null);
+		if(codonLabelerModuleName != null) {
+			String labelerModuleName = codonLabelerModuleName.getValue();
+			Module rendererModule = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(labelerModuleName));
+			return (CodonLabeler) (rendererModule.getModulePlugin(cmdContext.getGluetoolsEngine()));
 		}
 		return null;
 	}

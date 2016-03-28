@@ -1,0 +1,51 @@
+package uk.ac.gla.cvr.gluetools.core.commonAaPolymorphisms;
+
+public class AaPolymorphism {
+
+	private String refName;
+	private String featureName;
+	private String variationName;
+	private String codonLabel;
+	private String refAa;
+	private String variationAa;
+	
+	public AaPolymorphism(String refName, String featureName,
+			String variationName, String codonLabel, String refAa,
+			String variationAa) {
+		super();
+		this.refName = refName;
+		this.featureName = featureName;
+		this.variationName = variationName;
+		this.codonLabel = codonLabel;
+		this.refAa = refAa;
+		this.variationAa = variationAa;
+	}
+
+	public String getRefName() {
+		return refName;
+	}
+
+	public String getFeatureName() {
+		return featureName;
+	}
+
+	public String getVariationName() {
+		return variationName;
+	}
+
+	public String getCodonLabel() {
+		return codonLabel;
+	}
+
+	public String getRefAa() {
+		return refAa;
+	}
+
+	public String getVariationAa() {
+		return variationAa;
+	}
+	
+	
+	
+	
+}

@@ -20,9 +20,9 @@ public class VariationShowLabeledCodonLocationCommand extends VariationModeComma
 		Variation variation = lookupVariation(cmdContext);
 		TIntObjectMap<LabeledCodon> refNtToLabeledCodon = variation.getFeatureLoc().getRefNtToLabeledCodon(cmdContext);
 		LabeledCodon startCodon = refNtToLabeledCodon.get(variation.getRefStart());
-		String startLC = startCodon == null? null : startCodon.getLabel();
+		String startLC = startCodon == null? null : startCodon.getCodonLabel();
 		LabeledCodon endCodon = refNtToLabeledCodon.get(variation.getRefEnd()-2);
-		String endLC = endCodon == null? null : endCodon.getLabel();
+		String endLC = endCodon == null? null : endCodon.getCodonLabel();
 		return new VariationShowLabeledCodonLocationResult(startLC, endLC);
 	}
 

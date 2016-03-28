@@ -26,7 +26,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -73,8 +72,8 @@ public class FeatureLocation extends _FeatureLocation {
 		Feature feature = getFeature();
 		feature.checkCodesAminoAcids();
 		if(labeledCodons == null) {
-			String labelerModuleName = feature.getCodonLabelerModule();
-			if(labelerModuleName == null) {
+			CodonLabeler codonLabeler = feature.getCodonLabelerModule(cmdContext);
+			if(codonLabeler == null) {
 				Integer codon1Start = getCodon1Start(cmdContext);
 				Integer ntStart = ReferenceSegment.minRefStart(getSegments());
 				Integer ntEnd = ReferenceSegment.maxRefEnd(getSegments());
@@ -86,8 +85,6 @@ public class FeatureLocation extends _FeatureLocation {
 					}
 				}
 			} else {
-				Module rendererModule = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(labelerModuleName));
-				CodonLabeler codonLabeler = (CodonLabeler) (rendererModule.getModulePlugin(cmdContext.getGluetoolsEngine()));
 				labeledCodons = codonLabeler.labelCodons(cmdContext, this);
 			}
 		}
@@ -110,7 +107,7 @@ public class FeatureLocation extends _FeatureLocation {
 			labelToLabeledCodon = new LinkedHashMap<String, LabeledCodon>();
 			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
 			for(LabeledCodon labeledCodon: labeledCodons) {
-				labelToLabeledCodon.put(labeledCodon.getLabel(), labeledCodon);
+				labelToLabeledCodon.put(labeledCodon.getCodonLabel(), labeledCodon);
 			}
 		}
 		return labelToLabeledCodon;

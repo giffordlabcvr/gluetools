@@ -36,7 +36,8 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			String alignmentName, Optional<Expression> whereClause, String acRefName, String featureName, 
 			Boolean recursive, Boolean preview) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
+		List<AlignmentMember> almtMembers = 
+				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, getDeduplicate(), whereClause);
 		
 		int minRefNt = 1;
 		int maxRefNt = 1;

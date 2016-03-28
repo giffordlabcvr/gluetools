@@ -10,7 +10,7 @@ public class FeatureLocListLabeledCodonsResult extends BaseTableResult<LabeledCo
 	public FeatureLocListLabeledCodonsResult(List<LabeledCodon> rowObjects) {
 		super("showLabeledCodonsResult", rowObjects,
 				column("referenceNt", lc -> lc.getNtStart()),
-				column("codonLabel", lc -> lc.getLabel()));
+				column("codonLabel", lc -> lc.getCodonLabel()));
 	}
 
 }

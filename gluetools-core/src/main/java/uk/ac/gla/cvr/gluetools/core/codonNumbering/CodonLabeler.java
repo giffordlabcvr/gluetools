@@ -9,4 +9,6 @@ public interface CodonLabeler {
 
 	public List<LabeledCodon> labelCodons(CommandContext cmdContext, FeatureLocation constrainingFeatureLoc);
 	
+	public int compareCodonLabels(String codonLabel1, String codonLabel2);
+	
 }

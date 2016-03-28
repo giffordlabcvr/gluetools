@@ -2,18 +2,18 @@ package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
 public class LabeledCodon {
 
-	private String label;
+	private String codonLabel;
 	private int ntStart;
 	
 	
-	public LabeledCodon(String label, int ntStart) {
+	public LabeledCodon(String codonLabel, int ntStart) {
 		super();
-		this.label = label;
+		this.codonLabel = codonLabel;
 		this.ntStart = ntStart;
 	}
 
-	public String getLabel() {
-		return label;
+	public String getCodonLabel() {
+		return codonLabel;
 	}
 
 	public int getNtStart() {

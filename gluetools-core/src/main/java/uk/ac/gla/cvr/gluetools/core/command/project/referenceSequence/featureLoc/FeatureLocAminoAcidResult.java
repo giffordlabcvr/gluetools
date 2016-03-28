@@ -16,7 +16,7 @@ public class FeatureLocAminoAcidResult extends BaseTableResult<LabeledAminoAcid>
 	public FeatureLocAminoAcidResult(List<LabeledAminoAcid> rowData) {
 		super("featureLocAminoAcidResult", 
 				rowData, 
-				column(CODON_LABEL, laa -> laa.getLabeledCodon().getLabel()),
+				column(CODON_LABEL, laa -> laa.getLabeledCodon().getCodonLabel()),
 				column(REF_NT, laa -> laa.getLabeledCodon().getNtStart()),
 				column(AMINO_ACID, laa -> laa.getAminoAcid()));
 	}

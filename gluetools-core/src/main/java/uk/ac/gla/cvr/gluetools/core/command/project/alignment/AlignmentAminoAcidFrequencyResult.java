@@ -1,12 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class AlignmentAminoAcidFrequencyResult extends TableResult {
+public class AlignmentAminoAcidFrequencyResult extends BaseTableResult<LabeledAminoAcidFrequency> {
 
 	public static final String 
 		CODON = "codon",
@@ -15,14 +14,12 @@ public class AlignmentAminoAcidFrequencyResult extends TableResult {
 		PERCENTAGE_MEMBERS = "pctMembers";
 
 
-	public AlignmentAminoAcidFrequencyResult(List<Map<String, Object>> rowData) {
-		super("alignmentAminoAcidFrequencyResult", 
-				Arrays.asList(
-						CODON, 
-						AMINO_ACID, 
-						NUM_MEMBERS, 
-						PERCENTAGE_MEMBERS), 
-				rowData);
+	public AlignmentAminoAcidFrequencyResult(List<LabeledAminoAcidFrequency> rowData) {
+		super("alignmentAminoAcidFrequencyResult", rowData,
+				column(CODON, laaf -> laaf.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
+				column(AMINO_ACID, laaf -> laaf.getLabeledAminoAcid().getAminoAcid()),
+				column(NUM_MEMBERS, laaf -> laaf.getNumMembers()),
+				column(PERCENTAGE_MEMBERS, laaf -> laaf.getPctMembers()));
 	}
 
 }

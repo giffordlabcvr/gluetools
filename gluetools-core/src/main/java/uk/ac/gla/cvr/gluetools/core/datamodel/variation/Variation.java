@@ -197,8 +197,8 @@ public class Variation extends _Variation implements IReferenceSegment {
 			if(getTranslationFormat() == TranslationFormat.AMINO_ACID) {
 				TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getFeatureLoc().getRefNtToLabeledCodon(glueConfigContext.getCommandContext());
 				indent(glueConfigBuf, indent).append("set location -c "+
-						refNtToLabeledCodon.get(getRefStart()).getLabel()+" "+
-						refNtToLabeledCodon.get(getRefEnd()-2).getLabel()).append("\n");
+						refNtToLabeledCodon.get(getRefStart()).getCodonLabel()+" "+
+						refNtToLabeledCodon.get(getRefEnd()-2).getCodonLabel()).append("\n");
 				
 			} else {			
 				indent(glueConfigBuf, indent).append("set location -n "+getRefStart()+" "+getRefEnd()).append("\n");

@@ -1,8 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -23,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -73,7 +80,7 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 			getAlignmentMode(cmdContext).getProject().checkListableMemberField(fieldNames);
 		}
 
-		List<AlignmentMember> members = listMembers(cmdContext, lookupAlignment(cmdContext), recursive, whereClause);
+		List<AlignmentMember> members = listMembers(cmdContext, lookupAlignment(cmdContext), recursive, false, whereClause);
 		if(fieldNames == null) {
 			return new ListResult(AlignmentMember.class, members);
 		} else {
@@ -82,14 +89,27 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 	}
 
 
+	// deduplicate: since sequences can be members of multiple alignments, in the recursive case the same sequence may appear
+	// as the member of multiple descendents.
+	// deduplicate will remove duplicate sequences, in favour of those closest in the hierarchy to the supplied alignment, 
+	// breaking ties by sorting on alignment name.
+	
 	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
-			Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
+			Alignment alignment, Boolean recursive, Boolean deduplicate, Optional<Expression> whereClause) {
 		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName());
+		
+		Map<String, Integer> alignmentNameToDecOrder = new LinkedHashMap<String, Integer>();
+		alignmentNameToDecOrder.put(alignment.getName(), 0);
+		
+		int decOrder = 1;
 		if(recursive) {
 			List<Alignment> descendents = alignment.getDescendents();
 			for(Alignment descAlignment: descendents) {
+				String descName = descAlignment.getName();
+				alignmentNameToDecOrder.put(descName, decOrder);
+				decOrder++;
 				matchAlignmentOrDescendent = matchAlignmentOrDescendent.orExp(
-						ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, descAlignment.getName()));
+						ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, descName));
 			}
 		}
 		
@@ -99,8 +119,38 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 		} else {
 			selectQuery = new SelectQuery(AlignmentMember.class, matchAlignmentOrDescendent);
 		}
-		List<AlignmentMember> members = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
-		return members;
+		List<AlignmentMember> result = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
+		if(recursive && deduplicate) {
+			List<AlignmentMember> membersSorted = new ArrayList<AlignmentMember>(result);
+			// sort members so that those in higher up alignments are considered first during deduplication.
+			Collections.sort(membersSorted, new Comparator<AlignmentMember>() {
+				@Override
+				public int compare(AlignmentMember o1, AlignmentMember o2) {
+					String o1AlmtName = o1.getAlignment().getName();
+					String o2AlmtName = o2.getAlignment().getName();
+					int comp = Integer.compare(alignmentNameToDecOrder.get(o1AlmtName), alignmentNameToDecOrder.get(o2AlmtName));
+					if(comp != 0) { return comp; }
+					comp = o1AlmtName.compareTo(o2AlmtName);
+					if(comp != 0) { return comp; }
+					comp = o1.getSequence().getSource().getName().compareTo(o2.getSequence().getSource().getName());
+					if(comp != 0) { return comp; }
+					comp = o1.getSequence().getSequenceID().compareTo(o2.getSequence().getSequenceID());
+					if(comp != 0) { return comp; }
+					return 0;
+				}
+			});
+			Set<Sequence> sequences = new LinkedHashSet<Sequence>();
+			List<AlignmentMember> deduplicatedMembers = new ArrayList<AlignmentMember>();
+			for(AlignmentMember member: membersSorted) {
+				if(sequences.contains(member.getSequence())) {
+					continue;
+				}
+				sequences.add(member.getSequence());
+				deduplicatedMembers.add(member);
+			}
+			result = deduplicatedMembers;
+		}
+		return result;
 	}
 
 	

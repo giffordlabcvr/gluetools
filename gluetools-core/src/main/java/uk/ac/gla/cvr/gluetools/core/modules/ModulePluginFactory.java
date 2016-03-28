@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.referenceBuilder.GbRefBuilder;
+import uk.ac.gla.cvr.gluetools.core.commonAaPolymorphisms.CommonAaPolymorphismGenerator;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
@@ -52,6 +53,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(SamReporter.class);
 		registerPluginClass(FastaSequenceReporter.class);
 		registerPluginClass(Kuiken2006CodonLabeler.class);
+		registerPluginClass(CommonAaPolymorphismGenerator.class);
 		registerPluginClass(TextToQueryTransformer.class);
 		
 		

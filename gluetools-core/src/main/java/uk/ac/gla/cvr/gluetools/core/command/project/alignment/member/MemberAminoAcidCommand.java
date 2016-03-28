@@ -69,10 +69,10 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
-		return memberAminoAcids(cmdContext, almtMember, ancConstrainingRef, featureLoc);
+		return new MemberAminoAcidResult(memberAminoAcids(cmdContext, almtMember, ancConstrainingRef, featureLoc));
 	}
 
-	public static MemberAminoAcidResult memberAminoAcids(CommandContext cmdContext,
+	public static List<LabeledQueryAminoAcid> memberAminoAcids(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc) {
 		Alignment tipAlmt = almtMember.getAlignment();
 		
@@ -94,7 +94,7 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 		AbstractSequenceObject memberSeqObj = memberSequence.getSequenceObject();
 
 		if(memberToAncConstrRefSegsCodonAligned.isEmpty()) {
-			return new MemberAminoAcidResult(Collections.emptyList());
+			return Collections.emptyList();
 		}
 		
 		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
@@ -116,7 +116,7 @@ public class MemberAminoAcidCommand extends MemberModeCommand<MemberAminoAcidRes
 			}
 		}
 
-		return new MemberAminoAcidResult(labeledQueryAminoAcids);
+		return labeledQueryAminoAcids;
 	}
 
 	@CompleterClass

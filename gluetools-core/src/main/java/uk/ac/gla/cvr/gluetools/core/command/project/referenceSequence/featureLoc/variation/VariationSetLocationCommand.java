@@ -98,16 +98,16 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 			if(startLabeledCodon == null) {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
 						getRefSeqName(), getFeatureName(), getVariationName(), lcStart, 
-						featureLoc.getFirstLabeledCodon(cmdContext).getLabel(), 
-						featureLoc.getLastLabeledCodon(cmdContext).getLabel());
+						featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
+						featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
 			}
 			ntStart = startLabeledCodon.getNtStart();
 			LabeledCodon endLabeledCodon = labelToLabeledCodon.get(lcEnd);
 			if(endLabeledCodon == null) {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
 						getRefSeqName(), getFeatureName(), getVariationName(), lcEnd, 
-						featureLoc.getFirstLabeledCodon(cmdContext).getLabel(), 
-						featureLoc.getLastLabeledCodon(cmdContext).getLabel());
+						featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
+						featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
 			}
 			ntEnd = endLabeledCodon.getNtStart()+2;
 		}

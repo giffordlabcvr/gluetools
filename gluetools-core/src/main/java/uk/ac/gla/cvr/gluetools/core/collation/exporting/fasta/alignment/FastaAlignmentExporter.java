@@ -34,7 +34,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		checkAlignment(alignment, featureName, recursive);
 		ReferenceSequence refSequence = alignment.getRefSequence();
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, getDeduplicate(), whereClause);
 		
 		int minRefNt = 1;
 		int maxRefNt = 1;

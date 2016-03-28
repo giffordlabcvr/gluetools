@@ -23,11 +23,14 @@ import freemarker.template.TemplateModel;
 public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExporter<T>> extends ModulePlugin<T> {
 
 	private static final String ID_TEMPLATE = "idTemplate";
+	private static final String DEDUPLICATE = "deduplicate";
 	private Template idTemplate;
+	private Boolean deduplicate;
 	
 	public AbstractFastaAlignmentExporter() {
 		super();
 		addSimplePropertyName(ID_TEMPLATE);
+		addSimplePropertyName(DEDUPLICATE);
 	}
 
 	@Override
@@ -37,6 +40,7 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
 				.orElse(FreemarkerUtils.templateFromString("${alignment.name}.${sequence.source.name}.${sequence.sequenceID}", pluginConfigContext.getFreemarkerConfiguration()));
+		deduplicate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DEDUPLICATE, false)).orElse(false);
 	}
 
 	protected String generateFastaId(AlignmentMember almtMember) {
@@ -63,6 +67,10 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		if(refSequence == null && featureName != null) {
 			throw new FastaExporterException(Code.CANNOT_SPECIFY_FEATURE_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
 		}
+	}
+
+	protected Boolean getDeduplicate() {
+		return deduplicate;
 	}
 
 

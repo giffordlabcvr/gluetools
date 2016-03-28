@@ -70,7 +70,7 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 	@Override
 	public AlignmentVariationFrequencyResult execute(CommandContext cmdContext) {
 		Alignment alignment = lookupAlignment(cmdContext);
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, true, whereClause);
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
 		FeatureLocation featureLoc = 
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
