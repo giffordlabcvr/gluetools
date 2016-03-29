@@ -83,7 +83,7 @@ public class Project extends _Project {
 		if(propertyNames != null) {
 			propertyNames.forEach(f-> {
 				if(!validPropertyNames.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, listableProperties);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, listableProperties, cTable.name());
 				}
 			});
 		}
@@ -95,7 +95,7 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, cTable.name());
 				}
 			});
 		}
@@ -107,7 +107,7 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, cTable.name());
 				}
 			});
 		}
@@ -120,7 +120,7 @@ public class Project extends _Project {
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validMemberFields.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validMemberFieldsList);
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validMemberFieldsList, "member");
 				}
 			});
 		}

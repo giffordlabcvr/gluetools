@@ -102,7 +102,8 @@ public class Module extends _Module {
 	}
 	
 	public void validate(CommandContext cmdContext) {
-		getModulePlugin(cmdContext.getGluetoolsEngine());
+		ModulePlugin<?> modulePlugin = getModulePlugin(cmdContext.getGluetoolsEngine());
+		modulePlugin.validate(cmdContext);
 	}
 	
 	

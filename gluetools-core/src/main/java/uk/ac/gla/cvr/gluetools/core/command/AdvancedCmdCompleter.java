@@ -279,17 +279,12 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	}
 	
 	
-	public final static class SequenceFieldNameInstantiator extends VariableInstantiator {
+	private static abstract class FieldNameInstantiator extends VariableInstantiator {
 		
-		private boolean customOnly = false;
-		
-		public SequenceFieldNameInstantiator() {
-			this(false);
-		}
+		private ConfigurableTable cTable;
 
-		public SequenceFieldNameInstantiator(boolean customOnly) {
-			super();
-			this.customOnly = customOnly;
+		protected FieldNameInstantiator(ConfigurableTable cTable) {
+			this.cTable = cTable;
 		}
 
 		@Override
@@ -297,21 +292,49 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		protected List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
-			return getSequenceFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+			return getFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 
-		protected List<String> getSequenceFieldNames(ConsoleCommandContext cmdContext) {
-			if(customOnly) {
-				return getProject(cmdContext).getCustomFieldNames(ConfigurableTable.sequence);
-			} else {
-				return getProject(cmdContext).getListableProperties(ConfigurableTable.sequence);
-			}
+		protected ConfigurableTable getCTable() {
+			return cTable;
 		}
+		
+		protected abstract List<String> getFieldNames(ConsoleCommandContext cmdContext);
 
-		private Project getProject(ConsoleCommandContext cmdContext) {
+		protected Project getProject(ConsoleCommandContext cmdContext) {
 			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
 			Project project = insideProjectMode.getProject();
 			return project;
+		}
+	}
+
+	public static final class CustomFieldNameInstantiator extends FieldNameInstantiator {
+		public CustomFieldNameInstantiator(ConfigurableTable cTable) {
+			super(cTable);
+		}
+		@Override
+		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
+			return getProject(cmdContext).getCustomFieldNames(getCTable());
+		}
+	}
+
+	public static final class ModifiableFieldNameInstantiator extends FieldNameInstantiator {
+		public ModifiableFieldNameInstantiator(ConfigurableTable cTable) {
+			super(cTable);
+		}
+		@Override
+		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
+			return getProject(cmdContext).getModifiableFieldNames(getCTable());
+		}
+	}
+
+	public static final class ListablePropertyInstantiator extends FieldNameInstantiator {
+		public ListablePropertyInstantiator(ConfigurableTable cTable) {
+			super(cTable);
+		}
+		@Override
+		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
+			return getProject(cmdContext).getListableProperties(getCTable());
 		}
 	}
 

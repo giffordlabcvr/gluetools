@@ -26,11 +26,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"delete","sequence"}, 
-	docoptUsages={"<sourceName> <sequenceID>", 
-			"-w <whereClause>",
-			"-a"},
+	docoptUsages={"( <sourceName> <sequenceID> | -w <whereClause> | -a )"},
 	metaTags={CmdMeta.updatesDatabase},
-	docoptOptions={"-w <whereClause>, --whereClause <whereClause>  Qualify which sequences should be deleted", 
+	docoptOptions={
+			"-w <whereClause>, --whereClause <whereClause>  Qualify which sequences should be deleted", 
 			"-a, --allSequences  Delete all sequences" },
 	description="Delete one or more sequences", 
 	furtherHelp="If <allSequences> or <whereClause> is used, there will be no attempt to delete reference sequences.") 

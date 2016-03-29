@@ -139,7 +139,7 @@ public class GenerateVariationCommand extends ModulePluginCommand<GenerateVariat
 					if(!alreadyExists) {
 						CommandBuilder<CreateResult, CreateVariationCommand> cmdBuilder = 
 							cmdContext.cmdBuilder(CreateVariationCommand.class)
-							.set(CreateVariationCommand.VARIATON_NAME, variationName)
+							.set(CreateVariationCommand.VARIATION_NAME, variationName)
 							.set(CreateVariationCommand.TRANSLATION_TYPE, translationType);
 						if(variationDescription != null) {
 							cmdBuilder.set(CreateVariationCommand.DESCRIPTION,  variationDescription);

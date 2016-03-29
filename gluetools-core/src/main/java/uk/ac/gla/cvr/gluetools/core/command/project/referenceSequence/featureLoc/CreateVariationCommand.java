@@ -31,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 		"nucleotides in the sequence or against the amino acid translation. If omitted, NUCLEOTIDE is the default.") 
 public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
-	public static final String VARIATON_NAME = "variationName";
+	public static final String VARIATION_NAME = "variationName";
 	public static final String DESCRIPTION = "description";
 	public static final String TRANSLATION_TYPE = "translationType";
 
@@ -42,7 +42,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		variationName = PluginUtils.configureStringProperty(configElem, VARIATON_NAME, true);
+		variationName = PluginUtils.configureStringProperty(configElem, VARIATION_NAME, true);
 		translationFormat = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSLATION_TYPE, false)).
 				orElse(TranslationFormat.NUCLEOTIDE);

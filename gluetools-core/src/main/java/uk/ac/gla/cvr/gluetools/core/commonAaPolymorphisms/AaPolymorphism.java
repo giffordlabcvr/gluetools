@@ -8,10 +8,11 @@ public class AaPolymorphism {
 	private String codonLabel;
 	private String refAa;
 	private String variationAa;
+	private String description;
 	
 	public AaPolymorphism(String refName, String featureName,
 			String variationName, String codonLabel, String refAa,
-			String variationAa) {
+			String variationAa, String description) {
 		super();
 		this.refName = refName;
 		this.featureName = featureName;
@@ -19,6 +20,7 @@ public class AaPolymorphism {
 		this.codonLabel = codonLabel;
 		this.refAa = refAa;
 		this.variationAa = variationAa;
+		this.description = description;
 	}
 
 	public String getRefName() {
@@ -44,8 +46,16 @@ public class AaPolymorphism {
 	public String getVariationAa() {
 		return variationAa;
 	}
-	
-	
-	
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getRegex() {
+		if(variationAa.equals("*")) {
+			return "\\*";
+		}
+		return variationAa;
+	}
 	
 }

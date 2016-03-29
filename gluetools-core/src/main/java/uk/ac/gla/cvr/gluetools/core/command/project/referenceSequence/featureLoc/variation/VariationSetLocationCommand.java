@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.cayenne.BaseContext;
@@ -65,10 +66,10 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 		super.configure(pluginConfigContext, configElem);
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
-		nucleotideBased = PluginUtils.configureBooleanProperty(configElem, NT_BASED, true);
+		nucleotideBased = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_BASED, false)).orElse(false);
 		lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
-		labeledCodonBased = PluginUtils.configureBooleanProperty(configElem, LC_BASED, true);
+		labeledCodonBased = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LC_BASED, false)).orElse(false);
 		if(!( 
 			(nucleotideBased && !labeledCodonBased && ntStart != null && ntEnd != null && lcStart == null && lcEnd == null) || 
 			(!nucleotideBased && labeledCodonBased && ntStart == null && ntEnd == null && lcStart != null && lcEnd != null) ) ) {

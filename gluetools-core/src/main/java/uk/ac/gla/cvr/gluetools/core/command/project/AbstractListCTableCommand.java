@@ -3,19 +3,14 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
@@ -53,17 +48,7 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 
 		public FieldNameCompleter(ConfigurableTable cTable) {
 			super();
-			registerVariableInstantiator("fieldName", new VariableInstantiator() {
-				@Override
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext,
-						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
-						String prefix) {
-					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-					List<String> listableFieldNames = insideProjectMode.getProject().getListableProperties(cTable);
-					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
-				}
-			});
+			registerVariableInstantiator("fieldName", new ListablePropertyInstantiator(cTable));
 		}
 	}
 		

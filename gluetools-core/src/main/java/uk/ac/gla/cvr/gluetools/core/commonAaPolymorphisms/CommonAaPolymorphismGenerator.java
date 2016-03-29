@@ -1,12 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.commonAaPolymorphisms;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
@@ -15,19 +17,29 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentAminoAcidFrequencyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetLocationCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetPatternCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 
 /**
@@ -45,6 +57,8 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 	private double minFrequencyPct;
 	private double maxFrequencyPct;
 	private int minSampleSize;
+	private List<CustomFieldSetting> customFieldSettings;
+	
 	
 	public CommonAaPolymorphismGenerator() {
 		super();
@@ -52,6 +66,7 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 		addSimplePropertyName(MAX_FREQUENCY_PCT);
 		addSimplePropertyName(MIN_SAMPLE_SIZE);
 		addModulePluginCmdClass(GenerateCommand.class);
+		addModuleDocumentCmdClass(AddCustomFieldSettingCommand.class);
 	}
 
 	@Override
@@ -60,6 +75,8 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 		minFrequencyPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_FREQUENCY_PCT, false)).orElse(1.0);
 		maxFrequencyPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MAX_FREQUENCY_PCT, false)).orElse(99.0);
 		minSampleSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MAX_FREQUENCY_PCT, false)).orElse(30);
+		customFieldSettings = PluginFactory.createPlugins(pluginConfigContext, CustomFieldSetting.class, 
+				PluginUtils.findConfigElements(configElem, "customFieldSetting"));
 	}
 
 	public List<AaPolymorphism> preview(CommandContext cmdContext,
@@ -116,7 +133,7 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 				return o1.getVariationAa().compareTo(o2.getVariationAa()); 
 			}
 		});
-		
+		super.log(Level.FINEST, "Generated "+generated.size()+" common AA polymorphisms in "+featureName);
 		return result;
 		
 	}
@@ -167,10 +184,17 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 					}
 					String refAa = codonToRefAa.get(codonLabel);
 					if(refAa != null) {
-						String variationName = formVariationName(refAa, codonLabel, variationAa);
-						generated.put(new AaPolymorphismKey(alignmentRefName, codonLabel, variationAa), 
-								new AaPolymorphism(alignmentRefName, featureName, variationName, codonLabel, refAa, variationAa));
-						break;
+						// "X" just means any amino acid, so don't generate variations from these.
+						if(!refAa.equals("X") && !variationAa.equals("X") ) { 
+							String variationName = formVariationName(refAa, codonLabel, variationAa);
+							generated.put(new AaPolymorphismKey(alignmentRefName, codonLabel, variationAa), 
+									new AaPolymorphism(alignmentRefName, featureName, variationName, codonLabel, refAa, variationAa, 
+											"Common amino acid polymorphism in "+alignment.getName()));
+							if(generated.size() % 500 == 0) {
+								super.log(Level.FINEST, "Generated "+generated.size()+" common AA polymorphisms in "+featureName);
+							}
+							break;
+						}
 					}
 				}
 			}
@@ -235,10 +259,76 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 		
 	}
 	
-	public void generate(CommandContext cmdContext,
-			List<AaPolymorphism> aaPolymorphisms) {
-		// TODO Auto-generated method stub
-		
+	public void generate(CommandContext cmdContext, List<AaPolymorphism> aaPolymorphisms) {
+		int variationsCreated = 0;
+		for(AaPolymorphism aaPolymorphism : aaPolymorphisms) {
+			try(ModeCloser referenceMode = cmdContext.pushCommandMode("reference", aaPolymorphism.getRefName())) {
+				try(ModeCloser fLocMode = cmdContext.pushCommandMode("feature-location", aaPolymorphism.getFeatureName())) {
+					String variationName = aaPolymorphism.getVariationName();
+					cmdContext.cmdBuilder(CreateVariationCommand.class)
+					.set(CreateVariationCommand.VARIATION_NAME, variationName)
+					.set(CreateVariationCommand.TRANSLATION_TYPE, TranslationFormat.AMINO_ACID.name())
+					.set(CreateVariationCommand.DESCRIPTION, aaPolymorphism.getDescription())
+					.build().execute(cmdContext);
+					try(ModeCloser varationMode = cmdContext.pushCommandMode("variation", variationName)) {
+						String codonLabel = aaPolymorphism.getCodonLabel();
+						cmdContext.cmdBuilder(VariationSetLocationCommand.class)
+						.set(VariationSetLocationCommand.LC_BASED, Boolean.TRUE)
+						.set(VariationSetLocationCommand.LC_START, codonLabel)
+						.set(VariationSetLocationCommand.LC_END, codonLabel)
+						.build().execute(cmdContext);
+						cmdContext.cmdBuilder(VariationSetPatternCommand.class)
+						.set(VariationSetPatternCommand.REGEX, aaPolymorphism.getRegex())
+						.build().execute(cmdContext);
+						for(CustomFieldSetting customFieldSetting: customFieldSettings) {
+							cmdContext.cmdBuilder(VariationSetFieldCommand.class)
+							.set(VariationSetFieldCommand.FIELD_NAME, customFieldSetting.fieldName)
+							.set(VariationSetFieldCommand.FIELD_VALUE, customFieldSetting.fieldValue)
+							.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+							.build().execute(cmdContext);
+							
+						}
+					}
+				}
+			}
+			variationsCreated++;
+			if(variationsCreated % 500 == 0) {
+				log(Level.FINEST, "Created "+variationsCreated+" variations in the project");
+				cmdContext.commit();
+			}
+		}
+		log(Level.FINEST, "Created "+variationsCreated+" variations in the project");
+		cmdContext.commit();
 	}
 
+	
+	@Override
+	public void validate(CommandContext cmdContext) {
+		super.validate(cmdContext);
+		 InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		 for(CustomFieldSetting customFieldSetting: customFieldSettings) {
+			 insideProjectMode.getProject().checkCustomFieldNames(ConfigurableTable.variation, Arrays.asList(customFieldSetting.getFieldName()));
+		 }
+	}
+
+
+	public static class CustomFieldSetting implements Plugin {
+
+		private String fieldName;
+		private String fieldValue;
+		
+		@Override
+		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+			Plugin.super.configure(pluginConfigContext, configElem);
+			fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
+			fieldValue = PluginUtils.configureStringProperty(configElem, "fieldValue", true);
+		}
+		public String getFieldName() {
+			return fieldName;
+		}
+		public String getFieldValue() {
+			return fieldValue;
+		}
+	}
+	
 }

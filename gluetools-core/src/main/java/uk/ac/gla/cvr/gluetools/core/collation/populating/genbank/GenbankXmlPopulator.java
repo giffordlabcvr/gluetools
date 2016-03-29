@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -186,7 +187,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		public static class Completer extends AdvancedCmdCompleter {
 			public Completer() {
 				super();
-				registerVariableInstantiator("fieldName", new SequenceFieldNameInstantiator());
+				registerVariableInstantiator("fieldName", new ModifiableFieldNameInstantiator(ConfigurableTable.sequence));
 			}
 		}
 		

@@ -93,6 +93,9 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 			GlueLogger.log(msgLogLevel, message);
 		} 
 	}
+
+	public void validate(CommandContext cmdContext) {
+	}
 	
 	
 }

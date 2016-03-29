@@ -9,8 +9,8 @@ public class GenerateResult extends BaseTableResult<AaPolymorphism> {
 	public static final String REFERENCE_NAME = "refName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String VARIATION_NAME = "variationName";
-	public static final String CODON_LABEL = "codon";
 	public static final String REFERENCE_AA = "refAA";
+	public static final String CODON_LABEL = "codon";
 	public static final String VARIATION_AA = "variationAA";
 	
 	public GenerateResult(List<AaPolymorphism> rowData) {
@@ -18,8 +18,8 @@ public class GenerateResult extends BaseTableResult<AaPolymorphism> {
 				column(REFERENCE_NAME, aap -> aap.getRefName()),
 				column(FEATURE_NAME, aap -> aap.getFeatureName()),
 				column(VARIATION_NAME, aap -> aap.getVariationName()),
-				column(CODON_LABEL, aap -> aap.getCodonLabel()),
 				column(REFERENCE_AA, aap -> aap.getRefAa()),
+				column(CODON_LABEL, aap -> aap.getCodonLabel()),
 				column(VARIATION_AA, aap -> aap.getVariationAa()));
 	}
 
