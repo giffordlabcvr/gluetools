@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.project.GenerateConfigCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.result.GlueConfigResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -15,36 +16,44 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"generate", "glue-config"},
-		docoptUsages={"-v [-f <fileName>]"},
+		docoptUsages={"[-v] [-C] [-e] (-f <fileName> | -p)"},
 		docoptOptions={
-				"-v, --variations                      Generate feature location variations", 
-				"-f <fileName>, --fileName <fileName>  Name of file to output to"},
+				"-v, --variations                      Include variations",
+				"-C, --noCommit                        Generated commands should not commit",
+				"-e, --commitAtEnd                     Add commit command at end",
+				"-f <fileName>, --fileName <fileName>  Name of file to output to",
+				"-p, --preview                         Preview only"},
 		description="Generate GLUE configuration to recreate the reference sequence",
-		furtherHelp="If a <fileName> is supplied, GLUE commands will be saved to that file. "+
-		"Otherwise they will be output to the console.",
 		metaTags={ CmdMeta.consoleOnly }
 )
 public class ReferenceSequenceGenerateGlueConfigCommand extends ReferenceSequenceModeCommand<GlueConfigResult> {
 	
-	private String fileName;
-	private boolean variations;
+	public static final String VARIATIONS = "variations";
+	
+	private GenerateConfigCommandDelegate generateConfigCommandDelegate = new GenerateConfigCommandDelegate();
+	
+	private boolean includeVariations;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fileName = PluginUtils.configureStringProperty(configElem, "fileName", false);
-		variations = PluginUtils.configureBooleanProperty(configElem, "variations", true);
+		includeVariations = PluginUtils.configureBooleanProperty(configElem, VARIATIONS, true);
+		generateConfigCommandDelegate.configure(pluginConfigContext, configElem);
 	}
 
 	@Override
 	public GlueConfigResult execute(CommandContext cmdContext) {
+		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext, includeVariations, 
+				generateConfigCommandDelegate.getNoCommit(), 
+				generateConfigCommandDelegate.getCommitAtEnd());
 		ReferenceSequence refSequence = lookupRefSeq(cmdContext);
-		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext);
-		glueConfigContext.setIncludeVariations(variations);
-		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, refSequence.generateGlueConfig(glueConfigContext));
+		return GlueConfigResult.generateGlueConfigResult(cmdContext, 
+				generateConfigCommandDelegate.getPreview(), 
+				generateConfigCommandDelegate.getFileName(), 
+				refSequence.generateGlueConfig(glueConfigContext));
 	}
 
-
+	
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {

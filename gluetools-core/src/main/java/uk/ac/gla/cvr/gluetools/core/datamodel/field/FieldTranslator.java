@@ -13,6 +13,11 @@ public abstract class FieldTranslator<T extends Object> {
 
 	public abstract String valueToString(T value);
 	
+	@SuppressWarnings("unchecked")
+	public final String objectValueToString(Object obj) {
+		return valueToString((T) obj);
+	}
+	
 	public Class<T> getValueClass() {
 		return valueClass;
 	}

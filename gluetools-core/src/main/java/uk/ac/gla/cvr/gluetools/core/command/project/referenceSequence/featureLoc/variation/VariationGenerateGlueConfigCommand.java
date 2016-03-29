@@ -7,40 +7,44 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.project.GenerateConfigCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.result.GlueConfigResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"generate", "glue-config"},
-		docoptUsages={"[-f <fileName>]"},
-		docoptOptions={ 
-				"-f <fileName>, --fileName <fileName>  Name of file to output to"},
+		docoptUsages={"[-C] [-e] (-f <fileName> | -p)"},
+		docoptOptions={
+				"-C, --noCommit                        Generated commands should not commit",
+				"-e, --commitAtEnd                     Add commit command at end",
+				"-f <fileName>, --fileName <fileName>  Name of file to output to",
+				"-p, --preview                         Preview only"},
 		description="Generate GLUE configuration to recreate the variation",
-		furtherHelp="If a <fileName> is supplied, GLUE commands will be saved to that file. "+
-		"Otherwise they will be output to the console.",
 		metaTags={ CmdMeta.consoleOnly }
 )
 public class VariationGenerateGlueConfigCommand extends VariationModeCommand<GlueConfigResult> {
 	
-	
-	private String fileName;
-	
+	private GenerateConfigCommandDelegate generateConfigCommandDelegate = new GenerateConfigCommandDelegate();
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fileName = PluginUtils.configureStringProperty(configElem, "fileName", false);
+		generateConfigCommandDelegate.configure(pluginConfigContext, configElem);
 	}
-
-
 
 	@Override
 	public GlueConfigResult execute(CommandContext cmdContext) {
+		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext, false, 
+				generateConfigCommandDelegate.getNoCommit(), 
+				generateConfigCommandDelegate.getCommitAtEnd());
 		Variation variation = lookupVariation(cmdContext);
-		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, variation.generateGlueConfig(new GlueConfigContext(cmdContext)));
+		return GlueConfigResult.generateGlueConfigResult(cmdContext, 
+				generateConfigCommandDelegate.getPreview(), 
+				generateConfigCommandDelegate.getFileName(), 
+				variation.generateGlueConfig(glueConfigContext));
 	}
+
 	
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {

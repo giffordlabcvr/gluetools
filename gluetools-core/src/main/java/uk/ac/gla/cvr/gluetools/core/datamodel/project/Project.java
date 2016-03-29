@@ -21,7 +21,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 
 @GlueDataClass(defaultListedProperties = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
@@ -46,6 +45,12 @@ public class Project extends _Project {
 		return getFields().stream()
 				.filter(f -> f.getTable().equals(cTable.name()))
 				.map(Field::getName)
+				.collect(Collectors.toList());
+	}
+
+	public List<Field> getCustomFields(ConfigurableTable cTable) {
+		return getFields().stream()
+				.filter(f -> f.getTable().equals(cTable.name()))
 				.collect(Collectors.toList());
 	}
 
@@ -136,25 +141,7 @@ public class Project extends _Project {
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf,
 			GlueConfigContext glueConfigContext) {
-		if(glueConfigContext.includeVariationCategories()) {
-			List<VariationCategory> topologicallySortedVcats = VariationCategory.getTopologicallySortedVcats(glueConfigContext.getCommandContext());
-			for(VariationCategory vcat : topologicallySortedVcats) {
-				StringBuffer variationCategoryConfigBuf = new StringBuffer();
-				vcat.generateGlueConfig(indent+INDENT, variationCategoryConfigBuf, glueConfigContext);
-				if(variationCategoryConfigBuf.length() > 0) {
-					indent(glueConfigBuf, indent).append("create variation-category "+vcat.getName());
-					String description = vcat.getDescription();
-					if(description != null) {
-						glueConfigBuf.append( "\""+description+"\"");
-					}
-					glueConfigBuf.append("\n");
-					indent(glueConfigBuf, indent).append("variation-category "+vcat.getName()).append("\n");
-					glueConfigBuf.append(variationCategoryConfigBuf.toString());
-					indent(glueConfigBuf, indent+INDENT).append("exit").append("\n");
-				}
-			}
-		}
-		if(glueConfigContext.includeVariations()) {
+		if(glueConfigContext.getIncludeVariations()) {
 			List<ReferenceSequence> refSequences = GlueDataObject.query(glueConfigContext.getCommandContext(), ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
 			for(ReferenceSequence refSequence: refSequences) {
 				StringBuffer refSeqConfigBuf = new StringBuffer();

@@ -267,17 +267,20 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 					String variationName = aaPolymorphism.getVariationName();
 					cmdContext.cmdBuilder(CreateVariationCommand.class)
 					.set(CreateVariationCommand.VARIATION_NAME, variationName)
+					.set(CreateVariationCommand.NO_COMMIT, Boolean.TRUE)
 					.set(CreateVariationCommand.TRANSLATION_TYPE, TranslationFormat.AMINO_ACID.name())
 					.set(CreateVariationCommand.DESCRIPTION, aaPolymorphism.getDescription())
 					.build().execute(cmdContext);
 					try(ModeCloser varationMode = cmdContext.pushCommandMode("variation", variationName)) {
 						String codonLabel = aaPolymorphism.getCodonLabel();
 						cmdContext.cmdBuilder(VariationSetLocationCommand.class)
+						.set(VariationSetLocationCommand.NO_COMMIT, Boolean.TRUE)
 						.set(VariationSetLocationCommand.LC_BASED, Boolean.TRUE)
 						.set(VariationSetLocationCommand.LC_START, codonLabel)
 						.set(VariationSetLocationCommand.LC_END, codonLabel)
 						.build().execute(cmdContext);
 						cmdContext.cmdBuilder(VariationSetPatternCommand.class)
+						.set(VariationSetPatternCommand.NO_COMMIT, Boolean.TRUE)
 						.set(VariationSetPatternCommand.REGEX, aaPolymorphism.getRegex())
 						.build().execute(cmdContext);
 						for(CustomFieldSetting customFieldSetting: customFieldSettings) {
@@ -286,7 +289,6 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 							.set(VariationSetFieldCommand.FIELD_VALUE, customFieldSetting.fieldValue)
 							.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 							.build().execute(cmdContext);
-							
 						}
 					}
 				}

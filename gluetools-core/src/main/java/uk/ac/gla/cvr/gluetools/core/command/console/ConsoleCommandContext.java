@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class ConsoleCommandContext extends CommandContext {
 
@@ -240,8 +241,10 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 
 	public void runBatchCommands(String batchFilePath, String batchContent, boolean noEcho, boolean noOutput) {
+		GlueLogger.getGlueLogger().finest("Started running GLUE batch "+batchFilePath);
 		String[] lines = batchContent.split("\n");
 		console.runBatchCommands(batchFilePath, Arrays.stream(lines).collect(Collectors.toList()), noEcho, noOutput);
+		GlueLogger.getGlueLogger().finest("Finished running GLUE batch "+batchFilePath);
 	}
 
 	public void addOptionLine(ConsoleOption consoleOption) {

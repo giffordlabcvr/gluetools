@@ -2,8 +2,10 @@ package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.ObjectContext;
@@ -24,6 +26,7 @@ public class CommandContext {
 	private GluetoolsEngine gluetoolsEngine;
 	private List<ObjectContext> objectContextStack = new LinkedList<ObjectContext>();
 	private String description;
+	private Map<CacheKey, GlueDataObject> uncommittedCache = new LinkedHashMap<CommandContext.CacheKey, GlueDataObject>();
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -77,6 +80,7 @@ public class CommandContext {
 		CommandMode<?> commandMode = commandModeStack.remove(0);
 		if(commandMode instanceof DbContextChangingMode) {
 			objectContextStack.remove(0);
+			uncommittedCache.clear();
 		}
 		commandMode.exit();
 		return commandMode;
@@ -134,11 +138,13 @@ public class CommandContext {
 	}
 
 	public void commit() {
+		uncommittedCache.clear();
 		getObjectContext().commitChanges();
 	}
 	
 	public void newObjectContext() {
 		objectContextStack.remove(0);
+		uncommittedCache.clear();
 		objectContextStack.add(0, peekCommandMode().getServerRuntime().getContext());
 	}
 
@@ -161,6 +167,61 @@ public class CommandContext {
 			valueText = projectSetting.getValue();
 		}
 		return valueText;
+	}
+	
+	public void cacheUncommitted(GlueDataObject dataObject) {
+		uncommittedCache.put(new CacheKey(dataObject.getClass(), dataObject.pkMap()), dataObject);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <C extends GlueDataObject> C lookupUncommitted(Class<C> dataObjectClass, Map<String, String> pkMap) {
+		return (C) uncommittedCache.get(new CacheKey(dataObjectClass, pkMap));
+	}
+
+	private static class CacheKey {
+		private Class<? extends GlueDataObject> dataObjectClass;
+		private Map<String, String> pkMap;
+		
+		public CacheKey(Class<? extends GlueDataObject> dataObjectClass,
+				Map<String, String> pkMap) {
+			super();
+			this.dataObjectClass = dataObjectClass;
+			this.pkMap = pkMap;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime
+					* result
+					+ ((dataObjectClass == null) ? 0 : dataObjectClass
+							.hashCode());
+			result = prime * result + ((pkMap == null) ? 0 : pkMap.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CacheKey other = (CacheKey) obj;
+			if (dataObjectClass == null) {
+				if (other.dataObjectClass != null)
+					return false;
+			} else if (!dataObjectClass.equals(other.dataObjectClass))
+				return false;
+			if (pkMap == null) {
+				if (other.pkMap != null)
+					return false;
+			} else if (!pkMap.equals(other.pkMap))
+				return false;
+			return true;
+		}
 	}
 	
 }

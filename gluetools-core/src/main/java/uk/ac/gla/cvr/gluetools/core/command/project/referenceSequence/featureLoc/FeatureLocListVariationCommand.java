@@ -94,10 +94,13 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 			if(formatCmpResult != 0) {
 				return formatCmpResult;
 			}
-			int refStartCmpResult = 
-					Integer.compare(o1.getRefStart(), o2.getRefStart());
-			if(refStartCmpResult != 0) {
-				return refStartCmpResult;
+			Integer refStart1 = o1.getRefStart();
+			Integer refStart2 = o2.getRefStart();
+			if(refStart1 != null && refStart2 != null) {
+				int refStartCmpResult = Integer.compare(refStart1, refStart2);
+				if(refStartCmpResult != 0) {
+					return refStartCmpResult;
+				}
 			}
 			return(o1.getName().compareTo(o2.getName()));
 		}

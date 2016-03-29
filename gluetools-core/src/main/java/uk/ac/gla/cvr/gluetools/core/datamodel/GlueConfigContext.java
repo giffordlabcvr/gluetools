@@ -1,30 +1,40 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 public class GlueConfigContext {
-	private boolean variations;
-	private boolean variationCategories;
 	private CommandContext cmdContext;
-
-	public GlueConfigContext(CommandContext cmdContext) {
+	private boolean includeVariations;
+	private boolean noCommit;
+	private boolean commitAtEnd;
+	public GlueConfigContext(CommandContext cmdContext,
+			boolean includeVariations, boolean noCommit, boolean commitAtEnd) {
 		super();
 		this.cmdContext = cmdContext;
+		this.includeVariations = includeVariations;
+		this.noCommit = noCommit;
+		this.commitAtEnd = commitAtEnd;
 	}
-	public boolean includeVariations() {
-		return variations;
-	}
-	public void setIncludeVariations(boolean variations) {
-		this.variations = variations;
-	}
-	public boolean includeVariationCategories() {
-		return variationCategories;
-	}
-	public void setIncludeVariationCategories(boolean variationCategories) {
-		this.variationCategories = variationCategories;
-	}
+	
 	public CommandContext getCommandContext() {
 		return cmdContext;
 	}
+	public boolean getIncludeVariations() {
+		return includeVariations;
+	}
+	public boolean getNoCommit() {
+		return noCommit;
+	}
+	public boolean getCommitAtEnd() {
+		return commitAtEnd;
+	}
+
+	public Project getProject() {
+		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		return insideProjectMode.getProject();
+	}
+	
 	
 }

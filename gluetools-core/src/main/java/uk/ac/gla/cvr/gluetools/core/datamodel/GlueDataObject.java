@@ -29,10 +29,14 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	
 	public static <C extends GlueDataObject> C lookup(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowNull) {
+		C uncommittedObj = cmdContext.lookupUncommitted(objClass, pkMap);
+		if(uncommittedObj != null) {
+			return uncommittedObj;
+		}
 		Expression qualifier = pkMapToExpression(pkMap);
 		return lookupFromDB(cmdContext, objClass, allowNull, qualifier);
 	}
-
+	
 	public static <C extends GlueDataObject> C lookupFromDB(
 			CommandContext cmdContext, Class<C> objClass, boolean allowNull,
 			Expression qualifier) {
@@ -97,7 +101,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			return dataObject;
 		}).collect(Collectors.toList());
 	}
-	
+
 	public static <C extends GlueDataObject> C create(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowExists) {
 		C existing = lookup(cmdContext, objClass, pkMap, true);
@@ -112,7 +116,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		newObject.setPKValues(pkMap);
 		return newObject;
 	}
-	
+
 	public String populateListCell(String propertyName) {
 		Object readResult = readNestedProperty(propertyName);
 		if(readResult == null) {
@@ -133,6 +137,9 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	public final String generateGlueConfig(GlueConfigContext glueConfigContext) {
 		StringBuffer glueConfigBuf = new StringBuffer();
 		generateGlueConfig(0, glueConfigBuf, glueConfigContext);
+		if(glueConfigContext.getCommitAtEnd()) {
+			glueConfigBuf.append("commit").append("\n");
+		}
 		return glueConfigBuf.toString();
 	}
 

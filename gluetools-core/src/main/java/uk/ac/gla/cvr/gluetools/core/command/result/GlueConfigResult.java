@@ -24,15 +24,13 @@ public class GlueConfigResult extends OkResult {
 		}
 	}
 	
-	public static GlueConfigResult generateGlueConfigResult(CommandContext cmdContext, String fileName, String glueConfig) {
-		boolean outputToConsole = false;
-		if(fileName == null) {
-			outputToConsole = true;
-		} else {
+	public static GlueConfigResult generateGlueConfigResult(CommandContext cmdContext, 
+			boolean preview, String fileName, String glueConfig) {
+		if(fileName != null) {
 			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 			consoleCmdContext.saveBytes(fileName, glueConfig.getBytes());
 		}
-		GlueConfigResult glueConfigResult = new GlueConfigResult(outputToConsole, glueConfig);
+		GlueConfigResult glueConfigResult = new GlueConfigResult(preview, glueConfig);
 		return glueConfigResult;
 	}
 

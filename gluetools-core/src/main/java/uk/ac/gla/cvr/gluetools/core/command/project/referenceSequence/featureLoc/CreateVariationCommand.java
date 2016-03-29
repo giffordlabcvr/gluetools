@@ -22,8 +22,11 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"create","variation"}, 
-		docoptUsages={"<variationName> [-t <type>] [<description>]"},
-		docoptOptions={"-t <type>, --translationType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"},
+		docoptUsages={"[-C] <variationName> [-t <type>] [<description>]"},
+		docoptOptions={
+				"-C, --noCommit     Don't commit to the database [default: false]",
+				"-t <type>, --translationType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"
+		},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Create a new feature variation", 
 		furtherHelp="A variation is a known motif which may occur in a sequence aligned to a reference. "+
@@ -31,10 +34,12 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 		"nucleotides in the sequence or against the amino acid translation. If omitted, NUCLEOTIDE is the default.") 
 public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
+	public static final String NO_COMMIT = "noCommit";
 	public static final String VARIATION_NAME = "variationName";
 	public static final String DESCRIPTION = "description";
 	public static final String TRANSLATION_TYPE = "translationType";
 
+	private Boolean noCommit;
 	private String variationName;
 	private Optional<String> description;
 	private TranslationFormat translationFormat;
@@ -42,6 +47,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 		variationName = PluginUtils.configureStringProperty(configElem, VARIATION_NAME, true);
 		translationFormat = Optional.ofNullable(
 				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSLATION_TYPE, false)).
@@ -60,7 +66,11 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setFeatureLoc(featureLoc);
 		variation.setTranslationType(translationFormat.name());
 		description.ifPresent(d -> {variation.setDescription(d);});
-		cmdContext.commit();
+		if(noCommit) {
+			cmdContext.cacheUncommitted(variation);
+		} else {
+			cmdContext.commit();
+		}
 		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(VcatMembership.CACHE_GROUP);
 		return new CreateResult(Variation.class, 1);
 	}

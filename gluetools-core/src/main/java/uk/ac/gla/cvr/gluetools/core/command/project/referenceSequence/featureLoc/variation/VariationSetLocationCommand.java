@@ -31,8 +31,9 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @CommandClass( 
 		commandWords={"set","location"}, 
-		docoptUsages={"( -n <ntStart> <ntEnd> | -c <lcStart> <lcEnd> )"},
+		docoptUsages={"[-C] ( -n <ntStart> <ntEnd> | -c <lcStart> <lcEnd> )"},
 		docoptOptions={
+				"-C, --noCommit     Don't commit to the database [default: false]",
 				"-n, --nucleotide     Set location based on reference sequence nucleotide",
 				"-c, --labeledCodon   Set location based on labeled codons"},
 		metaTags={CmdMeta.updatesDatabase},
@@ -46,13 +47,16 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 				"codon-labeling scheme of the variation's feature location.") 
 public class VariationSetLocationCommand extends VariationModeCommand<OkResult> {
 
+	public static final String NO_COMMIT = "noCommit";
 	public static final String NT_BASED = "nucleotide";
 	public static final String NT_START = "ntStart";
 	public static final String NT_END = "ntEnd";
 	public static final String LC_BASED = "labeledCodon";
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
+
 	
+	private Boolean noCommit;
 	private Integer ntStart;
 	private Integer ntEnd;
 	private Boolean nucleotideBased;
@@ -64,6 +68,7 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		nucleotideBased = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_BASED, false)).orElse(false);
@@ -165,7 +170,9 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 			positionVariation.setVariation(variation);
 		}
 		
-		cmdContext.commit();
+		if(!noCommit) {
+			cmdContext.commit();
+		}
 		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(PositionVariation.CACHE_GROUP);
 		return new UpdateResult(Variation.class, 1);
 	}

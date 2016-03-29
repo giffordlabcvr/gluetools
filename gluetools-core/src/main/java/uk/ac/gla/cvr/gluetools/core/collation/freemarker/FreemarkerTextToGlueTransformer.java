@@ -64,7 +64,8 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 	}
 	
 
-	public CommandResult transform(ConsoleCommandContext cmdContext, String inputFile, boolean preview, boolean run, String outputFile) {
+	public CommandResult transform(ConsoleCommandContext cmdContext, String inputFile, boolean preview, boolean run,
+			boolean noEcho, boolean noOutput, String outputFile) {
 		TextFileModel csvFileModel = modelFromInputFileBytes(cmdContext.loadBytes(inputFile));
 		StringWriter stringWriter = new StringWriter();
 		try {
@@ -82,7 +83,7 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 			cmdContext.saveBytes(outputFile, result.getBytes());
 			return new OkResult();
 		} else { // run
-			cmdContext.runBatchCommands("generated_from_"+inputFile, result, false, false);
+			cmdContext.runBatchCommands("generated_from_"+inputFile, result, noEcho, noOutput);
 			return new OkResult();
 		}
 	}
@@ -196,11 +197,13 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 	
 	@CommandClass( 
 			commandWords={"transform"}, 
-			docoptUsages={"<inputFile> (-p | -r | -o <outputFile>)"},
+			docoptUsages={"<inputFile> (-p | -r [-E] [-O] | -o <outputFile>)"},
 			docoptOptions={
-					"-p, --preview                           Preview results",
-					"-r, --run                               Run results as GLUE commands",
-					"-o <outputFile>, --output <outputFile>  Output results to a file",
+					"-p, --preview                           Preview GLUE commands",
+					"-r, --run                               Run GLUE commands",
+					"-E, --no-echo                           Suppress command echo",
+				  	"-O, --no-output                         Suppress command output",
+					"-o <outputFile>, --output <outputFile>  Output commands to a file",
 			},
 			description="Read a CSV file and transform to GLUE using a template", 
 			metaTags = { CmdMeta.consoleOnly }
@@ -211,30 +214,41 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 		private String outputFile;
 		private boolean preview;
 		private boolean run;
-		
+		private boolean noEcho;
+		private boolean noOutput;
+
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
 			inputFile = PluginUtils.configureStringProperty(configElem, "inputFile", true);
 			outputFile = PluginUtils.configureStringProperty(configElem, "output", false);
 			preview = PluginUtils.configureBooleanProperty(configElem, "preview", true);
+			noEcho = PluginUtils.configureBooleanProperty(configElem, "no-echo", true);
+			noOutput = PluginUtils.configureBooleanProperty(configElem, "no-output", true);
 			run = PluginUtils.configureBooleanProperty(configElem, "run", true);
 			if(!( 
 					(preview && !run && outputFile == null) ||
 					(!preview && run && outputFile == null) ||
 					(!preview && !run && outputFile != null)
 					)) {
-				usageError();
+				usageError1();
+			}
+			if(!run && (noEcho || noOutput)) {
+				usageError2();
 			}
 		}
 
-		private void usageError() {
+		private void usageError1() {
 			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Either --preview, --run or --output must be specified");
+		}
+
+		private void usageError2() {
+			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "The --no-echo and --no-output options may only be used with --run");
 		}
 		
 		@Override
 		protected CommandResult execute(CommandContext cmdContext, FreemarkerTextToGlueTransformer tranformerPlugin) {
-			return tranformerPlugin.transform((ConsoleCommandContext) cmdContext, inputFile, preview, run, outputFile);
+			return tranformerPlugin.transform((ConsoleCommandContext) cmdContext, inputFile, preview, run, noEcho, noOutput, outputFile);
 		}
 		
 		@CompleterClass

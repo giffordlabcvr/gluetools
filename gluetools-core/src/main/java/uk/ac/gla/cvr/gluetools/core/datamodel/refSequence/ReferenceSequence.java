@@ -121,7 +121,7 @@ public class ReferenceSequence extends _ReferenceSequence {
 	}
 
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
-		if(glueConfigContext.includeVariations()) {
+		if(glueConfigContext.getIncludeVariations()) {
 			for(FeatureLocation featureLoc: getFeatureLocations()) {
 				StringBuffer featureLocConfigBuf = new StringBuffer();
 				featureLoc.generateGlueConfig(indent+INDENT, featureLocConfigBuf, glueConfigContext);

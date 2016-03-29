@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"run", "file"},
 	docoptUsages={"[-E] [-O] <filePath>"},
 	docoptOptions={"-E, --no-echo    Suppress batch command echo",
-			  	   "-O, --no-output  Suppress batch command output"},
+	   "-O, --no-output  Suppress batch command output"},
 	description="Run batch commands from a file",
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase }
 ) 

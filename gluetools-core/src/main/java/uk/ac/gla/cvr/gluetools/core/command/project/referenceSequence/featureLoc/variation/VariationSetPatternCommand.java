@@ -17,19 +17,25 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"set","pattern"}, 
-		docoptUsages={"<regex>"},
+		docoptUsages={"[-C] <regex>"},
+		docoptOptions={
+			"-C, --noCommit     Don't commit to the database [default: false]"
+		},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Set the variation's regular expression pattern") 
 public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 
+	public static final String NO_COMMIT = "noCommit";
 	public static final String REGEX = "regex";
 	
 	private Pattern regex;
+	private Boolean noCommit;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 		regex = PluginUtils.configureRegexPatternProperty(configElem, REGEX, true);
 	}
 
@@ -37,7 +43,9 @@ public class VariationSetPatternCommand extends VariationModeCommand<OkResult> {
 	public OkResult execute(CommandContext cmdContext) {
 		Variation variation = lookupVariation(cmdContext);
 		variation.setRegex(regex.pattern());
-		cmdContext.commit();
+		if(!noCommit) {
+			cmdContext.commit();
+		}
 		return new UpdateResult(Variation.class, 1);
 	}
 

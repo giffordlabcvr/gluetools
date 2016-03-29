@@ -15,37 +15,41 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"generate", "glue-config"},
-		docoptUsages={"[-v] [-c] [-f <fileName>]"},
+		docoptUsages={"[-v] [-C] [-e] (-f <fileName> | -p)"},
 		docoptOptions={
-				"-v, --variations                      Include reference sequence feature variations",
-				"-c, --variationCategories             Include variation categories",
-				"-f <fileName>, --fileName <fileName>  Name of file to output to"},
-		description="Generate GLUE configuration to recreate the reference sequence",
-		furtherHelp="If a <fileName> is supplied, GLUE commands will be saved to that file. "+
-		"Otherwise they will be output to the console.",
+				"-v, --variations                      Include variations",
+				"-C, --noCommit                        Generated commands should not commit",
+				"-e, --commitAtEnd                     Add commit command at end",
+				"-f <fileName>, --fileName <fileName>  Name of file to output to",
+				"-p, --preview                         Preview only"},
+		description="Generate GLUE configuration to recreate certain project objects",
 		metaTags={ CmdMeta.consoleOnly }
 )
 public class ProjectGenerateGlueConfigCommand extends ProjectModeCommand<GlueConfigResult> {
 	
-	private String fileName;
-	private boolean variations;
-	private boolean variationCategories;
+	public static final String VARIATIONS = "variations";
+	
+	private GenerateConfigCommandDelegate generateConfigCommandDelegate = new GenerateConfigCommandDelegate();
+	
+	private boolean includeVariations;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fileName = PluginUtils.configureStringProperty(configElem, "fileName", false);
-		variations = PluginUtils.configureBooleanProperty(configElem, "variations", true);
-		variationCategories = PluginUtils.configureBooleanProperty(configElem, "variationCategories", true);
+		includeVariations = PluginUtils.configureBooleanProperty(configElem, VARIATIONS, true);
+		generateConfigCommandDelegate.configure(pluginConfigContext, configElem);
 	}
 
 	@Override
 	public GlueConfigResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext);
-		glueConfigContext.setIncludeVariations(variations);
-		glueConfigContext.setIncludeVariationCategories(variationCategories);
-		return GlueConfigResult.generateGlueConfigResult(cmdContext, fileName, project.generateGlueConfig(glueConfigContext));
+		GlueConfigContext glueConfigContext = new GlueConfigContext(cmdContext, includeVariations, 
+				generateConfigCommandDelegate.getNoCommit(), 
+				generateConfigCommandDelegate.getCommitAtEnd());
+		return GlueConfigResult.generateGlueConfigResult(cmdContext, 
+				generateConfigCommandDelegate.getPreview(), 
+				generateConfigCommandDelegate.getFileName(), 
+				project.generateGlueConfig(glueConfigContext));
 	}
 
 	@CompleterClass

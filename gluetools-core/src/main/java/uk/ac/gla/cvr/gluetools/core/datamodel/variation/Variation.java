@@ -17,6 +17,7 @@ import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.console.Lexer;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -24,9 +25,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldTranslator;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
@@ -188,25 +193,34 @@ public class Variation extends _Variation implements IReferenceSegment {
 
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
+		String noCommit = glueConfigContext.getNoCommit() ? "--noCommit " : "";
 		String regex = getRegex();
 		if(regex != null) {
-			indent(glueConfigBuf, indent).append("set pattern \""+regex+"\"").append("\n");
+			indent(glueConfigBuf, indent).append("set pattern "+noCommit+"\""+regex+"\"").append("\n");
 		}
 		Integer refStart = getRefStart();
 		if(refStart != null) {
 			if(getTranslationFormat() == TranslationFormat.AMINO_ACID) {
 				TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getFeatureLoc().getRefNtToLabeledCodon(glueConfigContext.getCommandContext());
-				indent(glueConfigBuf, indent).append("set location -c "+
+				indent(glueConfigBuf, indent).append("set location "+noCommit+"-c "+
 						refNtToLabeledCodon.get(getRefStart()).getCodonLabel()+" "+
 						refNtToLabeledCodon.get(getRefEnd()-2).getCodonLabel()).append("\n");
 				
 			} else {			
-				indent(glueConfigBuf, indent).append("set location -n "+getRefStart()+" "+getRefEnd()).append("\n");
+				indent(glueConfigBuf, indent).append("set location "+noCommit+"-n "+getRefStart()+" "+getRefEnd()).append("\n");
 			}
 		}
-		for(VcatMembership vcm : getVcatMemberships()) {
-			indent(glueConfigBuf, indent).append("add category "+vcm.getCategory().getName()).append("\n");
+		List<Field> customFields = glueConfigContext.getProject().getCustomFields(ConfigurableTable.variation);
+		for(Field field: customFields) {
+			Object value = readProperty(field.getName());
+			if(value != null) {
+				FieldType fieldType = field.getFieldType();
+				FieldTranslator<?> fieldTranslator = fieldType.getFieldTranslator();
+				String valueAsString = fieldTranslator.objectValueToString(value);
+				indent(glueConfigBuf, indent).append("set field "+noCommit+field.getName()+" "+Lexer.quotifyIfNecessary(valueAsString)).append("\n");
+			}
 		}
+		
 	}
 
 	public VariationScanResult scanProteinTranslation(CharSequence proteinTranslation) {

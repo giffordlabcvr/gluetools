@@ -291,9 +291,10 @@ public class FeatureLocation extends _FeatureLocation {
 
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
-		if(glueConfigContext.includeVariations()) {
+		String noCommit = glueConfigContext.getNoCommit() ? "--noCommit " : "";
+		if(glueConfigContext.getIncludeVariations()) {
 			for(Variation variation: getVariations()) {
-				indent(glueConfigBuf, indent).append("create variation ").append(variation.getName())
+				indent(glueConfigBuf, indent).append("create variation "+noCommit).append(variation.getName())
 					.append(" -t ").append(variation.getTranslationType());
 				String description = variation.getDescription();
 				if(description != null) {
