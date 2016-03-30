@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import jline.console.ConsoleReader;
+import jline.console.history.MemoryHistory;
 
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
@@ -94,6 +97,23 @@ public class Console implements CommandResultRenderingContext
 			commandContext.newObjectContext(); // due to error, the current object context may lack integrity.
 			handleGlueException(ge);
 		}
+		if(historyFilter(line)) {
+			reader.getHistory().add(line);
+		}
+	}
+
+	private boolean historyFilter(String line) {
+		String trimmedLine = line.trim();
+		if(trimmedLine.isEmpty()) {
+			return false;
+		}
+		if(trimmedLine.equals("quit")) {
+			return false;
+		}
+		if(trimmedLine.equals("exit")) {
+			return false;
+		}
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -377,6 +397,7 @@ public class Console implements CommandResultRenderingContext
 		}
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));
 		reader.addCompleter(new ConsoleCompleter(commandContext));
+		loadCommandHistory();
 	}
 
 	private void interactiveSession() {
@@ -385,8 +406,81 @@ public class Console implements CommandResultRenderingContext
 		while(!isFinished()) {
 			handleInteractiveLine();
 		}
+		saveCommandHistory();
 	}
 
+	private void saveCommandHistory() {
+		GlueHistory history = (GlueHistory) reader.getHistory();
+		history.save();
+	}
+
+	private void loadCommandHistory() {
+		GlueHistory glueHistory = new GlueHistory();
+		String userHome = System.getProperty("user.home");
+		if(userHome != null) {
+			File userHomeFile = new File(userHome);
+			if(userHomeFile.isDirectory()) {
+				File glueHistoryFile = new File(userHomeFile, ".glue_history");
+				glueHistory.historyFile = glueHistoryFile;
+				if(glueHistoryFile.exists()) {
+					String historyFileAbsolutePath = glueHistoryFile.getAbsolutePath();
+					GlueLogger.getGlueLogger().finest("Loading .glue_history from "+userHome);
+					String glueHistoryContents = null;
+					try {
+						glueHistoryContents = new String(commandContext.loadBytes(historyFileAbsolutePath));
+					} catch(GlueException glueException) {
+						GlueLogger.getGlueLogger().warning("Failed to load .glue_history: "+glueException.getLocalizedMessage());
+					}
+					if(glueHistoryContents != null) {
+						String[] lines = glueHistoryContents.split("\n");
+						for(String line: lines) {
+							if(line.trim().length() > 0) {
+								glueHistory.add(line.trim());
+							}
+						}
+					}
+				}
+			}
+		}
+		reader.setHistory(glueHistory);
+		reader.setHistoryEnabled(false); // we will add items manually.
+	}
+	
+	private class GlueHistory extends MemoryHistory {
+		public GlueHistory() {
+			super();
+			setAutoTrim(true);
+			setMaxSize(Integer.parseInt(commandContext.getOptionValue(ConsoleOption.MAX_COMMAND_HISTORY_SIZE)));
+		}
+		public void save() {
+			String saveCommandHistory = commandContext.getOptionValue(ConsoleOption.SAVE_COMMAND_HISTORY);
+			// at the end of the session, save the whole command history.
+			// this enforces the max history size in the file.
+			if(historyFile != null && ( saveCommandHistory.equals("after_every_cmd") || saveCommandHistory.equals("at_end_of_session") )) {
+				try(FileOutputStream fos = new FileOutputStream(historyFile)) {
+					Iterator<Entry> iter = iterator();
+					while(iter.hasNext()) {
+						fos.write((iter.next().value().toString()+"\n").getBytes());
+					}
+				} catch (IOException ioe) {
+					GlueLogger.getGlueLogger().warning("Failed to write to .glue_history: "+ioe.getLocalizedMessage());
+				}
+			}
+		}
+		private File historyFile = null;
+		@Override
+		protected void internalAdd(CharSequence item) {
+			super.internalAdd(item);
+			if(historyFile != null && commandContext.getOptionValue(ConsoleOption.SAVE_COMMAND_HISTORY).equals("after_every_cmd")) {
+				try(FileOutputStream fos = new FileOutputStream(historyFile, true)) {
+					fos.write((item.toString()+"\n").getBytes());
+				} catch (IOException ioe) {
+					GlueLogger.getGlueLogger().warning("Failed to write to .glue_history: "+ioe.getLocalizedMessage());
+				}
+			}
+		}
+	}
+	
 	private void runGlueRC() {
 		String userHome = System.getProperty("user.home");
 		if(userHome == null) {
@@ -606,6 +700,11 @@ public class Console implements CommandResultRenderingContext
 		} else {
 			return Integer.parseInt(optionValue);
 		}
+	}
+
+	public void setMaxCmdHistorySize(int maxHistory) {
+		GlueHistory glueHistory = (GlueHistory) reader.getHistory();
+		glueHistory.setMaxSize(maxHistory);
 	}
 	
 }
