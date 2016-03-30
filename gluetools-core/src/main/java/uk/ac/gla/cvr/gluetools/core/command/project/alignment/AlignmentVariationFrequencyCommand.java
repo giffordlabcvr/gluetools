@@ -33,7 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 		"-w <whereClause>, --whereClause <whereClause>     Qualify members",
 		"-v <vWhereClause>, --vWhereClause <vWhereClause>  Qualify variations",
 		"-r <acRefName>, --acRefName <acRefName>           Ancestor-constraining ref",
-		"-f <featureName>, --featureName <featureName>     Feature to translate"
+		"-f <featureName>, --featureName <featureName>     Feature containing variations"
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
