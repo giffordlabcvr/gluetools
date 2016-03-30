@@ -1,2 +1,3 @@
 /.settings/
-/WebContent/www/gluetools/downloads/
+/WebContent/www/gluetools/downloads/exampleProject*.zip
+/WebContent/www/gluetools/downloads/gluetools-core-all-*.jar
