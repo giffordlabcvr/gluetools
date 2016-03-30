@@ -149,6 +149,24 @@ public class Alignment extends _Alignment {
 
 		return ancConstrainingRef;
 	}
+	
+	public List<ReferenceSequence> getAncestorPathReferences(CommandContext cmdContext, String acRefName) {
+		List<ReferenceSequence> ancestorReferences = getAncestorReferences();
+		List<ReferenceSequence> ancestorPathReferences = new ArrayList<ReferenceSequence>();
+		boolean acRefFound = false;
+		for(ReferenceSequence ancestorReference: ancestorReferences) {
+			ancestorPathReferences.add(ancestorReference);
+			if(ancestorReference.getName().equals(acRefName)) {
+				acRefFound = true;
+				break;
+			}
+		}
+		if(!acRefFound) {
+        	throw new AlignmentException(AlignmentException.Code.REFERENCE_DOES_NOT_CONSTRAIN_ANCESTOR, acRefName, this.getName());
+		}
+		return ancestorPathReferences;
+		
+	}
 
 	public ReferenceSequence getConstrainingRef() {
 		ReferenceSequence constrainingRef = getRefSequence();

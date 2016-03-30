@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 public class AlignmentVariationFrequencyResult extends BaseTableResult<VariationScanMemberCount> {
 
 	public static final String 
+		REF_SEQ_NAME = "referenceName",
 		VARIATION_NAME = "variationName",
 		READS_PRESENT = "membersPresent",
 		PCT_PRESENT = "pctPresent",
@@ -18,7 +19,8 @@ public class AlignmentVariationFrequencyResult extends BaseTableResult<Variation
 	public AlignmentVariationFrequencyResult(List<VariationScanMemberCount> rowData) {
 		super("samVariationsScanResult", 
 				rowData,
-				column(VARIATION_NAME, vsmc -> vsmc.getVariationName()), 
+				column(REF_SEQ_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getReferenceSequence().getName()), 
+				column(VARIATION_NAME, vsmc -> vsmc.getVariation().getName()), 
 				column(READS_PRESENT, vsmc -> vsmc.getMembersWherePresent()), 
 				column(PCT_PRESENT, vsmc -> vsmc.getPctWherePresent()), 
 				column(READS_ABSENT, vsmc -> vsmc.getMembersWhereAbsent()),

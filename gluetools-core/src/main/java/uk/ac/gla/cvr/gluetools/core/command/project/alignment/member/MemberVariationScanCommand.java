@@ -1,8 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -28,14 +29,17 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> -f <featureName> [-w <whereClause>]" },
+		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-w <whereClause>]" },
 		docoptOptions = { 
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
+		"-m, --multiReference                           Scan across references",
 		"-f <featureName>, --featureName <featureName>  Feature to scan",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify variations",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
+		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
+		"path between the containing alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
 		"The <featureName> argument names a feature location which is defined on this reference. "+
 		"The result will be confined to this feature location. "+
 		"The <whereClause>, if present, qualifies the set of variations scanned for.",
@@ -44,42 +48,51 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 public class MemberVariationScanCommand extends MemberModeCommand<MemberVariationScanResult> {
 
 	public static final String AC_REF_NAME = "acRefName";
+	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String WHERE_CLAUSE = "whereClause";
 
-	private String referenceName;
+	private String acRefName;
 	private String featureName;
 	private Expression whereClause;
+	private Boolean multiReference;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.referenceName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
+		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 	}
 
 	@Override
 	public MemberVariationScanResult execute(CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
-		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
-		FeatureLocation featureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
-		List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause.orExp(null));
-		List<VariationScanResult> scanResults = memberVariationScan(cmdContext, almtMember, ancConstrainingRef, featureLoc, variationsToScan);
-		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>() {
-			@Override
-			public int compare(VariationScanResult o1, VariationScanResult o2) {
-				int comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
-				if(comp == 0) {
-					comp = o1.getVariation().getName().compareTo(o2.getVariation().getName());
-				}
-				return comp;
+		List<ReferenceSequence> refsToScan;
+
+		if(multiReference) {
+			refsToScan = alignment.getAncestorPathReferences(cmdContext, acRefName);
+		} else {
+			refsToScan = Arrays.asList(alignment.getAncConstrainingRef(cmdContext, acRefName));
+		}
+
+		List<VariationScanResult> scanResults = new ArrayList<VariationScanResult>();
+		for(ReferenceSequence refToScan: refsToScan) {
+			FeatureLocation featureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refToScan.getName(), featureName), true);
+			if(featureLoc == null) {
+				continue;
 			}
-		};
-		Collections.sort(scanResults, comparator);
+			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+			if(variationsToScan == null) {
+				continue;
+			}
+			scanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan));
+		}
+		VariationScanResult.sortVariationScanResults(scanResults);
 		return new MemberVariationScanResult(scanResults);
 	}
 

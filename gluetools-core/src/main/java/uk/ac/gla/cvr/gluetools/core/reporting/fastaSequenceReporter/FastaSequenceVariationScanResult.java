@@ -8,14 +8,16 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanResult> {
 
 	public static final String 
-	VARIATION_NAME = "variationName",
-	PRESENT = "present",
-	ABSENT = "absent";
+		REF_SEQ_NAME = "referenceName",
+		VARIATION_NAME = "variationName",
+		PRESENT = "present",
+		ABSENT = "absent";
 
 
 	public FastaSequenceVariationScanResult(List<VariationScanResult> rowData) {
 		super("fastaSequenceVariationScanResult", 
 				rowData, 
+				column(REF_SEQ_NAME, vsr -> vsr.getVariation().getFeatureLoc().getReferenceSequence().getName()),
 				column(VARIATION_NAME, vsr -> vsr.getVariation().getName()),
 				column(PRESENT, vsr -> vsr.isPresent()),
 				column(ABSENT, vsr -> vsr.isAbsent()));
