@@ -38,6 +38,9 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(AlignmentExtractChildCommand.class);
 		registerCommandClass(AlignmentDemoteMemberCommand.class);
+		
+		registerCommandClass(AlignmentDeriveSegmentsCommand.class);
+		
 		registerCommandClass(AlignmentAminoAcidFrequencyCommand.class);
 		registerCommandClass(AlignmentVariationFrequencyCommand.class);
 		

@@ -1,11 +1,11 @@
-package uk.ac.gla.cvr.gluetools.core.command;
+package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class DeriveAlignmentException extends GlueException {
+public class AlignmentDeriveSegmentsException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		TARGET_ALIGNMENT_IS_UNCONSTRAINED("targetAlmtName"),
+		SOURCE_ALIGNMENT_IS_CONSTRAINED("sourceAlmtName"),
 		REFERENCE_SEQUENCE_NOT_MEMBER_OF_SOURCE_ALIGNMENT("sourceAlmtName", "referenceName", "refSourceName", "refSeqSeqID", "targetAlmtName");
 		
 		private String[] argNames;
@@ -18,11 +18,11 @@ public class DeriveAlignmentException extends GlueException {
 		}
 	}
 	
-	public DeriveAlignmentException(Code code, Object... errorArgs) {
+	public AlignmentDeriveSegmentsException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public DeriveAlignmentException(Throwable cause, Code code, Object... errorArgs) {
+	public AlignmentDeriveSegmentsException(Throwable cause, Code code, Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}
 }
