@@ -23,9 +23,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
 @CommandClass( 
 		commandWords={"demote", "member"},
@@ -89,15 +93,30 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 		if(childAlignment.getParent() == null || !childAlignment.getParent().getName().equals(thisAlignment.getName())) {
 			throw new AlignmentException(AlignmentException.Code.ALIGNMENT_NOT_CHILD_OF_PARENT, childAlmtName, thisAlignment.getName());
 		}
+		ReferenceSequence childRef = childAlignment.getRefSequence();
+		Sequence childRefSeq = childRef.getSequence();
+		AlignmentMember childRefMemberOfParent = 
+				GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+						AlignmentMember.pkMap(childAlignment.getName(), childRefSeq.getSource().getName(), childRefSeq.getSequenceID()));
+
+		List<QueryAlignedSegment> childRefToParentRefSegs = childRefMemberOfParent.segmentsAsQueryAlignedSegments();
+
+		List<QueryAlignedSegment> parentRefToChildRefSegs = childRefToParentRefSegs
+				.stream().map(qaseg -> qaseg.invert()).collect(Collectors.toList());
+
+		
 		List<AlignmentMember> membersToDemote = lookupMembers(cmdContext, whereClause, allMembers, sourceName, sequenceID);
-		membersToDemote.forEach(member -> {
-			Sequence sequence = member.getSequence();
-			// if member is the reference of a child of this alignment, do not demote it.
-			if(!isReferenceOfSomeChild(thisAlignment, member)) {
-				GlueDataObject.delete(cmdContext, AlignmentMember.class, member.pkMap(), true);
+		membersToDemote.forEach(memberToDemote -> {
+			Sequence sequence = memberToDemote.getSequence();
+			List<QueryAlignedSegment> memberToDemoteToParentRefSegs = memberToDemote.segmentsAsQueryAlignedSegments();
+			List<QueryAlignedSegment> memberToDemoteToChildRefSegs = QueryAlignedSegment.translateSegments(memberToDemoteToParentRefSegs, parentRefToChildRefSegs);
+			AlignmentMember memberOfChild = AlignmentAddMemberCommand.addMember(cmdContext, childAlignment, sequence);
+			
+			
+			// if member is not the reference of a child of this alignment, delete it.
+			if(!isReferenceOfSomeChild(thisAlignment, memberToDemote)) {
+				GlueDataObject.delete(cmdContext, AlignmentMember.class, memberToDemote.pkMap(), true);
 			}
-			// TODO Here we should copy aligned segments in some clever way 
-			AlignmentAddMemberCommand.addMember(cmdContext, childAlignment, sequence);
 		});
 		cmdContext.commit();
 		return new OkResult();
