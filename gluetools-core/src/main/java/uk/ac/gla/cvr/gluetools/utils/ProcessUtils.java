@@ -104,7 +104,6 @@ public class ProcessUtils {
 								ioe2.getLocalizedMessage());
 					} 
 				}
-				GlueLogger.getGlueLogger().finest("waiting for complete");
 				try {
 					processComplete = process.waitFor(PROCESS_WAIT_INTERVAL_MS, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {}
@@ -139,17 +138,11 @@ public class ProcessUtils {
 	
 	
 	private static int drainBytes(InputStream fromStream, byte[] drainBuffer, OutputStream toStream) throws IOException {
-//		int available = fromStream.available();
-//		GlueLogger.getGlueLogger().finest("available: "+available);
-//		int bytesRead = fromStream.read(drainBuffer, 0, Math.min(drainBuffer.length, available));
 		int bytesRead = fromStream.read(drainBuffer, 0, drainBuffer.length);
-		GlueLogger.getGlueLogger().finest("bytes read: "+bytesRead);
 		if(bytesRead > 0) {
 			toStream.write(drainBuffer, 0, bytesRead);
-			GlueLogger.getGlueLogger().finest("flushing");
 			toStream.flush();
 		}
-		GlueLogger.getGlueLogger().finest("drain complete");
 		return bytesRead;
 	}
 	
