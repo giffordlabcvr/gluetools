@@ -83,12 +83,16 @@ public class ProcessUtils {
 			InputStream processStdErr = process.getErrorStream();
 			boolean processComplete = false;
 			while(!processComplete) {
+				GlueLogger.getGlueLogger().finest("draining process stdout");
 				drainBytes(processStdOut, drainBuffer, outputBytes);
+				GlueLogger.getGlueLogger().finest("draining process stderr");
 				drainBytes(processStdErr, drainBuffer, errorBytes);
+				GlueLogger.getGlueLogger().finest("draining process stdin");
 				int inBytes = drainBytes(inputStream, drainBuffer, processStdIn);
 				if(inBytes < 0) { 
 					processStdIn.close(); 
 				}
+				GlueLogger.getGlueLogger().finest("waiting for complete");
 				try {
 					processComplete = process.waitFor(PROCESS_WAIT_INTERVAL_MS, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {}
@@ -111,11 +115,15 @@ public class ProcessUtils {
 	
 	private static int drainBytes(InputStream fromStream, byte[] drainBuffer, OutputStream toStream) throws IOException {
 		int available = fromStream.available();
+		GlueLogger.getGlueLogger().finest("available: "+available);
 		int bytesRead = fromStream.read(drainBuffer, 0, Math.min(drainBuffer.length, available));
+		GlueLogger.getGlueLogger().finest("bytes read: "+bytesRead);
 		if(bytesRead > 0) {
 			toStream.write(drainBuffer, 0, bytesRead);
+			GlueLogger.getGlueLogger().finest("flushing");
 			toStream.flush();
 		}
+		GlueLogger.getGlueLogger().finest("drain complete");
 		return bytesRead;
 	}
 
