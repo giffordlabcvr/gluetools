@@ -81,28 +81,53 @@ public class ProcessUtils {
 			OutputStream processStdIn = process.getOutputStream();
 			InputStream processStdOut = process.getInputStream();
 			InputStream processStdErr = process.getErrorStream();
+			BytesDrainer outBytesDrainer = new BytesDrainer(processStdOut, outputBytes);
+			Thread outBytesDrainerThread = new Thread(outBytesDrainer);
+			BytesDrainer errBytesDrainer = new BytesDrainer(processStdErr, errorBytes);
+			Thread errBytesDrainerThread = new Thread(errBytesDrainer);
+			outBytesDrainerThread.start();
+			errBytesDrainerThread.start();
+
+			boolean inputExhausted = false;
 			boolean processComplete = false;
 			while(!processComplete) {
-				GlueLogger.getGlueLogger().finest("draining process stdout");
-				drainBytes(processStdOut, drainBuffer, outputBytes);
-				GlueLogger.getGlueLogger().finest("draining process stderr");
-				drainBytes(processStdErr, drainBuffer, errorBytes);
-				GlueLogger.getGlueLogger().finest("draining process stdin");
-				int inBytes = drainBytes(inputStream, drainBuffer, processStdIn);
-				if(inBytes < 0) { 
-					processStdIn.close(); 
+				if(!inputExhausted) {
+					try {
+						int inBytes = drainBytes(inputStream, drainBuffer, processStdIn);
+						if(inBytes < 0) { 
+							processStdIn.close(); 
+							inputExhausted = true;
+						}
+					} catch(IOException ioe2) {
+						throw new ProcessUtilsException(ioe2, 
+								ProcessUtilsException.Code.PROCESS_IO_STDIN_ERROR, commandWords[0], 
+								ioe2.getLocalizedMessage());
+					} 
 				}
 				GlueLogger.getGlueLogger().finest("waiting for complete");
 				try {
 					processComplete = process.waitFor(PROCESS_WAIT_INTERVAL_MS, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {}
+				IOException outIoe = outBytesDrainer.getIoException();
+				if(outIoe != null) {
+					throw new ProcessUtilsException(outIoe, 
+							ProcessUtilsException.Code.PROCESS_IO_STDOUT_ERROR, commandWords[0], 
+							outIoe.getLocalizedMessage());
+				}
+				IOException errIoe = errBytesDrainer.getIoException();
+				if(errIoe != null) {
+					throw new ProcessUtilsException(errIoe, 
+							ProcessUtilsException.Code.PROCESS_IO_STDERR_ERROR, commandWords[0], 
+							errIoe.getLocalizedMessage());
+				}
 			}
-			while(drainBytes(processStdOut, drainBuffer, outputBytes) > 0){};
-			while(drainBytes(processStdErr, drainBuffer, errorBytes) > 0){};
-		} catch(IOException ioe2) {
-			throw new ProcessUtilsException(ioe2, 
-					ProcessUtilsException.Code.PROCESS_IO_ERROR, commandWords[0], 
-					ioe2.getLocalizedMessage());
+			try {
+				outBytesDrainerThread.join();
+			} catch (InterruptedException e) {}
+			try {
+				errBytesDrainerThread.join();
+			} catch (InterruptedException e) {}
+		
 		} finally {
 			if(process != null && process.isAlive()) {
 				try { process.destroyForcibly().waitFor(); } catch (InterruptedException e) {}
@@ -114,9 +139,10 @@ public class ProcessUtils {
 	
 	
 	private static int drainBytes(InputStream fromStream, byte[] drainBuffer, OutputStream toStream) throws IOException {
-		int available = fromStream.available();
-		GlueLogger.getGlueLogger().finest("available: "+available);
-		int bytesRead = fromStream.read(drainBuffer, 0, Math.min(drainBuffer.length, available));
+//		int available = fromStream.available();
+//		GlueLogger.getGlueLogger().finest("available: "+available);
+//		int bytesRead = fromStream.read(drainBuffer, 0, Math.min(drainBuffer.length, available));
+		int bytesRead = fromStream.read(drainBuffer, 0, drainBuffer.length);
 		GlueLogger.getGlueLogger().finest("bytes read: "+bytesRead);
 		if(bytesRead > 0) {
 			toStream.write(drainBuffer, 0, bytesRead);
@@ -125,6 +151,40 @@ public class ProcessUtils {
 		}
 		GlueLogger.getGlueLogger().finest("drain complete");
 		return bytesRead;
+	}
+	
+	private static class BytesDrainer implements Runnable {
+		private InputStream fromStream;
+		private OutputStream toStream;
+		private byte[] drainBuffer = new byte[DRAIN_BUFFER_SIZE];
+		private IOException ioException;
+		
+		public BytesDrainer(InputStream fromStream, OutputStream toStream) {
+			super();
+			this.fromStream = fromStream;
+			this.toStream = toStream;
+		}
+
+		public IOException getIoException() {
+			return ioException;
+		}
+
+		@Override
+		public void run() {
+			while(true) {
+				int bytesDrained;
+				try {
+					bytesDrained = drainBytes(fromStream, drainBuffer, toStream);
+				} catch (IOException ioe) {
+					this.ioException = ioe;
+					break;
+				}
+				if(bytesDrained < 0) {
+					break; // EOF
+				}
+			}			
+		}
+		
 	}
 
 	
