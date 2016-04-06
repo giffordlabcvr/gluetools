@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 	"Similarly, the member region endpoints must be within membSeqLength. "+
 	"It is permissible for memberStart > memberEnd. This indicates a homology in the reverse direction. "+
 	"In this case the member region includes the nucleotide at memberEnd and the nucleotide at memberStart.") 
-public class AddAlignedSegmentCommand extends MemberModeCommand<CreateResult> {
+public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 
 	public static final String REF_START = "refStart";
 	public static final String REF_END = "refEnd";

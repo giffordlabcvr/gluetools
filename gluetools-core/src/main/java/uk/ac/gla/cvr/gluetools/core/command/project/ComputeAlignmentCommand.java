@@ -19,8 +19,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowReferenceSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.AddAlignedSegmentCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.RemoveAlignedSegmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAddSegmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberRemoveSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
@@ -187,15 +187,15 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		if(memberAlignedSegments != null) {
 			try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 				try(ModeCloser memberMode = cmdContext.pushCommandMode("member", memberSourceName, memberSeqId)) {
-					numRemovedSegments = cmdContext.cmdBuilder(RemoveAlignedSegmentCommand.class)
-							.set(RemoveAlignedSegmentCommand.ALL_SEGMENTS, true)
+					numRemovedSegments = cmdContext.cmdBuilder(MemberRemoveSegmentCommand.class)
+							.set(MemberRemoveSegmentCommand.ALL_SEGMENTS, true)
 							.execute().getNumber();
 					for(IQueryAlignedSegment alignedSegment: memberAlignedSegments) {
-						CreateResult addSegResult = cmdContext.cmdBuilder(AddAlignedSegmentCommand.class)
-								.set(AddAlignedSegmentCommand.REF_START, alignedSegment.getRefStart())
-								.set(AddAlignedSegmentCommand.REF_END, alignedSegment.getRefEnd())
-								.set(AddAlignedSegmentCommand.MEMBER_START, alignedSegment.getQueryStart())
-								.set(AddAlignedSegmentCommand.MEMBER_END, alignedSegment.getQueryEnd())
+						CreateResult addSegResult = cmdContext.cmdBuilder(MemberAddSegmentCommand.class)
+								.set(MemberAddSegmentCommand.REF_START, alignedSegment.getRefStart())
+								.set(MemberAddSegmentCommand.REF_END, alignedSegment.getRefEnd())
+								.set(MemberAddSegmentCommand.MEMBER_START, alignedSegment.getQueryStart())
+								.set(MemberAddSegmentCommand.MEMBER_END, alignedSegment.getQueryEnd())
 								.execute();
 						numAddedSegments = numAddedSegments + addSegResult.getNumber();
 					}

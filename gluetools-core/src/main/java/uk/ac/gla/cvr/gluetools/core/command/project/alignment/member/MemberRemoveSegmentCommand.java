@@ -28,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	metaTags={CmdMeta.updatesDatabase},
 	description="Remove a specific aligned segment or all of them", 
 	furtherHelp="") 
-public class RemoveAlignedSegmentCommand extends MemberModeCommand<DeleteResult> {
+public class MemberRemoveSegmentCommand extends MemberModeCommand<DeleteResult> {
 
 	public static final String ALL_SEGMENTS = "allSegments";
 	public static final String REF_START = "refStart";

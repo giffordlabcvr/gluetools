@@ -15,9 +15,9 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
-		registerCommandClass(AddAlignedSegmentCommand.class);
-		registerCommandClass(RemoveAlignedSegmentCommand.class);
-		registerCommandClass(ListAlignedSegmentCommand.class);
+		registerCommandClass(MemberAddSegmentCommand.class);
+		registerCommandClass(MemberRemoveSegmentCommand.class);
+		registerCommandClass(MemberListSegmentCommand.class);
 		
 		registerCommandClass(MemberShowStatisticsCommand.class);
 		registerCommandClass(MemberAminoAcidCommand.class);

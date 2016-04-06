@@ -7,7 +7,7 @@ import org.w3c.dom.Document;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentShowReferenceSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.ListAlignedSegmentCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberListSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowFeatureTreeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand.ReferenceShowSequenceResult;
@@ -58,7 +58,7 @@ public class AlignmentResult {
 			try(ModeCloser almtMode = cmdContext.pushCommandMode("alignment", parentAlignmentName)) {
 				try(ModeCloser memberMode = cmdContext.pushCommandMode("member", refSourceName, refSequenceID)) {
 					refToParentAlignedSegments = 
-							cmdContext.cmdBuilder(ListAlignedSegmentCommand.class).execute().asQueryAlignedSegments();
+							cmdContext.cmdBuilder(MemberListSegmentCommand.class).execute().asQueryAlignedSegments();
 				}
 			}
 		}

@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 		commandWords={"list", "segment"}, 
 		docoptUsages={""},
 		description="List the aligned segments") 
-public class ListAlignedSegmentCommand extends MemberModeCommand<ListAlignedSegmentCommand.ListAlignedSegmentResult> {
+public class MemberListSegmentCommand extends MemberModeCommand<MemberListSegmentCommand.ListAlignedSegmentResult> {
 
 	@Override
 	public ListAlignedSegmentResult execute(CommandContext cmdContext) {
