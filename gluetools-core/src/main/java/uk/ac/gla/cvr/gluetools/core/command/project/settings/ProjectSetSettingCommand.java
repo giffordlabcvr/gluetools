@@ -51,6 +51,7 @@ public class ProjectSetSettingCommand extends ProjectSettingCommand<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		ProjectSettingOption projectSettingOption = getProjectSettingOption();
+		projectSettingOption.onSet(cmdContext, settingValue);
 		ProjectSetting existingSetting = GlueDataObject.lookup(cmdContext, ProjectSetting.class, ProjectSetting.pkMap(projectSettingOption.name()), true);
 		if(existingSetting == null) {
 			ProjectSetting newSetting = GlueDataObject.create(cmdContext, ProjectSetting.class, ProjectSetting.pkMap(projectSettingOption.name()), false);
