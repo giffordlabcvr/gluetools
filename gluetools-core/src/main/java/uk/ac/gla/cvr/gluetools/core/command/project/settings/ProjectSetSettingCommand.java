@@ -32,12 +32,14 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		description = "Set a value for a project setting")
 public class ProjectSetSettingCommand extends ProjectSettingCommand<OkResult> {
 	
+	public static final String SETTING_VALUE = "settingValue";
+	
 	private String settingValue;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		settingValue = PluginUtils.configureStringProperty(configElem, "settingValue", true);
+		settingValue = PluginUtils.configureStringProperty(configElem, SETTING_VALUE, true);
 		ProjectSettingOption projectSettingOption = getProjectSettingOption();
 		String[] allowedValues = projectSettingOption.getAllowedValues();
 		if(allowedValues != null) {
@@ -51,8 +53,8 @@ public class ProjectSetSettingCommand extends ProjectSettingCommand<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		ProjectSettingOption projectSettingOption = getProjectSettingOption();
-		projectSettingOption.onSet(cmdContext, settingValue);
 		ProjectSetting existingSetting = GlueDataObject.lookup(cmdContext, ProjectSetting.class, ProjectSetting.pkMap(projectSettingOption.name()), true);
+		projectSettingOption.onSet(cmdContext, existingSetting == null ? null: existingSetting.getValue(), settingValue);
 		if(existingSetting == null) {
 			ProjectSetting newSetting = GlueDataObject.create(cmdContext, ProjectSetting.class, ProjectSetting.pkMap(projectSettingOption.name()), false);
 			newSetting.setValue(settingValue);
@@ -72,7 +74,7 @@ public class ProjectSetSettingCommand extends ProjectSettingCommand<OkResult> {
 
 		public Completer() {
 			super();
-			registerVariableInstantiator("settingValue", new VariableInstantiator() {
+			registerVariableInstantiator(SETTING_VALUE, new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
 				protected List<CompletionSuggestion> instantiate(

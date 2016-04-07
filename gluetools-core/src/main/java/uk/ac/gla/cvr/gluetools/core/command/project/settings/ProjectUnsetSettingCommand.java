@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 
 
 @CommandClass( 
@@ -19,7 +20,9 @@ public class ProjectUnsetSettingCommand extends ProjectSettingCommand<DeleteResu
 	
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		getProjectSettingOption().onSet(cmdContext, null);
+		ProjectSettingOption projectSettingOption = getProjectSettingOption();
+		ProjectSetting existingSetting = GlueDataObject.lookup(cmdContext, ProjectSetting.class, ProjectSetting.pkMap(projectSettingOption.name()), true);
+		projectSettingOption.onSet(cmdContext, existingSetting == null ? null: existingSetting.getValue(), null);
 		DeleteResult deleteResult = 
 				GlueDataObject.delete(cmdContext, ProjectSetting.class, 
 						ProjectSetting.pkMap(getProjectSettingOption().name()), true);

@@ -21,6 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public abstract class ProjectSettingCommand<R extends CommandResult> extends ProjectModeCommand<R> {
 
+	public static final String SETTING_NAME = "settingName";
+
 	private ProjectSettingOption projectSettingOption;
 
 	protected ProjectSettingOption getProjectSettingOption() {
@@ -30,7 +32,7 @@ public abstract class ProjectSettingCommand<R extends CommandResult> extends Pro
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		String settingName = PluginUtils.configureStringProperty(configElem, "settingName", true);
+		String settingName = PluginUtils.configureStringProperty(configElem, SETTING_NAME, true);
 		projectSettingOption = lookupSettingOptionByName(settingName);
 	}
 
@@ -49,7 +51,7 @@ public abstract class ProjectSettingCommand<R extends CommandResult> extends Pro
 
 		public SettingNameCompleter() {
 			super();
-			registerVariableInstantiator("settingName", new VariableInstantiator() {
+			registerVariableInstantiator(SETTING_NAME, new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
 				protected List<CompletionSuggestion> instantiate(
