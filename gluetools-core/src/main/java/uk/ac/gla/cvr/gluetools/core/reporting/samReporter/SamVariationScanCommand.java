@@ -102,6 +102,9 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 
 	@Override
 	protected SamVariationScanResult execute(CommandContext cmdContext, SamReporter samReporter) {
+		// check feature exists.
+		GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
+		
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
 		String samRefName;

@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberVaria
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -77,7 +78,11 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 	
 	@Override
 	public AlignmentVariationFrequencyResult execute(CommandContext cmdContext) {
+		// check feature exists.
+		GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		
 		Alignment alignment = lookupAlignment(cmdContext);
+
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, true, whereClause);
 
 		List<ReferenceSequence> refsToScan;

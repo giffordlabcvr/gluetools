@@ -24,6 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -86,7 +87,9 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 	@Override
 	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter) {
-		
+		// check feature exists.
+		GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
+
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		
 		Entry<String, DNASequence> fastaEntry = getFastaEntry(consoleCmdContext);
