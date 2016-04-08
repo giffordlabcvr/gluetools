@@ -138,7 +138,7 @@ public class GluetoolsEngine implements Plugin {
 					} else if(osName.equals("Mac OS X")) {
 						mysqlLine = "/usr/local/mysql/bin/mysql";
 					} if(osName.toLowerCase().startsWith("windows")) {
-						mysqlLine = "mysql";
+						mysqlLine = "mysql -h 127.0.0.1";
 					}
 					String username = dbConfiguration.getUsername().orElse("<username>");
 					String password = dbConfiguration.getPassword().orElse("<password>");
