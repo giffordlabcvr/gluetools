@@ -15,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
@@ -171,14 +170,15 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 	public static Aligner<?, ?> getAligner(CommandContext cmdContext,
 			String alignerModuleName) {
-		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(alignerModuleName));
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
-		if(!(modulePlugin instanceof Aligner<?, ?>)) {
-			throw new AlignerException(AlignerException.Code.MODULE_IS_NOT_AN_ALIGNER, alignerModuleName);
-		}
-		return (Aligner<?, ?>) modulePlugin;
+		return Module.resolveModulePlugin(cmdContext, Aligner.class, alignerModuleName);
 	}
 
+	public final R doAlign(CommandContext cmdContext, String refName, String queryId, DNASequence nucleotides) {
+		Map<String, DNASequence> queryIdToNucleotides = new LinkedHashMap<String, DNASequence>();
+		queryIdToNucleotides.put(queryId, nucleotides);
+		return doAlign(cmdContext, refName, queryIdToNucleotides);
+	}
+	
 	public abstract R doAlign(CommandContext cmdContext, String refName, Map<String, DNASequence> queryIdToNucleotides);
 
 	protected Map<String, List<QueryAlignedSegment>> initFastaIdToAlignedSegments(Collection<String> queryIds) {

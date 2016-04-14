@@ -99,12 +99,8 @@ public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer>
 	
 	public static TextToQueryTransformer lookupTextToQueryTransformer(CommandContext cmdContext,
 			String moduleName, DataClassEnum dataClassEnum) {
-		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
-		if(!(modulePlugin instanceof TextToQueryTransformer)) {
-			throw new TextToQueryException(TextToQueryException.Code.MODULE_IS_NOT_TEXT_TO_QUERY_TRANSFORMER, moduleName);
-		}
-		TextToQueryTransformer textToQueryTransformer = (TextToQueryTransformer) modulePlugin;
+		TextToQueryTransformer textToQueryTransformer = 
+				Module.resolveModulePlugin(cmdContext, TextToQueryTransformer.class, moduleName);
 		if(textToQueryTransformer.dataClassEnum != dataClassEnum) {
 			throw new TextToQueryException(TextToQueryException.Code.MODULE_QUERY_OBJECT_TYPE_IS_INCORRECT, moduleName, textToQueryTransformer.dataClassEnum, dataClassEnum);
 		}

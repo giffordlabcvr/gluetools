@@ -2,9 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,7 +94,8 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
-		String targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID, getTargetRefName());
+		String targetRefName = Optional.ofNullable(getTargetRefName())
+				.orElse(fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID));
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
 		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
@@ -128,9 +127,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 
 			// align query to target reference
 			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
-			Map<String, DNASequence> fastaIDToSequence = new LinkedHashMap<String, DNASequence>();
-			fastaIDToSequence.put(fastaID, fastaNTSeq);
-			AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaIDToSequence);
+			AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
 
 			// extract segments from aligner result
 			List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);

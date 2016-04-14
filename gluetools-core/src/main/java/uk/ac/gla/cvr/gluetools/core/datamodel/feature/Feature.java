@@ -213,8 +213,7 @@ public class Feature extends _Feature {
 		FeatureMetatag codonLabelerModuleName = getMetatag(Type.CODON_LABELER_MODULE).orElse(null);
 		if(codonLabelerModuleName != null) {
 			String labelerModuleName = codonLabelerModuleName.getValue();
-			Module rendererModule = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(labelerModuleName));
-			return (CodonLabeler) (rendererModule.getModulePlugin(cmdContext.getGluetoolsEngine()));
+			return Module.resolveModulePlugin(cmdContext, CodonLabeler.class, labelerModuleName);
 		}
 		return null;
 	}

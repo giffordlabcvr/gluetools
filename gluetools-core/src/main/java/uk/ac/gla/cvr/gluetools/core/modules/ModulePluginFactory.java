@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
+import uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser.VariationAnalyser;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -56,6 +57,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(CommonAaPolymorphismGenerator.class);
 		registerPluginClass(TextToQueryTransformer.class);
 		
+		registerPluginClass(VariationAnalyser.class);
 		
 	}
 	

@@ -4,10 +4,10 @@ import gnu.trove.map.TIntObjectMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -24,7 +24,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -77,7 +76,12 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
-		String targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID, getTargetRefName());
+		String targetRefName = Optional.ofNullable(getTargetRefName())
+				.orElse(fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID));
+		
+		AlignerResult alignerResult = fastaSequenceReporter
+				.alignToTargetReference(consoleCmdContext, targetRefName, fastaID, fastaNTSeq);
+		
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
 		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
@@ -87,12 +91,6 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
-
-		// align query to target reference
-		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
-		Map<String, DNASequence> fastaIDToSequence = new LinkedHashMap<String, DNASequence>();
-		fastaIDToSequence.put(fastaID, fastaNTSeq);
-		AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaIDToSequence);
 		
 		// extract segments from aligner result
 		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);

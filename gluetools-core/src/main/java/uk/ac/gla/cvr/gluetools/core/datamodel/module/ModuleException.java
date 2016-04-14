@@ -8,7 +8,8 @@ public class ModuleException extends GlueException {
 		
 		CREATE_FROM_FILE_FAILED("file", "errorTxt"),
 		NO_SUCH_MODULE_TYPE("moduleType"),
-		NO_SUCH_MODULE_PROPERTY("propertyName");
+		NO_SUCH_MODULE_PROPERTY("propertyName"),
+		MODULE_PLUGIN_IS_NOT_OF_CORRECT_CLASS("moduleName", "requiredClass", "actualClass");
 
 		private String[] argNames;
 		private Code(String... argNames) {

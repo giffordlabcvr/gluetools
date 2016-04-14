@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
@@ -112,5 +113,17 @@ public class Module extends _Module {
 		return pkMap(getName());
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <M> M resolveModulePlugin(CommandContext cmdContext, Class<M> requiredClass, String moduleName) {
+		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
+		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
+		Class<?> actualClass = modulePlugin.getClass();
+		if(!(requiredClass.isAssignableFrom(actualClass))) {
+			throw new ModuleException(ModuleException.Code.MODULE_PLUGIN_IS_NOT_OF_CORRECT_CLASS, moduleName, 
+					requiredClass.getSimpleName(), actualClass.getSimpleName());
+		}
+		return (M) modulePlugin;
+
+	}
 	
 }

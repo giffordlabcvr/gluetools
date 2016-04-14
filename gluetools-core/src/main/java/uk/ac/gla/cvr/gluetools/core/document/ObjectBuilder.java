@@ -1,10 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.List;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultException;
+import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultException.Code;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -93,4 +102,5 @@ public class ObjectBuilder {
 	}
 	
 	
+	 
 }

@@ -2,9 +2,12 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.List;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -46,10 +49,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		return alignerModuleName;
 	}
 	
-	public String targetRefNameFromFastaId(CommandContext cmdContext, String fastaId, String definedTargetRefName) {
-		if(definedTargetRefName != null) {
-			return definedTargetRefName;
-		}
+	public String targetRefNameFromFastaId(CommandContext cmdContext, String fastaId) {
 		if(fastaIdTextToReferenceQueryModuleName == null) {
 			throw new FastaSequenceException(Code.NO_TARGET_REFERENCE_DEFINED);
 		}
@@ -67,6 +67,10 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		return referenceSeqNames.get(0);
 	}
 
-	
+	public AlignerResult alignToTargetReference(CommandContext cmdContext, String targetRefName, 
+			String fastaID, DNASequence fastaNTSeq) {
+		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, getAlignerModuleName());
+		return aligner.doAlign(cmdContext, targetRefName, fastaID, fastaNTSeq);
+	}
 	
 }
