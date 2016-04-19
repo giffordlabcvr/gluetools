@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -8,13 +10,20 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceException.Code;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @PluginClass(elemName="fastaSequenceReporter")
 public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
@@ -71,6 +80,58 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 			String fastaID, DNASequence fastaNTSeq) {
 		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, getAlignerModuleName());
 		return aligner.doAlign(cmdContext, targetRefName, fastaID, fastaNTSeq);
+	}
+	
+	
+	public List<TranslatedQueryAlignedSegment> translateNucleotides(
+			CommandContext cmdContext, FeatureLocation featureLoc,
+			List<QueryAlignedSegment> queryToRefSegs, String queryNTs) {
+		// trim down to the feature area.
+		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+		
+		List<QueryAlignedSegment> queryToRefSegsFeatureArea = 
+					ReferenceSegment.intersection(queryToRefSegs, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			
+		// truncate to codon aligned
+		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+
+		List<QueryAlignedSegment> queryToRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefSegsFeatureArea);
+
+		final Translator translator = new CommandContextTranslator(cmdContext);
+		
+		if(queryToRefSegsCodonAligned.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<TranslatedQueryAlignedSegment> translatedQaSegs = new ArrayList<TranslatedQueryAlignedSegment>();
+		
+		for(QueryAlignedSegment queryToRefSeg: queryToRefSegsCodonAligned) {
+			CharSequence nts = SegmentUtils.base1SubString(queryNTs, queryToRefSeg.getQueryStart(), queryToRefSeg.getQueryEnd());
+			String segAAs = translator.translate(nts);
+			translatedQaSegs.add(new TranslatedQueryAlignedSegment(queryToRefSeg, segAAs));
+		}
+		return translatedQaSegs;
+	}
+
+
+	
+	public static class TranslatedQueryAlignedSegment {
+
+		private QueryAlignedSegment queryAlignedSegment;
+		private String translation;
+		
+		public TranslatedQueryAlignedSegment(QueryAlignedSegment queryAlignedSegment, String translation) {
+			this.queryAlignedSegment = queryAlignedSegment;
+			this.translation = translation;
+		}
+
+		public QueryAlignedSegment getQueryAlignedSegment() {
+			return queryAlignedSegment;
+		}
+
+		public String getTranslation() {
+			return translation;
+		}
 	}
 	
 }

@@ -31,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -103,42 +104,26 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		// translate segments to ancestor constraining reference
 		List<QueryAlignedSegment> queryToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, ancConstrainingRef);
 
+		String fastaNTs = fastaNTSeq.getSequenceAsString();
 
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> queryToAncConstrRefSegs = 
-					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
-			
-		// truncate to codon aligned
-		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+		List<TranslatedQueryAlignedSegment> translatedQaSegs = fastaSequenceReporter.translateNucleotides(
+				cmdContext, featureLoc, queryToAncConstrRefSegsFull, fastaNTs);
 
-		List<QueryAlignedSegment> queryToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToAncConstrRefSegs);
-
-		final Translator translator = new CommandContextTranslator(cmdContext);
-		
-		if(queryToAncConstrRefSegsCodonAligned.isEmpty()) {
-			return new FastaSequenceAminoAcidResult(Collections.emptyList());
-		}
-		
 		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
 
-		String fastaNTs = fastaNTSeq.getSequenceAsString();
-		for(QueryAlignedSegment queryToGlueRefSeg: queryToAncConstrRefSegsCodonAligned) {
-			CharSequence nts = SegmentUtils.base1SubString(fastaNTs, queryToGlueRefSeg.getQueryStart(), queryToGlueRefSeg.getQueryEnd());
-			String segAAs = translator.translate(nts);
-			int refNt = queryToGlueRefSeg.getRefStart();
-			int queryNt = queryToGlueRefSeg.getQueryStart();
-			for(int i = 0; i < segAAs.length(); i++) {
-				String segAA = segAAs.substring(i, i+1);
+		for(TranslatedQueryAlignedSegment translatedQaSeg: translatedQaSegs) {
+			int refNt = translatedQaSeg.getQueryAlignedSegment().getRefStart();
+			int queryNt = translatedQaSeg.getQueryAlignedSegment().getQueryStart();
+			for(int i = 0; i < translatedQaSeg.getTranslation().length(); i++) {
+				String segAA = translatedQaSeg.getTranslation().substring(i, i+1);
 				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), segAA), queryNt));
 				refNt = refNt+3;
 				queryNt = queryNt+3;
 			}
 		}
 
+		
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}

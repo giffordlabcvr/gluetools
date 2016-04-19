@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.translation;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
@@ -76,6 +77,26 @@ public class TranslationUtils {
 		}
 		return outputSegs;
 	}
+
+	// based on QueryStart.
+	public static <S extends IQueryAlignedSegment> List<S> truncateToCodonAlignedQuery(int codon1Start, List<S> inputSegs) {
+		List<S> outputSegs = new ArrayList<S>();
+		for(S inputSeg: inputSegs) {
+			@SuppressWarnings("unchecked")
+			S outputSeg = (S) inputSeg.clone();
+			while(outputSeg.getCurrentLength() >= 3 && !isAtStartOfCodon(codon1Start, outputSeg.getQueryStart())) {
+				outputSeg.truncateLeft(1);
+			}
+			while(outputSeg.getCurrentLength() >= 3 && !isAtEndOfCodon(codon1Start, outputSeg.getQueryEnd())) {
+				outputSeg.truncateRight(1);
+			}
+			if(outputSeg.getCurrentLength() >= 3) {
+				outputSegs.add(outputSeg);
+			}
+		}
+		return outputSegs;
+	}
+
 	
 	
 	/**

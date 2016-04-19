@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -73,8 +74,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			ReferenceSegment minMaxSeg,
 			Map<String, List<QueryAlignedSegment>> idToQaSegs,
 			Map<String, AbstractSequenceObject> idToSeqObj) {
+		
+		AllColumnsAlignment<Key> allColsAlmt = null;
+		
 		ReferenceSequence refSequence = alignment.getRefSequence();
-		String refPrefix = "REF_XX_";
 
 		if(refSequence != null) {
 			// ensure all necessary references are in the alignment (we will delete them later).
@@ -91,15 +94,17 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 						Alignment parentAlmt = ancestorAlmt.getParent();
 						AbstractSequenceObject seqObj = ancRef.getSequence().getSequenceObject();
 						if(parentAlmt == null) {
-							QueryAlignedSegment.initAllColumnsAlmt(idToQaSegs, refPrefix+ancRef.getName(), 
-									seqObj.getNucleotides(cmdContext).length());
+							allColsAlmt = 
+									new AllColumnsAlignment<FastaAlignmentExporter.Key>(
+											new ReferenceKey(ancRef.getName()), seqObj.getNucleotides(cmdContext).length());
 						} else {
 							AlignmentMember refAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class,
 									AlignmentMember.pkMap(parentAlmt.getName(), refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID()));
-							QueryAlignedSegment.updateAllColumnsAlmt(idToQaSegs, 
-									refPrefix+parentAlmt.getRefSequence().getName(), 
-									refPrefix+ancRef.getName(), seqObj.getNucleotides(cmdContext).length(),
-									refAlmtMember.segmentsAsQueryAlignedSegments());
+							allColsAlmt.addRow(
+									new ReferenceKey(ancRef.getName()), 
+									new ReferenceKey(parentAlmt.getRefSequence().getName()), 
+									refAlmtMember.segmentsAsQueryAlignedSegments(), 
+									seqObj.getNucleotides(cmdContext).length());
 						}
 						includedRefs.put(ancRef.getName(), ancRef);
 					}
@@ -109,10 +114,11 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			for(AlignmentMember almtMember: almtMembers) {
 				String fastaID = generateFastaId(almtMember);
 				AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
-				QueryAlignedSegment.updateAllColumnsAlmt(idToQaSegs, 
-						refPrefix+almtMember.getAlignment().getRefSequence().getName(), 
-						fastaID, seqObj.getNucleotides(cmdContext).length(),
-						almtMember.segmentsAsQueryAlignedSegments());
+				allColsAlmt.addRow(
+						new QueryKey(fastaID), 
+						new ReferenceKey(almtMember.getAlignment().getRefSequence().getName()), 
+						almtMember.segmentsAsQueryAlignedSegments(), 
+						seqObj.getNucleotides(cmdContext).length());
 				idToSeqObj.put(fastaID, seqObj);
 			}
 			// set the min/max region.
@@ -120,7 +126,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class,
 						FeatureLocation.pkMap(acRef.getName(), featureName));
 				List<ReferenceSegment> featureLocAcRefSegs = featureLoc.segmentsAsReferenceSegments();
-				List<QueryAlignedSegment> acRefToUSegs = idToQaSegs.get(refPrefix+acRef.getName());
+				List<QueryAlignedSegment> acRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(acRef.getName()));
 				List<QueryAlignedSegment> uToAcRefSegs = acRefToUSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
 				List<QueryAlignedSegment> featureUToAcRefSegs = 
 						ReferenceSegment.intersection(featureLocAcRefSegs, uToAcRefSegs, ReferenceSegment.cloneRightSegMerger());
@@ -130,13 +136,16 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureAcRefToUSegs));
 				
 			} else {
-				for(List<QueryAlignedSegment> qaSegs: idToQaSegs.values()) {
+				for(Key key: allColsAlmt.getKeys()) {
+					List<QueryAlignedSegment> qaSegs = allColsAlmt.getSegments(key);
 					minMaxSeg.setRefEnd(Math.max(minMaxSeg.getRefEnd(), ReferenceSegment.maxRefEnd(qaSegs)));
 				}
 			}
-			// finally delete the references.
-			for(String includedRefName: includedRefs.keySet()) {
-				idToQaSegs.remove(refPrefix+includedRefName);
+			// finally copy the query rows of the all-columns alignment into the output map.
+			for(Key key: allColsAlmt.getKeys()) {
+				if(key instanceof QueryKey) {
+					idToQaSegs.put(((QueryKey) key).getFastaID(), allColsAlmt.getSegments(key));
+				}
 			}
 		} else {
 			throw new FastaExporterException(FastaExporterException.Code.INCLUDE_ALL_COLUMNS_UNIMPLEMENTED_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
@@ -216,5 +225,81 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		String fastaString = stringBuffer.toString();
 		return fastaString;
 	}
+	
+	
+	public static abstract class Key {}
+	
+	public static class ReferenceKey extends Key {
+		private String refName;
+		public ReferenceKey(String refName) {
+			super();
+			this.refName = refName;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((refName == null) ? 0 : refName.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ReferenceKey other = (ReferenceKey) obj;
+			if (refName == null) {
+				if (other.refName != null)
+					return false;
+			} else if (!refName.equals(other.refName))
+				return false;
+			return true;
+		}
+	}
+
+	private static class QueryKey extends Key {
+		private String fastaID;
+
+		public QueryKey(String fastaID) {
+			super();
+			this.fastaID = fastaID;
+		}
+
+		public String getFastaID() {
+			return fastaID;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((fastaID == null) ? 0 : fastaID.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			QueryKey other = (QueryKey) obj;
+			if (fastaID == null) {
+				if (other.fastaID != null)
+					return false;
+			} else if (!fastaID.equals(other.fastaID))
+				return false;
+			return true;
+		}
+		
+	}
+
 	
 }
