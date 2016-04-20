@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser;
+package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import org.w3c.dom.Element;
 
@@ -15,13 +15,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
-		commandWords={"variation-analysis"}, 
-		description = "Run variation analysis", 
+		commandWords={"analysis"}, 
+		description = "Run analysis from the command line", 
 		docoptUsages = { "-i <fileName>" },
 		docoptOptions = { "-i <fileName>, --fileName <fileName>  Multi-FASTA file to analyse"},
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class VariationAnalysisCommand extends ModulePluginCommand<PojoCommandResult<VariationAnalysis>, VariationAnalyser> 
+public class AnalysisCommand extends ModulePluginCommand<PojoCommandResult<WebAnalysisResult>, WebAnalysisTool> 
 	implements ProvidedProjectModeCommand{
 
 	public static final String FILE_NAME = "fileName";
@@ -37,9 +37,9 @@ public class VariationAnalysisCommand extends ModulePluginCommand<PojoCommandRes
 
 
 	@Override
-	protected PojoCommandResult<VariationAnalysis> execute(CommandContext cmdContext, VariationAnalyser variationAnalyser) {
+	protected PojoCommandResult<WebAnalysisResult> execute(CommandContext cmdContext, WebAnalysisTool variationAnalyser) {
 		byte[] fileContent = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
-		return new PojoCommandResult<VariationAnalysis>(variationAnalyser.analyse(cmdContext, fileContent));
+		return new PojoCommandResult<WebAnalysisResult>(variationAnalyser.analyse(cmdContext, fileContent));
 	}
 	
 	@CompleterClass

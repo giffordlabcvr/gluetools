@@ -69,20 +69,23 @@ public class PluginUtils {
 	}
 	
 	public static Pattern configureRegexPatternProperty(Element configElem, String propertyName, boolean required) {
-		Pattern pattern;
 		String patternString = PluginUtils.configureStringProperty(configElem, propertyName, required);
 		if(patternString != null) {
-			try {
-				pattern = Pattern.compile(patternString);
-			} catch(PatternSyntaxException pse) {
-				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, pse.getLocalizedMessage(), patternString);
-			}
+			return parseRegexPattern(propertyName, patternString);
 		} else {
-			pattern = null;
+			return null;
 		}
-		return pattern;
 	}
-	
+
+	public static Pattern parseRegexPattern(String propertyName,
+			String patternString) {
+		try {
+			return Pattern.compile(patternString);
+		} catch(PatternSyntaxException pse) {
+			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, pse.getLocalizedMessage(), patternString);
+		}
+	}
+
 	
 	public static DNASequence parseNucleotidesProperty(Element configElem, String propertyName, boolean required) {
 		String ntsString = PluginUtils.configureStringProperty(configElem, propertyName, required);

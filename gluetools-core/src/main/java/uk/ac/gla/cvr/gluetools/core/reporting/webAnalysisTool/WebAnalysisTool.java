@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser;
+package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import gnu.trove.map.TIntCharMap;
 import gnu.trove.map.TIntObjectMap;
@@ -40,8 +40,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@PluginClass(elemName="variationAnalyser")
-public class VariationAnalyser extends ModulePlugin<VariationAnalyser> {
+@PluginClass(elemName="webAnalysisTool")
+public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 	public static final String FASTA_SEQUENCE_REPORTER_MODULE_NAME = "fastaSequenceReporterModuleName";
 	public static final String FEATURE_ANALYSIS_HINT = "featureAnalysisHint";
@@ -49,10 +49,10 @@ public class VariationAnalyser extends ModulePlugin<VariationAnalyser> {
 	private String fastaSequenceReporterModuleName;
 	private List<FeatureAnalysisHint> featureAnalysisHints;
 	
-	public VariationAnalyser() {
+	public WebAnalysisTool() {
 		super();
-		addModulePluginCmdClass(WebVariationAnalysisCommand.class);
-		addModulePluginCmdClass(VariationAnalysisCommand.class);
+		addModulePluginCmdClass(WebAnalysisCommand.class);
+		addModulePluginCmdClass(AnalysisCommand.class);
 		addSimplePropertyName(FASTA_SEQUENCE_REPORTER_MODULE_NAME);
 	}
 
@@ -66,7 +66,7 @@ public class VariationAnalyser extends ModulePlugin<VariationAnalyser> {
 						GlueXmlUtils.getXPathElements(configElem, FEATURE_ANALYSIS_HINT));
 	}
 
-	public VariationAnalysis analyse(CommandContext cmdContext, byte[] fastaBytes) {
+	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes) {
 		
 		FastaSequenceReporter fastaSequenceReporter = 
 				Module.resolveModulePlugin(cmdContext, FastaSequenceReporter.class, fastaSequenceReporterModuleName);
@@ -267,7 +267,7 @@ public class VariationAnalyser extends ModulePlugin<VariationAnalyser> {
 			featureNameToAnalysis.put(featureName, featureAnalysis);
 		}
  		
-		return new VariationAnalysis(
+		return new WebAnalysisResult(
 				new ArrayList<FeatureAnalysis>(featureNameToAnalysis.values()),
 				new ArrayList<ReferenceAnalysis>(refNameToAnalysis.values()),
 				new ArrayList<SequenceAnalysis>(fastaIdToSequenceAnalysis.values()));

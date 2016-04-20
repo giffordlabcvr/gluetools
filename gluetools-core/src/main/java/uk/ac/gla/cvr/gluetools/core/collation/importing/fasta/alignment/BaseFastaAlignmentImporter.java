@@ -96,8 +96,9 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 		} else {
 			idClauseExtractorFormatter = new RegexExtractorFormatter();
 		}
-		if(idClauseExtractorFormatter.getMatchPattern() == null) {
-			idClauseExtractorFormatter.setMatchPattern(Pattern.compile("(.*)"));
+		// not sure why this is necessary, surely empty patterns behaviour should work.
+		if(idClauseExtractorFormatter.getMatchPatterns().isEmpty()) {
+			idClauseExtractorFormatter.setMatchPatterns(Arrays.asList(Pattern.compile("(.*)")));
 		}
 		if(idClauseExtractorFormatter.getOutputTemplate() == null) {
 			Template defaultTemplate;

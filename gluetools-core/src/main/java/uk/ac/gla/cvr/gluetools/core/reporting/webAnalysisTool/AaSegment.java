@@ -1,18 +1,18 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser;
-
-import java.util.List;
+package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class SequenceFeatureAnalysis {
+public class AaSegment {
 
 	@PojoResultField
-	public String featureName;
+	public String aaTranslation;
 	
 	@PojoResultField
-	public List<AaSegment> aaSegment;
+	public Integer startUIndex;
 
-	
+	@PojoResultField
+	public Integer endUIndex;
+
 }

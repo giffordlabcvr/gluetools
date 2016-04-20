@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser;
+package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import org.w3c.dom.Element;
 
@@ -12,13 +12,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
-		commandWords={"web-variation-analysis"}, 
-		description = "Run web variation analysis", 
+		commandWords={"web-analysis"}, 
+		description = "Run analysis from the web", 
 		docoptUsages = { "-b <inputData>" },
 		docoptOptions = { "-b <inputData>, --base64 <inputData>  Multi-FASTA input data"},
 		metaTags = {CmdMeta.webApiOnly, CmdMeta.consumesBinary}	
 )
-public class WebVariationAnalysisCommand extends ModulePluginCommand<PojoCommandResult<VariationAnalysis>, VariationAnalyser> 
+public class WebAnalysisCommand extends ModulePluginCommand<PojoCommandResult<WebAnalysisResult>, WebAnalysisTool> 
 	implements ProvidedProjectModeCommand {
 
 	private byte[] inputData;
@@ -31,8 +31,8 @@ public class WebVariationAnalysisCommand extends ModulePluginCommand<PojoCommand
 	}
 
 	@Override
-	protected PojoCommandResult<VariationAnalysis> execute(CommandContext cmdContext, VariationAnalyser variationAnalyser) {
-		return new PojoCommandResult<VariationAnalysis>(variationAnalyser.analyse(cmdContext, inputData));
+	protected PojoCommandResult<WebAnalysisResult> execute(CommandContext cmdContext, WebAnalysisTool variationAnalyser) {
+		return new PojoCommandResult<WebAnalysisResult>(variationAnalyser.analyse(cmdContext, inputData));
 	}
 	
 }

@@ -2,10 +2,12 @@ package uk.ac.gla.cvr.gluetools.core.collation.populating.regex;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -30,34 +32,46 @@ import freemarker.template.TemplateModel;
 public class RegexExtractorFormatter implements Plugin {
 
 	
-	private Optional<Pattern> matchPattern = Optional.empty();
+	private List<Pattern> matchPatterns = new ArrayList<Pattern>();
 	private Template outputTemplate;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
-		matchPattern = Optional.ofNullable(PluginUtils.configureRegexPatternProperty(configElem, "matchPattern", false));
+		matchPatterns = PluginUtils.configureStringsProperty(configElem, "matchPattern", 0, null)
+				.stream()
+				.map(rgxString -> PluginUtils.parseRegexPattern("matchPattern", rgxString))
+				.collect(Collectors.toList());
 		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputTemplate", false);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public String matchAndConvert(String input) {
 		TemplateHashModel variableResolver;
-		if(matchPattern.isPresent()) {
-			final Matcher matcher = matchPattern.get().matcher(input);
-			if(!matcher.find()) {
+		if(!matchPatterns.isEmpty()) {
+			Matcher workingMatcher = null;
+			for(Pattern matchPattern: matchPatterns) {
+				final Matcher candidateMatcher = matchPattern.matcher(input);
+				if(candidateMatcher.find()) {
+					workingMatcher = candidateMatcher;
+				} else {
+					continue;
+				}
+			}
+			if(workingMatcher == null) {
 				return null;
 			}
 			if(outputTemplate == null) {
-				return matcher.group(0);
+				return workingMatcher.group(0);
 			}
+			final Matcher workingMatcherF = workingMatcher;
 			variableResolver = new TemplateHashModel() {
 				@Override
 				public TemplateModel get(String key) {
 					String matcherGroup;
 					if(key.matches("g\\d+")) {
-						matcherGroup = matcher.group(Integer.parseInt(key.substring(1)));
+						matcherGroup = workingMatcherF.group(Integer.parseInt(key.substring(1)));
 					} else {
-						matcherGroup = matcher.group(key);
+						matcherGroup = workingMatcherF.group(key);
 					}
 					if(matcherGroup == null) {
 						return null;
@@ -114,12 +128,12 @@ public class RegexExtractorFormatter implements Plugin {
 		return input;
 	}
 
-	public Pattern getMatchPattern() {
-		return matchPattern.orElse(null);
+	public List<Pattern> getMatchPatterns() {
+		return matchPatterns;
 	}
 
-	public void setMatchPattern(Pattern matchPattern) {
-		this.matchPattern = Optional.ofNullable(matchPattern);
+	public void setMatchPatterns(List<Pattern> matchPatterns) {
+		this.matchPatterns = matchPatterns;
 	}
 
 	public Template getOutputTemplate() {

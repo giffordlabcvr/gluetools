@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser;
+package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class VariationAnalysis {
+public class WebAnalysisResult {
 
 	@PojoResultField(resultName = "featureAnalysis")
 	public List<FeatureAnalysis> featureAnalysisList;
@@ -17,7 +17,7 @@ public class VariationAnalysis {
 	@PojoResultField(resultName = "sequenceAnalysis")
 	public List<SequenceAnalysis> sequenceAnalysisList;
 
-	public VariationAnalysis(
+	public WebAnalysisResult(
 			List<FeatureAnalysis> featureAnalysisList, 
 			List<ReferenceAnalysis> referenceAnalysisList, 
 			List<SequenceAnalysis> sequenceAnalysisList) {

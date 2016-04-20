@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.variationAnalyser;
+package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import java.util.List;
 
