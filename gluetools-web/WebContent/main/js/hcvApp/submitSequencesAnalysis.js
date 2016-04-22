@@ -5,172 +5,98 @@ var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', ['angula
 
 submitSequencesAnalysis
 .controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', function($scope, glueWS, FileUploader, dialogs) {
-	$scope.pageTitle = "Submit sequences for analysis";
-	$scope.pageExplanation = "Submit sequences for analysis of mutations at the amino-acid level.";
 
 	$scope.selectFilesHeader = "Select sequence files";
 	$scope.dropZoneText = "Drag sequence files here";
 	$scope.browseAndSelectHeader = "Or browse and select multiple files";
 	$scope.selectFilesButtonText = "Select files";
-	$scope.autoDetectFormat = "Auto-detect"
-	$scope.headerDetectAlmtName = "Header-detect"
 		
-	$scope.sequenceFormats = [];
-	$scope.alignmentNames = [];
-	$scope.analysisResults = null;
-	$scope.selectedSequenceResult = null;
 
-	$scope.showSupportedFormats = function() {
-		dialogs.create('hcvApp/dialogs/seqFmtDialog.html','seqFmtDialogCtrl',$scope.sequenceFormats,{});
+	$scope.fileItemUnderAnalysis = null;
+	$scope.selectedSequenceAnalysis = null;
+	$scope.selectedRefName = null;
+	$scope.selectedFeatureAnalysis = null;
+	$scope.selectedReferenceAnalysis = null;
+	$scope.selectedRefSeqFeatAnalysis = null;
+	$scope.selectedSeqFeatAnalysis = null;
+	
+	
+	$scope.seqPrepDialog = function() {
+		dialogs.create('hcvApp/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
 	}
 
-	$scope.$watch( 'selectedSequenceResult', function(newObj, oldObj) {
-
-		if(!$scope.selectedSequenceResult) {
-			return;
+	$scope.updateSelectedRefSeqFeatAnalysis = function(){
+		if($scope.selectedReferenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
+			$scope.selectedRefSeqFeatAnalysis = _.find(
+				$scope.selectedReferenceAnalysis.sequenceFeatureAnalysis, 
+				function(seqFeatureAnalysis) {
+					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
+			console.log("selected ref sequence feature analysis: ", $scope.selectedRefSeqFeatAnalysis);
 		}
-		console.log('refToFeatureTreeMap:', $scope.selectedSequenceResult.refToFeatureTreeMap);
-		
-		$scope.nullifyFeatureOnRefChange = true;
-		$scope.referenceOptions = [];
-		$scope.noneSelected = "None selected";
-		$scope.numReferenceOptions = 0;
-		$scope.selectedSequenceResult.showNucleotides = "show";
-		$scope.selectedSequenceResult.showMinorityVariants = "show";
-		$scope.selectedSequenceResult.differenceView = "differenceSummary";
-		$scope.selectedSequenceResult.selectedFeature = {
-				featureDescription: $scope.noneSelected
-		};
-		
-		var refToFeatureTreeMap = $scope.selectedSequenceResult.refToFeatureTreeMap;
+	}
 
+	$scope.updateSelectedSeqFeatAnalysis = function(){
+		if($scope.selectedSequenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
+			$scope.selectedSeqFeatAnalysis = _.find(
+				$scope.selectedSequenceAnalysis.sequenceFeatureAnalysis, 
+				function(seqFeatureAnalysis) {
+					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
+			console.log("selected seq feature analysis: ", $scope.selectedSeqFeatAnalysis);
+		}
+	}
 
-		$scope.updateSequenceAnalysis();
+	$scope.selectedSequenceAnalysisChanged = function(){
+		if($scope.selectedSequenceAnalysis) {
+		    $scope.selectedRefName = $scope.selectedSequenceAnalysis.ancestorRefName[0];
+			console.log("selected ref name: ", $scope.selectedRefName);
+		}
+	}
 
-		// for now, only show the master reference.
-		for(var i = 0; i < $scope.selectedSequenceResult.sequenceAlignmentResult.length; i++) {
-			var sequenceAlignmentResult = $scope.selectedSequenceResult.sequenceAlignmentResult[i];
-			if(refToFeatureTreeMap[sequenceAlignmentResult.referenceName].features
-					&& i == $scope.selectedSequenceResult.sequenceAlignmentResult.length-1) {
-				$scope.numReferenceOptions ++;
-				$scope.referenceOptions.push(sequenceAlignmentResult.referenceName);
-			}
+	$scope.selectedFeatureAnalysisChanged = function(){
+		if($scope.selectedFeatureAnalysis) {
+			console.log("selected feature analysis: ", $scope.selectedFeatureAnalysis);
+			$scope.updateSelectedRefSeqFeatAnalysis();
+			$scope.updateSelectedSeqFeatAnalysis();
 		}
-		if($scope.numReferenceOptions != 1) {
-			// add to front.
-			$scope.referenceOptions.unshift($scope.noneSelected);
+	}
+
+	$scope.selectedRefNameChanged = function(){
+		if($scope.selectedRefName && $scope.fileItemUnderAnalysis) {
+			$scope.selectedReferenceAnalysis = _.find(
+					$scope.fileItemUnderAnalysis.webAnalysisResult.referenceAnalysis, 
+					function(refAnalysis) {return refAnalysis.refName == $scope.selectedRefName;} );
+			console.log("selected ref analysis: ", $scope.selectedReferenceAnalysis);
+			$scope.updateSelectedRefSeqFeatAnalysis();
 		}
-		
-		if($scope.numReferenceOptions == 1) {
-			$scope.selectedSequenceResult.selectedReference = $scope.referenceOptions[0]; 
-		} else {
-			$scope.selectedSequenceResult.selectedReference = $scope.noneSelected;
-		}
-		console.log("selectedReference: ", $scope.selectedSequenceResult.selectedReference);
-		
-		$scope.updateFeatureTreeMap();
+	}
+
+	
+	$scope.$watch( 'selectedSequenceAnalysis', function(newObj, oldObj) {
+		$scope.selectedSequenceAnalysisChanged();
 	}, false);
-	
-	
+
+	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
+		$scope.selectedRefNameChanged();
+	}, false);
+
+	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
+		$scope.selectedFeatureAnalysisChanged();
+	}, false);
+
+
+	// invoked when "Analysis" button is pressed
 	$scope.showAnalysisResults = function(item) {
 		console.log("show analysis : ", item);
-		console.log("resultArray : ", item.transientAnalysisResult.sequenceResult);
-		$scope.analysisResults = item;
-		if(item.transientAnalysisResult.sequenceResult.length >= 0) {
-			$scope.selectedSequenceResult = item.transientAnalysisResult.sequenceResult[0];
+		$scope.fileItemUnderAnalysis = item;
+		if($scope.fileItemUnderAnalysis.webAnalysisResult.sequenceAnalysis.length >= 0) {
+			$scope.selectedSequenceAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.sequenceAnalysis[0];
+			console.log("selected seq analysis: ", $scope.selectedSequenceAnalysis);
+		}
+		if($scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis.length >= 0) {
+			$scope.selectedFeatureAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis[0];
+			console.log("selected feature analysis: ", $scope.selectedFeatureAnalysis);
 		}
 	}
-	
-	$scope.findFeature = function(featureTree, featureName) {
-		if(featureTree.featureName == featureName) {
-			return featureTree;
-		}
-		if(featureTree.features) {
-			for(var i = 0; i < featureTree.features.length; i++) {
-				var chResult = $scope.findFeature(featureTree.features[i], featureName); 
-				if(chResult != null) {
-					return chResult;
-				}
-			}
-		}
-		return null;
-	}
-	
-	$scope.showAlignmentDetails = function(sequenceResult) {
-		dialogs.create('hcvApp/dialogs/alignmentDetails.html','alignmentDetailsCtrl',sequenceResult,{});
-	}
-
-	$scope.updateSequenceAnalysis = function() {
-		if(!$scope.selectedSequenceResult) {
-			return;
-		}
-		if($scope.selectedSequenceResult.differenceView == "differenceSummary") {
-			$scope.selectedSequenceResult.alignmentDifferenceSummaries = 
-				generateAlignmentDifferenceSummaries($scope.variationCategories, $scope.selectedSequenceResult);
-			console.log("alignmentDifferenceSummaries ", $scope.selectedSequenceResult.alignmentDifferenceSummaries);
-		} else {
-			console.log("selectedSequenceResult ", $scope.selectedSequenceResult);
-			$scope.selectedSequenceResult.analysisSequenceRows = [];
-			if($scope.selectedSequenceResult.selectedFeature.featureDescription == $scope.noneSelected) {
-				return;
-			}
-			var sequenceFeatureResult;
-			var sequenceAlignmentResult;
-			for(var i = 0; i < $scope.selectedSequenceResult.sequenceAlignmentResult.length; i++) {
-				if($scope.selectedSequenceResult.sequenceAlignmentResult[i].referenceName == $scope.selectedSequenceResult.selectedReference) {
-					sequenceAlignmentResult = $scope.selectedSequenceResult.sequenceAlignmentResult[i];
-				}
-			}
-			console.log("sequenceAlignmentResult ", sequenceAlignmentResult);
-			var sequenceFeatureResult;
-			for(var i = 0; i < sequenceAlignmentResult.sequenceFeatureResult.length; i++) {
-				if(sequenceAlignmentResult.sequenceFeatureResult[i].featureName == $scope.selectedSequenceResult.selectedFeature.featureName) {
-					sequenceFeatureResult = sequenceAlignmentResult.sequenceFeatureResult[i];
-				}
-			}
-			console.log("sequenceFeatureResult ", sequenceFeatureResult);
-			$scope.selectedSequenceResult.analysisSequenceRows = generateAnalysisSequenceRows(
-					$scope.variationCategories,
-					$scope.selectedSequenceResult.selectedFeature, 
-					sequenceFeatureResult);
-			console.log("analysisSequenceRows ", $scope.selectedSequenceResult.analysisSequenceRows);
-		}
-	}
-
-	$scope.switchToDetailView = function(referenceName, featureName) {
-		$scope.nullifyFeatureOnRefChange = false;
-		$scope.selectedSequenceResult.selectedReference = referenceName;
-		$scope.selectedSequenceResult.selectedFeature = $scope.findFeature($scope.selectedSequenceResult.refToFeatureTreeMap[referenceName], featureName);
-		console.log('updated feature to:', $scope.selectedSequenceResult.selectedFeature);
-		$scope.selectedSequenceResult.differenceView = "genomeDetail";
-	}
-
-	$scope.$watch( 'selectedSequenceResult.differenceView', function( newObj, oldObj ) {
-		$scope.updateSequenceAnalysis();
-	}, false);
-
-	$scope.updateFeatureTreeMap = function() {
-		if($scope.selectedSequenceResult.selectedReference != $scope.noneSelected) {
-			$scope.selectedSequenceResult.featureTreeResult = $scope.selectedSequenceResult.refToFeatureTreeMap[$scope.selectedSequenceResult.selectedReference].features;
-		} else {
-			$scope.selectedSequenceResult.featureTreeResult = null;
-		}
-	}
-	
-	$scope.$watch( 'selectedSequenceResult.selectedReference', function( newObj, oldObj ) {
-		if(!$scope.selectedSequenceResult) {
-			return;
-		}
-		console.log("selectedReference for "+$scope.selectedSequenceResult.sequenceID+" updated to: ", newObj);
-		$scope.updateFeatureTreeMap();
-		if($scope.nullifyFeatureOnRefChange) {
-			$scope.selectedSequenceResult.selectedFeature = {
-					featureDescription: $scope.noneSelected
-			};
-			$scope.updateSequenceAnalysis();
-		}
-		$scope.nullifyFeatureOnRefChange = true;
-	}, false);
 
 	$scope.selectGenomeFeature = function(selectedSequenceResult) {
 		// remove popovers somehow
@@ -183,13 +109,91 @@ submitSequencesAnalysis
 		});
 	}
 
-	$scope.selectVariationCategories = function() {
-		// removes popovers
-		var dlg = dialogs.create('hcvApp/dialogs/selectVariationCategories.html','selectVariationCategoriesCtrl',$scope.variationCategories,{});
-		dlg.result.then(function(updatedCategories) {
-			$scope.variationCategories = updatedCategories;
-			$scope.updateSequenceAnalysis();
-		});
+	
+	$scope.svgParams = {
+			sequenceLabelWidth: 150,
+
+			svgHeight: 300,
+
+			ntWidth: 16,
+			ntGap: 4,
+
+			codonLabelHeight: 35,
+
+			aaHeight: 25
+	}
+	
+	$scope.svgHeight = function() {
+		return $scope.codonLabelHeight() + $scope.referenceAaHeight();
+	}
+	$scope.svgWidth = function() {
+		if($scope.selectedFeatureAnalysis) {
+			var nts = ($scope.selectedFeatureAnalysis.endUIndex - $scope.selectedFeatureAnalysis.startUIndex) + 1;
+			return (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
+		} else {
+			return 0;
+		}
+	}
+	$scope.sequenceLabelWidth = function(featureAnalysis) {
+		return $scope.svgParams.sequenceLabelWidth;
+	}
+	
+	$scope.referenceLabelX = function() {
+		return 0;
+	}
+	$scope.referenceLabelY = function() {
+		return $scope.codonLabelY() +$scope.codonLabelHeight();
+	}
+	$scope.referenceLabelWidth = function() {
+		return $scope.svgParams.sequenceLabelWidth;
+	}
+	$scope.referenceLabelHeight = function() {
+		return $scope.referenceAaHeight();
+	}
+	$scope.codonLabelX = function(codonLabel) {
+		return (codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
+			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
+	}
+	$scope.codonLabelY = function() {
+		return 0;
+		// return $scope.codonLabelHeight();
+	}
+	$scope.codonLabelWidth = function(codonLabel) {
+		var nts = (codonLabel.endUIndex - codonLabel.startUIndex) + 1;
+		return (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
+	}
+	$scope.codonLabelHeight = function() {
+		return $scope.svgParams.codonLabelHeight;
+	}
+
+	$scope.referenceAaX = function(referenceAa) {
+		return (referenceAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
+			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
+	}
+	$scope.referenceAaY = function() {
+		return $scope.codonLabelY() + $scope.codonLabelHeight();
+	}
+	$scope.referenceAaWidth = function(referenceAa) {
+		var nts = (referenceAa.endUIndex - referenceAa.startUIndex) + 1;
+		return (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
+	}
+	$scope.referenceAaHeight = function() {
+		return $scope.svgParams.aaHeight;
+	}
+
+	$scope.sequenceAaX = function(sequenceAa) {
+		return (sequenceAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
+			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
+	}
+	$scope.sequenceAaY = function() {
+		return $scope.referenceAaY() + $scope.sequenceAaHeight();
+	}
+	$scope.sequenceAaWidth = function(sequenceAa) {
+		var nts = (sequenceAa.endUIndex - sequenceAa.startUIndex) + 1;
+		return (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
+	}
+	$scope.sequenceAaHeight = function() {
+		return $scope.svgParams.aaHeight;
 	}
 
 	
@@ -211,37 +215,12 @@ submitSequencesAnalysis
 
 	var uploader = $scope.uploader = new FileUploader({});
 
+	// executed after the project URL is set
 	glueWS.addProjectUrlListener( {
 		reportProjectURL: function(projectURL) {
-		    $scope.uploader.url = projectURL+"/module/mutationFrequencies";
-		    
-		    glueWS.runGlueCommand("", {
-		    	list: { format : { sequence: {} } }
-		    }).success(function(data, status, headers, config) {
-				  console.info('result', data);
-				  $scope.sequenceFormats = tableResultAsObjectList(data);
-				  console.info('sequenceFormats', $scope.sequenceFormats);
-			}).
-			error(glueWS.raiseErrorDialog(dialogs, "listing sequence formats"));
 
-		    glueWS.runGlueCommand("", {
-		    	list: { "variation-category": {} }
-		    }).success(function(data, status, headers, config) {
-				  console.info('result', data);
-				  var vcatList = tableResultAsObjectList(data);
-
-				  $scope.variationCategories = {};
-				  _.each(vcatList, function(vcatObj, idx, list) { 
-					  $scope.variationCategories[vcatObj.name] = vcatObj; 
-					  if(vcatObj.inheritedNotifiability != "NOTIFIABLE") {
-						  vcatObj.unused = true;
-					  }
-				  } ); 
-				  console.info('variationCategories', $scope.variationCategories);
-			}).
-			error(glueWS.raiseErrorDialog(dialogs, "listing variation-categories"));
-
-		    glueWS.runGlueCommand("", {
+			// leaving this in as an example of a glue command.
+			glueWS.runGlueCommand("", {
 		    	list: { alignment: {} }
 		    }).success(function(data, status, headers, config) {
 				  console.info('result', data);
@@ -249,6 +228,10 @@ submitSequencesAnalysis
 				  console.info('alignmentNames', $scope.alignmentNames);
 			}).
 			error(glueWS.raiseErrorDialog(dialogs, "listing alignments"));
+
+		    
+		    $scope.uploader.url = projectURL+"/module/webAnalysisTool";
+
 		    console.info('uploader', uploader);
 		}
 	});
@@ -261,7 +244,29 @@ submitSequencesAnalysis
     });
 
     // CALLBACKS
+    uploader.onBeforeUploadItem = function(item) {
+		var commandObject;
+		commandObject = {
+				"web-analysis": {
+					// any args would go here.
+				}
+			};
+    	item.formData = [{command: JSON.stringify(commandObject)}];
+        console.info('formData', JSON.stringify(item.formData));
+        console.info('onBeforeUploadItem', item);
+    };
+    uploader.onSuccessItem = function(fileItem, response, status, headers) {
+        console.info('onSuccessItem', fileItem, response, status, headers);
+        fileItem.webAnalysisResult = response.webAnalysisResult;
+        
+    };
+    uploader.onErrorItem = function(fileItem, response, status, headers) {
+        console.info('onErrorItem', fileItem, response, status, headers);
+        var errorFn = glueWS.raiseErrorDialog(dialogs, "processing sequence file \""+fileItem.file.name+"\"");
+        errorFn(response, status, headers, {});
+    };
 
+    // other callbacks
     uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
         console.info('onWhenAddingFileFailed', item, filter, options);
     };
@@ -272,57 +277,11 @@ submitSequencesAnalysis
     uploader.onAfterAddingAll = function(addedFileItems) {
         console.info('onAfterAddingAll', addedFileItems);
     };
-    uploader.onBeforeUploadItem = function(item) {
-		var commandObject;
-		if(item.alignmentName == $scope.headerDetectAlmtName) {
-			commandObject = {
-					"transient": {
-						analysis: {
-							headerDetect: true
-						}
-					}
-				};
-			
-		} else {
-			commandObject = {
-					"transient": {
-						analysis: {
-							alignmentName: item.alignmentName,
-							headerDetect: false
-						}
-					}
-				};
-		}
-    	item.formData = [{command: JSON.stringify(commandObject)}];
-        console.info('formData', JSON.stringify(item.formData));
-        console.info('onBeforeUploadItem', item);
-    };
     uploader.onProgressItem = function(fileItem, progress) {
         console.info('onProgressItem', fileItem, progress);
     };
     uploader.onProgressAll = function(progress) {
         console.info('onProgressAll', progress);
-    };
-    uploader.onSuccessItem = function(fileItem, response, status, headers) {
-        console.info('onSuccessItem', fileItem, response, status, headers);
-        fileItem.transientAnalysisResult = response.transientAnalysisResult;
-        // create a map from the ref results.
-        var refToFeatureTreeMap = {};
-        var alignmentResultArray = fileItem.transientAnalysisResult.alignmentResult;
-        for(var i = 0; i < alignmentResultArray.length; i++) {
-        	refToFeatureTreeMap[alignmentResultArray[i].referenceName] = alignmentResultArray[i].featureTreeResult;
-        }
-        var seqResultArray = fileItem.transientAnalysisResult.sequenceResult;
-        for(var i = 0; i < seqResultArray.length; i++) {
-            // add a reference to the ref results for each seqResult.
-        	seqResultArray[i].refToFeatureTreeMap = refToFeatureTreeMap;
-        }
-        
-    };
-    uploader.onErrorItem = function(fileItem, response, status, headers) {
-        console.info('onErrorItem', fileItem, response, status, headers);
-        var errorFn = glueWS.raiseErrorDialog(dialogs, "processing sequence file \""+fileItem.file.name+"\"");
-        errorFn(response, status, headers, {});
     };
     uploader.onCancelItem = function(fileItem, response, status, headers) {
         console.info('onCancelItem', fileItem, response, status, headers);
@@ -334,21 +293,6 @@ submitSequencesAnalysis
         console.info('onCompleteAll');
     };
 }])
-.controller('seqFmtDialogCtrl',function($scope,$modalInstance,data){
-	$scope.sequenceFormats = data;
-	
-	$scope.dismiss = function(){
-		$modalInstance.dismiss('Dismissed');
-	}; 
-})
-.controller('alignmentDetailsCtrl',function($scope,$modalInstance,data){
-	$scope.sequenceResult = data;
-	addUtilsToScope($scope);
-	
-	$scope.dismiss = function(){
-		$modalInstance.dismiss('Dismissed');
-	}; 
-})
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
 	$scope.sequenceResult = data;
 	$scope.defaultOpenDepth = 99;
@@ -366,95 +310,11 @@ submitSequencesAnalysis
 		$modalInstance.dismiss('Dismissed');
 	}; 
 
-})
-.controller('selectVariationCategoriesCtrl',function($scope,$modalInstance,data){
-	$scope.variationCategories = data;
-	$scope.included = [];
-	$scope.excluded = [];
-	$scope.unused = [];
-	addUtilsToScope($scope);
-
-	$scope.listSort = function(list) {
-		console.log("list: ", list);
-		return _.sortBy(list, function(vcat) { return vcat.name; } );
-	}
-
-	console.log("variation categories: ", $scope.variationCategories);
-	
-	_.each($scope.variationCategories, function(vcat, key, list) {
-		if(vcat.excluded && vcat.excluded == true) {
-			console.log("excluded vcat: ", vcat.name);
-			$scope.excluded.push(vcat);
-		} else if(vcat.unused && vcat.unused == true) {
-			console.log("unused vcat: ", vcat.name);
-			$scope.unused.push(vcat);
-		} else {
-			console.log("included vcat: ", vcat.name);
-			$scope.included.push(vcat);
-		}
-	});
-
-	console.log("excluded: ", $scope.excluded);
-	console.log("unused: ", $scope.unused);
-	console.log("included: ", $scope.included);
-
-	$scope.excluded = $scope.listSort($scope.excluded);
-	$scope.unused = $scope.listSort($scope.unused);
-	$scope.included = $scope.listSort($scope.included);
-	
-	
-	$scope.addToIncluded = function(vcat) {
-		$scope.unused = _.without($scope.unused, vcat);
-		$scope.included.push(vcat);
-		$scope.included = $scope.listSort($scope.included);
-	}
-
-	$scope.addToExcluded = function(vcat) {
-		$scope.unused = _.without($scope.unused, vcat);
-		$scope.excluded.push(vcat);
-		$scope.excluded = $scope.listSort($scope.excluded);
-	}
-
-	$scope.removeFromIncluded = function(vcat) {
-		$scope.included = _.without($scope.included, vcat);
-		$scope.unused.push(vcat);
-		$scope.unused = $scope.listSort($scope.unused);
-	}
-
-	$scope.removeFromExcluded = function(vcat) {
-		$scope.excluded = _.without($scope.excluded, vcat);
-		$scope.unused.push(vcat);
-		$scope.unused = $scope.listSort($scope.unused);
-	}
-
-	
-	$scope.select = function(){
-		var updatedCategories = {};
-		_.each($scope.included, function(vcat, idx, list) {
-			vcat.excluded = false;
-			vcat.unused = false;
-			updatedCategories[vcat.name] = vcat;
-		});
-		_.each($scope.excluded, function(vcat, idx, list) {
-			vcat.excluded = true;
-			vcat.unused = false;
-			updatedCategories[vcat.name] = vcat;
-		});
-		_.each($scope.unused, function(vcat, idx, list) {
-			vcat.excluded = false;
-			vcat.unused = true;
-			updatedCategories[vcat.name] = vcat;
-		});
-		console.log("updatedCategories: ", updatedCategories);
-		$modalInstance.close(updatedCategories);
-	}; 
-
+}).controller('seqPrepDialog',function($scope,$modalInstance,data){
 	$scope.dismiss = function(){
 		$modalInstance.dismiss('Dismissed');
 	}; 
-
 });
-
 
 
 

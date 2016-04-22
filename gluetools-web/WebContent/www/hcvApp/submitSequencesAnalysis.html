@@ -3,9 +3,9 @@
 <!-- 1. nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
 <div ng-app="submitSequencesAnalysis">
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
-		<h2>{{pageTitle}}</h2>
+		<h2>Sequence analysis</h2>
 		<div>
-			<h3>{{selectFilesHeader}} <small><a ng-click="showSupportedFormats()">Supported sequence file formats <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
+			<h3>{{selectFilesHeader}} <small><a ng-click="seqPrepDialog()">Preparing your sequences for analysis <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
 			<p></p>			
 			<div class="row">
 				<div class="col-md-6">
@@ -33,16 +33,12 @@
 	
 			<div>
 				<h3>File queue</h3>
-				<!-- <p>Queue length: {{ uploader.queue.length }}</p> -->
 	
 				<table class="table">
 					<thead>
 						<tr>
 							<th width="50%">File</th>
 							<th ng-show="uploader.isHTML5">Size</th>
-							<!-- <th ng-show="uploader.isHTML5">Progress</th> -->
-							<!-- <th>Format</th> -->
-							<th>Alignment</th>
 							<th>Status</th>
 							<th>Actions</th>
 						</tr>
@@ -52,21 +48,6 @@
 							<td><strong>{{ item.file.name }}</strong></td>
 							<td ng-show="uploader.isHTML5" nowrap>{{
 								item.file.size/1024/1024|number:2 }} MB</td>
-							<!-- <td ng-show="uploader.isHTML5">
-	                                    <div class="progress" style="margin-bottom: 0;">
-	                                        <div class="progress-bar" role="progressbar" ng-style="{ 'width': item.progress + '%' }"></div>
-	                                    </div>
-	                                </td> -->
-							<!--  <td><select name="singleSelect" ng-model="item.format">
-									<option value="">{{autoDetectFormat}}</option>
-									<option ng-repeat="seqFormat in sequenceFormats" value="{{seqFormat}}">{{seqFormat}}</option>
-							</select></td>
-							-->
-							<td><select name="singleSelect" ng-model="item.alignmentName" 
-								ng-disabled="item.isUploading || item.isSuccess">
-									<option value="{{headerDetectAlmtName}}" selected="selected">{{headerDetectAlmtName}}</option>
-									<option ng-repeat="almtName in alignmentNames" value="{{almtName}}">{{almtName}}</option>
-							</select></td>
 							<td class="text-center">
 								<span ng-show="item.isSuccess">
 									<i class="glyphicon glyphicon-ok"></i>
@@ -86,10 +67,6 @@
 									ng-disabled="item.isReady || item.isUploading || item.isSuccess">
 									<span class="glyphicon glyphicon-upload"></span> Submit
 								</button>
-							<!-- 	<button type="button" class="btn btn-warning btn-xs"
-									ng-click="item.cancel()" ng-disabled="!item.isUploading">
-									<span class="glyphicon glyphicon-ban-circle"></span> Cancel
-								</button>  -->
 								<button type="button" class="btn btn-primary btn-xs"
 									ng-click="showAnalysisResults(item)" ng-disabled="!item.isSuccess">
 									<span class="glyphicon glyphicon-list"></span> Analysis
@@ -104,23 +81,11 @@
 				</table>
 	
 				<div>
-					<!-- 
-	                        <div>
-	                            Queue progress:
-	                            <div class="progress" style="">
-	                                <div class="progress-bar" role="progressbar" ng-style="{ 'width': uploader.progress + '%' }"></div>
-	                            </div>
-	                        </div>
-	                    -->
 					<button type="button" class="btn btn-success btn-s"
 						ng-click="uploader.uploadAll()"
 						ng-disabled="!uploader.getNotUploadedItems().length">
 						<span class="glyphicon glyphicon-upload"></span> Submit all
 					</button>
-					<!-- <button type="button" class="btn btn-warning btn-s"
-						ng-click="uploader.cancelAll()" ng-disabled="!uploader.isUploading">
-						<span class="glyphicon glyphicon-ban-circle"></span> Cancel all
-					</button>  -->
 					<button type="button" class="btn btn-danger btn-s"
 						ng-click="removeAll()"
 						ng-disabled="!uploader.queue.length">
@@ -130,32 +95,23 @@
 	
 			</div>
 	
-			<div ng-show="analysisResults">
+			<div ng-show="fileItemUnderAnalysis">
 				<h3>Analysis</h3>
 				<table class="table table-nonfluid">
 					<thead>
 						<tr>
 							<th>File</th>
 							<th>Sequence</th>
-							<th>Coverage</th>
-							<th>Variation categories</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
-							<td>{{analysisResults.file.name}}</td>
+							<td>{{fileItemUnderAnalysis.file.name}}</td>
 							<td>
-							
-							<select ng-model="selectedSequenceResult" 
-								ng-options="sequenceResult.sequenceID for sequenceResult in analysisResults.transientAnalysisResult.sequenceResult">
-						    </select>
-							
-							</td>
-							<td><a ng-click="showAlignmentDetails(selectedSequenceResult)">Show coverage details <i class="glyphicon glyphicon-link"></i></a></td>
-							<td>
-								<button type="button" ng-disabled="variationCategories == null" class="btn btn-primary btn-xs" ng-click="selectVariationCategories()">
-										Select
-								</button>
+								<select ng-model="selectedSequenceAnalysis" 
+									ng-options="sequenceAnalysis.fastaId for sequenceAnalysis in fileItemUnderAnalysis.webAnalysisResult.sequenceAnalysis"
+									>
+							    </select>
 							</td>
 						</tr>
 					</tbody>
@@ -163,160 +119,78 @@
 				<table class="table table-nonfluid">
 					<thead>
 						<tr>
-							<th>Difference view</th>
-							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Reference sequence</th>
-							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Genome feature</th>
-							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'"></th>
-							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Nucleotides</th>
-							<th ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">Minority variants</th>
+							<th>Reference sequence</th>
+							<th>Genome feature</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td>
-								<div class="btn-group">
-							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.differenceView" btn-radio="'differenceSummary'">Summary</label>
-							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.differenceView" btn-radio="'genomeDetail'">Detail</label>
-		    					</div>
+								<select ng-model="selectedRefName" 
+									ng-options="x for x in selectedSequenceAnalysis.ancestorRefName"
+									>
+							    </select>
 							</td>
-							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
-								<select name="singleSelect" ng-model="selectedSequenceResult.selectedReference"
-									ng-options="referenceOption for referenceOption in referenceOptions">
-								</select>
-							</td>
-							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
-								{{selectedSequenceResult.selectedFeature.featureDescription}}
-							</td>
-							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
-								<button type="button" ng-disabled="selectedSequenceResult.selectedReference == noneSelected" class="btn btn-primary btn-xs" ng-disabled="featureAnalysisTree" ng-click="selectGenomeFeature(selectedSequenceResult)">
-										Select
-								</button>
-							</td>
-							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
-								<div class="btn-group">
-							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showNucleotides" btn-radio="'show'">Show</label>
-							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showNucleotides" btn-radio="'hide'">Hide</label>
-		    					</div>
-							</td>
-							<td ng-show="selectedSequenceResult.differenceView == 'genomeDetail'">
-								<div class="btn-group">
-							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showMinorityVariants" btn-radio="'show'">Show</label>
-							        <label class="btn btn-primary btn-xs" ng-model="selectedSequenceResult.showMinorityVariants" btn-radio="'hide'">Hide</label>
-		    					</div>
+							<td>
+								<select ng-model="selectedFeatureAnalysis" 
+									ng-options="featureAnalysis.featureName for featureAnalysis in fileItemUnderAnalysis.webAnalysisResult.featureAnalysis"
+									>
+							    </select>
+							
 							</td>
 						</tr>
 					</tbody>
 				</table>
 				
-				
-				<table ng-show="selectedSequenceResult.differenceView == 'differenceSummary'" class="table" >
-					<thead>
-						<tr>
-							<th>Reference sequence</th>
-							<th>Genome feature</th>
-							<th>Differences</th>
-						</tr>
-					</thead>
-				  	<tbody>
-					  	<tr ng-repeat="diffSummary in selectedSequenceResult.alignmentDifferenceSummaries">
-					  		<td ng-show="diffSummary.rowspan" rowspan="{{diffSummary.rowspan}}">{{diffSummary.referenceName}}</td>
-					  		<td><a ng-click="switchToDetailView(diffSummary.referenceName, diffSummary.featureName)">{{diffSummary.featureName}} <i class="glyphicon glyphicon-link"></i></a></td>
-					  		<td>
-							<span 
-							    popover-template="'popoverSummary.html'" 
-					  			popover-placement="bottom" data-trigger="click" 
-					  			class="{{diffSummElem.differenceStyle}}" 
-					  			ng-repeat="diffSummElem in diffSummary.diffSummElements">{{diffSummElem.foundVariation.name}} </span>
-					  		</td>
-					  	</tr>
-				  	</tbody>
-				</table>
-				<table ng-show="selectedSequenceResult.differenceView == 'genomeDetail'" class="table analysisSequenceTable" >
-				  	<tbody ng-repeat="analysisSequenceRow in selectedSequenceResult.analysisSequenceRows track by $index">
-					  	<tr class="analysisSequenceReferenceAAIndex">
-					  		<td colspan=3 ng-repeat="referenceAAIndex in analysisSequenceRow.referenceAAIndices track by $index">{{referenceAAIndex}}</td>
-					  	</tr>
-					  	<tr class="analysisSequenceReferenceAA">
-					  		<td colspan=3 ng-repeat="referenceAA in analysisSequenceRow.referenceAAs track by $index">{{referenceAA}}</td>
-					  	</tr>
-					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceReferenceNT">
-					  		<td ng-repeat="referenceNT in analysisSequenceRow.referenceNTs track by $index">{{referenceNT}}</td>
-					  	</tr>
-					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceReferenceNTIndex">
-					  		<td ng-repeat="referenceNTIndex in analysisSequenceRow.referenceNTIndices track by $index"><div>{{referenceNTIndex}}</div></td>
-					  	</tr>
+				<div style="width: 1000px; display: table;">
+			        <div style="display: table-cell;">
+						<svg ng-attr-height="{{svgHeight()}}" ng-attr-width="{{sequenceLabelWidth()}}">
+						  <text 
+						  	class="sequenceLabel" 
+							    	ng-attr-x="{{referenceLabelX()}}"
+							    	ng-attr-y="{{referenceLabelY()}}"
+							    	ng-attr-width="{{referenceLabelWidth()}}"
+							    	ng-attr-height="{{referenceLabelHeight()}}"
+							    	ng-attr-dx="{{referenceLabelWidth()/2.0}}"
+							    	ng-attr-dy="{{referenceLabelHeight()/2.0}}"
+							    	>{{selectedRefName}}</text>
+						</svg>
+			        </div>
+			        <div style="display: table-cell;">
+			        	<div style="overflow: auto; width: 900px;">
+							<svg 
+								ng-attr-height="{{svgHeight()}}" 
+								ng-attr-width="{{svgWidth()}}">
+							    <text class="codonLabel" ng-repeat="codonLabel in selectedFeatureAnalysis.codonLabel track by $index"
+							    	ng-attr-x="{{codonLabelX(codonLabel)}}"
+							    	ng-attr-y="{{codonLabelY()}}"
+							    	ng-attr-width="{{codonLabelWidth(codonLabel)}}"
+							    	ng-attr-height="{{codonLabelHeight()}}"
+							    	ng-attr-dy="{{codonLabelHeight()/2.0}}"
+							    	ng-attr-dx="{{codonLabelWidth(codonLabel)/2.0}}"
+							    	>{{codonLabel.label}}</text>
+							  <g ng-repeat="referenceAa in selectedRefSeqFeatAnalysis.aas track by $index">
+							    <rect class="referenceAaBackground" 
+							    	ng-attr-x="{{referenceAaX(referenceAa)}}"
+							    	ng-attr-y="{{referenceAaY()}}"
+							    	ng-attr-width="{{referenceAaWidth(referenceAa)}}"
+							    	ng-attr-height="{{referenceAaHeight()}}"
+							    	/>
+							    <text class="referenceAa" 
+							    	ng-attr-x="{{referenceAaX(referenceAa)}}"
+							    	ng-attr-y="{{referenceAaY()}}"
+							    	ng-attr-width="{{referenceAaWidth(referenceAa)}}"
+							    	ng-attr-height="{{referenceAaHeight()}}"
+							    	ng-attr-dy="{{referenceAaHeight()/2.0}}"
+							    	ng-attr-dx="{{referenceAaWidth(referenceAa)/2.0}}"
+							    	>{{referenceAa.aa}}</text>
+							  </g>
+							</svg>
+				        </div>
+			        </div>
+				</div>
 
-
-					  	<tr class="analysisSequenceQueryAA">
-					  		<td colspan=3 ng-repeat="queryAA in analysisSequenceRow.queryAAs track by $index">
-					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] != null" 
-					  			popover-placement="bottom" 
-					  			data-trigger="click" 
-							    popover-template="'popoverAA.html'" 
-					  			>
-					  				<div class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
-					  			</div>
-					  			<div ng-show="analysisSequenceRow.queryAAPopover[$index] == null" class="{{analysisSequenceRow.queryAADifferenceStyle[$index]}}">{{queryAA}}</div>
-					  		</td>
-					  	</tr>
-					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNT">
-					  		<td class="{{analysisSequenceRow.queryNTDifferenceStyle[$index]}}" ng-repeat="queryNT in analysisSequenceRow.queryNTs track by $index">{{queryNT}}</td>
-					  	</tr>
-					  	<tr ng-show="selectedSequenceResult.showMinorityVariants == 'show'" class="analysisSequenceMinorityVariantAA" ng-show="analysisSequenceRow.minorityVariantAAs">
-					  		<td colspan=3 ng-repeat="minorityVariantAA in analysisSequenceRow.minorityVariantAAs track by $index">{{minorityVariantAA}}<sup>{{analysisSequenceRow.minorityVariantAAProportions[$index]}}</sup></td>
-					  	</tr>
-					  	<tr ng-show="selectedSequenceResult.showNucleotides == 'show'" class="analysisSequenceQueryNTIndex">
-					  		<td ng-repeat="queryNTIndex in analysisSequenceRow.queryNTIndices track by $index"><div>{{queryNTIndex}}</div></td>
-					  	</tr>
-				  	</tbody>
-				</table>
 			</div>
 		</div>
 	</div>
-	
-	
-	<script type="text/ng-template" id="popoverSummary.html">
-      <div>
-        <h5>{{diffSummElem.foundVariation.name}}</h5>
-        <div ng-show="diffSummElem.foundVariation.transcriptionType == 'AMINO_ACID' && diffSummElem.foundVariation.refStart != diffSummElem.foundVariation.refEnd">
-          Start codon: {{diffSummElem.foundVariation.refStart}}, end codon: {{diffSummElem.foundVariation.refEnd}}
-        </div>
-        <div ng-show="diffSummElem.foundVariation.transcriptionType == 'AMINO_ACID' && diffSummElem.foundVariation.refStart == diffSummElem.foundVariation.refEnd">
-          Codon: {{diffSummElem.foundVariation.refStart}}
-        </div>
-		<div ng-show="diffSummElem.foundVariation.description && diffSummElem.foundVariation.description.substring(0,4) == 'http'">
-			<a target="_blank" href="{{diffSummElem.foundVariation.description}}">Published variation<i class="glyphicon glyphicon-link"></i></a>
-		</div>
-		<div ng-show="diffSummElem.foundVariation.description && diffSummElem.foundVariation.description.substring(0,4) != 'http'">
-			{{diffSummElem.foundVariation.description}}
-		</div>
-		<div ng-repeat="vcatName in diffSummElem.foundVariation.variationCategory">
-			<div ng-show="variationCategories[vcatName].excluded != true && variationCategories[vcatName].unused != true">{{variationCategories[vcatName].description}}</div>
-		</div>
-      </div>
-    </script>
-
-	<script type="text/ng-template" id="popoverAA.html">
-      <div>
-		<div ng-repeat="foundVariation in analysisSequenceRow.queryAAPopover[$index].foundVariations">
-        <h5>{{foundVariation.name}}</h5>
-        <div ng-show="foundVariation.transcriptionType == 'AMINO_ACID' && foundVariation.refStart != foundVariation.refEnd">
-          Start codon: {{foundVariation.refStart}}, end codon: {{foundVariation.refEnd}}
-        </div>
-        <div ng-show="foundVariation.transcriptionType == 'AMINO_ACID' && foundVariation.refStart == foundVariation.refEnd">
-          Codon: {{foundVariation.refStart}}
-        </div>
-		<div ng-show="foundVariation.description && foundVariation.description.substring(0,4) == 'http'">
-			<a target="_blank" href="{{foundVariation.description}}">Published variation<i class="glyphicon glyphicon-link"></i></a>
-		</div>
-		<div ng-show="foundVariation.description && foundVariation.description.substring(0,4) != 'http'">
-			{{foundVariation.description}}
-		</div>
-		<div ng-repeat="vcatName in foundVariation.variationCategory">
-			<div ng-show="variationCategories[vcatName].excluded != true && variationCategories[vcatName].unused != true">{{variationCategories[vcatName].description}}</div>
-		</div>
-      </div>
-    </script>
-
-	
 </div>
