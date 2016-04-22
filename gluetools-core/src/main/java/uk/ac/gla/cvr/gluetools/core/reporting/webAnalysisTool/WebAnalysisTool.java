@@ -6,8 +6,11 @@ import gnu.trove.map.hash.TIntCharHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -84,10 +87,12 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			Alignment tipAlmt = tipAlmtMember.getAlignment();
 			List<Alignment> ancestors = tipAlmt.getAncestors();
 			// reverse order to ensure parent is added before child.
+			List<String> ancestorRefNames = new ArrayList<String>();
 			for(int i = ancestors.size()-1; i >= 0; i--) {
 				Alignment ancestor = ancestors.get(i);
 				ReferenceSequence ancRefSeq = ancestor.getRefSequence();
 				String refName = ancRefSeq.getName();
+				ancestorRefNames.add(refName);
 				if(!refNameToAnalysis.containsKey(refName)) {
 					Alignment parentAlmt = ancestor.getParent();
 					AlignmentMember parentAlmtMember = null;
@@ -101,12 +106,15 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				}
 			}
 			if(!targetRefName.equals(tipAlmt.getRefSequence().getName())) {
+				ancestorRefNames.add(targetRefName);
 				if(!refNameToAnalysis.containsKey(targetRefName)) {
 					refNameToAnalysis.put(targetRefName, 
 						new ReferenceAnalysis(targetRef, tipAlmt, tipAlmtMember));
 				}
 			}
-			fastaIdToSequenceAnalysis.put(fastaId, new SequenceAnalysis(fastaId, new FastaSequenceObject(fastaId, sequence.getSequenceAsString()), targetRefName));
+			SequenceAnalysis sequenceAnalysis = new SequenceAnalysis(fastaId, new FastaSequenceObject(fastaId, sequence.getSequenceAsString()), targetRefName);
+			sequenceAnalysis.ancestorRefName = ancestorRefNames;
+			fastaIdToSequenceAnalysis.put(fastaId, sequenceAnalysis);
 		});
 		// Add all reference sequences to the all-column alignment.
 		for(Map.Entry<String, ReferenceAnalysis> entry: refNameToAnalysis.entrySet()) {
@@ -143,6 +151,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		allColsAlmt.rationalise();
 		
 		
+		Map<String, FeatureAnalysis> featureNameToAnalysis = new LinkedHashMap<String, FeatureAnalysis>();
+		initFeatureAnalysis(cmdContext, featureNameToAnalysis, refNameToAnalysis.keySet(), allColsAlmt);
+
+		
 		for(ReferenceAnalysis refAnalysis: refNameToAnalysis.values()) {
 			refAnalysis.ntAlignedSegment = new ArrayList<NtAlignedSegment>();
 			List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(refAnalysis.refName));
@@ -170,10 +182,11 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					refToRefSegs.add(new QueryAlignedSegment(1, refNTs.length(), 1, refNTs.length()));
 					List<TranslatedQueryAlignedSegment> translatedQaSegs = 
 							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, refToRefSegs, refNTs);
-					List<AaSegment> aaSegs = generateAaSegs(translatedQaSegs, refToUSegs);
+					List<Aa> aas = generateAas(translatedQaSegs, refToUSegs);
+					
 					SequenceFeatureAnalysis sequenceFeatureAnalysis = new SequenceFeatureAnalysis();
 					sequenceFeatureAnalysis.featureName = featureName;
-					sequenceFeatureAnalysis.aaSegment = aaSegs;
+					sequenceFeatureAnalysis.aas = aas;
 					sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 				}
 			}
@@ -197,6 +210,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				seqAnalysis.ntAlignedSegment.add(ntAlignedSegment);
 			}
 			
+			List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(seqAnalysis.targetRefName));
 			
 			// sequence feature analyses
 			List<SequenceFeatureAnalysis> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis>();
@@ -209,22 +223,39 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					List<QueryAlignedSegment> queryToTargetRefSegs = seqAnalysis.getQueryToTargetRefSegs();
 					List<TranslatedQueryAlignedSegment> translatedQaSegs = 
 							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, queryToTargetRefSegs, queryNTs);
-					List<AaSegment> aaSegs = generateAaSegs(translatedQaSegs, queryToUSegs);
+					List<Aa> aas = generateAas(translatedQaSegs, refToUSegs);
 					SequenceFeatureAnalysis sequenceFeatureAnalysis = new SequenceFeatureAnalysis();
 					sequenceFeatureAnalysis.featureName = featureName;
-					sequenceFeatureAnalysis.aaSegment = aaSegs;
+					sequenceFeatureAnalysis.aas = aas;
 					sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 				}
 			}
 			seqAnalysis.sequenceFeatureAnalysis = sequenceFeatureAnalyses;
 		}
 
-		Map<String, FeatureAnalysis> featureNameToAnalysis = new LinkedHashMap<String, FeatureAnalysis>();
+ 		
+		return new WebAnalysisResult(
+				new ArrayList<FeatureAnalysis>(featureNameToAnalysis.values()),
+				new ArrayList<ReferenceAnalysis>(refNameToAnalysis.values()),
+				new ArrayList<SequenceAnalysis>(fastaIdToSequenceAnalysis.values()));
+	}
+
+	public void initFeatureAnalysis(
+			CommandContext cmdContext,
+			Map<String, FeatureAnalysis> featureNameToAnalysis, 
+			Collection<String> refNames,
+			AllColumnsAlignment<Key> allColsAlmt) {
 		
 		for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
 			String featureName = featureAnalysisHint.getFeatureName();
-			TIntObjectMap<FeatureCodonLabel> uIndexToCodonLabel = new TIntObjectHashMap<FeatureCodonLabel>();
-			for(String refName: refNameToAnalysis.keySet()) {
+			
+			// this map is used to prevent overlapping codon labels.
+			TIntObjectMap<CodonLabel> uIndexToCodonLabel = new TIntObjectHashMap<CodonLabel>();
+			
+			Integer startUIndex = Integer.MAX_VALUE;
+			Integer endUIndex = Integer.MIN_VALUE;
+			
+			for(String refName: refNames) {
 				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class,
 						FeatureLocation.pkMap(refName, featureName), false);
 				if(featureLoc != null) {
@@ -234,43 +265,52 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							.collect(Collectors.toList());
 					List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(refName));
 					List<QueryAlignedSegment> featureLocRefToUSegs = QueryAlignedSegment.translateSegments(featureLocQaSegments, refToUSegs);
+					
+					startUIndex = Math.min(startUIndex, ReferenceSegment.minRefStart(featureLocRefToUSegs));
+					endUIndex = Math.max(endUIndex, ReferenceSegment.maxRefEnd(featureLocRefToUSegs));
+					
 					List<LabeledCodon> labeledCodons = featureLoc.getLabeledCodons(cmdContext);
-					TIntObjectMap<String> refNtToCodonLabel = new TIntObjectHashMap<String>();
+
+					List<CodonQueryAlignedSegment> codonRefQaSegs = new ArrayList<CodonQueryAlignedSegment>();
+
 					for(LabeledCodon labeledCodon: labeledCodons) {
-						refNtToCodonLabel.put(labeledCodon.getNtStart(), labeledCodon.getCodonLabel());
+						int refStart = labeledCodon.getNtStart();
+						int refEnd = refStart+2;
+						CodonLabel codonLabel = new CodonLabel();
+						codonLabel.label = labeledCodon.getCodonLabel();
+						codonLabel.startUIndex = Integer.MAX_VALUE;
+						codonLabel.endUIndex = Integer.MIN_VALUE;
+						codonRefQaSegs.add(new CodonQueryAlignedSegment(codonLabel, 
+								refStart, refEnd, refStart, refEnd));
 					}
-					for(QueryAlignedSegment qaSeg: featureLocRefToUSegs) {
-						int refToUOffset = qaSeg.getQueryToReferenceOffset();
-						for(int i = qaSeg.getQueryStart(); i <= qaSeg.getQueryEnd(); i++) {
-							String codonLabel = refNtToCodonLabel.get(i);
-							if(codonLabel != null) {
-								FeatureCodonLabel featureCodonLabel = new FeatureCodonLabel();
-								featureCodonLabel.startUIndex = i+refToUOffset;
-								featureCodonLabel.endUIndex = i+refToUOffset+2;
-								featureCodonLabel.codonLabel = codonLabel;
-								uIndexToCodonLabel.put(i+refToUOffset, featureCodonLabel);
+					List<CodonQueryAlignedSegment> codonUQaSegs = QueryAlignedSegment.translateSegments(codonRefQaSegs, featureLocRefToUSegs);
+					for(CodonQueryAlignedSegment codonUQaSeg: codonUQaSegs) {
+						for(int i = codonUQaSeg.getRefStart(); i <= codonUQaSeg.getRefEnd(); i++) {
+							CodonLabel codonLabel = codonUQaSeg.codonLabel;
+							codonLabel.startUIndex = Math.min(codonLabel.startUIndex, i);
+							codonLabel.endUIndex = Math.max(codonLabel.endUIndex, i);
+							if(!uIndexToCodonLabel.containsKey(i)) {
+								uIndexToCodonLabel.put(i, codonLabel);
 							}
 						}
 					}
 				}
 			}
-			List<FeatureCodonLabel> featureCodonLabels = new ArrayList<FeatureCodonLabel>(uIndexToCodonLabel.valueCollection());
-			featureCodonLabels.sort(new Comparator<FeatureCodonLabel>() {
+			FeatureAnalysis featureAnalysis = new FeatureAnalysis();
+			featureAnalysis.featureName = featureName;
+			featureAnalysis.startUIndex = startUIndex;
+			featureAnalysis.endUIndex = endUIndex;
+			List<CodonLabel> codonLabels = new ArrayList<CodonLabel>(
+					new LinkedHashSet<CodonLabel>(uIndexToCodonLabel.valueCollection()));
+			Collections.sort(codonLabels, new Comparator<CodonLabel>() {
 				@Override
-				public int compare(FeatureCodonLabel o1, FeatureCodonLabel o2) {
+				public int compare(CodonLabel o1, CodonLabel o2) {
 					return Integer.compare(o1.startUIndex, o2.startUIndex);
 				}
 			});
-			FeatureAnalysis featureAnalysis = new FeatureAnalysis();
-			featureAnalysis.featureName = featureName;
-			featureAnalysis.featureCodonLabel = featureCodonLabels;
+			featureAnalysis.codonLabel = codonLabels;
 			featureNameToAnalysis.put(featureName, featureAnalysis);
 		}
- 		
-		return new WebAnalysisResult(
-				new ArrayList<FeatureAnalysis>(featureNameToAnalysis.values()),
-				new ArrayList<ReferenceAnalysis>(refNameToAnalysis.values()),
-				new ArrayList<SequenceAnalysis>(fastaIdToSequenceAnalysis.values()));
 	}
 
 	private List<QueryAlignedSegment> generateSequenceTargetAlignment(
@@ -280,46 +320,94 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		AlignerResult alignerResult = fastaSequenceReporter.alignToTargetReference(cmdContext, 
 				targetRefName, fastaID, sequence);
 		List<QueryAlignedSegment> queryToTargetRefSegsUnmerged = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
-		List<QueryAlignedSegment> queryToTargetRefSegs = QueryAlignedSegment.mergeAbutting(queryToTargetRefSegsUnmerged, QueryAlignedSegment.mergeAbuttingFunction());
+		List<QueryAlignedSegment> queryToTargetRefSegs = 
+				QueryAlignedSegment.mergeAbutting(queryToTargetRefSegsUnmerged, 
+						QueryAlignedSegment.mergeAbuttingFunction(), 
+						QueryAlignedSegment.abutsPredicate());
 		return queryToTargetRefSegs;
 	}
 
-	private List<AaSegment> generateAaSegs(List<TranslatedQueryAlignedSegment> translatedQueryToRefSegs, List<QueryAlignedSegment> refToUSegs) {
-		TIntCharMap queryNtToAa = new TIntCharHashMap();
+	private List<Aa> generateAas(List<TranslatedQueryAlignedSegment> translatedQueryToRefSegs, 
+			List<QueryAlignedSegment> refToUSegs) {
 		if(translatedQueryToRefSegs.isEmpty()) {
-			return new ArrayList<AaSegment>();
+			return new ArrayList<Aa>();
 		}
-		List<QueryAlignedSegment> queryToRefSegs = new ArrayList<QueryAlignedSegment>();
+		List<AaQueryAlignedSegment> aaQueryToRefSegs = new ArrayList<AaQueryAlignedSegment>();
 		for(TranslatedQueryAlignedSegment translatedQaSeg: translatedQueryToRefSegs) {
 			QueryAlignedSegment queryAlignedSegment = translatedQaSeg.getQueryAlignedSegment();
-			queryToRefSegs.add(queryAlignedSegment);
 			int queryNt = queryAlignedSegment.getQueryStart();
+			int refNt = queryAlignedSegment.getRefStart();
 			String translation = translatedQaSeg.getTranslation();
 			for(int i = 0; i < translation.length(); i++) {
-				queryNtToAa.put(queryNt, translation.charAt(i));
+				Aa aa = new Aa();
+				aa.aa = translation.substring(i, i+1);
+				aa.startUIndex = Integer.MAX_VALUE;
+				aa.endUIndex = Integer.MIN_VALUE;
+				aaQueryToRefSegs.add(new AaQueryAlignedSegment(aa, 
+						queryNt, queryNt+2, refNt, refNt+2));
 				queryNt+=3;
 			}
 		}
-		int codonAlignedQueryNT = queryToRefSegs.get(0).getQueryStart();
-		List<QueryAlignedSegment> queryToUSegs = QueryAlignedSegment.translateSegments(queryToRefSegs, refToUSegs);
-		List<QueryAlignedSegment> queryToUSegsCodonAligned = TranslationUtils.truncateToCodonAlignedQuery(codonAlignedQueryNT, queryToUSegs);
-		
-		List<AaSegment> aaSegs = new ArrayList<AaSegment>();
-		for(QueryAlignedSegment queryToUSeg: queryToUSegsCodonAligned) {
-			StringBuffer translationBuf = new StringBuffer();
-			AaSegment aaSeg = new AaSegment();
-			aaSeg.startUIndex = queryToUSeg.getRefStart();
-			aaSeg.endUIndex = queryToUSeg.getRefEnd();
-			for(int i = queryToUSeg.getQueryStart(); i <= queryToUSeg.getQueryEnd()-2; i += 3) {
-				translationBuf.append(queryNtToAa.get(i));
+		List<AaQueryAlignedSegment> aaQueryToUSegs = QueryAlignedSegment.translateSegments(aaQueryToRefSegs, refToUSegs);
+		TIntObjectMap<Aa> uIndexToAa = new TIntObjectHashMap<Aa>();
+		for(AaQueryAlignedSegment aaQueryToUSeg: aaQueryToUSegs) {
+			Aa aa = aaQueryToUSeg.aa;
+			for(int i = aaQueryToUSeg.getRefStart(); i <= aaQueryToUSeg.getRefEnd(); i++) {
+				if(!uIndexToAa.containsKey(i)) {
+					aa.startUIndex = Math.min(aa.startUIndex, i);
+					aa.endUIndex = Math.max(aa.endUIndex, i);
+					uIndexToAa.put(i, aa);
+				}
 			}
-			aaSeg.aaTranslation = translationBuf.toString();
-			aaSegs.add(aaSeg);
 		}
-		return aaSegs;
+		List<Aa> aas = new ArrayList<Aa>(new LinkedHashSet<Aa>(uIndexToAa.valueCollection()));
+		Collections.sort(aas, new Comparator<Aa>() {
+			@Override
+			public int compare(Aa o1, Aa o2) {
+				return Integer.compare(o1.startUIndex, o2.startUIndex);
+			}
+		});
+		return aas;
 	}
 	
 	public static abstract class Key {}
+	
+	private class CodonQueryAlignedSegment extends QueryAlignedSegment {
+
+		CodonLabel codonLabel;
+		
+		public CodonQueryAlignedSegment(
+				CodonLabel codonLabel, 
+				int refStart, int refEnd,
+				int queryStart, int queryEnd) {
+			super(refStart, refEnd, queryStart, queryEnd);
+			this.codonLabel = codonLabel;
+		}
+
+		@Override
+		public CodonQueryAlignedSegment clone() {
+			return new CodonQueryAlignedSegment(codonLabel, getRefStart(), getRefEnd(), getQueryStart(), getQueryEnd());
+		}
+	}
+
+	private class AaQueryAlignedSegment extends QueryAlignedSegment {
+
+		Aa aa;
+		
+		public AaQueryAlignedSegment(
+				Aa aa, 
+				int refStart, int refEnd,
+				int queryStart, int queryEnd) {
+			super(refStart, refEnd, queryStart, queryEnd);
+			this.aa = aa;
+		}
+
+		@Override
+		public AaQueryAlignedSegment clone() {
+			return new AaQueryAlignedSegment(aa, getRefStart(), getRefEnd(), getQueryStart(), getQueryEnd());
+		}
+	}
+
 	
 	public static class ReferenceKey extends Key {
 		private String refName;

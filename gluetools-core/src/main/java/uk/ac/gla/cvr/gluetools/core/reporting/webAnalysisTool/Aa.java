@@ -4,11 +4,11 @@ import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class AaSegment {
+public class Aa {
 
 	@PojoResultField
-	public String aaTranslation;
-	
+	public String aa;
+
 	@PojoResultField
 	public Integer startUIndex;
 

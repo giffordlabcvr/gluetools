@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+
+
 public class AllColumnsAlignment<K> {
 
 	private Map<K, List<QueryAlignedSegment>> keyToSegments = new LinkedHashMap<K, List<QueryAlignedSegment>>();
@@ -117,7 +120,7 @@ public class AllColumnsAlignment<K> {
 				return Integer.compare(o1.getRefStart(), o2.getRefStart());
 			}
 		});
-
+		
 	}
 	
 	
@@ -169,7 +172,9 @@ public class AllColumnsAlignment<K> {
 
 	public void rationalise() {
 		keyToSegments.forEach((key, segs) -> {
-			List<QueryAlignedSegment> merged = QueryAlignedSegment.mergeAbutting(segs, QueryAlignedSegment.mergeAbuttingFunction());
+			List<QueryAlignedSegment> merged = 
+					QueryAlignedSegment.mergeAbutting(segs, QueryAlignedSegment.mergeAbuttingFunction(), 
+							QueryAlignedSegment.abutsPredicate());
 			segs.clear();
 			segs.addAll(merged);
 		});

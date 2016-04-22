@@ -17,6 +17,9 @@ public class SequenceAnalysis {
 	public String targetRefName;
 
 	@PojoResultField
+	public List<String> ancestorRefName;
+	
+	@PojoResultField
 	public List<NtAlignedSegment> ntAlignedSegment;
 
 	@PojoResultField

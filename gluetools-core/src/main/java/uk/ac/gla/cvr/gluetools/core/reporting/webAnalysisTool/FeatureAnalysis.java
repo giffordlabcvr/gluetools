@@ -12,6 +12,13 @@ public class FeatureAnalysis {
 	public String featureName;
 	
 	@PojoResultField
-	public List<FeatureCodonLabel> featureCodonLabel;
+	public List<CodonLabel> codonLabel;
+	
+	@PojoResultField
+	public Integer startUIndex;
+
+	@PojoResultField
+	public Integer endUIndex;
+
 	
 }

@@ -12,7 +12,7 @@ public class SequenceFeatureAnalysis {
 	public String featureName;
 	
 	@PojoResultField
-	public List<AaSegment> aaSegment;
+	public List<Aa> aas;
 
 	
 }

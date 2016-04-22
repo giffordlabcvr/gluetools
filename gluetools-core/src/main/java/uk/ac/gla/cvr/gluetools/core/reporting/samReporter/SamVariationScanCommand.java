@@ -193,7 +193,9 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 					final String readString = samRecord.getReadString().toUpperCase();
 
 					List<QueryAlignedSegment> readToAncConstrRefSegsMerged = 
-							ReferenceSegment.mergeAbutting(readToAncConstrRefSegs, QueryAlignedSegment.mergeAbuttingFunction());
+							ReferenceSegment.mergeAbutting(readToAncConstrRefSegs, 
+									QueryAlignedSegment.mergeAbuttingFunction(), 
+									QueryAlignedSegment.abutsPredicate());
 
 					List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 					for(QueryAlignedSegment readToAncConstrRefSeg: readToAncConstrRefSegsMerged) {

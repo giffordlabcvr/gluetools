@@ -34,6 +34,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
@@ -331,7 +332,9 @@ public class FeatureLocation extends _FeatureLocation {
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 		
 		List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegsMerged = 
-				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, NtQueryAlignedSegment.ntMergeAbuttingFunction());
+				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, 
+						NtQueryAlignedSegment.ntMergeAbuttingFunction(), 
+						QueryAlignedSegment.abutsPredicate());
 		
 		for(NtQueryAlignedSegment ntQaSeg: queryToFeatureLocRefNtSegsMerged) {
 			variationScanResults.addAll(variationScanSegment(translator, codon1Start, ntQaSeg, variationsToScan));

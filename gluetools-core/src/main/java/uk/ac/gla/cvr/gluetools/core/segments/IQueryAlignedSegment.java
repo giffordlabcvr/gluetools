@@ -54,13 +54,6 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 	}
 
 	
-	public default boolean abutsRight(IQueryAlignedSegment other) {
-		return IReferenceSegment.super.abutsRight(other) && other.getQueryStart() == this.getQueryEnd()+1;
-	}
-
-	public default boolean abutsLeft(IQueryAlignedSegment other) {
-		return IReferenceSegment.super.abutsRight(other) && other.getQueryStart() == this.getQueryEnd()+1;
-	}
 
 	
 	public default void translate(int offset) {

@@ -319,7 +319,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					retrievedSequence.sequenceID = giNumberFromDocument(individualDocument);
 				} 
 				if(retrievedSequence.sequenceID == null) {
-					throw new NcbiImporterException(NcbiImporterException.Code.NULL_SEQUENCE_ID, retrievedSequence.data);
+					throw new NcbiImporterException(NcbiImporterException.Code.NULL_SEQUENCE_ID, new String(retrievedSequence.data));
 				}
 			}
 			retrievedSequences.add(retrievedSequence);

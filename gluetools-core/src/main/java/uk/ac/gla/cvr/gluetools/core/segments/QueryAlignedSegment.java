@@ -1,12 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,6 +16,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -119,21 +122,24 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		
 	}
 	
-	public static List<QueryAlignedSegment> translateSegments(
-			List<QueryAlignedSegment> queryToRef1Segments0,
-			List<QueryAlignedSegment> ref1ToRef2Segments0) {
+	public static <SA extends QueryAlignedSegment,
+	   				SB extends QueryAlignedSegment> List<SA> 
+	translateSegments(List<SA> queryToRef1Segments0, List<SB> ref1ToRef2Segments0) {
 		Function<QueryAlignedSegment, Integer> getRefStart = QueryAlignedSegment::getRefStart;
 		Function<QueryAlignedSegment, Integer> getQueryStart = QueryAlignedSegment::getQueryStart;
 		Function<QueryAlignedSegment, Integer> getRefEnd = QueryAlignedSegment::getRefEnd;
 		Function<QueryAlignedSegment, Integer> getQueryEnd = QueryAlignedSegment::getQueryEnd;
 
-		LinkedList<QueryAlignedSegment> queryToRef1Segments = 
-				new LinkedList<QueryAlignedSegment>(queryToRef1Segments0.stream()
-						.map(QueryAlignedSegment::clone)
+		@SuppressWarnings("unchecked")
+		LinkedList<SA> queryToRef1Segments = 
+				new LinkedList<SA>((List<SA>) queryToRef1Segments0.stream()
+						.map(seg -> seg.clone())
 						.collect(Collectors.toList()));
-		LinkedList<QueryAlignedSegment> ref1ToRef2Segments = 
-				new LinkedList<QueryAlignedSegment>(ref1ToRef2Segments0.stream()
-						.map(QueryAlignedSegment::clone)
+		
+		@SuppressWarnings("unchecked")
+		LinkedList<SB> ref1ToRef2Segments = 
+				new LinkedList<SB>((List<SB>) ref1ToRef2Segments0.stream()
+						.map(seg -> seg.clone())
 						.collect(Collectors.toList()));
 		
 		Collections.sort(queryToRef1Segments, new SegmentStartComparator(getRefStart));
@@ -141,7 +147,7 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		
 		int queryToRef1NextStart, ref1ToRef2NextStart, 
 			queryToRef1NextEnd, ref1ToRef2NextEnd;	
-		LinkedList<QueryAlignedSegment> queryToRef2Segments = new LinkedList<QueryAlignedSegment>();
+		LinkedList<SA> queryToRef2Segments = new LinkedList<SA>();
 		while(!queryToRef1Segments.isEmpty() && !ref1ToRef2Segments.isEmpty()) {
 			queryToRef1NextStart = updateNext(queryToRef1Segments, getRefStart);
 			ref1ToRef2NextStart = updateNext(ref1ToRef2Segments, getQueryStart);
@@ -174,12 +180,15 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 						int newSegLength = ( queryToRef1NextEnd - queryToRef1NextStart ) + 1;
 						ref1ToRef2Segments.getFirst().truncateLeft(newSegLength);
 						// System.out.println("TRUNCATE Ref1-Ref2");
-						IQueryAlignedSegment removed = queryToRef1Segments.removeFirst();
+						SA removed = queryToRef1Segments.removeFirst();
 						// System.out.println("DELETE Query-Ref1");
 						int queryStart = removed.getQueryStart();
-						QueryAlignedSegment newSeg = new QueryAlignedSegment(
-								ref2Start, (ref2Start+newSegLength)-1, 
-								queryStart, (queryStart+newSegLength)-1);
+						@SuppressWarnings("unchecked")
+						SA newSeg = (SA) removed.clone(); 
+						newSeg.setRefStart(ref2Start);
+						newSeg.setRefEnd((ref2Start+newSegLength)-1);
+						newSeg.setQueryStart(queryStart);
+						newSeg.setQueryEnd((queryStart+newSegLength)-1);
 						// System.out.println("ADD "+newSeg);
 						queryToRef2Segments.add(newSeg);
 					} else if(ref1ToRef2NextEnd < queryToRef1NextEnd) {
@@ -190,20 +199,26 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 						IQueryAlignedSegment removed = ref1ToRef2Segments.removeFirst();
 						// System.out.println("DELETE Ref1-Ref2");
 						int ref2Start = removed.getRefStart();
-						QueryAlignedSegment newSeg = new QueryAlignedSegment(
-								ref2Start, (ref2Start+newSegLength)-1, 
-								queryStart, (queryStart+newSegLength)-1);
+						@SuppressWarnings("unchecked")
+						SA newSeg = (SA) queryToRef1Segments.getFirst().clone(); 
+						newSeg.setRefStart(ref2Start);
+						newSeg.setRefEnd((ref2Start+newSegLength)-1);
+						newSeg.setQueryStart(queryStart);
+						newSeg.setQueryEnd((queryStart+newSegLength)-1);
 						// System.out.println("ADD "+newSeg);
 						queryToRef2Segments.add(newSeg);
 					} else {
 						// both start and end line up.
-						IQueryAlignedSegment removed1 = queryToRef1Segments.removeFirst();
+						SA removed1 = queryToRef1Segments.removeFirst();
 						IQueryAlignedSegment removed2 = ref1ToRef2Segments.removeFirst();
 						// System.out.println("DELETE Query-Ref1");
 						// System.out.println("DELETE Ref1-Ref2");
-						QueryAlignedSegment newSeg = new QueryAlignedSegment(
-								removed2.getRefStart(), removed2.getRefEnd(), 
-								removed1.getQueryStart(), removed1.getQueryEnd());
+						@SuppressWarnings("unchecked")
+						SA newSeg = (SA) removed1.clone(); 
+						newSeg.setRefStart(removed2.getRefStart());
+						newSeg.setRefEnd(removed2.getRefEnd());
+						newSeg.setQueryStart(removed1.getQueryStart());
+						newSeg.setQueryEnd(removed1.getQueryEnd());
 						// System.out.println("ADD "+newSeg);
 						queryToRef2Segments.add(newSeg);
 					}
@@ -214,8 +229,8 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return queryToRef2Segments;
 	}
 	
-	private static int updateNext(
-			LinkedList<QueryAlignedSegment> alignedSegments,
+	private static <S extends QueryAlignedSegment> int updateNext(
+			LinkedList<S> alignedSegments,
 			Function<QueryAlignedSegment, Integer> getStart) {
 		if(alignedSegments.isEmpty()) {
 			return Integer.MAX_VALUE;
@@ -233,9 +248,13 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return (seg1, seg2) -> {
 			return new QueryAlignedSegment(seg1.getRefStart(), seg2.getRefEnd(), seg1.getQueryStart(), seg2.getQueryEnd());
 		};
-
 	}
 
+	public static <S extends QueryAlignedSegment> BiPredicate<S, S> abutsPredicate() {
+		return (seg1, seg2) -> {
+			return seg2.getRefStart() == seg1.getRefEnd()+1 && seg2.getQueryStart() == seg1.getQueryEnd()+1;
+		};
+	}
 
 	public static List<QueryAlignedSegment> insertRefColumnsBefore(int beforeCoord, int numCols, List<QueryAlignedSegment> qaSegs) {
 		List<QueryAlignedSegment> resultQaSegs = new ArrayList<QueryAlignedSegment>();
@@ -284,5 +303,13 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return resultQaSegs;
 	}
 
+	public static void checkLengths(List<QueryAlignedSegment> segs) {
+		for(QueryAlignedSegment seg: segs) {
+			if(seg.getRefEnd() - seg.getRefStart() != seg.getQueryEnd() - seg.getQueryStart()) {
+				GlueLogger.getGlueLogger().finest("Invalid segment length: "+seg);
+			}
+		}
+	}
+	
 	
 }

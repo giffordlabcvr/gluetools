@@ -89,13 +89,5 @@ public interface IReferenceSegment {
 		setRefEnd(getRefEnd()+offset);
 	}
 
-	public default boolean abutsRight(IReferenceSegment other) {
-		return other.getRefStart() == this.getRefEnd()+1;
-	}
-
-	public default boolean abutsLeft(IReferenceSegment other) {
-		return other.getRefEnd() == this.getRefStart()-1;
-	}
-
 	
 }

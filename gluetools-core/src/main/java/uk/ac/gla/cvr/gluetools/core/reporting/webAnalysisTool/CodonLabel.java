@@ -4,15 +4,15 @@ import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class FeatureCodonLabel {
+public class CodonLabel {
 
 	@PojoResultField
-	public String codonLabel;
-	
+	public String label;
+
 	@PojoResultField
 	public Integer startUIndex;
 
 	@PojoResultField
 	public Integer endUIndex;
-
+	
 }
