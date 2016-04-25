@@ -1,10 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
@@ -81,35 +83,44 @@ public class AllColumnsAlignment<K> {
 					new ColumnInsertionAfter(newStart, newLen-newStart, lastULoc);
 				colInsertions.add(colInsertion);
 		}
-		// introduce the new columns into the existing unconstrained alignment.
+		// add new row to the alignment
 		keyToSegments.put(newKey, newToUSegs);
-		keyToSegments.forEach( (seqId, seqToUSegs) -> {
-			List<QueryAlignedSegment> newSeqToUSegs = new ArrayList<QueryAlignedSegment>(seqToUSegs);
-			for(int i = 0; i < colInsertions.size(); i++) {
-				ColumnInsertion colInsertion = colInsertions.get(i);
-				int numCols = colInsertion.length;
+
+		for(int i = 0; i < colInsertions.size(); i++) {
+			ColumnInsertion colInsertion = colInsertions.get(i);
+			int numCols = colInsertion.length;
+			
+			// apply column insertion to each row of the alignment
+			keyToSegments.forEach( (seqId, seqToUSegs) -> {
+				List<QueryAlignedSegment> newSeqToUSegs = new ArrayList<QueryAlignedSegment>(seqToUSegs);
 				if(colInsertion instanceof ColumnInsertionBefore) {
 					ColumnInsertionBefore colInsertionBefore = (ColumnInsertionBefore) colInsertion;
 					newSeqToUSegs = QueryAlignedSegment
 							.insertRefColumnsBefore(colInsertionBefore.rightNT, numCols, newSeqToUSegs);
-					colInsertion.finalRefStart = colInsertionBefore.rightNT;
-					colInsertion.finalRefEnd = (colInsertionBefore.rightNT + numCols)-1;
 				} else if(colInsertion instanceof ColumnInsertionAfter) {
 					ColumnInsertionAfter colInsertionAfter = (ColumnInsertionAfter) colInsertion;
 					newSeqToUSegs = QueryAlignedSegment
 							.insertRefColumnsAfter(colInsertionAfter.leftNT, numCols, newSeqToUSegs);
-					colInsertion.finalRefStart = colInsertionAfter.leftNT + 1;
-					colInsertion.finalRefEnd = colInsertionAfter.leftNT + numCols;
 				}
-				for(int j = i+1; j < colInsertions.size(); j++) {
-					colInsertions.get(j).translate(numCols);
-				}
+				seqToUSegs.clear();
+				seqToUSegs.addAll(newSeqToUSegs);
+			} );
+			// determine reference coordinates for the column insertion
+			if(colInsertion instanceof ColumnInsertionBefore) {
+				ColumnInsertionBefore colInsertionBefore = (ColumnInsertionBefore) colInsertion;
+				colInsertion.finalRefStart = colInsertionBefore.rightNT;
+				colInsertion.finalRefEnd = (colInsertionBefore.rightNT + numCols)-1;
+			} else if(colInsertion instanceof ColumnInsertionAfter) {
+				ColumnInsertionAfter colInsertionAfter = (ColumnInsertionAfter) colInsertion;
+				colInsertion.finalRefStart = colInsertionAfter.leftNT + 1;
+				colInsertion.finalRefEnd = colInsertionAfter.leftNT + numCols;
 			}
-			seqToUSegs.clear();
-			seqToUSegs.addAll(newSeqToUSegs);
-		} );
-		
-		// add new segments for these regions for the new sequence.
+			// translate remaining column insertions
+			for(int j = i+1; j < colInsertions.size(); j++) {
+				colInsertions.get(j).translate(numCols);
+			}
+		}		
+		// add new segments for the inserted regions for the new sequence.
 		for(ColumnInsertion colInsertion: colInsertions) {
 			newToUSegs.add(new QueryAlignedSegment(colInsertion.finalRefStart, colInsertion.finalRefEnd, 
 					colInsertion.newStart, (colInsertion.newStart+colInsertion.length)-1));
@@ -156,6 +167,9 @@ public class AllColumnsAlignment<K> {
 		public void translate(int amount) {
 			rightNT += amount;
 		}
+		public String toString() {
+			return "insert "+length+" columns before "+rightNT+", starting from "+newStart+" on new sequence";
+		}
 	}
 
 	private static class ColumnInsertionAfter extends ColumnInsertion {
@@ -168,6 +182,9 @@ public class AllColumnsAlignment<K> {
 		public void translate(int amount) {
 			leftNT += amount;
 		}
+		public String toString() {
+			return "insert "+length+" columns after "+leftNT+", starting from "+newStart+" on new sequence";
+		}
 	}
 
 	public void rationalise() {
@@ -179,6 +196,25 @@ public class AllColumnsAlignment<K> {
 			segs.addAll(merged);
 		});
 		
+	}
+
+	public void logRegionAllKeys(int startUIndex, int endUIndex, Level level) {
+		GlueLogger.getGlueLogger().log(level, "Logging all-columns alignment region ["+startUIndex+", "+endUIndex+"]");
+		ReferenceSegment refSeg = new ReferenceSegment(startUIndex, endUIndex);
+		List<ReferenceSegment> loggedRegion = Arrays.asList(refSeg);
+		keyToSegments.forEach((key, segs) -> {
+			GlueLogger.getGlueLogger().log(level, key.toString()+": "+
+					ReferenceSegment.intersection(segs, loggedRegion, ReferenceSegment.cloneLeftSegMerger()));
+		});
+	}
+
+	
+	public void logRegion(K key, int startUIndex, int endUIndex, Level level) {
+		GlueLogger.getGlueLogger().log(level, "Logging all-columns alignment region ["+startUIndex+", "+endUIndex+"]");
+		ReferenceSegment refSeg = new ReferenceSegment(startUIndex, endUIndex);
+		List<ReferenceSegment> loggedRegion = Arrays.asList(refSeg);
+		GlueLogger.getGlueLogger().log(level, key.toString()+": "+
+				ReferenceSegment.intersection(keyToSegments.get(key), loggedRegion, ReferenceSegment.cloneLeftSegMerger()));
 	}
 
 	

@@ -1,8 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import gnu.trove.map.TIntCharMap;
 import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntCharHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
@@ -13,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -39,7 +38,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -149,7 +147,6 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		
 		// rationalise the all-column alignment by merging abutting segments.
 		allColsAlmt.rationalise();
-		
 		
 		Map<String, FeatureAnalysis> featureNameToAnalysis = new LinkedHashMap<String, FeatureAnalysis>();
 		initFeatureAnalysis(cmdContext, featureNameToAnalysis, refNameToAnalysis.keySet(), allColsAlmt);
@@ -439,6 +436,11 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				return false;
 			return true;
 		}
+		
+		public String toString() {
+			return "ReferenceKey("+refName+")";
+		}
+
 	}
 
 	private static class QueryKey extends Key {
@@ -473,6 +475,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			} else if (!fastaID.equals(other.fastaID))
 				return false;
 			return true;
+		}
+		
+		public String toString() {
+			return "QueryKey("+fastaID+")";
 		}
 		
 	}
