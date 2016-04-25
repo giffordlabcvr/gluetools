@@ -14,16 +14,16 @@ public class WebAnalysisResult {
 	@PojoResultField(resultName = "referenceAnalysis")
 	public List<ReferenceAnalysis> referenceAnalysisList;
 
-	@PojoResultField(resultName = "sequenceAnalysis")
-	public List<SequenceAnalysis> sequenceAnalysisList;
+	@PojoResultField(resultName = "queryAnalysis")
+	public List<QueryAnalysis> queryAnalysisList;
 
 	public WebAnalysisResult(
 			List<FeatureAnalysis> featureAnalysisList, 
 			List<ReferenceAnalysis> referenceAnalysisList, 
-			List<SequenceAnalysis> sequenceAnalysisList) {
+			List<QueryAnalysis> queryAnalysisList) {
 		this.featureAnalysisList = featureAnalysisList;
 		this.referenceAnalysisList = referenceAnalysisList;
-		this.sequenceAnalysisList = sequenceAnalysisList;
+		this.queryAnalysisList = queryAnalysisList;
 	}
 
 

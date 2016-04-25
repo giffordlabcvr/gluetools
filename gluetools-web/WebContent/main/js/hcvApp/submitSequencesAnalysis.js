@@ -13,7 +13,7 @@ submitSequencesAnalysis
 		
 
 	$scope.fileItemUnderAnalysis = null;
-	$scope.selectedSequenceAnalysis = null;
+	$scope.selectedQueryAnalysis = null;
 	$scope.selectedRefName = null;
 	$scope.selectedFeatureAnalysis = null;
 	$scope.selectedReferenceAnalysis = null;
@@ -36,18 +36,18 @@ submitSequencesAnalysis
 	}
 
 	$scope.updateSelectedSeqFeatAnalysis = function(){
-		if($scope.selectedSequenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
+		if($scope.selectedQueryAnalysis != null && $scope.selectedFeatureAnalysis != null) {
 			$scope.selectedSeqFeatAnalysis = _.find(
-				$scope.selectedSequenceAnalysis.sequenceFeatureAnalysis, 
+				$scope.selectedQueryAnalysis.sequenceFeatureAnalysis, 
 				function(seqFeatureAnalysis) {
 					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
 			console.log("selected seq feature analysis: ", $scope.selectedSeqFeatAnalysis);
 		}
 	}
 
-	$scope.selectedSequenceAnalysisChanged = function(){
-		if($scope.selectedSequenceAnalysis) {
-		    $scope.selectedRefName = $scope.selectedSequenceAnalysis.ancestorRefName[0];
+	$scope.selectedQueryAnalysisChanged = function(){
+		if($scope.selectedQueryAnalysis) {
+		    $scope.selectedRefName = $scope.selectedQueryAnalysis.ancestorRefName[0];
 			console.log("selected ref name: ", $scope.selectedRefName);
 		}
 	}
@@ -71,8 +71,8 @@ submitSequencesAnalysis
 	}
 
 	
-	$scope.$watch( 'selectedSequenceAnalysis', function(newObj, oldObj) {
-		$scope.selectedSequenceAnalysisChanged();
+	$scope.$watch( 'selectedQueryAnalysis', function(newObj, oldObj) {
+		$scope.selectedQueryAnalysisChanged();
 	}, false);
 
 	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
@@ -88,9 +88,9 @@ submitSequencesAnalysis
 	$scope.showAnalysisResults = function(item) {
 		console.log("show analysis : ", item);
 		$scope.fileItemUnderAnalysis = item;
-		if($scope.fileItemUnderAnalysis.webAnalysisResult.sequenceAnalysis.length >= 0) {
-			$scope.selectedSequenceAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.sequenceAnalysis[0];
-			console.log("selected seq analysis: ", $scope.selectedSequenceAnalysis);
+		if($scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis.length >= 0) {
+			$scope.selectedQueryAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis[0];
+			console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
 		}
 		if($scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis.length >= 0) {
 			$scope.selectedFeatureAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis[0];

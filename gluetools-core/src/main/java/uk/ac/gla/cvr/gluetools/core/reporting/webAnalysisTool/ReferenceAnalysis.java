@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import java.util.List;
+import java.util.Optional;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
@@ -30,7 +31,7 @@ public class ReferenceAnalysis {
 	public List<NtAlignedSegment> ntAlignedSegment;
 	
 	@PojoResultField
-	public List<SequenceFeatureAnalysis> sequenceFeatureAnalysis;
+	public List<SequenceFeatureAnalysis<ReferenceAa>> sequenceFeatureAnalysis;
 	
 	private ReferenceSequence refSeq;
 	private Alignment containingAlmt;
@@ -59,5 +60,7 @@ public class ReferenceAnalysis {
 		return containingAlmtMember;
 	}
 
-	
+	public Optional<SequenceFeatureAnalysis<ReferenceAa>> getSeqFeatAnalysis(String featureName) {
+		return sequenceFeatureAnalysis.stream().filter(seqFeatAnalysis -> seqFeatAnalysis.featureName.equals(featureName)).findFirst();
+	}
 }

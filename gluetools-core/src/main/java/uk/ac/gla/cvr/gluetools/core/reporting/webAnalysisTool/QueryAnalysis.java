@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import java.util.List;
+import java.util.Optional;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
@@ -8,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @PojoResultClass
-public class SequenceAnalysis {
+public class QueryAnalysis {
 
 	@PojoResultField
 	public String fastaId;
@@ -23,13 +24,13 @@ public class SequenceAnalysis {
 	public List<NtAlignedSegment> ntAlignedSegment;
 
 	@PojoResultField
-	public List<SequenceFeatureAnalysis> sequenceFeatureAnalysis;
+	public List<SequenceFeatureAnalysis<QueryAa>> sequenceFeatureAnalysis;
 
 	private AbstractSequenceObject sequenceObj;
 
 	private List<QueryAlignedSegment> queryToTargetRefSegs;
 	
-	public SequenceAnalysis(String fastaId, AbstractSequenceObject sequenceObj, String targetRefName) {
+	public QueryAnalysis(String fastaId, AbstractSequenceObject sequenceObj, String targetRefName) {
 		this.fastaId = fastaId;
 		this.targetRefName = targetRefName;
 		this.sequenceObj = sequenceObj;
@@ -46,5 +47,10 @@ public class SequenceAnalysis {
 	public void setQueryToTargetRefSegs(List<QueryAlignedSegment> queryToTargetRefSegs) {
 		this.queryToTargetRefSegs = queryToTargetRefSegs;
 	}
+	
+	public Optional<SequenceFeatureAnalysis<QueryAa>> getSeqFeatAnalysis(String featureName) {
+		return sequenceFeatureAnalysis.stream().filter(seqFeatAnalysis -> seqFeatAnalysis.featureName.equals(featureName)).findFirst();
+	}
+
 	
 }

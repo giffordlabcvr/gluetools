@@ -1,18 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class SequenceFeatureAnalysis<C extends Aa> {
+public class QueryAa extends Aa {
 
 	@PojoResultField
-	public String featureName;
-	
-	@PojoResultField
-	public List<C> aas;
-
+	public List<String> referenceDiffs = new ArrayList<String>();
 	
 }

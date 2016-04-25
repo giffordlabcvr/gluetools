@@ -108,8 +108,8 @@
 						<tr>
 							<td>{{fileItemUnderAnalysis.file.name}}</td>
 							<td>
-								<select ng-model="selectedSequenceAnalysis" 
-									ng-options="sequenceAnalysis.fastaId for sequenceAnalysis in fileItemUnderAnalysis.webAnalysisResult.sequenceAnalysis"
+								<select ng-model="selectedQueryAnalysis" 
+									ng-options="queryAnalysis.fastaId for queryAnalysis in fileItemUnderAnalysis.webAnalysisResult.queryAnalysis"
 									>
 							    </select>
 							</td>
@@ -127,7 +127,7 @@
 						<tr>
 							<td>
 								<select ng-model="selectedRefName" 
-									ng-options="x for x in selectedSequenceAnalysis.ancestorRefName"
+									ng-options="x for x in selectedQueryAnalysis.ancestorRefName"
 									>
 							    </select>
 							</td>
