@@ -293,6 +293,28 @@ submitSequencesAnalysis
         console.info('onCompleteAll');
     };
 }])
+.directive('codonLabel', function() {
+	  return {
+	    restrict: 'E',
+	    controller: function($scope) {
+	    	$scope.x = ($scope.codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
+	    			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
+	    	$scope.y = 0;
+    		var nts = ($scope.codonLabel.endUIndex - $scope.codonLabel.startUIndex) + 1;
+	    	$scope.width = (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
+	    	$scope.height = $scope.svgParams.codonLabelHeight;
+	    	$scope.dx = $scope.width / 2.0;
+	    	$scope.dy = $scope.height / 2.0;
+	    },
+	    replace: true,
+	    scope: {
+	      codonLabel: '=',
+	      svgParams: '=',
+	      selectedFeatureAnalysis: '=',
+	    },
+	    templateUrl: 'hcvApp/views/codonLabel.html'
+	  };
+	})
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
 	$scope.sequenceResult = data;
 	$scope.defaultOpenDepth = 99;
@@ -315,7 +337,6 @@ submitSequencesAnalysis
 		$modalInstance.dismiss('Dismissed');
 	}; 
 });
-
 
 
 

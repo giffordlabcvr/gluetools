@@ -2,6 +2,7 @@
 
 <!-- 1. nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
 <div ng-app="submitSequencesAnalysis">
+
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
 		<h2>Sequence analysis</h2>
 		<div>
@@ -161,14 +162,8 @@
 							<svg 
 								ng-attr-height="{{svgHeight()}}" 
 								ng-attr-width="{{svgWidth()}}">
-							    <text class="codonLabel" ng-repeat="codonLabel in selectedFeatureAnalysis.codonLabel track by $index"
-							    	ng-attr-x="{{codonLabelX(codonLabel)}}"
-							    	ng-attr-y="{{codonLabelY()}}"
-							    	ng-attr-width="{{codonLabelWidth(codonLabel)}}"
-							    	ng-attr-height="{{codonLabelHeight()}}"
-							    	ng-attr-dy="{{codonLabelHeight()/2.0}}"
-							    	ng-attr-dx="{{codonLabelWidth(codonLabel)/2.0}}"
-							    	>{{codonLabel.label}}</text>
+								<codon-label ng-repeat="codonLabel in selectedFeatureAnalysis.codonLabel track by $index" 
+									codon-label="codonLabel" svg-params="svgParams" selected-feature-analysis="selectedFeatureAnalysis"> </codon-label>	
 							  <g ng-repeat="referenceAa in selectedRefSeqFeatAnalysis.aas track by $index">
 							    <rect class="referenceAaBackground" 
 							    	ng-attr-x="{{referenceAaX(referenceAa)}}"
