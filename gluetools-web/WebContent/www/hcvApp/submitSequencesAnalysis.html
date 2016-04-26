@@ -145,16 +145,26 @@
 				
 				<div style="width: 1000px; display: table;">
 			        <div style="display: table-cell;">
-						<svg ng-attr-height="{{svgHeight()}}" ng-attr-width="{{sequenceLabelWidth()}}">
-						  <text 
+						<svg ng-attr-height="{{svgHeight()}}" ng-attr-width="{{svgParams.sequenceLabelWidth}}">
+						 <!-- can't make this into a custom directive. NO idea why. -->
+						 <text 
 						  	class="sequenceLabel" 
-							    	ng-attr-x="{{referenceLabelX()}}"
-							    	ng-attr-y="{{referenceLabelY()}}"
-							    	ng-attr-width="{{referenceLabelWidth()}}"
-							    	ng-attr-height="{{referenceLabelHeight()}}"
-							    	ng-attr-dx="{{referenceLabelWidth()/2.0}}"
-							    	ng-attr-dy="{{referenceLabelHeight()/2.0}}"
+							    	ng-attr-x="{{0}}"
+							    	ng-attr-y="{{svgParams.codonLabelHeight}}"
+							    	ng-attr-width="{{svgParams.sequenceLabelWidth}}"
+							    	ng-attr-height="{{svgParams.aaHeight}}"
+							    	ng-attr-dx="{{svgParams.sequenceLabelWidth/2.0}}"
+							    	ng-attr-dy="{{svgParams.aaHeight/2.0}}"
 							    	>{{selectedRefName}}</text>
+						 <text 
+						  	class="sequenceLabel" 
+							    	ng-attr-x="{{0}}"
+							    	ng-attr-y="{{svgParams.codonLabelHeight + svgParams.aaHeight}}"
+							    	ng-attr-width="{{svgParams.sequenceLabelWidth}}"
+							    	ng-attr-height="{{svgParams.aaHeight}}"
+							    	ng-attr-dx="{{svgParams.sequenceLabelWidth/2.0}}"
+							    	ng-attr-dy="{{svgParams.aaHeight/2.0}}"
+							    	>Query</text>
 						</svg>
 			        </div>
 			        <div style="display: table-cell;">
@@ -163,23 +173,13 @@
 								ng-attr-height="{{svgHeight()}}" 
 								ng-attr-width="{{svgWidth()}}">
 								<codon-label ng-repeat="codonLabel in selectedFeatureAnalysis.codonLabel track by $index" 
-									codon-label="codonLabel" svg-params="svgParams" selected-feature-analysis="selectedFeatureAnalysis"> </codon-label>	
-							  <g ng-repeat="referenceAa in selectedRefSeqFeatAnalysis.aas track by $index">
-							    <rect class="referenceAaBackground" 
-							    	ng-attr-x="{{referenceAaX(referenceAa)}}"
-							    	ng-attr-y="{{referenceAaY()}}"
-							    	ng-attr-width="{{referenceAaWidth(referenceAa)}}"
-							    	ng-attr-height="{{referenceAaHeight()}}"
-							    	/>
-							    <text class="referenceAa" 
-							    	ng-attr-x="{{referenceAaX(referenceAa)}}"
-							    	ng-attr-y="{{referenceAaY()}}"
-							    	ng-attr-width="{{referenceAaWidth(referenceAa)}}"
-							    	ng-attr-height="{{referenceAaHeight()}}"
-							    	ng-attr-dy="{{referenceAaHeight()/2.0}}"
-							    	ng-attr-dx="{{referenceAaWidth(referenceAa)/2.0}}"
-							    	>{{referenceAa.aa}}</text>
-							  </g>
+									codon-label="codonLabel" svg-params="svgParams" selected-feature-analysis="selectedFeatureAnalysis"></codon-label>	
+								<reference-aa ng-repeat="referenceAa in selectedRefFeatAnalysis.aas track by $index"
+									reference-aa="referenceAa" svg-params="svgParams" 
+										selected-feature-analysis="selectedFeatureAnalysis"></reference-aa>
+								<query-aa ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+									query-aa="queryAa" svg-params="svgParams" selected-ref-name="selectedRefName"
+										selected-feature-analysis="selectedFeatureAnalysis"></query-aa>
 							</svg>
 				        </div>
 			        </div>

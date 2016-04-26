@@ -39,7 +39,7 @@ a {
    width: auto !important;
 }
 
-.sequenceLabel, .codonLabel, .referenceAa, .queryAa {
+.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff {
 	font-size: 120%;
     text-anchor: middle;
     alignment-baseline: central;
@@ -53,7 +53,7 @@ a {
 	color: #222222;
 }
 
-.referenceAa, .queryAa {
+.referenceAa, .queryAa, .queryAaDiff {
 	font-weight: bold;
 }
 
@@ -73,6 +73,13 @@ a {
 	fill: #ddeecc;
 }
 
+.queryAaDiff {
+	fill: #ffffff;
+}
+
+.queryAaDiffBackground {
+	fill: #aaaaaa;
+}
 
 
 
