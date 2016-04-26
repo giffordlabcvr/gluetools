@@ -21,10 +21,7 @@ public class QueryAnalysis {
 	public List<String> ancestorRefName;
 	
 	@PojoResultField
-	public List<NtAlignedSegment> ntAlignedSegment;
-
-	@PojoResultField
-	public List<SequenceFeatureAnalysis<QueryAa>> sequenceFeatureAnalysis;
+	public List<SequenceFeatureAnalysis<QueryAa, QueryNt>> sequenceFeatureAnalysis;
 
 	private AbstractSequenceObject sequenceObj;
 
@@ -48,7 +45,7 @@ public class QueryAnalysis {
 		this.queryToTargetRefSegs = queryToTargetRefSegs;
 	}
 	
-	public Optional<SequenceFeatureAnalysis<QueryAa>> getSeqFeatAnalysis(String featureName) {
+	public Optional<SequenceFeatureAnalysis<QueryAa, QueryNt>> getSeqFeatAnalysis(String featureName) {
 		return sequenceFeatureAnalysis.stream().filter(seqFeatAnalysis -> seqFeatAnalysis.featureName.equals(featureName)).findFirst();
 	}
 

@@ -85,12 +85,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 	
 	public List<TranslatedQueryAlignedSegment> translateNucleotides(
 			CommandContext cmdContext, FeatureLocation featureLoc,
-			List<QueryAlignedSegment> queryToRefSegs, String queryNTs) {
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> queryToRefSegsFeatureArea = 
-					ReferenceSegment.intersection(queryToRefSegs, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<QueryAlignedSegment> queryToRefSegsFeatureArea, String queryNTs) {
 			
 		// truncate to codon aligned
 		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);

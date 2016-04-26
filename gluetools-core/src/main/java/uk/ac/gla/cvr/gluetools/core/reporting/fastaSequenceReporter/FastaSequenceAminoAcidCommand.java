@@ -106,8 +106,15 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 
 		String fastaNTs = fastaNTSeq.getSequenceAsString();
 
+		
+		// trim down to the feature area.
+		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+		
+		List<QueryAlignedSegment> queryToAncConstrRefSegsFeatureArea = 
+					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+		
 		List<TranslatedQueryAlignedSegment> translatedQaSegs = fastaSequenceReporter.translateNucleotides(
-				cmdContext, featureLoc, queryToAncConstrRefSegsFull, fastaNTs);
+				cmdContext, featureLoc, queryToAncConstrRefSegsFeatureArea, fastaNTs);
 
 		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();

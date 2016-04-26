@@ -154,22 +154,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 		
 		for(ReferenceAnalysis refAnalysis: refNameToAnalysis.values()) {
-			refAnalysis.ntAlignedSegment = new ArrayList<NtAlignedSegment>();
 			List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(refAnalysis.refName));
-			// populate NT aligned segments for reference sequences.
-			for(QueryAlignedSegment refToUSeg: refToUSegs) {
-				CharSequence segNTs = refAnalysis.getRefSeq().getSequence().getSequenceObject().
-					getNucleotides(cmdContext, refToUSeg.getQueryStart(), refToUSeg.getQueryEnd());
-				NtAlignedSegment ntAlignedSegment = new NtAlignedSegment();
-				ntAlignedSegment.startSeqIndex = refToUSeg.getQueryStart();
-				ntAlignedSegment.endSeqIndex = refToUSeg.getQueryEnd();
-				ntAlignedSegment.startUIndex = refToUSeg.getRefStart();
-				ntAlignedSegment.endUIndex = refToUSeg.getRefEnd();
-				ntAlignedSegment.nucleotides = segNTs.toString();
-				refAnalysis.ntAlignedSegment.add(ntAlignedSegment);
-			}
 			// sequence feature analyses
-			List<SequenceFeatureAnalysis<ReferenceAa>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<ReferenceAa>>();
+			List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
 				if(featureAnalysisHint.getIncludeTranslation()) {
 					String featureName = featureAnalysisHint.getFeatureName();
@@ -178,13 +165,25 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					List<QueryAlignedSegment> refToRefSegs = new ArrayList<QueryAlignedSegment>();
 					String refNTs = refAnalysis.getRefSeq().getSequence().getSequenceObject().getNucleotides(cmdContext);
 					refToRefSegs.add(new QueryAlignedSegment(1, refNTs.length(), 1, refNTs.length()));
+					
+					
+					
+					// trim down to the feature area.
+					List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+
+					List<QueryAlignedSegment> refToRefSegsFeatureArea = 
+								ReferenceSegment.intersection(refToRefSegs, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+					
 					List<TranslatedQueryAlignedSegment> translatedQaSegs = 
-							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, refToRefSegs, refNTs);
+							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, refToRefSegsFeatureArea, refNTs);
+
+					List<ReferenceNt> nts = generateNts(refNTs, refToRefSegsFeatureArea, refToUSegs, ReferenceNt::new);
 					List<ReferenceAa> aas = generateAas(translatedQaSegs, refToUSegs, ReferenceAa::new);
 					
-					SequenceFeatureAnalysis<ReferenceAa> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<ReferenceAa>();
+					SequenceFeatureAnalysis<ReferenceAa, ReferenceNt> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>();
 					sequenceFeatureAnalysis.featureName = featureName;
 					sequenceFeatureAnalysis.aas = aas;
+					sequenceFeatureAnalysis.nts = nts;
 					sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 				}
 			}
@@ -193,25 +192,11 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		
 		for(QueryAnalysis queryAnalysis: fastaIdToQueryAnalysis.values()) {
 
-			queryAnalysis.ntAlignedSegment = new ArrayList<NtAlignedSegment>();
-			List<QueryAlignedSegment> queryToUSegs = allColsAlmt.getSegments(new QueryKey(queryAnalysis.fastaId));
-			// populate NT aligned segments for query sequences.
-			for(QueryAlignedSegment qaSeg: queryToUSegs) {
-				CharSequence segNTs = SegmentUtils.base1SubString(queryAnalysis.getSequenceObj().getNucleotides(cmdContext), 
-						qaSeg.getQueryStart(), qaSeg.getQueryEnd());
-				NtAlignedSegment ntAlignedSegment = new NtAlignedSegment();
-				ntAlignedSegment.startSeqIndex = qaSeg.getQueryStart();
-				ntAlignedSegment.endSeqIndex = qaSeg.getQueryEnd();
-				ntAlignedSegment.startUIndex = qaSeg.getRefStart();
-				ntAlignedSegment.endUIndex = qaSeg.getRefEnd();
-				ntAlignedSegment.nucleotides = segNTs.toString();
-				queryAnalysis.ntAlignedSegment.add(ntAlignedSegment);
-			}
 			
-			List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(queryAnalysis.targetRefName));
+			List<QueryAlignedSegment> targetRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(queryAnalysis.targetRefName));
 			
 			// sequence feature analyses
-			List<SequenceFeatureAnalysis<QueryAa>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<QueryAa>>();
+			List<SequenceFeatureAnalysis<QueryAa, QueryNt>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<QueryAa, QueryNt>>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
 				if(featureAnalysisHint.getIncludeTranslation()) {
 					String featureName = featureAnalysisHint.getFeatureName();
@@ -219,12 +204,23 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							FeatureLocation.pkMap(queryAnalysis.targetRefName, featureName));
 					String queryNTs = queryAnalysis.getSequenceObj().getNucleotides(cmdContext);
 					List<QueryAlignedSegment> queryToTargetRefSegs = queryAnalysis.getQueryToTargetRefSegs();
+					
+					List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+
+					List<QueryAlignedSegment> queryToTargetFeatureArea = 
+								ReferenceSegment.intersection(queryToTargetRefSegs, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+					
 					List<TranslatedQueryAlignedSegment> translatedQaSegs = 
-							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, queryToTargetRefSegs, queryNTs);
-					List<QueryAa> aas = generateAas(translatedQaSegs, refToUSegs, QueryAa::new);
-					SequenceFeatureAnalysis<QueryAa> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa>();
+							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, queryToTargetFeatureArea, queryNTs);
+
+					List<QueryAa> aas = generateAas(translatedQaSegs, targetRefToUSegs, QueryAa::new);
+
+					List<QueryNt> nts = generateNts(queryNTs, queryToTargetFeatureArea, targetRefToUSegs, QueryNt::new);
+					
+					SequenceFeatureAnalysis<QueryAa, QueryNt> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa, QueryNt>();
 					sequenceFeatureAnalysis.featureName = featureName;
 					sequenceFeatureAnalysis.aas = aas;
+					sequenceFeatureAnalysis.nts = nts;
 					sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 				}
 			}
@@ -261,6 +257,28 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				new ArrayList<FeatureAnalysis>(featureNameToAnalysis.values()),
 				new ArrayList<ReferenceAnalysis>(refNameToAnalysis.values()),
 				new ArrayList<QueryAnalysis>(fastaIdToQueryAnalysis.values()));
+	}
+
+	private <D extends Nt> List<D> generateNts(String nts,
+			List<QueryAlignedSegment> seqToRefSegs,
+			List<QueryAlignedSegment> refToUSegs, Supplier<D> supplier) {
+		List<D> ntList = new ArrayList<D>();
+		
+		List<QueryAlignedSegment> seqToUSegs = QueryAlignedSegment.translateSegments(seqToRefSegs, refToUSegs);
+		
+		// populate NT aligned segments for query sequences.
+		for(QueryAlignedSegment seg: seqToUSegs) {
+			CharSequence segNTs = SegmentUtils.base1SubString(nts, seg.getQueryStart(), seg.getQueryEnd());
+			for(int i = 0; i < segNTs.length(); i++) {
+				D nt = supplier.get();
+				nt.nt = new String(new char[] {segNTs.charAt(i)});
+				nt.uIndex = seg.getRefStart()+i;
+				nt.seqIndex = seg.getQueryStart()+i;
+				nt.segmentBoundary = (i == 0 || i == (segNTs.length() - 1));
+				ntList.add(nt);
+			}
+		}
+		return ntList;
 	}
 
 	public void initFeatureAnalysis(
