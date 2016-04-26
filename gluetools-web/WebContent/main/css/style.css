@@ -39,21 +39,28 @@ a {
    width: auto !important;
 }
 
-.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff {
-	font-size: 120%;
+.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt {
     text-anchor: middle;
     alignment-baseline: central;
 }
+
+.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff {
+	font-size: 120%;
+}
+
+.referenceNt, .queryNt {
+	font-size: 90%;
+}
 	
 .sequenceLabel {
-	color: #222222;
+	fill: #222222;
 }
 
 .codonLabel {
-	color: #222222;
+	fill: #222222;
 }
 
-.referenceAa, .queryAa, .queryAaDiff {
+.referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt  {
 	font-weight: bold;
 }
 
@@ -79,8 +86,15 @@ a {
 
 .queryAaDiffBackground {
 	fill: #aaaaaa;
+	}
+
+.referenceNt {
+	fill: #88aacc;
 }
 
+.queryNt {
+	fill: #99bb77;
+}
 
 
 .difference {

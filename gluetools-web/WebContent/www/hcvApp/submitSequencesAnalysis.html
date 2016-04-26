@@ -159,7 +159,7 @@
 						 <text 
 						  	class="sequenceLabel" 
 							    	ng-attr-x="{{0}}"
-							    	ng-attr-y="{{svgParams.codonLabelHeight + svgParams.aaHeight}}"
+							    	ng-attr-y="{{svgParams.codonLabelHeight + svgParams.aaHeight + svgParams.ntHeight}}"
 							    	ng-attr-width="{{svgParams.sequenceLabelWidth}}"
 							    	ng-attr-height="{{svgParams.aaHeight}}"
 							    	ng-attr-dx="{{svgParams.sequenceLabelWidth/2.0}}"
@@ -177,9 +177,15 @@
 								<reference-aa ng-repeat="referenceAa in selectedRefFeatAnalysis.aas track by $index"
 									reference-aa="referenceAa" svg-params="svgParams" 
 										selected-feature-analysis="selectedFeatureAnalysis"></reference-aa>
+								<reference-nt ng-repeat="referenceNt in selectedRefFeatAnalysis.nts track by $index"
+									reference-nt="referenceNt" svg-params="svgParams" 
+										selected-feature-analysis="selectedFeatureAnalysis"></reference-nt>
 								<query-aa ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
 									query-aa="queryAa" svg-params="svgParams" selected-ref-name="selectedRefName"
 										selected-feature-analysis="selectedFeatureAnalysis"></query-aa>
+								<query-nt ng-repeat="queryNt in selectedQueryFeatAnalysis.nts track by $index"
+									query-nt="queryNt" svg-params="svgParams" selected-ref-name="selectedRefName"
+										selected-feature-analysis="selectedFeatureAnalysis"></query-nt>
 							</svg>
 				        </div>
 			        </div>
