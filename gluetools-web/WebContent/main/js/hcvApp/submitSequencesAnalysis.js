@@ -31,45 +31,64 @@ submitSequencesAnalysis
 				$scope.selectedReferenceAnalysis.sequenceFeatureAnalysis, 
 				function(seqFeatureAnalysis) {
 					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
-			console.log("selected ref feature analysis: ", $scope.selectedRefFeatAnalysis);
+		} else {
+			$scope.selectedRefFeatAnalysis = null;
 		}
+		console.log("updated ref feature analysis: ", $scope.selectedRefFeatAnalysis);
 	}
 
+	$scope.updateSelectedRefName = function(){
+		if($scope.selectedQueryAnalysis != null) {
+			if($scope.selectedRefName == null || $scope.selectedQueryAnalysis.ancestorRefName.indexOf($scope.selectedRefName) == -1) {
+				// current reference is not an ancestor reference of new selected query
+				$scope.selectedRefName = $scope.selectedQueryAnalysis.ancestorRefName[0];
+			}
+		} else {
+			$scope.selectedRefName = null;
+		}
+		console.log("updated ref name: ", $scope.selectedRefName);
+	}
+
+	
 	$scope.updateSelectedQueryFeatAnalysis = function(){
 		if($scope.selectedQueryAnalysis != null && $scope.selectedFeatureAnalysis != null) {
 			$scope.selectedQueryFeatAnalysis = _.find(
 				$scope.selectedQueryAnalysis.sequenceFeatureAnalysis, 
 				function(seqFeatureAnalysis) {
 					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
-			console.log("selected query feature analysis: ", $scope.selectedQueryFeatAnalysis);
+		} else {
+			$scope.selectedQueryFeatAnalysis = null;
 		}
+		console.log("updated query feature analysis: ", $scope.selectedQueryFeatAnalysis);
 	}
 
 	$scope.selectedQueryAnalysisChanged = function(){
-		if($scope.selectedQueryAnalysis) {
-		    $scope.selectedRefName = $scope.selectedQueryAnalysis.ancestorRefName[0];
-			console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
-		}
+		console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
+		$scope.updateSelectedQueryFeatAnalysis();
+		$scope.updateSelectedRefName();
 	}
 
 	$scope.selectedFeatureAnalysisChanged = function(){
-		if($scope.selectedFeatureAnalysis) {
-			console.log("selected feature analysis: ", $scope.selectedFeatureAnalysis);
-			$scope.updateSelectedRefSeqFeatAnalysis();
-			$scope.updateSelectedQueryFeatAnalysis();
-		}
+		console.log("selected feature analysis: ", $scope.selectedFeatureAnalysis);
+		$scope.updateSelectedRefSeqFeatAnalysis();
+		$scope.updateSelectedQueryFeatAnalysis();
+	}
+
+	$scope.selectedReferenceAnalysisChanged = function(){
+		console.log("selected reference analysis: ", $scope.selectedReferenceAnalysis);
+		$scope.updateSelectedRefSeqFeatAnalysis();
 	}
 
 	$scope.selectedRefNameChanged = function(){
-		if($scope.selectedRefName && $scope.fileItemUnderAnalysis) {
+		console.log("selected refName: ", $scope.selectedRefName);
+		if($scope.fileItemUnderAnalysis) {
 			$scope.selectedReferenceAnalysis = _.find(
 					$scope.fileItemUnderAnalysis.webAnalysisResult.referenceAnalysis, 
 					function(refAnalysis) {return refAnalysis.refName == $scope.selectedRefName;} );
-			console.log("selected ref analysis: ", $scope.selectedReferenceAnalysis);
-			$scope.updateSelectedRefSeqFeatAnalysis();
+		} else {
+			$scope.selectedReferenceAnalysis = null;
 		}
 	}
-
 	
 	$scope.$watch( 'selectedQueryAnalysis', function(newObj, oldObj) {
 		$scope.selectedQueryAnalysisChanged();
@@ -83,6 +102,9 @@ submitSequencesAnalysis
 		$scope.selectedFeatureAnalysisChanged();
 	}, false);
 
+	$scope.$watch( 'selectedReferenceAnalysis', function(newObj, oldObj) {
+		$scope.selectedReferenceAnalysisChanged();
+	}, false);
 
 	// invoked when "Analysis" button is pressed
 	$scope.showAnalysisResults = function(item) {
@@ -227,134 +249,113 @@ submitSequencesAnalysis
         console.info('onCompleteAll');
     };
 }])
-.directive('codonLabel', function() {
+.directive('sequenceLabel', function() {
 	  return {
 	    restrict: 'E',
 	    controller: function($scope) {
-	    	$scope.x = ($scope.codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
-	    			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
-	    	$scope.y = 0;
-    		var nts = ($scope.codonLabel.endUIndex - $scope.codonLabel.startUIndex) + 1;
-	    	$scope.width = (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
-	    	$scope.height = $scope.svgParams.codonLabelHeight;
+	    	var params = $scope.svgParams;
+	    	$scope.x = 0;
+	    	$scope.y = params.codonLabelHeight + ($scope.sequenceIndex * (params.aaHeight + params.ntHeight));
+	    	$scope.width = params.sequenceLabelWidth;
+	    	$scope.height = params.aaHeight;
 	    	$scope.dx = $scope.width / 2.0;
 	    	$scope.dy = $scope.height / 2.0;
 	    },
 	    replace: true,
 	    scope: {
-	      codonLabel: '=',
+	      sequenceLabel: '=',
+	      sequenceIndex: '=',
 	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
 	    },
-	    templateUrl: 'hcvApp/views/codonLabel.html'
+	    templateNamespace: 'svg',
+	    templateUrl: 'hcvApp/views/sequenceLabel.html'
 	  };
 	})
-.directive('referenceAa', function() {
+.directive('codonLabelLine', function() {
 	  return {
 	    restrict: 'E',
 	    controller: function($scope) {
-	    	$scope.x = ($scope.referenceAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
-	    			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
-	    	$scope.y = $scope.svgParams.codonLabelHeight;
-    		var nts = ($scope.referenceAa.endUIndex - $scope.referenceAa.startUIndex) + 1;
-	    	$scope.width = (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
-	    	$scope.height = $scope.svgParams.aaHeight;
-	    	$scope.dx = $scope.width / 2.0;
-	    	$scope.dy = $scope.height / 2.0;
-	    },
-	    replace: true,
-	    scope: {
-	      referenceAa: '=',
-	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
-	    },
-	    templateUrl: 'hcvApp/views/referenceAa.html'
-	  };
-	})
-.directive('referenceNt', function() {
-	  return {
-	    restrict: 'E',
-	    controller: function($scope) {
-	    	$scope.x = ($scope.referenceNt.uIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
-	    			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
-	    	$scope.y = $scope.svgParams.codonLabelHeight + $scope.svgParams.aaHeight;
-	    	$scope.width = $scope.svgParams.ntWidth;
-	    	$scope.height = $scope.svgParams.ntHeight;
-	    	$scope.dx = $scope.width / 2.0;
-	    	$scope.dy = $scope.height / 2.0;
-	    },
-	    replace: true,
-	    scope: {
-	      referenceNt: '=',
-	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
-	    },
-	    templateUrl: 'hcvApp/views/referenceNt.html'
-	  };
-	})
-.directive('queryAa', function() {
-	  return {
-	    restrict: 'E',
-	    controller: function($scope) {
-	    	$scope.x = ($scope.queryAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
-	    			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
-	    	$scope.y = $scope.svgParams.codonLabelHeight + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight;
-    		var nts = ($scope.queryAa.endUIndex - $scope.queryAa.startUIndex) + 1;
-	    	$scope.width = (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
-	    	$scope.height = $scope.svgParams.aaHeight;
-	    	$scope.dx = $scope.width / 2.0;
-	    	$scope.dy = $scope.height / 2.0;
-
-
-	    	$scope.updateDiffs = function() {
-		    	if($scope.queryAa.referenceDiffs && $scope.queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1) {
-		    		$scope.textClass = "queryAaDiff";
-		    		$scope.textBgClass = "queryAaDiffBackground";
-		    	} else {
-		    		$scope.textClass = "queryAa";
-		    		$scope.textBgClass = "queryAaBackground";
-		    	}
+	    	var params = $scope.svgParams;
+	    	$scope.x = function(codonLabel) {
+	    		return (codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
 	    	};
-	    	
-	    	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
-	    		$scope.updateDiffs();
-	    	}, false);
-
-	    	$scope.updateDiffs();
-	    	
+	    	$scope.y = 0;
+	    	$scope.width = function(codonLabel) {
+	    		var nts = (codonLabel.endUIndex - codonLabel.startUIndex) + 1;
+		    	return (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+	    	}; 
+	    	$scope.height = params.codonLabelHeight;
+	    	$scope.dx = function(codonLabel) {
+	    		return $scope.width(codonLabel) / 2.0;
+	    	}
+	    	$scope.dy = $scope.height / 2.0; 
 	    },
 	    replace: true,
 	    scope: {
-	      queryAa: '=',
+	      svgParams: '=',
+	      selectedFeatureAnalysis: '=',
+	    },
+	    templateNamespace: 'svg',
+	    templateUrl: 'hcvApp/views/codonLabelLine.html'
+	  };
+	})
+.directive('referenceSequence', function() {
+	  return {
+	    restrict: 'E',
+	    replace: true,
+	    controller: function($scope) {
+	    	var params = $scope.svgParams;
+	    	$scope.aaX = function(referenceAa) {
+	    		return (referenceAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
+	    	};
+	    	$scope.aaY = params.codonLabelHeight;
+    		$scope.aaWidth = function(referenceAa) {
+        		var nts = (referenceAa.endUIndex - referenceAa.startUIndex) + 1;
+    			return (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+    		};
+	    	$scope.aaHeight = params.aaHeight;
+	    	$scope.aaDx = function(referenceAa) {
+	    		return $scope.aaWidth(referenceAa) / 2.0;
+	    	}
+	    	$scope.aaDy = $scope.aaHeight / 2.0; 
+	    },
+	    scope: {
+	      svgParams: '=',
+	      selectedFeatureAnalysis: '=',
+	      selectedRefFeatAnalysis: '='
+	    },
+	    templateNamespace: 'svg',
+	    templateUrl: 'hcvApp/views/referenceSequence.html'
+	  };
+	})
+.directive('querySequence', function() {
+	  return {
+	    restrict: 'E',
+	    replace: true,
+	    controller: function($scope) {
+	    	var params = $scope.svgParams;
+	    	$scope.aaX = function(queryAa) {
+	    		return (queryAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
+	    	};
+	    	$scope.aaY = params.codonLabelHeight + params.aaHeight + params.ntHeight;
+    		$scope.aaWidth = function(queryAa) {
+        		var nts = (queryAa.endUIndex - queryAa.startUIndex) + 1;
+    			return (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+    		};
+	    	$scope.aaHeight = params.aaHeight;
+	    	$scope.aaDx = function(queryAa) {
+	    		return $scope.aaWidth(queryAa) / 2.0;
+	    	}
+	    	$scope.aaDy = $scope.aaHeight / 2.0; 
+	    },
+	    scope: {
 	      svgParams: '=',
 	      selectedFeatureAnalysis: '=',
 	      selectedRefName: '=',
+	      selectedQueryFeatAnalysis: '='
 	    },
-	    templateUrl: 'hcvApp/views/queryAa.html'
-	  };
-	})
-.directive('queryNt', function() {
-	  return {
-	    restrict: 'E',
-	    controller: function($scope) {
-	    	$scope.x = ($scope.queryNt.uIndex - $scope.selectedFeatureAnalysis.startUIndex) * 
-	    			($scope.svgParams.ntWidth + $scope.svgParams.ntGap);
-	    	$scope.y = $scope.svgParams.codonLabelHeight + 
-		    	$scope.svgParams.aaHeight+
-		    	$scope.svgParams.ntHeight+
-		    	$scope.svgParams.aaHeight;
-	    	$scope.width = $scope.svgParams.ntWidth;
-	    	$scope.height = $scope.svgParams.ntHeight;
-	    	$scope.dx = $scope.width / 2.0;
-	    	$scope.dy = $scope.height / 2.0;
-	    },
-	    replace: true,
-	    scope: {
-	      queryNt: '=',
-	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
-	    },
-	    templateUrl: 'hcvApp/views/queryNt.html'
+	    templateNamespace: 'svg',
+	    templateUrl: 'hcvApp/views/querySequence.html'
 	  };
 	})
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){

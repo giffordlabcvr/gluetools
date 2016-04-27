@@ -1,0 +1,17 @@
+<g>
+	<rect class="referenceAaBackground" ng-repeat="referenceAa in selectedRefFeatAnalysis.aas track by $index"
+	ng-attr-x="{{aaX(referenceAa)}}"
+	ng-attr-y="{{aaY}}"
+	ng-attr-width="{{aaWidth(referenceAa)}}"
+	ng-attr-height="{{aaHeight}}"
+	></rect>
+   <text class="referenceAa" ng-repeat="referenceAa in selectedRefFeatAnalysis.aas track by $index"
+	ng-attr-x="{{aaX(referenceAa)}}"
+	ng-attr-y="{{aaY}}"
+	ng-attr-width="{{aaWidth(referenceAa)}}"
+	ng-attr-height="{{aaHeight}}"
+	ng-attr-dx="{{aaDx(referenceAa)}}"
+	ng-attr-dy="{{aaDy}}"
+	   	>{{referenceAa.aa}}</text>
+</g>
+	
