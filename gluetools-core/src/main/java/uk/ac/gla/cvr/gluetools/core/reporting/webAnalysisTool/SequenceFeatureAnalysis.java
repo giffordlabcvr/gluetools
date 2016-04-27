@@ -6,7 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class SequenceFeatureAnalysis<C extends Aa, D extends Nt> {
+public class SequenceFeatureAnalysis<C extends Aa, D extends NtSegment> {
 
 	@PojoResultField
 	public String featureName;

@@ -7,6 +7,9 @@ import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 
 @PojoResultClass
-public class ReferenceNt extends Nt {
+public class QueryNtSegment extends NtSegment {
+
+	@PojoResultField
+	public List<ReferenceDiffNtMask> referenceDiffs = new ArrayList<ReferenceDiffNtMask>();
 
 }

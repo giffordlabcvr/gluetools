@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -156,7 +157,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		for(ReferenceAnalysis refAnalysis: refNameToAnalysis.values()) {
 			List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(refAnalysis.refName));
 			// sequence feature analyses
-			List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>>();
+			List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
 				if(featureAnalysisHint.getIncludeTranslation()) {
 					String featureName = featureAnalysisHint.getFeatureName();
@@ -177,10 +178,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					List<TranslatedQueryAlignedSegment> translatedQaSegs = 
 							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, refToRefSegsFeatureArea, refNTs);
 
-					List<ReferenceNt> nts = generateNts(refNTs, refToRefSegsFeatureArea, refToUSegs, ReferenceNt::new);
+					List<ReferenceNtSegment> nts = generateNts(refNTs, refToRefSegsFeatureArea, refToUSegs, ReferenceNtSegment::new);
 					List<ReferenceAa> aas = generateAas(translatedQaSegs, refToUSegs, ReferenceAa::new);
 					
-					SequenceFeatureAnalysis<ReferenceAa, ReferenceNt> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>();
+					SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>();
 					sequenceFeatureAnalysis.featureName = featureName;
 					sequenceFeatureAnalysis.aas = aas;
 					sequenceFeatureAnalysis.nts = nts;
@@ -196,7 +197,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			List<QueryAlignedSegment> targetRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(queryAnalysis.targetRefName));
 			
 			// sequence feature analyses
-			List<SequenceFeatureAnalysis<QueryAa, QueryNt>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<QueryAa, QueryNt>>();
+			List<SequenceFeatureAnalysis<QueryAa, QueryNtSegment>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<QueryAa, QueryNtSegment>>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
 				if(featureAnalysisHint.getIncludeTranslation()) {
 					String featureName = featureAnalysisHint.getFeatureName();
@@ -215,9 +216,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 					List<QueryAa> aas = generateAas(translatedQaSegs, targetRefToUSegs, QueryAa::new);
 
-					List<QueryNt> nts = generateNts(queryNTs, queryToTargetFeatureArea, targetRefToUSegs, QueryNt::new);
+					List<QueryNtSegment> nts = generateNts(queryNTs, queryToTargetFeatureArea, targetRefToUSegs, QueryNtSegment::new);
 					
-					SequenceFeatureAnalysis<QueryAa, QueryNt> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa, QueryNt>();
+					SequenceFeatureAnalysis<QueryAa, QueryNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa, QueryNtSegment>();
 					sequenceFeatureAnalysis.featureName = featureName;
 					sequenceFeatureAnalysis.aas = aas;
 					sequenceFeatureAnalysis.nts = nts;
@@ -227,25 +228,20 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			queryAnalysis.sequenceFeatureAnalysis = sequenceFeatureAnalyses;
 		}
 
-		// compute diffs between every query and reference pair, for every feature that exists on both
-		refNameToAnalysis.forEach( (refName, refAnalysis) -> {
-			featureNameToAnalysis.forEach( (featureName, featureAnalysis) -> {
-				refAnalysis.getSeqFeatAnalysis(featureName).ifPresent(refSeqFeatAnalysis -> {
-					fastaIdToQueryAnalysis.values().forEach(queryAnalysis -> {
-						queryAnalysis.getSeqFeatAnalysis(featureName).ifPresent(querySeqFeatAnalysis -> {
+		// compute diffs between every query and ancestor reference pair, for every feature that exists on both
+		featureNameToAnalysis.forEach( (featureName, featureAnalysis) -> {
+			fastaIdToQueryAnalysis.values().forEach(queryAnalysis -> {
+				queryAnalysis.getSeqFeatAnalysis(featureName).ifPresent(querySeqFeatAnalysis -> {
+					queryAnalysis.ancestorRefName.forEach(refName -> {
+						ReferenceAnalysis refAnalysis = refNameToAnalysis.get(refName);
+						refAnalysis.getSeqFeatAnalysis(featureName).ifPresent(refSeqFeatAnalysis -> {
+							List<ReferenceNtSegment> referenceNtSegs = refSeqFeatAnalysis.nts;
+							// ntDiffs
+							List<QueryNtSegment> queryNtSegs = querySeqFeatAnalysis.nts;
+							calculateNtDiffs(refName, referenceNtSegs, queryNtSegs);
+							// aaDiffs
 							List<QueryAa> queryAas = querySeqFeatAnalysis.aas;
-							LinkedList<ReferenceAa> referenceAas = new LinkedList<ReferenceAa>(refSeqFeatAnalysis.aas);
-							for(QueryAa queryAa: queryAas) {
-								while((!referenceAas.isEmpty()) && referenceAas.getFirst().startUIndex < queryAa.startUIndex) {
-									referenceAas.removeFirst();
-								}
-								if((!referenceAas.isEmpty()) && referenceAas.getFirst().startUIndex.equals(queryAa.startUIndex)) {
-									ReferenceAa refAa = referenceAas.removeFirst();
-									if(!queryAa.aa.equals(refAa.aa)) { 
-										queryAa.referenceDiffs.add(refName); 
-									}
-								}
-							}
+							calculateAaDiffs(refName, refSeqFeatAnalysis, queryAas);
 						});
 					});
 				});
@@ -259,7 +255,113 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				new ArrayList<QueryAnalysis>(fastaIdToQueryAnalysis.values()));
 	}
 
-	private <D extends Nt> List<D> generateNts(String nts,
+	private void calculateNtDiffs(String refName,
+			List<ReferenceNtSegment> referenceNtSegs,
+			List<QueryNtSegment> queryNtSegs) {
+		
+		queryNtSegs.forEach(seg -> {
+			ReferenceDiffNtMask referenceDiffNtMask = new ReferenceDiffNtMask();
+			referenceDiffNtMask.refName = refName;
+			referenceDiffNtMask.maskChars = new char[seg.nts.length()];
+			for(int i = 0; i < referenceDiffNtMask.maskChars.length; i++) {
+				referenceDiffNtMask.maskChars[i] = 'I'; // assume NT does not exist on reference until proven otherwise.
+			}
+			seg.referenceDiffs.add(referenceDiffNtMask);
+		});
+		
+		List<AdapterSegment<ReferenceNtSegment>> refQaNtSegs = referenceNtSegs.stream()
+				.map(seg -> new AdapterSegment<ReferenceNtSegment>(seg))
+				.collect(Collectors.toList());
+
+		List<AdapterSegment<QueryNtSegment>> queryQaNtSegs = queryNtSegs.stream()
+				.map(seg -> new AdapterSegment<QueryNtSegment>(seg))
+				.collect(Collectors.toList());
+
+		List<ComparisonSegment> compSegs = 
+				ReferenceSegment.intersection(queryQaNtSegs, refQaNtSegs, 
+						new BiFunction<AdapterSegment<QueryNtSegment>, AdapterSegment<ReferenceNtSegment>, ComparisonSegment>() {
+							@Override
+							public ComparisonSegment apply(
+									AdapterSegment<QueryNtSegment> queryNtSegment,
+									AdapterSegment<ReferenceNtSegment> referenceNtSegment) {
+								int refStart = Math.max(queryNtSegment.getRefStart(), referenceNtSegment.getRefStart());
+								int refEnd = Math.min(queryNtSegment.getRefEnd(), referenceNtSegment.getRefEnd());
+								return new ComparisonSegment(refStart, refEnd, queryNtSegment.ntSegment, referenceNtSegment.ntSegment);
+							}
+				});
+		
+		for(ComparisonSegment compSeg: compSegs) {
+			QueryNtSegment queryNtSegment = compSeg.queryNtSegment;
+			ReferenceNtSegment referenceNtSegment = compSeg.referenceNtSegment;
+			char[] maskChars = queryNtSegment.referenceDiffs.stream()
+					.filter(rDiff -> rDiff.refName.equals(refName))
+					.findFirst().get().maskChars;
+			for(int uIndex = compSeg.getRefStart(); uIndex <= compSeg.getRefEnd(); uIndex++) {
+				int indexInQueryNTs = uIndex - queryNtSegment.startUIndex;
+				char queryNt = queryNtSegment.nts.charAt(indexInQueryNTs);
+				char refNt = referenceNtSegment.nts.charAt(uIndex - referenceNtSegment.startUIndex);
+				if(queryNt == refNt) {
+					maskChars[indexInQueryNTs] = '-';
+				} else {
+					maskChars[indexInQueryNTs] = 'X';
+				}
+			}
+		}
+		
+		queryNtSegs.forEach(seg -> {
+			seg.referenceDiffs.forEach(rDiff -> {
+				rDiff.mask = new String(rDiff.maskChars);
+			});
+		});
+		
+		
+	}
+
+	
+	public static class AdapterSegment<N extends NtSegment> extends QueryAlignedSegment {
+		public N ntSegment;
+		public AdapterSegment(N ntSegment) {
+			super(ntSegment.startUIndex, ntSegment.endUIndex, ntSegment.startSeqIndex, ntSegment.endSeqIndex);
+			this.ntSegment = ntSegment;
+		}
+		public AdapterSegment<N> clone() {
+			return new AdapterSegment<N>(ntSegment);
+		}
+	}
+
+	public static class ComparisonSegment extends ReferenceSegment {
+		public QueryNtSegment queryNtSegment;
+		public ReferenceNtSegment referenceNtSegment;
+		
+		public ComparisonSegment(int refStart, int refEnd, 
+				QueryNtSegment queryNtSegment, ReferenceNtSegment referenceNtSegment) {
+			super(refStart, refEnd);
+			this.queryNtSegment = queryNtSegment;
+			this.referenceNtSegment = referenceNtSegment;
+		}
+
+		public ComparisonSegment clone() {
+			return new ComparisonSegment(getRefStart(), getRefEnd(), queryNtSegment, referenceNtSegment);
+		}
+	}
+	
+	private void calculateAaDiffs(String refName, SequenceFeatureAnalysis<ReferenceAa, 
+			ReferenceNtSegment> refSeqFeatAnalysis, List<QueryAa> queryAas) {
+		LinkedList<ReferenceAa> referenceAas = new LinkedList<ReferenceAa>(refSeqFeatAnalysis.aas);
+		for(QueryAa queryAa: queryAas) {
+			while((!referenceAas.isEmpty()) && referenceAas.getFirst().startUIndex < queryAa.startUIndex) {
+				referenceAas.removeFirst();
+			}
+			if((!referenceAas.isEmpty()) && referenceAas.getFirst().startUIndex.equals(queryAa.startUIndex)) {
+				ReferenceAa refAa = referenceAas.removeFirst();
+				if(!queryAa.aa.equals(refAa.aa)) { 
+					queryAa.referenceDiffs.add(refName); 
+				}
+			}
+		}
+	}
+
+	private <D extends NtSegment> List<D> generateNts(String nts,
 			List<QueryAlignedSegment> seqToRefSegs,
 			List<QueryAlignedSegment> refToUSegs, Supplier<D> supplier) {
 		List<D> ntList = new ArrayList<D>();
@@ -269,14 +371,13 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		// populate NT aligned segments for query sequences.
 		for(QueryAlignedSegment seg: seqToUSegs) {
 			CharSequence segNTs = SegmentUtils.base1SubString(nts, seg.getQueryStart(), seg.getQueryEnd());
-			for(int i = 0; i < segNTs.length(); i++) {
-				D nt = supplier.get();
-				nt.nt = new String(new char[] {segNTs.charAt(i)});
-				nt.uIndex = seg.getRefStart()+i;
-				nt.seqIndex = seg.getQueryStart()+i;
-				nt.segmentBoundary = (i == 0 || i == (segNTs.length() - 1));
-				ntList.add(nt);
-			}
+			D nt = supplier.get();
+			nt.startSeqIndex = seg.getQueryStart();
+			nt.endSeqIndex = seg.getQueryEnd();
+			nt.startUIndex = seg.getRefStart();
+			nt.endUIndex = seg.getRefEnd();
+			nt.nts = segNTs.toString();
+			ntList.add(nt);
 		}
 		return ntList;
 	}

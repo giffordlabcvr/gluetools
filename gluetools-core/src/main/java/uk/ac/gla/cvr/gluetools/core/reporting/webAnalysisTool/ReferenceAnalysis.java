@@ -28,7 +28,7 @@ public class ReferenceAnalysis {
 	public String containingAlmtName;
 
 	@PojoResultField
-	public List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>> sequenceFeatureAnalysis;
+	public List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>> sequenceFeatureAnalysis;
 	
 	private ReferenceSequence refSeq;
 	private Alignment containingAlmt;
@@ -57,7 +57,7 @@ public class ReferenceAnalysis {
 		return containingAlmtMember;
 	}
 
-	public Optional<SequenceFeatureAnalysis<ReferenceAa, ReferenceNt>> getSeqFeatAnalysis(String featureName) {
+	public Optional<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>> getSeqFeatAnalysis(String featureName) {
 		return sequenceFeatureAnalysis.stream().filter(seqFeatAnalysis -> seqFeatAnalysis.featureName.equals(featureName)).findFirst();
 	}
 }
