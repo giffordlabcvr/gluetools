@@ -1,11 +1,13 @@
 <g>
-	<rect class="queryAaBackground" ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+	<rect ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+	class="{{aaDiff(queryAa) ? 'queryAaDiffBackground' : 'queryAaBackground'}}"
 	ng-attr-x="{{aaX(queryAa)}}"
 	ng-attr-y="{{aaY}}"
 	ng-attr-width="{{aaWidth(queryAa)}}"
 	ng-attr-height="{{aaHeight}}"
 	></rect>
-   <text class="queryAa" ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+   <text ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+   class="{{aaDiff(queryAa) ? 'queryAaDiff' : 'queryAa'}}" 
 	ng-attr-x="{{aaX(queryAa)}}"
 	ng-attr-y="{{aaY}}"
 	ng-attr-width="{{aaWidth(queryAa)}}"

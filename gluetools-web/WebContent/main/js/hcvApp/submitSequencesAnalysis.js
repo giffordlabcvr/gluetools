@@ -347,6 +347,9 @@ submitSequencesAnalysis
 	    		return $scope.aaWidth(queryAa) / 2.0;
 	    	}
 	    	$scope.aaDy = $scope.aaHeight / 2.0; 
+	    	$scope.aaDiff = function(queryAa) {
+	    		return queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
+	    	};
 	    },
 	    scope: {
 	      svgParams: '=',
