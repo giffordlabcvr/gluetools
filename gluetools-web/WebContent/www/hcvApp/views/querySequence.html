@@ -1,19 +1,39 @@
 <g>
-	<rect ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
-	class="{{aaDiff(queryAa) ? 'queryAaDiffBackground' : 'queryAaBackground'}}"
-	ng-attr-x="{{aaX(queryAa)}}"
-	ng-attr-y="{{aaY}}"
-	ng-attr-width="{{aaWidth(queryAa)}}"
-	ng-attr-height="{{aaHeight}}"
+	<rect 
+		ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+		class="{{aaDiff(queryAa) ? 'queryAaDiffBackground' : 'queryAaBackground'}}"
+		ng-attr-x="{{aaX(queryAa)}}"
+		ng-attr-y="{{aaY}}"
+		ng-attr-width="{{aaWidth(queryAa)}}"
+		ng-attr-height="{{aaHeight}}"
 	></rect>
-   <text ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
-   class="{{aaDiff(queryAa) ? 'queryAaDiff' : 'queryAa'}}" 
-	ng-attr-x="{{aaX(queryAa)}}"
-	ng-attr-y="{{aaY}}"
-	ng-attr-width="{{aaWidth(queryAa)}}"
-	ng-attr-height="{{aaHeight}}"
-	ng-attr-dx="{{aaDx(queryAa)}}"
-	ng-attr-dy="{{aaDy}}"
+   <text 
+   		ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
+		class="{{aaDiff(queryAa) ? 'queryAaDiff' : 'queryAa'}}" 
+		ng-attr-x="{{aaX(queryAa)}}"
+		ng-attr-y="{{aaY}}"
+		ng-attr-width="{{aaWidth(queryAa)}}"
+		ng-attr-height="{{aaHeight}}"
+		ng-attr-dx="{{aaDx(queryAa)}}"
+		ng-attr-dy="{{aaDy}}"
 	   	>{{queryAa.aa}}</text>
+   <g 
+	   	ng-repeat="queryNtSegment in selectedQueryFeatAnalysis.nts track by $index"
+	   	ng-init="referenceDiff = referenceDiff(queryNtSegment)"
+	   	>
+		<text 
+			ng-repeat="queryNt in queryNtSegment.nts track by $index"
+			ng-init="segIndex = $index"
+			class="queryNt"
+			ng-attr-x="{{ntX(queryNtSegment, segIndex)}}"
+			ng-attr-y="{{ntY}}"
+			ng-attr-width="{{ntWidth}}"
+			ng-attr-height="{{ntHeight}}"
+			ng-attr-dx="{{ntDx}}"
+			ng-attr-dy="{{ntDy}}"
+		>{{queryNt}}</text>   		
+   </g>
+
+
 </g>
 	

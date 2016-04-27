@@ -350,6 +350,27 @@ submitSequencesAnalysis
 	    	$scope.aaDiff = function(queryAa) {
 	    		return queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
 	    	};
+
+	    	$scope.ntX = function(queryNtSegment, segIndex) {
+	    		return ( (queryNtSegment.startUIndex + segIndex) - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
+	    	};
+	    	$scope.ntY = params.codonLabelHeight + params.aaHeight + params.ntHeight + params.aaHeight;
+    		$scope.ntWidth = params.ntWidth;
+	    	$scope.ntHeight = params.ntHeight;
+	    	
+	    	$scope.ntDx = $scope.ntWidth / 2.0;
+	    	$scope.ntDy = $scope.ntHeight / 2.0; 
+	    	
+	    	$scope.referenceDiff = function(queryNtSegment) {
+	    		return _.find(
+	    				queryNtSegment.referenceDiff,
+	    				function(referenceDiff) {
+	    					return referenceDiff.refName == $scope.selectedRefName;} );
+	    	};
+	    	$scope.ntDiffChar = function(referenceDiff, segIndex) {
+	    		return referenceDiff.mask[segIndex];
+	    	};
+	    
 	    },
 	    scope: {
 	      svgParams: '=',
