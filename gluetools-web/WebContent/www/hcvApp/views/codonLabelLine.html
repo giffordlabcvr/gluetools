@@ -1,8 +1,14 @@
-<g><text class="codonLabel" ng-repeat="codonLabel in selectedFeatureAnalysis.codonLabel track by $index" 
-	ng-attr-x="{{x(codonLabel)}}"
-	ng-attr-y="{{y}}"
-	ng-attr-width="{{width(codonLabel)}}"
-	ng-attr-height="{{height}}"
-	ng-attr-dx="{{dx(codonLabel)}}"
-	ng-attr-dy="{{dy}}">{{codonLabel.label}}</text></g>
+<g>
+	<g ng-attr-transform="translate(0, {{y}})">
+		<text 
+			ng-repeat="cProp in cProps track by $index" 
+			class="codonLabel" 
+			ng-attr-x="{{cProp.x}}"
+			ng-attr-width="{{cProp.width}}"
+			ng-attr-height="{{cProp.height}}"
+			ng-attr-dx="{{cProp.dx}}"
+			ng-attr-dy="{{cProp.dy}}"
+			>{{cProp.text}}</text>
+	</g>
+</g>
 	

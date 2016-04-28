@@ -134,16 +134,76 @@ submitSequencesAnalysis
 			ntHeight: 16,
 			ntGap: 4,
 			codonLabelHeight: 35,
-			aaHeight: 25
+			aaHeight: 25,
+			
+			initAaProps: function(seqFeatAnalysis, featAnalysis) {
+				var params = $scope.svgParams;
+				return _.map(seqFeatAnalysis.aas, function(aa) {
+	        		var nts = (aa.endUIndex - aa.startUIndex) + 1;
+	    			var aaWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+	    			var aaHeight = params.aaHeight;
+		    		return {
+		    			x: (aa.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
+		    			width: aaWidth,
+		    			height: aaHeight,
+		    			dx: aaWidth / 2.0,
+		    			dy: aaHeight / 2.0,
+		    			text: aa.aa
+		    		};
+		    	});
+			},
+			initNtSegProps: function(seqFeatAnalysis, featAnalysis) {
+				var params = $scope.svgParams;
+				return _.map(seqFeatAnalysis.nts, function(queryNtSeg) {
+		    		var ntProps = _.map(queryNtSeg.nts, function(nt) {
+		    			var ntWidth = params.ntWidth;
+		    			var ntHeight = params.ntHeight;
+	    				return {
+			    			width: ntWidth,
+			    			height: ntHeight,
+			    			dx: ntWidth / 2.0,
+			    			dy: ntHeight / 2.0,
+	    					text: nt 
+	    				};
+	    			});
+		    		for(var i = 0; i < ntProps.length; i++) {
+		    			ntProps[i].x = ( (queryNtSeg.startUIndex + i) - featAnalysis.startUIndex) * 
+		    				(params.ntWidth + params.ntGap);
+		    		}
+		    		return {
+		    			ntProps: ntProps
+		    		}
+				});
+			},
+			codonLabelLineY: function() {
+				return 0;
+			},
+			codonLabelLineHeight: function() {
+				return $scope.svgParams.codonLabelHeight;
+			},
+			sequenceY: function(sequenceIndex) {
+				console.log("calling sequenceY")
+				var params = $scope.svgParams;
+				var result =  
+					params.codonLabelLineY() + 
+					params.codonLabelLineHeight() + 
+					(sequenceIndex * params.sequenceHeight());
+				console.log("result:", result)
+				return result;
+			},
+			sequenceHeight: function() {
+				var params = $scope.svgParams;
+				return params.aaHeight + params.ntHeight;
+			}
 	}
 	
 	$scope.svgHeight = function() {
+		var params = $scope.svgParams;
 		return 
-			$scope.svgParams.codonLabelHeight + // codon label 
-			$scope.svgParams.aaHeight + 		// reference AA
-			$scope.svgParams.ntHeight + 		// reference NT
-			$scope.svgParams.aaHeight + 		// query AA
-			$scope.svgParams.ntHeight;			// query NT
+			params.codonLabelLineY() + 
+			params.codonLabelLineHeight() + // codon label 
+			params.sequenceHeight()+	// reference
+			params.sequenceHeight();	// query
 	}
 	$scope.svgWidth = function() {
 		if($scope.selectedFeatureAnalysis) {
@@ -255,7 +315,7 @@ submitSequencesAnalysis
 	    controller: function($scope) {
 	    	var params = $scope.svgParams;
 	    	$scope.x = 0;
-	    	$scope.y = params.codonLabelHeight + ($scope.sequenceIndex * (params.aaHeight + params.ntHeight));
+	    	$scope.y = params.sequenceY($scope.sequenceIndex);
 	    	$scope.width = params.sequenceLabelWidth;
 	    	$scope.height = params.aaHeight;
 	    	$scope.dx = $scope.width / 2.0;
@@ -276,19 +336,30 @@ submitSequencesAnalysis
 	    restrict: 'E',
 	    controller: function($scope) {
 	    	var params = $scope.svgParams;
-	    	$scope.x = function(codonLabel) {
-	    		return (codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
-	    	};
-	    	$scope.y = 0;
-	    	$scope.width = function(codonLabel) {
-	    		var nts = (codonLabel.endUIndex - codonLabel.startUIndex) + 1;
-		    	return (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-	    	}; 
-	    	$scope.height = params.codonLabelHeight;
-	    	$scope.dx = function(codonLabel) {
-	    		return $scope.width(codonLabel) / 2.0;
+	    	
+	    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
+	    		$scope.initProps();
+	    	}, false);
+
+	    	$scope.initProps = function() {
+	    		$scope.y = params.codonLabelLineY();
+	    		if($scope.selectedFeatureAnalysis) {
+	    			$scope.cProps = _.map($scope.selectedFeatureAnalysis.codonLabel, function(codonLabel) {
+			    		var nts = (codonLabel.endUIndex - codonLabel.startUIndex) + 1;
+				    	var height = params.codonLabelHeight;
+				    	var width = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+	    				return {
+	    		    		x: (codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
+					    	width: width,
+	    					height: height,
+	    					dx: width / 2.0,
+	    					dy: height / 2.0,
+	    					text: codonLabel.label
+	    				};
+	    			});
+	    		}
 	    	}
-	    	$scope.dy = $scope.height / 2.0; 
+	    	
 	    },
 	    replace: true,
 	    scope: {
@@ -305,24 +376,33 @@ submitSequencesAnalysis
 	    replace: true,
 	    controller: function($scope) {
 	    	var params = $scope.svgParams;
-	    	$scope.aaX = function(referenceAa) {
-	    		return (referenceAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
+	    	
+	    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
+	    		$scope.initProps();
+	    	}, false);
+	    	
+	    	$scope.$watch( 'selectedRefFeatAnalysis', function(newObj, oldObj) {
+	    		$scope.initProps();
+	    	}, false);
+
+	    	$scope.initProps = function() {
+	    		$scope.y = params.sequenceY($scope.sequenceIndex);
+		    	$scope.initProps = function() {
+		    		$scope.y = params.sequenceY($scope.sequenceIndex);
+		    		if($scope.selectedRefFeatAnalysis && $scope.selectedFeatureAnalysis) {
+				    	$scope.aaProps = params.initAaProps($scope.selectedRefFeatAnalysis, $scope.selectedFeatureAnalysis);
+				    	$scope.ntSegProps = params.initNtSegProps($scope.selectedRefFeatAnalysis, $scope.selectedFeatureAnalysis);
+			    	}
+		    	};
 	    	};
-	    	$scope.aaY = params.codonLabelHeight;
-    		$scope.aaWidth = function(referenceAa) {
-        		var nts = (referenceAa.endUIndex - referenceAa.startUIndex) + 1;
-    			return (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-    		};
-	    	$scope.aaHeight = params.aaHeight;
-	    	$scope.aaDx = function(referenceAa) {
-	    		return $scope.aaWidth(referenceAa) / 2.0;
-	    	}
-	    	$scope.aaDy = $scope.aaHeight / 2.0; 
+
+	    	
 	    },
 	    scope: {
 	      svgParams: '=',
 	      selectedFeatureAnalysis: '=',
-	      selectedRefFeatAnalysis: '='
+	      selectedRefFeatAnalysis: '=',
+	      sequenceIndex: '='
 	    },
 	    templateNamespace: 'svg',
 	    templateUrl: 'hcvApp/views/referenceSequence.html'
@@ -353,42 +433,10 @@ submitSequencesAnalysis
 	    	}, false);
 
 	    	$scope.initProps = function() {
-		    	if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
-			    	$scope.aaProps = _.map($scope.selectedQueryFeatAnalysis.aas, function(queryAa) {
-		        		var nts = (queryAa.endUIndex - queryAa.startUIndex) + 1;
-		    			var aaWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-		    			var aaHeight = params.aaHeight;
-			    		return {
-			    			x: (queryAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
-			    			y: params.codonLabelHeight + params.aaHeight + params.ntHeight,
-			    			width: aaWidth,
-			    			height: aaHeight,
-			    			dx: aaWidth / 2.0,
-			    			dy: aaHeight / 2.0,
-			    			text: queryAa.aa
-			    		};
-			    	});
-			    	$scope.ntSegProps = _.map($scope.selectedQueryFeatAnalysis.nts, function(queryNtSeg) {
-			    		var ntProps = _.map(queryNtSeg.nts, function(nt) {
-			    			var ntWidth = params.ntWidth;
-			    			var ntHeight = params.ntHeight;
-		    				return {
-				    			y: params.codonLabelHeight + params.aaHeight + params.ntHeight + params.aaHeight,
-				    			width: ntWidth,
-				    			height: ntHeight,
-				    			dx: ntWidth / 2.0,
-				    			dy: ntHeight / 2.0,
-		    					text: nt 
-		    				};
-		    			});
-			    		for(var i = 0; i < ntProps.length; i++) {
-			    			ntProps[i].x = ( (queryNtSeg.startUIndex + i) - $scope.selectedFeatureAnalysis.startUIndex) * 
-			    				(params.ntWidth + params.ntGap);
-			    		}
-			    		return {
-			    			ntProps: ntProps
-			    		};
-			    	});
+	    		$scope.y = params.sequenceY($scope.sequenceIndex);
+	    		if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
+			    	$scope.aaProps = params.initAaProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
+			    	$scope.ntSegProps = params.initNtSegProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 		    	}
 	    	};
 	    	
@@ -413,7 +461,8 @@ submitSequencesAnalysis
 	      svgParams: '=',
 	      selectedFeatureAnalysis: '=',
 	      selectedRefName: '=',
-	      selectedQueryFeatAnalysis: '='
+	      selectedQueryFeatAnalysis: '=',
+	      sequenceIndex: '='
 	    },
 	    templateNamespace: 'svg',
 	    templateUrl: 'hcvApp/views/querySequence.html'
