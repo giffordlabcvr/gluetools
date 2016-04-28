@@ -39,7 +39,7 @@ a {
    width: auto !important;
 }
 
-.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt {
+.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
     text-anchor: middle;
     alignment-baseline: central;
 }
@@ -48,7 +48,7 @@ a {
 	font-size: 120%;
 }
 
-.referenceNt, .queryNt {
+.referenceNt, .queryNt, .queryNtDiff {
 	font-size: 90%;
 }
 	
@@ -60,7 +60,7 @@ a {
 	fill: #222222;
 }
 
-.referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt  {
+.referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff  {
 	font-weight: bold;
 }
 
@@ -80,13 +80,13 @@ a {
 	fill: #ddeecc;
 }
 
-.queryAaDiff {
+.queryAaDiff, .queryNtDiff {
 	fill: #ffffff;
 }
 
-.queryAaDiffBackground {
+.queryAaDiffBackground, .queryNtDiffBackground {
 	fill: #aaaaaa;
-	}
+}
 
 .referenceNt {
 	fill: #88aacc;

@@ -332,45 +332,82 @@ submitSequencesAnalysis
 	  return {
 	    restrict: 'E',
 	    replace: true,
+	    link: function(scope, element, attrs) {
+	    	console.log("link running");
+	    },
 	    controller: function($scope) {
 	    	var params = $scope.svgParams;
-	    	$scope.aaX = function(queryAa) {
-	    		return (queryAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
-	    	};
-	    	$scope.aaY = params.codonLabelHeight + params.aaHeight + params.ntHeight;
-    		$scope.aaWidth = function(queryAa) {
-        		var nts = (queryAa.endUIndex - queryAa.startUIndex) + 1;
-    			return (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-    		};
-	    	$scope.aaHeight = params.aaHeight;
-	    	$scope.aaDx = function(queryAa) {
-	    		return $scope.aaWidth(queryAa) / 2.0;
-	    	}
-	    	$scope.aaDy = $scope.aaHeight / 2.0; 
-	    	$scope.aaDiff = function(queryAa) {
-	    		return queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
-	    	};
 
-	    	$scope.ntX = function(queryNtSegment, segIndex) {
-	    		return ( (queryNtSegment.startUIndex + segIndex) - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap);
-	    	};
-	    	$scope.ntY = params.codonLabelHeight + params.aaHeight + params.ntHeight + params.aaHeight;
-    		$scope.ntWidth = params.ntWidth;
-	    	$scope.ntHeight = params.ntHeight;
+	    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
+	    		$scope.initProps();
+	    		$scope.updateDiffs();
+	    	}, false);
 	    	
-	    	$scope.ntDx = $scope.ntWidth / 2.0;
-	    	$scope.ntDy = $scope.ntHeight / 2.0; 
+	    	$scope.$watch( 'selectedQueryFeatAnalysis', function(newObj, oldObj) {
+	    		$scope.initProps();
+	    		$scope.updateDiffs();
+	    	}, false);
+
+	    	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
+	    		$scope.updateDiffs();
+	    	}, false);
+
+	    	$scope.initProps = function() {
+		    	if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
+			    	$scope.aaProps = _.map($scope.selectedQueryFeatAnalysis.aas, function(queryAa) {
+		        		var nts = (queryAa.endUIndex - queryAa.startUIndex) + 1;
+		    			var aaWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+		    			var aaHeight = params.aaHeight;
+			    		return {
+			    			x: (queryAa.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
+			    			y: params.codonLabelHeight + params.aaHeight + params.ntHeight,
+			    			width: aaWidth,
+			    			height: aaHeight,
+			    			dx: aaWidth / 2.0,
+			    			dy: aaHeight / 2.0,
+			    			text: queryAa.aa
+			    		};
+			    	});
+			    	$scope.ntSegProps = _.map($scope.selectedQueryFeatAnalysis.nts, function(queryNtSeg) {
+			    		var ntProps = _.map(queryNtSeg.nts, function(nt) {
+			    			var ntWidth = params.ntWidth;
+			    			var ntHeight = params.ntHeight;
+		    				return {
+				    			y: params.codonLabelHeight + params.aaHeight + params.ntHeight + params.aaHeight,
+				    			width: ntWidth,
+				    			height: ntHeight,
+				    			dx: ntWidth / 2.0,
+				    			dy: ntHeight / 2.0,
+		    					text: nt 
+		    				};
+		    			});
+			    		for(var i = 0; i < ntProps.length; i++) {
+			    			ntProps[i].x = ( (queryNtSeg.startUIndex + i) - $scope.selectedFeatureAnalysis.startUIndex) * 
+			    				(params.ntWidth + params.ntGap);
+			    		}
+			    		return {
+			    			ntProps: ntProps
+			    		};
+			    	});
+		    	}
+	    	};
 	    	
-	    	$scope.referenceDiff = function(queryNtSegment) {
-	    		return _.find(
-	    				queryNtSegment.referenceDiff,
-	    				function(referenceDiff) {
-	    					return referenceDiff.refName == $scope.selectedRefName;} );
+	    	$scope.updateDiffs = function() {
+		    	if($scope.selectedQueryFeatAnalysis && $scope.selectedRefName) {
+		    		for(var i = 0; i < $scope.selectedQueryFeatAnalysis.aas.length; i++) {
+		    			var queryAa = $scope.selectedQueryFeatAnalysis.aas[i];
+		    			$scope.aaProps[i].diff = queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
+		    		}
+		    		for(var i = 0; i < $scope.selectedQueryFeatAnalysis.nts.length; i++) {
+		    			var ntSeg = $scope.selectedQueryFeatAnalysis.nts[i];
+		    			var ntSegProp = $scope.ntSegProps[i];
+		    			var referenceDiff = _.find(ntSeg.referenceDiffs, function(rDiff) { return rDiff.refName == $scope.selectedRefName; });
+			    		for(var j = 0; j < ntSeg.nts.length; j++) {
+			    			ntSegProp.ntProps[j].diff = referenceDiff.mask[j] == 'X';
+			    		}
+		    		}
+		    	}
 	    	};
-	    	$scope.ntDiffChar = function(referenceDiff, segIndex) {
-	    		return referenceDiff.mask[segIndex];
-	    	};
-	    
 	    },
 	    scope: {
 	      svgParams: '=',

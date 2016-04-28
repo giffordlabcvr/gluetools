@@ -1,39 +1,43 @@
 <g>
-	<rect 
-		ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
-		class="{{aaDiff(queryAa) ? 'queryAaDiffBackground' : 'queryAaBackground'}}"
-		ng-attr-x="{{aaX(queryAa)}}"
-		ng-attr-y="{{aaY}}"
-		ng-attr-width="{{aaWidth(queryAa)}}"
-		ng-attr-height="{{aaHeight}}"
-	></rect>
-   <text 
-   		ng-repeat="queryAa in selectedQueryFeatAnalysis.aas track by $index"
-		class="{{aaDiff(queryAa) ? 'queryAaDiff' : 'queryAa'}}" 
-		ng-attr-x="{{aaX(queryAa)}}"
-		ng-attr-y="{{aaY}}"
-		ng-attr-width="{{aaWidth(queryAa)}}"
-		ng-attr-height="{{aaHeight}}"
-		ng-attr-dx="{{aaDx(queryAa)}}"
-		ng-attr-dy="{{aaDy}}"
-	   	>{{queryAa.aa}}</text>
-   <g 
-	   	ng-repeat="queryNtSegment in selectedQueryFeatAnalysis.nts track by $index"
-	   	ng-init="referenceDiff = referenceDiff(queryNtSegment)"
-	   	>
+	<g 
+		ng-repeat="aaProp in aaProps track by $index"
+		ng-attr-transform="translate({{aaProp.x}}, {{aaProp.y}})"
+	>
+		<rect 
+			class="{{ aaProp.diff ? 'queryAaDiffBackground' : 'queryAaBackground'}}"
+			ng-attr-width="{{aaProp.width}}"
+			ng-attr-height="{{aaProp.height}}"
+		></rect>
 		<text 
-			ng-repeat="queryNt in queryNtSegment.nts track by $index"
-			ng-init="segIndex = $index"
-			class="queryNt"
-			ng-attr-x="{{ntX(queryNtSegment, segIndex)}}"
-			ng-attr-y="{{ntY}}"
-			ng-attr-width="{{ntWidth}}"
-			ng-attr-height="{{ntHeight}}"
-			ng-attr-dx="{{ntDx}}"
-			ng-attr-dy="{{ntDy}}"
-		>{{queryNt}}</text>   		
+			class="{{ aaProp.diff ? 'queryAaDiff' : 'queryAa'}}" 
+			ng-attr-width="{{aaProp.width}}"
+			ng-attr-height="{{aaProp.height}}"
+			ng-attr-dx="{{aaProp.dx}}"
+			ng-attr-dy="{{aaProp.dy}}"
+		>{{aaProp.text}}</text>
+	</g>
+	<g 
+		ng-repeat="ntSegProp in ntSegProps track by $index"
+	>
+		<g 
+			ng-repeat="ntProp in ntSegProp.ntProps track by $index"
+			ng-attr-transform="translate({{ntProp.x}}, {{ntProp.y}})"
+		>
+			<rect 
+				ng-if="ntProp.diff"
+				class="queryNtDiffBackground"
+				ng-attr-width="{{ntProp.width}}"
+				ng-attr-height="{{ntProp.height}}"
+			></rect>
+			<text
+				class="{{ ntProp.diff ? 'queryNtDiff' : 'queryNt'}}"
+				ng-attr-width="{{ntProp.width}}"
+				ng-attr-height="{{ntProp.height}}"
+				ng-attr-dx="{{ntProp.dx}}"
+				ng-attr-dy="{{ntProp.dy}}"
+			>{{ntProp.text}}</text>
+		</g>   		
    </g>
-
 
 </g>
 	
