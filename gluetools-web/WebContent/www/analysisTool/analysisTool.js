@@ -128,105 +128,17 @@ analysisTool
 		});
 	}
 	
-	$scope.svgParams = {
-			sequenceLabelWidth: 150,
-			svgHeight: 300,
-			ntWidth: 16,
-			ntHeight: 16,
-			ntGap: 4,
-			codonLabelHeight: 35,
-			aaHeight: 25,
-			
-			initAaProps: function(seqFeatAnalysis, featAnalysis) {
-				var params = $scope.svgParams;
-				return _.map(seqFeatAnalysis.aas, function(aa) {
-	        		var nts = (aa.endUIndex - aa.startUIndex) + 1;
-	    			var aaWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-	    			var aaHeight = params.aaHeight;
-		    		return {
-		    			x: (aa.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
-		    			width: aaWidth,
-		    			height: aaHeight,
-		    			dx: aaWidth / 2.0,
-		    			dy: aaHeight / 2.0,
-		    			text: aa.aa
-		    		};
-		    	});
-			},
-			initNtSegProps: function(seqFeatAnalysis, featAnalysis) {
-				var params = $scope.svgParams;
-				return _.map(seqFeatAnalysis.nts, function(queryNtSeg) {
-		    		var ntProps = _.map(queryNtSeg.nts, function(nt) {
-		    			var ntWidth = params.ntWidth;
-		    			var ntHeight = params.ntHeight;
-	    				return {
-			    			width: ntWidth,
-			    			height: ntHeight,
-			    			dx: ntWidth / 2.0,
-			    			dy: ntHeight / 2.0,
-	    					text: nt 
-	    				};
-	    			});
-		    		for(var i = 0; i < ntProps.length; i++) {
-		    			ntProps[i].x = ( (queryNtSeg.startUIndex + i) - featAnalysis.startUIndex) * 
-		    				(params.ntWidth + params.ntGap);
-		    		}
-		    		return {
-		    			ntProps: ntProps
-		    		}
-				});
-			},
-			codonLabelLineY: function() {
-				return 0;
-			},
-			codonLabelLineHeight: function() {
-				return $scope.svgParams.codonLabelHeight;
-			},
-			sequenceY: function(sequenceIndex) {
-				var params = $scope.svgParams;
-				var result =  
-					params.codonLabelLineY() + 
-					params.codonLabelLineHeight() + 
-					(sequenceIndex * params.sequenceHeight());
-				return result;
-			},
-			sequenceHeight: function() {
-				var params = $scope.svgParams;
-				return params.aaHeight + params.ntHeight;
-			}
-	}
-	
-	$scope.svgHeight = function() {
-		var params = $scope.svgParams;
-		return 
-			params.codonLabelLineY() + 
-			params.codonLabelLineHeight() + // codon label 
-			params.sequenceHeight()+	// reference
-			params.sequenceHeight();	// query
-	}
-	$scope.svgWidth = function() {
-		if($scope.selectedFeatureAnalysis) {
-			var nts = ($scope.selectedFeatureAnalysis.endUIndex - $scope.selectedFeatureAnalysis.startUIndex) + 1;
-			return (nts * $scope.svgParams.ntWidth) + ( (nts-1) * $scope.svgParams.ntGap );
-		} else {
-			return 0;
-		}
-	}
 	$scope.removeAll = function() {
 		$scope.uploader.clearQueue();
-		$scope.analysisResults = null;
+		$scope.fileItemUnderAnalysis = null;
 	}
 
 	$scope.removeItem = function(item) {
-		if($scope.analysisResults == item) {
-			$scope.analysisResults = null;
+		if($scope.fileItemUnderAnalysis == item) {
+			$scope.fileItemUnderAnalysis = null;
 		}
 		item.remove();
 	}
-
-	addUtilsToScope($scope);
-	
-	console.log("init analysisTool controller");
 
 	var uploader = $scope.uploader = new FileUploader({});
 
@@ -312,7 +224,6 @@ analysisTool
 	$scope.sequenceResult = data;
 	$scope.defaultOpenDepth = 99;
 	$scope.defaultSelectedId = data.selectedFeature.featureName;
-	addUtilsToScope($scope);
 	
 	console.log("select genome feature, sequenceResult", $scope.sequenceResult)
 	
