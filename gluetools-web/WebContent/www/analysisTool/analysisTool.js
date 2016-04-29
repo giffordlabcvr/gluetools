@@ -185,13 +185,11 @@ analysisTool
 				return $scope.svgParams.codonLabelHeight;
 			},
 			sequenceY: function(sequenceIndex) {
-				console.log("calling sequenceY")
 				var params = $scope.svgParams;
 				var result =  
 					params.codonLabelLineY() + 
 					params.codonLabelLineHeight() + 
 					(sequenceIndex * params.sequenceHeight());
-				console.log("result:", result)
 				return result;
 			},
 			sequenceHeight: function() {
