@@ -1,10 +1,10 @@
-var glueWS = angular.module('glueWS', []);
+var glueWS = angular.module('glueWS', ['moduleURLs']);
 
 
-glueWS.factory('glueWS', function ($http) {
+glueWS.factory('glueWS', function ($http, moduleURLs) {
 	var projectURL;
 	var urlListenerCallbacks = [];
-	$http.get('../main/js/hcvApp/glueProjectURL.json').success(function(data) {
+	/*$http.get('../main/js/hcvApp/glueProjectURL.json').success(function(data) {
         projectURL = data.glueProjectURL;
         console.log("Project URL: "+projectURL);
         for(var i = 0; i < urlListenerCallbacks.length; i++) {
@@ -15,8 +15,11 @@ glueWS.factory('glueWS', function ($http) {
     })
     .error(function(data,status,error,config){
         console.log("Unable to load GLUE project URL: "+data);
-    });
+    });*/
 	return {
+		setProjectURL: function(newURL) {
+			projectURL = newURL;
+		},
 		runGlueCommand: function(modePath, command) {
 			return $http.post(projectURL+"/"+modePath, command);
 		},
@@ -60,7 +63,7 @@ glueWS.factory('glueWS', function ($http) {
 						  }
 					  }
 				  }
-				  dialogs.create('hcvApp/dialogs/glueErrorDialog.html','glueErrorDialogCtrl',error,{});
+				  dialogs.create(moduleURLs.getGlueWSURL()+'/dialogs/glueErrorDialog.html','glueErrorDialogCtrl',error,{});
 			  }
 		}
 	};

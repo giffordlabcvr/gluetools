@@ -10,19 +10,19 @@ glueToolsApp.config(['$routeProvider',
     function($routeProvider) {
       $routeProvider.
     	when('/download', {
-            templateUrl: 'gluetools/download.html',
+            templateUrl: './download.html',
             controller: 'downloadCtrl'
           }).
       	when('/installation', {
-            templateUrl: 'gluetools/installation.html',
+            templateUrl: './installation.html',
             controller: 'installationCtrl'
           }).
       	when('/model', {
-            templateUrl: 'gluetools/model.html',
+            templateUrl: './model.html',
             controller: 'modelCtrl'
           }).
         when('/home', {
-            templateUrl: 'gluetools/home.html',
+            templateUrl: './home.html',
             controller: 'homeCtrl'
           }).
         otherwise({

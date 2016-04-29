@@ -1,0 +1,41 @@
+
+body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+
+/* Remove "blue glow" from buttons
+	could be the wrong thing to do in terms of accessibility?  */
+
+.btn:focus,.btn:active:focus,.btn.active:focus,
+.btn.focus,.btn:active.focus,.btn.active.focus {
+    outline: none;
+}
+
+
+
+.my-drop-zone { 
+	border: dotted 3px lightgray; 
+}
+
+.nv-file-over { 
+	border: dotted 3px red; 
+} 
+/* Default class applied to drop zones on over */
+.another-file-over-class { 
+	border: dotted 3px green; 
+}
+
+a {
+	cursor: pointer;
+}
+
+.borderless tbody tr td, .borderless tbody tr th, .borderless thead tr th {
+    border: none;
+}
+
+.table-nonfluid {
+   width: auto !important;
+}
+

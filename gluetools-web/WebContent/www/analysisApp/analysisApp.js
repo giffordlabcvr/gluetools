@@ -1,10 +1,11 @@
 'use strict';
 
-var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', ['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main']);
-
+var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', 
+		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'moduleURLs']);
 
 submitSequencesAnalysis
-.controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', function($scope, glueWS, FileUploader, dialogs) {
+.controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
+    function($scope, glueWS, FileUploader, dialogs, moduleURLs) {
 
 	$scope.selectFilesHeader = "Select sequence files";
 	$scope.dropZoneText = "Drag sequence files here";
@@ -19,10 +20,12 @@ submitSequencesAnalysis
 	$scope.selectedReferenceAnalysis = null;
 	$scope.selectedRefFeatAnalysis = null;
 	$scope.selectedQueryFeatAnalysis = null;
+	$scope.analysisAppURL = moduleURLs.getAnalysisAppURL();
+	
 	
 	
 	$scope.seqPrepDialog = function() {
-		dialogs.create('hcvApp/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
+		dialogs.create($scope.analysisAppURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
 	}
 
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
@@ -122,7 +125,7 @@ submitSequencesAnalysis
 
 	$scope.selectGenomeFeature = function(selectedSequenceResult) {
 		// remove popovers somehow
-		var dlg = dialogs.create('hcvApp/dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.selectedSequenceResult,{});
+		var dlg = dialogs.create('dialogs/selectGenomeFeature.html','selectGenomeFeatureCtrl',$scope.selectedSequenceResult,{});
 		dlg.result.then(function(feature){
 		});
 	}
@@ -309,7 +312,7 @@ submitSequencesAnalysis
         console.info('onCompleteAll');
     };
 }])
-.directive('sequenceLabel', function() {
+.directive('sequenceLabel', function(moduleURLs) {
 	  return {
 	    restrict: 'E',
 	    controller: function($scope) {
@@ -328,10 +331,10 @@ submitSequencesAnalysis
 	      svgParams: '=',
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: 'hcvApp/views/sequenceLabel.html'
+	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/sequenceLabel.html'
 	  };
 	})
-.directive('codonLabelLine', function() {
+.directive('codonLabelLine', function(moduleURLs) {
 	  return {
 	    restrict: 'E',
 	    controller: function($scope) {
@@ -367,10 +370,10 @@ submitSequencesAnalysis
 	      selectedFeatureAnalysis: '=',
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: 'hcvApp/views/codonLabelLine.html'
+	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/codonLabelLine.html'
 	  };
 	})
-.directive('referenceSequence', function() {
+.directive('referenceSequence', function(moduleURLs) {
 	  return {
 	    restrict: 'E',
 	    replace: true,
@@ -405,10 +408,10 @@ submitSequencesAnalysis
 	      sequenceIndex: '='
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: 'hcvApp/views/referenceSequence.html'
+	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/referenceSequence.html'
 	  };
 	})
-.directive('querySequence', function() {
+.directive('querySequence', function(moduleURLs) {
 	  return {
 	    restrict: 'E',
 	    replace: true,
@@ -465,7 +468,7 @@ submitSequencesAnalysis
 	      sequenceIndex: '='
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: 'hcvApp/views/querySequence.html'
+	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/querySequence.html'
 	  };
 	})
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
@@ -490,6 +493,4 @@ submitSequencesAnalysis
 		$modalInstance.dismiss('Dismissed');
 	}; 
 });
-
-
 
