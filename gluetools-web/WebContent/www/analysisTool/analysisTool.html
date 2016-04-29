@@ -4,41 +4,14 @@
 <div ng-app="analysisTool">
 
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
-		<h2>Sequence analysis</h2>
+		<h2>Sequence file analysis</h2>
 		<div>
-			<h3>Select sequence files <small><a ng-click="seqPrepDialog()">Preparing your sequences for analysis <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
-			<p></p>			
-			<div class="row">
-				<div class="col-md-6">
-					<div ng-show="uploader.isHTML5">
-						<!-- Example: nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
-						<div nv-file-drop="" uploader="uploader">
-							<div nv-file-over="" uploader="uploader"
-								over-class="another-file-over-class" class="well my-drop-zone">
-								<p align="center">Drag sequence files here</p>
-							</div>
-						</div>
-					</div>
-				</div>
-	
-				<div class="col-md-6">
-					<p>Or browse and select multiple files</p>
-					<!-- Example: nv-file-select="" uploader="{Object}" options="{Object}" filters="{String}" -->
-					<label class="btn btn-primary" for="my-file-selector"> <input
-						id="my-file-selector" type="file" nv-file-select=""
-						uploader="uploader" multiple style="display: none;">
-						Select files
-					</label>
-				</div>
-			</div>
-	
 			<div>
-				<h3>File queue</h3>
 	
-				<table class="table">
+				<table class="table" width="100%">
 					<thead>
 						<tr>
-							<th width="50%">File</th>
+							<th>File</th>
 							<th ng-show="uploader.isHTML5">Size</th>
 							<th>Status</th>
 							<th>Actions</th>
@@ -49,7 +22,7 @@
 							<td><strong>{{ item.file.name }}</strong></td>
 							<td ng-show="uploader.isHTML5" nowrap>{{
 								item.file.size/1024/1024|number:2 }} MB</td>
-							<td class="text-center">
+							<td>
 								<span ng-show="item.isSuccess">
 									<i class="glyphicon glyphicon-ok"></i>
 								</span> 
@@ -70,7 +43,7 @@
 								</button>
 								<button type="button" class="btn btn-primary btn-xs"
 									ng-click="showAnalysisResults(item)" ng-disabled="!item.isSuccess">
-									<span class="glyphicon glyphicon-list"></span> Analysis
+									<span class="glyphicon glyphicon-list"></span> Show analysis
 								</button>
 								<button type="button" class="btn btn-danger btn-xs"
 									ng-click="removeItem(item)">
@@ -82,15 +55,24 @@
 				</table>
 	
 				<div>
+					<label class="btn btn-primary" for="my-file-selector"> <input
+						id="my-file-selector" type="file" nv-file-select=""
+						uploader="uploader" multiple style="display: none;">
+						<span class="glyphicon glyphicon-plus-sign"></span> Add files
+					</label>
+					<button type="button" class="btn btn-primary btn-s"
+						ng-click="seqPrepDialog()">
+						<span class="glyphicon glyphicon-info-sign"></span> File preparation
+					</button>
 					<button type="button" class="btn btn-success btn-s"
 						ng-click="uploader.uploadAll()"
 						ng-disabled="!uploader.getNotUploadedItems().length">
-						<span class="glyphicon glyphicon-upload"></span> Submit all
+						<span class="glyphicon glyphicon-upload"></span> Submit all files
 					</button>
 					<button type="button" class="btn btn-danger btn-s"
 						ng-click="removeAll()"
 						ng-disabled="!uploader.queue.length">
-						<span class="glyphicon glyphicon-trash"></span> Remove all
+						<span class="glyphicon glyphicon-trash"></span> Remove all files
 					</button>
 				</div>
 	
@@ -98,11 +80,13 @@
 	
 			<div ng-show="fileItemUnderAnalysis">
 				<h3>Analysis</h3>
-				<table class="table table-nonfluid">
+				<table class="table" width="100%">
 					<thead>
 						<tr>
 							<th>File</th>
-							<th>Sequence</th>
+							<th>Query sequence</th>
+							<th>Reference sequence</th>
+							<th>Genome feature</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -114,18 +98,6 @@
 									>
 							    </select>
 							</td>
-						</tr>
-					</tbody>
-				</table>
-				<table class="table table-nonfluid">
-					<thead>
-						<tr>
-							<th>Reference sequence</th>
-							<th>Genome feature</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
 							<td>
 								<select ng-model="selectedRefName" 
 									ng-options="x for x in selectedQueryAnalysis.ancestorRefName"
@@ -143,7 +115,7 @@
 					</tbody>
 				</table>
 				
-				<div style="width: 1000px; display: table;" ng-controller='analysisSvg'>
+				<div style="width: 1138px; display: table;" ng-controller='analysisSvg'>
 			        <div style="display: table-cell;">
 						<svg ng-attr-height="{{svgHeight()}}" ng-attr-width="{{svgParams.sequenceLabelWidth}}">
 							 <sequence-label sequence-label="selectedRefName" svg-params="svgParams" sequence-index="0"> </sequence-label>
