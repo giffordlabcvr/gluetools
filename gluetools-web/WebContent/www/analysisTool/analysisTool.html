@@ -6,7 +6,7 @@
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
 		<h2>Sequence analysis</h2>
 		<div>
-			<h3>{{selectFilesHeader}} <small><a ng-click="seqPrepDialog()">Preparing your sequences for analysis <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
+			<h3>Select sequence files <small><a ng-click="seqPrepDialog()">Preparing your sequences for analysis <i class="glyphicon glyphicon-link"></i></a></small></h3> 			
 			<p></p>			
 			<div class="row">
 				<div class="col-md-6">
@@ -15,19 +15,19 @@
 						<div nv-file-drop="" uploader="uploader">
 							<div nv-file-over="" uploader="uploader"
 								over-class="another-file-over-class" class="well my-drop-zone">
-								<p align="center">{{dropZoneText}}</p>
+								<p align="center">Drag sequence files here</p>
 							</div>
 						</div>
 					</div>
 				</div>
 	
 				<div class="col-md-6">
-					<p>{{browseAndSelectHeader}}</p>
+					<p>Or browse and select multiple files</p>
 					<!-- Example: nv-file-select="" uploader="{Object}" options="{Object}" filters="{String}" -->
 					<label class="btn btn-primary" for="my-file-selector"> <input
 						id="my-file-selector" type="file" nv-file-select=""
 						uploader="uploader" multiple style="display: none;">
-						{{selectFilesButtonText}}
+						Select files
 					</label>
 				</div>
 			</div>

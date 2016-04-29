@@ -3,15 +3,8 @@
 var analysisTool = angular.module('analysisTool', 
 		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'moduleURLs']);
 
-analysisTool
-.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
+analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
     function($scope, glueWS, FileUploader, dialogs, moduleURLs) {
-
-	$scope.selectFilesHeader = "Select sequence files";
-	$scope.dropZoneText = "Drag sequence files here";
-	$scope.browseAndSelectHeader = "Or browse and select multiple files";
-	$scope.selectFilesButtonText = "Select files";
-		
 
 	$scope.fileItemUnderAnalysis = null;
 	$scope.selectedQueryAnalysis = null;
