@@ -22,8 +22,6 @@ analysisTool
 	$scope.selectedQueryFeatAnalysis = null;
 	$scope.analysisToolURL = moduleURLs.getAnalysisToolURL();
 	
-	
-	
 	$scope.seqPrepDialog = function() {
 		dialogs.create($scope.analysisToolURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
 	}
@@ -310,165 +308,6 @@ analysisTool
         console.info('onCompleteAll');
     };
 }])
-.directive('sequenceLabel', function(moduleURLs) {
-	  return {
-	    restrict: 'E',
-	    controller: function($scope) {
-	    	var params = $scope.svgParams;
-	    	$scope.x = 0;
-	    	$scope.y = params.sequenceY($scope.sequenceIndex);
-	    	$scope.width = params.sequenceLabelWidth;
-	    	$scope.height = params.aaHeight;
-	    	$scope.dx = $scope.width / 2.0;
-	    	$scope.dy = $scope.height / 2.0;
-	    },
-	    replace: true,
-	    scope: {
-	      sequenceLabel: '=',
-	      sequenceIndex: '=',
-	      svgParams: '=',
-	    },
-	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/sequenceLabel.html'
-	  };
-	})
-.directive('codonLabelLine', function(moduleURLs) {
-	  return {
-	    restrict: 'E',
-	    controller: function($scope) {
-	    	var params = $scope.svgParams;
-	    	
-	    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-	    		$scope.initProps();
-	    	}, false);
-
-	    	$scope.initProps = function() {
-	    		$scope.y = params.codonLabelLineY();
-	    		if($scope.selectedFeatureAnalysis) {
-	    			$scope.cProps = _.map($scope.selectedFeatureAnalysis.codonLabel, function(codonLabel) {
-			    		var nts = (codonLabel.endUIndex - codonLabel.startUIndex) + 1;
-				    	var height = params.codonLabelHeight;
-				    	var width = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-	    				return {
-	    		    		x: (codonLabel.startUIndex - $scope.selectedFeatureAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
-					    	width: width,
-	    					height: height,
-	    					dx: width / 2.0,
-	    					dy: height / 2.0,
-	    					text: codonLabel.label
-	    				};
-	    			});
-	    		}
-	    	}
-	    	
-	    },
-	    replace: true,
-	    scope: {
-	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
-	    },
-	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/codonLabelLine.html'
-	  };
-	})
-.directive('referenceSequence', function(moduleURLs) {
-	  return {
-	    restrict: 'E',
-	    replace: true,
-	    controller: function($scope) {
-	    	var params = $scope.svgParams;
-	    	
-	    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-	    		$scope.initProps();
-	    	}, false);
-	    	
-	    	$scope.$watch( 'selectedRefFeatAnalysis', function(newObj, oldObj) {
-	    		$scope.initProps();
-	    	}, false);
-
-	    	$scope.initProps = function() {
-	    		$scope.y = params.sequenceY($scope.sequenceIndex);
-		    	$scope.initProps = function() {
-		    		$scope.y = params.sequenceY($scope.sequenceIndex);
-		    		if($scope.selectedRefFeatAnalysis && $scope.selectedFeatureAnalysis) {
-				    	$scope.aaProps = params.initAaProps($scope.selectedRefFeatAnalysis, $scope.selectedFeatureAnalysis);
-				    	$scope.ntSegProps = params.initNtSegProps($scope.selectedRefFeatAnalysis, $scope.selectedFeatureAnalysis);
-			    	}
-		    	};
-	    	};
-
-	    	
-	    },
-	    scope: {
-	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
-	      selectedRefFeatAnalysis: '=',
-	      sequenceIndex: '='
-	    },
-	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/referenceSequence.html'
-	  };
-	})
-.directive('querySequence', function(moduleURLs) {
-	  return {
-	    restrict: 'E',
-	    replace: true,
-	    link: function(scope, element, attrs) {
-	    	console.log("link running");
-	    },
-	    controller: function($scope) {
-	    	var params = $scope.svgParams;
-
-	    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-	    		$scope.initProps();
-	    		$scope.updateDiffs();
-	    	}, false);
-	    	
-	    	$scope.$watch( 'selectedQueryFeatAnalysis', function(newObj, oldObj) {
-	    		$scope.initProps();
-	    		$scope.updateDiffs();
-	    	}, false);
-
-	    	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
-	    		$scope.updateDiffs();
-	    	}, false);
-
-	    	$scope.initProps = function() {
-	    		$scope.y = params.sequenceY($scope.sequenceIndex);
-	    		if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
-			    	$scope.aaProps = params.initAaProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
-			    	$scope.ntSegProps = params.initNtSegProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
-		    	}
-	    	};
-	    	
-	    	$scope.updateDiffs = function() {
-		    	if($scope.selectedQueryFeatAnalysis && $scope.selectedRefName) {
-		    		for(var i = 0; i < $scope.selectedQueryFeatAnalysis.aas.length; i++) {
-		    			var queryAa = $scope.selectedQueryFeatAnalysis.aas[i];
-		    			$scope.aaProps[i].diff = queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
-		    		}
-		    		for(var i = 0; i < $scope.selectedQueryFeatAnalysis.nts.length; i++) {
-		    			var ntSeg = $scope.selectedQueryFeatAnalysis.nts[i];
-		    			var ntSegProp = $scope.ntSegProps[i];
-		    			var referenceDiff = _.find(ntSeg.referenceDiffs, function(rDiff) { return rDiff.refName == $scope.selectedRefName; });
-			    		for(var j = 0; j < ntSeg.nts.length; j++) {
-			    			ntSegProp.ntProps[j].diff = referenceDiff.mask[j] == 'X';
-			    		}
-		    		}
-		    	}
-	    	};
-	    },
-	    scope: {
-	      svgParams: '=',
-	      selectedFeatureAnalysis: '=',
-	      selectedRefName: '=',
-	      selectedQueryFeatAnalysis: '=',
-	      sequenceIndex: '='
-	    },
-	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/querySequence.html'
-	  };
-	})
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){
 	$scope.sequenceResult = data;
 	$scope.defaultOpenDepth = 99;
@@ -486,9 +325,6 @@ analysisTool
 		$modalInstance.dismiss('Dismissed');
 	}; 
 
-}).controller('seqPrepDialog',function($scope,$modalInstance,data){
-	$scope.dismiss = function(){
-		$modalInstance.dismiss('Dismissed');
-	}; 
-});
+})
+;
 
