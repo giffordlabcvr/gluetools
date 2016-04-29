@@ -28,7 +28,7 @@ function ($scope, glueWS, moduleURLs) {
 	$scope.brand = "HCV-GLUE";
 	$scope.homeMenuTitle = "Home";
 	$scope.analysisMenuTitle = "Analysis";
-	$scope.analysisToolMenuTitle = "Submit sequences for analysis";
+	$scope.analysisToolMenuTitle = "Sequence file analysis";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");
 	moduleURLs.setAnalysisToolURL("../analysisTool");
 	moduleURLs.setGlueWSURL("../glueWS");
