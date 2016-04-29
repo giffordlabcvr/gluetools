@@ -2,15 +2,15 @@ var moduleURLs = angular.module('moduleURLs', []);
 
 
 moduleURLs.factory('moduleURLs', function () {
-	var analysisAppURL;
+	var analysisToolURL;
 	var glueWSURL;
 	return {
-		setAnalysisAppURL: function(newURL) {
-			analysisAppURL = newURL;
-			console.log("analysis app URL set to: "+newURL);
+		setAnalysisToolURL: function(newURL) {
+			analysisToolURL = newURL;
+			console.log("analysis tool URL set to: "+newURL);
 		},
-		getAnalysisAppURL: function() {
-			return analysisAppURL;
+		getAnalysisToolURL: function() {
+			return analysisToolURL;
 		},
 		setGlueWSURL: function(newURL) {
 			glueWSURL = newURL;

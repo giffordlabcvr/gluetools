@@ -20,12 +20,12 @@ submitSequencesAnalysis
 	$scope.selectedReferenceAnalysis = null;
 	$scope.selectedRefFeatAnalysis = null;
 	$scope.selectedQueryFeatAnalysis = null;
-	$scope.analysisAppURL = moduleURLs.getAnalysisAppURL();
+	$scope.analysisToolURL = moduleURLs.getAnalysisToolURL();
 	
 	
 	
 	$scope.seqPrepDialog = function() {
-		dialogs.create($scope.analysisAppURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
+		dialogs.create($scope.analysisToolURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
 	}
 
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
@@ -331,7 +331,7 @@ submitSequencesAnalysis
 	      svgParams: '=',
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/sequenceLabel.html'
+	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/sequenceLabel.html'
 	  };
 	})
 .directive('codonLabelLine', function(moduleURLs) {
@@ -370,7 +370,7 @@ submitSequencesAnalysis
 	      selectedFeatureAnalysis: '=',
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/codonLabelLine.html'
+	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/codonLabelLine.html'
 	  };
 	})
 .directive('referenceSequence', function(moduleURLs) {
@@ -408,7 +408,7 @@ submitSequencesAnalysis
 	      sequenceIndex: '='
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/referenceSequence.html'
+	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/referenceSequence.html'
 	  };
 	})
 .directive('querySequence', function(moduleURLs) {
@@ -468,7 +468,7 @@ submitSequencesAnalysis
 	      sequenceIndex: '='
 	    },
 	    templateNamespace: 'svg',
-	    templateUrl: moduleURLs.getAnalysisAppURL()+'/views/querySequence.html'
+	    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/querySequence.html'
 	  };
 	})
 .controller('selectGenomeFeatureCtrl',function($scope,$modalInstance,data){

@@ -30,7 +30,7 @@ function ($scope, glueWS, moduleURLs) {
 	$scope.analysisMenuTitle = "Analysis";
 	$scope.submitSequencesAnalysisMenuTitle = "Submit sequences for analysis";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");
-	moduleURLs.setAnalysisAppURL("../analysisApp");
+	moduleURLs.setAnalysisToolURL("../analysisTool");
 	moduleURLs.setGlueWSURL("../glueWS");
 } ]);
 
