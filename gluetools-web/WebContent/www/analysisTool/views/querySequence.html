@@ -40,7 +40,26 @@
 					ng-attr-dy="{{ntProp.dy}}"
 				>{{ntProp.text}}</text>
 			</g>   		
-	   </g>
+			<g 
+				ng-attr-transform="translate(0, {{svgParams.ntHeight}})"
+				class="queryNtIndex"
+			>
+				<text
+					ng-attr-x="{{ntSegProp.startIndexX}}"
+					ng-attr-width="{{svgParams.ntWidth}}"
+					ng-attr-height="{{svgParams.ntIndexHeight}}"
+					ng-attr-dx="{{ntSegProp.indexDx}}"
+					ng-attr-dy="{{ntSegProp.indexDy}}"
+				>{{ntSegProp.startIndexText}}</text>
+				<text
+					ng-attr-x="{{ntSegProp.endIndexX}}"
+					ng-attr-width="{{svgParams.ntWidth}}"
+					ng-attr-height="{{svgParams.ntIndexHeight}}"
+					ng-attr-dx="{{ntSegProp.indexDx}}"
+					ng-attr-dy="{{ntSegProp.indexDy}}"
+				>{{ntSegProp.endIndexText}}</text>
+			</g>
+		</g>
 	</g>
 </g>
 	

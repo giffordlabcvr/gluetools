@@ -3,12 +3,22 @@
     alignment-baseline: central;
 }
 
+.queryNtIndex, .referenceNtIndex {
+    text-anchor: start;
+    alignment-baseline: central;
+    writing-mode: tb;
+}
+
 .sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff {
 	font-size: 120%;
 }
 
 .referenceNt, .queryNt, .queryNtDiff {
 	font-size: 90%;
+}
+
+.queryNtIndex, .referenceNtIndex {
+	font-size: 100%;
 }
 	
 .sequenceLabel {
@@ -47,11 +57,11 @@
 	fill: #aaaaaa;
 }
 
-.referenceNt {
+.referenceNt, .referenceNtIndex {
 	fill: #88aacc;
 }
 
-.queryNt {
+.queryNt, .queryNtIndex {
 	fill: #99bb77;
 }
 

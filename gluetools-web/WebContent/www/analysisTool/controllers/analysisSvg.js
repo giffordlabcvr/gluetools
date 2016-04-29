@@ -1,9 +1,9 @@
 analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 	$scope.svgParams = {
 			sequenceLabelWidth: 150,
-			svgHeight: 300,
 			ntWidth: 16,
 			ntHeight: 16,
+			ntIndexHeight: 55,
 			ntGap: 4,
 			codonLabelHeight: 35,
 			aaHeight: 25,
@@ -43,7 +43,14 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 		    				(params.ntWidth + params.ntGap);
 		    		}
 		    		return {
-		    			ntProps: ntProps
+		    			ntProps: ntProps, 
+		    			indexDx: params.ntWidth / 2.0,
+		    			indexDy: params.ntIndexHeight / 10.0,
+		    			startIndexText: queryNtSeg.startSeqIndex, 
+		    			startIndexX: (queryNtSeg.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
+		    			endIndexText: queryNtSeg.endSeqIndex, 
+		    			endIndexX: (queryNtSeg.endUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap)
+		    			
 		    		}
 				});
 			},
@@ -63,17 +70,19 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 			},
 			sequenceHeight: function() {
 				var params = $scope.svgParams;
-				return params.aaHeight + params.ntHeight;
+				return params.aaHeight + params.ntHeight + params.ntIndexHeight;
 			}
 	};
 	
 	$scope.svgHeight = function() {
 		var params = $scope.svgParams;
-		return 
+		var height = 
 			params.codonLabelLineY() + 
 			params.codonLabelLineHeight() + // codon label 
 			params.sequenceHeight()+	// reference
 			params.sequenceHeight();	// query
+		console.log("svgHeight:", height);
+		return height;
 	};
 	$scope.svgWidth = function() {
 		if($scope.selectedFeatureAnalysis) {
