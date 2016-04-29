@@ -1,6 +1,6 @@
 var hcvApp = angular.module('hcvApp', [
     'ngRoute',
-    'submitSequencesAnalysis', 
+    'analysisTool', 
     'home',
     'glueWS',
     'moduleURLs'
@@ -9,9 +9,9 @@ var hcvApp = angular.module('hcvApp', [
 hcvApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
-      when('/submitSequencesAnalysis', {
-          templateUrl: 'submitSequencesAnalysis.html',
-          controller: 'submitSequencesAnalysisCtrl'
+      when('/analysisTool', {
+          templateUrl: '../analysisTool/analysisTool.html',
+          controller: 'analysisToolCtrl'
         }).
       when('/home', {
           templateUrl: './modules/home/home.html',
@@ -28,7 +28,7 @@ function ($scope, glueWS, moduleURLs) {
 	$scope.brand = "HCV-GLUE";
 	$scope.homeMenuTitle = "Home";
 	$scope.analysisMenuTitle = "Analysis";
-	$scope.submitSequencesAnalysisMenuTitle = "Submit sequences for analysis";
+	$scope.analysisToolMenuTitle = "Submit sequences for analysis";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");
 	moduleURLs.setAnalysisToolURL("../analysisTool");
 	moduleURLs.setGlueWSURL("../glueWS");

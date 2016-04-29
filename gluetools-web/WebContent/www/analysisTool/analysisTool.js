@@ -1,10 +1,10 @@
 'use strict';
 
-var submitSequencesAnalysis = angular.module('submitSequencesAnalysis', 
+var analysisTool = angular.module('analysisTool', 
 		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'moduleURLs']);
 
-submitSequencesAnalysis
-.controller('submitSequencesAnalysisCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
+analysisTool
+.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
     function($scope, glueWS, FileUploader, dialogs, moduleURLs) {
 
 	$scope.selectFilesHeader = "Select sequence files";
@@ -230,7 +230,7 @@ submitSequencesAnalysis
 
 	addUtilsToScope($scope);
 	
-	console.log("init submitSequencesAnalysis controller");
+	console.log("init analysisTool controller");
 
 	var uploader = $scope.uploader = new FileUploader({});
 
