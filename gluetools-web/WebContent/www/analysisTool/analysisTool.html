@@ -114,35 +114,35 @@
 						</tr>
 					</tbody>
 				</table>
-				
-				<div style="width: 1138px; display: table;" ng-controller='analysisSvg'>
-			        <div style="display: table-cell;">
-						<svg ng-attr-height="{{svgHeight()}}" ng-attr-width="{{svgParams.sequenceLabelWidth}}">
-							 <sequence-label sequence-label="selectedRefName" svg-params="svgParams" sequence-index="0"> </sequence-label>
-							 <sequence-label sequence-label="'Query'" svg-params="svgParams" sequence-index="1"> </sequence-label>
-						</svg>
-			        </div>
-			        <div style="display: table-cell;">
-			        	<div style="overflow: auto; width: {{1138 - svgParams.sequenceLabelWidth}}px;">
-							<svg 
-								ng-attr-height="{{svgHeight()}}" 
-								ng-attr-width="{{svgWidth()}}">
-								<codon-label-line svg-params="svgParams" 
-										selected-feature-analysis="selectedFeatureAnalysis"></codon-label-line>
-								<reference-sequence svg-params="svgParams" 
-										selected-feature-analysis="selectedFeatureAnalysis"
-										selected-ref-feat-analysis="selectedRefFeatAnalysis"
-										sequence-index="0"></reference-sequence>
-								<query-sequence svg-params="svgParams" 
-										selected-feature-analysis="selectedFeatureAnalysis"
-										selected-ref-name="selectedRefName"
-										selected-query-feat-analysis="selectedQueryFeatAnalysis"
-										sequence-index="1"></query-sequence>
+				<div class="container">
+					<div class="row" ng-controller='analysisSvg'>
+				        <div class="col-xs-2">
+							<svg ng-attr-height="{{svgHeight()}}">
+								 <sequence-label sequence-label="selectedRefName" svg-params="svgParams" sequence-index="0"> </sequence-label>
+								 <sequence-label sequence-label="'Query'" svg-params="svgParams" sequence-index="1"> </sequence-label>
 							</svg>
 				        </div>
-			        </div>
+				        <div class="col-xs-10">
+				        	<div style="overflow: auto">
+								<svg 
+									ng-attr-height="{{svgHeight()}}" 
+									ng-attr-width="{{svgWidth()}}">
+									<codon-label-line svg-params="svgParams" 
+											selected-feature-analysis="selectedFeatureAnalysis"></codon-label-line>
+									<reference-sequence svg-params="svgParams" 
+											selected-feature-analysis="selectedFeatureAnalysis"
+											selected-ref-feat-analysis="selectedRefFeatAnalysis"
+											sequence-index="0"></reference-sequence>
+									<query-sequence svg-params="svgParams" 
+											selected-feature-analysis="selectedFeatureAnalysis"
+											selected-ref-name="selectedRefName"
+											selected-query-feat-analysis="selectedQueryFeatAnalysis"
+											sequence-index="1"></query-sequence>
+								</svg>
+					        </div>
+				        </div>
+					</div>
 				</div>
-
 			</div>
 		</div>
 	</div>
