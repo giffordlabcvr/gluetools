@@ -7,7 +7,7 @@ analysisTool.directive('sequenceLabel', function(moduleURLs) {
 		    	$scope.y = params.sequenceY($scope.sequenceIndex);
 		    	$scope.width = params.sequenceLabelWidth;
 		    	$scope.height = params.aaHeight;
-		    	$scope.dx = $scope.width / 2.0;
+		    	$scope.dx = 0;
 		    	$scope.dy = $scope.height / 2.0;
 		    },
 		    replace: true,

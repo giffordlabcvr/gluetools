@@ -1,7 +1,13 @@
-.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
+.sequenceLabel {
+    text-anchor: start;
+    alignment-baseline: central;
+}
+
+.codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
     text-anchor: middle;
     alignment-baseline: central;
 }
+
 
 .queryNtIndex, .referenceNtIndex {
     text-anchor: start;

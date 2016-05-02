@@ -487,8 +487,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				aa.startUIndex = Integer.MAX_VALUE;
 				aa.endUIndex = Integer.MIN_VALUE;
 				aaQueryToRefSegs.add(new AaQueryAlignedSegment<C>(aa, 
-						queryNt, queryNt+2, refNt, refNt+2));
+						refNt, refNt+2, queryNt, queryNt+2));
 				queryNt+=3;
+				refNt+=3;
 			}
 		}
 		List<AaQueryAlignedSegment<C>> aaQueryToUSegs = QueryAlignedSegment.translateSegments(aaQueryToRefSegs, refToUSegs);

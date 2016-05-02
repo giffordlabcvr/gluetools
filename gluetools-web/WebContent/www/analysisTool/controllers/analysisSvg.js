@@ -81,7 +81,6 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 			params.codonLabelLineHeight() + // codon label 
 			params.sequenceHeight()+	// reference
 			params.sequenceHeight();	// query
-		console.log("svgHeight:", height);
 		return height;
 	};
 	$scope.svgWidth = function() {

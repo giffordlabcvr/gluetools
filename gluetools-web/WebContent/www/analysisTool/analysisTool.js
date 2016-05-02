@@ -6,14 +6,17 @@ var analysisTool = angular.module('analysisTool',
 analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
     function($scope, glueWS, FileUploader, dialogs, moduleURLs) {
 
-	$scope.fileItemUnderAnalysis = null;
-	$scope.selectedQueryAnalysis = null;
-	$scope.selectedRefName = null;
-	$scope.selectedFeatureAnalysis = null;
-	$scope.selectedReferenceAnalysis = null;
-	$scope.selectedRefFeatAnalysis = null;
-	$scope.selectedQueryFeatAnalysis = null;
 	$scope.analysisToolURL = moduleURLs.getAnalysisToolURL();
+	
+	$scope.resetSelections = function() {
+		$scope.fileItemUnderAnalysis = null;
+		$scope.selectedQueryAnalysis = null;
+		$scope.selectedRefName = null;
+		$scope.selectedFeatureAnalysis = null;
+		$scope.selectedReferenceAnalysis = null;
+		$scope.selectedRefFeatAnalysis = null;
+		$scope.selectedQueryFeatAnalysis = null;
+	}
 	
 	$scope.seqPrepDialog = function() {
 		dialogs.create($scope.analysisToolURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
@@ -102,15 +105,18 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 
 	// invoked when "Analysis" button is pressed
 	$scope.showAnalysisResults = function(item) {
-		console.log("show analysis : ", item);
-		$scope.fileItemUnderAnalysis = item;
-		if($scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis.length >= 0) {
-			$scope.selectedQueryAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis[0];
-			console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
-		}
-		if($scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis.length >= 0) {
-			$scope.selectedFeatureAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis[0];
-			console.log("selected feature analysis: ", $scope.selectedFeatureAnalysis);
+		if( (!$scope.fileItemUnderAnalysis) || ($scope.fileItemUnderAnalysis != item) ) {
+			$scope.resetSelections();
+			console.log("show analysis : ", item);
+			$scope.fileItemUnderAnalysis = item;
+			if($scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis.length >= 0) {
+				$scope.selectedQueryAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis[0];
+				console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
+			}
+			if($scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis.length >= 0) {
+				$scope.selectedFeatureAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.featureAnalysis[0];
+				console.log("selected feature analysis: ", $scope.selectedFeatureAnalysis);
+			}
 		}
 	}
 

@@ -2,9 +2,6 @@ analysisTool.directive('querySequence', function(moduleURLs) {
 	  return {
 		    restrict: 'E',
 		    replace: true,
-		    link: function(scope, element, attrs) {
-		    	console.log("link running");
-		    },
 		    controller: function($scope) {
 		    	var params = $scope.svgParams;
 
