@@ -1,3 +1,9 @@
+.variationCategory {
+   bold: true;
+   font-size: 130%;
+}
+
+
 .sequenceLabel {
     text-anchor: start;
     alignment-baseline: central;

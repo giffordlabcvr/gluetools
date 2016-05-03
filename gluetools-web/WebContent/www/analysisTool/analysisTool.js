@@ -103,6 +103,20 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.selectedReferenceAnalysisChanged();
 	}, false);
 
+	$scope.selectVariationCategories = function(item) {
+		var included = _(item.variationCategorySelection).clone();
+		var variationCategories = $scope.variationCategories;
+		
+		var dlg = dialogs.create($scope.analysisToolURL+'/dialogs/selectVariationCategories.html','selectVariationCategoriesCtrl',
+				{ included: included,
+				  variationCategories: variationCategories }, {});
+		dlg.result.then(function(data){
+			item.variationCategorySelection = data.included;
+			console.log("variation categories updated to: ", item.variationCategorySelection);
+		});
+
+	}
+	
 	// invoked when "Analysis" button is pressed
 	$scope.showAnalysisResults = function(item) {
 		if( (!$scope.fileItemUnderAnalysis) || ($scope.fileItemUnderAnalysis != item) ) {
@@ -145,18 +159,19 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	glueWS.addProjectUrlListener( {
 		reportProjectURL: function(projectURL) {
 
-			// leaving this in as an example of a glue command.
-			glueWS.runGlueCommand("", {
-		    	list: { alignment: {} }
-		    }).success(function(data, status, headers, config) {
+			var moduleModePath = "module/webAnalysisTool";
+			
+			glueWS.runGlueCommand(moduleModePath, {
+		    	"list": { "variation-category": {} } 
+			})
+		    .success(function(data, status, headers, config) {
 				  console.info('result', data);
-				  $scope.alignmentNames = tableResultGetColumn(data, "name");
-				  console.info('alignmentNames', $scope.alignmentNames);
-			}).
-			error(glueWS.raiseErrorDialog(dialogs, "listing alignments"));
-
+				  $scope.variationCategories = tableResultAsObjectList(data);
+				  console.info('variation categories:', $scope.variationCategories); 
+		    })
+		    .error(glueWS.raiseErrorDialog(dialogs, "listing variation categories"));
 		    
-		    $scope.uploader.url = projectURL+"/module/webAnalysisTool";
+		    $scope.uploader.url = projectURL + "/" + moduleModePath;
 
 		    console.info('uploader', uploader);
 		}
@@ -197,7 +212,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
         console.info('onWhenAddingFileFailed', item, filter, options);
     };
     uploader.onAfterAddingFile = function(fileItem) {
-        fileItem.alignmentName = $scope.headerDetectAlmtName;
+		fileItem.variationCategorySelection = [];
         console.info('onAfterAddingFile', fileItem);
     };
     uploader.onAfterAddingAll = function(addedFileItems) {
@@ -236,5 +251,9 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	}; 
 
 })
+
+
+
+
 ;
 

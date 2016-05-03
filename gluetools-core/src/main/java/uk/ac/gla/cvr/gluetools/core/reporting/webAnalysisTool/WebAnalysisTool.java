@@ -48,14 +48,17 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 	public static final String FASTA_SEQUENCE_REPORTER_MODULE_NAME = "fastaSequenceReporterModuleName";
 	public static final String FEATURE_ANALYSIS_HINT = "featureAnalysisHint";
+	public static final String VARIATION_CATEGORY = "variationCategory";
 
 	private String fastaSequenceReporterModuleName;
 	private List<FeatureAnalysisHint> featureAnalysisHints;
+	private List<VariationCategory> variationCategories;
 	
 	public WebAnalysisTool() {
 		super();
 		addModulePluginCmdClass(WebAnalysisCommand.class);
 		addModulePluginCmdClass(AnalysisCommand.class);
+		addModulePluginCmdClass(ListVariationCategoryCommand.class);
 		addSimplePropertyName(FASTA_SEQUENCE_REPORTER_MODULE_NAME);
 	}
 
@@ -67,6 +70,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		featureAnalysisHints = 
 				PluginFactory.createPlugins(pluginConfigContext, FeatureAnalysisHint.class, 
 						GlueXmlUtils.getXPathElements(configElem, FEATURE_ANALYSIS_HINT));
+		variationCategories = 
+				PluginFactory.createPlugins(pluginConfigContext, VariationCategory.class, 
+						GlueXmlUtils.getXPathElements(configElem, VARIATION_CATEGORY));
 	}
 
 	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes) {
@@ -628,6 +634,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			return "QueryKey("+fastaID+")";
 		}
 		
+	}
+
+	public List<VariationCategory> getVariationCategories() {
+		return variationCategories;
 	}
 
 

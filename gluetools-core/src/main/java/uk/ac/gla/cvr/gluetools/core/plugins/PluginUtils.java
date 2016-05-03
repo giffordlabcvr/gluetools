@@ -107,6 +107,7 @@ public class PluginUtils {
 		String expressionString = PluginUtils.configureStringProperty(configElem, propertyName, required);
 		Expression expression = null;
 		if(expressionString != null) {
+			expressionString = expressionString.replaceAll("\\t\\r\\n", "");
 			try {
 				expression = Expression.fromString(expressionString);
 			} catch(ExpressionException ee) {

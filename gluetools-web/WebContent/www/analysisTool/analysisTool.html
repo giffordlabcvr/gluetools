@@ -13,6 +13,7 @@
 						<tr>
 							<th>File</th>
 							<th ng-show="uploader.isHTML5">Size</th>
+							<th>Variation categories</th>
 							<th>Status</th>
 							<th>Actions</th>
 						</tr>
@@ -22,6 +23,16 @@
 							<td><strong>{{ item.file.name }}</strong></td>
 							<td ng-show="uploader.isHTML5" nowrap>{{
 								item.file.size/1024/1024|number:2 }} MB</td>
+							<td>
+								<div style="float:left;">
+									<div style="padding-right:10px;" ng-repeat="vCat in item.variationCategorySelection">{{vCat.displayName}}</div>
+								</div>
+								<button type="button" class="btn btn-primary btn-xs"
+									ng-click="selectVariationCategories(item)" 
+									ng-disabled="item.isReady || item.isUploading || item.isSuccess">
+									<span class="glyphicon glyphicon-list"></span> Select
+								</button>
+							</td>
 							<td>
 								<span ng-show="item.isSuccess">
 									<i class="glyphicon glyphicon-ok"></i>
