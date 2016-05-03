@@ -1,0 +1,20 @@
+.vcat_common_aa_polymorphisms {
+	fill:#b3e6b3; 	
+}
+
+.vcat_resistance_associated_variants {
+	fill:#ff3333; 	
+}
+
+.vcat_epitopes, .vcat_epitopes_mhc_class_i, .vcat_epitopes_mhc_class_ii {
+	fill:#b3e0ff; 	
+}
+
+.vcat_epitopes_mhc_class_i {
+	mask: url(#mask-stripe-diag);
+}
+
+.vcat_epitopes_mhc_class_ii {
+	mask: url(#mask-stripe-vertical);
+}
+
