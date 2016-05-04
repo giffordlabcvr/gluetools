@@ -138,7 +138,6 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 		if(descendentFeatures) {
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
-
 		
 		List<VariationScanReadCount> variationScanReadCounts = new ArrayList<VariationScanReadCount>();
 		
