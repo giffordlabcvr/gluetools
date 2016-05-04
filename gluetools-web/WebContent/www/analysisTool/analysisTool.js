@@ -187,9 +187,10 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
     // CALLBACKS
     uploader.onBeforeUploadItem = function(item) {
 		var commandObject;
+		var vCatNames = _.map(item.variationCategorySelection, function(vCat) { return vCat.name; });
 		commandObject = {
 				"web-analysis": {
-					// any args would go here.
+					"vCategory": vCatNames
 				}
 			};
     	item.formData = [{command: JSON.stringify(commandObject)}];

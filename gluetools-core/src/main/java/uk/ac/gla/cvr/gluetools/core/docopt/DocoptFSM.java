@@ -27,7 +27,9 @@ public class DocoptFSM {
 
 	private static void buildFSM(Node startNode, LinkedList<Context> contextStack, LinkedList<Token> tokens, Map<Character, String> optionMap) {
 		Node currentNode = startNode;
-		Node lastNode = null;
+		Node lastVariableNode = null;
+		Node lastSqLeftNode = null;
+		Node lastBrLeftNode = null;
 		TokenType lastType = null;
 		while(!tokens.isEmpty()) {
 			Token currentToken = tokens.pop();
@@ -39,12 +41,13 @@ public class DocoptFSM {
 			case VARIABLE:
 				String variableName = currentToken.getData().replace("<", "").replace(">", "");
 				//System.out.println("variable "+variableName+" from: "+currentNode);
-				lastNode = currentNode;
+				lastVariableNode = currentNode;
 				currentNode = currentNode.variableToNew(variableName);
 				//System.out.println("variable "+variableName+" to: "+currentNode);
 				break;
 			case BRLEFT:
 				contextStack.push(new Context(currentNode, ")"));
+				lastBrLeftNode = currentNode;
 				break;
 			case BRRIGHT: {
 				Context context = contextStack.pop();
@@ -60,6 +63,7 @@ public class DocoptFSM {
 			break;
 			case SQLEFT:
 				contextStack.push(new Context(currentNode, "]"));
+				lastSqLeftNode = currentNode;
 				break;
 			case SQRIGHT: {
 				Context context = contextStack.pop();
@@ -80,11 +84,16 @@ public class DocoptFSM {
 				currentNode = context.startNode;
 				break;
 			case ELLIPSIS:
-				if(lastType != TokenType.VARIABLE) {
-					throw new RuntimeException("Ellipsis can only occur after variable");
+				if(lastType != TokenType.VARIABLE && lastType != TokenType.SQRIGHT && lastType != TokenType.BRRIGHT) {
+					throw new RuntimeException("Ellipsis can only occur after variable, ']' or ')'");
 				}
-				//System.out.println("ellipsis from:"+currentNode+" to "+lastNode);
-				currentNode.nullTo(lastNode);
+				if(lastType == TokenType.VARIABLE) {
+					currentNode.nullTo(lastVariableNode);
+				} else if(lastType == TokenType.SQRIGHT) {
+					currentNode.nullTo(lastSqLeftNode);
+				} if(lastType == TokenType.BRRIGHT) {
+					currentNode.nullTo(lastBrLeftNode);
+				} 
 				break;
 			case OPTION:
 				String optionWithMinus = currentToken.getData();

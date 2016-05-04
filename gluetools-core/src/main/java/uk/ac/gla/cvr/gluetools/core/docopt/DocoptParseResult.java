@@ -50,10 +50,14 @@ public class DocoptParseResult {
 				if(transition instanceof OptionTransition) {
 					String option = ((OptionTransition) transition).getOption();
 					if(option.equals(arg)) {
+						String optionKey = null;
 						if(option.startsWith("--")) {
-							result.bindings.put(option.replace("--", ""), true);
+							optionKey = option.replace("--", "");
 						} else if(option.startsWith("-")) {
-							result.bindings.put(optionsMap.get(option.charAt(1)), true);
+							optionKey = optionsMap.get(option.charAt(1));
+						}
+						if(optionKey != null && !result.bindings.containsKey(optionKey)) {
+							result.bindings.put(optionKey, true); // option value may already be in the binding for e.g. docopts of the form [-v <vCat> ] ...
 						}
 						currentNode = transition.getToNode();
 						break;

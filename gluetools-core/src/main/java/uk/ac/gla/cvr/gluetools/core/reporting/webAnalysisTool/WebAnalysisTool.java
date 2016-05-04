@@ -75,7 +75,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 						GlueXmlUtils.getXPathElements(configElem, VARIATION_CATEGORY));
 	}
 
-	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes) {
+	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes, List<String> vCategories) {
 		
 		FastaSequenceReporter fastaSequenceReporter = 
 				Module.resolveModulePlugin(cmdContext, FastaSequenceReporter.class, fastaSequenceReporterModuleName);
