@@ -56,7 +56,7 @@
 									<i class="glyphicon glyphicon-remove"></i>
 								</span></td>
 							<td nowrap>
-								<button type="button" class="btn btn-success btn-xs"
+								<button type="button" class="btn btn-primary btn-xs"
 									ng-click="item.upload()"
 									ng-disabled="item.isReady || item.isUploading || item.isSuccess">
 									<span class="glyphicon glyphicon-upload"></span> Submit
@@ -65,7 +65,7 @@
 									ng-click="showAnalysisResults(item)" ng-disabled="!item.isSuccess">
 									<span class="glyphicon glyphicon-list"></span> Show analysis
 								</button>
-								<button type="button" class="btn btn-danger btn-xs"
+								<button type="button" class="btn btn-primary btn-xs"
 									ng-click="removeItem(item)">
 									<span class="glyphicon glyphicon-trash"></span> Remove
 								</button>
@@ -84,12 +84,12 @@
 						ng-click="seqPrepDialog()">
 						<span class="glyphicon glyphicon-info-sign"></span> File preparation
 					</button>
-					<button type="button" class="btn btn-success btn-s"
+					<button type="button" class="btn btn-primary btn-s"
 						ng-click="uploader.uploadAll()"
 						ng-disabled="!uploader.getNotUploadedItems().length">
 						<span class="glyphicon glyphicon-upload"></span> Submit all files
 					</button>
-					<button type="button" class="btn btn-danger btn-s"
+					<button type="button" class="btn btn-primary btn-s"
 						ng-click="removeAll()"
 						ng-disabled="!uploader.queue.length">
 						<span class="glyphicon glyphicon-trash"></span> Remove all files
