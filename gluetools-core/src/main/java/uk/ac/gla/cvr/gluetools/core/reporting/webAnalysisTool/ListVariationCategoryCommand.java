@@ -29,7 +29,8 @@ public class ListVariationCategoryCommand extends ModulePluginCommand<
 			super("listVariationCategoryResult", variationCategories,
 					column(VariationCategory.NAME, vcat -> vcat.getName()),
 					column(VariationCategory.DISPLAY_NAME, vcat -> vcat.getDisplayName()),
-					column(VariationCategory.DESCRIPTION, vcat -> vcat.getDescription()));
+					column(VariationCategory.DESCRIPTION, vcat -> vcat.getDescription()),
+					column(VariationCategory.SELECTED_BY_DEFAULT, vcat -> vcat.getSelectedByDefault()));
 		}
 		
 	}

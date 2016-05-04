@@ -213,7 +213,8 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
         console.info('onWhenAddingFileFailed', item, filter, options);
     };
     uploader.onAfterAddingFile = function(fileItem) {
-		fileItem.variationCategorySelection = [];
+		fileItem.variationCategorySelection = 
+			_.filter($scope.variationCategories, function(vCat) { return vCat.selectedByDefault; });
         console.info('onAfterAddingFile', fileItem);
     };
     uploader.onAfterAddingAll = function(addedFileItems) {

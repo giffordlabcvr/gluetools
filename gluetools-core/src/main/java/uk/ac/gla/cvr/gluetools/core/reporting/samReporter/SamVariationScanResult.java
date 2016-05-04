@@ -8,6 +8,7 @@ public class SamVariationScanResult extends BaseTableResult<VariationScanReadCou
 
 	public static final String 
 		REF_SEQ_NAME = "referenceName",
+		FEATURE_NAME = "featureName",
 		VARIATION_NAME = "variationName",
 		READS_PRESENT = "readsPresent",
 		PCT_PRESENT = "pctPresent",
@@ -19,6 +20,7 @@ public class SamVariationScanResult extends BaseTableResult<VariationScanReadCou
 		super("samVariationsScanResult", 
 				rowData,
 				column(REF_SEQ_NAME, vsrc -> vsrc.getVariation().getFeatureLoc().getReferenceSequence().getName()), 
+				column(FEATURE_NAME, vsrc -> vsrc.getVariation().getFeatureLoc().getFeature().getName()), 
 				column(VARIATION_NAME, vsrc -> vsrc.getVariation().getName()), 
 				column(READS_PRESENT, vsrc -> vsrc.getReadsWherePresent()), 
 				column(PCT_PRESENT, vsrc -> vsrc.getPctWherePresent()), 

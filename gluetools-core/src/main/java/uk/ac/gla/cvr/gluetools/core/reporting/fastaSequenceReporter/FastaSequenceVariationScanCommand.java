@@ -37,12 +37,13 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>]" },
+		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 				"-m, --multiReference                                 Scan across references",
-				"-f <featureName>, --featureName <featureName>        Feature to translate",
+				"-f <featureName>, --featureName <featureName>        Feature to scan",
+				"-d, --descendentFeatures                             Include descendent features",
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
@@ -60,7 +61,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 				"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
 				"path between the target reference and the ancestor-constraining reference, in the alignment tree. "+
 				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
-				"The variation scan will be limited to the specified feature location. "+
+				"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
+				"The variation scan will be limited to the specified features. "+
 				"If <whereClause> is used, this qualifies the set of variations which are scanned for.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
@@ -69,10 +71,11 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String MULTI_REFERENCE = "multiReference";
-
+	public static final String DESCENDENT_FEATURES = "descendentFeatures";
 
 	private Expression whereClause;
 	private Boolean multiReference;
+	private Boolean descendentFeatures;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -80,13 +83,13 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		super.configure(pluginConfigContext, configElem);
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
+		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 	}
 
 	@Override
 	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter) {
-		// check feature exists.
-		GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
+		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		
@@ -111,53 +114,64 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 			refsToScan = Arrays.asList(tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName()));
 		}
 
+		List<Feature> featuresToScan = new ArrayList<Feature>();
+		featuresToScan.add(namedFeature);
+		if(descendentFeatures) {
+			featuresToScan.addAll(namedFeature.getDescendents());
+		}
+
+		
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 		
 		for(ReferenceSequence refToScan: refsToScan) {
 
-			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refToScan.getName(), getFeatureName()), true);
-			if(featureLoc == null) {
-				continue;
+			for(Feature featureToScan: featuresToScan) {
+
+				FeatureLocation featureLoc = 
+						GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+								FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
+				if(featureLoc == null) {
+					continue;
+				}
+				
+				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+				if(variationsToScan.isEmpty()) {
+					continue;
+				}
+	
+				// align query to target reference
+				Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
+				AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
+	
+				// extract segments from aligner result
+				List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
+	
+				// translate segments to tip alignment reference
+				List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+						tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+						queryToTargetRefSegs);
+	
+				// translate segments to ancestor constraining reference
+				List<QueryAlignedSegment> queryToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
+	
+	
+				// trim down to the feature area.
+				List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
+	
+				List<QueryAlignedSegment> queryToAncConstrRefSegs = 
+						ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+	
+				String fastaNTs = fastaNTSeq.getSequenceAsString();
+	
+				List<NtQueryAlignedSegment> queryToAncConstrRefNtSegs =
+						queryToAncConstrRefSegs.stream()
+						.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
+								SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
+								.collect(Collectors.toList());
+	
+	
+				variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToAncConstrRefNtSegs, variationsToScan));
 			}
-			
-			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
-			if(variationsToScan.isEmpty()) {
-				continue;
-			}
-
-			// align query to target reference
-			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
-			AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
-
-			// extract segments from aligner result
-			List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
-
-			// translate segments to tip alignment reference
-			List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-					queryToTargetRefSegs);
-
-			// translate segments to ancestor constraining reference
-			List<QueryAlignedSegment> queryToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
-
-
-			// trim down to the feature area.
-			List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-
-			List<QueryAlignedSegment> queryToAncConstrRefSegs = 
-					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
-
-			String fastaNTs = fastaNTSeq.getSequenceAsString();
-
-			List<NtQueryAlignedSegment> queryToAncConstrRefNtSegs =
-					queryToAncConstrRefSegs.stream()
-					.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
-							SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
-							.collect(Collectors.toList());
-
-
-			variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToAncConstrRefNtSegs, variationsToScan));
-
 		}
 
 		VariationScanResult.sortVariationScanResults(variationScanResults);

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;

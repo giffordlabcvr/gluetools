@@ -15,11 +15,13 @@ public class VariationCategory implements Plugin {
 	public static final String DISPLAY_NAME = "displayName";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String DESCRIPTION = "description";
+	public static final String SELECTED_BY_DEFAULT = "selectedByDefault";
 	
 	private String name;
 	private String displayName;
 	private Expression whereClause;
 	private String description;
+	private Boolean selectedByDefault;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -27,6 +29,7 @@ public class VariationCategory implements Plugin {
 		displayName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DISPLAY_NAME, false)).orElse(name);
 		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, true);
 		description = PluginUtils.configureStringProperty(configElem, DESCRIPTION, false);
+		selectedByDefault = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SELECTED_BY_DEFAULT, false)).orElse(false);
 	}
 
 	public String getName() {
@@ -43,6 +46,10 @@ public class VariationCategory implements Plugin {
 
 	public String getDescription() {
 		return description;
+	}
+
+	public Boolean getSelectedByDefault() {
+		return selectedByDefault;
 	}
 	
 }

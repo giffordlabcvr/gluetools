@@ -9,6 +9,7 @@ public class AlignmentVariationFrequencyResult extends BaseTableResult<Variation
 
 	public static final String 
 		REF_SEQ_NAME = "referenceName",
+		FEATURE_NAME = "featureName",
 		VARIATION_NAME = "variationName",
 		READS_PRESENT = "membersPresent",
 		PCT_PRESENT = "pctPresent",
@@ -20,6 +21,7 @@ public class AlignmentVariationFrequencyResult extends BaseTableResult<Variation
 		super("samVariationsScanResult", 
 				rowData,
 				column(REF_SEQ_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getReferenceSequence().getName()), 
+				column(FEATURE_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getFeature().getName()), 
 				column(VARIATION_NAME, vsmc -> vsmc.getVariation().getName()), 
 				column(READS_PRESENT, vsmc -> vsmc.getMembersWherePresent()), 
 				column(PCT_PRESENT, vsmc -> vsmc.getPctWherePresent()), 
