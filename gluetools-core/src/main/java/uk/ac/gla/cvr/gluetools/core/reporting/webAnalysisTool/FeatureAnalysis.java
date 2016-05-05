@@ -20,5 +20,10 @@ public class FeatureAnalysis {
 	@PojoResultField
 	public Integer endUIndex;
 
+	@PojoResultField
+	public Boolean includesSequenceContent;
+
+	@PojoResultField
+	public String deriveSequenceContentFrom;
 	
 }

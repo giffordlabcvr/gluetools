@@ -6,7 +6,8 @@ public class WebAnalysisException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		UNKNOWN_VARIATION_CATEGORY("vCatName");
+		UNKNOWN_VARIATION_CATEGORY("vCatName"),
+		INVALID_CONFIG("errorTxt"),;
 
 		private String[] argNames;
 		private Code(String... argNames) {

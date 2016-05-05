@@ -11,24 +11,31 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class FeatureAnalysisHint implements Plugin {
 
 	public static final String FEATURE_NAME = "featureName";
-	public static final String INCLUDE_TRANSLATION = "includeTranslation";
+	public static final String INCLUDES_SEQUENCE_CONTENT = "includesSequenceContent";
+	public static final String DERIVE_SEQUENCE_CONTENT_FROM = "deriveSequenceContentFrom";
 	
 	private String featureName;
-	private Boolean includeTranslation;
+	private Boolean includesSequenceContent;
+	private String deriveSequenceContentFrom;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		includeTranslation = Optional.ofNullable(
-				PluginUtils.configureBooleanProperty(configElem, INCLUDE_TRANSLATION, false)).orElse(false);
+		includesSequenceContent = Optional.ofNullable(
+				PluginUtils.configureBooleanProperty(configElem, INCLUDES_SEQUENCE_CONTENT, false)).orElse(false);
+		deriveSequenceContentFrom = PluginUtils.configureStringProperty(configElem, DERIVE_SEQUENCE_CONTENT_FROM, false);
 	}
 
 	public String getFeatureName() {
 		return featureName;
 	}
 
-	public Boolean getIncludeTranslation() {
-		return includeTranslation;
+	public Boolean getIncludesSequenceContent() {
+		return includesSequenceContent;
+	}
+
+	public String getDeriveSequenceContentFrom() {
+		return deriveSequenceContentFrom;
 	}
 	
 }

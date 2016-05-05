@@ -25,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -36,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -165,8 +167,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			// sequence feature analyses
 			List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
-				if(featureAnalysisHint.getIncludeTranslation()) {
-					String featureName = featureAnalysisHint.getFeatureName();
+				SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>();
+				String featureName = featureAnalysisHint.getFeatureName();
+				sequenceFeatureAnalysis.featureName = featureName;
+				if(featureAnalysisHint.getIncludesSequenceContent()) {
 					FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
 							FeatureLocation.pkMap(refAnalysis.refName, featureName));
 					List<QueryAlignedSegment> refToRefSegs = new ArrayList<QueryAlignedSegment>();
@@ -187,71 +191,66 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					List<ReferenceNtSegment> nts = generateNts(refNTs, refToRefSegsFeatureArea, refToUSegs, ReferenceNtSegment::new);
 					List<ReferenceAa> aas = generateAas(translatedQaSegs, refToUSegs, ReferenceAa::new);
 					
-					SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>();
-					sequenceFeatureAnalysis.featureName = featureName;
 					sequenceFeatureAnalysis.aas = aas;
 					sequenceFeatureAnalysis.nts = nts;
-					sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 				}
+				sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 			}
 			refAnalysis.sequenceFeatureAnalysis = sequenceFeatureAnalyses;
 		}
 		
 		for(QueryAnalysis queryAnalysis: fastaIdToQueryAnalysis.values()) {
-
-			
 			List<QueryAlignedSegment> targetRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(queryAnalysis.targetRefName));
 			
 			// sequence feature analyses
 			List<SequenceFeatureAnalysis<QueryAa, QueryNtSegment>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<QueryAa, QueryNtSegment>>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
-				if(featureAnalysisHint.getIncludeTranslation()) {
-					String featureName = featureAnalysisHint.getFeatureName();
+				
+				String featureName = featureAnalysisHint.getFeatureName();
+				SequenceFeatureAnalysis<QueryAa, QueryNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa, QueryNtSegment>();
+				sequenceFeatureAnalysis.featureName = featureName;
+
+				if(featureAnalysisHint.getIncludesSequenceContent()) {
 					FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
 							FeatureLocation.pkMap(queryAnalysis.targetRefName, featureName));
 					String queryNTs = queryAnalysis.getSequenceObj().getNucleotides(cmdContext);
 					List<QueryAlignedSegment> queryToTargetRefSegs = queryAnalysis.getQueryToTargetRefSegs();
-					
 					List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-
 					List<QueryAlignedSegment> queryToTargetFeatureArea = 
 								ReferenceSegment.intersection(queryToTargetRefSegs, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
-					
 					List<TranslatedQueryAlignedSegment> translatedQaSegs = 
 							fastaSequenceReporter.translateNucleotides(cmdContext, featureLoc, queryToTargetFeatureArea, queryNTs);
-
 					List<QueryAa> aas = generateAas(translatedQaSegs, targetRefToUSegs, QueryAa::new);
-
 					List<QueryNtSegment> nts = generateNts(queryNTs, queryToTargetFeatureArea, targetRefToUSegs, QueryNtSegment::new);
 					
-					SequenceFeatureAnalysis<QueryAa, QueryNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa, QueryNtSegment>();
-					sequenceFeatureAnalysis.featureName = featureName;
 					sequenceFeatureAnalysis.aas = aas;
 					sequenceFeatureAnalysis.nts = nts;
-					sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 				}
+				sequenceFeatureAnalyses.add(sequenceFeatureAnalysis);
 			}
 			queryAnalysis.sequenceFeatureAnalysis = sequenceFeatureAnalyses;
 		}
 
 		// compute diffs between every query and ancestor reference pair, for every feature that exists on both
 		featureNameToAnalysis.forEach( (featureName, featureAnalysis) -> {
-			fastaIdToQueryAnalysis.values().forEach(queryAnalysis -> {
-				queryAnalysis.getSeqFeatAnalysis(featureName).ifPresent(querySeqFeatAnalysis -> {
-					queryAnalysis.ancestorRefName.forEach(refName -> {
-						ReferenceAnalysis refAnalysis = refNameToAnalysis.get(refName);
-						refAnalysis.getSeqFeatAnalysis(featureName).ifPresent(refSeqFeatAnalysis -> {
-							List<ReferenceNtSegment> referenceNtSegs = refSeqFeatAnalysis.nts;
-							// ntDiffs
-							List<QueryNtSegment> queryNtSegs = querySeqFeatAnalysis.nts;
-							calculateNtDiffs(refName, referenceNtSegs, queryNtSegs);
-							// aaDiffs
-							List<QueryAa> queryAas = querySeqFeatAnalysis.aas;
-							calculateAaDiffs(refName, refSeqFeatAnalysis, queryAas);
+			if(featureAnalysis.includesSequenceContent) {
+				fastaIdToQueryAnalysis.values().forEach(queryAnalysis -> {
+					queryAnalysis.getSeqFeatAnalysis(featureName).ifPresent(querySeqFeatAnalysis -> {
+						queryAnalysis.ancestorRefName.forEach(refName -> {
+							ReferenceAnalysis refAnalysis = refNameToAnalysis.get(refName);
+							refAnalysis.getSeqFeatAnalysis(featureName).ifPresent(refSeqFeatAnalysis -> {
+								List<ReferenceNtSegment> referenceNtSegs = refSeqFeatAnalysis.nts;
+								// ntDiffs
+								List<QueryNtSegment> queryNtSegs = querySeqFeatAnalysis.nts;
+								calculateNtDiffs(refName, referenceNtSegs, queryNtSegs);
+								// aaDiffs
+								List<QueryAa> queryAas = querySeqFeatAnalysis.aas;
+								calculateAaDiffs(refName, refSeqFeatAnalysis, queryAas);
+							});
 						});
 					});
 				});
-			});
+			}
 		});
 		
  		
@@ -448,6 +447,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			featureAnalysis.featureName = featureName;
 			featureAnalysis.startUIndex = startUIndex;
 			featureAnalysis.endUIndex = endUIndex;
+			featureAnalysis.includesSequenceContent = featureAnalysisHint.getIncludesSequenceContent();
+			featureAnalysis.deriveSequenceContentFrom = featureAnalysisHint.getDeriveSequenceContentFrom();
+
 			List<CodonLabel> codonLabels = new ArrayList<CodonLabel>(
 					new LinkedHashSet<CodonLabel>(uIndexToCodonLabel.valueCollection()));
 			Collections.sort(codonLabels, new Comparator<CodonLabel>() {
@@ -638,6 +640,44 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 	public List<VariationCategory> getVariationCategories() {
 		return variationCategories;
+	}
+
+	@Override
+	public void validate(CommandContext cmdContext) {
+		super.validate(cmdContext);
+		Map<String, FeatureAnalysisHint> featureHintMap = new LinkedHashMap<String, FeatureAnalysisHint>();
+		for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
+			String featureName = featureAnalysisHint.getFeatureName();
+			Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName), true);
+			if(feature == null) {
+				throw new WebAnalysisException(Code.INVALID_CONFIG, "Feature '"+featureAnalysisHint.getFeatureName()+
+						"' analysis hint: this feature does not exist");
+			}
+			featureHintMap.put(featureName, featureAnalysisHint);
+		}
+		for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
+			boolean includesSequenceContent = featureAnalysisHint.getIncludesSequenceContent();
+			String deriveSequenceContentFrom = featureAnalysisHint.getDeriveSequenceContentFrom();
+			if(includesSequenceContent && deriveSequenceContentFrom != null) {
+				throw new WebAnalysisException(Code.INVALID_CONFIG, "Feature '"+featureAnalysisHint.getFeatureName()+
+						"' analysis hint specifies both includesSequenceContent and deriveSequenceContentFrom");
+			}
+			if(!includesSequenceContent && deriveSequenceContentFrom == null) {
+				throw new WebAnalysisException(Code.INVALID_CONFIG, "Feature '"+featureAnalysisHint.getFeatureName()+
+						"' analysis hint does not specify includesSequenceContent or deriveSequenceContentFrom");
+			}
+			FeatureAnalysisHint deriveSourceFeatureHint = featureHintMap.get(deriveSequenceContentFrom);
+			if(deriveSequenceContentFrom != null) {
+				 if(deriveSourceFeatureHint == null) {
+						throw new WebAnalysisException(Code.INVALID_CONFIG, "Feature '"+featureAnalysisHint.getFeatureName()+
+								"' analysis hint specifies deriveSequenceContentFrom for feature '"+deriveSequenceContentFrom+"' which has no analysis hint");
+				 } else if(!deriveSourceFeatureHint.getIncludesSequenceContent()) {
+						throw new WebAnalysisException(Code.INVALID_CONFIG, "Feature '"+featureAnalysisHint.getFeatureName()+
+								"' analysis hint specifies deriveSequenceContentFrom for feature '"+deriveSequenceContentFrom+"' which does not include sequence content");
+				 }
+				
+			}
+		}
 	}
 
 

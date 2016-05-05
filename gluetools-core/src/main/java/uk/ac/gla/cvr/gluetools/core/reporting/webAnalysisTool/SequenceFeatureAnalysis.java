@@ -17,5 +17,4 @@ public class SequenceFeatureAnalysis<C extends Aa, D extends NtSegment> {
 	@PojoResultField
 	public List<D> nts;
 
-	
 }
