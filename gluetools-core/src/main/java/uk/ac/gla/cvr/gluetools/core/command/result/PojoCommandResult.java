@@ -47,7 +47,7 @@ public final class PojoCommandResult<D> extends CommandResult {
 						objectBuilder.setBoolean(resultName, (Boolean) readResult);
 					} else if(fieldType.equals(List.class)) {
 						List<?> theList = (List<?>) readResult;
-						if(!theList.isEmpty()) {
+						if(theList != null && !theList.isEmpty()) {
 							ArrayBuilder arrayBuilder = objectBuilder.setArray(resultName);
 							for(Object elem: theList) {
 								addToArray(arrayBuilder, elem);
