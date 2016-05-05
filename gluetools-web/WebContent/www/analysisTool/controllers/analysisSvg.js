@@ -8,9 +8,30 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 			codonLabelHeight: 35,
 			aaHeight: 25,
 			
-			initAaProps: function(seqFeatAnalysis, featAnalysis) {
+			findSegs: function(segs, startUIndex, endUIndex) {
+				var lIndex = binarySearch(segs, 
+						function(seg) { return seg.endUIndex >= startUIndex; }
+				);
+				var rIndex = binarySearch(segs, 
+						function(seg) { return seg.startUIndex >= endUIndex; }
+				);
+				if(rIndex == -1) {
+					rIndex = segs.length;
+				}
+				if(lIndex == -1) {
+					return [];
+				} else {
+					return segs.slice(lIndex, rIndex);
+				}
+			},
+			
+			initFeatureAas: function(seqFeatAnalysis, featAnalysis) {
+				return $scope.svgParams.findSegs(seqFeatAnalysis.aas, featAnalysis.startUIndex, featAnalysis.endUIndex);
+			},
+			
+			initAaProps: function(featureAas, featAnalysis) {
 				var params = $scope.svgParams;
-				return _.map(seqFeatAnalysis.aas, function(aa) {
+				return _.map(featureAas, function(aa) {
 	        		var nts = (aa.endUIndex - aa.startUIndex) + 1;
 	    			var aaWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
 	    			var aaHeight = params.aaHeight;
@@ -24,10 +45,26 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 		    		};
 		    	});
 			},
-			initNtSegProps: function(seqFeatAnalysis, featAnalysis) {
+
+			initFeatureNtSegs: function(seqFeatAnalysis, featAnalysis) {
+				return $scope.svgParams.findSegs(seqFeatAnalysis.nts, featAnalysis.startUIndex, featAnalysis.endUIndex);
+			},
+
+			initNtSegProps: function(featureNtSegs, featAnalysis) {
 				var params = $scope.svgParams;
-				return _.map(seqFeatAnalysis.nts, function(queryNtSeg) {
-		    		var ntProps = _.map(queryNtSeg.nts, function(nt) {
+				
+				return _.map(featureNtSegs, function(featureNtSeg) {
+					var truncateLeft = 0;
+					if(featureNtSeg.startUIndex < featAnalysis.startUIndex) {
+						truncateLeft = featAnalysis.startUIndex - featureNtSeg.startUIndex;
+					}
+					var truncateRight = 0;
+					if(featureNtSeg.endUIndex > featAnalysis.endUIndex) {
+						truncateRight = (featureNtSeg.endUIndex - featAnalysis.endUIndex);
+					}
+					var truncatedNts = featureNtSeg.nts.slice(truncateLeft, featureNtSeg.nts.length - truncateRight);
+					
+		    		var ntProps = _.map(truncatedNts, function(nt) {
 		    			var ntWidth = params.ntWidth;
 		    			var ntHeight = params.ntHeight;
 	    				return {
@@ -39,18 +76,21 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 	    				};
 	    			});
 		    		for(var i = 0; i < ntProps.length; i++) {
-		    			ntProps[i].x = ( (queryNtSeg.startUIndex + i) - featAnalysis.startUIndex) * 
+		    			ntProps[i].x = ( (featureNtSeg.startUIndex + truncateLeft + i) - featAnalysis.startUIndex) * 
 		    				(params.ntWidth + params.ntGap);
 		    		}
 		    		return {
+		    			truncateLeft: truncateLeft,
+		    			truncateRight: truncateRight,
 		    			ntProps: ntProps, 
 		    			indexDx: params.ntWidth / 2.0,
 		    			indexDy: params.ntIndexHeight / 10.0,
-		    			startIndexText: queryNtSeg.startSeqIndex, 
-		    			startIndexX: (queryNtSeg.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
-		    			endIndexText: queryNtSeg.endSeqIndex, 
-		    			endIndexX: (queryNtSeg.endUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap)
-		    			
+		    			startIndexText: featureNtSeg.startSeqIndex + truncateLeft, 
+		    			startIndexX: ( ( featureNtSeg.startUIndex + truncateLeft) - featAnalysis.startUIndex) * 
+		    				(params.ntWidth + params.ntGap),
+		    			endIndexText: featureNtSeg.endSeqIndex - truncateRight, 
+		    			endIndexX: ( ( featureNtSeg.endUIndex - truncateRight ) - featAnalysis.startUIndex) * 
+		    				(params.ntWidth + params.ntGap)
 		    		}
 				});
 			},

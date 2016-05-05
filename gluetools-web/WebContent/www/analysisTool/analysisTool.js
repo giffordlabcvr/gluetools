@@ -24,10 +24,16 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
 		if($scope.selectedReferenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
+			var contentFeatureName;
+			if($scope.selectedFeatureAnalysis.includesSequenceContent) {
+				contentFeatureName = $scope.selectedFeatureAnalysis.featureName;
+			} else {
+				contentFeatureName = $scope.selectedFeatureAnalysis.deriveSequenceContentFrom;
+			}
 			$scope.selectedRefFeatAnalysis = _.find(
 				$scope.selectedReferenceAnalysis.sequenceFeatureAnalysis, 
 				function(seqFeatureAnalysis) {
-					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
+					return seqFeatureAnalysis.featureName == contentFeatureName;} );
 		} else {
 			$scope.selectedRefFeatAnalysis = null;
 		}
@@ -49,10 +55,16 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	
 	$scope.updateSelectedQueryFeatAnalysis = function(){
 		if($scope.selectedQueryAnalysis != null && $scope.selectedFeatureAnalysis != null) {
+			var contentFeatureName;
+			if($scope.selectedFeatureAnalysis.includesSequenceContent) {
+				contentFeatureName = $scope.selectedFeatureAnalysis.featureName;
+			} else {
+				contentFeatureName = $scope.selectedFeatureAnalysis.deriveSequenceContentFrom;
+			}
 			$scope.selectedQueryFeatAnalysis = _.find(
 				$scope.selectedQueryAnalysis.sequenceFeatureAnalysis, 
 				function(seqFeatureAnalysis) {
-					return seqFeatureAnalysis.featureName == $scope.selectedFeatureAnalysis.featureName;} );
+					return seqFeatureAnalysis.featureName == contentFeatureName; } );
 		} else {
 			$scope.selectedQueryFeatAnalysis = null;
 		}

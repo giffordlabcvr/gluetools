@@ -20,25 +20,29 @@ analysisTool.directive('querySequence', function(moduleURLs) {
 		    	}, false);
 
 		    	$scope.initProps = function() {
+		    		console.log("initProps query");
 		    		$scope.y = params.sequenceY($scope.sequenceIndex);
 		    		if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
-				    	$scope.aaProps = params.initAaProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
-				    	$scope.ntSegProps = params.initNtSegProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
+				    	$scope.featureAas = params.initFeatureAas($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
+				    	$scope.aaProps = params.initAaProps($scope.featureAas, $scope.selectedFeatureAnalysis);
+				    	$scope.featureNtSegs = params.initFeatureNtSegs($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
+				    	$scope.ntSegProps = params.initNtSegProps($scope.featureNtSegs, $scope.selectedFeatureAnalysis);
 			    	}
 		    	};
 		    	
 		    	$scope.updateDiffs = function() {
+		    		console.log("updateDiffs query");
 			    	if($scope.selectedQueryFeatAnalysis && $scope.selectedRefName) {
-			    		for(var i = 0; i < $scope.selectedQueryFeatAnalysis.aas.length; i++) {
-			    			var queryAa = $scope.selectedQueryFeatAnalysis.aas[i];
+			    		for(var i = 0; i < $scope.featureAas.length; i++) {
+			    			var queryAa = $scope.featureAas[i];
 			    			$scope.aaProps[i].diff = queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
 			    		}
-			    		for(var i = 0; i < $scope.selectedQueryFeatAnalysis.nts.length; i++) {
-			    			var ntSeg = $scope.selectedQueryFeatAnalysis.nts[i];
+			    		for(var i = 0; i < $scope.featureNtSegs.length; i++) {
+			    			var ntSeg = $scope.featureNtSegs[i];
 			    			var ntSegProp = $scope.ntSegProps[i];
 			    			var referenceDiff = _.find(ntSeg.referenceDiffs, function(rDiff) { return rDiff.refName == $scope.selectedRefName; });
-				    		for(var j = 0; j < ntSeg.nts.length; j++) {
-				    			ntSegProp.ntProps[j].diff = referenceDiff.mask[j] == 'X';
+				    		for(var j = ntSegProp.truncateLeft; j < (ntSeg.nts.length - ntSegProp.truncateRight); j++) {
+				    			ntSegProp.ntProps[(j - ntSegProp.truncateLeft)].diff = referenceDiff.mask[j] == 'X';
 				    		}
 			    		}
 			    	}
