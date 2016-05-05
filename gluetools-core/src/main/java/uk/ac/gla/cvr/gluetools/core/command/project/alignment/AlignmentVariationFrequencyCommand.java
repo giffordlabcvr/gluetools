@@ -124,7 +124,7 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 				}
 
 				for(AlignmentMember almtMember: almtMembers) {
-					List<VariationScanResult> variationScanResults = MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan);
+					List<VariationScanResult> variationScanResults = MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, false);
 					for(VariationScanResult variationScanResult: variationScanResults) {
 						VariationInfo variationInfo = variationNameToInfo.get(variationScanResult.getVariation().getName());
 						if(variationScanResult.isPresent()) {

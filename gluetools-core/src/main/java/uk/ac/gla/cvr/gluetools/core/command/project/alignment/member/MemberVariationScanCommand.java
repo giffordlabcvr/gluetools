@@ -30,13 +30,14 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>]" },
+		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e]" },
 		docoptOptions = { 
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 		"-m, --multiReference                           Scan across references",
 		"-f <featureName>, --featureName <featureName>  Feature to scan",
 		"-d, --descendentFeatures                       Include descendent features",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify variations",
+		"-e, --excludeAbsent                            Exclude absent variations",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
@@ -45,7 +46,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"The <featureName> argument names a feature location which is defined on this reference. "+
 		"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 		"The result will be confined to this feature location. "+
-		"The <whereClause>, if present, qualifies the set of variations scanned for.",
+		"The <whereClause>, if present, qualifies the set of variations scanned for. "+
+		"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results.",
 		metaTags = {}	
 )
 public class MemberVariationScanCommand extends MemberModeCommand<MemberVariationScanResult> {
@@ -55,6 +57,8 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 	public static final String FEATURE_NAME = "featureName";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
+	public static final String EXCLUDE_ABSENT = "excludeAbsent";
+
 
 
 	private String acRefName;
@@ -62,6 +66,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 	private Boolean descendentFeatures;
 	private Expression whereClause;
 	private Boolean multiReference;
+	private Boolean excludeAbsent;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -72,6 +77,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
+		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
 	}
 
 	@Override
@@ -108,7 +114,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 				if(variationsToScan == null) {
 					continue;
 				}
-				scanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan));
+				scanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, excludeAbsent));
 			}
 		}
 		VariationScanResult.sortVariationScanResults(scanResults);
@@ -117,7 +123,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 
 	public static List<VariationScanResult> memberVariationScan(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc,
-			List<Variation> variationsToScan) {
+			List<Variation> variationsToScan, boolean excludeAbsent) {
 		Alignment tipAlmt = almtMember.getAlignment();
 		
 		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
@@ -141,7 +147,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		
 		
 		List<VariationScanResult> variationScanResults = featureLoc.
-				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan);
+				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan, excludeAbsent);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 
 		return variationScanResults;

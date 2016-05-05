@@ -222,7 +222,7 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 												readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd(),
 												SegmentUtils.base1SubString(readString, readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd()));
 
-								variationScanResults.addAll(featureLoc.variationScanSegment(translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment));
+								variationScanResults.addAll(featureLoc.variationScanSegment(translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment, false));
 							}
 						}
 

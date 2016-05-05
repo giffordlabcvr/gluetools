@@ -37,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>]" },
+		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
@@ -47,6 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
+				"-e, --excludeAbsent                                  Exclude absent variations",
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
@@ -63,7 +64,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
 				"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 				"The variation scan will be limited to the specified features. "+
-				"If <whereClause> is used, this qualifies the set of variations which are scanned for.",
+				"If <whereClause> is used, this qualifies the set of variations which are scanned for "+
+				"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class FastaSequenceVariationScanCommand extends FastaSequenceReporterCommand<FastaSequenceVariationScanResult> 
@@ -72,10 +74,12 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
+	public static final String EXCLUDE_ABSENT = "excludeAbsent";
 
 	private Expression whereClause;
 	private Boolean multiReference;
 	private Boolean descendentFeatures;
+	private Boolean excludeAbsent;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -84,6 +88,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
+		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
 	}
 
 	@Override
@@ -172,7 +177,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 								.collect(Collectors.toList());
 	
 	
-				variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToScannedRefNtSegs, variationsToScan));
+				variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToScannedRefNtSegs, variationsToScan, excludeAbsent));
 			}
 		}
 
