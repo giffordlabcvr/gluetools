@@ -40,12 +40,26 @@ public class VariationScanResult {
 		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>(){
 			@Override
 			public int compare(VariationScanResult o1, VariationScanResult o2) {
-				int comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
+				int comp = 0;
 				if(comp == 0) {
-					comp = Integer.compare(o1.getVariation().getRefEnd(), o2.getVariation().getRefEnd());
+					comp = Boolean.compare(o1.present, o2.present);
+				}
+				if(comp == 0 && o1.present) {
+					if(comp == 0) {
+						comp = Integer.compare(o1.queryNtStart, o2.queryNtStart);
+					}
+					if(comp == 0) {
+						comp = Integer.compare(o1.queryNtEnd, o2.queryNtEnd);
+					}
 				}
 				if(comp == 0) {
 					comp = o1.getVariation().getFeatureLoc().getReferenceSequence().getName().compareTo(o2.getVariation().getFeatureLoc().getReferenceSequence().getName());
+				}
+				if(comp == 0) {
+					comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
+				}
+				if(comp == 0) {
+					comp = Integer.compare(o1.getVariation().getRefEnd(), o2.getVariation().getRefEnd());
 				}
 				if(comp == 0) {
 					comp = o1.getVariation().getFeatureLoc().getFeature().getName().compareTo(o2.getVariation().getFeatureLoc().getFeature().getName());
