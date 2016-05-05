@@ -95,6 +95,8 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
 		final Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
 		
+		// TODO cache reference DBs 
+		// for specific feature locations (but this is only worth it for runs against non-coding features).
 		if(!fastaIdToAlignedSegments.isEmpty()) {
 			String featureName = getFeatureName();
 			BlastDbManager blastDbManager = BlastDbManager.getInstance();
