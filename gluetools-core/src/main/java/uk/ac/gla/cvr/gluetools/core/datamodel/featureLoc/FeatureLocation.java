@@ -361,17 +361,14 @@ public class FeatureLocation extends _FeatureLocation {
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 		
 		String fullProteinTranslation = null;
-		Integer proteinTranslationRefNtStart = 0;
-		Integer proteinTranslationRefNtEnd = 0;
+		NtQueryAlignedSegment ntQaSegCdnAligned = null;
 		if(getFeature().codesAminoAcids()) {
 			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, Arrays.asList(ntQaSeg));
 			if(ntQaSegsCdnAligned.isEmpty()) {
 				fullProteinTranslation = "";
 			} else {
-				NtQueryAlignedSegment ntQaSegCdnAligned = ntQaSegsCdnAligned.get(0);
+				ntQaSegCdnAligned = ntQaSegsCdnAligned.get(0);
 				fullProteinTranslation = translator.translate(ntQaSegCdnAligned.getNucleotides());
-				proteinTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
-				proteinTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 			}
 		}
 		
@@ -379,13 +376,17 @@ public class FeatureLocation extends _FeatureLocation {
 			Integer refStart = variationToScan.getRefStart();
 			Integer refEnd = variationToScan.getRefEnd();
 			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
+				Integer proteinTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
+				Integer proteinTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 				if(!( refStart >= proteinTranslationRefNtStart && refEnd <= proteinTranslationRefNtEnd )) {
 					continue;
 				}
-				int startAA = (refStart - proteinTranslationRefNtStart) / 3;
-				int endAA = ( (refEnd-2) - proteinTranslationRefNtStart) / 3;
+				int segToVariationStartOffset = refStart - proteinTranslationRefNtStart;
+				int startAA = segToVariationStartOffset / 3;
+				int endAA = ( segToVariationStartOffset + 2 ) / 3;
 				CharSequence proteinTranslationForVariation = fullProteinTranslation.subSequence(startAA, endAA+1);
-				variationScanResults.add(variationToScan.scanProteinTranslation(proteinTranslationForVariation));
+				int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
+				variationScanResults.add(variationToScan.scanProteinTranslation(proteinTranslationForVariation, scanQueryNtStart));
 			} else if(variationToScan.getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
 				if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
 					continue;
@@ -398,7 +399,7 @@ public class FeatureLocation extends _FeatureLocation {
 				}
 				NtQueryAlignedSegment intersectionSeg = intersection.get(0);
 				CharSequence nucleotides = intersectionSeg.getNucleotides();
-				variationScanResults.add(variationToScan.scanNucleotides(nucleotides));
+				variationScanResults.add(variationToScan.scanNucleotides(nucleotides, intersectionSeg.getQueryStart()));
 			}
 		}
 		

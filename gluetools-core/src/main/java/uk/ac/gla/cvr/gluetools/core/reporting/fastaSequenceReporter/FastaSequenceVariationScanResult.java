@@ -12,7 +12,8 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 		FEATURE_NAME = "featureName",
 		VARIATION_NAME = "variationName",
 		PRESENT = "present",
-		ABSENT = "absent";
+		QUERY_NT_START = "queryNtStart",
+		QUERY_NT_END = "queryNtEnd";
 
 
 	public FastaSequenceVariationScanResult(List<VariationScanResult> rowData) {
@@ -22,7 +23,8 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 				column(FEATURE_NAME, vsr -> vsr.getVariation().getFeatureLoc().getFeature().getName()),
 				column(VARIATION_NAME, vsr -> vsr.getVariation().getName()),
 				column(PRESENT, vsr -> vsr.isPresent()),
-				column(ABSENT, vsr -> vsr.isAbsent()));
+				column(QUERY_NT_START, vsr -> vsr.getQueryNtStart()), 
+				column(QUERY_NT_END, vsr -> vsr.getQueryNtEnd()));
 	}
 
 }

@@ -104,6 +104,8 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
+		ReferenceSequence ancConstrRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
+
 		List<ReferenceSequence> refsToScan;
 		if(multiReference) {
 			refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, getAcRefName());
@@ -111,7 +113,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 				refsToScan.add(0, targetRef);
 			}
 		} else {
-			refsToScan = Arrays.asList(tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName()));
+			refsToScan = Arrays.asList(ancConstrRef);
 		}
 
 		List<Feature> featuresToScan = new ArrayList<Feature>();
@@ -119,6 +121,19 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		if(descendentFeatures) {
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
+
+		
+		// align query to target reference
+		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
+		AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
+
+		// extract segments from aligner result
+		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
+
+		// translate segments to tip alignment reference
+		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+				queryToTargetRefSegs);
 
 		
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
@@ -139,38 +154,25 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 					continue;
 				}
 	
-				// align query to target reference
-				Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
-				AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
-	
-				// extract segments from aligner result
-				List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
-	
-				// translate segments to tip alignment reference
-				List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-						tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-						queryToTargetRefSegs);
-	
-				// translate segments to ancestor constraining reference
-				List<QueryAlignedSegment> queryToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
-	
-	
-				// trim down to the feature area.
+				// translate segments to scanned reference
+				List<QueryAlignedSegment> queryToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
+				
+				// trim query to scanned ref segs down to the feature area.
 				List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
 	
-				List<QueryAlignedSegment> queryToAncConstrRefSegs = 
-						ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
+				List<QueryAlignedSegment> queryToScannedRefSegs = 
+						ReferenceSegment.intersection(queryToScannedRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
 	
 				String fastaNTs = fastaNTSeq.getSequenceAsString();
 	
-				List<NtQueryAlignedSegment> queryToAncConstrRefNtSegs =
-						queryToAncConstrRefSegs.stream()
+				List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
+						queryToScannedRefSegs.stream()
 						.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
 								SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
 								.collect(Collectors.toList());
 	
 	
-				variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToAncConstrRefNtSegs, variationsToScan));
+				variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToScannedRefNtSegs, variationsToScan));
 			}
 		}
 

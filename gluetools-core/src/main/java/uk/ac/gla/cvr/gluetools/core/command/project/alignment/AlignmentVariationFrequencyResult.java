@@ -11,9 +11,9 @@ public class AlignmentVariationFrequencyResult extends BaseTableResult<Variation
 		REF_SEQ_NAME = "referenceName",
 		FEATURE_NAME = "featureName",
 		VARIATION_NAME = "variationName",
-		READS_PRESENT = "membersPresent",
+		MEMBERS_PRESENT = "membersPresent",
 		PCT_PRESENT = "pctPresent",
-		READS_ABSENT = "membersAbsent",
+		MEMBERS_ABSENT = "membersAbsent",
 		PCT_ABSENT = "pctAbsent";
 
 
@@ -23,9 +23,9 @@ public class AlignmentVariationFrequencyResult extends BaseTableResult<Variation
 				column(REF_SEQ_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getReferenceSequence().getName()), 
 				column(FEATURE_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getFeature().getName()), 
 				column(VARIATION_NAME, vsmc -> vsmc.getVariation().getName()), 
-				column(READS_PRESENT, vsmc -> vsmc.getMembersWherePresent()), 
+				column(MEMBERS_PRESENT, vsmc -> vsmc.getMembersWherePresent()), 
 				column(PCT_PRESENT, vsmc -> vsmc.getPctWherePresent()), 
-				column(READS_ABSENT, vsmc -> vsmc.getMembersWhereAbsent()),
+				column(MEMBERS_ABSENT, vsmc -> vsmc.getMembersWhereAbsent()),
 				column(PCT_ABSENT, vsmc -> vsmc.getPctWhereAbsent()));
 	}
 

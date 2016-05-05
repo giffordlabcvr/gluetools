@@ -235,7 +235,7 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 							}
 							if(variationScanResult.isPresent()) {
 								variationInfo.readsConfirmedPresent++;
-							} else if(variationScanResult.isAbsent()) {
+							} else {
 								variationInfo.readsConfirmedAbsent++;
 							} 
 						}

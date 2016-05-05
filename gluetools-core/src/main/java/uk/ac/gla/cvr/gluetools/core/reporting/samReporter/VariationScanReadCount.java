@@ -44,9 +44,15 @@ public class VariationScanReadCount {
 		Comparator<VariationScanReadCount> comparator = new Comparator<VariationScanReadCount>(){
 			@Override
 			public int compare(VariationScanReadCount o1, VariationScanReadCount o2) {
-				int comp = o1.getVariation().getFeatureLoc().getReferenceSequence().getName().compareTo(o2.getVariation().getFeatureLoc().getReferenceSequence().getName());
+				int comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
 				if(comp == 0) {
-					comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
+					comp = Integer.compare(o1.getVariation().getRefEnd(), o2.getVariation().getRefEnd());
+				}
+				if(comp == 0) {
+					comp = o1.getVariation().getFeatureLoc().getReferenceSequence().getName().compareTo(o2.getVariation().getFeatureLoc().getReferenceSequence().getName());
+				}
+				if(comp == 0) {
+					comp = o1.getVariation().getFeatureLoc().getFeature().getName().compareTo(o2.getVariation().getFeatureLoc().getFeature().getName());
 				}
 				if(comp == 0) {
 					comp = o1.getVariation().getName().compareTo(o2.getVariation().getName());

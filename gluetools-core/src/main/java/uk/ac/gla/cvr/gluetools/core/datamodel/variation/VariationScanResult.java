@@ -8,13 +8,16 @@ public class VariationScanResult {
 
 	private Variation variation;
 	private boolean present;
-	private boolean absent;
+	private Integer queryNtStart;
+	private Integer queryNtEnd;
 	
-	public VariationScanResult(Variation variation, boolean present, boolean absent) {
+	
+	public VariationScanResult(Variation variation, boolean present, Integer queryNtStart, Integer queryNtEnd) {
 		super();
 		this.variation = variation;
 		this.present = present;
-		this.absent = absent;
+		this.queryNtStart = queryNtStart;
+		this.queryNtEnd = queryNtEnd;
 	}
 
 	public Variation getVariation() {
@@ -25,17 +28,27 @@ public class VariationScanResult {
 		return present;
 	}
 
-	public boolean isAbsent() {
-		return absent;
+	public Integer getQueryNtStart() {
+		return queryNtStart;
+	}
+
+	public Integer getQueryNtEnd() {
+		return queryNtEnd;
 	}
 
 	public static void sortVariationScanResults(List<VariationScanResult> variationScanResults) {
 		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>(){
 			@Override
 			public int compare(VariationScanResult o1, VariationScanResult o2) {
-				int comp = o1.getVariation().getFeatureLoc().getReferenceSequence().getName().compareTo(o2.getVariation().getFeatureLoc().getReferenceSequence().getName());
+				int comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
 				if(comp == 0) {
-					comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
+					comp = Integer.compare(o1.getVariation().getRefEnd(), o2.getVariation().getRefEnd());
+				}
+				if(comp == 0) {
+					comp = o1.getVariation().getFeatureLoc().getReferenceSequence().getName().compareTo(o2.getVariation().getFeatureLoc().getReferenceSequence().getName());
+				}
+				if(comp == 0) {
+					comp = o1.getVariation().getFeatureLoc().getFeature().getName().compareTo(o2.getVariation().getFeatureLoc().getFeature().getName());
 				}
 				if(comp == 0) {
 					comp = o1.getVariation().getName().compareTo(o2.getVariation().getName());

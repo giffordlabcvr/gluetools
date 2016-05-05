@@ -129,7 +129,7 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 						VariationInfo variationInfo = variationNameToInfo.get(variationScanResult.getVariation().getName());
 						if(variationScanResult.isPresent()) {
 							variationInfo.membersConfirmedPresent++;
-						} else if(variationScanResult.isAbsent()) {
+						} else {
 							variationInfo.membersConfirmedAbsent++;
 						}
 					}

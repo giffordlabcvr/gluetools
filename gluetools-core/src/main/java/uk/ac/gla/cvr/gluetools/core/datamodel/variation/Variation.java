@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -223,20 +224,26 @@ public class Variation extends _Variation implements IReferenceSegment {
 		
 	}
 
-	public VariationScanResult scanProteinTranslation(CharSequence proteinTranslation) {
-		TranslationFormat translationFormat = getTranslationFormat();
+	public VariationScanResult scanProteinTranslation(CharSequence proteinTranslation, int zeroIndexNtStart) {
 		boolean result;
-		if(translationFormat == TranslationFormat.AMINO_ACID) {
-			if(isSimpleMatch()) {
-				result = charSequencesEqual(getRegex(), proteinTranslation);
-			} else {
-				Pattern regexPattern = getRegexPattern();
-				result = regexPattern.matcher(proteinTranslation).find();
+		Integer ntStart = null;
+		Integer ntEnd = null;
+		if(isSimpleMatch()) {
+			result = charSequencesEqual(getRegex(), proteinTranslation);
+			if(result) {
+				ntStart = zeroIndexNtStart;
+				ntEnd = zeroIndexNtStart+(proteinTranslation.length() * 3)-1;
 			}
 		} else {
-			return null;
+			Pattern regexPattern = getRegexPattern();
+			Matcher matcher = regexPattern.matcher(proteinTranslation);
+			result = matcher.find();
+			if(result) {
+				ntStart = zeroIndexNtStart + ( matcher.start() * 3 );
+				ntEnd = zeroIndexNtStart + ( matcher.end() * 3 ) - 1;
+			}
 		}
-		return new VariationScanResult(this, result, !result);
+		return new VariationScanResult(this, result, ntStart, ntEnd);
 	}
 
 	private boolean charSequencesEqual(CharSequence seq1, CharSequence seq2) {
@@ -252,20 +259,26 @@ public class Variation extends _Variation implements IReferenceSegment {
 	}
 	
 	
-	public VariationScanResult scanNucleotides(CharSequence nucleotides) {
-		TranslationFormat translationFormat = getTranslationFormat();
+	public VariationScanResult scanNucleotides(CharSequence nucleotides, int zeroIndexNtStart) {
 		boolean result;
-		if(translationFormat == TranslationFormat.NUCLEOTIDE) {
-			if(isSimpleMatch()) {
-				result = charSequencesEqual(getRegex(), nucleotides);
-			} else {
-				Pattern regexPattern = getRegexPattern();
-				result = regexPattern.matcher(nucleotides).find();
+		Integer ntStart = null;
+		Integer ntEnd = null;
+		if(isSimpleMatch()) {
+			result = charSequencesEqual(getRegex(), nucleotides);
+			if(result) {
+				ntStart = zeroIndexNtStart;
+				ntEnd = zeroIndexNtStart+nucleotides.length()-1;
 			}
 		} else {
-			return null;
+			Pattern regexPattern = getRegexPattern();
+			Matcher matcher = regexPattern.matcher(nucleotides);
+			result = matcher.find();
+			if(result) {
+				ntStart = zeroIndexNtStart + matcher.start();
+				ntEnd = zeroIndexNtStart + matcher.end() - 1;
+			}
 		}
-		return new VariationScanResult(this, result, !result);
+		return new VariationScanResult(this, result, ntStart, ntEnd);
 	}
 	
 	public Variation clone() {
