@@ -94,7 +94,6 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 	@Override
 	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter) {
-		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		
@@ -111,9 +110,44 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 
 		ReferenceSequence ancConstrRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
+		// align query to target reference
+		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
+		AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
+
+		// extract segments from aligner result
+		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
+
+		// translate segments to tip alignment reference
+		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+				queryToTargetRefSegs);
+
+
+		List<VariationScanResult> variationScanResults = variationScan(
+				cmdContext, getFeatureName(), fastaNTSeq, targetRef.getName(), tipAlmt,
+				ancConstrRef.getName(), queryToTipAlmtRefSegs, 
+				multiReference, descendentFeatures, excludeAbsent, whereClause);
+		
+		return new FastaSequenceVariationScanResult(variationScanResults);
+	}
+
+	public static List<VariationScanResult> variationScan(CommandContext cmdContext,
+			String featureName, DNASequence fastaNTSeq,
+			String targetRefName, Alignment tipAlmt,
+			String ancConstrRefName,
+			List<QueryAlignedSegment> queryToTipAlmtRefSegs, 
+			boolean multiReference, boolean descendentFeatures, boolean excludeAbsent,
+			Expression variationWhereClause) {
+		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+
 		List<ReferenceSequence> refsToScan;
+		ReferenceSequence targetRef = 
+				GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
+		ReferenceSequence ancConstrRef = 
+				GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(ancConstrRefName));
+
 		if(multiReference) {
-			refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, getAcRefName());
+			refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, ancConstrRefName);
 			if(!refsToScan.contains(targetRef)) {
 				refsToScan.add(0, targetRef);
 			}
@@ -126,19 +160,6 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		if(descendentFeatures) {
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
-
-		
-		// align query to target reference
-		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
-		AlignerResult alignerResult = aligner.doAlign(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
-
-		// extract segments from aligner result
-		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
-
-		// translate segments to tip alignment reference
-		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-				queryToTargetRefSegs);
 
 		
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
@@ -154,7 +175,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 					continue;
 				}
 				
-				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, variationWhereClause);
 				if(variationsToScan.isEmpty()) {
 					continue;
 				}
@@ -182,8 +203,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		}
 
 		VariationScanResult.sortVariationScanResults(variationScanResults);
-		
-		return new FastaSequenceVariationScanResult(variationScanResults);
+		return variationScanResults;
 	}
 
 	@CompleterClass

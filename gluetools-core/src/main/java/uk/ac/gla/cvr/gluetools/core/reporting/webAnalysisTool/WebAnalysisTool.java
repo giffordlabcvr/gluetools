@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
@@ -30,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -37,6 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceVariationScanCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -82,7 +85,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		
 	}
 
-	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes, List<String> vCategories) {
+	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes, List<String> vCatNames) {
 		
 		FastaSequenceReporter fastaSequenceReporter = 
 				Module.resolveModulePlugin(cmdContext, FastaSequenceReporter.class, fastaSequenceReporterModuleName);
@@ -94,25 +97,84 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				cmdContext, fastaBytes, fastaSequenceReporter,
 				refNameToAnalysis, fastaIdToQueryAnalysis);
 		
+		checkVCatNames(vCatNames);
+		
 		AllColumnsAlignment<Key> allColsAlmt = initAllColumnsAlignment(
 				cmdContext, fastaSequenceReporter, fastaIdToSequence,
 				fastaIdToQueryAnalysis, refNameToAnalysis);
 		
 		Map<String, FeatureAnalysis> featureNameToAnalysis = 
 				initFeatureAnalysis(cmdContext, refNameToAnalysis.keySet(), allColsAlmt);
-
 		
 		populateReferenceAnalyses(cmdContext, fastaSequenceReporter, refNameToAnalysis, allColsAlmt);
 		
 		populateQueryAnalysese(cmdContext, fastaSequenceReporter, fastaIdToQueryAnalysis, allColsAlmt);
 
-		computeDiffs(fastaIdToQueryAnalysis, refNameToAnalysis, featureNameToAnalysis);
+		populateRefQueryDiffs(featureNameToAnalysis, refNameToAnalysis, fastaIdToQueryAnalysis);
 		
+		populateVariationMatchGroups(cmdContext, fastaSequenceReporter, allColsAlmt, 
+				fastaIdToSequence, fastaIdToQueryAnalysis, vCatNames);
  		
 		return new WebAnalysisResult(
 				new ArrayList<FeatureAnalysis>(featureNameToAnalysis.values()),
 				new ArrayList<ReferenceAnalysis>(refNameToAnalysis.values()),
 				new ArrayList<QueryAnalysis>(fastaIdToQueryAnalysis.values()));
+	}
+
+	private void populateVariationMatchGroups(CommandContext cmdContext,
+			FastaSequenceReporter fastaSequenceReporter,
+			AllColumnsAlignment<Key> allColsAlmt,
+			Map<String, DNASequence> fastaIdToSequence, 
+			Map<String, QueryAnalysis> fastaIdToQueryAnalysis, 
+			List<String> vCatNames) {
+
+		featureAnalysisHints.forEach(featureAnalysisHint -> {
+			String featureName = featureAnalysisHint.getFeatureName();
+			if(featureAnalysisHint.getIncludesSequenceContent()) {
+				fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
+					
+					DNASequence dnaSequence = fastaIdToSequence.get(fastaId);
+					
+					Alignment tipAlignment = 
+							GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(queryAnalysis.tipAlignmentName));
+					
+					QueryKey queryKey = new QueryKey(fastaId);
+					ReferenceKey tipAlmtRefKey = new ReferenceKey(tipAlignment.getRefSequence().getName());
+					List<QueryAlignedSegment> queryToTipAlmtRefSegs = allColsAlmt.key1ToKey2Segments(queryKey, tipAlmtRefKey);
+					
+					Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroup = 
+							new LinkedHashMap<VariationMatchGroup.Key, VariationMatchGroup>();
+					
+					vCatNames.forEach( vCatName -> {
+						VariationCategory variationCategory = vCatNameToCategory.get(vCatName);
+						for(VariationScanHint variationScanHint: featureAnalysisHint.getVariationScanHints()) {
+							String acRefName = variationScanHint.getReferenceName();
+							Boolean multiReference = variationScanHint.getMultiReference();
+							Boolean descendentFeatures = variationScanHint.getDescendentFeatures();
+							Expression variationWhereClause = variationCategory.getWhereClause();
+							
+							List<VariationScanResult> variationScanResults = 
+									FastaSequenceVariationScanCommand.variationScan(
+									cmdContext, featureName, dnaSequence, queryAnalysis.targetRefName, tipAlignment,
+									acRefName, queryToTipAlmtRefSegs, 
+									multiReference, descendentFeatures, true, variationWhereClause);
+
+							int foo = 1;
+							foo = 2;
+						}
+					} );
+				});
+			}
+		});
+	}
+
+	private void checkVCatNames(List<String> vCatNames) {
+		for(String vCatName : vCatNames) {
+			if(!vCatNameToCategory.containsKey(vCatName)) {
+				throw new WebAnalysisException(Code.UNKNOWN_VARIATION_CATEGORY, vCatName);
+			}
+		}
+		
 	}
 
 	private Map<String, DNASequence> initRefAndQueryAnalyses(
@@ -156,6 +218,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			}
 			QueryAnalysis queryAnalysis = new QueryAnalysis(fastaId, new FastaSequenceObject(fastaId, sequence.getSequenceAsString()), targetRefName);
 			queryAnalysis.ancestorRefName = ancestorRefNames;
+			queryAnalysis.tipAlignmentName = tipAlmt.getName();
 			fastaIdToQueryAnalysis.put(fastaId, queryAnalysis);
 		});
 		return fastaIdToSequence;
@@ -212,11 +275,11 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			List<QueryAlignedSegment> targetRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(queryAnalysis.targetRefName));
 			
 			// sequence feature analyses
-			List<SequenceFeatureAnalysis<QueryAa, QueryNtSegment>> sequenceFeatureAnalyses = new ArrayList<SequenceFeatureAnalysis<QueryAa, QueryNtSegment>>();
+			List<QuerySequenceFeatureAnalysis> sequenceFeatureAnalyses = new ArrayList<QuerySequenceFeatureAnalysis>();
 			for(FeatureAnalysisHint featureAnalysisHint: featureAnalysisHints) {
 				
 				String featureName = featureAnalysisHint.getFeatureName();
-				SequenceFeatureAnalysis<QueryAa, QueryNtSegment> sequenceFeatureAnalysis = new SequenceFeatureAnalysis<QueryAa, QueryNtSegment>();
+				QuerySequenceFeatureAnalysis sequenceFeatureAnalysis = new QuerySequenceFeatureAnalysis();
 				sequenceFeatureAnalysis.featureName = featureName;
 
 				if(featureAnalysisHint.getIncludesSequenceContent()) {
@@ -284,10 +347,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 	}
 
 	// compute diffs between every query and ancestor reference pair, for every feature that exists on both
-	private void computeDiffs(
-			Map<String, QueryAnalysis> fastaIdToQueryAnalysis,
+	private void populateRefQueryDiffs(
+			Map<String, FeatureAnalysis> featureNameToAnalysis,
 			Map<String, ReferenceAnalysis> refNameToAnalysis,
-			Map<String, FeatureAnalysis> featureNameToAnalysis) {
+			Map<String, QueryAnalysis> fastaIdToQueryAnalysis) {
 		featureNameToAnalysis.forEach( (featureName, featureAnalysis) -> {
 			if(featureAnalysis.includesSequenceContent) {
 				fastaIdToQueryAnalysis.values().forEach(queryAnalysis -> {

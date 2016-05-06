@@ -198,6 +198,15 @@ public class AllColumnsAlignment<K> {
 		
 	}
 
+	public List<QueryAlignedSegment> key1ToKey2Segments(K key1, K key2) {
+		List<QueryAlignedSegment> key1ToUSegs = getSegments(key1);
+		List<QueryAlignedSegment> key2ToUSegs = getSegments(key2);
+		List<QueryAlignedSegment> uToKey2Segs = 
+				key2ToUSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
+		return QueryAlignedSegment.translateSegments(key1ToUSegs, uToKey2Segs);
+	}
+	
+	
 	public void logRegionAllKeys(int startUIndex, int endUIndex, Level level) {
 		GlueLogger.getGlueLogger().log(level, "Logging all-columns alignment region ["+startUIndex+", "+endUIndex+"]");
 		ReferenceSegment refSeg = new ReferenceSegment(startUIndex, endUIndex);
