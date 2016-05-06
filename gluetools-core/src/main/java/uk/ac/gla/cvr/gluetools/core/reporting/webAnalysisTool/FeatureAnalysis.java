@@ -24,6 +24,6 @@ public class FeatureAnalysis {
 	public Boolean includesSequenceContent;
 
 	@PojoResultField
-	public String deriveSequenceContentFrom;
+	public String deriveSequenceAnalysisFrom;
 	
 }

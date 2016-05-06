@@ -28,7 +28,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 			if($scope.selectedFeatureAnalysis.includesSequenceContent) {
 				contentFeatureName = $scope.selectedFeatureAnalysis.featureName;
 			} else {
-				contentFeatureName = $scope.selectedFeatureAnalysis.deriveSequenceContentFrom;
+				contentFeatureName = $scope.selectedFeatureAnalysis.deriveSequenceAnalysisFrom;
 			}
 			$scope.selectedRefFeatAnalysis = _.find(
 				$scope.selectedReferenceAnalysis.sequenceFeatureAnalysis, 
@@ -59,7 +59,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 			if($scope.selectedFeatureAnalysis.includesSequenceContent) {
 				contentFeatureName = $scope.selectedFeatureAnalysis.featureName;
 			} else {
-				contentFeatureName = $scope.selectedFeatureAnalysis.deriveSequenceContentFrom;
+				contentFeatureName = $scope.selectedFeatureAnalysis.deriveSequenceAnalysisFrom;
 			}
 			$scope.selectedQueryFeatAnalysis = _.find(
 				$scope.selectedQueryAnalysis.sequenceFeatureAnalysis, 
