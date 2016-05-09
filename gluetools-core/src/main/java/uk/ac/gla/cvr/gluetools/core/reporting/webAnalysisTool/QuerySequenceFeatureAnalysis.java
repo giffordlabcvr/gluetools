@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
@@ -9,6 +10,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 public class QuerySequenceFeatureAnalysis extends SequenceFeatureAnalysis<QueryAa, QueryNtSegment> {
 
 	@PojoResultField
-	public List<VariationMatchGroup> variationMatchGroup;
+	public List<VariationMatchGroup> variationMatchGroup = new ArrayList<VariationMatchGroup>();
 	
 }

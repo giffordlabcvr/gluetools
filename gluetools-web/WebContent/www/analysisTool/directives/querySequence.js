@@ -5,13 +5,16 @@ analysisTool.directive('querySequence', function(moduleURLs) {
 		    controller: function($scope) {
 		    	var params = $scope.svgParams;
 
+		    	// not sure if this first watch is necessary.
 		    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
 		    		$scope.initProps();
+		    		$scope.initVarProps();
 		    		$scope.updateDiffs();
 		    	}, false);
 		    	
 		    	$scope.$watch( 'selectedQueryFeatAnalysis', function(newObj, oldObj) {
 		    		$scope.initProps();
+		    		$scope.initVarProps();
 		    		$scope.updateDiffs();
 		    	}, false);
 
@@ -45,6 +48,13 @@ analysisTool.directive('querySequence', function(moduleURLs) {
 				    			ntSegProp.ntProps[(j - ntSegProp.truncateLeft)].diff = referenceDiff.mask[j] == 'X';
 				    		}
 			    		}
+			    	}
+		    	};
+
+		    	$scope.initVarProps = function() {
+		    		console.log("updateVars query");
+			    	if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
+				    	$scope.varProps = params.initVarProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 			    	}
 		    	};
 		    },

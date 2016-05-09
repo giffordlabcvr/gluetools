@@ -61,5 +61,30 @@
 			</g>
 		</g>
 	</g>
+	<g ng-attr-transform="translate(0, {{y + svgParams.aaHeight + svgParams.ntHeight + svgParams.ntIndexHeight}})">
+		<g 
+			ng-repeat="varProp in varProps track by $index"
+		>
+			<rect 
+				ng-attr-class="vcat_{{varProp.variationCategory}}"
+				ng-attr-x="{{varProp.x}}"
+				ng-attr-y="{{varProp.y}}"
+				ng-attr-width="{{varProp.width}}"
+				ng-attr-height="{{varProp.height}}"
+				ng-attr-dx="{{varProp.dX}}"
+				ng-attr-dy="{{varProp.dY}}"
+			></rect>
+			<rect 
+				fill="none" 
+				stroke="rgb(0,0,0)"
+				ng-attr-x="{{varProp.x}}"
+				ng-attr-y="{{varProp.y}}"
+				ng-attr-width="{{varProp.width}}"
+				ng-attr-height="{{varProp.height}}"
+				ng-attr-dx="{{varProp.dX}}"
+				ng-attr-dy="{{varProp.dY}}"
+			></rect>
+		</g>
+	</g>
 </g>
 	

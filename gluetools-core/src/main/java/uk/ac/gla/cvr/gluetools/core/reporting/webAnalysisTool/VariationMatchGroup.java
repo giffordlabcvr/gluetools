@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
@@ -18,7 +19,7 @@ public class VariationMatchGroup {
 	public String variationCategory;
 
 	@PojoResultField
-	public List<VariationMatch> variationMatch;
+	public List<VariationMatch> variationMatch = new ArrayList<VariationMatch>();
 	
 	public static class Key {
 		private String referenceName;

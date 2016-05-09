@@ -7,6 +7,9 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 			ntGap: 4,
 			codonLabelHeight: 35,
 			aaHeight: 25,
+			varHeight: 20,
+			varGap: 5,
+			numVarTracks: 0,
 			
 			findSegs: function(segs, startUIndex, endUIndex) {
 				var lIndex = binarySearch(segs, 
@@ -94,6 +97,56 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 		    		}
 				});
 			},
+
+			
+			initVarProps: function(seqFeatAnalysis, featAnalysis) {
+				var params = $scope.svgParams;
+				var varProps = [];
+				params.numVarTracks = 0;
+
+				if(seqFeatAnalysis.variationMatchGroup) {
+					for(var i = 0; i < seqFeatAnalysis.variationMatchGroup.length; i++) {
+						var varMatchGroup = seqFeatAnalysis.variationMatchGroup[i];
+						for(var j = 0; j < varMatchGroup.variationMatch.length; j++) {
+							var varMatch = varMatchGroup.variationMatch[j];
+							if(varMatch.endUIndex < featAnalysis.startUIndex) {
+								continue;
+							}
+							if(varMatch.startUIndex > featAnalysis.endUIndex) {
+								continue;
+							}
+			        		var nts = (varMatch.endUIndex - varMatch.startUIndex) + 1;
+			    			var varWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+			    			var varHeight = params.varHeight;
+	
+							var varProp = {
+								varReferenceName: varMatchGroup.referenceName,
+								varFeatureName: varMatchGroup.featureName,
+								variationCategory: varMatchGroup.variationCategory,
+								variationName: varMatch.variationName,
+				    			x: (varMatch.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
+				    			y: varMatch.track * (params.varHeight + params.varGap),
+				    			width: varWidth,
+				    			height: varHeight,
+				    			dx: varWidth / 2.0,
+				    			dy: varHeight / 2.0,
+				    			text: varMatch.variationName,
+							};
+							varProps.push(varProp);
+							if(varMatch.track >= params.numVarTracks) {
+								params.numVarTracks = varMatch.track + 1;
+							}
+						}
+					}
+				}
+				return varProps;
+			},
+
+			svgVariations: function() {
+				var params = $scope.svgParams;
+				return params.numVarTracks != 0;
+			},
+			
 			codonLabelLineY: function() {
 				return 0;
 			},
@@ -115,13 +168,19 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 	};
 	
 	$scope.svgHeight = function() {
-		var params = $scope.svgParams;
-		var height = 
-			params.codonLabelLineY() + 
-			params.codonLabelLineHeight() + // codon label 
-			params.sequenceHeight()+	// reference
-			params.sequenceHeight();	// query
-		return height;
+		if($scope.selectedQueryFeatAnalysis) {
+			var params = $scope.svgParams;
+			var height = 
+				params.codonLabelLineY() + 
+				params.codonLabelLineHeight() + 		// codon label 
+				params.sequenceHeight()+				// reference
+				params.sequenceHeight()+				// query
+				params.numVarTracks * 
+					(params.varHeight + params.varGap);	// variation tracks. 
+			return height;
+		} else {
+			return 0;
+		}
 	};
 	$scope.svgWidth = function() {
 		if($scope.selectedFeatureAnalysis) {

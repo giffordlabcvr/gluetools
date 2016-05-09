@@ -375,6 +375,7 @@ public class FeatureLocation extends _FeatureLocation {
 		for(Variation variationToScan: variationsToScan) {
 			Integer refStart = variationToScan.getRefStart();
 			Integer refEnd = variationToScan.getRefEnd();
+			int varLengthNt = refEnd - refStart + 1;
 			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
 				Integer proteinTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
 				Integer proteinTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
@@ -383,7 +384,7 @@ public class FeatureLocation extends _FeatureLocation {
 				}
 				int segToVariationStartOffset = refStart - proteinTranslationRefNtStart;
 				int startAA = segToVariationStartOffset / 3;
-				int endAA = ( segToVariationStartOffset + 2 ) / 3;
+				int endAA = startAA + ( (varLengthNt / 3) - 1);
 				CharSequence proteinTranslationForVariation = fullProteinTranslation.subSequence(startAA, endAA+1);
 				int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
 				VariationScanResult proteinScanResult = variationToScan.scanProteinTranslation(proteinTranslationForVariation, scanQueryNtStart);

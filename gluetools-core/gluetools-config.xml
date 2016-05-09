@@ -6,7 +6,7 @@
 		<jdbcUrl>jdbc:mysql://localhost:3306/GLUE_TOOLS</jdbcUrl>	
 	</database>
 	<properties>
-		<property>
+	         <property>
 			<name>gluetools.core.programs.blast.blastn.executable</name>
 			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/bin/blastn</value>
 		</property>

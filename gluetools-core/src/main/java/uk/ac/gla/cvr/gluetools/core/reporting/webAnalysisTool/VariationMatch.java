@@ -15,4 +15,9 @@ public class VariationMatch {
 	@PojoResultField
 	public Integer endUIndex;
 
+	// display hint, to prevent overlapping variation hits, they are shown on separate "tracks". 
+	// track number starts from 0.
+	@PojoResultField
+	public Integer track;
+
 }

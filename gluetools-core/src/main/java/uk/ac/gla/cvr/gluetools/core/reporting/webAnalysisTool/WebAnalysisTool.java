@@ -4,6 +4,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,6 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisExcepti
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -121,6 +123,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				new ArrayList<QueryAnalysis>(fastaIdToQueryAnalysis.values()));
 	}
 
+	
+	
 	private void populateVariationMatchGroups(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter,
 			AllColumnsAlignment<Key> allColsAlmt,
@@ -128,10 +132,18 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis, 
 			List<String> vCatNames) {
 
-		featureAnalysisHints.forEach(featureAnalysisHint -> {
-			String featureName = featureAnalysisHint.getFeatureName();
-			if(featureAnalysisHint.getIncludesSequenceContent()) {
-				fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
+
+		fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
+			ReferenceSegmentTree<VariationRefSegment> trackSegTree = new ReferenceSegmentTree<VariationRefSegment>();
+
+			featureAnalysisHints.forEach(featureAnalysisHint -> {
+				String featureName = featureAnalysisHint.getFeatureName();
+				if(featureAnalysisHint.getIncludesSequenceContent()) {
+					QuerySequenceFeatureAnalysis queryFeatAnalysis = queryAnalysis.getSeqFeatAnalysis(featureName).orElse(null);
+					if(queryFeatAnalysis == null) {
+						return;
+					}
+					
 					
 					DNASequence dnaSequence = fastaIdToSequence.get(fastaId);
 					
@@ -141,6 +153,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					QueryKey queryKey = new QueryKey(fastaId);
 					ReferenceKey tipAlmtRefKey = new ReferenceKey(tipAlignment.getRefSequence().getName());
 					List<QueryAlignedSegment> queryToTipAlmtRefSegs = allColsAlmt.key1ToKey2Segments(queryKey, tipAlmtRefKey);
+					
+					List<QueryAlignedSegment> queryToUSegs = allColsAlmt.getSegments(new QueryKey(fastaId));
 					
 					Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroup = 
 							new LinkedHashMap<VariationMatchGroup.Key, VariationMatchGroup>();
@@ -158,13 +172,52 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									cmdContext, featureName, dnaSequence, queryAnalysis.targetRefName, tipAlignment,
 									acRefName, queryToTipAlmtRefSegs, 
 									multiReference, descendentFeatures, true, variationWhereClause);
+							
+							variationScanResults.forEach(vsr -> {
+								FeatureLocation vsrFeatureLoc = vsr.getVariation().getFeatureLoc();
+								String groupRefName = vsrFeatureLoc.getReferenceSequence().getName();
+								String groupFeatureName = vsrFeatureLoc.getFeature().getName();
+								VariationMatchGroup.Key key = 
+										new VariationMatchGroup.Key(groupRefName, groupFeatureName, vCatName);
+								VariationMatchGroup variationMatchGroup = variationMatchKeyToGroup.get(key);
+								if(variationMatchGroup == null) {
+									variationMatchGroup = new VariationMatchGroup();
+									variationMatchGroup.referenceName = groupRefName;
+									variationMatchGroup.featureName = groupFeatureName;
+									variationMatchGroup.variationCategory = vCatName;
+									variationMatchKeyToGroup.put(key, variationMatchGroup);
+								}
+								VariationMatch variationMatch = new VariationMatch();
+								variationMatch.variationName = vsr.getVariation().getName();
+								Integer queryNtStart = vsr.getQueryNtStart();
+								Integer queryNtEnd = vsr.getQueryNtEnd();
+								QueryAlignedSegment vsrQaSeg = 
+										new QueryAlignedSegment(queryNtStart, queryNtEnd, queryNtStart, queryNtEnd);
+								List<QueryAlignedSegment> vsrUSegs = 
+										QueryAlignedSegment.translateSegments(Arrays.asList(vsrQaSeg), queryToUSegs);
+								variationMatch.startUIndex = ReferenceSegment.minRefStart(vsrUSegs);
+								variationMatch.endUIndex = ReferenceSegment.maxRefEnd(vsrUSegs);
+								variationMatchGroup.variationMatch.add(variationMatch);
+								List<VariationRefSegment> overlapping = new ArrayList<VariationRefSegment>();
+								VariationRefSegment varSeg = new VariationRefSegment(
+										variationMatch.variationName, variationMatch.startUIndex, variationMatch.endUIndex);
+								trackSegTree.findOverlapping(variationMatch.startUIndex, variationMatch.endUIndex, overlapping);
+								varSeg.track = 0;
+								while(true) {
+									if(!overlapping.stream().anyMatch(vSeg -> vSeg.track == varSeg.track)) {
+										break;
+									}
+									varSeg.track++;
+								}
+								trackSegTree.add(varSeg);
+								variationMatch.track = varSeg.track;
+							});
 
-							int foo = 1;
-							foo = 2;
 						}
 					} );
-				});
-			}
+					queryFeatAnalysis.variationMatchGroup.addAll(variationMatchKeyToGroup.values());
+				}
+			});
 		});
 	}
 
@@ -177,6 +230,19 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		
 	}
 
+	private class VariationRefSegment extends ReferenceSegment {
+
+		String variationName;
+		int track;
+		public VariationRefSegment(String variationName, int refStart, int refEnd) {
+			super(refStart, refEnd);
+			this.variationName = variationName;
+		}
+		public String toString() {
+			return variationName+": ["+getRefStart()+", "+getRefEnd()+"]";
+		}
+	}
+	
 	private Map<String, DNASequence> initRefAndQueryAnalyses(
 			CommandContext cmdContext, byte[] fastaBytes,
 			FastaSequenceReporter fastaSequenceReporter,
