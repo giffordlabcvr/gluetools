@@ -66,6 +66,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		addModulePluginCmdClass(WebAnalysisCommand.class);
 		addModulePluginCmdClass(AnalysisCommand.class);
 		addModulePluginCmdClass(ListVariationCategoryCommand.class);
+		addModulePluginCmdClass(RenderVariationCommand.class);
 		addSimplePropertyName(FASTA_SEQUENCE_REPORTER_MODULE_NAME);
 	}
 
@@ -860,6 +861,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		return new ArrayList<VariationCategory>(vCatNameToCategory.values());
 	}
 
+	public VariationCategory getVariationCategory(String vCatName) {
+		return vCatNameToCategory.get(vCatName);
+	}
 
 	
 }
