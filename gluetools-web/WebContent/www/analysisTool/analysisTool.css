@@ -78,3 +78,11 @@
 	fill: #99bb77;
 }
 
+.varLocation {
+	fill: #e6f9ff;
+}
+
+.varBox {
+	stroke: #333333;
+	fill: none;
+}

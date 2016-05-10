@@ -1,4 +1,4 @@
-analysisTool.directive('querySequence', function(moduleURLs) {
+analysisTool.directive('querySequence', function(moduleURLs, dialogs, glueWS) {
 	  return {
 		    restrict: 'E',
 		    replace: true,
@@ -52,11 +52,25 @@ analysisTool.directive('querySequence', function(moduleURLs) {
 		    	};
 
 		    	$scope.initVarProps = function() {
-		    		console.log("updateVars query");
 			    	if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
 				    	$scope.varProps = params.initVarProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 			    	}
 		    	};
+		    	
+		    	$scope.displayVariation = function(varProp) {
+		    		varProp.mouseOver = false;
+		    		var tooltip = varProp.text;
+		    		varProp.text = null;
+		    		var dlg = dialogs.create(moduleURLs.getAnalysisToolURL()+'/dialogs/displayVariation.html','displayVariationCtrl',{},{});
+		    		dlg.result.then(function() {
+		    			// completion handler
+		    		}, function() {
+		    		    // Error handler
+		    		}).finally(function() {
+		    			varProp.text = tooltip;
+		    		});
+		    	}
+		    	
 		    },
 		    scope: {
 		      svgParams: '=',

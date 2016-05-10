@@ -39,4 +39,11 @@ a {
    width: auto !important;
 }
 
+/* change yeti tooltip colours */
 
+.tooltip.top .tooltip-inner {
+    background-color: #008cba;
+}
+.tooltip.top .tooltip-arrow {
+    border-top-color: #008cba;
+}

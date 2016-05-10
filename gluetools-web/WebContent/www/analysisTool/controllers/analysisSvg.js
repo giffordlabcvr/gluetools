@@ -1,4 +1,8 @@
-analysisTool.controller('analysisSvg', ['$scope', function($scope) {
+analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'moduleURLs', 
+                                        function($scope, glueWS, dialogs, moduleURLs) {
+	
+	$scope.analysisToolURL = moduleURLs.getAnalysisToolURL();
+	
 	$scope.svgParams = {
 			sequenceLabelWidth: 150,
 			ntWidth: 16,
@@ -118,8 +122,15 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 			        		var nts = (varMatch.endUIndex - varMatch.startUIndex) + 1;
 			    			var varWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
 			    			var varHeight = params.varHeight;
-	
+
+			    			var locationHeight = 
+			    				params.aaHeight + 
+			    				params.ntHeight + 
+			    				params.ntIndexHeight + 
+			    				( varMatch.track * (params.varHeight + params.varGap) );
+			    			
 							var varProp = {
+								id: varMatchGroup.referenceName+"_"+varMatchGroup.featureName+"_"+varMatch.variationName,
 								varReferenceName: varMatchGroup.referenceName,
 								varFeatureName: varMatchGroup.featureName,
 								variationCategory: varMatchGroup.variationCategory,
@@ -131,6 +142,7 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 				    			dx: varWidth / 2.0,
 				    			dy: varHeight / 2.0,
 				    			text: varMatch.variationName,
+				    			locationHeight: locationHeight
 							};
 							varProps.push(varProp);
 							if(varMatch.track >= params.numVarTracks) {
@@ -190,4 +202,6 @@ analysisTool.controller('analysisSvg', ['$scope', function($scope) {
 			return 0;
 		}
 	};
+	
+	
 }]);
