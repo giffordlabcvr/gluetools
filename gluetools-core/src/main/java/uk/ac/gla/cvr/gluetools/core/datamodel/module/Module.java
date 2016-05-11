@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.module;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.xml.sax.SAXException;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Module;
@@ -62,6 +64,7 @@ public class Module extends _Module {
 	public ModulePlugin<?> getModulePlugin(GluetoolsEngine gluetoolsEngine, boolean requireValid) {
 		if(modulePlugin == null) {
 			modulePlugin = buildModulePlugin();
+			modulePlugin.setModuleName(getName());
 		}
 		if(requireValid == true && !valid) {
 			PluginFactory.configurePlugin(gluetoolsEngine.createPluginConfigContext(), configDoc.getDocumentElement(), modulePlugin);
@@ -125,5 +128,16 @@ public class Module extends _Module {
 		return (M) modulePlugin;
 
 	}
-	
+
+	public void loadConfig(ConsoleCommandContext consoleCmdContext, String fileName, boolean loadResources) {
+		File file = consoleCmdContext.fileStringToFile(fileName);
+		byte[] config = ConsoleCommandContext.loadBytesFromFile(file);
+		setConfig(config);
+		if(loadResources) {
+			ModulePlugin<?> modulePlugin = getModulePlugin(consoleCmdContext.getGluetoolsEngine(), true);
+			File resourceDir = file.getParentFile();
+			modulePlugin.loadResources(consoleCmdContext, resourceDir, this);
+		}
+	}
+
 }

@@ -25,6 +25,11 @@ public abstract class CommandResult {
 		this.documentBuilder = new DocumentBuilder(rootObjectName);
 	}
 	
+	protected CommandResult(Document xmlDocument) {
+		this.xmlDocument = xmlDocument;
+		this.documentBuilder = new DocumentBuilder(xmlDocument);
+	}
+
 	protected DocumentBuilder getDocumentBuilder() {
 		return documentBuilder;
 	}

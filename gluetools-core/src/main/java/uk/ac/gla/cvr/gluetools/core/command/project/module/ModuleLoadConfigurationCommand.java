@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
+import java.util.Optional;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -15,19 +17,25 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(commandWords={"load", "configuration"},
-	docoptUsages="<fileName>",
+	docoptUsages="<fileName> [-r]",
+	docoptOptions={
+		"-r, --loadResources  Also load dependent resources",
+	},
 	description = "Load module configuration from a file", 
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase } )
 public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<UpdateResult> {
 
 	private static final String FILE_NAME = "fileName";
+	private static final String LOAD_RESOURCES = "loadResources";
 	private String fileName;
+	private boolean loadResources;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		this.loadResources = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LOAD_RESOURCES, true)).orElse(false);
 	}
 
 	// do the commit here rather than implementing the ModuleUpdateDocumentCommand marker interface.
@@ -35,8 +43,7 @@ public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<Update
 	protected UpdateResult processDocument(CommandContext cmdContext,
 			Module module, Document modulePluginDoc) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		byte[] config = consoleCmdContext.loadBytes(fileName);
-		module.setConfig(config);
+		module.loadConfig(consoleCmdContext, fileName, loadResources);
 		consoleCmdContext.commit();
 		return new UpdateResult(Module.class, 1);
 	}

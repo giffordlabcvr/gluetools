@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._SchemaVersion;
 
 public class SchemaVersion extends _SchemaVersion {
 
-	public static final String currentVersionString = "11";
+	public static final String currentVersionString = "12";
 	
 	public static Map<String, String> pkMap(Integer id) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();

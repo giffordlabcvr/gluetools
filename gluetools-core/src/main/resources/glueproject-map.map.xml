@@ -55,6 +55,11 @@
 		<db-attribute name="description" type="VARCHAR" length="1000"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
+	<db-entity name="module_resource">
+		<db-attribute name="content" type="BLOB"/>
+		<db-attribute name="module_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="200"/>
+	</db-entity>
 	<db-entity name="position_variation">
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="position" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
@@ -148,6 +153,11 @@
 	</obj-entity>
 	<obj-entity name="Module" className="uk.ac.gla.cvr.gluetools.core.datamodel.module.Module" dbEntityName="module" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="config" type="byte[]" db-attribute-path="config"/>
+		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+	</obj-entity>
+	<obj-entity name="ModuleResource" className="uk.ac.gla.cvr.gluetools.core.datamodel.moduleResource.ModuleResource" dbEntityName="module_resource" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="content" type="byte[]" db-attribute-path="content"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
 	<obj-entity name="PositionVariation" className="uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation" dbEntityName="position_variation" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
@@ -269,6 +279,12 @@
 		<db-attribute-pair source="sequence_id" target="sequence_id"/>
 		<db-attribute-pair source="source_name" target="source_name"/>
 	</db-relationship>
+	<db-relationship name="resources" source="module" target="module_resource" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="name" target="module_name"/>
+	</db-relationship>
+	<db-relationship name="module" source="module_resource" target="module" toMany="false">
+		<db-attribute-pair source="module_name" target="name"/>
+	</db-relationship>
 	<db-relationship name="feature_location" source="position_variation" target="feature_location" toMany="false">
 		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
 		<db-attribute-pair source="feature_name" target="feature_name"/>
@@ -386,6 +402,8 @@
 	<obj-relationship name="featureLocation" source="FeatureSegment" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="feature_location"/>
 	<obj-relationship name="group" source="GroupMember" target="SequenceGroup" deleteRule="Nullify" db-relationship-path="group"/>
 	<obj-relationship name="sequence" source="GroupMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
+	<obj-relationship name="resources" source="Module" target="ModuleResource" deleteRule="Cascade" db-relationship-path="resources"/>
+	<obj-relationship name="module" source="ModuleResource" target="Module" deleteRule="Nullify" db-relationship-path="module"/>
 	<obj-relationship name="featureLocation" source="PositionVariation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="feature_location"/>
 	<obj-relationship name="variation" source="PositionVariation" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignments_where_ref_sequence"/>

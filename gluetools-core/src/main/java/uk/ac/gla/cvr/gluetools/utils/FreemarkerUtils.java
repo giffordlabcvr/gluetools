@@ -19,8 +19,12 @@ public class FreemarkerUtils {
 
 	
 	public static Template templateFromString(String templateString, Configuration freemarkerConfiguration) {
+		return templateFromString(UUID.randomUUID().toString(), templateString, freemarkerConfiguration);
+	}
+
+	public static Template templateFromString(String templateName, String templateString, Configuration freemarkerConfiguration) {
 		try {
-			Template template = new Template(UUID.randomUUID().toString(), new StringReader(templateString), freemarkerConfiguration);
+			Template template = new Template(templateName, new StringReader(templateString), freemarkerConfiguration);
 			return template;
 		} catch (ParseException pe) {
 			throw new FreemarkerUtilsException(pe, Code.INVALID_FREEMARKER_TEMPLATE, templateString, pe.getLocalizedMessage());
@@ -28,6 +32,7 @@ public class FreemarkerUtils {
 			throw new RuntimeException(ioe);
 		} 
 	}
+
 	
 	public static class GlueDataObjectTemplateModel implements TemplateHashModel {
 

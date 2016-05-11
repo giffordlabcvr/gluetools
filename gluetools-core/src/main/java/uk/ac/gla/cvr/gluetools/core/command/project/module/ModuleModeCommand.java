@@ -3,7 +3,10 @@ package uk.ac.gla.cvr.gluetools.core.command.project.module;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -22,6 +25,9 @@ public abstract class ModuleModeCommand<R extends CommandResult> extends Command
 		return moduleName;
 	}
 
+	protected Module lookupModule(CommandContext cmdContext) {
+		return GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(getModuleName()));
+	}
 	
 	
 }

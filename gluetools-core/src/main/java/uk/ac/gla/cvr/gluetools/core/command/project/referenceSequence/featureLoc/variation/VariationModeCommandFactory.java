@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class VariationModeCommandFactory extends BaseCommandFactory {
@@ -44,6 +45,7 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 		
 		registerCommandClass(VariationGenerateGlueConfigCommand.class);
 
+		registerCommandClass(RenderObjectCommand.class);
 		registerCommandClass(ExitCommand.class);
 	}
 	

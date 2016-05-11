@@ -84,6 +84,14 @@ public class ConsoleCommandContext extends CommandContext {
 		}
 	}
 	
+	public static String getCanonicalPath(File file) {
+		try {
+			return file.getCanonicalPath();
+		} catch (IOException e) {
+			throw new ConsoleException(e, Code.INVALID_PATH, file.toString(), e.getMessage());
+		}
+	}
+	
 	public void saveBytes(String fileString, byte[] bytes) {
 		saveBytesToFile(fileStringToFile(fileString), bytes);
 	}

@@ -266,16 +266,10 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	
 	@CompleterClass
 	public static class Completer extends AlignmentNameCompleter {
-
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("alignerModuleName", Module.class, Module.NAME_PROPERTY);
 		}
-
-		
-		
-		
-		
 	}
 
 	

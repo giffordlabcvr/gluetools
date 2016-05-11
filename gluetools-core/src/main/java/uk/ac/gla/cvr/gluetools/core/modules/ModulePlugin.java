@@ -1,14 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleLoadConfigurationCommand;
@@ -19,6 +24,10 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleShowConfigurati
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleShowSimplePropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleUnsetSimplePropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleValidateCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.ModuleException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.moduleResource.ModuleResource;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
@@ -32,6 +41,10 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	private Level moduleLogLevel = null;
 	
 	private List<String> simplePropertyNames = new ArrayList<String>();
+	
+	private Set<String> resourceNames = new LinkedHashSet<String>();
+	
+	private String moduleName;
 	
 	public ModulePlugin() {
 		super();
@@ -54,6 +67,12 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 		}
 	}
 
+	// call this during configure to register a resource name
+	// the resource will then get loaded during loadResources()
+	protected void registerResourceName(String resourceName) {
+		resourceNames.add(resourceName);
+	}
+	
 	protected void addSimplePropertyName(String simplePropertyName) {
 		this.simplePropertyNames.add(simplePropertyName);
 	}
@@ -96,6 +115,41 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 
 	public void validate(CommandContext cmdContext) {
 	}
+
+	public final void loadResources(ConsoleCommandContext consoleCmdContext, File resourceDir, Module module) {
+		// delete old resources.
+		List<ModuleResource> oldResources = new LinkedList<ModuleResource>(module.getResources());
+		for(ModuleResource moduleResource: oldResources) {
+			GlueDataObject.delete(consoleCmdContext, ModuleResource.class, moduleResource.pkMap(), false);
+		}
+		if(!oldResources.isEmpty()) {
+			consoleCmdContext.commit();
+		}
+		for(String resourceName: resourceNames) {
+			File resourceFile = new File(resourceDir, resourceName);
+			byte[] resourceContent = ConsoleCommandContext.loadBytesFromFile(resourceFile);
+			ModuleResource moduleResource = GlueDataObject.create(consoleCmdContext, ModuleResource.class, 
+						ModuleResource.pkMap(moduleName, resourceName), false);
+			moduleResource.setContent(resourceContent);
+			moduleResource.setModule(module);
+		}		
+	}
+
+	public String getModuleName() {
+		return moduleName;
+	}
+
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
+	}
 	
+	public byte[] getResource(CommandContext cmdContext, String resourceName) {
+		ModuleResource moduleResource = GlueDataObject.lookup(cmdContext, ModuleResource.class, ModuleResource.pkMap(moduleName, resourceName), true);
+		if(moduleResource == null) {
+			throw new ModuleException(ModuleException.Code.RESOURCE_NOT_LOADED, moduleName, resourceName);
+		}
+		return moduleResource.getContent();
+	}
 	
+
 }

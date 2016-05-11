@@ -41,6 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceVariationScanCommand;
+import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.ObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -66,7 +67,6 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		addModulePluginCmdClass(WebAnalysisCommand.class);
 		addModulePluginCmdClass(AnalysisCommand.class);
 		addModulePluginCmdClass(ListVariationCategoryCommand.class);
-		addModulePluginCmdClass(RenderVariationCommand.class);
 		addSimplePropertyName(FASTA_SEQUENCE_REPORTER_MODULE_NAME);
 	}
 
@@ -855,6 +855,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				
 			}
 		}
+		for(VariationCategory variationCategory: getVariationCategories()) {
+			// check renderer module exists and is of the correct type
+			ObjectRenderer.getRenderer(cmdContext, variationCategory.getObjectRendererModule());
+		}
 	}
 
 	public List<VariationCategory> getVariationCategories() {
@@ -865,5 +869,4 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		return vCatNameToCategory.get(vCatName);
 	}
 
-	
 }

@@ -6,6 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.RenderableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.VariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -14,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
 @CommandModeClass(commandFactoryClass = VariationModeCommandFactory.class)
-public class VariationMode extends CommandMode<VariationCommand> implements ConfigurableObjectMode {
+public class VariationMode extends CommandMode<VariationCommand> implements ConfigurableObjectMode, RenderableObjectMode {
 
 	
 	private String refSeqName;
@@ -60,6 +61,11 @@ public class VariationMode extends CommandMode<VariationCommand> implements Conf
 	
 	@Override
 	public GlueDataObject getConfigurableObject(CommandContext cmdContext) {
+		return lookupVariation(cmdContext);
+	}
+
+	@Override
+	public GlueDataObject getRenderableObject(CommandContext cmdContext) {
 		return lookupVariation(cmdContext);
 	}
 

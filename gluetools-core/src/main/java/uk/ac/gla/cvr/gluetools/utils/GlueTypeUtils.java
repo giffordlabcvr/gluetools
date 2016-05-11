@@ -59,8 +59,12 @@ public class GlueTypeUtils {
 
 	public static GlueType getGlueType(Element elem) {
 		String typeString = elem.getAttribute(GLUE_TYPE_ATTRIBUTE);
-		if(typeString == null) {
-			throw new RuntimeException("Element "+elem.getNodeName()+" has no GLUE type attribute.");
+		if(typeString.length() == 0) {
+			if(GlueXmlUtils.findChildElements(elem).isEmpty()) {
+				typeString = GlueType.String.name();
+			} else {
+				typeString = GlueType.Object.name();
+			}
 		}
 		typeString = typeString.replace("[]", "");
 		try {

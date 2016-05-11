@@ -184,7 +184,8 @@ public class GluetoolsEngine implements Plugin {
 		return gluecoreProperties;
 	}
 
-	
-	
+	public Configuration getFreemarkerConfiguration() {
+		return freemarkerConfiguration;
+	}
 	
 }

@@ -10,6 +10,9 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public class DocumentBuilder extends ObjectBuilder {
 
+	public DocumentBuilder(Document xmlDocument) {
+		super(xmlDocument.getDocumentElement(), false);
+	}
 
 	public DocumentBuilder(String name) {
 		super(createDocElem(name), false);

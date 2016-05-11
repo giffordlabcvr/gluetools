@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
+import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
@@ -56,7 +57,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(Kuiken2006CodonLabeler.class);
 		registerPluginClass(CommonAaPolymorphismGenerator.class);
 		registerPluginClass(TextToQueryTransformer.class);
-		
+		registerPluginClass(FreemarkerObjectRenderer.class);
+
 		registerPluginClass(WebAnalysisTool.class);
 		
 	}
