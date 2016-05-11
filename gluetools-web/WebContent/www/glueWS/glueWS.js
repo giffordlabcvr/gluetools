@@ -1,7 +1,7 @@
-var glueWS = angular.module('glueWS', ['moduleURLs']);
+var glueWS = angular.module('glueWS', ['glueWebToolConfig']);
 
 
-glueWS.factory('glueWS', function ($http, moduleURLs) {
+glueWS.factory('glueWS', function ($http, glueWebToolConfig) {
 	var projectURL;
 	var urlListenerCallbacks = [];
 	/*$http.get('../main/js/hcvApp/glueProjectURL.json').success(function(data) {
@@ -63,7 +63,7 @@ glueWS.factory('glueWS', function ($http, moduleURLs) {
 						  }
 					  }
 				  }
-				  dialogs.create(moduleURLs.getGlueWSURL()+'/dialogs/glueErrorDialog.html','glueErrorDialogCtrl',error,{});
+				  dialogs.create(glueWebToolConfig.getGlueWSURL()+'/dialogs/glueErrorDialog.html','glueErrorDialogCtrl',error,{});
 			  }
 		}
 	};

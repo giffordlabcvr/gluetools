@@ -1,4 +1,4 @@
-analysisTool.directive('querySequence', function(moduleURLs, dialogs, glueWS) {
+analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glueWS) {
 	  return {
 		    restrict: 'E',
 		    replace: true,
@@ -61,14 +61,45 @@ analysisTool.directive('querySequence', function(moduleURLs, dialogs, glueWS) {
 		    		varProp.mouseOver = false;
 		    		var tooltip = varProp.text;
 		    		varProp.text = null;
-		    		var dlg = dialogs.create(moduleURLs.getAnalysisToolURL()+'/dialogs/displayVariation.html','displayVariationCtrl',{},{});
-		    		dlg.result.then(function() {
-		    			// completion handler
-		    		}, function() {
-		    		    // Error handler
-		    		}).finally(function() {
+
+					var varVCat = _.find(
+							$scope.variationCategories, 
+							function(vCat) {
+								return vCat.name == varProp.variationCategory; } );
+
+					var variationRendererModuleName = varVCat.objectRendererModule;
+
+					var variationRendererDialog = _.find(glueWebToolConfig.getRendererDialogs(), 
+							function(rendererDialog) { return rendererDialog.renderer == variationRendererModuleName;});
+
+					console.info('variationRendererDialog', variationRendererDialog);
+
+		    		var glueVariationPath = 
+		    			"reference/"+varProp.varReferenceName+
+		    			"/feature-location/"+varProp.varFeatureName+
+		    			"/variation/"+varProp.variationName;
+					glueWS.runGlueCommand(glueVariationPath, {
+				    	"render-object": { "rendererModuleName": variationRendererModuleName } 
+					})
+				    .success(function(data, status, headers, config) {
+						  console.info('render result', data);
+				    		var dlg = dialogs.create(variationRendererDialog.dialogURL,
+				    				variationRendererDialog.dialogController, 
+				    				{ renderedVariation: data,
+				    				  variationCategory: varVCat
+				    				}, {});
+				    		dlg.result.then(function() {
+				    			// completion handler
+				    		}, function() {
+				    		    // Error handler
+				    		}).finally(function() {
+				    			varProp.text = tooltip;
+				    		});
+				    })
+				    .error(function() {
 		    			varProp.text = tooltip;
-		    		});
+				    	glueWS.raiseErrorDialog(dialogs, "rendering variation "+varProp.variationName);
+				    });
 		    	}
 		    	
 		    },
@@ -77,9 +108,10 @@ analysisTool.directive('querySequence', function(moduleURLs, dialogs, glueWS) {
 		      selectedFeatureAnalysis: '=',
 		      selectedRefName: '=',
 		      selectedQueryFeatAnalysis: '=',
-		      sequenceIndex: '='
+		      sequenceIndex: '=',
+		      variationCategories: "="
 		    },
 		    templateNamespace: 'svg',
-		    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/querySequence.html'
+		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/querySequence.html'
 		  };
 		});

@@ -1,4 +1,4 @@
-analysisTool.directive('codonLabelLine', function(moduleURLs) {
+analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 	  return {
 		    restrict: 'E',
 		    controller: function($scope) {
@@ -34,6 +34,6 @@ analysisTool.directive('codonLabelLine', function(moduleURLs) {
 		      selectedFeatureAnalysis: '=',
 		    },
 		    templateNamespace: 'svg',
-		    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/codonLabelLine.html'
+		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/codonLabelLine.html'
 		  };
 		});

@@ -1,12 +1,12 @@
 'use strict';
 
 var analysisTool = angular.module('analysisTool', 
-		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'moduleURLs']);
+		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'glueWebToolConfig']);
 
-analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'moduleURLs',
-    function($scope, glueWS, FileUploader, dialogs, moduleURLs) {
+analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig',
+    function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig) {
 
-	$scope.analysisToolURL = moduleURLs.getAnalysisToolURL();
+	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
 	
 	$scope.resetSelections = function() {
 		$scope.fileItemUnderAnalysis = null;

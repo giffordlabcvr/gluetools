@@ -1,4 +1,4 @@
-analysisTool.directive('sequenceLabel', function(moduleURLs) {
+analysisTool.directive('sequenceLabel', function(glueWebToolConfig) {
 	  return {
 		    restrict: 'E',
 		    controller: function($scope) {
@@ -17,6 +17,6 @@ analysisTool.directive('sequenceLabel', function(moduleURLs) {
 		      svgParams: '=',
 		    },
 		    templateNamespace: 'svg',
-		    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/sequenceLabel.html'
+		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/sequenceLabel.html'
 		  };
 		});

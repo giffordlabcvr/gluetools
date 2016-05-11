@@ -1,9 +1,10 @@
-var moduleURLs = angular.module('moduleURLs', []);
+var glueWebToolConfig = angular.module('glueWebToolConfig', []);
 
 
-moduleURLs.factory('moduleURLs', function () {
+glueWebToolConfig.factory('glueWebToolConfig', function () {
 	var analysisToolURL;
 	var glueWSURL;
+	var rendererDialogs;
 	return {
 		setAnalysisToolURL: function(newURL) {
 			analysisToolURL = newURL;
@@ -18,6 +19,13 @@ moduleURLs.factory('moduleURLs', function () {
 		},
 		getGlueWSURL: function() {
 			return glueWSURL;
+		},
+		setRendererDialogs: function(newRendererDialogs) {
+			rendererDialogs = newRendererDialogs;
+			console.log("rendererDialogs set to: "+rendererDialogs);
+		},
+		getRendererDialogs: function() {
+			return rendererDialogs;
 		}
 	};
 });

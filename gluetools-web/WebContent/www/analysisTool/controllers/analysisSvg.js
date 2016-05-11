@@ -1,7 +1,7 @@
-analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'moduleURLs', 
-                                        function($scope, glueWS, dialogs, moduleURLs) {
+analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebToolConfig', 
+                                        function($scope, glueWS, dialogs, glueWebToolConfig) {
 	
-	$scope.analysisToolURL = moduleURLs.getAnalysisToolURL();
+	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
 	
 	$scope.svgParams = {
 			sequenceLabelWidth: 150,

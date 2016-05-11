@@ -1,4 +1,4 @@
-analysisTool.directive('referenceSequence', function(moduleURLs) {
+analysisTool.directive('referenceSequence', function(glueWebToolConfig) {
 	  return {
 		    restrict: 'E',
 		    replace: true,
@@ -33,6 +33,6 @@ analysisTool.directive('referenceSequence', function(moduleURLs) {
 		      sequenceIndex: '='
 		    },
 		    templateNamespace: 'svg',
-		    templateUrl: moduleURLs.getAnalysisToolURL()+'/views/referenceSequence.html'
+		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/referenceSequence.html'
 		  };
 		});
