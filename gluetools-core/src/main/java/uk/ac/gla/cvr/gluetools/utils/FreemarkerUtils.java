@@ -3,12 +3,16 @@ package uk.ac.gla.cvr.gluetools.utils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtilsException.Code;
 import freemarker.core.ParseException;
 import freemarker.template.Configuration;
+import freemarker.template.SimpleCollection;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -36,6 +40,8 @@ public class FreemarkerUtils {
 	
 	public static class GlueDataObjectTemplateModel implements TemplateHashModel {
 
+		private Function<String, String> stringEscapeFunction = Function.identity();
+		
 		private GlueDataObject glueDataObject;
 		
 		public GlueDataObjectTemplateModel(GlueDataObject glueDataObject) {
@@ -45,14 +51,32 @@ public class FreemarkerUtils {
 		@Override
 		public TemplateModel get(String key) {
 			Object propValue = glueDataObject.readProperty(key);
-			if(propValue == null) {
+			return objectToTemplateModel(propValue); 
+		}
+		private TemplateModel objectToTemplateModel(Object object) {
+			if(object == null) {
 				return null;
 			}
-			if(propValue instanceof GlueDataObject) {
-				return new GlueDataObjectTemplateModel((GlueDataObject) propValue);
+			if(object instanceof GlueDataObject) {
+				GlueDataObjectTemplateModel glueDataObjectTemplateModel = 
+						new GlueDataObjectTemplateModel((GlueDataObject) object);
+				glueDataObjectTemplateModel.setStringEscapeFunction(stringEscapeFunction);;
+				return glueDataObjectTemplateModel;
 			}
-			return new SimpleScalar(propValue.toString()); 
+			if(object instanceof Collection) {
+				Collection<?> collection = (Collection<?>) object;
+				return new SimpleCollection(collection.stream()
+						.map(obj -> objectToTemplateModel(obj))
+						.collect(Collectors.toList()));
+			}
+			return new SimpleScalar(stringEscapeFunction.apply(object.toString()));
 		}
+		
+		public void setStringEscapeFunction(
+				Function<String, String> stringEscapeFunction) {
+			this.stringEscapeFunction = stringEscapeFunction;
+		}
+
 		@Override
 		public boolean isEmpty() { return false; }
 

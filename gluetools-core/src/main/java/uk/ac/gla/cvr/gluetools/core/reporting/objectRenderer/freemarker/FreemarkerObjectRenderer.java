@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker;
 
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -37,6 +40,12 @@ public class FreemarkerObjectRenderer extends ObjectRenderer<FreemarkerObjectRen
 						cmdContext.getGluetoolsEngine().getFreemarkerConfiguration());
 		}
 		GlueDataObjectTemplateModel templateModel = new GlueDataObjectTemplateModel(renderableObject);
+		templateModel.setStringEscapeFunction(new Function<String, String>() {
+			@Override
+			public String apply(String t) {
+				return StringEscapeUtils.escapeXml(t);
+			}
+		});
 		return FreemarkerUtils.processTemplate(template, templateModel).getBytes();
 	}
 

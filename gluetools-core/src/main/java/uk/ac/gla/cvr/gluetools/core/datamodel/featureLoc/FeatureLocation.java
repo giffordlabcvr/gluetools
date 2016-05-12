@@ -376,7 +376,7 @@ public class FeatureLocation extends _FeatureLocation {
 			Integer refStart = variationToScan.getRefStart();
 			Integer refEnd = variationToScan.getRefEnd();
 			int varLengthNt = refEnd - refStart + 1;
-			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
+			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID && fullProteinTranslation.length() > 0) {
 				Integer proteinTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
 				Integer proteinTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 				if(!( refStart >= proteinTranslationRefNtStart && refEnd <= proteinTranslationRefNtEnd )) {
