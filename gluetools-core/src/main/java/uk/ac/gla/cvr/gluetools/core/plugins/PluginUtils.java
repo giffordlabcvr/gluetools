@@ -215,15 +215,19 @@ public class PluginUtils {
 		}
 		if(result != null) {
 			if(minValue != null) {
-				if(minInclusive && result < minValue) {
-					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<", minValue);
+				if(minInclusive) {
+					if(result < minValue) {
+						throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<", minValue);
+					}
 				} else if(result <= minValue) {
 					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<=", minValue);
 				}
 			}
 			if(maxValue != null) {
-				if(maxInclusive && result > maxValue) {
-					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
+				if(maxInclusive) {
+					if(result > maxValue) {
+						throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
+					}
 				} else if(result <= maxValue) {
 					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">=", maxValue);
 				}
@@ -265,15 +269,19 @@ public class PluginUtils {
 		}
 		if(result != null) {
 			if(minValue != null) {
-				if(minInclusive && result < minValue) {
-					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<", minValue);
+				if(minInclusive) {
+					if(result < minValue) {
+						throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<", minValue);
+					}
 				} else if(result <= minValue) {
 					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, "<=", minValue);
 				}
 			}
 			if(maxValue != null) {
-				if(maxInclusive && result > maxValue) {
-					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
+				if(maxInclusive) {
+					if(result > maxValue) {
+						throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">", maxValue);
+					}
 				} else if(result >= maxValue) {
 					throw new PluginConfigException(Code.PROPERTY_VALUE_OUT_OF_RANGE, propertyName, result, ">=", maxValue);
 				}

@@ -30,7 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.GenerateVariationFreque
 @CommandClass(
 		commandWords={"generate", "frequencies"}, 
 		description = "Generate variation frequencies as variation-alignment notes", 
-		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <acRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>]" },
+		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <acRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>] [-p]" },
 		docoptOptions = { 
 		"-q, --alignmentRecursive                          Include descendent alignments",
 		"-c, --recursive                                   Include descendent members",
@@ -40,19 +40,24 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.GenerateVariationFreque
 		"-m, --multiReference                              Scan across references",
 		"-f <featureName>, --featureName <featureName>     Feature containing variations",
 		"-d, --descendentFeatures                          Include descendent features",
+		"-p, --previewOnly                                 Preview only",
+			
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of the named alignment. "+
 		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
 		"path between the named alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
 		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference. "+
-		"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. ",
+		"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
+		"Variation-alignment notes will be created / updated for each variation whose frequency meets the statistical requirements "+
+		"configured in this module. If --previewOnly is used, no notes will be created / updated, only a preview is returned. ",
 		metaTags = {}	
 )
 public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<GenerateVariationFrequenciesResult, VariationFrequenciesGenerator> {
 
 	public static String ALIGNMENT_NAME = "almtName";
 	public static String ALIGNMENT_RECURSIVE = "alignmentRecursive";
+	public static String PREVIEW_ONLY = "previewOnly";
 	
 	public static final String RECURSIVE = AlignmentVariationFrequencyCmdDelegate.RECURSIVE;
 	public static final String WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.WHERE_CLAUSE;
@@ -64,6 +69,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 	
 	private String almtName; 
 	private boolean alignmentRecursive; 
+	private boolean previewOnly; 
 	
 	private AlignmentVariationFrequencyCmdDelegate delegate = new AlignmentVariationFrequencyCmdDelegate();
 	
@@ -74,6 +80,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 		super.configure(pluginConfigContext, configElem);
 		this.almtName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		this.alignmentRecursive = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALIGNMENT_RECURSIVE, false)).orElse(false);
+		this.previewOnly = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, PREVIEW_ONLY, false)).orElse(false);
 		this.delegate.configure(pluginConfigContext, configElem);
 	}
 
@@ -89,10 +96,12 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 		List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports = new ArrayList<VariationFrequenciesGenerator.AlignmentVariationReport>();
 		for(Alignment alignment: alignments) {
 			List<VariationScanMemberCount> scanCounts = delegate.execute(alignment, cmdContext);
-			variationFrequenciesGenerator.generateAlmtVarNotes(cmdContext, alignment, scanCounts, almtVarReports);
+			variationFrequenciesGenerator.previewAlmtVarNotes(cmdContext, alignment, scanCounts, almtVarReports);
 		}
 		variationFrequenciesGenerator.log("Generated "+almtVarReports.size()+" alignment-variation frequencies");
-
+		if(!previewOnly) {
+			variationFrequenciesGenerator.generateVarAlmtNotes(cmdContext, almtVarReports);
+		}
 		return new GenerateVariationFrequenciesResult(almtVarReports);
 	}
 

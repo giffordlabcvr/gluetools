@@ -56,12 +56,19 @@ public class PropertyCommandDelegate {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
 		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
-		project.checkModifiableFieldNames(cTable, Collections.singletonList(fieldName));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		Object oldValue = configurableObject.readProperty(fieldName);
 		FieldType fieldType = project.getModifiableFieldType(cTable, fieldName);
 		Object newValue = fieldType.getFieldTranslator().valueFromString(fieldValue);
+		return executeSet(cmdContext, project, cTable, configurableObject, 
+				fieldName, newValue, noCommit);
+	}
+
+	public static UpdateResult executeSet(CommandContext cmdContext, Project project,
+			ConfigurableTable cTable, GlueDataObject configurableObject, 
+			String fieldName, Object newValue, boolean noCommit) {
+		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
+		project.checkModifiableFieldNames(cTable, Collections.singletonList(fieldName));
+		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue != null && newValue != null && oldValue.equals(newValue)) {
 			return new UpdateResult(dataObjectClass, 0);
 		}

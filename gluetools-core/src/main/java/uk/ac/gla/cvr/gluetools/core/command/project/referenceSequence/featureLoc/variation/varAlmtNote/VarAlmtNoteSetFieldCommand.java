@@ -39,6 +39,7 @@ public class VarAlmtNoteSetFieldCommand extends VarAlmtNoteModeCommand<UpdateRes
 		return propertyCommandDelegate.executeSet(cmdContext);
 	}
 
+	
 	@CompleterClass
 	public static class Completer extends PropertyCommandDelegate.ModifiableFieldNameCompleter {}
 

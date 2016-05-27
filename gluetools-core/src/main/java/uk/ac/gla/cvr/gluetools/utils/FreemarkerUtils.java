@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtilsException.Code;
 import freemarker.core.ParseException;
 import freemarker.template.Configuration;
 import freemarker.template.SimpleCollection;
+import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -51,6 +52,7 @@ public class FreemarkerUtils {
 		@Override
 		public TemplateModel get(String key) {
 			Object propValue = glueDataObject.readProperty(key);
+		
 			return objectToTemplateModel(propValue); 
 		}
 		private TemplateModel objectToTemplateModel(Object object) {

@@ -257,13 +257,15 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(null);
 			Alignment tipAlmt = tipAlmtMember.getAlignment();
 			List<Alignment> ancestors = tipAlmt.getAncestors();
-			// reverse order to ensure parent is added before child.
 			List<String> ancestorRefNames = new ArrayList<String>();
+			List<String> ancestorAlmtNames = new ArrayList<String>();
+			// reverse order to ensure parent is added before child.
 			for(int i = ancestors.size()-1; i >= 0; i--) {
 				Alignment ancestor = ancestors.get(i);
 				ReferenceSequence ancRefSeq = ancestor.getRefSequence();
 				String refName = ancRefSeq.getName();
 				ancestorRefNames.add(refName);
+				ancestorAlmtNames.add(ancestor.getName());
 				if(!refNameToAnalysis.containsKey(refName)) {
 					Alignment parentAlmt = ancestor.getParent();
 					AlignmentMember parentAlmtMember = null;
@@ -278,6 +280,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			}
 			if(!targetRefName.equals(tipAlmt.getRefSequence().getName())) {
 				ancestorRefNames.add(targetRefName);
+				ancestorAlmtNames.add(tipAlmt.getName());
 				if(!refNameToAnalysis.containsKey(targetRefName)) {
 					refNameToAnalysis.put(targetRefName, 
 						new ReferenceAnalysis(targetRef, tipAlmt, tipAlmtMember));
@@ -285,6 +288,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			}
 			QueryAnalysis queryAnalysis = new QueryAnalysis(fastaId, new FastaSequenceObject(fastaId, sequence.getSequenceAsString()), targetRefName);
 			queryAnalysis.ancestorRefName = ancestorRefNames;
+			queryAnalysis.ancestorAlmtName = ancestorAlmtNames;
 			queryAnalysis.tipAlignmentName = tipAlmt.getName();
 			fastaIdToQueryAnalysis.put(fastaId, queryAnalysis);
 		});

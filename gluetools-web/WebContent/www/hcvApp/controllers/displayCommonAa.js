@@ -1,17 +1,9 @@
-analysisTool.controller('displayCommonAaCtrl',function($scope,$modalInstance,data){
-	$scope.renderedVariation = data.renderedVariation;
-	$scope.variationCategory = data.variationCategory;
-	
-	$scope.close = function(){
-		$modalInstance.close();
-	}; 
+analysisTool.controller('displayCommonAaCtrl', ['$scope', '$modalInstance', '$controller', 'data',
+    function($scope, $modalInstance, $controller, data) {
+	$controller('displayVariationBase', { $scope: $scope, 
+		$modalInstance: $modalInstance,
+		variationCategory: data.variationCategory, 
+		variation: data.renderedVariation.common_aa_polymorphism, 
+		ancestorAlmtNames: data.ancestorAlmtNames});
+}]);
 
-	$scope.handleNull = function(text){
-		if(text == null) {
-			return "-";
-		}
-		return text;
-	}; 
-
-	
-});

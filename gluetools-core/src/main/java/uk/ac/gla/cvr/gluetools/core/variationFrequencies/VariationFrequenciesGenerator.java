@@ -6,7 +6,14 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.PropertyCommandDelegate;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationCreateAlmtNoteCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -29,10 +36,14 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 	public static String MIN_FREQUENCY_PCT = "minFrequencyPct";
 	public static String MIN_SAMPLE_SIZE = "minSampleSize";
 	
-	private String frequencyFieldName; // DOUBLE field on var-almt-note, where the frequency will be set.
-	private Double minFrequencyPct; // if frequency percentage is below this value, no varAlmtNote will be generated / updated.
-	private Integer minSampleSize; // if the number of members sampled is below this threshold, no varAlmtNote will be generated / updated.
-	
+	// name of a DOUBLE field on var-almt-note, where the frequency will be set.
+	private String frequencyFieldName; 
+	// if frequency percentage is below this value, no varAlmtNote will be generated / updated.
+	// default: 1.0%
+	private Double minFrequencyPct; 
+	// if the number of members sampled is below this threshold, no varAlmtNote will be generated / updated.
+	// default: 30
+	private Integer minSampleSize; 	
 	public VariationFrequenciesGenerator() {
 		super();
 		addModulePluginCmdClass(GenerateVariationFrequenciesCommand.class);
@@ -46,26 +57,27 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.frequencyFieldName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, FREQUENCY_FIELD_NAME, false)).orElse("frequency");
-		this.minFrequencyPct = PluginUtils.configureDoubleProperty(configElem, MIN_FREQUENCY_PCT, false);
-		this.minSampleSize = PluginUtils.configureIntProperty(configElem, MIN_SAMPLE_SIZE, false);
+		this.minFrequencyPct = 
+				Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_FREQUENCY_PCT, 0.0, true, 100.0, true, false)).orElse(1.0);
+		this.minSampleSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_SAMPLE_SIZE, 1, true, null, true, false)).orElse(30);
 	}
 
-	public void generateAlmtVarNotes(
+	public void previewAlmtVarNotes(
 			CommandContext cmdContext, Alignment alignment,
-			List<VariationScanMemberCount> scanCounts, List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports) {
+			List<VariationScanMemberCount> scanCounts, 
+			List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports) {
 		for(VariationScanMemberCount memberCount: scanCounts) {
 			double frequency = memberCount.getPctWherePresent();
 			if( (minFrequencyPct == null || frequency >= minFrequencyPct)  ) {
 				if( (minSampleSize == null || memberCount.getMembersWherePresent() >= minSampleSize)  ) {
 					
-					// TODO -- generate / update the almt-var note!
-					
-					
-					VariationFrequenciesGenerator.AlignmentVariationReport almtVarReport = new VariationFrequenciesGenerator.AlignmentVariationReport();
+					VariationFrequenciesGenerator.AlignmentVariationReport almtVarReport = 
+							new VariationFrequenciesGenerator.AlignmentVariationReport();
 					almtVarReport.alignment = alignment;
 					almtVarReport.variation = memberCount.getVariation();
 					almtVarReport.frequency = frequency;
 					almtVarReports.add(almtVarReport);
+
 					if(almtVarReports.size() % 500 == 0) {
 						log("Generated "+almtVarReports.size()+" alignment-variation frequencies");
 					}
@@ -73,5 +85,50 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 			}
 		}
 	}
+
+	public void generateVarAlmtNotes(CommandContext cmdContext, List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports) {
+		int i = 0;
+		for(AlignmentVariationReport almtVarReport: almtVarReports) {
+			createOrUpdateVarAlmtNote(cmdContext, almtVarReport);
+			i++;
+			if(i % 1000 == 0) {
+				cmdContext.commit();
+				log("Created/updated "+i+" variation-alignment notes");
+			}
+		}
+		if(i > 0) {
+			cmdContext.commit();
+			log("Created/updated "+i+" variation-alignment notes");
+		}
+	}
+	
+	private void createOrUpdateVarAlmtNote(CommandContext cmdContext,
+			VariationFrequenciesGenerator.AlignmentVariationReport almtVarReport) {
+		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		VarAlmtNote varAlmtNote = GlueDataObject.lookup(cmdContext, VarAlmtNote.class, 
+				VarAlmtNote.pkMap(almtVarReport.alignment.getName(), 
+						almtVarReport.variation.getFeatureLoc().getReferenceSequence().getName(), 
+						almtVarReport.variation.getFeatureLoc().getFeature().getName(), 
+						almtVarReport.variation.getName()), true);
+		if(varAlmtNote == null) {
+			varAlmtNote = VariationCreateAlmtNoteCommand.createAlmtNote(cmdContext, 
+					almtVarReport.variation, almtVarReport.alignment);
+		}
+		PropertyCommandDelegate.executeSet(cmdContext, insideProjectMode.getProject(), 
+				ConfigurableTable.var_almt_note, varAlmtNote, frequencyFieldName, 
+				new Double(almtVarReport.frequency), true);
+		cmdContext.cacheUncommitted(varAlmtNote);
+	}
+
+	@Override
+	public void validate(CommandContext cmdContext) {
+		super.validate(cmdContext);
+		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		insideProjectMode.getProject().checkProperty(ConfigurableTable.var_almt_note, frequencyFieldName, FieldType.DOUBLE, true);
+	}
+	
+	
+	
+	
 	
 }

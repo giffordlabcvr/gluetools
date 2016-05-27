@@ -1,6 +1,6 @@
 <div class="modal-header">
 	<h4 class="modal-title">
-		{{renderedVariation.resistance_associated_variant.name}}
+		{{variation.name}}
 	</h4>
 	<div style="display:table-row;"" >
 		<svg width="40px" height="22px" style="display:table-cell; padding-right:5px">
@@ -11,10 +11,21 @@
 	</div>
 </div>
 <div class="modal-body">
-	<table class="table table-bordered">
-		<tr><td><b>Resistant amino acids:</b></td><td>{{handleNull(renderedVariation.resistance_associated_variant.pattern)}}</td></tr>
-		<tr><td><b>Defining GLUE reference sequence / feature:</b></td><td>{{renderedVariation.resistance_associated_variant.referenceSequence}} / {{renderedVariation.resistance_associated_variant.feature}}</td></tr>
+	<table class="table table-bordered table-striped">
+		<tr><td><b>Resistant amino acids:</b></td><td>{{handleNull(variation.pattern)}}</td></tr>
+		<tr><td><b>Defining GLUE reference sequence / feature:</b></td><td>{{variation.referenceSequence}} / {{variation.feature}}</td></tr>
 	</table>
+	<div ng-show="publicSeqFreqs">
+		<h4>Public sequence frequency</h4>
+		<p>Percentage of NCBI sequences in different clades which contain this epitope</p>		
+		<table class="table table-striped table-nonfluid table-bordered">
+			<tr ng-repeat="cladeFreq in publicSeqFreqs track by $index">
+				<td><b>{{cladeFreq.alignmentName}}</b></td>
+				<td>{{toFixed(cladeFreq.ncbiCuratedFrequencyPct, 2)}} %</td>
+			</tr>
+		</table>
+	</div>
+
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-primary" ng-click="close()">OK</button>

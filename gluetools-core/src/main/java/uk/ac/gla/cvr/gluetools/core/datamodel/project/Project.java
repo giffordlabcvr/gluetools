@@ -155,5 +155,36 @@ public class Project extends _Project {
 		}
 	}
 
-	
+	/**
+	 * Check that a property exists, is of the correct type, and (optionally) is modifiable.
+	 */
+	public void checkProperty(ConfigurableTable cTable, String propertyName, FieldType requiredFieldType, boolean requireModifiable) {
+		if(requireModifiable) {
+			List<String> validList = getModifiableFieldNames(cTable);
+			if(!validList.contains(propertyName)) {
+				throw new ProjectModeCommandException(ProjectModeCommandException.Code.NO_SUCH_MODIFIABLE_PROPERTY, 
+						cTable.name(), propertyName);
+			}
+			if(requiredFieldType != null) {
+				FieldType fieldType = getModifiableFieldType(cTable, propertyName);
+				if(fieldType != requiredFieldType) {
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INCORRECT_FIELD_TYPE, 
+							cTable.name(), propertyName, requiredFieldType.name(), fieldType.name());
+				}
+			}
+		} else {
+			List<String> validList = getListableProperties(cTable);
+			if(!validList.contains(propertyName)) {
+				throw new ProjectModeCommandException(ProjectModeCommandException.Code.NO_SUCH_PROPERTY, 
+						cTable.name(), propertyName);
+			}
+			if(requiredFieldType != null) {
+				FieldType fieldType = getModifiableFieldType(cTable, propertyName);
+				if(fieldType != requiredFieldType) {
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INCORRECT_FIELD_TYPE, 
+							cTable.name(), propertyName, requiredFieldType.name(), fieldType.name());
+				}
+			}
+		}
+	}
 }

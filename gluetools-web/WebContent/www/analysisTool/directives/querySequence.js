@@ -86,7 +86,8 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    		var dlg = dialogs.create(variationRendererDialog.dialogURL,
 				    				variationRendererDialog.dialogController, 
 				    				{ renderedVariation: data,
-				    				  variationCategory: varVCat
+				    				  variationCategory: varVCat, 
+				    				  ancestorAlmtNames: _.uniq($scope.selectedQueryAnalysis.ancestorAlmtName)
 				    				}, {});
 				    		dlg.result.then(function() {
 				    			// completion handler
@@ -108,6 +109,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		      selectedFeatureAnalysis: '=',
 		      selectedRefName: '=',
 		      selectedQueryFeatAnalysis: '=',
+		      selectedQueryAnalysis: '=',
 		      sequenceIndex: '=',
 		      variationCategories: "="
 		    },

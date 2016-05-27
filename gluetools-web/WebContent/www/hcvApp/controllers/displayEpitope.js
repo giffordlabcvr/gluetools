@@ -1,17 +1,10 @@
-analysisTool.controller('displayEpitopeCtrl',function($scope,$modalInstance,data){
-	$scope.renderedVariation = data.renderedVariation;
-	$scope.variationCategory = data.variationCategory;
-	
-	$scope.close = function(){
-		$modalInstance.close();
-	}; 
 
-	$scope.handleNull = function(text){
-		if(text == null) {
-			return "-";
-		}
-		return text;
-	}; 
-
+analysisTool.controller('displayEpitopeCtrl', ['$scope', '$modalInstance', '$controller', 'data',
+    function($scope, $modalInstance, $controller, data) {
+	$controller('displayVariationBase', { $scope: $scope, 
+		$modalInstance: $modalInstance,
+		variationCategory: data.variationCategory, 
+		variation: data.renderedVariation.epitope, 
+		ancestorAlmtNames: data.ancestorAlmtNames});
 	
-});
+}]);

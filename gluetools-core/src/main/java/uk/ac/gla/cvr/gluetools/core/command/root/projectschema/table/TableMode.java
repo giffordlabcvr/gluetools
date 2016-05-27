@@ -38,5 +38,9 @@ public class TableMode extends CommandMode<TableCommand> {
 		return project;
 	}
 
+	public ConfigurableTable getConfigurableTable() {
+		return cTable;
+	}
+
 	
 }

@@ -1,17 +1,9 @@
-analysisTool.controller('displayRAVCtrl',function($scope,$modalInstance,data){
-	$scope.renderedVariation = data.renderedVariation;
-	$scope.variationCategory = data.variationCategory;
+analysisTool.controller('displayRAVCtrl', ['$scope', '$modalInstance', '$controller', 'data',
+    function($scope, $modalInstance, $controller, data) {
+	$controller('displayVariationBase', { $scope: $scope, 
+		$modalInstance: $modalInstance,
+		variationCategory: data.variationCategory, 
+		variation: data.renderedVariation.resistance_associated_variant, 
+		ancestorAlmtNames: data.ancestorAlmtNames});
 	
-	$scope.close = function(){
-		$modalInstance.close();
-	}; 
-
-	$scope.handleNull = function(text){
-		if(text == null) {
-			return "-";
-		}
-		return text;
-	}; 
-
-	
-});
+}]);
