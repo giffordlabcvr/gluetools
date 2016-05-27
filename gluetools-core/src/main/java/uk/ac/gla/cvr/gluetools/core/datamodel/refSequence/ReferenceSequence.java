@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
@@ -23,8 +25,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequenceException.Code;
 
-@GlueDataClass(defaultListedProperties = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH})
-public class ReferenceSequence extends _ReferenceSequence {
+@GlueDataClass(defaultListedProperties = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH}, 
+		listableBuiltInProperties = {_ReferenceSequence.NAME_PROPERTY, _ReferenceSequence.DISPLAY_NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH}, 
+		modifiableBuiltInProperties = {_ReferenceSequence.DISPLAY_NAME_PROPERTY})
+public class ReferenceSequence extends _ReferenceSequence implements HasDisplayName {
 
 	public static final String SEQ_SOURCE_NAME_PATH = 
 			_ReferenceSequence.SEQUENCE_PROPERTY+"."+

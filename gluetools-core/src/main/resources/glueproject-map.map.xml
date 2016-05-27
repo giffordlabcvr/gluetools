@@ -16,6 +16,7 @@
 	</db-entity>
 	<db-entity name="alignment">
 		<db-attribute name="description" type="VARCHAR" length="1000"/>
+		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="parent_name" type="VARCHAR" length="50"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" length="50"/>
@@ -27,6 +28,7 @@
 	</db-entity>
 	<db-entity name="feature">
 		<db-attribute name="description" type="VARCHAR" length="1000"/>
+		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="parent_name" type="VARCHAR" length="50"/>
 	</db-entity>
@@ -74,6 +76,7 @@
 	<db-entity name="reference_sequence">
 		<db-attribute name="creation_time" type="BIGINT" isMandatory="true"/>
 		<db-attribute name="description" type="VARCHAR" length="1000"/>
+		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="sequence_id" type="VARCHAR" isMandatory="true" length="50"/>
 		<db-attribute name="source_name" type="VARCHAR" isMandatory="true" length="50"/>
@@ -103,6 +106,7 @@
 	</db-entity>
 	<db-entity name="variation">
 		<db-attribute name="description" type="VARCHAR" length="1000"/>
+		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="ref_end" type="INTEGER"/>
@@ -131,12 +135,14 @@
 	</obj-entity>
 	<obj-entity name="Alignment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment" dbEntityName="alignment" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
+		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="display_name"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
 	<obj-entity name="AlignmentMember" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember" dbEntityName="alignment_member" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 	</obj-entity>
 	<obj-entity name="Feature" className="uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature" dbEntityName="feature" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
+		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="display_name"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
 	<obj-entity name="FeatureLocation" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation" dbEntityName="feature_location" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
@@ -170,6 +176,7 @@
 	</obj-entity>
 	<obj-entity name="ReferenceSequence" className="uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence" dbEntityName="reference_sequence" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="creationTime" type="long" db-attribute-path="creation_time"/>
+		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="display_name"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
 	<obj-entity name="SeqOrigData" className="uk.ac.gla.cvr.gluetools.core.datamodel.seqOrigData.SeqOrigData" dbEntityName="seq_orig_data" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
@@ -190,6 +197,7 @@
 	</obj-entity>
 	<obj-entity name="Variation" className="uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation" dbEntityName="variation" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
+		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="display_name"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>

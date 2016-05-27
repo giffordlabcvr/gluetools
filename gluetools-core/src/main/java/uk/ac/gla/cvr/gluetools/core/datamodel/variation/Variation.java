@@ -22,6 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.console.Lexer;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
@@ -43,10 +45,10 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @GlueDataClass(
 		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
-		listableBuiltInProperties = { _Variation.NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
+		listableBuiltInProperties = { _Variation.NAME_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
 				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
-		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY })		
-public class Variation extends _Variation implements IReferenceSegment {
+		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY })		
+public class Variation extends _Variation implements IReferenceSegment, HasDisplayName {
 
 	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("[NACGT]+");
 	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("[ACDEFGHIKLMNOPQRSTUVWYX*]+");
@@ -211,14 +213,14 @@ public class Variation extends _Variation implements IReferenceSegment {
 				indent(glueConfigBuf, indent).append("set location "+noCommit+"-n "+getRefStart()+" "+getRefEnd()).append("\n");
 			}
 		}
-		List<Field> customFields = glueConfigContext.getProject().getCustomFields(ConfigurableTable.variation);
-		for(Field field: customFields) {
-			Object value = readProperty(field.getName());
+		List<String> modifiableFieldNames = glueConfigContext.getProject().getModifiableFieldNames(ConfigurableTable.variation);
+		for(String fieldName: modifiableFieldNames) {
+			Object value = readProperty(fieldName);
 			if(value != null) {
-				FieldType fieldType = field.getFieldType();
+				FieldType fieldType = glueConfigContext.getProject().getModifiableFieldType(ConfigurableTable.variation, fieldName);
 				FieldTranslator<?> fieldTranslator = fieldType.getFieldTranslator();
 				String valueAsString = fieldTranslator.objectValueToString(value);
-				indent(glueConfigBuf, indent).append("set field "+noCommit+field.getName()+" "+Lexer.quotifyIfNecessary(valueAsString)).append("\n");
+				indent(glueConfigBuf, indent).append("set field "+noCommit+fieldName+" "+Lexer.quotifyIfNecessary(valueAsString)).append("\n");
 			}
 		}
 		

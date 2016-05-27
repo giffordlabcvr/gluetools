@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.commonAaPolymorphisms;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -32,7 +31,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -51,12 +52,20 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 @PluginClass(elemName="commonAaPolymorphismGenerator")
 public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorphismGenerator> {
 
-	private static final String MIN_FREQUENCY_PCT = "minFrequencyPct";
-	private static final String MAX_FREQUENCY_PCT = "maxFrequencyPct";
-	private static final String MIN_SAMPLE_SIZE = "minSampleSize";
+	public static final String CODON_FIELD = "codonField";
+	public static final String VARIATION_AA_FIELD = "variationAaField";
+	public static final String REFERENCE_AA_FIELD = "referenceAaField";
+	public static final String MIN_FREQUENCY_PCT = "minFrequencyPct";
+	public static final String MAX_FREQUENCY_PCT = "maxFrequencyPct";
+	public static final String MIN_SAMPLE_SIZE = "minSampleSize";
+	
 	private double minFrequencyPct;
 	private double maxFrequencyPct;
 	private int minSampleSize;
+	private String referenceAaField;
+	private String variationAaField;
+	private String codonField;
+	
 	private List<CustomFieldSetting> customFieldSettings;
 	
 	
@@ -73,8 +82,13 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		minFrequencyPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_FREQUENCY_PCT, false)).orElse(1.0);
-		maxFrequencyPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MAX_FREQUENCY_PCT, false)).orElse(99.0);
+		maxFrequencyPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MAX_FREQUENCY_PCT, false)).orElse(100.0);
 		minSampleSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MAX_FREQUENCY_PCT, false)).orElse(30);
+		referenceAaField = PluginUtils.configureStringProperty(configElem, REFERENCE_AA_FIELD, false);
+		variationAaField = PluginUtils.configureStringProperty(configElem, VARIATION_AA_FIELD, false);
+		codonField = PluginUtils.configureStringProperty(configElem, CODON_FIELD, false);
+		
+		
 		customFieldSettings = PluginFactory.createPlugins(pluginConfigContext, CustomFieldSetting.class, 
 				PluginUtils.findConfigElements(configElem, "customFieldSetting"));
 	}
@@ -186,9 +200,10 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 					if(refAa != null) {
 						// "X" just means any amino acid, so don't generate variations from these.
 						if(!refAa.equals("X") && !variationAa.equals("X") ) { 
-							String variationName = formVariationName(refAa, codonLabel, variationAa);
+							String variationName = formVariationName(featureName, refAa, codonLabel, variationAa);
+							String variationDisplayName = formVariationDisplayName(featureName, refAa, codonLabel, variationAa);
 							generated.put(new AaPolymorphismKey(alignmentRefName, codonLabel, variationAa), 
-									new AaPolymorphism(alignmentRefName, featureName, variationName, codonLabel, refAa, variationAa, 
+									new AaPolymorphism(alignmentRefName, featureName, variationName, variationDisplayName, codonLabel, refAa, variationAa, 
 											"Common amino acid polymorphism in "+alignment.getName()));
 							if(generated.size() % 500 == 0) {
 								super.log(Level.FINEST, "Generated "+generated.size()+" common AA polymorphisms in "+featureName);
@@ -201,10 +216,14 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 		}
 	}
 
-	private String formVariationName(String refAa, String codonLabel, String variationAa) {
-		return refAa+codonLabel+variationAa;
+	private String formVariationName(String featureName, String refAa, String codonLabel, String variationAa) {
+		return "common_aa_"+featureName+"_"+refAa+codonLabel+variationAa;
 	}
-	
+
+	private String formVariationDisplayName(String featureName, String refAa, String codonLabel, String variationAa) {
+		return featureName+":"+refAa+codonLabel+variationAa;
+	}
+
 	
 	private static class AaPolymorphismKey {
 		private String refName;
@@ -283,6 +302,36 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 						.set(VariationSetPatternCommand.NO_COMMIT, Boolean.TRUE)
 						.set(VariationSetPatternCommand.REGEX, aaPolymorphism.getRegex())
 						.build().execute(cmdContext);
+
+						cmdContext.cmdBuilder(VariationSetFieldCommand.class)
+						.set(VariationSetFieldCommand.FIELD_NAME, Variation.DISPLAY_NAME_PROPERTY)
+						.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationDisplayName())
+						.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+						.build().execute(cmdContext);
+
+						
+						 if(referenceAaField != null) {
+							cmdContext.cmdBuilder(VariationSetFieldCommand.class)
+							.set(VariationSetFieldCommand.FIELD_NAME, referenceAaField)
+							.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getRefAa())
+							.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+							.build().execute(cmdContext);
+						 }
+						 if(codonField != null) {
+								cmdContext.cmdBuilder(VariationSetFieldCommand.class)
+								.set(VariationSetFieldCommand.FIELD_NAME, codonField)
+								.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getCodonLabel())
+								.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+								.build().execute(cmdContext);
+						 }
+						 if(variationAaField != null) {
+								cmdContext.cmdBuilder(VariationSetFieldCommand.class)
+								.set(VariationSetFieldCommand.FIELD_NAME, variationAaField)
+								.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationAa())
+								.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+								.build().execute(cmdContext);
+						 }
+						
 						for(CustomFieldSetting customFieldSetting: customFieldSettings) {
 							cmdContext.cmdBuilder(VariationSetFieldCommand.class)
 							.set(VariationSetFieldCommand.FIELD_NAME, customFieldSetting.fieldName)
@@ -308,8 +357,18 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
 		 InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		 if(referenceAaField != null) {
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, referenceAaField, FieldType.VARCHAR, true);
+		 }
+		 if(codonField != null) {
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, codonField, FieldType.VARCHAR, true);
+		 }
+		 if(variationAaField != null) {
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, variationAaField, FieldType.VARCHAR, true);
+		 }
+		 
 		 for(CustomFieldSetting customFieldSetting: customFieldSettings) {
-			 insideProjectMode.getProject().checkCustomFieldNames(ConfigurableTable.variation, Arrays.asList(customFieldSetting.getFieldName()));
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, customFieldSetting.getFieldName(), null, true);
 		 }
 	}
 

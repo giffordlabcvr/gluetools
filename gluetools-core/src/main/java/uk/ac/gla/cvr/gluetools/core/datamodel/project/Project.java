@@ -63,9 +63,9 @@ public class Project extends _Project {
 
 	public List<String> getModifiableFieldNames(ConfigurableTable cTable) {
 		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
-		List<String> listableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInProperties()));
-		listableFields.addAll(getCustomFieldNames(cTable));
-		return listableFields;
+		List<String> modifiableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInProperties()));
+		modifiableFields.addAll(getCustomFieldNames(cTable));
+		return modifiableFields;
 	}
 	
 	public FieldType getModifiableFieldType(ConfigurableTable cTable, String fieldName) {

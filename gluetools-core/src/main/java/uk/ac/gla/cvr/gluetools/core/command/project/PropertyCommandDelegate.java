@@ -88,7 +88,7 @@ public class PropertyCommandDelegate {
 		Project project = configurableObjectMode.getProject();
 		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
 		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
-		project.checkCustomFieldNames(cTable, Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(cTable, Collections.singletonList(fieldName));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue == null) {

@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
@@ -20,10 +22,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 @GlueDataClass(
 		defaultListedProperties = { _Feature.NAME_PROPERTY, 
 				Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY }, 
-		listableBuiltInProperties = { _Feature.NAME_PROPERTY, 
+		listableBuiltInProperties = { _Feature.NAME_PROPERTY, _Feature.DISPLAY_NAME_PROPERTY,
 				Feature.PARENT_NAME_PATH, _Feature.DESCRIPTION_PROPERTY }, 
-		modifiableBuiltInProperties = { _Feature.DESCRIPTION_PROPERTY } )
-public class Feature extends _Feature {
+		modifiableBuiltInProperties = { _Feature.DESCRIPTION_PROPERTY, _Feature.DISPLAY_NAME_PROPERTY } )
+public class Feature extends _Feature implements HasDisplayName {
 
 	public static final String PARENT_NAME_PATH = _Feature.PARENT_PROPERTY+"."+_Feature.NAME_PROPERTY;
 

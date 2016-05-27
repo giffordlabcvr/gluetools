@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 public abstract class _ReferenceSequence extends GlueDataObject {
 
     public static final String CREATION_TIME_PROPERTY = "creationTime";
+    public static final String DISPLAY_NAME_PROPERTY = "displayName";
     public static final String NAME_PROPERTY = "name";
     public static final String ALIGNMENTS_PROPERTY = "alignments";
     public static final String FEATURE_LOCATIONS_PROPERTY = "featureLocations";
@@ -29,6 +30,13 @@ public abstract class _ReferenceSequence extends GlueDataObject {
     public long getCreationTime() {
         Object value = readProperty(CREATION_TIME_PROPERTY);
         return (value != null) ? (Long) value : 0;
+    }
+
+    public void setDisplayName(String displayName) {
+        writeProperty(DISPLAY_NAME_PROPERTY, displayName);
+    }
+    public String getDisplayName() {
+        return (String)readProperty(DISPLAY_NAME_PROPERTY);
     }
 
     public void setName(String name) {

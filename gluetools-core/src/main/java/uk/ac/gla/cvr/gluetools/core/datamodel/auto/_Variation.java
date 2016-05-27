@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 public abstract class _Variation extends GlueDataObject {
 
     public static final String DESCRIPTION_PROPERTY = "description";
+    public static final String DISPLAY_NAME_PROPERTY = "displayName";
     public static final String NAME_PROPERTY = "name";
     public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
@@ -36,6 +37,13 @@ public abstract class _Variation extends GlueDataObject {
     }
     public String getDescription() {
         return (String)readProperty(DESCRIPTION_PROPERTY);
+    }
+
+    public void setDisplayName(String displayName) {
+        writeProperty(DISPLAY_NAME_PROPERTY, displayName);
+    }
+    public String getDisplayName() {
+        return (String)readProperty(DISPLAY_NAME_PROPERTY);
     }
 
     public void setName(String name) {

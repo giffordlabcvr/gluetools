@@ -5,18 +5,20 @@ public class AaPolymorphism {
 	private String refName;
 	private String featureName;
 	private String variationName;
+	private String variationDisplayName;
 	private String codonLabel;
 	private String refAa;
 	private String variationAa;
 	private String description;
 	
 	public AaPolymorphism(String refName, String featureName,
-			String variationName, String codonLabel, String refAa,
+			String variationName, String variationDisplayName, String codonLabel, String refAa,
 			String variationAa, String description) {
 		super();
 		this.refName = refName;
 		this.featureName = featureName;
 		this.variationName = variationName;
+		this.variationDisplayName = variationDisplayName;
 		this.codonLabel = codonLabel;
 		this.refAa = refAa;
 		this.variationAa = variationAa;
@@ -56,6 +58,10 @@ public class AaPolymorphism {
 			return "\\*";
 		}
 		return variationAa;
+	}
+
+	public String getVariationDisplayName() {
+		return variationDisplayName;
 	}
 	
 }

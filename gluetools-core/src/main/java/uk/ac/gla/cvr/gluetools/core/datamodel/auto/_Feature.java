@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 public abstract class _Feature extends GlueDataObject {
 
     public static final String DESCRIPTION_PROPERTY = "description";
+    public static final String DISPLAY_NAME_PROPERTY = "displayName";
     public static final String NAME_PROPERTY = "name";
     public static final String CHILDREN_PROPERTY = "children";
     public static final String FEATURE_LOCATIONS_PROPERTY = "featureLocations";
@@ -29,6 +30,13 @@ public abstract class _Feature extends GlueDataObject {
     }
     public String getDescription() {
         return (String)readProperty(DESCRIPTION_PROPERTY);
+    }
+
+    public void setDisplayName(String displayName) {
+        writeProperty(DISPLAY_NAME_PROPERTY, displayName);
+    }
+    public String getDisplayName() {
+        return (String)readProperty(DISPLAY_NAME_PROPERTY);
     }
 
     public void setName(String name) {

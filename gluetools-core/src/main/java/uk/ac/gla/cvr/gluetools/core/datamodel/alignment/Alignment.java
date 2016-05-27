@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
+import uk.ac.gla.cvr.gluetools.core.datamodel.HasName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
@@ -21,10 +23,10 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @GlueDataClass(
 		defaultListedProperties = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH }, 
-		listableBuiltInProperties = { _Alignment.NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH, Alignment.DESCRIPTION_PROPERTY }, 
-		modifiableBuiltInProperties = { Alignment.DESCRIPTION_PROPERTY }
+		listableBuiltInProperties = { _Alignment.NAME_PROPERTY, _Alignment.DISPLAY_NAME_PROPERTY, Alignment.PARENT_NAME_PATH, Alignment.REF_SEQ_NAME_PATH, Alignment.DESCRIPTION_PROPERTY }, 
+		modifiableBuiltInProperties = { Alignment.DESCRIPTION_PROPERTY, _Alignment.DISPLAY_NAME_PROPERTY }
 		)
-public class Alignment extends _Alignment {
+public class Alignment extends _Alignment implements HasDisplayName {
 	
 	public static final String REF_SEQ_NAME_PATH = 
 			_Alignment.REF_SEQUENCE_PROPERTY+"."+ReferenceSequence.NAME_PROPERTY;

@@ -145,6 +145,4 @@ public abstract class GlueDataObject extends CayenneDataObject {
 
 	public void generateGlueConfig(int i, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 	}
-	
-	
 }
