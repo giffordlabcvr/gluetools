@@ -10,6 +10,9 @@ public class VariationMatch {
 	public String variationName;
 
 	@PojoResultField
+	public String variationRenderedName;
+	
+	@PojoResultField
 	public Integer startUIndex;
 
 	@PojoResultField

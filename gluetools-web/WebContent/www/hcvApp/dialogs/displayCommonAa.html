@@ -1,7 +1,9 @@
 <div class="modal-header">
-	<h4 class="modal-title">
-		{{variation.name}}
-	</h4>
+	<h3 class="modal-title">
+		{{variation.renderedName}}
+	</h3>
+	{{variation.description}}
+	<h4>Category</h4>
 	<div style="display:table-row;"" >
 		<svg width="40px" height="22px" style="display:table-cell; padding-right:5px">
 			<rect ng-attr-class="vcat_{{variationCategory.name}}" y="15%" width="100%" height="70%"></rect>
@@ -11,16 +13,20 @@
 	</div>
 </div>
 <div class="modal-body">
+	<h4>Details</h4>
 	<table class="table table-bordered table-striped">
-		<tr><td><b>Variant amino acid:</b></td><td>{{handleNull(variation.pattern)}}</td></tr>
-		<tr><td><b>Defining GLUE reference sequence / feature:</b></td><td>{{variation.referenceSequence}} / {{variation.feature}}</td></tr>
+		<tr><td><b>Defining GLUE reference sequence:</b></td><td>{{variation.referenceSequence}}</td></tr>
+		<tr><td><b>Feature:</b></td><td>{{variation.feature}}</td></tr>
+		<tr><td><b>Codon:</b></td><td>{{handleNull(variation.codon)}}</td></tr>
+		<tr><td><b>Reference sequence amino acid:</b></td><td>{{handleNull(variation.referenceAa)}}</td></tr>
+		<tr><td><b>Variant amino acid:</b></td><td>{{handleNull(variation.variationAa)}}</td></tr>
 	</table>
-	<div ng-show="publicSeqFreqs">
+	<div ng-show="publicSeqFreqs && publicSeqFreqs.length > 0">
 		<h4>Public sequence frequency</h4>
 		<p>Percentage of NCBI sequences in different clades which contain this variant</p>		
 		<table class="table table-striped table-nonfluid table-bordered">
 			<tr ng-repeat="cladeFreq in publicSeqFreqs track by $index">
-				<td><b>{{cladeFreq.alignmentName}}</b></td>
+				<td><b>{{cladeFreq.alignmentRenderedName}}</b></td>
 				<td>{{toFixed(cladeFreq.ncbiCuratedFrequencyPct, 2)}} %</td>
 			</tr>
 		</table>

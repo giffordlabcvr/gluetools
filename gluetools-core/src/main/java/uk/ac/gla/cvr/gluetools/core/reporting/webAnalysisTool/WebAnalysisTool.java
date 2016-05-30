@@ -190,6 +190,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 								}
 								VariationMatch variationMatch = new VariationMatch();
 								variationMatch.variationName = vsr.getVariation().getName();
+								variationMatch.variationRenderedName = vsr.getVariation().getRenderedName();
 								Integer queryNtStart = vsr.getQueryNtStart();
 								Integer queryNtEnd = vsr.getQueryNtEnd();
 								QueryAlignedSegment vsrQaSeg = 

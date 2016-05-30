@@ -4,8 +4,4 @@ public interface HasName {
 
 	public String getName();
 	
-	public default String getRenderedName() {
-		return getName();
-	}
-	
 }

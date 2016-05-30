@@ -141,7 +141,7 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 				    			height: varHeight,
 				    			dx: varWidth / 2.0,
 				    			dy: varHeight / 2.0,
-				    			text: varMatch.variationName,
+				    			text: varMatch.variationRenderedName,
 				    			locationHeight: locationHeight
 							};
 							varProps.push(varProp);

@@ -64,7 +64,7 @@ public class GluetoolsEngine implements Plugin {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		freemarkerConfiguration = new Configuration();
+		freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_24);
 		Document configDocument = null;
 		if(configFilePath != null) {
 			try {

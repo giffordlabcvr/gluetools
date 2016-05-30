@@ -145,4 +145,18 @@ public abstract class GlueDataObject extends CayenneDataObject {
 
 	public void generateGlueConfig(int i, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 	}
+
+	public String getRenderedName() {
+		String result = null;
+		if(this instanceof HasDisplayName) {
+			result = Optional.ofNullable(((HasDisplayName) this).getDisplayName()).orElse(null);
+		}
+		if(result == null && this instanceof HasName) {
+			result = ((HasName) this).getName();
+		}
+		return result;
+	}
+
+
+
 }

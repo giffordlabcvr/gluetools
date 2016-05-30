@@ -2,10 +2,10 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import org.w3c.dom.Element;
 
-import freemarker.template.Template;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import freemarker.template.Template;
 
 public class PropertyTemplate implements Plugin {
 

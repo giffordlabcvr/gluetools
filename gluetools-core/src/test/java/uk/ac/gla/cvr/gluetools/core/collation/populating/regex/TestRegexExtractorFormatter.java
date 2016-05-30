@@ -55,7 +55,7 @@ public class TestRegexExtractorFormatter {
 	private RegexExtractorFormatter loadTestFile(String testFile)
 			throws SAXException, IOException {
 		Document document = GlueXmlUtils.documentFromStream(getClass().getResourceAsStream(testFile));
-		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration());
+		PluginConfigContext pluginConfigContext = new PluginConfigContext(new Configuration(Configuration.VERSION_2_3_24));
 		RegexExtractorFormatter regexExtractorFormatter = 
 				PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class,
 				document.getDocumentElement());

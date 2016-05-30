@@ -1,8 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker;
 
-import java.util.function.Function;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -12,8 +9,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.ObjectRenderer;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils.GlueDataObjectTemplateModel;
 import freemarker.template.Template;
+import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="freemarkerObjectRenderer")
 public class FreemarkerObjectRenderer extends ObjectRenderer<FreemarkerObjectRenderer> {
@@ -36,16 +33,11 @@ public class FreemarkerObjectRenderer extends ObjectRenderer<FreemarkerObjectRen
 		if(template == null) {
 			byte[] templateBytes = getResource(cmdContext, templateFileName);
 			template = FreemarkerUtils.templateFromString(
+					// xml extension triggers xml escaping
 					getModuleName()+":"+templateFileName, new String(templateBytes),  
 						cmdContext.getGluetoolsEngine().getFreemarkerConfiguration());
 		}
-		GlueDataObjectTemplateModel templateModel = new GlueDataObjectTemplateModel(renderableObject);
-		templateModel.setStringEscapeFunction(new Function<String, String>() {
-			@Override
-			public String apply(String t) {
-				return StringEscapeUtils.escapeXml(t);
-			}
-		});
+		TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(renderableObject);
 		return FreemarkerUtils.processTemplate(template, templateModel).getBytes();
 	}
 

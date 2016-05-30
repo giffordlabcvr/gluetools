@@ -8,7 +8,8 @@ public class FreemarkerUtilsException extends GlueException {
 	public enum Code implements GlueErrorCode {
 
 		INVALID_FREEMARKER_TEMPLATE("templateString", "errorTxt"),
-		FREEMARKER_TEMPLATE_FAILED("errorTxt");
+		FREEMARKER_TEMPLATE_FAILED("errorTxt"),
+		FREEMARKER_OBJECT_WRAPPING_FAILED("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

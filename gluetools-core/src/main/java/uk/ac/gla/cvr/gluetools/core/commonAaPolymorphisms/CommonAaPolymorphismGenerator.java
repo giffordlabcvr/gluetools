@@ -204,7 +204,7 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 							String variationDisplayName = formVariationDisplayName(featureName, refAa, codonLabel, variationAa);
 							generated.put(new AaPolymorphismKey(alignmentRefName, codonLabel, variationAa), 
 									new AaPolymorphism(alignmentRefName, featureName, variationName, variationDisplayName, codonLabel, refAa, variationAa, 
-											"Common amino acid polymorphism in "+alignment.getName()));
+											"Common amino acid polymorphism"));
 							if(generated.size() % 500 == 0) {
 								super.log(Level.FINEST, "Generated "+generated.size()+" common AA polymorphisms in "+featureName);
 							}

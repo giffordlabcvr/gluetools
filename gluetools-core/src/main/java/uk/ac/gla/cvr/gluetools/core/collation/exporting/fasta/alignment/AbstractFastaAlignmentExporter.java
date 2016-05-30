@@ -44,7 +44,7 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 	}
 
 	protected String generateFastaId(AlignmentMember almtMember) {
-		TemplateModel templateModel = new FreemarkerUtils.GlueDataObjectTemplateModel(almtMember);
+		TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(almtMember);
 		return FreemarkerUtils.processTemplate(idTemplate, templateModel);
 	}
 	
