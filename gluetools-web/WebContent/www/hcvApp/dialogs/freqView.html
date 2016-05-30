@@ -1,0 +1,21 @@
+<div>
+	<h4>Public sequence frequency</h4>
+	<p>Percentage of NCBI sequences in different clades which contain this epitope</p>		
+	<div class="btn-group">
+		<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" ng-model="data.freqView" btn-radio="'querySequenceClades'">Query sequence clades</label>
+		<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" ng-model="data.freqView" btn-radio="'allClades'">All clades</label>
+	</div>
+	<div ng-show="data.cladeFreqs.length == 0">
+		<p>Not present at significant numbers</p>
+	</div>
+	<div ng-show="data.cladeFreqs.length > 0">
+		<p>
+			<table class="table table-striped table-bordered">
+				<tr ng-repeat="cladeFreq in data.cladeFreqs track by $index">
+					<td><b>{{cladeFreq.alignmentRenderedName}}</b></td>
+					<td>{{toFixed(cladeFreq.ncbiCuratedFrequencyPct, 2)}} %</td>
+				</tr>
+			</table>
+		</p>
+	</div>
+</div>

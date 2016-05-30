@@ -21,16 +21,8 @@
 		<tr><td><b>Reference sequence amino acid:</b></td><td>{{handleNull(variation.referenceAa)}}</td></tr>
 		<tr><td><b>Variant amino acid:</b></td><td>{{handleNull(variation.variationAa)}}</td></tr>
 	</table>
-	<div ng-show="publicSeqFreqs && publicSeqFreqs.length > 0">
-		<h4>Public sequence frequency</h4>
-		<p>Percentage of NCBI sequences in different clades which contain this variant</p>		
-		<table class="table table-striped table-nonfluid table-bordered">
-			<tr ng-repeat="cladeFreq in publicSeqFreqs track by $index">
-				<td><b>{{cladeFreq.alignmentRenderedName}}</b></td>
-				<td>{{toFixed(cladeFreq.ncbiCuratedFrequencyPct, 2)}} %</td>
-			</tr>
-		</table>
-	</div>
+
+	<div ng-include src="'dialogs/freqView.html'"></div>
 	
 </div>
 <div class="modal-footer">
