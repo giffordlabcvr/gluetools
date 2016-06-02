@@ -105,71 +105,128 @@
 			</div>
 	
 			<div ng-show="fileItemUnderAnalysis">
-				<h3>Analysis</h3>
-				<table class="table" width="100%">
-					<thead>
-						<tr>
-							<th>File</th>
-							<th>Query sequence</th>
-							<th>Reference sequence</th>
-							<th>Genome feature</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>{{fileItemUnderAnalysis.file.name}}</td>
-							<td>
-								<select ng-model="selectedQueryAnalysis" 
-									ng-options="queryAnalysis.fastaId for queryAnalysis in fileItemUnderAnalysis.webAnalysisResult.queryAnalysis"
-									>
-							    </select>
-							</td>
-							<td>
-								<select ng-model="selectedRefName" 
-									ng-options="x for x in selectedQueryAnalysis.ancestorRefName"
-									>
-							    </select>
-							</td>
-							<td>
-								<select ng-model="selectedFeatureAnalysis" 
-									ng-options="featureAnalysis.featureName for featureAnalysis in fileItemUnderAnalysis.webAnalysisResult.featureAnalysis"
-									>
-							    </select>
-							
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<div class="container">
-					<div class="row" ng-controller='analysisSvg'>
-				        <div class="col-xs-2">
-							<svg ng-attr-height="{{svgHeight()}}">
-								 <sequence-label sequence-label="selectedRefName" svg-params="svgParams" sequence-index="0"> </sequence-label>
-								 <sequence-label sequence-label="'Query'" svg-params="svgParams" sequence-index="1"> </sequence-label>
-								 <sequence-label ng-show="svgParams.svgVariations()" sequence-label="'Variations'" svg-params="svgParams" sequence-index="2"> </sequence-label>
-							</svg>
-				        </div>
-				        <div class="col-xs-10">
-				        	<div style="overflow: auto">
-								<svg 
-									ng-attr-height="{{svgHeight()}}" 
-									ng-attr-width="{{svgWidth()}}">
-									<codon-label-line svg-params="svgParams" 
-											selected-feature-analysis="selectedFeatureAnalysis"></codon-label-line>
-									<reference-sequence svg-params="svgParams" 
-											selected-feature-analysis="selectedFeatureAnalysis"
-											selected-ref-feat-analysis="selectedRefFeatAnalysis"
-											sequence-index="0"></reference-sequence>
-									<query-sequence svg-params="svgParams" 
-											selected-feature-analysis="selectedFeatureAnalysis"
-											selected-ref-name="selectedRefName"
-											selected-query-feat-analysis="selectedQueryFeatAnalysis"
-											selected-query-analysis="selectedQueryAnalysis"
-											sequence-index="1"
-											variation-categories="variationCategories"></query-sequence>
+				<h3>Analysis Results</h3>
+				<div class="btn-group">
+					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
+					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" ng-model="analysisView" btn-radio="'genomeDetail'">Genome detail</label>
+				</div>
+
+				<div ng-show="analysisView == 'variationSummary'">
+					<table class="table" width="100%">
+						<thead>
+							<tr>
+								<th>File</th>
+								<th>Query sequence</th>
+								<th>Variation category</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{fileItemUnderAnalysis.file.name}}</td>
+								<td>
+									<select ng-model="selectedQueryAnalysis" 
+										ng-options="queryAnalysis.fastaId for queryAnalysis in fileItemUnderAnalysis.webAnalysisResult.queryAnalysis"
+										>
+								    </select>
+								</td>
+								<td>
+									<select ng-model="selectedResultVariationCategory" 
+										ng-options="resultVariationCategory.displayName for resultVariationCategory in selectedQueryAnalysis.resultVariationCategory"
+										>
+								    </select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div ng-show="resultVariationMatches">
+						<h4>{{selectedResultVariationCategory.displayName}} present in the query sequence</h4>
+						<table class="table" width="100%">
+							<thead>
+								<tr>
+									<th>Reference sequence</th>
+									<th>Genome feature</th>
+									<th ng-repeat="a in range(variationsPerRow) track by $index"></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="resultVariationMatch in resultVariationMatches">
+									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}">{{resultVariationMatch.definingReferenceName}}</td>
+									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}">{{resultVariationMatch.definingFeatureName}}</td>
+									<td ng-repeat="variation in resultVariationMatch.variation">
+										<a ng-click="displayVariation(selectedResultVariationCategory.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+				<div ng-show="analysisView == 'genomeDetail'">
+					<table class="table" width="100%">
+						<thead>
+							<tr>
+								<th>File</th>
+								<th>Query sequence</th>
+								<th>Reference sequence</th>
+								<th>Genome feature</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{fileItemUnderAnalysis.file.name}}</td>
+								<td>
+									<select ng-model="selectedQueryAnalysis" 
+										ng-options="queryAnalysis.fastaId for queryAnalysis in fileItemUnderAnalysis.webAnalysisResult.queryAnalysis"
+										>
+								    </select>
+								</td>
+								<td>
+									<select ng-model="selectedRefName" 
+										ng-options="x for x in selectedQueryAnalysis.ancestorRefName"
+										>
+								    </select>
+								</td>
+								<td>
+									<select ng-model="selectedFeatureAnalysis" 
+										ng-options="featureAnalysis.featureName for featureAnalysis in fileItemUnderAnalysis.webAnalysisResult.featureAnalysis"
+										>
+								    </select>
+								
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="container">
+						<div class="row" ng-controller='analysisSvg'>
+					        <div class="col-xs-2">
+								<svg ng-attr-height="{{svgHeight()}}">
+									 <sequence-label sequence-label="selectedRefName" svg-params="svgParams" sequence-index="0"> </sequence-label>
+									 <sequence-label sequence-label="'Query'" svg-params="svgParams" sequence-index="1"> </sequence-label>
+									 <sequence-label ng-show="svgParams.svgVariations()" sequence-label="'Variations'" svg-params="svgParams" sequence-index="2"> </sequence-label>
 								</svg>
 					        </div>
-				        </div>
+					        <div class="col-xs-9">
+					        	<div style="overflow: auto">
+									<svg 
+										ng-attr-height="{{svgHeight()}}" 
+										ng-attr-width="{{svgWidth()}}">
+										<codon-label-line svg-params="svgParams" 
+												selected-feature-analysis="selectedFeatureAnalysis"></codon-label-line>
+										<reference-sequence svg-params="svgParams" 
+												selected-feature-analysis="selectedFeatureAnalysis"
+												selected-ref-feat-analysis="selectedRefFeatAnalysis"
+												sequence-index="0"></reference-sequence>
+										<query-sequence svg-params="svgParams" 
+												selected-feature-analysis="selectedFeatureAnalysis"
+												selected-ref-name="selectedRefName"
+												selected-query-feat-analysis="selectedQueryFeatAnalysis"
+												selected-query-analysis="selectedQueryAnalysis"
+												sequence-index="1"
+												variation-categories="variationCategories"></query-sequence>
+									</svg>
+						        </div>
+					        </div>
+						</div>
 					</div>
 				</div>
 			</div>

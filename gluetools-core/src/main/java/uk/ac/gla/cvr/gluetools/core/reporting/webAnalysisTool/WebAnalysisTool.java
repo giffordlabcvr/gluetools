@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -135,6 +136,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 
 		fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
+			
+			Set<String> resultVariationCategoryNames = new LinkedHashSet<String>();
+			queryAnalysis.resultVariationCategory = new ArrayList<ResultVariationCategory>();
+			
 			ReferenceSegmentTree<VariationRefSegment> trackSegTree = new ReferenceSegmentTree<VariationRefSegment>();
 
 			featureAnalysisHints.forEach(featureAnalysisHint -> {
@@ -173,6 +178,16 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									cmdContext, featureName, dnaSequence, queryAnalysis.targetRefName, tipAlignment,
 									acRefName, queryToTipAlmtRefSegs, 
 									multiReference, descendentFeatures, true, variationWhereClause);
+							
+							if(!variationScanResults.isEmpty()) {
+								if(!resultVariationCategoryNames.contains(vCatName)) {
+									resultVariationCategoryNames.add(vCatName);
+									ResultVariationCategory resultVariationCategory = new ResultVariationCategory();
+									resultVariationCategory.name = vCatName;
+									resultVariationCategory.displayName = variationCategory.getDisplayName();
+									queryAnalysis.resultVariationCategory.add(resultVariationCategory);
+								}
+							}
 							
 							variationScanResults.forEach(vsr -> {
 								FeatureLocation vsrFeatureLoc = vsr.getVariation().getFeatureLoc();
@@ -215,6 +230,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 								variationMatch.track = varSeg.track;
 							});
 
+							
+							
 						}
 					} );
 					queryFeatAnalysis.variationMatchGroup.addAll(variationMatchKeyToGroup.values());

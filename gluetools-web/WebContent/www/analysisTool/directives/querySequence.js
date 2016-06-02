@@ -57,7 +57,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 			    	}
 		    	};
 		    	
-		    	$scope.displayVariation = function(varProp) {
+		    	$scope.displayVariationQS = function(varProp) {
 		    		varProp.mouseOver = false;
 		    		var tooltip = varProp.text;
 		    		varProp.text = null;

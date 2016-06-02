@@ -7,6 +7,11 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
     function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig) {
 
 	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
+
+	$scope.variationsPerRow = 8;
+	$scope.range = function(n) {
+		return new Array(n);
+	}
 	
 	$scope.resetSelections = function() {
 		$scope.fileItemUnderAnalysis = null;
@@ -16,11 +21,15 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.selectedReferenceAnalysis = null;
 		$scope.selectedRefFeatAnalysis = null;
 		$scope.selectedQueryFeatAnalysis = null;
+		$scope.selectedResultVariationCategory = null;
+		$scope.resultVariationMatches = null;
 	}
 	
 	$scope.seqPrepDialog = function() {
 		dialogs.create($scope.analysisToolURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
 	}
+	
+	$scope.analysisView = 'variationSummary';
 
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
 		if($scope.selectedReferenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
@@ -52,6 +61,68 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		console.log("updated ref name: ", $scope.selectedRefName);
 	}
 
+	$scope.updateSelectedResultVariationCategory = function(){
+		if($scope.selectedQueryAnalysis != null && $scope.selectedQueryAnalysis.resultVariationCategory
+				&& $scope.selectedQueryAnalysis.resultVariationCategory.length > 0) {
+			if($scope.selectedResultVariationCategory == null) {
+					$scope.selectedResultVariationCategory = $scope.selectedQueryAnalysis.resultVariationCategory[0];
+			} else {
+				var existing = _.find($scope.selectedQueryAnalysis.resultVariationCategory, function(rvCat) {
+							return rvCat.name == $scope.selectedResultVariationCategory.name;
+					});
+				if(existing == null) {
+					$scope.selectedResultVariationCategory = $scope.selectedQueryAnalysis.resultVariationCategory[0];
+				} else {
+					$scope.selectedResultVariationCategory = existing;
+				}
+			}
+		} else {
+			$scope.selectedResultVariationCategory = null;
+		}
+		console.log("updated selected variationCategory: ", $scope.selectedResultVariationCategory);
+	}
+
+	$scope.displayVariation = function(vCatName, referenceName, featureName, variationName) {
+		var varVCat = _.find(
+				$scope.variationCategories, 
+				function(vCat) {
+					return vCat.name == vCatName; } );
+
+		var variationRendererModuleName = varVCat.objectRendererModule;
+
+		var variationRendererDialog = _.find(glueWebToolConfig.getRendererDialogs(), 
+				function(rendererDialog) { return rendererDialog.renderer == variationRendererModuleName;});
+
+		console.info('variationRendererDialog', variationRendererDialog);
+
+		var glueVariationPath = 
+			"reference/"+referenceName+
+			"/feature-location/"+featureName+
+			"/variation/"+variationName;
+		glueWS.runGlueCommand(glueVariationPath, {
+	    	"render-object": { "rendererModuleName": variationRendererModuleName } 
+		})
+	    .success(function(data, status, headers, config) {
+			  console.info('render result', data);
+	    		var dlg = dialogs.create(variationRendererDialog.dialogURL,
+	    				variationRendererDialog.dialogController, 
+	    				{ renderedVariation: data,
+	    				  variationCategory: varVCat, 
+	    				  ancestorAlmtNames: _.uniq($scope.selectedQueryAnalysis.ancestorAlmtName)
+	    				}, {});
+	    		dlg.result.then(function() {
+	    			// completion handler
+	    		}, function() {
+	    		    // Error handler
+	    		}).finally(function() {
+	    		    // Finally handler
+	    		});
+	    })
+	    .error(function() {
+	    	glueWS.raiseErrorDialog(dialogs, "rendering variation "+variationName);
+	    });
+	}
+
 	
 	$scope.updateSelectedQueryFeatAnalysis = function(){
 		if($scope.selectedQueryAnalysis != null && $scope.selectedFeatureAnalysis != null) {
@@ -75,6 +146,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
 		$scope.updateSelectedQueryFeatAnalysis();
 		$scope.updateSelectedRefName();
+		$scope.updateSelectedResultVariationCategory();
 	}
 
 	$scope.selectedFeatureAnalysisChanged = function(){
@@ -99,6 +171,63 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		}
 	}
 	
+	$scope.selectedResultVariationCategoryChanged = function() {
+		$scope.updateResultVariationMatches();
+	}
+
+	$scope.updateResultVariationMatches = function() {
+		if($scope.selectedResultVariationCategory != null && $scope.selectedQueryAnalysis != null) {
+			var resultVariationMatches = [];
+			if($scope.selectedQueryAnalysis.sequenceFeatureAnalysis) {
+				for(var i = 0; i < $scope.selectedQueryAnalysis.sequenceFeatureAnalysis.length; i++) {
+					var sequenceFeatureAnalysis = $scope.selectedQueryAnalysis.sequenceFeatureAnalysis[i];
+					if(sequenceFeatureAnalysis.variationMatchGroup) {
+						for(var j = 0; j < sequenceFeatureAnalysis.variationMatchGroup.length; j++) {
+							var variationMatchGroup = sequenceFeatureAnalysis.variationMatchGroup[j];
+							if(variationMatchGroup.variationCategory != $scope.selectedResultVariationCategory.name) {
+								continue;
+							}
+							var definingReferenceName = variationMatchGroup.referenceName;
+							var definingFeatureName = variationMatchGroup.featureName;
+							var currentResultVariationMatch = null;
+							var firstResultVariationMatch = null;
+							for(var k = 0; k < variationMatchGroup.variationMatch.length; k++) {
+								var variationMatch = variationMatchGroup.variationMatch[k];
+								if(currentResultVariationMatch == null) {
+									currentResultVariationMatch = {
+											definingReferenceName: definingReferenceName,
+											definingFeatureName: definingFeatureName,
+											showDefining: false,
+											variation: []
+									};
+									resultVariationMatches.push(currentResultVariationMatch);
+									if(firstResultVariationMatch == null) {
+										firstResultVariationMatch = currentResultVariationMatch;
+										firstResultVariationMatch.showDefining = true;
+										firstResultVariationMatch.rowspan = 1;
+									} else {
+										firstResultVariationMatch.rowspan = firstResultVariationMatch.rowspan+1;
+									}
+								}
+								currentResultVariationMatch.variation.push({
+									name: variationMatch.variationName,
+									renderedName: variationMatch.variationRenderedName
+								});
+								if(currentResultVariationMatch.variation.length == $scope.variationsPerRow) {
+									currentResultVariationMatch = null;
+								}
+							}
+						}
+					}
+				}
+			}
+			$scope.resultVariationMatches = resultVariationMatches;
+		} else {
+			$scope.resultVariationMatches = null;
+		}
+		console.log("updated resultVariationMatches", $scope.resultVariationMatches);
+	}
+
 	$scope.$watch( 'selectedQueryAnalysis', function(newObj, oldObj) {
 		$scope.selectedQueryAnalysisChanged();
 	}, false);
@@ -115,6 +244,11 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.selectedReferenceAnalysisChanged();
 	}, false);
 
+	$scope.$watch( 'selectedResultVariationCategory', function(newObj, oldObj) {
+		$scope.selectedResultVariationCategoryChanged();
+	}, false);
+
+	
 	$scope.selectVariationCategories = function(item) {
 		var included = _(item.variationCategorySelection).clone();
 		var variationCategories = $scope.variationCategories;

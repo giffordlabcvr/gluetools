@@ -26,6 +26,8 @@ public class QueryAnalysis {
 	@PojoResultField
 	public List<String> ancestorAlmtName;
 
+	@PojoResultField
+	public List<ResultVariationCategory> resultVariationCategory;
 	
 	@PojoResultField
 	public List<QuerySequenceFeatureAnalysis> sequenceFeatureAnalysis;
