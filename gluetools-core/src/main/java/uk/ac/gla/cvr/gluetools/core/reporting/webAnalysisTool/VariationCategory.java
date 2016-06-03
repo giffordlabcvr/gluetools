@@ -17,6 +17,7 @@ public class VariationCategory implements Plugin {
 	public static final String DESCRIPTION = "description";
 	public static final String SELECTED_BY_DEFAULT = "selectedByDefault";
 	public static final String OBJECT_RENDERER_MODULE = "objectRendererModule";
+	public static final String REPORT_ABSENCE = "reportAbsence";
 	
 	private String name;
 	private String displayName;
@@ -24,6 +25,7 @@ public class VariationCategory implements Plugin {
 	private String description;
 	private String objectRendererModule;
 	private Boolean selectedByDefault;
+	private Boolean reportAbsence;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -33,7 +35,7 @@ public class VariationCategory implements Plugin {
 		description = PluginUtils.configureStringProperty(configElem, DESCRIPTION, false);
 		selectedByDefault = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SELECTED_BY_DEFAULT, false)).orElse(false);
 		objectRendererModule = PluginUtils.configureStringProperty(configElem, OBJECT_RENDERER_MODULE, true);
-
+		reportAbsence = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, REPORT_ABSENCE, false)).orElse(false);
 	}
 
 	public String getName() {
@@ -54,6 +56,10 @@ public class VariationCategory implements Plugin {
 
 	public Boolean getSelectedByDefault() {
 		return selectedByDefault;
+	}
+
+	public Boolean getReportAbsence() {
+		return reportAbsence;
 	}
 
 	public String getObjectRendererModule() {

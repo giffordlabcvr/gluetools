@@ -110,19 +110,22 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		Map<String, FeatureAnalysis> featureNameToAnalysis = 
 				initFeatureAnalysis(cmdContext, refNameToAnalysis.keySet(), allColsAlmt);
 		
+		List<VariationCategoryResult> variationCategoryResults = new ArrayList<VariationCategoryResult>();
+		
 		populateReferenceAnalyses(cmdContext, fastaSequenceReporter, refNameToAnalysis, allColsAlmt);
 		
-		populateQueryAnalysese(cmdContext, fastaSequenceReporter, fastaIdToQueryAnalysis, allColsAlmt);
+		populateQueryAnalyses(cmdContext, fastaSequenceReporter, fastaIdToQueryAnalysis, allColsAlmt);
 
 		populateRefQueryDiffs(featureNameToAnalysis, refNameToAnalysis, fastaIdToQueryAnalysis);
 		
 		populateVariationMatchGroups(cmdContext, fastaSequenceReporter, allColsAlmt, 
-				fastaIdToSequence, fastaIdToQueryAnalysis, vCatNames);
+				fastaIdToSequence, fastaIdToQueryAnalysis, vCatNames, variationCategoryResults);
  		
 		return new WebAnalysisResult(
 				new ArrayList<FeatureAnalysis>(featureNameToAnalysis.values()),
 				new ArrayList<ReferenceAnalysis>(refNameToAnalysis.values()),
-				new ArrayList<QueryAnalysis>(fastaIdToQueryAnalysis.values()));
+				new ArrayList<QueryAnalysis>(fastaIdToQueryAnalysis.values()), 
+				variationCategoryResults);
 	}
 
 	
@@ -132,7 +135,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			AllColumnsAlignment<Key> allColsAlmt,
 			Map<String, DNASequence> fastaIdToSequence, 
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis, 
-			List<String> vCatNames) {
+			List<String> vCatNames,
+			List<VariationCategoryResult> variationCategoryResults) {
 
 
 		fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
@@ -162,9 +166,12 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 					
 					List<QueryAlignedSegment> queryToUSegs = allColsAlmt.getSegments(new QueryKey(fastaId));
 					
-					Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroup = 
+					Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroupPresent = 
 							new LinkedHashMap<VariationMatchGroup.Key, VariationMatchGroup>();
-					
+
+					Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroupAbsent = 
+							new LinkedHashMap<VariationMatchGroup.Key, VariationMatchGroup>();
+
 					vCatNames.forEach( vCatName -> {
 						VariationCategory variationCategory = vCatNameToCategory.get(vCatName);
 						for(VariationScanHint variationScanHint: featureAnalysisHint.getVariationScanHints()) {
@@ -173,11 +180,13 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							Boolean descendentFeatures = variationScanHint.getDescendentFeatures();
 							Expression variationWhereClause = variationCategory.getWhereClause();
 							
+							boolean excludeAbsent = !variationCategory.getReportAbsence();
+							
 							List<VariationScanResult> variationScanResults = 
 									FastaSequenceVariationScanCommand.variationScan(
 									cmdContext, featureName, dnaSequence, queryAnalysis.targetRefName, tipAlignment,
 									acRefName, queryToTipAlmtRefSegs, 
-									multiReference, descendentFeatures, true, variationWhereClause);
+									multiReference, descendentFeatures, excludeAbsent, variationWhereClause);
 							
 							if(!variationScanResults.isEmpty()) {
 								if(!resultVariationCategoryNames.contains(vCatName)) {
@@ -195,49 +204,70 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 								String groupFeatureName = vsrFeatureLoc.getFeature().getName();
 								VariationMatchGroup.Key key = 
 										new VariationMatchGroup.Key(groupRefName, groupFeatureName, vCatName);
-								VariationMatchGroup variationMatchGroup = variationMatchKeyToGroup.get(key);
+								Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroupMap;
+								if(vsr.isPresent()) {
+									variationMatchKeyToGroupMap = variationMatchKeyToGroupPresent;
+								} else {
+									variationMatchKeyToGroupMap = variationMatchKeyToGroupAbsent;
+								}
+
+								VariationMatchGroup variationMatchGroup = variationMatchKeyToGroupMap.get(key);
 								if(variationMatchGroup == null) {
 									variationMatchGroup = new VariationMatchGroup();
 									variationMatchGroup.referenceName = groupRefName;
 									variationMatchGroup.featureName = groupFeatureName;
 									variationMatchGroup.variationCategory = vCatName;
-									variationMatchKeyToGroup.put(key, variationMatchGroup);
+									variationMatchKeyToGroupMap.put(key, variationMatchGroup);
 								}
 								VariationMatch variationMatch = new VariationMatch();
 								variationMatch.variationName = vsr.getVariation().getName();
 								variationMatch.variationRenderedName = vsr.getVariation().getRenderedName();
-								Integer queryNtStart = vsr.getQueryNtStart();
-								Integer queryNtEnd = vsr.getQueryNtEnd();
-								QueryAlignedSegment vsrQaSeg = 
-										new QueryAlignedSegment(queryNtStart, queryNtEnd, queryNtStart, queryNtEnd);
-								List<QueryAlignedSegment> vsrUSegs = 
-										QueryAlignedSegment.translateSegments(Arrays.asList(vsrQaSeg), queryToUSegs);
-								variationMatch.startUIndex = ReferenceSegment.minRefStart(vsrUSegs);
-								variationMatch.endUIndex = ReferenceSegment.maxRefEnd(vsrUSegs);
 								variationMatchGroup.variationMatch.add(variationMatch);
-								List<VariationRefSegment> overlapping = new ArrayList<VariationRefSegment>();
-								VariationRefSegment varSeg = new VariationRefSegment(
-										variationMatch.variationName, variationMatch.startUIndex, variationMatch.endUIndex);
-								trackSegTree.findOverlapping(variationMatch.startUIndex, variationMatch.endUIndex, overlapping);
-								varSeg.track = 0;
-								while(true) {
-									if(!overlapping.stream().anyMatch(vSeg -> vSeg.track == varSeg.track)) {
-										break;
+								if(vsr.isPresent()) {
+									Integer queryNtStart = vsr.getQueryNtStart();
+									Integer queryNtEnd = vsr.getQueryNtEnd();
+									QueryAlignedSegment vsrQaSeg = 
+											new QueryAlignedSegment(queryNtStart, queryNtEnd, queryNtStart, queryNtEnd);
+									List<QueryAlignedSegment> vsrUSegs = 
+											QueryAlignedSegment.translateSegments(Arrays.asList(vsrQaSeg), queryToUSegs);
+									variationMatch.startUIndex = ReferenceSegment.minRefStart(vsrUSegs);
+									variationMatch.endUIndex = ReferenceSegment.maxRefEnd(vsrUSegs);
+									List<VariationRefSegment> overlapping = new ArrayList<VariationRefSegment>();
+									VariationRefSegment varSeg = new VariationRefSegment(
+											variationMatch.variationName, variationMatch.startUIndex, variationMatch.endUIndex);
+									trackSegTree.findOverlapping(variationMatch.startUIndex, variationMatch.endUIndex, overlapping);
+									varSeg.track = 0;
+									while(true) {
+										if(!overlapping.stream().anyMatch(vSeg -> vSeg.track == varSeg.track)) {
+											break;
+										}
+										varSeg.track++;
 									}
-									varSeg.track++;
+									trackSegTree.add(varSeg);
+									variationMatch.track = varSeg.track;
 								}
-								trackSegTree.add(varSeg);
-								variationMatch.track = varSeg.track;
 							});
 
 							
 							
 						}
 					} );
-					queryFeatAnalysis.variationMatchGroup.addAll(variationMatchKeyToGroup.values());
+					queryFeatAnalysis.variationMatchGroupPresent = new ArrayList<VariationMatchGroup>(variationMatchKeyToGroupPresent.values());
+					queryFeatAnalysis.variationMatchGroupAbsent = new ArrayList<VariationMatchGroup>(variationMatchKeyToGroupAbsent.values());
 				}
 			});
 		});
+		
+		vCatNames.forEach(vcatName -> {
+			VariationCategory vcat = vCatNameToCategory.get(vcatName);
+			VariationCategoryResult vCatResult = new VariationCategoryResult();
+			vCatResult.name = vcat.getName();
+			vCatResult.displayName = vcat.getDisplayName();
+			vCatResult.reportAbsence = vcat.getReportAbsence();
+			variationCategoryResults.add(vCatResult);	
+		});
+		
+		
 	}
 
 	private void checkVCatNames(List<String> vCatNames) {
@@ -356,7 +386,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		return allColsAlmt;
 	}
 
-	private void populateQueryAnalysese(CommandContext cmdContext,
+	private void populateQueryAnalyses(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter,
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis,
 			AllColumnsAlignment<Key> allColsAlmt) {

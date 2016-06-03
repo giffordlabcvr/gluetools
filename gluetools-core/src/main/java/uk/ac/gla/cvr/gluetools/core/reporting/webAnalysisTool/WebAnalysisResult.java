@@ -17,14 +17,19 @@ public class WebAnalysisResult {
 	@PojoResultField(resultName = "queryAnalysis")
 	public List<QueryAnalysis> queryAnalysisList;
 
+	@PojoResultField(resultName = "variationCategoryResult")
+	public List<VariationCategoryResult> variationCategoryResultList;
+	
+	
 	public WebAnalysisResult(
 			List<FeatureAnalysis> featureAnalysisList, 
 			List<ReferenceAnalysis> referenceAnalysisList, 
-			List<QueryAnalysis> queryAnalysisList) {
+			List<QueryAnalysis> queryAnalysisList,
+			List<VariationCategoryResult> variationCategoryResultList) {
 		this.featureAnalysisList = featureAnalysisList;
 		this.referenceAnalysisList = referenceAnalysisList;
 		this.queryAnalysisList = queryAnalysisList;
+		this.variationCategoryResultList = variationCategoryResultList;
 	}
-
 
 }

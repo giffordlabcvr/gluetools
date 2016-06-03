@@ -108,9 +108,9 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 				var varProps = [];
 				params.numVarTracks = 0;
 
-				if(seqFeatAnalysis.variationMatchGroup) {
-					for(var i = 0; i < seqFeatAnalysis.variationMatchGroup.length; i++) {
-						var varMatchGroup = seqFeatAnalysis.variationMatchGroup[i];
+				if(seqFeatAnalysis.variationMatchGroupPresent) {
+					for(var i = 0; i < seqFeatAnalysis.variationMatchGroupPresent.length; i++) {
+						var varMatchGroup = seqFeatAnalysis.variationMatchGroupPresent[i];
 						for(var j = 0; j < varMatchGroup.variationMatch.length; j++) {
 							var varMatch = varMatchGroup.variationMatch[j];
 							if(varMatch.endUIndex < featAnalysis.startUIndex) {
