@@ -2,7 +2,9 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
 
 import gnu.trove.map.TIntObjectMap;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
@@ -34,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldTranslator;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
@@ -280,6 +284,29 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 		}
 		return new VariationScanResult(this, result, ntStart, ntEnd);
 	}
+	
+	/**
+	 * @return List of variation-alignment notes associated with this variation, 
+	 * ordered by the depth of the alignment in question in the alignment tree.
+	 */
+	public List<VarAlmtNote> getVarAlmtNotesOrderedByDepth() {
+		List<VarAlmtNote> varAlmtNotes = new ArrayList<VarAlmtNote>(super.getVarAlmtNotes());
+		Collections.sort(varAlmtNotes, new Comparator<VarAlmtNote>() {
+			@Override
+			public int compare(VarAlmtNote van1, VarAlmtNote van2) {
+				Alignment almt1 = van1.getAlignment();
+				Alignment almt2 = van2.getAlignment();
+				int comp = Integer.compare(almt1.getDepth(), almt2.getDepth());
+				if(comp != 0) {
+					return comp;
+				}
+				return almt1.getName().compareTo(almt2.getName());
+			}
+		});
+		
+		return varAlmtNotes;
+	}
+	
 	
 	public Variation clone() {
 		throw new RuntimeException("Variation.clone() not supported");

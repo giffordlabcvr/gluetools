@@ -30,6 +30,7 @@ public class Alignment extends _Alignment implements HasDisplayName {
 	public static final String REF_SEQ_NAME_PATH = 
 			_Alignment.REF_SEQUENCE_PROPERTY+"."+ReferenceSequence.NAME_PROPERTY;
 	public static final String PARENT_NAME_PATH = _Alignment.PARENT_PROPERTY+"."+_Alignment.NAME_PROPERTY;
+
 	
 	public static Map<String, String> pkMap(String name) {
 		Map<String, String> idMap = new LinkedHashMap<String, String>();
@@ -211,9 +212,18 @@ public class Alignment extends _Alignment implements HasDisplayName {
 				.findFirst();
 		return ancestor.orElse(null);
 	}
-	
+
 	public boolean isConstrained() {
 		return getRefSequence() != null;
 	}
+	
+	public Integer getDepth() {
+		Alignment parent = getParent();
+		if(parent == null) {
+			return 0;
+		}
+		return parent.getDepth() + 1;
+	}
+	
 }
 
