@@ -142,11 +142,20 @@
 						<h4>{{selectedVariationCategoryResult.displayName}} present in the query sequence: {{resultVariationMatchesPresent.number}}</h4>
 						<table ng-show="resultVariationMatchesPresent.matches.length > 0" class="table" width="100%">
 							<thead>
+								<col width="2%"></col>
+								<col width="2%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
 								<tr>
 									<th>Reference sequence</th>
 									<th>Genome feature</th>
-									<th>{{selectedVariationCategoryResult.displayName}}</th>
-									<th ng-repeat="a in range(variationsPerRow - 1) track by $index"></th>
+									<th colspan="{{variationsPerRow}}">{{selectedVariationCategoryResult.displayName}}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -164,11 +173,20 @@
 						<h4>{{selectedVariationCategoryResult.displayName}} absent from the query sequence: {{resultVariationMatchesAbsent.number}}</h4>
 						<table ng-show="resultVariationMatchesAbsent.matches.length > 0" class="table" width="100%">
 							<thead>
+								<col width="2%"></col>
+								<col width="2%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
+								<col width="12%"></col>
 								<tr>
 									<th>Reference sequence</th>
 									<th>Genome feature</th>
-									<th>{{selectedVariationCategoryResult.displayName}}</th>
-									<th ng-repeat="a in range(variationsPerRow - 1) track by $index"></th>
+									<th colspan="{{variationsPerRow}}">{{selectedVariationCategoryResult.displayName}}</th>
 								</tr>
 							</thead>
 							<tbody>
