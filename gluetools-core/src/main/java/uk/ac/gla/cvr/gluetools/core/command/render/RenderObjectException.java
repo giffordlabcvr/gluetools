@@ -1,14 +1,13 @@
-package uk.ac.gla.cvr.gluetools.core.command.result;
+package uk.ac.gla.cvr.gluetools.core.command.render;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class PojoResultException extends GlueException {
+public class RenderObjectException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		POJO_PROPERTY_READ_ERROR("errorText"),
-		CLASS_NOT_ANNOTATED("className"),
-		POJO_FIELD_INCORRECT_MODIFIERS("fieldName", "className");
+		NO_DEFAULT_RENDERER_DEFINED("class"),
+		ERROR_LOADING_DEFAULT_RENDERER_TEMPLATE("resource", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -21,11 +20,11 @@ public class PojoResultException extends GlueException {
 
 	}
 	
-	public PojoResultException(Code code, Object... errorArgs) {
+	public RenderObjectException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public PojoResultException(Throwable cause, Code code,
+	public RenderObjectException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

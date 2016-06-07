@@ -1,0 +1,12 @@
+<#include "/utils/glueDocUtils.ftlx">
+
+<alignmentMember>
+	<alignment>
+		<name>${alignment.name}</name>
+		<renderedName>${alignment.getRenderedName()}</renderedName>
+	</alignment>
+	<sequence>
+		<sourceName>${sequence.source.name}</sourceName>
+		<sequenceID>${sequence.sequenceID}</sequenceID>
+	</sequence>
+</alignmentMember>

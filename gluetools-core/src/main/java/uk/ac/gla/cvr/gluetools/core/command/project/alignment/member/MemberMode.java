@@ -3,15 +3,19 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.RenderableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.InsideAlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.MemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = MemberModeCommandFactory.class)
-public class MemberMode extends CommandMode<MemberCommand> implements InsideProjectMode, InsideAlignmentMode {
+public class MemberMode extends CommandMode<MemberCommand> implements InsideProjectMode, InsideAlignmentMode, RenderableObjectMode {
 
 	
 	private Project project;
@@ -47,5 +51,15 @@ public class MemberMode extends CommandMode<MemberCommand> implements InsideProj
 	public String getAlignmentName() {
 		return almtName;
 	}
+	
+	public AlignmentMember getAlignmentMember(CommandContext cmdContext) {
+		return GlueDataObject.lookup(cmdContext, AlignmentMember.class, AlignmentMember.pkMap(getAlignmentName(), sourceName, sequenceID));
+	}
+
+	@Override
+	public GlueDataObject getRenderableObject(CommandContext cmdContext) {
+		return getAlignmentMember(cmdContext);
+	}
+	
 	
 }

@@ -1,0 +1,20 @@
+<div ng-app="projectBrowser">
+	<h1>Reference sequences</h1>
+
+	<table class="table" width="100%">
+		<thead>
+			<tr>
+				<th>Reference sequence</th>
+				<th>Underlying sequence</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="referenceResult in listReferenceResult">
+				<td><a href="#project/reference/{{referenceResult.name}}">{{referenceResult.name}}</a></td>
+				<td><a href="#project/sequence/{{referenceResult['sequence.source.name']}}/{{referenceResult['sequence.sequenceID']}}">
+					{{referenceResult['sequence.source.name']}}/{{referenceResult['sequence.sequenceID']}}
+				</a></td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -24,7 +24,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequenceException.Code;
 
-@GlueDataClass(defaultListedProperties = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH}, 
+@GlueDataClass(
+		defaultObjectRendererFtlFile = "defaultRenderers/reference.ftlx",
+		defaultListedProperties = {_ReferenceSequence.NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH}, 
 		listableBuiltInProperties = {_ReferenceSequence.NAME_PROPERTY, _ReferenceSequence.DISPLAY_NAME_PROPERTY, ReferenceSequence.SEQ_SOURCE_NAME_PATH, ReferenceSequence.SEQ_ID_PATH}, 
 		modifiableBuiltInProperties = {_ReferenceSequence.DISPLAY_NAME_PROPERTY})
 public class ReferenceSequence extends _ReferenceSequence implements HasDisplayName {

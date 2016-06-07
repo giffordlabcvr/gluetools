@@ -1,0 +1,16 @@
+<div ng-app="projectBrowser">
+	<h1>Sequences</h1>
+
+	<table class="table" width="100%">
+		<thead>
+			<tr>
+				<th>Source name / sequenceID</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="sequenceResult in listSequenceResult">
+				<td><a href="#project/sequence/{{sequenceResult['source.name']}}/{{sequenceResult.sequenceID}}">{{sequenceResult['source.name']}}/{{sequenceResult.sequenceID}}</a></td>
+			</tr>
+		</tbody>
+	</table>
+</div>

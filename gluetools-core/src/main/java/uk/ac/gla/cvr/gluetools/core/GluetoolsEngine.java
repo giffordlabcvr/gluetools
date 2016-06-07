@@ -65,6 +65,7 @@ public class GluetoolsEngine implements Plugin {
 			throw new RuntimeException(e);
 		}
 		freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_24);
+		freemarkerConfiguration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "/freemarker");
 		Document configDocument = null;
 		if(configFilePath != null) {
 			try {

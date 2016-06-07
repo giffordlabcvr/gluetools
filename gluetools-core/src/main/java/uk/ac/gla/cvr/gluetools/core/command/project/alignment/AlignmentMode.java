@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.AlignmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.RenderableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -14,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = AlignmentModeCommandFactory.class)
-public class AlignmentMode extends CommandMode<AlignmentCommand> implements ConfigurableObjectMode, InsideAlignmentMode {
+public class AlignmentMode extends CommandMode<AlignmentCommand> implements ConfigurableObjectMode, InsideAlignmentMode, RenderableObjectMode {
 	
 	private String alignmentName;
 	private Project project;
@@ -56,6 +57,11 @@ public class AlignmentMode extends CommandMode<AlignmentCommand> implements Conf
 
 	protected Alignment lookupAlignment(CommandContext cmdContext) {
 		return GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(getAlignmentName()));
+	}
+
+	@Override
+	public GlueDataObject getRenderableObject(CommandContext cmdContext) {
+		return lookupAlignment(cmdContext);
 	}
 
 

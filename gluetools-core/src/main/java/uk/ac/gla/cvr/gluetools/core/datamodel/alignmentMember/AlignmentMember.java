@@ -16,7 +16,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-@GlueDataClass(defaultListedProperties = {AlignmentMember.ALIGNMENT_NAME_PATH, AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
+@GlueDataClass(
+		defaultObjectRendererFtlFile = "defaultRenderers/alignmentMember.ftlx",
+		defaultListedProperties = {AlignmentMember.ALIGNMENT_NAME_PATH, AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH})
 public class AlignmentMember extends _AlignmentMember {
 	
 	public enum MemberStatistic {

@@ -122,7 +122,7 @@ public abstract class GlueException extends RuntimeException {
 
 	private ResourceBundle getResourceBundle() {
 		try {
-			return ResourceBundle.getBundle(getClass().getSimpleName(), Locale.getDefault());
+			return ResourceBundle.getBundle("exceptionMessages."+getClass().getSimpleName(), Locale.getDefault());
 		} catch(MissingResourceException mre) {
 			logger.warning(mre.getMessage());
 			return null;

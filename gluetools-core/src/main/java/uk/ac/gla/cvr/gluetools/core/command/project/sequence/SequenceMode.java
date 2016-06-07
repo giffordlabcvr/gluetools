@@ -6,6 +6,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.RenderableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.SequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -14,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 @CommandModeClass(commandFactoryClass = SequenceModeCommandFactory.class)
-public class SequenceMode extends CommandMode<SequenceCommand> implements ConfigurableObjectMode {
+public class SequenceMode extends CommandMode<SequenceCommand> implements ConfigurableObjectMode, RenderableObjectMode {
 
 	private Project project;
 	private String sourceName;
@@ -62,6 +63,11 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Config
 	@Override
 	public ConfigurableTable getConfigurableTable() {
 		return ConfigurableTable.sequence;
+	}
+
+	@Override
+	public GlueDataObject getRenderableObject(CommandContext cmdContext) {
+		return lookupSequence(cmdContext);
 	}
 
 	

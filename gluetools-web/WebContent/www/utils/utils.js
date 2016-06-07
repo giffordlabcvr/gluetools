@@ -14,7 +14,26 @@ function toFixed(value, precision) {
 
 function addUtilsToScope($scope) {
 	$scope.toFixed = function(v,p) { return toFixed(v,p); }
+	$scope.renderDisplayName = renderDisplayName;
+	$scope.handleNull = handleNull;
 }
+
+
+
+function renderDisplayName(name, displayName) {
+	if(displayName == null) {
+		return name;
+	}
+	return displayName;
+}
+
+function handleNull(text) {
+	if(text == null) {
+		return "-";
+	}
+	return text;
+}; 
+
 
 // find the index of the first item X in list for which predicate(X) returns true, 
 // or return -1 if there is no such item.

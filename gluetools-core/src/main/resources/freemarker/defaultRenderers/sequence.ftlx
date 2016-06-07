@@ -1,0 +1,18 @@
+<#include "/utils/glueDocUtils.ftlx">
+
+<sequence>
+	<sourceName>${source.name}</sourceName>
+	<sequenceID>${sequenceID}</sequenceID>
+<#list alignmentMemberships as alignmentMembership>
+	<alignmentMembership glueType="Object[]">
+		<name>${alignmentMembership.alignment.name}</name>
+		<renderedName>${alignmentMembership.alignment.getRenderedName()}</renderedName>
+	</alignmentMembership>
+</#list>
+<#list referenceSequences as referenceSequence>
+	<referenceSequence glueType="Object[]">
+		<name>${referenceSequence.name}</name>
+		<renderedName>${referenceSequence.getRenderedName()}</renderedName>
+	</referenceSequence>
+</#list>
+</sequence>

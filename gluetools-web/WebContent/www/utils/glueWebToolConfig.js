@@ -3,6 +3,7 @@ var glueWebToolConfig = angular.module('glueWebToolConfig', []);
 
 glueWebToolConfig.factory('glueWebToolConfig', function () {
 	var analysisToolURL;
+	var projectBrowserURL;
 	var glueWSURL;
 	var rendererDialogs;
 	return {
@@ -12,6 +13,13 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 		},
 		getAnalysisToolURL: function() {
 			return analysisToolURL;
+		},
+		setProjectBrowserURL: function(newURL) {
+			projectBrowserURL = newURL;
+			console.log("project browser URL set to: "+newURL);
+		},
+		getProjectBrowserURL: function() {
+			return projectBrowserURL;
 		},
 		setGlueWSURL: function(newURL) {
 			glueWSURL = newURL;

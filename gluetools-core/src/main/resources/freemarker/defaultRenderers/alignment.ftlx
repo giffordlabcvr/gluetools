@@ -1,0 +1,30 @@
+<#include "/utils/glueDocUtils.ftlx">
+
+<alignment>
+	<name>${name}</name>
+	<renderedName>${getRenderedName()}</renderedName>
+<#if refSequence ??>
+	<constrainingReference>
+		<name>${refSequence.name}</name>
+		<renderedName>${refSequence.getRenderedName()}</renderedName>
+	</constrainingReference>
+</#if>
+<#if parent ??>
+	<parent>
+		<name>${parent.name}</name>
+		<renderedName>${parent.getRenderedName()}</renderedName>
+	</parent>
+</#if>
+<#list children as child>
+	<child glueType="Object[]">
+		<name>${child.name}</name>
+		<renderedName>${child.getRenderedName()}</renderedName>
+	</child>
+</#list>
+<#list members as member>
+	<memberSequence glueType="Object[]">
+		<sourceName>${member.sequence.source.name}</sourceName>
+		<sequenceID>${member.sequence.sequenceID}</sequenceID>
+	</memberSequence>
+</#list>
+</alignment>

@@ -1,0 +1,88 @@
+.variationCategory {
+   bold: true;
+   font-size: 130%;
+   vertical-align: middle;
+}
+
+
+.sequenceLabel {
+    text-anchor: start;
+    alignment-baseline: central;
+}
+
+.codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
+    text-anchor: middle;
+    alignment-baseline: central;
+}
+
+
+.queryNtIndex, .referenceNtIndex {
+    text-anchor: start;
+    alignment-baseline: central;
+    writing-mode: tb;
+}
+
+.sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff {
+	font-size: 120%;
+}
+
+.referenceNt, .queryNt, .queryNtDiff {
+	font-size: 90%;
+}
+
+.queryNtIndex, .referenceNtIndex {
+	font-size: 100%;
+}
+	
+.sequenceLabel {
+	fill: #222222;
+}
+
+.codonLabel {
+	fill: #222222;
+}
+
+.referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff  {
+	font-weight: bold;
+}
+
+.referenceAa {
+	fill: #3a5c7e;
+}
+
+.referenceAaBackground {
+	fill: #ddeeff;
+}
+
+.queryAa {
+	fill: #557733;
+}
+
+.queryAaBackground {
+	fill: #ddeecc;
+}
+
+.queryAaDiff, .queryNtDiff {
+	fill: #ffffff;
+}
+
+.queryAaDiffBackground, .queryNtDiffBackground {
+	fill: #aaaaaa;
+}
+
+.referenceNt, .referenceNtIndex {
+	fill: #88aacc;
+}
+
+.queryNt, .queryNtIndex {
+	fill: #99bb77;
+}
+
+.varLocation {
+	fill: #e6f9ff;
+}
+
+.varBox {
+	stroke: #333333;
+	fill: none;
+}

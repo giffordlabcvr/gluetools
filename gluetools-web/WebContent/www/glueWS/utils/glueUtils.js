@@ -19,3 +19,4 @@ function tableResultAsObjectList(tableResult) {
 	}
 	return objectList;
 }
+

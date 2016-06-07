@@ -1,0 +1,19 @@
+<div ng-show="renderResult" ng-app="projectBrowser">
+	<h1>Sequence: {{renderResult.sequence.sourceName}}/{{renderResult.sequence.sequenceID}}</h1>
+	<p>
+		<div ng-repeat="reference in renderResult.sequence.referenceSequence track by $index">
+			Basis of reference sequence: 
+			<a href="#project/reference/{{reference.name}}">
+				{{reference.renderedName}}
+			</a>
+		</div>
+	</p>
+	<h3>Alignment memberships</h3>	
+	<span ng-show="!renderResult.sequence.alignmentMembership">None</span>
+	<div ng-repeat="alignment in renderResult.sequence.alignmentMembership track by $index">
+		<a href="#project/alignment/{{alignment.name}}/member/{{renderResult.sequence.sourceName}}/{{renderResult.sequence.sequenceID}}">
+			{{alignment.renderedName}}
+		</a>
+	</div>
+	
+</div>

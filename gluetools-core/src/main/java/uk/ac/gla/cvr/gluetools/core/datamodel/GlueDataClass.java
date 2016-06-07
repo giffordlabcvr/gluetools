@@ -14,4 +14,6 @@ public @interface GlueDataClass {
 	String[] listableBuiltInProperties() default {};
 	// built-in properties which may be set / unset by generic set / unset commands, in a similar way to custom fields
 	String[] modifiableBuiltInProperties() default {};
+	// default object renderer freemarker template file path
+	String defaultObjectRendererFtlFile() default "";
 }

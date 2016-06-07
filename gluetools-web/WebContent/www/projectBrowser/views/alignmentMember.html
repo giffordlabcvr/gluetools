@@ -1,0 +1,15 @@
+<div ng-show="renderResult" ng-app="projectBrowser">
+	<h1>Alignment member</h1>
+	<p>
+	Alignment: 
+	<a href="#project/alignment/{{renderResult.alignmentMember.alignment.name}}">
+		{{renderResult.alignmentMember.alignment.renderedName}}
+	</a>
+	</p>
+	<p>
+	Sequence: 
+	<a href="#project/sequence/{{renderResult.alignmentMember.sequence.sourceName}}/{{renderResult.alignmentMember.sequence.sequenceID}}">
+		{{renderResult.alignmentMember.sequence.sourceName}}/{{renderResult.alignmentMember.sequence.sequenceID}}
+	</a>
+	</p>
+</div>

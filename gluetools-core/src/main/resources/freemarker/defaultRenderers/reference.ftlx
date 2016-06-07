@@ -1,0 +1,16 @@
+<#include "/utils/glueDocUtils.ftlx">
+
+<reference>
+	<name>${name}</name>
+	<renderedName>${getRenderedName()}</renderedName>
+	<sequence>
+		<sourceName>${sequence.source.name}</sourceName>
+		<sequenceID>${sequence.sequenceID}</sequenceID>
+	</sequence>
+<#list alignments as alignment>
+	<constrainsAlignment glueType="Object[]">
+		<name>${alignment.name}</name>
+		<renderedName>${alignment.getRenderedName()}</renderedName>
+	</constrainsAlignment>
+</#list>
+</reference>

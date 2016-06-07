@@ -1,0 +1,28 @@
+<div ng-app="projectBrowser">
+	<h1>Alignments</h1>
+
+	<table class="table" width="100%">
+		<thead>
+			<tr>
+				<th>Alignment</th>
+				<th>Parent alignment</th>
+				<th>Description</th>
+				<th>Constraining reference sequence</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="alignmentResult in listAlignmentResult">
+				<td><a href="#project/alignment/{{alignmentResult.name}}">{{renderDisplayName(alignmentResult.name, alignmentResult.displayName)}}</a></td>
+				<td>
+					<a ng-show="alignmentResult['parent.name']" href="#project/alignment/{{alignmentResult['parent.name']}}">{{renderDisplayName(alignmentResult['parent.name'], alignmentResult['parent.displayName'])}}</a>
+					<span ng-show="!alignmentResult['parent.name']">-</span>
+				</td>
+				<td>{{handleNull(alignmentResult.description)}}</td>
+				<td>
+					<a ng-show="alignmentResult['refSequence.name']" href="#project/reference/{{alignmentResult['refSequence.name']}}">{{alignmentResult['refSequence.name']}}</a>
+					<span ng-show="!alignmentResult['refSequence.name']">-</span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

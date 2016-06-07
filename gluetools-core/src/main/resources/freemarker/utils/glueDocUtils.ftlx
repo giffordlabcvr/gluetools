@@ -1,0 +1,14 @@
+<#-- null handling -->
+<#-- also suppresses number formatting -->
+<#macro elem tag expr type="String" context="">
+<#if (expr?eval) ??>
+<#assign result = expr?eval>
+<#if result?is_number>
+	<${tag} glueType="${type}">${result?c}</${tag}>
+<#else>
+	<${tag} glueType="${type}">${result}</${tag}>
+</#if>
+<#else>
+	<${tag} glueType="Null"/>
+</#if>
+</#macro>

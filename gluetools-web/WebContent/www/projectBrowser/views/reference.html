@@ -1,0 +1,17 @@
+<div ng-show="renderResult" ng-app="projectBrowser">
+	<h1>Reference sequence: {{renderResult.reference.renderedName}}</h1>
+	<p>
+		Underlying sequence: 
+		<a href="#project/sequence/{{renderResult.reference.sequence.sourceName}}/{{renderResult.reference.sequence.sequenceID}}">
+		{{renderResult.reference.sequence.sourceName}}/{{renderResult.reference.sequence.sequenceID}}
+		</a>
+	</p>
+		<p>
+			<div ng-repeat="alignment in renderResult.reference.constrainsAlignment track by $index">
+				Constrains alignment: 
+				<a href="#project/alignment/{{alignment.name}}">
+					{{alignment.renderedName}}
+				</a>
+			</div>
+		</p>
+</div>
