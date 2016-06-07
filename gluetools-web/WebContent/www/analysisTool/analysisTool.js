@@ -31,6 +31,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	}
 	
 	$scope.analysisView = 'variationSummary';
+	$scope.enableVariationSummary = true;
 
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
 		if($scope.selectedReferenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
@@ -290,8 +291,18 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	$scope.showAnalysisResults = function(item) {
 		if( (!$scope.fileItemUnderAnalysis) || ($scope.fileItemUnderAnalysis != item) ) {
 			$scope.resetSelections();
+			
 			console.log("show analysis : ", item);
 			$scope.fileItemUnderAnalysis = item;
+
+			if($scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult &&
+					$scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult.length > 0) {
+				$scope.analysisView = 'variationSummary';
+				$scope.enableVariationSummary = true;
+			} else {
+				$scope.analysisView = 'genomeDetail';
+				$scope.enableVariationSummary = false;
+			}
 			if($scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis.length >= 0) {
 				$scope.selectedQueryAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis[0];
 				console.log("selected query analysis: ", $scope.selectedQueryAnalysis);

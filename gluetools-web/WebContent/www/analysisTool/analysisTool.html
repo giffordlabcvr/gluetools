@@ -107,7 +107,8 @@
 			<div ng-show="fileItemUnderAnalysis">
 				<h3>Analysis Results</h3>
 				<div class="btn-group">
-					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
+					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
+						ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" ng-model="analysisView" btn-radio="'genomeDetail'">Genome detail</label>
 				</div>
 
