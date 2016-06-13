@@ -40,7 +40,7 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 	public static final String FEATURE_NAME = AlignmentVariationFrequencyCmdDelegate.FEATURE_NAME;
 	public static final String DESCENDENT_FEATURES = AlignmentVariationFrequencyCmdDelegate.DESCENDENT_FEATURES;
 	
-	private AlignmentVariationFrequencyCmdDelegate delegate;
+	private AlignmentVariationFrequencyCmdDelegate delegate = new AlignmentVariationFrequencyCmdDelegate();
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
