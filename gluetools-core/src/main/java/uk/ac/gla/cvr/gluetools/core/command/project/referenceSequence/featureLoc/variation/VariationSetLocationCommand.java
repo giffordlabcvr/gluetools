@@ -1,11 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
-import org.apache.cayenne.BaseContext;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -17,16 +14,13 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 
 @CommandClass( 
@@ -88,10 +82,6 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 
 		Variation variation = lookupVariation(cmdContext);
 		TranslationFormat translationFormat = variation.getTranslationFormat();
-		Integer codon1Start = null;
-		if(translationFormat == TranslationFormat.AMINO_ACID) {
-			codon1Start = featureLoc.getCodon1Start(cmdContext);
-		}
 		
 		if(labeledCodonBased) {
 			if(translationFormat != TranslationFormat.AMINO_ACID) {
@@ -125,55 +115,13 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 					getRefSeqName(), getFeatureName(), getVariationName(), Integer.toString(ntStart), Integer.toString(ntEnd));
 		}
 		
-		Integer oldRefStart = variation.getRefStart();
-		Integer oldRefEnd = variation.getRefEnd();
-		
 		variation.setRefStart(ntStart);
 		variation.setRefEnd(ntEnd);
 		
 		
-		Set<Integer> positionsToRemove = new LinkedHashSet<Integer>();
-		Set<Integer> positionsToAdd = new LinkedHashSet<Integer>();
-
-		// for amino acid variations we only store position variations at start of codon, for efficiency.
-		
-		if(oldRefStart != null && oldRefEnd != null) {
-			for(int i = oldRefStart; i <= oldRefEnd; i++) {
-				if(translationFormat == TranslationFormat.AMINO_ACID && !TranslationUtils.isAtStartOfCodon(codon1Start, i)) {
-					continue;
-				}
-				if(i < ntStart || i > ntEnd) {
-					positionsToRemove.add(i);
-				}
-			}
-		}
-		for(int i = ntStart; i <= ntEnd; i++) {
-			if( (oldRefStart != null && i >= oldRefStart) 
-				|| (oldRefEnd != null && i > oldRefEnd) ) {
-				continue;
-			}
-			if(translationFormat == TranslationFormat.AMINO_ACID && !TranslationUtils.isAtStartOfCodon(codon1Start, i)) {
-				continue;
-			}
-			positionsToAdd.add(i);
-		}
-		for(Integer positionToRemove: positionsToRemove) {
-			GlueDataObject.delete(cmdContext, PositionVariation.class, 
-					PositionVariation.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), 
-							positionToRemove, translationFormat), true);
-		}
-		for(Integer positionToAdd: positionsToAdd) {
-			PositionVariation positionVariation = GlueDataObject.create(cmdContext, PositionVariation.class, 
-					PositionVariation.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), 
-							positionToAdd, translationFormat), true);
-			positionVariation.setFeatureLocation(featureLoc);
-			positionVariation.setVariation(variation);
-		}
-		
 		if(!noCommit) {
 			cmdContext.commit();
 		}
-		((BaseContext) cmdContext.getObjectContext()).getQueryCache().removeGroup(PositionVariation.CACHE_GROUP);
 		return new UpdateResult(Variation.class, 1);
 	}
 

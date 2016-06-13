@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAware
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
-import uk.ac.gla.cvr.gluetools.core.reporting.MutationFrequenciesReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
@@ -41,7 +40,6 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(GenbankXmlPopulator.class);
 		registerPluginClass(TextFilePopulator.class);
 		registerPluginClass(FreemarkerTextToGlueTransformer.class);
-		registerPluginClass(MutationFrequenciesReporter.class);
 		registerPluginClass(BlastAligner.class);
 		registerPluginClass(CodonAwareBlastAligner.class);
 		registerPluginClass(CompoundAligner.class);

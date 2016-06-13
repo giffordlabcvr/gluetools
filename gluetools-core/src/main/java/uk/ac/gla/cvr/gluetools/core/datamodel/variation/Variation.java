@@ -6,24 +6,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.exp.ExpressionFactory;
-import org.apache.cayenne.query.QueryCacheStrategy;
-import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
@@ -39,7 +31,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
-import uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
@@ -173,28 +164,6 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 		}
 
 	}	
-
-	public VariationDocument getVariationDocument(CommandContext cmdContext) {
-		return new VariationDocument(getName(), 
-				getRefStart(), getRefEnd(), 
-				getRegexPattern(), getDescription(), getTranslationFormat(), 
-				new LinkedHashSet<String>(getVariationCategoryNames(cmdContext)), false);
-	}
-
-	public List<String> getVariationCategoryNames(CommandContext cmdContext) {
-		Expression exp = ExpressionFactory.matchExp(VcatMembership.VARIATION_NAME_PATH, getName());
-		exp = exp.andExp(ExpressionFactory.matchExp(VcatMembership.VARIATION_FEATURE_NAME_PATH, getFeatureLoc().getFeature().getName()));
-		exp = exp.andExp(ExpressionFactory.matchExp(VcatMembership.VARIATION_REFSEQ_NAME_PATH, getFeatureLoc().getReferenceSequence().getName()));
-		SelectQuery query = new SelectQuery(VcatMembership.class, exp);
-		query.setCacheGroups(VcatMembership.CACHE_GROUP);
-		query.setCacheStrategy(QueryCacheStrategy.SHARED_CACHE);
-		
-		List<VcatMembership> vcatMemberships = GlueDataObject.query(cmdContext, VcatMembership.class, query);
-		
-		List<String> names = vcatMemberships.stream().
-			map(vcm -> vcm.getCategory().getName()).collect(Collectors.toList());
-		return names;
-	}
 
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {

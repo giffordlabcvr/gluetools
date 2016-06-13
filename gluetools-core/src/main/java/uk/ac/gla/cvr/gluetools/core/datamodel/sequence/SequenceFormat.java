@@ -9,20 +9,6 @@ import uk.ac.gla.cvr.gluetools.utils.ByteScanningUtils;
 public enum SequenceFormat {
 
 
-	// this MUST come before FASTA, so that it detection from bytes happens correctly.
-	SAM2CONSENSUS_EXTENDED("SAM2CONSENSUS extended", null, new String[]{"s2c"}, "s2c") {
-		@Override
-		public boolean detectFromBytes(byte[] data) {
-			return data.length > 0 &&
-					data[0] == (byte) '>' &&
-					ByteScanningUtils.indexOf(data, "Position,".getBytes(), 0) > 0;
-		}
-		@Override
-		public AbstractSequenceObject sequenceObject() {
-			return new Sam2ConsensusSequenceObject();
-		}
-	},
-
 	FASTA("FASTA nucleic acid", "https://en.wikipedia.org/wiki/FASTA_format", 
 			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS, 
 			FastaSequenceObject.FASTA_DEFAULT_EXTENSION) {

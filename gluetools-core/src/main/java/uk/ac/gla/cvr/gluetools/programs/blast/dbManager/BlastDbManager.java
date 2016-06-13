@@ -12,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SequenceGroupBlastDB.SequenceGroupBlastDbKey;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB.SingleReferenceBlastDbKey;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporaryMultiSeqBlastDB.TemporaryMultiSeqBlastDbKey;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastDB.TemporarySingleSeqBlastDbKey;
@@ -46,11 +45,6 @@ public class BlastDbManager {
 	}
 
 	
-	public SequenceGroupBlastDB ensureSequenceGroupDB(CommandContext cmdContext, String groupName) {
-		SequenceGroupBlastDbKey blastDbKey = new SequenceGroupBlastDbKey(getProjectName(cmdContext), groupName);
-		return (SequenceGroupBlastDB) ensureBlastDB(cmdContext, blastDbKey);
-	}
-
 	public TemporarySingleSeqBlastDB createTempSingleSeqBlastDB(CommandContext cmdContext, String uuid, String refFastaID, String refNTs) {
 		TemporarySingleSeqBlastDbKey blastDbKey = new TemporarySingleSeqBlastDbKey(getProjectName(cmdContext), uuid, refFastaID, refNTs);
 		return (TemporarySingleSeqBlastDB) ensureBlastDB(cmdContext, blastDbKey);

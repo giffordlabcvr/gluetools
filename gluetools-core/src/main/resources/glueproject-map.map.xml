@@ -47,11 +47,6 @@
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="ref_start" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
 	</db-entity>
-	<db-entity name="group_member">
-		<db-attribute name="group_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="sequence_id" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="source_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-	</db-entity>
 	<db-entity name="module">
 		<db-attribute name="config" type="BLOB" isMandatory="true"/>
 		<db-attribute name="description" type="VARCHAR" length="1000"/>
@@ -61,13 +56,6 @@
 		<db-attribute name="content" type="BLOB"/>
 		<db-attribute name="module_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="200"/>
-	</db-entity>
-	<db-entity name="position_variation">
-		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="position" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
-		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="translation_type" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="20"/>
-		<db-attribute name="variation_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="project_setting">
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
@@ -91,10 +79,6 @@
 		<db-attribute name="sequence_id" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="source_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
-	<db-entity name="sequence_group">
-		<db-attribute name="last_update_time" type="BIGINT" isMandatory="true"/>
-		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-	</db-entity>
 	<db-entity name="source">
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
@@ -114,18 +98,6 @@
 		<db-attribute name="ref_start" type="INTEGER"/>
 		<db-attribute name="regex" type="VARCHAR" length="1000"/>
 		<db-attribute name="translation_type" type="VARCHAR" length="50"/>
-	</db-entity>
-	<db-entity name="variation_category">
-		<db-attribute name="description" type="VARCHAR" length="1000"/>
-		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="notifiability" type="VARCHAR" isMandatory="true" length="50"/>
-		<db-attribute name="parent_name" type="VARCHAR" length="50"/>
-	</db-entity>
-	<db-entity name="vcat_membership">
-		<db-attribute name="category_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="variation_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<obj-entity name="AlignedSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment" dbEntityName="aligned_segment" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="memberEnd" type="java.lang.Integer" db-attribute-path="member_end"/>
@@ -155,8 +127,6 @@
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
 	</obj-entity>
-	<obj-entity name="GroupMember" className="uk.ac.gla.cvr.gluetools.core.groupMember.GroupMember" dbEntityName="group_member" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-	</obj-entity>
 	<obj-entity name="Module" className="uk.ac.gla.cvr.gluetools.core.datamodel.module.Module" dbEntityName="module" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="config" type="byte[]" db-attribute-path="config"/>
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
@@ -165,10 +135,6 @@
 	<obj-entity name="ModuleResource" className="uk.ac.gla.cvr.gluetools.core.datamodel.moduleResource.ModuleResource" dbEntityName="module_resource" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="content" type="byte[]" db-attribute-path="content"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
-	</obj-entity>
-	<obj-entity name="PositionVariation" className="uk.ac.gla.cvr.gluetools.core.datamodel.positionVariation.PositionVariation" dbEntityName="position_variation" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-		<obj-attribute name="position" type="java.lang.Integer" db-attribute-path="position"/>
-		<obj-attribute name="translationType" type="java.lang.String" db-attribute-path="translation_type"/>
 	</obj-entity>
 	<obj-entity name="ProjectSetting" className="uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting" dbEntityName="project_setting" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
@@ -186,10 +152,6 @@
 		<obj-attribute name="format" type="java.lang.String" db-attribute-path="format"/>
 		<obj-attribute name="sequenceID" type="java.lang.String" db-attribute-path="sequence_id"/>
 	</obj-entity>
-	<obj-entity name="SequenceGroup" className="uk.ac.gla.cvr.gluetools.core.sequenceGroup.SequenceGroup" dbEntityName="sequence_group" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-		<obj-attribute name="lastUpdateTime" type="long" db-attribute-path="last_update_time"/>
-		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
-	</obj-entity>
 	<obj-entity name="Source" className="uk.ac.gla.cvr.gluetools.core.datamodel.source.Source" dbEntityName="source" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
@@ -203,13 +165,6 @@
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
 		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="regex"/>
 		<obj-attribute name="translationType" type="java.lang.String" db-attribute-path="translation_type"/>
-	</obj-entity>
-	<obj-entity name="VariationCategory" className="uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory" dbEntityName="variation_category" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
-		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
-		<obj-attribute name="notifiability" type="java.lang.String" db-attribute-path="notifiability"/>
-	</obj-entity>
-	<obj-entity name="VcatMembership" className="uk.ac.gla.cvr.gluetools.core.datamodel.vcatMembership.VcatMembership" dbEntityName="vcat_membership" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 	</obj-entity>
 	<db-relationship name="alignment_member" source="aligned_segment" target="alignment_member" toMany="false">
 		<db-attribute-pair source="source_name" target="source_name"/>
@@ -258,10 +213,6 @@
 	<db-relationship name="feature" source="feature_location" target="feature" toMany="false">
 		<db-attribute-pair source="feature_name" target="name"/>
 	</db-relationship>
-	<db-relationship name="position_variations" source="feature_location" target="position_variation" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
-	</db-relationship>
 	<db-relationship name="reference_sequence" source="feature_location" target="reference_sequence" toMany="false">
 		<db-attribute-pair source="ref_seq_name" target="name"/>
 	</db-relationship>
@@ -280,27 +231,11 @@
 		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
 		<db-attribute-pair source="feature_name" target="feature_name"/>
 	</db-relationship>
-	<db-relationship name="group" source="group_member" target="sequence_group" toMany="false">
-		<db-attribute-pair source="group_name" target="name"/>
-	</db-relationship>
-	<db-relationship name="sequence" source="group_member" target="sequence" toMany="false">
-		<db-attribute-pair source="sequence_id" target="sequence_id"/>
-		<db-attribute-pair source="source_name" target="source_name"/>
-	</db-relationship>
 	<db-relationship name="resources" source="module" target="module_resource" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="name" target="module_name"/>
 	</db-relationship>
 	<db-relationship name="module" source="module_resource" target="module" toMany="false">
 		<db-attribute-pair source="module_name" target="name"/>
-	</db-relationship>
-	<db-relationship name="feature_location" source="position_variation" target="feature_location" toMany="false">
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
-	</db-relationship>
-	<db-relationship name="variation" source="position_variation" target="variation" toMany="false">
-		<db-attribute-pair source="variation_name" target="name"/>
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
 	</db-relationship>
 	<db-relationship name="alignments_where_ref_sequence" source="reference_sequence" target="alignment" toMany="true">
 		<db-attribute-pair source="name" target="ref_seq_name"/>
@@ -320,10 +255,6 @@
 		<db-attribute-pair source="source_name" target="source_name"/>
 		<db-attribute-pair source="sequence_id" target="sequence_id"/>
 	</db-relationship>
-	<db-relationship name="groups_where_member" source="sequence" target="group_member" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="sequence_id" target="sequence_id"/>
-		<db-attribute-pair source="source_name" target="source_name"/>
-	</db-relationship>
 	<db-relationship name="reference_sequences" source="sequence" target="reference_sequence" toMany="true">
 		<db-attribute-pair source="source_name" target="source_name"/>
 		<db-attribute-pair source="sequence_id" target="sequence_id"/>
@@ -334,9 +265,6 @@
 	</db-relationship>
 	<db-relationship name="source" source="sequence" target="source" toMany="false">
 		<db-attribute-pair source="source_name" target="name"/>
-	</db-relationship>
-	<db-relationship name="members" source="sequence_group" target="group_member" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="name" target="group_name"/>
 	</db-relationship>
 	<db-relationship name="sequences" source="source" target="sequence" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="name" target="source_name"/>
@@ -358,36 +286,6 @@
 		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
 		<db-attribute-pair source="feature_name" target="feature_name"/>
 	</db-relationship>
-	<db-relationship name="members" source="variation" target="vcat_membership" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="name" target="variation_name"/>
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
-	</db-relationship>
-	<db-relationship name="position_variations" source="variation" target="position_variation" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="name" target="variation_name"/>
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
-	</db-relationship>
-	<db-relationship name="vcat_memberships" source="variation" target="vcat_membership" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="name" target="variation_name"/>
-	</db-relationship>
-	<db-relationship name="children" source="variation_category" target="variation_category" toMany="true">
-		<db-attribute-pair source="name" target="parent_name"/>
-	</db-relationship>
-	<db-relationship name="memberships" source="variation_category" target="vcat_membership" toDependentPK="true" toMany="true">
-		<db-attribute-pair source="name" target="category_name"/>
-	</db-relationship>
-	<db-relationship name="parent" source="variation_category" target="variation_category" toMany="false">
-		<db-attribute-pair source="parent_name" target="name"/>
-	</db-relationship>
-	<db-relationship name="category" source="vcat_membership" target="variation_category" toMany="false">
-		<db-attribute-pair source="category_name" target="name"/>
-	</db-relationship>
-	<db-relationship name="variation" source="vcat_membership" target="variation" toMany="false">
-		<db-attribute-pair source="variation_name" target="name"/>
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
-	</db-relationship>
 	<obj-relationship name="alignmentMember" source="AlignedSegment" target="AlignmentMember" deleteRule="Nullify" db-relationship-path="alignment_member"/>
 	<obj-relationship name="children" source="Alignment" target="Alignment" deleteRule="Nullify" db-relationship-path="children"/>
 	<obj-relationship name="members" source="Alignment" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="members"/>
@@ -402,38 +300,24 @@
 	<obj-relationship name="featureMetatags" source="Feature" target="FeatureMetatag" deleteRule="Cascade" db-relationship-path="metatags"/>
 	<obj-relationship name="parent" source="Feature" target="Feature" deleteRule="Nullify" db-relationship-path="parent"/>
 	<obj-relationship name="feature" source="FeatureLocation" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
-	<obj-relationship name="positionVariations" source="FeatureLocation" target="PositionVariation" deleteRule="Cascade" db-relationship-path="position_variations"/>
 	<obj-relationship name="referenceSequence" source="FeatureLocation" target="ReferenceSequence" deleteRule="Nullify" db-relationship-path="reference_sequence"/>
 	<obj-relationship name="segments" source="FeatureLocation" target="FeatureSegment" deleteRule="Cascade" db-relationship-path="segments"/>
 	<obj-relationship name="variations" source="FeatureLocation" target="Variation" deleteRule="Cascade" db-relationship-path="variations"/>
 	<obj-relationship name="feature" source="FeatureMetatag" target="Feature" deleteRule="Nullify" db-relationship-path="feature"/>
 	<obj-relationship name="featureLocation" source="FeatureSegment" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="feature_location"/>
-	<obj-relationship name="group" source="GroupMember" target="SequenceGroup" deleteRule="Nullify" db-relationship-path="group"/>
-	<obj-relationship name="sequence" source="GroupMember" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="resources" source="Module" target="ModuleResource" deleteRule="Cascade" db-relationship-path="resources"/>
 	<obj-relationship name="module" source="ModuleResource" target="Module" deleteRule="Nullify" db-relationship-path="module"/>
-	<obj-relationship name="featureLocation" source="PositionVariation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="feature_location"/>
-	<obj-relationship name="variation" source="PositionVariation" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignments_where_ref_sequence"/>
 	<obj-relationship name="featureLocations" source="ReferenceSequence" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="feature_locations"/>
 	<obj-relationship name="sequence" source="ReferenceSequence" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="sequence" source="SeqOrigData" target="Sequence" deleteRule="Cascade" db-relationship-path="sequence"/>
 	<obj-relationship name="alignmentMemberships" source="Sequence" target="AlignmentMember" deleteRule="Cascade" db-relationship-path="alignments_where_member"/>
-	<obj-relationship name="groupMemberships" source="Sequence" target="GroupMember" deleteRule="Cascade" db-relationship-path="groups_where_member"/>
 	<obj-relationship name="referenceSequences" source="Sequence" target="ReferenceSequence" deleteRule="Deny" db-relationship-path="reference_sequences"/>
 	<obj-relationship name="seqOrigData" source="Sequence" target="SeqOrigData" deleteRule="Cascade" db-relationship-path="seq_orig_data"/>
 	<obj-relationship name="source" source="Sequence" target="Source" deleteRule="Nullify" db-relationship-path="source"/>
-	<obj-relationship name="members" source="SequenceGroup" target="GroupMember" deleteRule="Cascade" db-relationship-path="members"/>
 	<obj-relationship name="sequences" source="Source" target="Sequence" deleteRule="Cascade" db-relationship-path="sequences"/>
 	<obj-relationship name="alignment" source="VarAlmtNote" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>
 	<obj-relationship name="variation" source="VarAlmtNote" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="featureLoc" source="Variation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="feature_loc"/>
-	<obj-relationship name="positionVariations" source="Variation" target="PositionVariation" deleteRule="Cascade" db-relationship-path="position_variations"/>
 	<obj-relationship name="varAlmtNotes" source="Variation" target="VarAlmtNote" deleteRule="Cascade" db-relationship-path="almt_var_notes"/>
-	<obj-relationship name="vcatMemberships" source="Variation" target="VcatMembership" deleteRule="Cascade" db-relationship-path="members"/>
-	<obj-relationship name="children" source="VariationCategory" target="VariationCategory" deleteRule="Deny" db-relationship-path="children"/>
-	<obj-relationship name="memberships" source="VariationCategory" target="VcatMembership" deleteRule="Cascade" db-relationship-path="memberships"/>
-	<obj-relationship name="parent" source="VariationCategory" target="VariationCategory" deleteRule="Nullify" db-relationship-path="parent"/>
-	<obj-relationship name="category" source="VcatMembership" target="VariationCategory" deleteRule="Nullify" db-relationship-path="category"/>
-	<obj-relationship name="variation" source="VcatMembership" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 </data-map>

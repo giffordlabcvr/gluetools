@@ -22,30 +22,26 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variationCategory.VariationCategory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
 	commandWords={"clear", "variation"}, 
-	docoptUsages={"[-f <featureName>] [-i <vcatName>]"},
+	docoptUsages={"[-f <featureName>]"},
 	docoptOptions={
-			"-f <featureName>, --feature <featureName>  Delete from the named feature-location",
-			"-i <vcatName>, --includeVcat <vcatName>    Delete variations in named category"
+			"-f <featureName>, --feature <featureName>  Delete from the named feature-location"
 	},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Delete a set of variations") 
 public class ClearVariationCommand extends ReferenceSequenceModeCommand<DeleteResult> {
 
 	private String featureName;
-	private String includeVcatName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		featureName = PluginUtils.configureStringProperty(configElem, "feature", false);
-		includeVcatName = PluginUtils.configureStringProperty(configElem, "includeVcat", false);
 	}
 
 	@Override
@@ -59,18 +55,6 @@ public class ClearVariationCommand extends ReferenceSequenceModeCommand<DeleteRe
 		}
 		List<Variation> variations = GlueDataObject.query(cmdContext, Variation.class, new SelectQuery(Variation.class, exp));
 		
-		if(includeVcatName != null) {
-			// check variation category exists
-			GlueDataObject.lookup(cmdContext, VariationCategory.class, VariationCategory.pkMap(includeVcatName));
-			// filter down to the set of variations that have membership of the named category.
-			variations = variations.stream()
-					.filter(var ->	var.getVcatMemberships().stream()
-									.map(vcm -> vcm.getCategory().getName())
-									.anyMatch(catName -> catName.equals(includeVcatName)))
-					.collect(Collectors.toList());
-			
-		}
-
 		int numDeleted = 0;
 		for(Variation variation: variations) {
 			DeleteResult result = 
@@ -100,7 +84,6 @@ public class ClearVariationCommand extends ReferenceSequenceModeCommand<DeleteRe
 							.collect(Collectors.toList());
 				}
 			});
-			registerDataObjectNameLookup("vcatName", VariationCategory.class, VariationCategory.NAME_PROPERTY);
 		}
 		
 	}

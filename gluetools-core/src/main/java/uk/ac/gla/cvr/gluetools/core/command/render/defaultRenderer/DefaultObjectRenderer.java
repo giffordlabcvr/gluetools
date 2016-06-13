@@ -1,9 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.render.defaultRenderer;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.commons.io.IOUtils;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -15,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.IObjectRenderer;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 

@@ -33,10 +33,6 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(VariationValidateCommand.class);
 
-		registerCommandClass(VariationListCategoryCommand.class);
-		registerCommandClass(VariationAddCategoryCommand.class);
-		registerCommandClass(VariationRemoveCategoryCommand.class);
-
 		registerCommandClass(VariationCreateAlmtNoteCommand.class);
 		registerCommandClass(VariationDeleteAlmtNoteCommand.class);
 		registerCommandClass(VariationListAlmtNoteCommand.class);
