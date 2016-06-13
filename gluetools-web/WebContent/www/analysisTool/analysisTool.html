@@ -140,7 +140,7 @@
 						</tbody>
 					</table>
 					<div ng-show="resultVariationMatchesPresent">
-						<h4>{{selectedVariationCategoryResult.displayName}} present in the query sequence: {{resultVariationMatchesPresent.number}}</h4>
+						<h4>{{selectedVariationCategoryResult.displayName}} where a match was found in the query sequence: {{resultVariationMatchesPresent.number}}</h4>
 						<table ng-show="resultVariationMatchesPresent.matches.length > 0" class="table" width="100%">
 							<thead>
 								<col width="2%"></col>
@@ -171,7 +171,7 @@
 						</table>
 					</div>
 					<div ng-show="resultVariationMatchesAbsent">
-						<h4>{{selectedVariationCategoryResult.displayName}} absent from the query sequence: {{resultVariationMatchesAbsent.number}}</h4>
+						<h4>{{selectedVariationCategoryResult.displayName}} where no match was found in the query sequence: {{resultVariationMatchesAbsent.number}}</h4>
 						<table ng-show="resultVariationMatchesAbsent.matches.length > 0" class="table" width="100%">
 							<thead>
 								<col width="2%"></col>
