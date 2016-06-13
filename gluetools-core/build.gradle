@@ -162,9 +162,7 @@ task deployJarAlpha(dependsOn: ['jarAll']) {
 }
 
 
-
-
-
+// TODO: rewrite this to just send the database over.
 // HCV project 
 task deployHcvProject(dependsOn: ['deployJar']) {
   ext.jarFileName = project.name+"-all-"+version+'.jar'
@@ -173,34 +171,13 @@ task deployHcvProject(dependsOn: ['deployJar']) {
   inputs.dir hcvProjectDir
   outputs.file deployHcvProjectTouchfile
   doLast {
-	  println "Uploading GLUE project: "+hcvProjectDir.name
-	  ssh.run {
-	    session(remotes.gluehome) {
-	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "sources/ncbi-curated/**" }
-	      ext.projectDestDir = '/opt/gluehome/hcvGlue'
-	      execute 'rm -rf '+projectDestDir
-	      execute 'mkdir '+projectDestDir
-	      projectFileTree.visit {element ->
-	    	ext.destFile = new File(projectDestDir, element.relativePath.pathString)
-	      	if(element.directory) {
-				println "Making directory: "+destFile.path
-	    		execute 'mkdir -p '+destFile.path
-	 	    } else {
-				println "Uploading: "+destFile.path
-	    		ext.srcFile = new File(hcvProjectDir, element.relativePath.pathString)
-	 	      	put from: srcFile.path, into: destFile.path
-	 	    }
-		  }
-	      execute 'cd /opt/gluehome/hcvGlue ; java -jar ../'+jarFileName+' -c ../gluetools-config-gluehome.xml -n -f hcvProject.glue'
-	    }
-	  }
 	  deployHcvProjectTouchfile.delete()
 	  buildDir.mkdirs()
 	  deployHcvProjectTouchfile.createNewFile()
   }
 }
 
-
+// TODO: rewrite this to just send the database over.
 // HCV project 
 task deployHcvProjectOmega(dependsOn: ['deployJarOmega', 'deployGlueConfigOmega']) {
   ext.jarFileName = project.name+"-all-"+version+'.jar'
@@ -209,27 +186,6 @@ task deployHcvProjectOmega(dependsOn: ['deployJarOmega', 'deployGlueConfigOmega'
   inputs.dir hcvProjectDir
   outputs.file deployHcvProjectOmegaTouchfile
   doLast {
-	  println "Uploading GLUE project: "+hcvProjectDir.name
-	  ssh.run {
-	    session(remotes.omega) {
-	      ext.projectFileTree = fileTree(hcvProjectDir).matching{ exclude "sources/ncbi-curated/**" }
-	      ext.projectDestDir = '/home/sing01j/gluetools/projects/HCV'
-	      execute 'rm -rf '+projectDestDir
-	      execute 'mkdir '+projectDestDir
-	      projectFileTree.visit {element ->
-	    	ext.destFile = new File(projectDestDir, element.relativePath.pathString)
-	      	if(element.directory) {
-				println "Making directory: "+destFile.path
-	    		execute 'mkdir -p '+destFile.path
-	 	    } else {
-				println "Uploading: "+destFile.path
-	    		ext.srcFile = new File(hcvProjectDir, element.relativePath.pathString)
-	 	      	put from: srcFile.path, into: destFile.path
-	 	    }
-		  }
-	      execute 'cd /home/sing01j/gluetools/projects/HCV ; /home/sing01j/gluetools/bin/gluetools -n -f hcvProject.glue'
-	    }
-	  }
 	  deployHcvProjectOmegaTouchfile.delete()
 	  buildDir.mkdirs()
 	  deployHcvProjectOmegaTouchfile.createNewFile()
