@@ -55,18 +55,16 @@ task jarAll(type: Jar) {
 
 
 // config for Glue which tells it where to find its database. 
-task deployGlueConfig {
-  ext.glueConfigFile = new File(projectDir, '/gluetools-config-gluehome.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfig.touchfile')
+task deployGlueConfigGlueHome {
+  ext.glueConfigFile = new File(projectDir, '/gluehome/gluetools-config.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigGlueHome.touchfile')
   inputs.file glueConfigFile
   outputs.file glueConfigTouchfile
   doLast {
 	  println "Uploading "+glueConfigFile.name
 	  ssh.run {
 	    session(remotes.gluehome) {
-	      execute 'sudo -n mkdir -p /opt/gluehome'
-	      execute 'sudo -n chmod a+rw /opt/gluehome'
-	      put from: glueConfigFile, into: '/opt/gluehome'
+	      put from: glueConfigFile, into: '/opt/gluetools/conf'
 	    }
 	  }
 	  glueConfigTouchfile.delete()
@@ -99,23 +97,22 @@ task deployGlueConfigOmega {
 
 
 // gluetools core jar. 
-task deployJar(dependsOn: ['jarAll','deployGlueConfig']) {
+task deployJarGlueHome(dependsOn: ['jarAll','deployGlueConfigGlueHome']) {
   ext.jarFile = new File(buildDir, '/libs/'+project.name+"-all-"+version+'.jar')
-  ext.deployJarTouchfile = new File(buildDir, '/deployJar.touchfile')
+  ext.deployJarGlueHomeTouchfile = new File(buildDir, '/deployJarGlueHome.touchfile')
   inputs.file jarFile
-  outputs.file deployJarTouchfile
+  outputs.file deployJarGlueHomeTouchfile
   doLast {
 	  println "Uploading "+jarFile.name
 	  ssh.run {
 	    session(remotes.gluehome) {
-	      execute 'sudo -n mkdir -p /opt/gluehome'
-	      execute 'sudo -n chmod a+rw /opt/gluehome'
-	      put from: jarFile, into: '/opt/gluehome'
+	      execute 'rm -rf /opt/gluetools/lib/*.jar'
+	      put from: jarFile, into: '/opt/gluetools/lib'
 	    }
 	  }
-	  deployJarTouchfile.delete()
+	  deployJarGlueHomeTouchfile.delete()
 	  buildDir.mkdirs()
-	  deployJarTouchfile.createNewFile()
+	  deployJarGlueHomeTouchfile.createNewFile()
   }
 }
 
@@ -162,37 +159,57 @@ task deployJarAlpha(dependsOn: ['jarAll']) {
 }
 
 
-// TODO: rewrite this to just send the database over.
-// HCV project 
-task deployHcvProject(dependsOn: ['deployJar']) {
-  ext.jarFileName = project.name+"-all-"+version+'.jar'
-  ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
-  ext.deployHcvProjectTouchfile = new File(buildDir, '/deployHcvProject.touchfile')
-  inputs.dir hcvProjectDir
-  outputs.file deployHcvProjectTouchfile
-  doLast {
-	  deployHcvProjectTouchfile.delete()
-	  buildDir.mkdirs()
-	  deployHcvProjectTouchfile.createNewFile()
-  }
+
+task dumpGlueDB(type: Exec) {
+	standardOutput = new FileOutputStream(new File('/tmp/gluedb.sql'))
+	commandLine '/usr/local/mysql/bin/mysqldump', '-u', 'gluetools', '--password=gluetools', 'GLUE_TOOLS'
 }
 
-// TODO: rewrite this to just send the database over.
-// HCV project 
-task deployHcvProjectOmega(dependsOn: ['deployJarOmega', 'deployGlueConfigOmega']) {
-  ext.jarFileName = project.name+"-all-"+version+'.jar'
-  ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
-  ext.deployHcvProjectOmegaTouchfile = new File(buildDir, '/deployHcvProjectOmega.touchfile')
-  inputs.dir hcvProjectDir
-  outputs.file deployHcvProjectOmegaTouchfile
-  doLast {
-	  deployHcvProjectOmegaTouchfile.delete()
+task zipGlueDB(type: Exec, dependsOn: ['dumpGlueDB']) {
+	commandLine '/usr/bin/gzip', '-f', '/tmp/gluedb.sql'
+}
+
+// TODO implement this task and have other tasks depend on it.
+task buildHcvProject() {
+	ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
+    ext.buildHcvProjectTouchfile = new File(buildDir, '/buildHcvProject.touchfile')
+    inputs.dir hcvProjectDir
+    outputs.file buildHcvProjectTouchfile
+    doLast {
+	  buildHcvProjectTouchfile.delete()
 	  buildDir.mkdirs()
-	  deployHcvProjectOmegaTouchfile.createNewFile()
-  }
+	  buildHcvProjectTouchfile.createNewFile()
+    }
 }
 
 
+task deployGlueDbToGlueHome(dependsOn: ['zipGlueDB']) {
+  doLast {
+	  println "Uploading GLUE DB"
+	  ssh.run {
+	    session(remotes.gluehome) {
+	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
+	      execute 'echo "drop database GLUE_TOOLS; create database GLUE_TOOLS;" | mysql -u gluetools --password=gluetools GLUE_TOOLS'
+	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUE_TOOLS'
+	      execute 'rm /tmp/gluedb.sql.gz'
+	    }
+	  }
+  }
+}
+
+task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
+  doLast {
+	  println "Uploading GLUE DB"
+	  ssh.run {
+	    session(remotes.omega) {
+	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
+	      execute 'echo "drop database GLUETOOLS; create database GLUETOOLS;" | mysql -u gluetools --password=gluetools GLUETOOLS'
+	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUETOOLS'
+	      execute 'rm /tmp/gluedb.sql.gz'
+	    }
+	  }
+  }
+}
 
 
 

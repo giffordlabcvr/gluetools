@@ -31,7 +31,7 @@
     -->
 
 	<!-- glue config file -->    
-    <Environment name="configFilePath" type="java.lang.String" value="/opt/gluehome/gluetools-config-gluehome.xml"/>
+    <Environment name="configFilePath" type="java.lang.String" value="/opt/gluetools/conf/gluetools-config.xml"/>
     <Environment name="migrateSchema" type="java.lang.Boolean" value="false"/>
     
 

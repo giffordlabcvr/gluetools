@@ -36,9 +36,9 @@ task cleanDownloads(type: Delete) {
 	delete fileTree(dir: 'WebContent/www/gluetools/downloads').matching { include 'exampleProject-*.zip' }
 }
 
-task deployWebAppWar(dependsOn: ['war']) {
+task deployWebAppWarGlueHome(dependsOn: ['war']) {
   ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web-'+version+'.war')
-  ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWar.touchfile')
+  ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWarGlueHome.touchfile')
   inputs.file glueWebAppWarFile
   outputs.file glueWebAppWarTouchfile
   doLast {

@@ -26,9 +26,9 @@ buildscript {
 
 
 // config for Glue-WS which tells it where (a) where to find glue config and (b) whether to update the schema on startup. 
-task deployGlueWSConfig(dependsOn: ':gluetools-core:deployGlueConfig') {
+task deployGlueWSConfigGlueHome(dependsOn: ':gluetools-core:deployGlueConfigGlueHome') {
   ext.glueWSConfigFile = new File(projectDir, '/context-gluehome.xml')
-  ext.glueWSConfigTouchfile = new File(buildDir, '/deployGlueWSConfig.touchfile')
+  ext.glueWSConfigTouchfile = new File(buildDir, '/deployGlueWSConfigGlueHome.touchfile')
   inputs.file glueWSConfigFile
   outputs.file glueWSConfigTouchfile
   doLast {
@@ -48,9 +48,9 @@ task deployGlueWSConfig(dependsOn: ':gluetools-core:deployGlueConfig') {
 }
 
 
-task deployWar(dependsOn: ['war','deployGlueWSConfig']) {
+task deployWarGlueHome(dependsOn: ['war','deployGlueWSConfigGlueHome']) {
   ext.glueWSWarFile = new File(buildDir, '/libs/gluetools-ws-'+version+'.war')
-  ext.glueWSWarTouchfile = new File(buildDir, '/deployWar.touchfile')
+  ext.glueWSWarTouchfile = new File(buildDir, '/deployWarGlueHome.touchfile')
   inputs.file glueWSWarFile
   outputs.file glueWSWarTouchfile
   doLast {

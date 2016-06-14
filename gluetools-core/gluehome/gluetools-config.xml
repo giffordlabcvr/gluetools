@@ -8,19 +8,19 @@
 	<properties>
 		<property>
 			<name>gluetools.core.programs.blast.blastn.executable</name>
-			<value>/opt/gluehome/blast/ncbi-blast-2.2.31+/bin/blastn</value>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/blastn</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.blast.tblastn.executable</name>
-			<value>/opt/gluehome/blast/ncbi-blast-2.2.31+/bin/tblastn</value>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/tblastn</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.blast.makeblastdb.executable</name>
-			<value>/opt/gluehome/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.blast.db.dir</name>
-			<value>/opt/gluehome/blast/ncbi-blast-2.2.31+/blastdbs</value>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs</value>
 		</property>
 		<property>
 			<name>cayenne.querycache.size</name>
