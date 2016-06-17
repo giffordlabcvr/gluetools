@@ -8,6 +8,10 @@
 	<primaryAccession>NC_002549</primaryAccession>
 	<!-- 1995 Kikwit strain reference -->
 	<primaryAccession>JQ352763</primaryAccession>
+	<!-- 2008 Luebo isolate 034-KS -->
+	<primaryAccession>HQ613402</primaryAccession>
+	<!-- 2007 Luebo isolate M-M -->
+	<primaryAccession>HQ613403</primaryAccession>
   </specificPrimaryAccessions>
   <sequenceFormat>GENBANK_XML</sequenceFormat>
   <sequenceIdField>PRIMARY_ACCESSION</sequenceIdField>

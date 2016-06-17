@@ -18,12 +18,16 @@ project example
   run file glue/features.glue
 
   import source sources/ncbi-refseqs
+  import source sources/ncbi-carroll-2013
+
   sequence ncbi-refseqs NC_002549 
     set field gb_collection_year 1976
     set field gb_country_iso COD
     exit
-  import source sources/ncbi-carroll-2013
-  
+  sequence ncbi-refseqs JQ352763 
+    set field gb_country_iso COD
+    exit
+
   module genbankXmlPopulator populate
   
   run file glue/references.glue

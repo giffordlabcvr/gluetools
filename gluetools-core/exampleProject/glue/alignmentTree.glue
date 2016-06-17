@@ -1,84 +1,93 @@
-create alignment AL_ZEBOV -r REF_ZEBOV
+multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and ( gb_collection_year = 1976 or gb_collection_year = 1977 )" outbreak Yambuku_DRC_1976_1977
+multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_isolate like '%Luebo%'" outbreak Luebo_DRC_2007_2008
+multi-set field sequence -w "sequenceID = 'HQ613402'" outbreak Luebo_DRC_2007_2008
+multi-set field sequence -w "sequenceID = 'HQ613403'" outbreak Luebo_DRC_2007_2008
+multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_isolate like '%Ilembe%'" outbreak Ilembe_Gabon_2002
+multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_country_iso = 'GAB' and ( gb_collection_year >= 1994 and gb_collection_year <= 1996 )" outbreak Gabon_1994_1996
+multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_country_iso = 'COD' and gb_collection_year = 1995" outbreak Kikwit_DRC_1995
 
-alignment AL_ZEBOV
-  set field description "Superclade of ZEBOV outbreaks 1976-2008"
+create alignment AL_All -r REF_All
 
-  add member -w "source.name = 'ncbi-carroll-2013' and gb_organism = 'Zaire ebolavirus'"
-  add member -w "source.name = 'ncbi-refseqs'"
+alignment AL_All
+  set field description "Superclade of all outbreaks"
 
-  extract child AL_ZEBOV_Mayinga_DRC_1976 -r REF_ZEBOV_Mayinga_DRC_1976
-  demote member AL_ZEBOV_Mayinga_DRC_1976 -w "sequence.gb_country_iso = 'COD' and sequence.gb_collection_year = '1976'"
-  demote member AL_ZEBOV_Mayinga_DRC_1976 -w "sequence.gb_country_iso = 'COD' and sequence.gb_collection_year = '1977'"
+  add member -w "outbreak != null"
 
-  extract child AL_ZEBOV_post_1977 -r REF_ZEBOV_post_1977
-  demote member AL_ZEBOV_post_1977 -w "sequence.gb_collection_year > '1977'"
+  extract child AL_Yambuku_DRC_1976_1977 -r REF_Yambuku_DRC_1976_1977
+  demote member AL_Yambuku_DRC_1976_1977 -w "sequence.outbreak = 'Yambuku_DRC_1976_1977'"
+
+  extract child AL_Post_1977 -r REF_Post_1977
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'"
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Ilembe_Gabon_2002'"
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Gabon_1994_1996'"
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Kikwit_DRC_1995'"
 
   exit
 
-alignment AL_ZEBOV_post_1977
+alignment AL_Post_1977
   set field description "Superclade of all outbreaks after 1977"
 
-  extract child AL_ZEBOV_2002_to_2008 -r REF_ZEBOV_2002_to_2008
-  demote member AL_ZEBOV_2002_to_2008 -w "sequence.gb_country_iso = 'COD' and sequence.gb_isolate like '%Luebo%'"
-  demote member AL_ZEBOV_2002_to_2008 -w "sequence.gb_country_iso = 'GAB' and sequence.gb_isolate like '%Ilembe%'"
+  extract child AL_2002_to_2008 -r REF_2002_to_2008
+  demote member AL_2002_to_2008 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'"
+  demote member AL_2002_to_2008 -w "sequence.outbreak = 'Ilembe_Gabon_2002'"
 
-  extract child AL_ZEBOV_1994_to_1996 -r REF_ZEBOV_1994_to_1996
-  demote member AL_ZEBOV_1994_to_1996 -w "sequence.gb_country_iso = 'GAB'"
-  demote member AL_ZEBOV_1994_to_1996 -w "sequence.gb_country_iso = 'COD' and sequence.gb_isolate like '%Kikwit%'"
+  extract child AL_1994_to_1996 -r REF_1994_to_1996
+  demote member AL_1994_to_1996 -w "sequence.outbreak = 'Gabon_1994_1996'"
+  demote member AL_1994_to_1996 -w "sequence.outbreak = 'Kikwit_DRC_1995'"
 
   exit
   
-alignment AL_ZEBOV_2002_to_2008
+alignment AL_2002_to_2008
   set field description "Superclade of all outbreaks 2002-2008"
 
-  extract child AL_ZEBOV_Luebo_DRC -r REF_ZEBOV_Luebo_DRC_2007
-  demote member AL_ZEBOV_Luebo_DRC -w "sequence.gb_country_iso = 'COD' and sequence.gb_isolate like '%Luebo%'"
+  extract child AL_Luebo_DRC_2007_2008 -r REF_Luebo_DRC_2007_2008
+  demote member AL_Luebo_DRC_2007_2008 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'"
 
-  extract child AL_ZEBOV_Ilembe_GAB -r REF_ZEBOV_Ilembe_GAB_2002
-  demote member AL_ZEBOV_Ilembe_GAB -w "sequence.gb_country_iso = 'GAB' and sequence.gb_isolate like '%Ilembe%'"
+  extract child AL_Ilembe_Gabon_2002 -r REF_Ilembe_Gabon_2002
+  demote member AL_Ilembe_Gabon_2002 -w "sequence.outbreak = 'Ilembe_Gabon_2002'"
 
   exit
   
-alignment AL_ZEBOV_1994_to_1996
+alignment AL_1994_to_1996
   set field description "Superclade of all outbreaks 1994-1996"
 
-  extract child AL_ZEBOV_GAB_1994_to_1996 -r REF_ZEBOV_GAB_1994_to_1996
-  demote member AL_ZEBOV_GAB_1994_to_1996 -w "sequence.gb_country_iso = 'GAB'"
+  extract child AL_Gabon_1994_to_1996 -r REF_Gabon_1994_to_1996
+  demote member AL_Gabon_1994_to_1996 -w "sequence.outbreak = 'Gabon_1994_1996'"
 
-  extract child AL_ZEBOV_Kikwit_DRC_1995 -r REF_ZEBOV_Kikwit_DRC_1995
-  demote member AL_ZEBOV_Kikwit_DRC_1995 -w "sequence.gb_country_iso = 'COD' and sequence.gb_isolate like '%Kikwit%'"
+  extract child AL_Kikwit_DRC_1995 -r REF_Kikwit_DRC_1995
+  demote member AL_Kikwit_DRC_1995 -w "sequence.outbreak = 'Kikwit_DRC_1995'"
   
   exit
   
-alignment AL_ZEBOV_Mayinga_DRC_1976 set field description "Outbreaks in DRC, 1976-1977"
-alignment AL_ZEBOV_GAB_1994_to_1996 set field description "Outbreaks in Gabon, 1994-1996"
-alignment AL_ZEBOV_Kikwit_DRC_1995 set field description "Outbreak in Kikwit, DRC, 1995"
-alignment AL_ZEBOV_Ilembe_GAB set field description "Outbreak in Ilembe, Gabon, 2002"
-alignment AL_ZEBOV_Luebo_DRC set field description "Outbreak in Luebo, DRC, 2007-2008"
+alignment AL_Yambuku_DRC_1976_1977 set field description "Outbreaks around Yambuku, DRC, 1976-1977"
+alignment AL_Luebo_DRC_2007_2008 set field description "Outbreak in Luebo, DRC, 2007-2008"
+alignment AL_Ilembe_Gabon_2002 set field description "Outbreak in Ilembe, Gabon, 2002"
+alignment AL_Gabon_1994_to_1996 set field description "Outbreaks in Gabon, 1994-1996"
+alignment AL_Kikwit_DRC_1995 set field description "Outbreak in Kikwit, DRC, 1995"
 
-compute alignment AL_ZEBOV compoundAligner
-reference REF_ZEBOV_Mayinga_DRC_1976 inherit feature-location -r -s AL_ZEBOV whole_genome 
-reference REF_ZEBOV_post_1977 inherit feature-location -r -s AL_ZEBOV whole_genome 
+compute alignment AL_All compoundAligner
+reference REF_Yambuku_DRC_1976_1977 inherit feature-location -r -s AL_All whole_genome 
+reference REF_Post_1977 inherit feature-location -r -s AL_All whole_genome 
 
-compute alignment AL_ZEBOV_Mayinga_DRC_1976 compoundAligner
+compute alignment AL_Yambuku_DRC_1976_1977 compoundAligner
 
-compute alignment AL_ZEBOV_post_1977 compoundAligner
-reference REF_ZEBOV_2002_to_2008 inherit feature-location -r -s AL_ZEBOV_post_1977 whole_genome 
-reference REF_ZEBOV_1994_to_1996 inherit feature-location -r -s AL_ZEBOV_post_1977 whole_genome 
+compute alignment AL_Post_1977 compoundAligner
+reference REF_2002_to_2008 inherit feature-location -r -s AL_Post_1977 whole_genome 
+reference REF_1994_to_1996 inherit feature-location -r -s AL_Post_1977 whole_genome 
 
-compute alignment AL_ZEBOV_2002_to_2008 compoundAligner
-reference REF_ZEBOV_Luebo_DRC_2007 inherit feature-location -r -s AL_ZEBOV_2002_to_2008 whole_genome 
-reference REF_ZEBOV_Ilembe_GAB_2002 inherit feature-location -r -s AL_ZEBOV_2002_to_2008 whole_genome 
+compute alignment AL_2002_to_2008 compoundAligner
+reference REF_Luebo_DRC_2007_2008 inherit feature-location -r -s AL_2002_to_2008 whole_genome 
+reference REF_Ilembe_Gabon_2002 inherit feature-location -r -s AL_2002_to_2008 whole_genome 
 
-compute alignment AL_ZEBOV_Luebo_DRC compoundAligner
+compute alignment AL_Luebo_DRC_2007_2008 compoundAligner
 
-compute alignment AL_ZEBOV_Ilembe_GAB compoundAligner
+compute alignment AL_Ilembe_Gabon_2002 compoundAligner
 
-compute alignment AL_ZEBOV_1994_to_1996 compoundAligner
-reference REF_ZEBOV_GAB_1994_to_1996 inherit feature-location -r -s AL_ZEBOV_1994_to_1996 whole_genome 
-reference REF_ZEBOV_Kikwit_DRC_1995 inherit feature-location -r -s AL_ZEBOV_1994_to_1996 whole_genome 
+compute alignment AL_1994_to_1996 compoundAligner
+reference REF_Gabon_1994_to_1996 inherit feature-location -r -s AL_1994_to_1996 whole_genome 
+reference REF_Kikwit_DRC_1995 inherit feature-location -r -s AL_1994_to_1996 whole_genome 
 
-compute alignment AL_ZEBOV_GAB_1994_to_1996 compoundAligner
+compute alignment AL_Gabon_1994_to_1996 compoundAligner
 
-compute alignment AL_ZEBOV_Kikwit_DRC_1995 compoundAligner
+compute alignment AL_Kikwit_DRC_1995 compoundAligner
 

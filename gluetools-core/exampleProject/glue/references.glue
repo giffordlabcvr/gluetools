@@ -1,15 +1,15 @@
-create reference REF_ZEBOV ncbi-refseqs NC_002549
-create reference REF_ZEBOV_Mayinga_DRC_1976 ncbi-refseqs NC_002549
-create reference REF_ZEBOV_post_1977 ncbi-carroll-2013 KC242796
-create reference REF_ZEBOV_2002_to_2008 ncbi-carroll-2013 KC242785
-create reference REF_ZEBOV_Luebo_DRC_2007 ncbi-carroll-2013 KC242785
-create reference REF_ZEBOV_Ilembe_GAB_2002 ncbi-carroll-2013 KC242800
-create reference REF_ZEBOV_1994_to_1996 ncbi-carroll-2013 KC242792
-create reference REF_ZEBOV_GAB_1994_to_1996 ncbi-carroll-2013 KC242792
-create reference REF_ZEBOV_Kikwit_DRC_1995 ncbi-carroll-2013 KC242796
+create reference REF_All ncbi-refseqs NC_002549
+create reference REF_Yambuku_DRC_1976_1977 ncbi-refseqs NC_002549
+create reference REF_Post_1977 ncbi-carroll-2013 KC242796
+create reference REF_2002_to_2008 ncbi-carroll-2013 KC242785
+create reference REF_Luebo_DRC_2007_2008 ncbi-carroll-2013 KC242785
+create reference REF_Ilembe_Gabon_2002 ncbi-carroll-2013 KC242800
+create reference REF_1994_to_1996 ncbi-carroll-2013 KC242792
+create reference REF_Gabon_1994_to_1996 ncbi-carroll-2013 KC242792
+create reference REF_Kikwit_DRC_1995 ncbi-refseqs JQ352763
 
 
-reference REF_ZEBOV
+reference REF_All
   add feature-location leader
   feature-location leader
     add segment 1 55
