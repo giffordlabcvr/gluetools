@@ -26,14 +26,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
-import uk.ac.gla.cvr.gluetools.core.segments.AaReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
@@ -152,17 +148,6 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 	
-	public FeatureLocation getOrfAncestorLocation(CommandContext cmdContext) {
-		if(getFeature().isOpenReadingFrame()) {
-			return this;
-		}
-		FeatureLocation nextAncestor = getNextAncestorLocation(cmdContext);
-		if(nextAncestor == null) {
-			return null;
-		}
-		return nextAncestor.getOrfAncestorLocation(cmdContext);
-	}
-	
 	public void validate(CommandContext cmdContext) {
 		List<FeatureSegment> segments = getSegments();
 		Feature feature = getFeature();
@@ -243,53 +228,6 @@ public class FeatureLocation extends _FeatureLocation {
 		return codons;
 	}
 	
-	/**
-	 * Translate an ORF feature location to AAs
-	 * Returns null if this feature location is not an ORF.
-	 * @param cmdContext
-	 * @return
-	 */
-	public List<AaReferenceSegment> translate(CommandContext cmdContext) {
-		Feature feature = getFeature();
-		if(feature.isOpenReadingFrame()) {
-			Integer codon1Start = getCodon1Start(cmdContext);
-			if(codon1Start == null) {
-				return null;
-			}
-			List<FeatureSegment> featureLocSegments = getSegments();
-			if(featureLocSegments.isEmpty()) {
-				return null;
-			}
-			List<ReferenceSegment> segmentsToTranslate = featureLocSegments.stream()
-				.map(featureLocSeg -> new ReferenceSegment(featureLocSeg.getRefStart(), featureLocSeg.getRefEnd()))
-				.collect(Collectors.toList());
-
-			ReferenceSequence refSeq = getReferenceSequence();
-			List<NtReferenceSegment> ntSegmentsToTranscribe = 
-					refSeq.getSequence().getSequenceObject().getNtReferenceSegments(segmentsToTranslate, cmdContext);
-			
-			List<AaReferenceSegment> transcribedSegments = new ArrayList<AaReferenceSegment>();
-			
-			for(NtReferenceSegment ntSegment : ntSegmentsToTranscribe) {
-				checkCodonAligned(feature, codon1Start, ntSegment);
-				CharSequence nucleotides = ntSegment.getNucleotides();
-				boolean translateBeyondPossibleStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_POSSIBLE_STOP).equals("true");
-				boolean translateBeyondDefiniteStop = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_DEFINITE_STOP).equals("true");
-				String aminoAcids = TranslationUtils.translate(nucleotides, true, false, translateBeyondPossibleStop, translateBeyondDefiniteStop);
-				if(aminoAcids.length() != nucleotides.length() / 3) {
-					throw new FeatureLocationException(
-							FeatureLocationException.Code.FEATURE_LOCATION_ORF_TRANSCRIPTION_INCOMPLETE, 
-							refSeq.getName(), feature.getName(), ntSegment.getRefStart(), ntSegment.getRefEnd());
-				}
-				int aaRefStart = TranslationUtils.getCodon(codon1Start, ntSegment.getRefStart());
-				int aaRefEnd = aaRefStart+(aminoAcids.length()-1);
-				transcribedSegments.add(new AaReferenceSegment(aaRefStart, aaRefEnd, aminoAcids));
-			};
-			return transcribedSegments;
-		}
-		return null;
-	}
-
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		String noCommit = glueConfigContext.getNoCommit() ? "--noCommit " : "";

@@ -14,11 +14,6 @@ public class FeatureMetatag extends _FeatureMetatag {
 	public enum Type {
 		/** 
 		 * boolean
-		 * this feature (and any descendent features) can be translated to amino acids
-		 */
-		OPEN_READING_FRAME,
-		/** 
-		 * boolean
 		 * informational features are in place just to group other features
 		 * */
 		INFORMATIONAL, 

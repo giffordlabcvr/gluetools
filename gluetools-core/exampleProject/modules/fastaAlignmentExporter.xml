@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <fastaAlignmentExporter>
-    <idTemplate>${sequence.sequenceID}.${sequence.renderProperty('gb_country')}.${sequence.renderProperty('gb_create_date')}</idTemplate>
+    <idTemplate>${sequence.sequenceID}.${sequence.renderProperty('gb_country_iso')}.${sequence.renderProperty('gb_collection_year')}.${sequence.renderProperty('outbreak')}</idTemplate>
 </fastaAlignmentExporter>

@@ -111,10 +111,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		objectBuilder.set("referenceName", referenceName);
 		objectBuilder.set("featureName", feature.getName());
 		objectBuilder.set("featureDescription", feature.getDescription());
-		Feature orfAncestor = feature.getOrfAncestor();
-		if(orfAncestor != null) {
-			objectBuilder.set("orfAncestorFeature", orfAncestor.getName());
-		}
 		ArrayBuilder metatagArray = objectBuilder.setArray("featureMetatag");
 		metatagTypes.forEach(t -> metatagArray.addString(t.name()));
 	}
@@ -194,10 +190,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return getFeatureMetatags().contains(FeatureMetatag.Type.INFORMATIONAL.name());
 	}
 
-	public boolean isOpenReadingFrame() {
-		return getFeatureMetatags().contains(FeatureMetatag.Type.OPEN_READING_FRAME.name());
-	}
-	
 	public boolean isIncludedInSummary() {
 		return getFeatureMetatags().contains(FeatureMetatag.Type.INCLUDE_IN_SUMMARY.name());
 	}

@@ -1,0 +1,6 @@
+<blastFastaAlignmentImporter>
+  <idClauseExtractorFormatter>
+    <matchPattern><![CDATA[(?<primaryAcc>[A-Z_]{1,2}[0-9]+)]]></matchPattern>
+    <outputTemplate>sequenceID = '${primaryAcc}'</outputTemplate>
+  </idClauseExtractorFormatter>
+</blastFastaAlignmentImporter>

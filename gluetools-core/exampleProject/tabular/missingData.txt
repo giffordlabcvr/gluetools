@@ -1,0 +1,3 @@
+sequenceID	gb_collection_year	gb_country_iso
+NC_002549	1976	COD
+JQ352763		COD

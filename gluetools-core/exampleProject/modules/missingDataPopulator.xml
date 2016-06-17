@@ -1,0 +1,17 @@
+<textFilePopulator>
+	<columnDelimiterRegex>\t</columnDelimiterRegex>
+	<textFileColumn>
+		<identifier>true</identifier>
+		<header>sequenceID</header>
+		<fieldName>sequenceID</fieldName>
+	</textFileColumn>
+	<textFileColumn>
+		<header>gb_collection_year</header>
+		<fieldName>gb_collection_year</fieldName>
+	</textFileColumn>
+	<textFileColumn>
+		<header>gb_country_iso</header>
+		<fieldName>gb_country_iso</fieldName>
+		<overwriteExistingNonNull>true</overwriteExistingNonNull>
+	</textFileColumn>
+</textFilePopulator>

@@ -70,12 +70,6 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 		return featureTree;
 	}
 
-	public ReferenceRealisedFeatureTreeResult getRealisedFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
-		ReferenceRealisedFeatureTreeResult featureTree = new ReferenceRealisedFeatureTreeResult(getName());
-		buildTree(cmdContext, limitingFeature, recursive, featureTree);
-		return featureTree;
-	}
-
 	public void buildTree(CommandContext cmdContext,
 			Feature limitingFeature, boolean recursive, ReferenceFeatureTreeResult featureTree) {
 		List<FeatureLocation> featureLocations = new ArrayList<FeatureLocation>(getFeatureLocations());

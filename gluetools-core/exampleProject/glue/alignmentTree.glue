@@ -1,11 +1,3 @@
-multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and ( gb_collection_year = 1976 or gb_collection_year = 1977 )" outbreak Yambuku_DRC_1976_1977
-multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_isolate like '%Luebo%'" outbreak Luebo_DRC_2007_2008
-multi-set field sequence -w "sequenceID = 'HQ613402'" outbreak Luebo_DRC_2007_2008
-multi-set field sequence -w "sequenceID = 'HQ613403'" outbreak Luebo_DRC_2007_2008
-multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_isolate like '%Ilembe%'" outbreak Ilembe_Gabon_2002
-multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_country_iso = 'GAB' and ( gb_collection_year >= 1994 and gb_collection_year <= 1996 )" outbreak Gabon_1994_1996
-multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_country_iso = 'COD' and gb_collection_year = 1995" outbreak Kikwit_DRC_1995
-
 create alignment AL_All -r REF_All
 
 alignment AL_All
@@ -79,8 +71,6 @@ compute alignment AL_2002_to_2008 compoundAligner
 reference REF_Luebo_DRC_2007_2008 inherit feature-location -r -s AL_2002_to_2008 whole_genome 
 reference REF_Ilembe_Gabon_2002 inherit feature-location -r -s AL_2002_to_2008 whole_genome 
 
-compute alignment AL_Luebo_DRC_2007_2008 compoundAligner
-
 compute alignment AL_Ilembe_Gabon_2002 compoundAligner
 
 compute alignment AL_1994_to_1996 compoundAligner
@@ -90,4 +80,11 @@ reference REF_Kikwit_DRC_1995 inherit feature-location -r -s AL_1994_to_1996 who
 compute alignment AL_Gabon_1994_to_1996 compoundAligner
 
 compute alignment AL_Kikwit_DRC_1995 compoundAligner
+
+module blastFastaAlignmentImporter import AL_Luebo_DRC_2007_2008_unconstrained -f alignments/AL_Luebo_DRC_2007_2008_unconstrained.fasta
+
+alignment AL_Luebo_DRC_2007_2008
+  derive segments AL_Luebo_DRC_2007_2008_unconstrained -a --mergeStrategy OVERWRITE
+  exit
+
 
