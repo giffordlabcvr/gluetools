@@ -1,0 +1,57 @@
+  create feature whole_genome "Whole genome"
+  feature whole_genome set metatag INFORMATIONAL true
+
+  create feature leader -p whole_genome "3' Leader"
+
+  create feature NP -p whole_genome "NP"
+  feature NP 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature VP35 -p whole_genome "VP35"
+  feature VP35 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature VP40 -p whole_genome "VP40"
+  feature VP40 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature GP -p whole_genome "GP"
+  feature GP 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature VP30 -p whole_genome "VP30"
+  feature VP30 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature VP24 -p whole_genome "VP24"
+  feature VP24 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature L -p whole_genome "L (RNA polymerase)"
+  feature L 
+    set metatag OWN_CODON_NUMBERING true
+    set metatag CODES_AMINO_ACIDS true
+    set metatag CODON_LABELER_MODULE kuiken2006CodonLabeler
+    exit
+
+  create feature trailer -p whole_genome "5' Trailer"
+
+

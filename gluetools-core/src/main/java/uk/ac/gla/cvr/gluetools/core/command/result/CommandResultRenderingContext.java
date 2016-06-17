@@ -3,8 +3,9 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 import java.io.InputStream;
 
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleOutputFormat;
+import uk.ac.gla.cvr.gluetools.utils.RenderContext;
 
-public interface CommandResultRenderingContext {
+public interface CommandResultRenderingContext extends RenderContext {
 
 	public void output(String outputLines);
 	
@@ -20,5 +21,4 @@ public interface CommandResultRenderingContext {
 	
 	public boolean interactiveTables();
 	
-	public Integer floatDecimalPlacePrecision();
 }

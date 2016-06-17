@@ -8,6 +8,7 @@ public class XmlPopulatorRuleFactory extends PluginFactory<XmlPopulatorRule>{
 
 	protected XmlPopulatorRuleFactory() {
 		super();
+		registerPluginClass(IsoCountryFieldPopulatorRule.class);
 		registerPluginClass(XmlFieldPopulatorRule.class);
 		registerPluginClass(XPathNodesRule.class);
 	}

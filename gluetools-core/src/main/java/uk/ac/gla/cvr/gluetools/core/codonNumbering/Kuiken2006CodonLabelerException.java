@@ -6,7 +6,7 @@ public class Kuiken2006CodonLabelerException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		GAP_AT_START;
+		GAP_AT_START("refName", "ntLocation");
 
 		private String[] argNames;
 		private Code(String... argNames) {

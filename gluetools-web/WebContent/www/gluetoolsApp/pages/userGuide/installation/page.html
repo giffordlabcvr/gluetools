@@ -1,0 +1,139 @@
+<h2>{{installationMenuTitle}}</h2>
+
+<p>If you have already installed GLUE and you would like to upgrade your current GLUE installation to a new version, skip to <a ng-click="scrollTo('installTheGlueJar')">Install the GLUE jar</a>
+
+
+
+<h3>Operating system</h3>
+<p>You can install GLUE on MS Windows, Linux and Mac OSX.</p>
+<p>If you are using Windows, we strongly recommend installing Cygwin, which you can download from <a href="http://cygwin.org/">cygwin.org</a>.
+</p>
+
+<h3>Prerequisite: Java</h3>
+
+Download and install Java 1.8.0 or later, from <a href="http://www.java.com/">java.com</a>.
+
+<p>
+Make sure you can run the correct version of the "java" program from the command line:
+<pre>$ java -version
+java version "1.8.0_45"
+Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
+</pre>
+
+<h3>Prerequisite: MySQL</h3>
+
+<p>GLUE requires a relational database manager. We recommend MySQL, certain other vendors may also be possible.</p>
+
+<p>Download and install MySQL 5.6 or later, from <a href="http://www.mysql.com/">mysql.com</a>.</p>
+
+<p>GLUE connects to a named database with a specific username/password, and stores its data in that database. 
+So within MySQL, you would normally create a username/password and named database specifically for GLUE.
+Example set up: </p>
+
+<ul>
+	<li>MySQL username: gluetools</li>
+	<li>MySQL password: glue12345</li>
+	<li>Database name: GLUE_TOOLS</li>
+</ul>
+<p>
+You can use the following MySQL commands to set this up: </p>
+<div hljs language="sql" no-escape>
+mysql> create user 'gluetools'@'localhost' identified by 'glue12345';
+mysql> create database GLUE_TOOLS;
+mysql> grant all privileges on GLUE_TOOLS.* to 'gluetools'@'localhost';   
+</div>
+<p>Test that the new user/password works:</p>
+<pre>
+$ mysql -u gluetools --password=glue12345
+Welcome to the MySQL monitor.  
+Server version: 5.6.25 MySQL Community Server (GPL)
+
+mysql>
+</pre>
+
+<p>In this MySQL session, test that the new named database works:</p>
+<div hljs language="sql" no-escape>
+mysql> use GLUE_TOOLS;
+
+Database changed
+</div>
+
+<h3>Prerequisite: BLAST+</h3>
+<p>GLUE uses the BLAST+ program for auto-alignment and certain other features.</p>
+<p>Download and install BLAST+ 2.2.31 from 
+<a href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/">NCBI's BLAST+ FTP page</a>.
+
+<p>In the case of Mac OSX you should use the 'universal-macosx' BLAST+ distribution.</p>
+GLUE may function correctly with later versions of BLAST+ but this has not been fully tested.
+
+Make a note of where BLAST+ is installed as we will refer to this later.
+
+<h3>GLUE install directory</h3>
+
+Your installation of GLUE will be contained within its own directory.
+Download the GLUE install zip from the <a href="#download">GLUE download page</a>.
+This contains various files for running GLUE. Unzip the GLUE install zip file in a 
+convenient location (e.g. <code>/home/fred</code>), to create a <code>gluetools</code> directory.
+
+Ensure that the path to the <code>gluetools</code> directory is stored in the environment variable
+<code>GLUE_HOME</code>. Also make sure that <code>${GLUE_HOME}/bin</code> is on your bash path.
+
+This can be done for example by adding these lines to the end of your </code>.bash_profile</code> file.
+<div hljs language="bash" no-escape>
+export GLUE_HOME=/home/fred/gluetools
+export PATH=${PATH}:${GLUE_HOME}/bin
+</div>
+
+Make sure the bash script is executable:
+<pre>
+$ chmod u+x /home/fred/gluetools/bin/gluetools.sh
+</pre>
+
+<h3>Edit the GLUE configuration XML file</h3>
+
+GLUE reads a configuration XML file each time it runs. You need to edit this file to adapt it to your GLUE installation.
+<p>In a text editor, load the XML file <code>${GLUE_HOME}/conf/gluetools-config.xml</code> shown below. 
+You will need to make these changes:<p>
+<ul>
+	<li>Specify your MySQL username, password and database name as necessary, by editing contents of the 
+		<code>&lt;username&gt;</code>, <code>&lt;password&gt;</code> and <code>&lt;jdbcUrl&gt;</code> elements.</li>
+	<li>Specify the location of the blast executables <code>blastn</code>, <code>tblastn</code> and <code>makeblastdb</code></li>
+	<li>GLUE creates BLAST database files. Specify the directory where GLUE can store these files, normally this is the gluetools/blastdbs directory</li>
+</ul>
+<div hljs source="gluetoolsXml"></div>
+
+<h3>Download the GLUE example project</h3>
+
+<p>Conventionally, files relating to GLUE projects are stored in their own directories, which are inside the <code>gluetools/projects</code> directory.</p>
+
+<p>Download the example project zip from the <a href="#download">GLUE download page</a>. Unzip it inside <code>gluetools/projects</code>.</p>
+
+<h3 id="installTheGlueJar">Install the GLUE jar</h3>
+
+<p>The GLUE jar file contains the GLUE engine itself. </p>
+
+<p>Download the GLUE jar file from the <a href="#download">GLUE download page</a>. Place it inside <code>gluetools/lib</code>.</p>
+
+<p>When you upgrade to a new version of GLUE, you will normally only replace the GLUE jar.</p>
+
+<h3>Run GLUE</h3>
+<p>We can now start a GLUE interactive session and build the example project.</p>
+<p>If the project build was successful, the last output before the GLUE prompt should be "OK".</p>
+<pre>
+$ cd /home/fred/gluetools/projects/exampleProject
+$ gluetools.sh
+GLUE version 0.1.51
+Mode path: /
+GLUE> run file exampleProject.glue
+...
+
+...
+OK
+Mode path: /
+GLUE>
+</pre>
+
+
+
+

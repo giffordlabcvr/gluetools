@@ -64,6 +64,9 @@ public class PluginUtils {
 			Template template = new Template(UUID.randomUUID().toString(), new StringReader(templateString), freemarkerConfiguration);
 			return template;
 		} catch (IOException e) {
+			if(e instanceof ParseException) {
+				throw (ParseException) e;
+			}
 			throw new RuntimeException(e);
 		} 
 	}

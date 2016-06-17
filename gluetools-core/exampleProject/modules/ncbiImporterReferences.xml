@@ -1,0 +1,9 @@
+<ncbiImporter>
+  <sourceName>ncbi-refseqs</sourceName>
+  <giNumberFieldName>gb_gi_number</giNumberFieldName>
+  <specificPrimaryAccessions>
+	<primaryAccession>NC_002549</primaryAccession>
+  </specificPrimaryAccessions>
+  <sequenceFormat>GENBANK_XML</sequenceFormat>
+  <sequenceIdField>PRIMARY_ACCESSION</sequenceIdField>
+</ncbiImporter>

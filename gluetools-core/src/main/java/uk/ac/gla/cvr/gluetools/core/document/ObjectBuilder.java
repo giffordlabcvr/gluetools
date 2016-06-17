@@ -1,10 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import java.util.Date;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -32,6 +35,10 @@ public class ObjectBuilder {
 
 	public ObjectBuilder setBoolean(String name, boolean value) {
 		return setSimpleProperty(name, Boolean.toString(value), GlueTypeUtils.GlueType.Boolean);
+	}
+
+	public ObjectBuilder setDate(String name, Date value) {
+		return setSimpleProperty(name, DateUtils.render(value), GlueTypeUtils.GlueType.Date);
 	}
 
 	public ObjectBuilder setDouble(String name, double value) {

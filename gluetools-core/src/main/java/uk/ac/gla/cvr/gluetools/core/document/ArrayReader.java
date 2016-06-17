@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import java.util.Date;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -41,6 +42,10 @@ public class ArrayReader {
 
 	public Double doubleValue(int i) {
 		return (Double) value(i);
+	}
+
+	public Date dateValue(int i) {
+		return (Date) value(i);
 	}
 
 	public ObjectReader getObject(int i) {

@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +66,10 @@ public class ObjectReader {
 	
 	public Boolean booleanValue(String name) {
 		return (Boolean) value(name);
+	}
+
+	public Date dateValue(String name) {
+		return (Date) value(name);
 	}
 
 	public Integer intValue(String name) {

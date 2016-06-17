@@ -25,15 +25,19 @@ war {
 	webAppDirName = 'WebContent'
 }
 
-task copyToDownloads(dependsOn: [':gluetools-core:jarAll', ':gluetools-core:exampleProjectZip', 'cleanDownloads'], type: Copy) {
+task copyToDownloads(dependsOn: [':gluetools-core:jarAll', ':gluetools-core:exampleProjectZip', ':gluetools-core:glueInstallDirZip', 'cleanDownloads'], type: Copy) {
     from '../gluetools-core/build/libs/gluetools-core-all-'+version+'.jar'
     from '../gluetools-core/build/distributions/exampleProject-'+version+'.zip'
+    from '../gluetools-core/build/distributions/glueInstallDir-'+version+'.zip'
+    from '../gluetools-core/gluetools/conf/gluetools-config.xml'
     into 'WebContent/www/gluetoolsApp/downloads'
 }
 
 task cleanDownloads(type: Delete) {
 	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'gluetools-core-all-*.jar' }
 	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'exampleProject-*.zip' }
+	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'glueInstallDir-*.zip' }
+	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'gluetools-config.xml' }
 }
 
 task deployWebAppWarGlueHome(dependsOn: ['war']) {

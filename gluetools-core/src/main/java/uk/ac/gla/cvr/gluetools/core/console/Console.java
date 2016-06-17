@@ -655,7 +655,7 @@ public class Console implements CommandResultRenderingContext
 
 	private String versionLine() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("GLUEtools version");
+		buffer.append("GLUE version");
 		buffer.append(" ").append(GluetoolsEngine.getInstance().getGluecoreProperties().getProperty("version", "unknown"));
 		return buffer.toString();
 	}

@@ -1,0 +1,19 @@
+table sequence
+  create field gb_gi_number VARCHAR
+  create field gb_primary_accession VARCHAR
+  create field gb_accession_version VARCHAR
+  create field gb_locus VARCHAR
+  create field gb_length INTEGER
+  create field gb_lab_construct BOOLEAN
+  create field gb_organism VARCHAR
+  create field gb_isolate VARCHAR 100
+  create field gb_taxonomy VARCHAR 200
+  create field gb_host VARCHAR 
+  create field gb_country_iso VARCHAR
+  create field gb_country_official VARCHAR 100
+  create field gb_create_date DATE
+  create field gb_update_date DATE
+  create field gb_collection_year INTEGER 
+  create field gb_collection_month VARCHAR
+  create field gb_collection_month_day INTEGER
+  exit

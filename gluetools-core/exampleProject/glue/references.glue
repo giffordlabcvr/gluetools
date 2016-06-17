@@ -1,0 +1,53 @@
+create reference REF_ZEBOV ncbi-refseqs NC_002549
+create reference REF_ZEBOV_Mayinga_DRC_1976 ncbi-refseqs NC_002549
+create reference REF_ZEBOV_post_1977 ncbi-carroll-2013 KC242796
+create reference REF_ZEBOV_2002_to_2008 ncbi-carroll-2013 KC242785
+create reference REF_ZEBOV_Luebo_DRC_2007 ncbi-carroll-2013 KC242785
+create reference REF_ZEBOV_Ilembe_GAB_2002 ncbi-carroll-2013 KC242800
+create reference REF_ZEBOV_1994_to_1996 ncbi-carroll-2013 KC242792
+create reference REF_ZEBOV_GAB_1994_to_1996 ncbi-carroll-2013 KC242792
+create reference REF_ZEBOV_Kikwit_DRC_1995 ncbi-carroll-2013 KC242796
+
+
+reference REF_ZEBOV
+  add feature-location leader
+  feature-location leader
+    add segment 1 55
+    exit
+  add feature-location NP
+  feature-location NP
+    add segment 470 2689
+    exit
+  add feature-location VP35
+  feature-location VP35
+    add segment 3129 4151
+    exit
+  add feature-location VP40
+  feature-location VP40
+    add segment 4479 5459
+    exit
+  add feature-location GP
+  feature-location GP
+    add segment 6039 8068
+    exit
+  add feature-location VP30
+  feature-location VP30
+    add segment 8509 9375
+    exit
+  add feature-location VP24
+  feature-location VP24
+    add segment 10345 11100
+    exit
+  add feature-location L
+  feature-location L
+    add segment 11581 18219
+    exit
+  add feature-location trailer
+  feature-location trailer
+    add segment 18283 18959
+    exit
+  exit
+  
+
+  
+  
