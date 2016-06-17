@@ -17,3 +17,4 @@ gluetools-web/build
 .settings
 export.fasta
 build
+gluetools-web/WebContent/www/gluetoolsApp/downloads

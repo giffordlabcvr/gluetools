@@ -1,8 +1,13 @@
+<!-- This NCBI importer module downloads Zaire Ebola sequences used in the Carroll 
+     et al. 2013 phylogeny but generated from previous work -->
 <ncbiImporter>
   <sourceName>ncbi-refseqs</sourceName>
   <giNumberFieldName>gb_gi_number</giNumberFieldName>
   <specificPrimaryAccessions>
+	<!-- 1976 Mayinga strain reference -->
 	<primaryAccession>NC_002549</primaryAccession>
+	<!-- 1995 Kikwit strain reference -->
+	<primaryAccession>JQ352763</primaryAccession>
   </specificPrimaryAccessions>
   <sequenceFormat>GENBANK_XML</sequenceFormat>
   <sequenceIdField>PRIMARY_ACCESSION</sequenceIdField>
