@@ -290,8 +290,21 @@ task exampleProjectZip(type: Zip) {
 	  exampleProjectTouchfile.delete()
 	  buildDir.mkdirs()
 	  exampleProjectTouchfile.createNewFile()
-  }
+    }
+}
 
-
+task glueInstallDirZip(type: Zip) {
+	from projectDir
+	ext.glueInstallDir = new File(projectDir, 'gluetools')
+	ext.glueInstallDirTouchfile = new File(buildDir, '/glueInstallDir.touchfile')
+	inputs.dir glueInstallDir
+	outputs.file glueInstallDirTouchfile
+    baseName "glueInstallDir"
+    include "gluetools/**"
+    doLast {
+	  glueInstallDirTouchfile.delete()
+	  buildDir.mkdirs()
+	  glueInstallDirTouchfile.createNewFile()
+    }
 }
 

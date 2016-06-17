@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 import com.brsanthu.dataexporter.model.AlignType;
 import com.brsanthu.dataexporter.model.Row;
@@ -278,7 +279,7 @@ public class BaseTableResult<D> extends CommandResult {
 		return listOfMaps.stream()
 			.map(unrendered -> {
 				Map<String, String> rendered = new LinkedHashMap<String, String>();
-				unrendered.forEach((k,v) -> {rendered.put(k, renderValue(v, renderCtx));});
+				unrendered.forEach((k,v) -> {rendered.put(k, RenderUtils.render(v, renderCtx));});
 				return rendered; })
 			.collect(Collectors.toCollection(() -> new ArrayList<Map<String, String>>(listOfMaps.size())));
 	}
@@ -293,22 +294,6 @@ public class BaseTableResult<D> extends CommandResult {
 	public void updatePreferred(Map<String, Integer> preferredWidths, String header, String content) {
 	}
 	
-	private static String renderValue(Object value, CommandResultRenderingContext renderCtx) {
-		String cString;
-		if(value == null) {
-			cString = "-";
-		} else if(value instanceof Double) {
-			Integer precision = renderCtx.floatDecimalPlacePrecision();
-			if(precision != null) {
-				cString = String.format("%."+precision.intValue()+"f", ((Double) value).doubleValue());
-			} else {
-				cString = value.toString();
-			}
-		} else {
-			cString = value.toString();
-		}
-		return cString;
-	}
 
 	public static <D> List<Map<String, Object>> listOfMapsFromDataObjects(
 			List<D> results, List<String> headers, 
@@ -345,7 +330,7 @@ public class BaseTableResult<D> extends CommandResult {
 			buf = new StringBuffer();
 			for(int i = 0; i < columnHeaders.size(); i++) {
 				String header = columnHeaders.get(i);
-				buf.append(renderValue(rowData.get(header), renderCtx));
+				buf.append(RenderUtils.render(rowData.get(header), renderCtx));
 				if(i < columnHeaders.size() - 1) {
 					buf.append(delimiter);
 				}

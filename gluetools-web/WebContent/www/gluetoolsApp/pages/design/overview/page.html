@@ -1,0 +1,39 @@
+<h2>{{overviewMenuTitle}}</h2>
+
+<h4>The GLUE Model</h4>
+At the heart of the GLUE engine is an <a href="#model">entity-relationship model</a> which has been designed for capturing 
+and developing the interrelated data comprising virus evolutionary hypotheses, including:
+<ul>
+<li>Virus and EVE genome sequences</li>
+<li>Nucleotide-level homologies between sequences</li>
+<li>Groupings of sequences into clades</li>
+<li>Evolutionary relationships between clades</li>
+<li>Genome features</li>
+<li>Phenotypic and other data associated with sequences, genome features and clades</li>
+</ul>
+
+<h4>GLUE Projects</h4>
+
+<p>Data inside a GLUE instance is organised into independent self-contained <em>projects</em>; each project may focus 
+on a virus, a related set of viruses or a specific aspect, such as the evolution of a certain genome region.</p>
+
+<p>GLUE provides a varied set of <em>commands</em> for creating, manipulating and querying the various data 
+elements within a project. These may be run interactively by a bioinformatician working on a GLUE project.</p>
+
+<p>GLUE also allows projects to define <em>modules</em>: larger functional blocks which have the ability to perform 
+more complex operations on the GLUE model.</p>
+
+<p>All aspects of a GLUE project are stored in a relational database. However, the set of GLUE 
+commands which build a project can be stored in files which are version-controlled. This allows controlled development 
+of the hypothesis by multiple bioinformaticians working in parallel.</p>
+
+<h4>GLUE on the Web</h4>
+
+Once a project has been developed, it can be published as a
+web resource by deploying the project into a GLUE instance which has been embedded in a web server. 
+This web deployment allows:
+<ul>
+<li><i>Dissemination</i> of the project data in browsable, graphical form, for example in conjunction with 
+an academic publication</li>
+<li><i>Utilisation</i> of the project for automated sequence analysis, as part of an online tool</li>
+</ul>

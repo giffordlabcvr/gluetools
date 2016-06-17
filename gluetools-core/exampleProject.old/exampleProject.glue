@@ -1,0 +1,144 @@
+delete project example_project
+
+create project example_project "GLUE example project"
+
+# add some fields to the sequence table of this project
+schema-project example_project
+  table sequence
+
+    # fields which will be populated from GenBank XML
+    create field gb_gi_number VARCHAR
+    create field gb_primary_accession VARCHAR
+    create field gb_accession_version VARCHAR
+    create field gb_locus VARCHAR
+    create field gb_length INTEGER
+    create field gb_genotype VARCHAR
+    create field gb_subtype VARCHAR
+    create field gb_recombinant BOOLEAN
+    create field gb_patent_related BOOLEAN
+    create field gb_organism VARCHAR
+    create field gb_isolate VARCHAR
+    create field gb_taxonomy VARCHAR 200
+    create field gb_host VARCHAR 
+    create field gb_country VARCHAR
+    create field gb_collection_year INTEGER 
+    create field gb_collection_month VARCHAR
+    create field gb_collection_month_day INTEGER
+    create field gb_create_date DATE
+    create field gb_update_date DATE
+
+    # fields which will be populated from FASTA header
+    create field header_1 VARCHAR 50
+    create field header_2 VARCHAR 50
+
+    # fields which will be populated from a tab-delimited file.
+    create field custom_field_x INTEGER
+    create field custom_field_y VARCHAR 200
+    exit
+  exit
+ 
+project EXAMPLE_PROJECT
+  # create a source for sequences imported locally
+  create source local
+
+  # import a Genbank XML sequence from a local XML file. 
+  import sequence local localGenbank1 GENBANK_XML sequence.xml
+
+  # manually set a field on this sequence
+  sequence local localGenbank1
+    set field gb_host "a creature"
+    exit
+    
+  # create an ncbi-importer module from XML config
+  create module --fileName ncbiImporter.xml ncbi-importer
+  
+  # run it
+  module ncbi-importer
+    import
+	exit
+	  
+  # create a genbank populator module from XML config
+  create module --fileName genbankXmlPopulator.xml gb-populator
+
+  # run it
+  module gb-populator
+  	populate
+  	exit
+
+  # create a FASTA exporter module from XML config
+  create module --fileName fastaExporter.xml fasta-exporter
+  module fasta-exporter
+  	export -w "source.name = 'ncbi-nuccore'" -f export.fasta
+  	exit
+
+  # create a FASTA importer module from XML config
+  create module --fileName fastaImporter.xml fasta-importer
+
+  # run it
+  module fasta-importer
+    import -f fastaExample.fasta
+	exit
+  	
+  # create a text file populator module from XML config
+  create module --fileName textFilePopulator.xml textfile-populator
+
+  # run it
+  module textfile-populator
+  	populate -f fieldValues.txt
+  	exit
+  
+  # create some features
+  create feature ALL_THE_GENES "all the genes"
+  create feature -p ALL_THE_GENES GENE_1 "some gene"
+  create feature -p ALL_THE_GENES GENE_2 "some other gene"
+  create feature -p ALL_THE_GENES GENE_3 "yet another gene"
+
+  # create a ref sequence from sequence localGenbank1 in source local
+  create reference REF_1 local localGenbank1
+
+  # add feature locations to the reference
+  reference REF_1
+    add feature-location ALL_THE_GENES
+    feature-location ALL_THE_GENES
+      add segment 10 100
+      exit
+    add feature-location GENE_3
+    feature-location GENE_3
+      add segment 20 50
+      add segment 60 80
+      exit
+	exit
+
+  # create an alignment AL_1 constrained to REF_1
+  create alignment AL_1 -r REF_1
+
+  # add some sequences as members to the alignment
+  alignment AL_1
+    add member -w "source.name = 'local'"
+    exit
+
+  # create a blast-aligner module from XML config
+  create module --fileName blastAligner.xml blast-aligner
+    
+  # use the blast-aligner to align the members of AL_1
+  compute alignment AL_1 blast-aligner
+  
+  create source sequencesToAlign
+  
+  import sequence sequencesToAlign seqToAlign1 FASTA sequencesToAlign/seq1.fasta
+  import sequence sequencesToAlign seqToAlign2 FASTA sequencesToAlign/seq2.fasta
+  import sequence sequencesToAlign seqToAlign3 FASTA sequencesToAlign/seq3.fasta
+  
+  sequence sequencesToAlign seqToAlign1 set field gb_primary_accession XY99901
+  sequence sequencesToAlign seqToAlign2 set field gb_primary_accession XY99902
+  sequence sequencesToAlign seqToAlign3 set field gb_primary_accession XY99903
+  
+  create module --fileName fastaAlignmentImporter.xml fasta-alignment-importer 
+  
+  module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentA.fasta
+  module fasta-alignment-importer import AL_2 -f sequencesToAlign/alignmentB.fasta
+  
+  create module --fileName fastaAlignmentExporter.xml fasta-alignment-exporter
+  
+  module fasta-alignment-exporter export AL_1 -a -p 
+  

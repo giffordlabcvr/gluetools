@@ -43,6 +43,7 @@ public class RegexExtractorFormatter implements Plugin {
 		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputTemplate", false);
 	}
 	
+	
 	@SuppressWarnings("rawtypes")
 	public String matchAndConvert(String input) {
 		TemplateHashModel variableResolver;

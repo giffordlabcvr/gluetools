@@ -1,8 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import java.util.Date;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -27,6 +30,10 @@ public class ArrayBuilder {
 
 	public ArrayBuilder addDouble(double value) {
 		return add(Double.toString(value), GlueTypeUtils.GlueType.Double);
+	}
+
+	public ArrayBuilder addDate(Date value) {
+		return add(DateUtils.render(value), GlueTypeUtils.GlueType.Date);
 	}
 
 	public ArrayBuilder addNull() {
@@ -55,6 +62,8 @@ public class ArrayBuilder {
 			return addInt(((Integer) value).intValue());
 		} else if(value instanceof Boolean) {
 			return addBoolean(((Boolean) value).booleanValue());
+		} else if(value instanceof Date) {
+			return addDate(((Date) value));
 		} else if(value instanceof String) {
 			return addString(((String) value));
 		} else {

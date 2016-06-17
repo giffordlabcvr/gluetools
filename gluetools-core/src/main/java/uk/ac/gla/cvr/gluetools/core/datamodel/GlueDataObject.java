@@ -16,6 +16,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
+import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 public abstract class GlueDataObject extends CayenneDataObject {
 
@@ -141,6 +142,14 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			glueConfigBuf.append("commit").append("\n");
 		}
 		return glueConfigBuf.toString();
+	}
+
+	public String renderNestedProperty(String path) {
+		return RenderUtils.render(super.readNestedProperty(path));
+	}
+
+	public Object renderProperty(String propertyName) {
+		return RenderUtils.render(super.readProperty(propertyName));
 	}
 
 	public void generateGlueConfig(int i, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {

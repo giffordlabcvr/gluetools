@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.util.Date;
+
 import org.w3c.dom.Element;
 
 public class GlueTypeUtils {
@@ -10,6 +12,7 @@ public class GlueTypeUtils {
 		Double,
 		String,
 		Boolean,
+		Date,
 		Null
 	}
 
@@ -22,6 +25,8 @@ public class GlueTypeUtils {
 			return Integer.parseInt(elem.getTextContent());
 		case Boolean:
 			return Boolean.parseBoolean(elem.getTextContent());
+		case Date:
+			return DateUtils.parse(elem.getTextContent());
 		case String:
 			return elem.getTextContent();
 		case Null:
@@ -41,6 +46,8 @@ public class GlueTypeUtils {
 			return GlueType.Integer;
 		} else if (value instanceof Boolean) {
 			return GlueType.Boolean;
+		}  else if (value instanceof Date) {
+			return GlueType.Date;
 		} else if (value instanceof String) {
 			return GlueType.String;
 		} else {

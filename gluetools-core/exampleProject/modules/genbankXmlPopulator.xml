@@ -1,0 +1,69 @@
+<genbankXmlPopulator>
+	<gbPrimaryAccession>
+		<fieldPopulator fieldName="gb_primary_accession"/>
+	</gbPrimaryAccession>
+	<gbAccessionVersion>
+		<fieldPopulator fieldName="gb_accession_version"/>
+	</gbAccessionVersion>
+	<gbLocus>
+		<fieldPopulator fieldName="gb_locus"/>
+	</gbLocus>
+	<gbOtherID>
+		<fieldPopulator fieldName="gb_gi_number">
+			<matchPattern>gi\|(\d+)</matchPattern>
+			<outputTemplate>${g1}</outputTemplate>
+		</fieldPopulator>
+	</gbOtherID>
+	<gbTaxonomy>
+		<fieldPopulator fieldName="gb_taxonomy"/>
+	</gbTaxonomy>
+	<gbLength>
+		<fieldPopulator fieldName="gb_length"/>
+	</gbLength>
+	<gbUpdateDate>
+		<fieldPopulator fieldName="gb_update_date"/>
+	</gbUpdateDate>
+	<gbCreateDate>
+		<fieldPopulator fieldName="gb_create_date"/>
+	</gbCreateDate>
+	<gbOrganism>
+		<fieldPopulator fieldName="gb_organism"/>
+	</gbOrganism>
+	<gbDivision>
+		<fieldPopulator fieldName="gb_lab_construct">
+			<matchPattern>PAT</matchPattern>
+			<outputTemplate>true</outputTemplate>
+		</fieldPopulator>
+	</gbDivision>
+	<gbFeature key="source">
+		<gbQualifier name="isolate">
+			<fieldPopulator fieldName="gb_isolate"/>
+		</gbQualifier>
+		<gbQualifier name="country">
+			<isoCountryFieldPopulator fieldName="gb_country_iso" codeStyle="ALPHA_3"/>
+			<isoCountryFieldPopulator fieldName="gb_country_official" codeStyle="OFFICIAL"/>
+		</gbQualifier>
+		<gbQualifier name="host">
+			<fieldPopulator fieldName="gb_host">
+				<valueConverter>
+					<matchPattern>.*Homo [sS]apiens.*</matchPattern>
+					<outputTemplate>Homo sapiens</outputTemplate>
+				</valueConverter>
+			</fieldPopulator>
+		</gbQualifier>
+		<gbQualifier name="collection_date">
+			<fieldPopulator fieldName="gb_collection_month_day">
+				<matchPattern>(\d{2})-[A-Za-z]{3}-\d{4}</matchPattern>
+				<outputTemplate>${g1}</outputTemplate>
+			</fieldPopulator>
+			<fieldPopulator fieldName="gb_collection_month">
+				<matchPattern>\d{2}-([A-Za-z]{3})-\d{4}</matchPattern>
+				<outputTemplate>${g1?upper_case}</outputTemplate>
+			</fieldPopulator>
+			<fieldPopulator fieldName="gb_collection_year">
+				<matchPattern>(\d{4})</matchPattern>
+				<outputTemplate>${g1}</outputTemplate>
+			</fieldPopulator>
+		</gbQualifier>
+	</gbFeature>
+</genbankXmlPopulator>

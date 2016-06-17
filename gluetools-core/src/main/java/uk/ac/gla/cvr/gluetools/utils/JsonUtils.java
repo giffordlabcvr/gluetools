@@ -118,6 +118,9 @@ public class JsonUtils {
 		case Boolean:
 			parentBuilder.add(Boolean.parseBoolean(element.getTextContent()));
 			break;
+		case Date:
+			parentBuilder.add(element.getTextContent());
+			break;
 		case String:
 			parentBuilder.add(element.getTextContent());
 			break;
@@ -159,7 +162,12 @@ public class JsonUtils {
 		} else if(value.getValueType() == ValueType.NULL){
 			parentObjBuilder.setNull(key);
 		} else if(value instanceof JsonString) {
-			parentObjBuilder.setString(key, ((JsonString) value).getChars().toString());
+			String string = ((JsonString) value).getChars().toString();
+			if(DateUtils.isDateString(string)) {
+				parentObjBuilder.setDate(key, DateUtils.parse(string));
+			} else {
+				parentObjBuilder.setString(key, string);
+			}
 		} else if(value.toString().equals("true") || value.toString().equals("false")) {
 			parentObjBuilder.setBoolean(key, Boolean.parseBoolean(value.toString()));
 		} else if(value instanceof JsonNumber) {
