@@ -252,19 +252,19 @@
 									<svg 
 										ng-attr-height="{{svgHeight()}}" 
 										ng-attr-width="{{svgWidth()}}">
-										<codon-label-line svg-params="svgParams" 
-												selected-feature-analysis="selectedFeatureAnalysis"></codon-label-line>
-										<reference-sequence svg-params="svgParams" 
+										<g codon-label-line svg-params="svgParams" 
+												selected-feature-analysis="selectedFeatureAnalysis"></g>
+										<g reference-sequence svg-params="svgParams" 
 												selected-feature-analysis="selectedFeatureAnalysis"
 												selected-ref-feat-analysis="selectedRefFeatAnalysis"
-												sequence-index="0"></reference-sequence>
-										<query-sequence svg-params="svgParams" 
+												sequence-index="0"></g>
+										<g query-sequence svg-params="svgParams" 
 												selected-feature-analysis="selectedFeatureAnalysis"
 												selected-ref-name="selectedRefName"
 												selected-query-feat-analysis="selectedQueryFeatAnalysis"
 												selected-query-analysis="selectedQueryAnalysis"
 												sequence-index="1"
-												variation-categories="variationCategories"></query-sequence>
+												variation-categories="variationCategories"></g>
 									</svg>
 						        </div>
 					        </div>
