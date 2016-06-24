@@ -23,19 +23,22 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    	}, false);
 
 		    	$scope.initProps = function() {
-		    		console.log("initProps query");
 		    		$scope.y = params.sequenceY($scope.sequenceIndex);
 		    		if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
+			    		console.log("$scope.selectedQueryFeatAnalysis", $scope.selectedQueryFeatAnalysis);
+			    		console.log("$scope.selectedFeatureAnalysis", $scope.selectedFeatureAnalysis);
+			    		console.log("initProps query start");
 				    	$scope.featureAas = params.initFeatureAas($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 				    	$scope.aaProps = params.initAaProps($scope.featureAas, $scope.selectedFeatureAnalysis);
 				    	$scope.featureNtSegs = params.initFeatureNtSegs($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 				    	$scope.ntSegProps = params.initNtSegProps($scope.featureNtSegs, $scope.selectedFeatureAnalysis);
+			    		console.log("initProps query finish");
 			    	}
 		    	};
 		    	
 		    	$scope.updateDiffs = function() {
-		    		console.log("updateDiffs query");
 			    	if($scope.selectedQueryFeatAnalysis && $scope.selectedRefName) {
+			    		console.log("updateDiffs query start");
 			    		for(var i = 0; i < $scope.featureAas.length; i++) {
 			    			var queryAa = $scope.featureAas[i];
 			    			$scope.aaProps[i].diff = queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
@@ -48,6 +51,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    			ntSegProp.ntProps[(j - ntSegProp.truncateLeft)].diff = referenceDiff.mask[j] == 'X';
 				    		}
 			    		}
+			    		console.log("updateDiffs query finish");
 			    	}
 		    	};
 
@@ -111,7 +115,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		      selectedQueryFeatAnalysis: '=',
 		      selectedQueryAnalysis: '=',
 		      sequenceIndex: '=',
-		      variationCategories: "="
+		      variationCategories: '='
 		    },
 		    templateNamespace: 'svg',
 		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/querySequence.html'

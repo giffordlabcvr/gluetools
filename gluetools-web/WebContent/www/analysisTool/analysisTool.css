@@ -7,18 +7,18 @@
 
 .sequenceLabel {
     text-anchor: start;
-    alignment-baseline: central;
+    dominant-baseline: central;
 }
 
 .codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
     text-anchor: middle;
-    alignment-baseline: central;
+    dominant-baseline: central;
 }
 
 
 .queryNtIndex, .referenceNtIndex {
     text-anchor: start;
-    alignment-baseline: central;
+    dominant-baseline: central;
     writing-mode: tb;
 }
 

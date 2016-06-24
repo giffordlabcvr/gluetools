@@ -1,3 +1,5 @@
+console.log("before hcvApp module definition");
+
 var hcvApp = angular.module('hcvApp', [
     'ngRoute',
     'analysisTool', 
@@ -6,6 +8,8 @@ var hcvApp = angular.module('hcvApp', [
     'glueWS',
     'glueWebToolConfig'
   ]);
+
+console.log("after hcvApp module definition");
 
 hcvApp.config(['$routeProvider',
   function($routeProvider) {

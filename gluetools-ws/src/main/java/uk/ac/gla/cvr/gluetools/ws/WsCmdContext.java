@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -84,11 +85,32 @@ public class WsCmdContext extends CommandContext {
 	@POST()
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	@SuppressWarnings({ "rawtypes" })
 	public String postAsCommandMultipart(
 			@FormDataParam("file") InputStream fileInputStream,
 			@FormDataParam("command") String commandString, 
 			@Context HttpServletResponse response) {
+		return multipartCommand(fileInputStream, commandString, response);
+	}
+
+	// for some reason IE preferentially accepts text/html on multipart requests,
+	// so we go along with this. 
+	// if not, it will prompt to save the JSON somewhere.
+	@POST()
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.TEXT_HTML)
+	public String postAsCommandMultipartInternetExplorer(
+			@FormDataParam("file") InputStream fileInputStream,
+			@FormDataParam("command") String commandString, 
+			@Context HttpServletResponse response) {
+		System.out.println("IE case");
+		return multipartCommand(fileInputStream, commandString, response);
+	}
+
+	
+	@SuppressWarnings({ "rawtypes" })
+	private String multipartCommand(InputStream fileInputStream,
+			String commandString, HttpServletResponse response) {
+		System.out.println("Non-ie case");
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
