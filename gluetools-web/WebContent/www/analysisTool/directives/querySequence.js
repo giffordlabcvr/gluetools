@@ -160,20 +160,48 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				x: varProp.x,
 				    				y: varProp.y,
 				    				width:varProp.width,
-				    				height:varProp.height,
-			    					tooltip:varProp.text,
-			    			        "tooltip-append-to-body":"true",
-			    			        "tooltip-placement":"top",
-			    			        "tooltip-animation":"false"
+				    				height:varProp.height
 				    			});
 			    				rectElem1.on("click", function() {
 			    					$scope.displayVariationQS(varProp);
 			    				});
+			    				// IE issues require Angular 1.4.9
+			    				// https://github.com/angular/angular.js/issues/10259
+			    				
+			    				// possible alternative text posistioning technique
+			    				// http://lea.verou.me/2013/03/easily-center-text-vertically-with-svg/
 			    				rectElem1.on("mouseenter", function() {
+			    					console.log("varProp.tooltipText", varProp.tooltipText);
+			    					console.log("varProp.tooltipText[0]", varProp.tooltipText[0]);
+			    					var textWidth = varProp.tooltipText[0].getBBox().width;
+			    					var boxWidth = textWidth + $scope.svgParams.varTooltipExtraWidth;
+				    				var textX = varProp.x + (varProp.width / 2) - (textWidth / 2);
+				    				var boxX = varProp.x + (varProp.width / 2) - (boxWidth / 2);
+				    				var textY = varProp.y - ((($scope.svgParams.varTooltipHeight) / 2) + $scope.svgParams.varTooltipGap);
+				    				var boxY = varProp.y - ($scope.svgParams.varTooltipHeight + $scope.svgParams.varTooltipGap);
+				    				var height = $scope.svgParams.varTooltipHeight;
+			    					
+			    					varProp.tooltipBox.attr("x", boxX);
+			    					varProp.tooltipBox.attr("y", boxY);
+			    					varProp.tooltipBox.attr("width", boxWidth);
+			    					varProp.tooltipBox.attr("height", height);
+
+			    					varProp.tooltipRect.attr("x", boxX);
+			    					varProp.tooltipRect.attr("y", boxY);
+			    					varProp.tooltipRect.attr("width", boxWidth);
+			    					varProp.tooltipRect.attr("height", height);
+
+			    					varProp.tooltipText.attr("x", textX);
+			    					varProp.tooltipText.attr("y", textY);
+			    					varProp.tooltipText.attr("height", height);
+			    					varProp.tooltipText.attr("dy", ".35em");
+
 			    					varProp.locationRect.removeClass("display-hide");
+			    					varProp.tooltipElem.removeClass("display-hide");
 			    				});
 			    				rectElem1.on("mouseleave", function() {
 			    					varProp.locationRect.addClass("display-hide");
+			    					varProp.tooltipElem.addClass("display-hide");
 			    				});
 			    				g2.append(rectElem1);
 				    			g2.append(svgElem('rect', {
@@ -183,6 +211,20 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				width:varProp.width,
 				    				height:varProp.height
 				    			}));
+				    			varProp.tooltipElem = svgElem('g');
+		    					varProp.tooltipElem.addClass("display-hide");
+		    					varProp.tooltipRect = svgElem('rect', {
+				    				"class": "varTooltipRect"})
+				    			varProp.tooltipElem.append(varProp.tooltipRect);
+		    					varProp.tooltipBox = svgElem('rect', {
+				    				"class": "varTooltipBox"})
+				    			varProp.tooltipElem.append(varProp.tooltipBox);
+		    					varProp.tooltipText = svgElem('text', {
+				    				"class": "varTooltipText"})
+				    			varProp.tooltipElem.append(varProp.tooltipText);
+		    					varProp.tooltipText.append(varProp.text);
+				    			g2.append(varProp.tooltipElem);
+				    			
 			    			}));
 			    		});
 		    		}));

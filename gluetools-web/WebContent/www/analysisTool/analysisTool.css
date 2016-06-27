@@ -86,3 +86,18 @@
 	stroke: #333333;
 	fill: none;
 }
+
+.varTooltipRect {
+	fill: #ffffff;
+}
+
+.varTooltipBox {
+	stroke: #333333;
+	fill: none;
+}
+
+.varTooltipText {
+	fill: #333333;
+}
+
+

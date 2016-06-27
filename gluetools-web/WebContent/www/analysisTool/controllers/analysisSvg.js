@@ -12,6 +12,9 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 			codonLabelHeight: 35,
 			aaHeight: 25,
 			varHeight: 20,
+			varTooltipHeight: 30,
+			varTooltipGap: 10,
+			varTooltipExtraWidth: 10,
 			varGap: 5,
 			numVarTracks: 0,
 			
