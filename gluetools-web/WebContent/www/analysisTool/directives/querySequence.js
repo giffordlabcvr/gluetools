@@ -9,24 +9,25 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    	$scope.aaProps = [];
 		    	$scope.featureNtSegs = [];
 		    	$scope.ntSegProps = [];
+		    	$scope.propsDirty = true;
 		    	
 		    	// not sure if this first watch is necessary.
 		    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-		    		$scope.initProps();
-		    		$scope.initVarProps();
-		    		$scope.updateDiffs();
+			    	$scope.propsDirty = true;
 		    		$scope.updateElem();
 		    	}, false);
 		    	
 		    	$scope.$watch( 'selectedQueryFeatAnalysis', function(newObj, oldObj) {
-		    		$scope.initProps();
-		    		$scope.initVarProps();
-		    		$scope.updateDiffs();
+			    	$scope.propsDirty = true;
 		    		$scope.updateElem();
 		    	}, false);
 
 		    	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
-		    		$scope.updateDiffs();
+			    	$scope.propsDirty = true;
+		    		$scope.updateElem();
+		    	}, false);
+
+		    	$scope.$watch( 'analysisView', function(newObj, oldObj) {
 		    		$scope.updateElem();
 		    	}, false);
 
@@ -64,172 +65,181 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    	};
 
 		    	$scope.updateElem = function() {
-		    		console.log("updating query sequence");
-		    		$scope.elem.empty();
-		    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
-		    				function(g) {
-			    		_.each($scope.varProps, function(varProp) {
-			    			g.append(svgElem('g', {}, function(g2) {
-			    				var locationRect = svgElem('rect', {
-				    				"class": "varLocation", 
-				    				x: varProp.x,
-				    				width: varProp.width,
-				    				height: varProp.locationHeight
-				    			});
-			    				locationRect.addClass("display-hide");
-			    				varProp.locationRect = locationRect;
-				    			g2.append(locationRect);
-			    			}));
-			    		});
-		    		}));
-		    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
-		    				function(g) {
-			    		_.each($scope.aaProps, function(aaProp) {
-			    			g.append(svgElem('g', {"transform":"translate("+aaProp.x+", 0)"}, function(g2) {
-				    			g2.append(svgElem('rect', {
-				    				"class": aaProp.diff ? "queryAaDiffBackground" : "queryAaBackground", 
-				    				width: aaProp.width,
-				    				height: aaProp.height
-				    			}));
-				    			g2.append(svgElem('text', {
-				    				"class": aaProp.diff ? "queryAaDiff" : "queryAa", 
-				    				width: aaProp.width,
-				    				height: aaProp.height,
-				    				dx: aaProp.dx,
-				    				dy: aaProp.dy
-				    			}, function(text) {
-				    				text.append(aaProp.text);
-				    			}));
-			    			}));
-			    		});
-		    		}));
-		    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight) + ")"}, 
-		    				function(g) {
-		    			_.each($scope.ntSegProps, function(ntSegProp) {
-			    			g.append(svgElem('g', {}, function(g2) {
-				    			_.each(ntSegProp.ntProps, function(ntProp) {
-					    			g2.append(svgElem('g', {"transform":"translate("+ ntProp.x + ", 0)"}, function(g3) {
-					    				if(ntProp.diff) {
-							    			g3.append(svgElem('rect', {
-							    				"class": "queryNtDiffBackground", 
-							    				width: ntProp.width,
-							    				height: ntProp.height
-							    			}));
-					    				}
-						    			g3.append(svgElem('text', {
-						    				"class": ntProp.diff ? "queryNtDiff" : "queryNt", 
-						    				width: ntProp.width,
-						    				height: ntProp.height,
-						    				dx: ntProp.dx,
-						    				dy: ntProp.dy
+		    		if($scope.analysisView == 'genomeDetail' && $scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis && $scope.selectedRefName) {
+		    			if($scope.propsDirty) {
+				    		$scope.initProps();
+				    		$scope.initVarProps();
+				    		$scope.updateDiffs();
+
+			    			console.log("updating query sequence");
+				    		$scope.elem.empty();
+				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
+				    				function(g) {
+					    		_.each($scope.varProps, function(varProp) {
+					    			g.append(svgElem('g', {}, function(g2) {
+					    				var locationRect = svgElem('rect', {
+						    				"class": "varLocation", 
+						    				x: varProp.x,
+						    				width: varProp.width,
+						    				height: varProp.locationHeight
+						    			});
+					    				locationRect.addClass("display-hide");
+					    				varProp.locationRect = locationRect;
+						    			g2.append(locationRect);
+					    			}));
+					    		});
+				    		}));
+				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
+				    				function(g) {
+					    		_.each($scope.aaProps, function(aaProp) {
+					    			g.append(svgElem('g', {"transform":"translate("+aaProp.x+", 0)"}, function(g2) {
+						    			g2.append(svgElem('rect', {
+						    				"class": aaProp.diff ? "queryAaDiffBackground" : "queryAaBackground", 
+						    				width: aaProp.width,
+						    				height: aaProp.height
+						    			}));
+						    			g2.append(svgElem('text', {
+						    				"class": aaProp.diff ? "queryAaDiff" : "queryAa", 
+						    				width: aaProp.width,
+						    				height: aaProp.height,
+						    				dx: aaProp.dx,
+						    				dy: aaProp.dy
 						    			}, function(text) {
-						    				text.append(ntProp.text);
+						    				text.append(aaProp.text);
 						    			}));
 					    			}));
 					    		});
-			    			}));
-			    			g.append(svgElem('g', {"class": "queryNtIndex", "transform":"translate(0, "+ $scope.svgParams.ntHeight + ")"}, function(g2) {
-				    			g2.append(svgElem('text', {
-				    				x: ntSegProp.startIndexX,
-				    				width: $scope.svgParams.ntWidth,
-				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: ntSegProp.indexDx,
-				    				dy: ntSegProp.indexDy
-				    			}, function(text) {
-				    				text.append(String(ntSegProp.startIndexText));
-				    			}));
-				    			g2.append(svgElem('text', {
-				    				x: ntSegProp.endIndexX,
-				    				width: $scope.svgParams.ntWidth,
-				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: ntSegProp.indexDx,
-				    				dy: ntSegProp.indexDy
-				    			}, function(text) {
-				    				text.append(String(ntSegProp.endIndexText));
-				    			}));
-			    			}));
-			    		});
-		    		}));
-		    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + $scope.svgParams.ntIndexHeight) + ")"}, 
-		    				function(g) {
-		    			_.each($scope.varProps, function(varProp) {
-			    			g.append(svgElem('g', {}, function(g2) {
-			    				var rectElem1 = svgElem('rect', {
-				    				id: varProp.id,
-				    				"class": "vcat_"+varProp.variationCategory,
-				    				x: varProp.x,
-				    				y: varProp.y,
-				    				width:varProp.width,
-				    				height:varProp.height
-				    			});
-			    				rectElem1.on("click", function() {
-			    					$scope.displayVariationQS(varProp);
-			    				});
-			    				// IE issues require Angular 1.4.9
-			    				// https://github.com/angular/angular.js/issues/10259
-			    				
-			    				// possible alternative text posistioning technique
-			    				// http://lea.verou.me/2013/03/easily-center-text-vertically-with-svg/
-			    				rectElem1.on("mouseenter", function() {
-			    					console.log("varProp.tooltipText", varProp.tooltipText);
-			    					console.log("varProp.tooltipText[0]", varProp.tooltipText[0]);
-			    					var textWidth = varProp.tooltipText[0].getBBox().width;
-			    					var boxWidth = textWidth + $scope.svgParams.varTooltipExtraWidth;
-				    				var textX = varProp.x + (varProp.width / 2) - (textWidth / 2);
-				    				var boxX = varProp.x + (varProp.width / 2) - (boxWidth / 2);
-				    				var textY = varProp.y - ((($scope.svgParams.varTooltipHeight) / 2) + $scope.svgParams.varTooltipGap);
-				    				var boxY = varProp.y - ($scope.svgParams.varTooltipHeight + $scope.svgParams.varTooltipGap);
-				    				var height = $scope.svgParams.varTooltipHeight;
-			    					
-			    					varProp.tooltipBox.attr("x", boxX);
-			    					varProp.tooltipBox.attr("y", boxY);
-			    					varProp.tooltipBox.attr("width", boxWidth);
-			    					varProp.tooltipBox.attr("height", height);
-
-			    					varProp.tooltipRect.attr("x", boxX);
-			    					varProp.tooltipRect.attr("y", boxY);
-			    					varProp.tooltipRect.attr("width", boxWidth);
-			    					varProp.tooltipRect.attr("height", height);
-
-			    					varProp.tooltipText.attr("x", textX);
-			    					varProp.tooltipText.attr("y", textY);
-			    					varProp.tooltipText.attr("height", height);
-			    					varProp.tooltipText.attr("dy", ".35em");
-
-			    					varProp.locationRect.removeClass("display-hide");
-			    					varProp.tooltipElem.removeClass("display-hide");
-			    				});
-			    				rectElem1.on("mouseleave", function() {
-			    					varProp.locationRect.addClass("display-hide");
-			    					varProp.tooltipElem.addClass("display-hide");
-			    				});
-			    				g2.append(rectElem1);
-				    			g2.append(svgElem('rect', {
-				    				"class": "varBox",
-				    				x: varProp.x,
-				    				y: varProp.y,
-				    				width:varProp.width,
-				    				height:varProp.height
-				    			}));
-				    			varProp.tooltipElem = svgElem('g');
-		    					varProp.tooltipElem.addClass("display-hide");
-		    					varProp.tooltipRect = svgElem('rect', {
-				    				"class": "varTooltipRect"})
-				    			varProp.tooltipElem.append(varProp.tooltipRect);
-		    					varProp.tooltipBox = svgElem('rect', {
-				    				"class": "varTooltipBox"})
-				    			varProp.tooltipElem.append(varProp.tooltipBox);
-		    					varProp.tooltipText = svgElem('text', {
-				    				"class": "varTooltipText"})
-				    			varProp.tooltipElem.append(varProp.tooltipText);
-		    					varProp.tooltipText.append(varProp.text);
-				    			g2.append(varProp.tooltipElem);
-				    			
-			    			}));
-			    		});
-		    		}));
-
-		    		console.log("query sequence updated");
+				    		}));
+				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight) + ")"}, 
+				    				function(g) {
+				    			_.each($scope.ntSegProps, function(ntSegProp) {
+					    			g.append(svgElem('g', {}, function(g2) {
+						    			_.each(ntSegProp.ntProps, function(ntProp) {
+							    			g2.append(svgElem('g', {"transform":"translate("+ ntProp.x + ", 0)"}, function(g3) {
+							    				if(ntProp.diff) {
+									    			g3.append(svgElem('rect', {
+									    				"class": "queryNtDiffBackground", 
+									    				width: ntProp.width,
+									    				height: ntProp.height
+									    			}));
+							    				}
+								    			g3.append(svgElem('text', {
+								    				"class": ntProp.diff ? "queryNtDiff" : "queryNt", 
+								    				width: ntProp.width,
+								    				height: ntProp.height,
+								    				dx: ntProp.dx,
+								    				dy: ntProp.dy
+								    			}, function(text) {
+								    				text.append(ntProp.text);
+								    			}));
+							    			}));
+							    		});
+					    			}));
+					    			g.append(svgElem('g', {"class": "queryNtIndex", "transform":"translate(0, "+ $scope.svgParams.ntHeight + ")"}, function(g2) {
+						    			g2.append(svgElem('text', {
+						    				x: ntSegProp.startIndexX,
+						    				width: $scope.svgParams.ntWidth,
+						    				height: $scope.svgParams.ntIndexWidth,
+						    				dx: ntSegProp.indexDx,
+						    				dy: ntSegProp.indexDy
+						    			}, function(text) {
+						    				text.append(String(ntSegProp.startIndexText));
+						    			}));
+						    			g2.append(svgElem('text', {
+						    				x: ntSegProp.endIndexX,
+						    				width: $scope.svgParams.ntWidth,
+						    				height: $scope.svgParams.ntIndexWidth,
+						    				dx: ntSegProp.indexDx,
+						    				dy: ntSegProp.indexDy
+						    			}, function(text) {
+						    				text.append(String(ntSegProp.endIndexText));
+						    			}));
+					    			}));
+					    		});
+				    		}));
+				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + $scope.svgParams.ntIndexHeight) + ")"}, 
+				    				function(g) {
+				    			_.each($scope.varProps, function(varProp) {
+					    			g.append(svgElem('g', {}, function(g2) {
+					    				var rectElem1 = svgElem('rect', {
+						    				id: varProp.id,
+						    				"class": "vcat_"+varProp.variationCategory,
+						    				x: varProp.x,
+						    				y: varProp.y,
+						    				width:varProp.width,
+						    				height:varProp.height
+						    			});
+					    				rectElem1.on("click", function() {
+					    					$scope.displayVariationQS(varProp);
+					    				});
+					    				// IE issues require Angular 1.4.9
+					    				// https://github.com/angular/angular.js/issues/10259
+					    				
+					    				// possible alternative text posistioning technique
+					    				// http://lea.verou.me/2013/03/easily-center-text-vertically-with-svg/
+					    				rectElem1.on("mouseenter", function() {
+					    					console.log("varProp.tooltipText", varProp.tooltipText);
+					    					console.log("varProp.tooltipText[0]", varProp.tooltipText[0]);
+					    					var textWidth = varProp.tooltipText[0].getBBox().width;
+					    					var boxWidth = textWidth + $scope.svgParams.varTooltipExtraWidth;
+						    				var textX = varProp.x + (varProp.width / 2) - (textWidth / 2);
+						    				var boxX = varProp.x + (varProp.width / 2) - (boxWidth / 2);
+						    				var textY = varProp.y - ((($scope.svgParams.varTooltipHeight) / 2) + $scope.svgParams.varTooltipGap);
+						    				var boxY = varProp.y - ($scope.svgParams.varTooltipHeight + $scope.svgParams.varTooltipGap);
+						    				var height = $scope.svgParams.varTooltipHeight;
+					    					
+					    					varProp.tooltipBox.attr("x", boxX);
+					    					varProp.tooltipBox.attr("y", boxY);
+					    					varProp.tooltipBox.attr("width", boxWidth);
+					    					varProp.tooltipBox.attr("height", height);
+		
+					    					varProp.tooltipRect.attr("x", boxX);
+					    					varProp.tooltipRect.attr("y", boxY);
+					    					varProp.tooltipRect.attr("width", boxWidth);
+					    					varProp.tooltipRect.attr("height", height);
+		
+					    					varProp.tooltipText.attr("x", textX);
+					    					varProp.tooltipText.attr("y", textY);
+					    					varProp.tooltipText.attr("height", height);
+					    					varProp.tooltipText.attr("dy", ".35em");
+		
+					    					varProp.locationRect.removeClass("display-hide");
+					    					varProp.tooltipElem.removeClass("display-hide");
+					    				});
+					    				rectElem1.on("mouseleave", function() {
+					    					varProp.locationRect.addClass("display-hide");
+					    					varProp.tooltipElem.addClass("display-hide");
+					    				});
+					    				g2.append(rectElem1);
+						    			g2.append(svgElem('rect', {
+						    				"class": "varBox",
+						    				x: varProp.x,
+						    				y: varProp.y,
+						    				width:varProp.width,
+						    				height:varProp.height
+						    			}));
+						    			varProp.tooltipElem = svgElem('g');
+				    					varProp.tooltipElem.addClass("display-hide");
+				    					varProp.tooltipRect = svgElem('rect', {
+						    				"class": "varTooltipRect"})
+						    			varProp.tooltipElem.append(varProp.tooltipRect);
+				    					varProp.tooltipBox = svgElem('rect', {
+						    				"class": "varTooltipBox"})
+						    			varProp.tooltipElem.append(varProp.tooltipBox);
+				    					varProp.tooltipText = svgElem('text', {
+						    				"class": "varTooltipText"})
+						    			varProp.tooltipElem.append(varProp.tooltipText);
+				    					varProp.tooltipText.append(varProp.text);
+						    			g2.append(varProp.tooltipElem);
+						    			
+					    			}));
+					    		});
+				    		}));
+		
+				    		console.log("query sequence updated");
+			    		$scope.propsDirty = false;
+		    			}
+		    		}
 		    	}
 
 		    	
@@ -288,7 +298,6 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    },
 		    link: function(scope, element, attributes){
 		    	scope.elem = element;
-    			scope.updateElem();
 		    },
 		    scope: {
 		      svgParams: '=',
@@ -297,7 +306,8 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		      selectedQueryFeatAnalysis: '=',
 		      selectedQueryAnalysis: '=',
 		      sequenceIndex: '=',
-		      variationCategories: '='
+		      variationCategories: '=',
+			  analysisView: '='
 		    }
 		  };
 		});

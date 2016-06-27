@@ -5,9 +5,15 @@ analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 		    	var params = $scope.svgParams;
 		    	$scope.y = 0;
 		    	$scope.cProps = [];
+		    	$scope.cPropsDirty = true;
 		    	
 		    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-		    		$scope.initProps();
+		    		$scope.cPropsDirty = true;
+		    		$scope.updateElem();
+		    	}, false);
+		    	
+		    	$scope.$watch( 'analysisView', function(newObj, oldObj) {
+		    		$scope.updateElem();
 		    	}, false);
 
 		    	$scope.initProps = function() {
@@ -26,37 +32,42 @@ analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 		    					text: codonLabel.label
 		    				};
 		    			});
-		    			$scope.updateElem();
 		    		}
 		    	}
 		    	
 		    	$scope.updateElem = function() {
-		    		console.log("updating codon label line");
-		    		$scope.elem.empty();
-		    		$scope.elem.attr("transform", "translate(0, "+$scope.y+")");
-		    		_.each($scope.cProps, function(cProp) {
-		    			$scope.elem.append(svgElem('text', {
-		    				"class": "codonLabel", 
-		    				x: cProp.x,
-		    				width: cProp.width,
-		    				height: cProp.height,
-		    				dx: cProp.dx,
-		    				dy: cProp.dy
-		    			}, function(text) {
-		    				text.append(cProp.text);
-		    			}));
-		    		});
-		    		console.log("codon label line updated");
+		    		if($scope.analysisView == 'genomeDetail' && $scope.selectedFeatureAnalysis) {
+		    			if($scope.cPropsDirty) {
+				    		console.log("updating codon label line");
+		    				$scope.initProps();
+				    		$scope.elem.empty();
+				    		$scope.elem.attr("transform", "translate(0, "+$scope.y+")");
+				    		_.each($scope.cProps, function(cProp) {
+				    			$scope.elem.append(svgElem('text', {
+				    				"class": "codonLabel", 
+				    				x: cProp.x,
+				    				width: cProp.width,
+				    				height: cProp.height,
+				    				dx: cProp.dx,
+				    				dy: cProp.dy
+				    			}, function(text) {
+				    				text.append(cProp.text);
+				    			}));
+				    		});
+				    		console.log("codon label line updated");
+		    				$scope.cPropsDirty = false;
+		    			}
+		    		}
 		    	}
 		    	
 		    },
 		    link: function(scope, element, attributes){
 		    	scope.elem = element;
-    			scope.updateElem();
 		    },
 		    scope: {
 		      svgParams: '=',
 		      selectedFeatureAnalysis: '=',
+		      analysisView: '='
 		    }
 		  };
 		});
