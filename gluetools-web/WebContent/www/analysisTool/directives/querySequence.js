@@ -180,11 +180,6 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 						    				width:varProp.width,
 						    				height:varProp.height
 						    			});
-					    				rectElem1[0].focus = function() {
-					    					console.log("rectElem1[0].focus invoked!");
-					    				}
-					    				console.log("rectElem1", rectElem1);
-					    				
 					    				rectElem1.on("click", function() {
 					    					$scope.displayVariationQS(varProp);
 					    				});
