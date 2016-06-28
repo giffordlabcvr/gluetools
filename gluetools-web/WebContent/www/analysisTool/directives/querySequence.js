@@ -1,3 +1,13 @@
+
+// This is a hack.
+// When closing a dialog which was launched from an SVG element, on Internet Explorer, 
+// there is an attempt to invoke focus() on the main svg element, which doesn't exist.
+// this hack defines it.
+if (typeof SVGElement.prototype.focus == 'undefined') {
+    SVGElement.prototype.focus = function() {};
+}
+
+
 analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glueWS) {
 	  return {
 		    restrict: 'A',
@@ -170,6 +180,11 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 						    				width:varProp.width,
 						    				height:varProp.height
 						    			});
+					    				rectElem1[0].focus = function() {
+					    					console.log("rectElem1[0].focus invoked!");
+					    				}
+					    				console.log("rectElem1", rectElem1);
+					    				
 					    				rectElem1.on("click", function() {
 					    					$scope.displayVariationQS(varProp);
 					    				});
