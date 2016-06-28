@@ -40,20 +40,22 @@ analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 		    			if($scope.cPropsDirty) {
 				    		console.log("updating codon label line");
 		    				$scope.initProps();
-				    		$scope.elem.empty();
-				    		_.each($scope.cProps, function(cProp) {
-				    			$scope.elem.append(svgElem('text', {
+		    				var docFrag = angular.element(document.createDocumentFragment());
+		    				_.each($scope.cProps, function(cProp) {
+				    			docFrag.append(svgElem('text', {
 				    				"class": "codonLabel", 
 				    				x: cProp.x + cProp.dx,
 				    				y: $scope.y + cProp.dy,
 				    				width: cProp.width,
 				    				height: cProp.height,
-				    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+				    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
 				    			}, function(text) {
 				    				text.append(cProp.text);
 				    			}));
 				    		});
 				    		console.log("codon label line updated");
+				    		$scope.elem.empty();
+				    		$scope.elem.append(docFrag);
 		    				$scope.cPropsDirty = false;
 		    			}
 		    		}

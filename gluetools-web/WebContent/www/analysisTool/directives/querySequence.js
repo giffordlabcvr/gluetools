@@ -72,8 +72,9 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    		$scope.updateDiffs();
 
 			    			console.log("updating query sequence");
-				    		$scope.elem.empty();
-				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
+			    			var docFrag = angular.element(document.createDocumentFragment());
+			    			
+				    		docFrag.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
 				    				function(g) {
 					    		_.each($scope.varProps, function(varProp) {
 					    			g.append(svgElem('g', {}, function(g2) {
@@ -90,20 +91,20 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 					    		});
 				    		}));
 				    		_.each($scope.aaProps, function(aaProp) {
-			    				$scope.elem.append(svgElem('rect', {
+			    				docFrag.append(svgElem('rect', {
 				    				"class": aaProp.diff ? "queryAaDiffBackground" : "queryAaBackground", 
 				    				x: aaProp.x,
 				    				y: $scope.y,
 				    				width: aaProp.width,
 				    				height: aaProp.height
 				    			}));
-			    				$scope.elem.append(svgElem('text', {
+			    				docFrag.append(svgElem('text', {
 				    				"class": aaProp.diff ? "queryAaDiff" : "queryAa", 
 				    				x: aaProp.x + aaProp.dx,
 				    				y: $scope.y + aaProp.dy,
 				    				width: aaProp.width,
 				    				height: aaProp.height,
-				    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+				    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
 				    			}, function(text) {
 				    				text.append(aaProp.text);
 				    			}));
@@ -112,7 +113,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 			    			_.each($scope.ntSegProps, function(ntSegProp) {
 				    			_.each(ntSegProp.ntProps, function(ntProp) {
 				    				if(ntProp.diff) {
-				    					$scope.elem.append(svgElem('rect', {
+				    					docFrag.append(svgElem('rect', {
 						    				"class": "queryNtDiffBackground", 
 						    				x: ntProp.x,
 						    				y: $scope.y + $scope.svgParams.aaHeight,
@@ -120,13 +121,13 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 						    				height: ntProp.height
 						    			}));
 				    				}
-				    				$scope.elem.append(svgElem('text', {
+				    				docFrag.append(svgElem('text', {
 					    				"class": ntProp.diff ? "queryNtDiff" : "queryNt", 
 					    				x: ntProp.x + ntProp.dx,
 					    				y: $scope.y + $scope.svgParams.aaHeight + ntProp.dy,
 					    				width: ntProp.width,
 					    				height: ntProp.height,
-					    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+					    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
 					    			}, function(text) {
 					    				text.append(ntProp.text);
 					    			}));
@@ -136,28 +137,28 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    		
 				    		
 			    			_.each($scope.ntSegProps, function(ntSegProp) {
-			    				$scope.elem.append(svgElem('text', {
+			    				docFrag.append(svgElem('text', {
 				    				"class": "queryNtIndex", 
 				    				x: ntSegProp.startIndexX + ntSegProp.indexDx,
 				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
 				    				width: $scope.svgParams.ntWidth,
 				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : null
+				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : 0
 				    			}, function(text) {
 				    				text.append(String(ntSegProp.startIndexText));
 				    			}));
-			    				$scope.elem.append(svgElem('text', {
+			    				docFrag.append(svgElem('text', {
 				    				"class": "queryNtIndex", 
 				    				x: ntSegProp.endIndexX + ntSegProp.indexDx,
 				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
 				    				width: $scope.svgParams.ntWidth,
 				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : null
+				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : 0
 				    			}, function(text) {
 				    				text.append(String(ntSegProp.endIndexText));
 				    			}));
 				    		});
-				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + $scope.svgParams.ntIndexHeight) + ")"}, 
+				    		docFrag.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + $scope.svgParams.ntIndexHeight) + ")"}, 
 				    				function(g) {
 				    			_.each($scope.varProps, function(varProp) {
 					    			g.append(svgElem('g', {}, function(g2) {
@@ -176,38 +177,14 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 					    				// https://github.com/angular/angular.js/issues/10259
 					    				
 					    				rectElem1.on("mouseenter", function() {
-					    					console.log("varProp.tooltipText", varProp.tooltipText);
-					    					console.log("varProp.tooltipText[0]", varProp.tooltipText[0]);
-					    					var textWidth = varProp.tooltipText[0].getBBox().width;
-					    					var boxWidth = textWidth + $scope.svgParams.varTooltipExtraWidth;
-						    				var textX = varProp.x + (varProp.width / 2) - (textWidth / 2);
-						    				var boxX = varProp.x + (varProp.width / 2) - (boxWidth / 2);
-						    				var textY = varProp.y - ((($scope.svgParams.varTooltipHeight) / 2) + $scope.svgParams.varTooltipGap);
-						    				var boxY = varProp.y - ($scope.svgParams.varTooltipHeight + $scope.svgParams.varTooltipGap);
-						    				var height = $scope.svgParams.varTooltipHeight;
-					    					
-					    					varProp.tooltipBox.attr("x", boxX);
-					    					varProp.tooltipBox.attr("y", boxY);
-					    					varProp.tooltipBox.attr("width", boxWidth);
-					    					varProp.tooltipBox.attr("height", height);
-		
-					    					varProp.tooltipRect.attr("x", boxX);
-					    					varProp.tooltipRect.attr("y", boxY);
-					    					varProp.tooltipRect.attr("width", boxWidth);
-					    					varProp.tooltipRect.attr("height", height);
-		
-					    					varProp.tooltipText.attr("x", textX);
-					    					varProp.tooltipText.attr("y", textY);
-					    					varProp.tooltipText.attr("height", height);
-					    					varProp.tooltipText.attr("dy", ".35em");
-		
 					    					varProp.locationRect.removeClass("display-hide");
-					    					varProp.tooltipElem.removeClass("display-hide");
 					    				});
 					    				rectElem1.on("mouseleave", function() {
 					    					varProp.locationRect.addClass("display-hide");
-					    					varProp.tooltipElem.addClass("display-hide");
 					    				});
+					    				g2.append(svgElem('title', {}, function(title) {
+					    					title.append(varProp.text);
+					    				}));
 					    				g2.append(rectElem1);
 						    			g2.append(svgElem('rect', {
 						    				"class": "varBox",
@@ -216,26 +193,15 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 						    				width:varProp.width,
 						    				height:varProp.height
 						    			}));
-						    			varProp.tooltipElem = svgElem('g');
-				    					varProp.tooltipElem.addClass("display-hide");
-				    					varProp.tooltipRect = svgElem('rect', {
-						    				"class": "varTooltipRect"})
-						    			varProp.tooltipElem.append(varProp.tooltipRect);
-				    					varProp.tooltipBox = svgElem('rect', {
-						    				"class": "varTooltipBox"})
-						    			varProp.tooltipElem.append(varProp.tooltipBox);
-				    					varProp.tooltipText = svgElem('text', {
-						    				"class": "varTooltipText"})
-						    			varProp.tooltipElem.append(varProp.tooltipText);
-				    					varProp.tooltipText.append(varProp.text);
-						    			g2.append(varProp.tooltipElem);
-						    			
+					    				
 					    			}));
 					    		});
 				    		}));
-		
+
 				    		console.log("query sequence updated");
-			    		$scope.propsDirty = false;
+				    		$scope.elem.empty();
+				    		$scope.elem.append(docFrag);
+				    		$scope.propsDirty = false;
 		    			}
 		    		}
 		    	}

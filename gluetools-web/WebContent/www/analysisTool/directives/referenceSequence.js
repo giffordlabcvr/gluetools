@@ -44,20 +44,21 @@ analysisTool.directive('referenceSequence', function(glueWebToolConfig) {
 		    				$scope.initProps();
 		    				
 				    		console.log("updating reference sequence");
-				    		$scope.elem.empty();
+				    		var docFrag = angular.element(document.createDocumentFragment());
+				    		
 			    			_.each($scope.aaProps, function(aaProp) {
-			    				$scope.elem.append(svgElem('rect', {
+			    				docFrag.append(svgElem('rect', {
 				    				"class": "referenceAaBackground",
 				    				x: aaProp.x,
 				    				y: $scope.y,
 				    				width: aaProp.width,
 				    				height: aaProp.height
 				    			}));
-			    				$scope.elem.append(svgElem('text', {
+			    				docFrag.append(svgElem('text', {
 				    				"class": "referenceAa", 
 				    				x: aaProp.x + aaProp.dx,
 				    				y: $scope.y + aaProp.dy,
-				    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+				    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
 				    			}, function(text) {
 				    				text.append(aaProp.text);
 				    			}));
@@ -65,13 +66,13 @@ analysisTool.directive('referenceSequence', function(glueWebToolConfig) {
 			    			
 			    			_.each($scope.ntSegProps, function(ntSegProp) {
 				    			_.each(ntSegProp.ntProps, function(ntProp) {
-					    			$scope.elem.append(svgElem('text', {
+					    			docFrag.append(svgElem('text', {
 					    				"class": "referenceNt", 
 					    				x: ntProp.x + ntProp.dx, 
 					    				y: $scope.y + $scope.svgParams.aaHeight + ntProp.dy, 
 					    				width: ntProp.width,
 					    				height: ntProp.height,
-					    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+					    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
 					    			}, function(text) {
 					    				text.append(ntProp.text);
 					    			}));
@@ -79,30 +80,32 @@ analysisTool.directive('referenceSequence', function(glueWebToolConfig) {
 			    			});
 			    			
 			    			_.each($scope.ntSegProps, function(ntSegProp) {
-			    				$scope.elem.append(svgElem('text', {
+			    				docFrag.append(svgElem('text', {
 				    				"class": "referenceNtIndex", 
 				    				x: ntSegProp.startIndexX + ntSegProp.indexDx,
 				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
 				    				width: $scope.svgParams.ntWidth,
 				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : null
+				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : 0
 				    			}, function(text) {
 				    				text.append(String(ntSegProp.startIndexText));
 				    			}));
-			    				$scope.elem.append(svgElem('text', {
+			    				docFrag.append(svgElem('text', {
 				    				"class": "referenceNtIndex", 
 				    				x: ntSegProp.endIndexX + ntSegProp.indexDx,
 				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
 				    				width: $scope.svgParams.ntWidth,
 				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : null
+				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : 0
 				    			}, function(text) {
 				    				text.append(String(ntSegProp.endIndexText));
 				    			}));
 				    		});
 				    		console.log("reference sequence updated");
+		    				$scope.propsDirty = false;
+				    		$scope.elem.empty();
+				    		$scope.elem.append(docFrag);
 		    			}
-	    				$scope.propsDirty = false;
 		    		}
 		    	}
 		    	
