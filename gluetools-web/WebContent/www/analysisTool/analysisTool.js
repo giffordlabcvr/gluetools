@@ -2,6 +2,14 @@
 
 console.log("before analysisTool module definition");
 
+
+var userAgent = detect.parse(navigator.userAgent);
+
+console.log("userAgent.browser.family", userAgent.browser.family);
+console.log("userAgent.browser.name", userAgent.browser.name);
+console.log("userAgent.browser.version", userAgent.browser.version);
+
+
 var analysisTool = angular.module('analysisTool', 
 		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'glueWebToolConfig']);
 

@@ -41,15 +41,14 @@ analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 				    		console.log("updating codon label line");
 		    				$scope.initProps();
 				    		$scope.elem.empty();
-				    		$scope.elem.attr("transform", "translate(0, "+$scope.y+")");
 				    		_.each($scope.cProps, function(cProp) {
 				    			$scope.elem.append(svgElem('text', {
 				    				"class": "codonLabel", 
-				    				x: cProp.x,
+				    				x: cProp.x + cProp.dx,
+				    				y: $scope.y + cProp.dy,
 				    				width: cProp.width,
 				    				height: cProp.height,
-				    				dx: cProp.dx,
-				    				dy: cProp.dy
+				    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
 				    			}, function(text) {
 				    				text.append(cProp.text);
 				    			}));

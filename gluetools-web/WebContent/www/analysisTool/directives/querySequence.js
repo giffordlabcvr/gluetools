@@ -89,74 +89,74 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 					    			}));
 					    		});
 				    		}));
-				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
-				    				function(g) {
-					    		_.each($scope.aaProps, function(aaProp) {
-					    			g.append(svgElem('g', {"transform":"translate("+aaProp.x+", 0)"}, function(g2) {
-						    			g2.append(svgElem('rect', {
-						    				"class": aaProp.diff ? "queryAaDiffBackground" : "queryAaBackground", 
-						    				width: aaProp.width,
-						    				height: aaProp.height
+				    		_.each($scope.aaProps, function(aaProp) {
+			    				$scope.elem.append(svgElem('rect', {
+				    				"class": aaProp.diff ? "queryAaDiffBackground" : "queryAaBackground", 
+				    				x: aaProp.x,
+				    				y: $scope.y,
+				    				width: aaProp.width,
+				    				height: aaProp.height
+				    			}));
+			    				$scope.elem.append(svgElem('text', {
+				    				"class": aaProp.diff ? "queryAaDiff" : "queryAa", 
+				    				x: aaProp.x + aaProp.dx,
+				    				y: $scope.y + aaProp.dy,
+				    				width: aaProp.width,
+				    				height: aaProp.height,
+				    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+				    			}, function(text) {
+				    				text.append(aaProp.text);
+				    			}));
+				    		});
+				    		
+			    			_.each($scope.ntSegProps, function(ntSegProp) {
+				    			_.each(ntSegProp.ntProps, function(ntProp) {
+				    				if(ntProp.diff) {
+				    					$scope.elem.append(svgElem('rect', {
+						    				"class": "queryNtDiffBackground", 
+						    				x: ntProp.x,
+						    				y: $scope.y + $scope.svgParams.aaHeight,
+						    				width: ntProp.width,
+						    				height: ntProp.height
 						    			}));
-						    			g2.append(svgElem('text', {
-						    				"class": aaProp.diff ? "queryAaDiff" : "queryAa", 
-						    				width: aaProp.width,
-						    				height: aaProp.height,
-						    				dx: aaProp.dx,
-						    				dy: aaProp.dy
-						    			}, function(text) {
-						    				text.append(aaProp.text);
-						    			}));
+				    				}
+				    				$scope.elem.append(svgElem('text', {
+					    				"class": ntProp.diff ? "queryNtDiff" : "queryNt", 
+					    				x: ntProp.x + ntProp.dx,
+					    				y: $scope.y + $scope.svgParams.aaHeight + ntProp.dy,
+					    				width: ntProp.width,
+					    				height: ntProp.height,
+					    				dy: userAgent.browser.family == "IE" ? "0.35em" : null
+					    			}, function(text) {
+					    				text.append(ntProp.text);
 					    			}));
 					    		});
-				    		}));
-				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight) + ")"}, 
-				    				function(g) {
-				    			_.each($scope.ntSegProps, function(ntSegProp) {
-					    			g.append(svgElem('g', {}, function(g2) {
-						    			_.each(ntSegProp.ntProps, function(ntProp) {
-							    			g2.append(svgElem('g', {"transform":"translate("+ ntProp.x + ", 0)"}, function(g3) {
-							    				if(ntProp.diff) {
-									    			g3.append(svgElem('rect', {
-									    				"class": "queryNtDiffBackground", 
-									    				width: ntProp.width,
-									    				height: ntProp.height
-									    			}));
-							    				}
-								    			g3.append(svgElem('text', {
-								    				"class": ntProp.diff ? "queryNtDiff" : "queryNt", 
-								    				width: ntProp.width,
-								    				height: ntProp.height,
-								    				dx: ntProp.dx,
-								    				dy: ntProp.dy
-								    			}, function(text) {
-								    				text.append(ntProp.text);
-								    			}));
-							    			}));
-							    		});
-					    			}));
-					    			g.append(svgElem('g', {"class": "queryNtIndex", "transform":"translate(0, "+ $scope.svgParams.ntHeight + ")"}, function(g2) {
-						    			g2.append(svgElem('text', {
-						    				x: ntSegProp.startIndexX,
-						    				width: $scope.svgParams.ntWidth,
-						    				height: $scope.svgParams.ntIndexWidth,
-						    				dx: ntSegProp.indexDx,
-						    				dy: ntSegProp.indexDy
-						    			}, function(text) {
-						    				text.append(String(ntSegProp.startIndexText));
-						    			}));
-						    			g2.append(svgElem('text', {
-						    				x: ntSegProp.endIndexX,
-						    				width: $scope.svgParams.ntWidth,
-						    				height: $scope.svgParams.ntIndexWidth,
-						    				dx: ntSegProp.indexDx,
-						    				dy: ntSegProp.indexDy
-						    			}, function(text) {
-						    				text.append(String(ntSegProp.endIndexText));
-						    			}));
-					    			}));
-					    		});
-				    		}));
+				    		});
+	
+				    		
+				    		
+			    			_.each($scope.ntSegProps, function(ntSegProp) {
+			    				$scope.elem.append(svgElem('text', {
+				    				"class": "queryNtIndex", 
+				    				x: ntSegProp.startIndexX + ntSegProp.indexDx,
+				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
+				    				width: $scope.svgParams.ntWidth,
+				    				height: $scope.svgParams.ntIndexWidth,
+				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : null
+				    			}, function(text) {
+				    				text.append(String(ntSegProp.startIndexText));
+				    			}));
+			    				$scope.elem.append(svgElem('text', {
+				    				"class": "queryNtIndex", 
+				    				x: ntSegProp.endIndexX + ntSegProp.indexDx,
+				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
+				    				width: $scope.svgParams.ntWidth,
+				    				height: $scope.svgParams.ntIndexWidth,
+				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : null
+				    			}, function(text) {
+				    				text.append(String(ntSegProp.endIndexText));
+				    			}));
+				    		});
 				    		$scope.elem.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + $scope.svgParams.ntIndexHeight) + ")"}, 
 				    				function(g) {
 				    			_.each($scope.varProps, function(varProp) {
@@ -172,11 +172,9 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 					    				rectElem1.on("click", function() {
 					    					$scope.displayVariationQS(varProp);
 					    				});
-					    				// IE issues require Angular 1.4.9
+					    				// IE event issues require Angular 1.4.9
 					    				// https://github.com/angular/angular.js/issues/10259
 					    				
-					    				// possible alternative text posistioning technique
-					    				// http://lea.verou.me/2013/03/easily-center-text-vertically-with-svg/
 					    				rectElem1.on("mouseenter", function() {
 					    					console.log("varProp.tooltipText", varProp.tooltipText);
 					    					console.log("varProp.tooltipText[0]", varProp.tooltipText[0]);

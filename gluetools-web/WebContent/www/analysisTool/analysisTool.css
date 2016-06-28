@@ -6,19 +6,12 @@
 
 
 .sequenceLabel {
-    text-anchor: start;
-    dominant-baseline: central;
 }
 
-.codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
-    text-anchor: middle;
-    dominant-baseline: central;
+.queryAa, .queryAaDiff, .queryNt, .queryNtDiff, .codonLabel, .referenceAa, .referenceNt {
 }
-
 
 .queryNtIndex, .referenceNtIndex {
-    text-anchor: start;
-    dominant-baseline: central;
     writing-mode: tb;
 }
 
