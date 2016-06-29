@@ -68,6 +68,9 @@ public class JsonUtils {
 		case Boolean:
 			parentBuilder.add(elemName, Boolean.parseBoolean(element.getTextContent()));
 			break;
+		case Date:
+			parentBuilder.add(elemName, DateUtils.render(DateUtils.parse(element.getTextContent())));
+			break;
 		case String:
 			parentBuilder.add(elemName, element.getTextContent());
 			break;

@@ -117,6 +117,10 @@ public class ConsoleCommandContext extends CommandContext {
 
 	public void mkdirs(String fileString) {
 		File dirFile = fileStringToFile(fileString);
+		mkdirs(dirFile);
+	}
+
+	public void mkdirs(File dirFile) {
 		dirFile.mkdirs();
 		if(!dirFile.isDirectory()) {
 			throw new ConsoleException(Code.MAKE_DIRECTORY_ERROR, dirFile);

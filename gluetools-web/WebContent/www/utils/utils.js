@@ -1,3 +1,5 @@
+console.log("loading utils");
+
 function toFixed(value, precision) {
     var precision = precision || 0,
         power = Math.pow(10, precision),

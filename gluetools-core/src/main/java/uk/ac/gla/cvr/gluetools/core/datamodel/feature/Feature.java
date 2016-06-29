@@ -71,18 +71,6 @@ public class Feature extends _Feature implements HasDisplayName {
 		return getFeatureMetatags().stream().map(m -> m.getType()).collect(Collectors.toSet());
 	}
 
-	public Feature getOrfAncestor() {
-		if(getMetatagTypes().contains(FeatureMetatag.Type.OPEN_READING_FRAME)) {
-			return this;
-		}
-		Feature parent = getParent();
-		if(parent == null) {
-			return null;
-		} else {
-			return parent.getOrfAncestor();
-		}
-	}
-
 	// "Next ancestor" is defined as the first distinct ancestor we encounter while traversing the tree, which is not informational
 	public Feature getNextAncestor() {
 		Feature parent = getParent();
@@ -106,22 +94,11 @@ public class Feature extends _Feature implements HasDisplayName {
 	}
 	
 	public void validate(CommandContext cmdContext) {
-		if(hasOwnCodonNumbering()) {
-			Feature orfAncestor = getOrfAncestor();
-			if(orfAncestor == null) {
-				throw new FeatureException(FeatureException.Code.FEATURE_WITH_OWN_CODON_NUMBERING_NOT_IN_ORF, 
-						getName());
-			}
-		}
 	}
 
 	
 	public boolean hasOwnCodonNumbering() {
 		return getMetatagTypes().contains(FeatureMetatag.Type.OWN_CODON_NUMBERING);
-	}
-
-	public boolean isOpenReadingFrame() {
-		return getMetatagTypes().contains(FeatureMetatag.Type.OPEN_READING_FRAME);
 	}
 
 	public boolean isInformational() {

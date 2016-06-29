@@ -1,11 +1,19 @@
 analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 	  return {
-		    restrict: 'E',
+		    restrict: 'A',
 		    controller: function($scope) {
 		    	var params = $scope.svgParams;
+		    	$scope.y = 0;
+		    	$scope.cProps = [];
+		    	$scope.cPropsDirty = true;
 		    	
 		    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-		    		$scope.initProps();
+		    		$scope.cPropsDirty = true;
+		    		$scope.updateElem();
+		    	}, false);
+		    	
+		    	$scope.$watch( 'analysisView', function(newObj, oldObj) {
+		    		$scope.updateElem();
 		    	}, false);
 
 		    	$scope.initProps = function() {
@@ -27,13 +35,40 @@ analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 		    		}
 		    	}
 		    	
+		    	$scope.updateElem = function() {
+		    		if($scope.analysisView == 'genomeDetail' && $scope.selectedFeatureAnalysis) {
+		    			if($scope.cPropsDirty) {
+				    		console.log("updating codon label line");
+		    				$scope.initProps();
+		    				var docFrag = angular.element(document.createDocumentFragment());
+		    				_.each($scope.cProps, function(cProp) {
+				    			docFrag.append(svgElem('text', {
+				    				"class": "codonLabel", 
+				    				x: cProp.x + cProp.dx,
+				    				y: $scope.y + cProp.dy,
+				    				width: cProp.width,
+				    				height: cProp.height,
+				    				dy: svgDyValue(userAgent)
+				    			}, function(text) {
+				    				text.append(cProp.text);
+				    			}));
+				    		});
+				    		console.log("codon label line updated");
+				    		$scope.elem.empty();
+				    		$scope.elem.append(docFrag);
+		    				$scope.cPropsDirty = false;
+		    			}
+		    		}
+		    	}
+		    	
 		    },
-		    replace: true,
+		    link: function(scope, element, attributes){
+		    	scope.elem = element;
+		    },
 		    scope: {
 		      svgParams: '=',
 		      selectedFeatureAnalysis: '=',
-		    },
-		    templateNamespace: 'svg',
-		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/codonLabelLine.html'
+		      analysisView: '='
+		    }
 		  };
 		});

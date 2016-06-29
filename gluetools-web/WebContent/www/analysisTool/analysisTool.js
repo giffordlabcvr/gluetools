@@ -1,7 +1,20 @@
 'use strict';
 
+console.log("before analysisTool module definition");
+
+
+var userAgent = detect.parse(navigator.userAgent);
+
+console.log("userAgent.browser.family", userAgent.browser.family);
+console.log("userAgent.browser.name", userAgent.browser.name);
+console.log("userAgent.browser.version", userAgent.browser.version);
+
+
 var analysisTool = angular.module('analysisTool', 
 		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'glueWebToolConfig']);
+
+console.log("after analysisTool module definition");
+
 
 analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig',
     function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig) {
@@ -12,7 +25,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	$scope.range = function(n) {
 		return new Array(n);
 	}
-	
+
 	$scope.resetSelections = function() {
 		$scope.fileItemUnderAnalysis = null;
 		$scope.selectedQueryAnalysis = null;
@@ -72,6 +85,8 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		} 
 		console.log("updated selected variationCategoryResult: ", $scope.selectedVariationCategoryResult);
 	}
+	
+	
 
 	$scope.displayVariation = function(vCatName, referenceName, featureName, variationName) {
 		var varVCat = _.find(
@@ -164,6 +179,11 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		}
 	}
 	
+	$scope.analysisViewChanged = function() {
+		if($scope.analysisView == 'genomeDetail') {
+		}
+	}
+	
 	$scope.switchToFeatureDetail = function(refName, featureName) {
 		$scope.selectedRefName = refName;
 		$scope.selectedFeatureAnalysis = _.find(
@@ -252,6 +272,11 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		}
 	}
 
+	$scope.$watch( 'analysisView', function(newObj, oldObj) {
+		$scope.analysisViewChanged();
+	}, false);
+
+	
 	$scope.$watch( 'selectedQueryAnalysis', function(newObj, oldObj) {
 		$scope.selectedQueryAnalysisChanged();
 	}, false);

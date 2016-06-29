@@ -6,19 +6,12 @@
 
 
 .sequenceLabel {
-    text-anchor: start;
-    alignment-baseline: central;
 }
 
-.codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
-    text-anchor: middle;
-    alignment-baseline: central;
+.queryAa, .queryAaDiff, .queryNt, .queryNtDiff, .codonLabel, .referenceAa, .referenceNt {
 }
-
 
 .queryNtIndex, .referenceNtIndex {
-    text-anchor: start;
-    alignment-baseline: central;
     writing-mode: tb;
 }
 
@@ -86,3 +79,18 @@
 	stroke: #333333;
 	fill: none;
 }
+
+.varTooltipRect {
+	fill: #ffffff;
+}
+
+.varTooltipBox {
+	stroke: #333333;
+	fill: none;
+}
+
+.varTooltipText {
+	fill: #333333;
+}
+
+

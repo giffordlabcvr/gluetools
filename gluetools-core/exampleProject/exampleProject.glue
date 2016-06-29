@@ -1,6 +1,12 @@
+# Example GLUE project
+#
+# This project illustrates how to structure a GLUE project
+# It can also be used to understand some of the functionality of GLUE
+
+
 delete project example
 
-create project example "Example project based on Ebola virus" --minVersion 0.1.51
+create project example "Zaire ebolavirus outbreaks [Carroll et al. 2013]" --minVersion 0.1.52
 
 schema-project example
   run file glue/fieldDefinitions.glue
@@ -8,26 +14,39 @@ schema-project example
 
 project example
 
+  run file glue/projectSettings.glue
+
   create module -f modules/ncbiImporterReferences.xml ncbiImporterReferences
   create module -f modules/ncbiImporterCarroll2013.xml ncbiImporterCarroll2013
   create module -f modules/genbankXmlPopulator.xml genbankXmlPopulator
   create module -f modules/compoundAligner.xml compoundAligner
   create module -f modules/kuiken2006CodonLabeler.xml kuiken2006CodonLabeler
+  create module -f modules/missingDataPopulator.xml missingDataPopulator
+  create module -f modules/blastFastaAlignmentImporter.xml blastFastaAlignmentImporter
   create module -f modules/fastaAlignmentExporter.xml fastaAlignmentExporter
 
   run file glue/features.glue
 
   import source sources/ncbi-refseqs
-  sequence ncbi-refseqs NC_002549 
-    set field gb_collection_year 1976
-    set field gb_country_iso COD
-    exit
   import source sources/ncbi-carroll-2013
-  
+
   module genbankXmlPopulator populate
   
+  module missingDataPopulator populate -f tabular/missingData.txt
+  
+  multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and ( gb_collection_year = 1976 or gb_collection_year = 1977 )" outbreak Yambuku_DRC_1976_1977
+  multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_isolate like '%Luebo%'" outbreak Luebo_DRC_2007_2008
+  multi-set field sequence -w "sequenceID = 'HQ613402'" outbreak Luebo_DRC_2007_2008
+  multi-set field sequence -w "sequenceID = 'HQ613403'" outbreak Luebo_DRC_2007_2008
+  multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_isolate like '%Ilembe%'" outbreak Ilembe_Gabon_2002
+  multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_country_iso = 'GAB' and ( gb_collection_year >= 1994 and gb_collection_year <= 1996 )" outbreak Gabon_1994_1996
+  multi-set field sequence -w "gb_organism = 'Zaire ebolavirus' and gb_country_iso = 'COD' and gb_collection_year = 1995" outbreak Kikwit_DRC_1995
+
   run file glue/references.glue
 
   run file glue/alignmentTree.glue
+  
+  # validation fails at the moment because of RNA editing in the GP protein (insertion of 1 x A)
+  # validate
   
   exit

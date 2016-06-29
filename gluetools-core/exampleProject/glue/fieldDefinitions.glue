@@ -16,4 +16,5 @@ table sequence
   create field gb_collection_year INTEGER 
   create field gb_collection_month VARCHAR
   create field gb_collection_month_day INTEGER
+  create field outbreak VARCHAR 100
   exit

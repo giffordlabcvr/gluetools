@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html ng-app="hcvApp">
+<html >
 <head>
 
 	<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
 	<meta http-equiv="expires" content="0" />
 	<meta http-equiv="pragma" content="no-cache" />
+
+	<!-- Due to a bug in webcomponents, I can't use CSS with HTML imports -->
+	<!-- (at least in IE) -->
+	<!-- https://github.com/webcomponents/webcomponentsjs/issues/400 -->
+	<link rel="stylesheet" href="../../bootstrap/css/bootstrap-yeti.css"/>
+	<link rel="stylesheet" href="../css/style.css"/>
+	<link rel="stylesheet" href="./hcvApp.css"/>
+
+
+	<!-- Polyfill, required for browsers that do not support link rel="import" -->
+	<script type="text/javascript" src="../../webcomponents/webcomponents-lite.min.js"></script>
 
 	<link rel="import" href="./hcvAppDependencies.html"/>
 </head>

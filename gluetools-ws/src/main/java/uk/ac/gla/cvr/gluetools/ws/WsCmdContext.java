@@ -84,11 +84,30 @@ public class WsCmdContext extends CommandContext {
 	@POST()
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	@SuppressWarnings({ "rawtypes" })
 	public String postAsCommandMultipart(
 			@FormDataParam("file") InputStream fileInputStream,
 			@FormDataParam("command") String commandString, 
 			@Context HttpServletResponse response) {
+		return multipartCommand(fileInputStream, commandString, response);
+	}
+
+	// for some reason IE preferentially accepts text/html on multipart requests,
+	// so we go along with this. 
+	// if not, it will prompt to save the JSON somewhere.
+	@POST()
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.TEXT_HTML)
+	public String postAsCommandMultipartInternetExplorer(
+			@FormDataParam("file") InputStream fileInputStream,
+			@FormDataParam("command") String commandString, 
+			@Context HttpServletResponse response) {
+		return multipartCommand(fileInputStream, commandString, response);
+	}
+
+	
+	@SuppressWarnings({ "rawtypes" })
+	private String multipartCommand(InputStream fileInputStream,
+			String commandString, HttpServletResponse response) {
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);

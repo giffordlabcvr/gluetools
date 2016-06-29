@@ -37,17 +37,20 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"export", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u ) ] [-b <batchSize>] <sourceName> [-w <whereClause>]"
+		"[ ( -i | -u ) ] [-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>]"
 	}, 
 	docoptOptions={
 		"-i, --incremental                              Add to directory, don't overwrite",
 		"-u, --update                                   Add to directory, overwrite",
 		"-b <batchSize>, --batchSize <batchSize>        Batch size [default: 250]",
+		"-p <parentDir>, --parentDir <parentDir>        Parent directory",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
 	},
 	metaTags = { CmdMeta.consoleOnly },
 	furtherHelp=
-			"Saves sequences to a directory called <sourceName>, relative to the current load-save-path. "+
+			"Saves sequences to a directory called <sourceName>. "+
+			"If <parentDir> is provided, the directory will be located inside <parentDir>. "+
+			"Otherwise it will be located inside the current load-save-path directory. "+
 			"The optional whereClause qualifies which sequences are exported.\n"+
 			"If the --incremental or --update option is used, the directory may already exist. Otherwise "+
 			"it should not exist. If it doesn't exist it will be created by the command."+
@@ -66,10 +69,12 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String INCREMENTAL = "incremental";
 	public static final String UPDATE = "update";
+	public static final String PARENT_DIR = "parentDir";
 	public static final String WHERE_CLAUSE = "whereClause";
 
 
 	private String sourceName;
+	private String parentDir;
 	private Integer batchSize;
 	private Boolean incremental;
 	private Boolean update;
@@ -88,15 +93,21 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify both --incremental and --update");
 		}
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-
+		parentDir = PluginUtils.configureStringProperty(configElem, PARENT_DIR, false);
 	}
 
 	@Override
 	public ExportSourceResult execute(CommandContext cmdContext) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+		File parentDirFile = consoleCmdContext.getLoadSavePath();
+
+		if(parentDir != null) {
+			parentDirFile = consoleCmdContext.fileStringToFile(parentDir);
+		}
+		
 		if(!update && !incremental && consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Directory "+
-					new File(consoleCmdContext.getLoadSavePath(), sourceName).getAbsolutePath()+" already exists");
+					new File(parentDirFile, sourceName).getAbsolutePath()+" already exists");
 		}
 		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
 		Expression exp = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
@@ -112,13 +123,15 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		
 		int exported = 0;
 		int skipped = 0;
-		consoleCmdContext.mkdirs(sourceName);
+		File sourceDirFile = new File(parentDirFile, sourceName);
+		
+		consoleCmdContext.mkdirs(sourceDirFile);
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		for(Map<String, String> pkMap: pkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
 			String sequenceID = sequence.getSequenceID();
 			SequenceFormat seqFormat = sequence.getSequenceFormat();
-			File filePath = new File(sourceName, sequenceID+"."+seqFormat.getGeneratedFileExtension(cmdContext));
+			File filePath = new File(sourceDirFile, sequenceID+"."+seqFormat.getGeneratedFileExtension(cmdContext));
 			if(incremental && consoleCmdContext.isFile(filePath.toString())) {
 				skipped++;
 			} else {
@@ -158,6 +171,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
+			registerPathLookup("parentDir", true);
 		}
 	}
 

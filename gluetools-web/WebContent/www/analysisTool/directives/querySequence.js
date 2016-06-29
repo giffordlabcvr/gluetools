@@ -1,41 +1,63 @@
+
+// This is a hack.
+// When closing a dialog which was launched from an SVG element, on Internet Explorer, 
+// there is an attempt to invoke focus() on the main svg element, which doesn't exist.
+// this hack defines it.
+if (typeof SVGElement.prototype.focus == 'undefined') {
+    SVGElement.prototype.focus = function() {};
+}
+
+
 analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glueWS) {
 	  return {
-		    restrict: 'E',
-		    replace: true,
+		    restrict: 'A',
 		    controller: function($scope) {
 		    	var params = $scope.svgParams;
 
+		    	$scope.y = 0;
+		    	$scope.featureAas = [];
+		    	$scope.aaProps = [];
+		    	$scope.featureNtSegs = [];
+		    	$scope.ntSegProps = [];
+		    	$scope.propsDirty = true;
+		    	
 		    	// not sure if this first watch is necessary.
 		    	$scope.$watch( 'selectedFeatureAnalysis', function(newObj, oldObj) {
-		    		$scope.initProps();
-		    		$scope.initVarProps();
-		    		$scope.updateDiffs();
+			    	$scope.propsDirty = true;
+		    		$scope.updateElem();
 		    	}, false);
 		    	
 		    	$scope.$watch( 'selectedQueryFeatAnalysis', function(newObj, oldObj) {
-		    		$scope.initProps();
-		    		$scope.initVarProps();
-		    		$scope.updateDiffs();
+			    	$scope.propsDirty = true;
+		    		$scope.updateElem();
 		    	}, false);
 
 		    	$scope.$watch( 'selectedRefName', function(newObj, oldObj) {
-		    		$scope.updateDiffs();
+			    	$scope.propsDirty = true;
+		    		$scope.updateElem();
+		    	}, false);
+
+		    	$scope.$watch( 'analysisView', function(newObj, oldObj) {
+		    		$scope.updateElem();
 		    	}, false);
 
 		    	$scope.initProps = function() {
-		    		console.log("initProps query");
 		    		$scope.y = params.sequenceY($scope.sequenceIndex);
 		    		if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
+			    		console.log("$scope.selectedQueryFeatAnalysis", $scope.selectedQueryFeatAnalysis);
+			    		console.log("$scope.selectedFeatureAnalysis", $scope.selectedFeatureAnalysis);
+			    		console.log("initProps query start");
 				    	$scope.featureAas = params.initFeatureAas($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 				    	$scope.aaProps = params.initAaProps($scope.featureAas, $scope.selectedFeatureAnalysis);
 				    	$scope.featureNtSegs = params.initFeatureNtSegs($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
 				    	$scope.ntSegProps = params.initNtSegProps($scope.featureNtSegs, $scope.selectedFeatureAnalysis);
+			    		console.log("initProps query finish");
 			    	}
 		    	};
 		    	
 		    	$scope.updateDiffs = function() {
-		    		console.log("updateDiffs query");
 			    	if($scope.selectedQueryFeatAnalysis && $scope.selectedRefName) {
+			    		console.log("updateDiffs query start");
 			    		for(var i = 0; i < $scope.featureAas.length; i++) {
 			    			var queryAa = $scope.featureAas[i];
 			    			$scope.aaProps[i].diff = queryAa.referenceDiffs != null && queryAa.referenceDiffs.indexOf($scope.selectedRefName) != -1;
@@ -48,9 +70,153 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    			ntSegProp.ntProps[(j - ntSegProp.truncateLeft)].diff = referenceDiff.mask[j] == 'X';
 				    		}
 			    		}
+			    		console.log("updateDiffs query finish");
 			    	}
 		    	};
 
+		    	$scope.updateElem = function() {
+		    		if($scope.analysisView == 'genomeDetail' && $scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis && $scope.selectedRefName) {
+		    			if($scope.propsDirty) {
+				    		$scope.initProps();
+				    		$scope.initVarProps();
+				    		$scope.updateDiffs();
+
+			    			console.log("updating query sequence");
+			    			var docFrag = angular.element(document.createDocumentFragment());
+			    			
+				    		docFrag.append(svgElem('g', {"transform":"translate(0, "+$scope.y+")"}, 
+				    				function(g) {
+					    		_.each($scope.varProps, function(varProp) {
+					    			g.append(svgElem('g', {}, function(g2) {
+					    				var locationRect = svgElem('rect', {
+						    				"class": "varLocation", 
+						    				x: varProp.x,
+						    				width: varProp.width,
+						    				height: varProp.locationHeight
+						    			});
+					    				locationRect.addClass("display-hide");
+					    				varProp.locationRect = locationRect;
+						    			g2.append(locationRect);
+					    			}));
+					    		});
+				    		}));
+				    		_.each($scope.aaProps, function(aaProp) {
+			    				docFrag.append(svgElem('rect', {
+				    				"class": aaProp.diff ? "queryAaDiffBackground" : "queryAaBackground", 
+				    				x: aaProp.x,
+				    				y: $scope.y,
+				    				width: aaProp.width,
+				    				height: aaProp.height
+				    			}));
+			    				docFrag.append(svgElem('text', {
+				    				"class": aaProp.diff ? "queryAaDiff" : "queryAa", 
+				    				x: aaProp.x + aaProp.dx,
+				    				y: $scope.y + aaProp.dy,
+				    				width: aaProp.width,
+				    				height: aaProp.height,
+				    				dy: svgDyValue(userAgent)
+				    			}, function(text) {
+				    				text.append(aaProp.text);
+				    			}));
+				    		});
+				    		
+			    			_.each($scope.ntSegProps, function(ntSegProp) {
+				    			_.each(ntSegProp.ntProps, function(ntProp) {
+				    				if(ntProp.diff) {
+				    					docFrag.append(svgElem('rect', {
+						    				"class": "queryNtDiffBackground", 
+						    				x: ntProp.x,
+						    				y: $scope.y + $scope.svgParams.aaHeight,
+						    				width: ntProp.width,
+						    				height: ntProp.height
+						    			}));
+				    				}
+				    				docFrag.append(svgElem('text', {
+					    				"class": ntProp.diff ? "queryNtDiff" : "queryNt", 
+					    				x: ntProp.x + ntProp.dx,
+					    				y: $scope.y + $scope.svgParams.aaHeight + ntProp.dy,
+					    				width: ntProp.width,
+					    				height: ntProp.height,
+					    				dy: svgDyValue(userAgent)
+					    			}, function(text) {
+					    				text.append(ntProp.text);
+					    			}));
+					    		});
+				    		});
+	
+				    		
+				    		
+			    			_.each($scope.ntSegProps, function(ntSegProp) {
+			    				docFrag.append(svgElem('text', {
+				    				"class": "queryNtIndex", 
+				    				x: ntSegProp.startIndexX + ntSegProp.indexDx,
+				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
+				    				width: $scope.svgParams.ntWidth,
+				    				height: $scope.svgParams.ntIndexWidth,
+				    				dx: svgDxValue(userAgent)
+				    			}, function(text) {
+				    				text.append(String(ntSegProp.startIndexText));
+				    			}));
+			    				docFrag.append(svgElem('text', {
+				    				"class": "queryNtIndex", 
+				    				x: ntSegProp.endIndexX + ntSegProp.indexDx,
+				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
+				    				width: $scope.svgParams.ntWidth,
+				    				height: $scope.svgParams.ntIndexWidth,
+				    				dx: svgDxValue(userAgent)
+				    			}, function(text) {
+				    				text.append(String(ntSegProp.endIndexText));
+				    			}));
+				    		});
+				    		docFrag.append(svgElem('g', {"transform":"translate(0, "+ ($scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + $scope.svgParams.ntIndexHeight) + ")"}, 
+				    				function(g) {
+				    			_.each($scope.varProps, function(varProp) {
+					    			g.append(svgElem('g', {}, function(g2) {
+					    				var rectElem1 = svgElem('rect', {
+						    				id: varProp.id,
+						    				"class": "vcat_"+varProp.variationCategory,
+						    				x: varProp.x,
+						    				y: varProp.y,
+						    				width:varProp.width,
+						    				height:varProp.height
+						    			});
+					    				rectElem1.on("click", function() {
+					    					$scope.displayVariationQS(varProp);
+					    				});
+					    				// IE event issues require Angular 1.4.9
+					    				// https://github.com/angular/angular.js/issues/10259
+					    				
+					    				rectElem1.on("mouseenter", function() {
+					    					varProp.locationRect.removeClass("display-hide");
+					    				});
+					    				rectElem1.on("mouseleave", function() {
+					    					varProp.locationRect.addClass("display-hide");
+					    				});
+					    				g2.append(svgElem('title', {}, function(title) {
+					    					title.append(varProp.text);
+					    				}));
+					    				g2.append(rectElem1);
+						    			g2.append(svgElem('rect', {
+						    				"class": "varBox",
+						    				x: varProp.x,
+						    				y: varProp.y,
+						    				width:varProp.width,
+						    				height:varProp.height
+						    			}));
+					    				
+					    			}));
+					    		});
+				    		}));
+
+				    		console.log("query sequence updated");
+				    		$scope.elem.empty();
+				    		$scope.elem.append(docFrag);
+				    		$scope.propsDirty = false;
+		    			}
+		    		}
+		    	}
+
+		    	
 		    	$scope.initVarProps = function() {
 			    	if($scope.selectedQueryFeatAnalysis && $scope.selectedFeatureAnalysis) {
 				    	$scope.varProps = params.initVarProps($scope.selectedQueryFeatAnalysis, $scope.selectedFeatureAnalysis);
@@ -58,7 +224,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    	};
 		    	
 		    	$scope.displayVariationQS = function(varProp) {
-		    		varProp.mouseOver = false;
+					varProp.locationRect.addClass("display-hide");
 		    		var tooltip = varProp.text;
 		    		varProp.text = null;
 
@@ -104,6 +270,9 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    	}
 		    	
 		    },
+		    link: function(scope, element, attributes){
+		    	scope.elem = element;
+		    },
 		    scope: {
 		      svgParams: '=',
 		      selectedFeatureAnalysis: '=',
@@ -111,9 +280,8 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		      selectedQueryFeatAnalysis: '=',
 		      selectedQueryAnalysis: '=',
 		      sequenceIndex: '=',
-		      variationCategories: "="
-		    },
-		    templateNamespace: 'svg',
-		    templateUrl: glueWebToolConfig.getAnalysisToolURL()+'/views/querySequence.html'
+		      variationCategories: '=',
+			  analysisView: '='
+		    }
 		  };
 		});

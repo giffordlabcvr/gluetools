@@ -1,3 +1,5 @@
+<!-- This NCBI importer module downloads all the sequences mentioned in the 
+     Carroll et al. 2013 paper -->
 <ncbiImporter>
   <sourceName>ncbi-carroll-2013</sourceName>
   <giNumberFieldName>gb_gi_number</giNumberFieldName>

@@ -47,3 +47,8 @@ a {
 .tooltip.top .tooltip-arrow {
     border-top-color: #008cba;
 }
+
+
+.display-hide {
+   display: none;
+}
