@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -102,7 +101,6 @@ public class WsCmdContext extends CommandContext {
 			@FormDataParam("file") InputStream fileInputStream,
 			@FormDataParam("command") String commandString, 
 			@Context HttpServletResponse response) {
-		System.out.println("IE case");
 		return multipartCommand(fileInputStream, commandString, response);
 	}
 
@@ -110,7 +108,6 @@ public class WsCmdContext extends CommandContext {
 	@SuppressWarnings({ "rawtypes" })
 	private String multipartCommand(InputStream fileInputStream,
 			String commandString, HttpServletResponse response) {
-		System.out.println("Non-ie case");
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);

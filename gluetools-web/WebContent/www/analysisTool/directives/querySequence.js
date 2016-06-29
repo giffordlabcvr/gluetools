@@ -114,7 +114,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				y: $scope.y + aaProp.dy,
 				    				width: aaProp.width,
 				    				height: aaProp.height,
-				    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
+				    				dy: svgDyValue(userAgent)
 				    			}, function(text) {
 				    				text.append(aaProp.text);
 				    			}));
@@ -137,7 +137,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 					    				y: $scope.y + $scope.svgParams.aaHeight + ntProp.dy,
 					    				width: ntProp.width,
 					    				height: ntProp.height,
-					    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
+					    				dy: svgDyValue(userAgent)
 					    			}, function(text) {
 					    				text.append(ntProp.text);
 					    			}));
@@ -153,7 +153,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
 				    				width: $scope.svgParams.ntWidth,
 				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : 0
+				    				dx: svgDxValue(userAgent)
 				    			}, function(text) {
 				    				text.append(String(ntSegProp.startIndexText));
 				    			}));
@@ -163,7 +163,7 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				y: $scope.y + $scope.svgParams.aaHeight + $scope.svgParams.ntHeight + ntSegProp.indexDy,
 				    				width: $scope.svgParams.ntWidth,
 				    				height: $scope.svgParams.ntIndexWidth,
-				    				dx: userAgent.browser.family == "IE" ? "-0.35em" : 0
+				    				dx: svgDxValue(userAgent)
 				    			}, function(text) {
 				    				text.append(String(ntSegProp.endIndexText));
 				    			}));

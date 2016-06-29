@@ -11,3 +11,16 @@ function svgElem(tag, attrs, inner) {
     return elem;
 }
 
+function svgDyValue(userAgent) {
+	if(userAgent.browser.family == "IE" || userAgent.browser.family == "Firefox") {
+		return "0.35em";
+	}
+	return 0;
+}
+
+function svgDxValue(userAgent) {
+	if(userAgent.browser.family == "IE") {
+		return "-0.35em";
+	}
+	return 0;
+}

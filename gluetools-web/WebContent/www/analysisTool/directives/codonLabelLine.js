@@ -48,7 +48,7 @@ analysisTool.directive('codonLabelLine', function(glueWebToolConfig) {
 				    				y: $scope.y + cProp.dy,
 				    				width: cProp.width,
 				    				height: cProp.height,
-				    				dy: userAgent.browser.family == "IE" ? "0.35em" : 0
+				    				dy: svgDyValue(userAgent)
 				    			}, function(text) {
 				    				text.append(cProp.text);
 				    			}));

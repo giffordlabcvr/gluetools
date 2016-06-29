@@ -8,7 +8,7 @@ analysisTool.directive('sequenceLabel', function(glueWebToolConfig) {
 		    	$scope.x = 0;
 		    	$scope.y = params.sequenceY($scope.sequenceIndex) + $scope.height / 2.0;
 		    	$scope.dx = 0;
-		    	$scope.dy = userAgent.browser.family == "IE" ? "0.35em" : 0;
+		    	$scope.dy = svgDyValue(userAgent);
 		    },
 		    replace: true,
 		    scope: {
