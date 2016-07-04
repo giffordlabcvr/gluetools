@@ -20,7 +20,6 @@ project example
   create module -f modules/ncbiImporterCarroll2013.xml ncbiImporterCarroll2013
   create module -f modules/genbankXmlPopulator.xml genbankXmlPopulator
   create module -f modules/compoundAligner.xml compoundAligner
-  create module -f modules/kuiken2006CodonLabeler.xml kuiken2006CodonLabeler
   create module -f modules/missingDataPopulator.xml missingDataPopulator
   create module -f modules/blastFastaAlignmentImporter.xml blastFastaAlignmentImporter
   create module -f modules/fastaAlignmentExporter.xml fastaAlignmentExporter

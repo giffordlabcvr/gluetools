@@ -25,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
@@ -167,8 +168,8 @@ public class FeatureLocation extends _FeatureLocation {
 						getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
 			}
 		}
-		Integer codon1Start = getCodon1Start(cmdContext);
-		if(codon1Start != null) { // might be undefined if there is a valiation problem elsewhere
+		if(feature.codesAminoAcids()) {
+			Integer codon1Start = getCodon1Start(cmdContext);
 			int codon1Int = codon1Start.intValue();
 			segments.forEach(seg -> {
 				checkCodonAligned(feature, codon1Int, seg);
@@ -197,14 +198,14 @@ public class FeatureLocation extends _FeatureLocation {
 	public Integer getCodon1Start(CommandContext cmdContext) {
 		FeatureLocation codonNumberingAncestorLocation = getCodonNumberingAncestorLocation(cmdContext);
 		if(codonNumberingAncestorLocation == null) {
-			return null;
+			throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
 		}
 		List<FeatureSegment> segments = codonNumberingAncestorLocation.getSegments();
 		if(!segments.isEmpty()) {
 			// first segment establishes codon1start
 			return segments.get(0).getRefStart();
 		}
-		return null;
+		throw new FeatureLocationException(Code.FEATURE_LOCATION_MUST_HAVE_SEGMENTS_TO_ESTABLISH_READING_FRAME, codonNumberingAncestorLocation.getReferenceSequence().getName(), codonNumberingAncestorLocation.getFeature().getName());
 	}
 
 	/**

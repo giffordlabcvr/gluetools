@@ -119,8 +119,8 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
 		ObjectBuilder objectBuilder = featureTreeResult.getObjectBuilder();
-		Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
-		if(codon1Start != null) {
+		if(feature.codesAminoAcids()) {
+			Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
 			objectBuilder.setInt("codon1Start", codon1Start);
 		}
 		List<FeatureSegment> featureLocSegments = featureLocation.getSegments();
