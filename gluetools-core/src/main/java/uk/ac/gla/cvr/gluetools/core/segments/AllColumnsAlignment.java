@@ -80,7 +80,7 @@ public class AllColumnsAlignment<K> {
 		if(lastCoveredNewLoc < newLen) {
 			int newStart = lastCoveredNewLoc+1;
 			ColumnInsertion colInsertion = 
-					new ColumnInsertionAfter(newStart, newLen-newStart, lastULoc);
+					new ColumnInsertionAfter(newStart, (newLen-newStart)+1, lastULoc);
 				colInsertions.add(colInsertion);
 		}
 		// add new row to the alignment

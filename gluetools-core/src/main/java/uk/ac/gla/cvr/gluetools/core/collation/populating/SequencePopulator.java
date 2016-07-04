@@ -32,7 +32,7 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 				RegexExtractorFormatter.extractAndConvert(inputText, fieldPopulator.getMainExtractor(), fieldPopulator.getValueConverters());
 		if(extractAndConvertResult != null) {
 			Pattern nullRegex = fieldPopulator.getNullRegex();
-			if(nullRegex == null || !nullRegex.matcher(extractAndConvertResult).find()) {
+			if(nullRegex == null || !nullRegex.matcher(extractAndConvertResult).matches()) {
 				return extractAndConvertResult;
 			}
 		}

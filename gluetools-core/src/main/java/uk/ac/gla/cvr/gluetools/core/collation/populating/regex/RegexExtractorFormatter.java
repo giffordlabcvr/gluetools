@@ -89,7 +89,7 @@ public class RegexExtractorFormatter implements Plugin {
 			variableResolver = new TemplateHashModel() {
 				@Override
 				public TemplateModel get(String key) {
-					if(key.equals("0")) { return new SimpleScalar(input); } else { return null; }
+					if(key.equals("g0")) { return new SimpleScalar(input); } else { return null; }
 				}
 				@Override
 				public boolean isEmpty() { return false; }

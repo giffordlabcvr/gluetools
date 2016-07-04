@@ -32,12 +32,14 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
+import freemarker.template.Template;
 
 
 @CommandClass( 
 	commandWords={"export", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u ) ] [-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>]"
+		"[ ( -i | -u ) ] [-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>] [-t <idTemplate>]"
 	}, 
 	docoptOptions={
 		"-i, --incremental                              Add to directory, don't overwrite",
@@ -45,6 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-b <batchSize>, --batchSize <batchSize>        Batch size [default: 250]",
 		"-p <parentDir>, --parentDir <parentDir>        Parent directory",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
+		"-t <idTemplate>, --idTemplate <idTemplate>     Freemarker template to use as ID",
 	},
 	metaTags = { CmdMeta.consoleOnly },
 	furtherHelp=
@@ -58,7 +61,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"In the --incremental case sequences will not be saved to overwrite existing sequences in the directory. "+
 			"In the --update case saved sequences will overwrite existing sequences in the directory. "+
 			"The first part of the "+
-			"sequence file name will be the sequenceID, and the extension will be the standard file "+
+			"sequence file name will be the sequenceID, unless --idTemplate is specified, in which case this Freemarker template "+
+			"will be used to form the first part of the file name. "+
+			"This option can thereby be used to redefine the sequenceID for a set of sequences. "+
+			"The file extension will be the standard file "+
 			"extension for the sequence format, as specified in the \"list format sequence\" command output. "+
 			"Sequences are retrieved from the database in batches. The <batchSize> option controls the size "+
 			"of each batch.",
@@ -71,6 +77,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	public static final String UPDATE = "update";
 	public static final String PARENT_DIR = "parentDir";
 	public static final String WHERE_CLAUSE = "whereClause";
+	public static final String ID_TEMPLATE = "idTemplate";
 
 
 	private String sourceName;
@@ -79,8 +86,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	private Boolean incremental;
 	private Boolean update;
 	private Optional<Expression> whereClause;
-
-
+	private Template idTemplate;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -94,6 +100,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		}
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		parentDir = PluginUtils.configureStringProperty(configElem, PARENT_DIR, false);
+		idTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false);
 	}
 
 	@Override
@@ -131,7 +138,11 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
 			String sequenceID = sequence.getSequenceID();
 			SequenceFormat seqFormat = sequence.getSequenceFormat();
-			File filePath = new File(sourceDirFile, sequenceID+"."+seqFormat.getGeneratedFileExtension(cmdContext));
+			String fileName = sequenceID;
+			if(idTemplate != null) {
+				fileName = FreemarkerUtils.processTemplate(idTemplate, FreemarkerUtils.templateModelForGlueDataObject(sequence));
+			}
+			File filePath = new File(sourceDirFile, fileName+"."+seqFormat.getGeneratedFileExtension(cmdContext));
 			if(incremental && consoleCmdContext.isFile(filePath.toString())) {
 				skipped++;
 			} else {

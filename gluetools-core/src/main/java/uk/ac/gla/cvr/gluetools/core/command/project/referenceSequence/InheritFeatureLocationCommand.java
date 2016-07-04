@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
@@ -22,7 +21,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFea
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -117,11 +115,13 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			// feature location segments of the parent ref seq for this feature.
 			List<ReferenceSegment> parentFeatureLocSegs = featureTreeResult.getReferenceSegments();
 			
-			List<AlignedSegment> refParentAlignedSegments = almtMember.getAlignedSegments();
+			List<QueryAlignedSegment> refParentAlignedSegments = 
+					almtMember.getAlignedSegments().stream().map(aSeg -> aSeg.asQueryAlignedSegment()).collect(Collectors.toList());
 
+			
 			// this generates aligned segments just for this feature.
 			List<QueryAlignedSegment> intersection = 
-					ReferenceSegment.intersection(parentFeatureLocSegs, refParentAlignedSegments, new SegMerger());
+					ReferenceSegment.intersection(parentFeatureLocSegs, refParentAlignedSegments, ReferenceSegment.cloneRightSegMerger());
 			
 			if(spanGaps && intersection.size() > 1) {
 				QueryAlignedSegment firstSeg = intersection.get(0);
@@ -167,21 +167,6 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		
 	}
 
-	private static class SegMerger implements BiFunction<ReferenceSegment, AlignedSegment, QueryAlignedSegment> {
-
-		@Override
-		public QueryAlignedSegment apply(ReferenceSegment parentFeatureLocSeg, AlignedSegment refParentAlignedSeg) {
-			
-			int refStart = Math.max(parentFeatureLocSeg.getRefStart(), refParentAlignedSeg.getRefStart());
-			int refEnd = Math.min(parentFeatureLocSeg.getRefEnd(), refParentAlignedSeg.getRefEnd());
-			int queryStart = refStart + refParentAlignedSeg.getReferenceToQueryOffset();
-			int queryEnd = refEnd + refParentAlignedSeg.getReferenceToQueryOffset();
-			return new QueryAlignedSegment(refStart, refEnd, queryStart, queryEnd);
-		}
-		
-	}
-	
-	
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 

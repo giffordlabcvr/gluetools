@@ -7,7 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFor
 
 public interface FieldPopulator {
 
-	public static final String DEFAULT_NULL_REGEX = "^ *$";
+	public static final String DEFAULT_NULL_REGEX = " *";
 
 	public RegexExtractorFormatter getMainExtractor();
 
