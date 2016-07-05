@@ -157,6 +157,17 @@ public class PluginUtils {
 		return propertyElems.get(0).getTextContent();
 	}
 
+	public static char configureCharProperty(Element configElem, String propertyName, boolean required) {
+		String string = configureStringProperty(configElem, propertyName, required);
+		if(string.length() != 1) {
+			throw new PluginConfigException(PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
+					"Single character required", string);
+		}
+		return string.charAt(0);
+	}
+
+	
+	
 	public static List<String> configureStringsProperty(Element configElem, String propertyName) {
 		return configureStringsProperty(configElem, propertyName, null, null);
 	}

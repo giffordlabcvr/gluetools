@@ -374,7 +374,13 @@ public class TranslationUtils {
 		return 0;
 	}
 	
-	
+	public static boolean isNucleotide(char x) {
+		return "ACTG".indexOf(x) >= 0;
+	}
+
+	public static boolean isAminoAcid(char x) {
+		return "FLSY*CWPHQRIMTNKVADEG".indexOf(x) >= 0;
+	}
 
 
 	/**
