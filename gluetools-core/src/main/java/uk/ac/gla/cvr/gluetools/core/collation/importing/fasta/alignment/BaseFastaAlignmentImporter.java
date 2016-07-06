@@ -125,8 +125,7 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 	}
 
 
-	protected Alignment initAlignment(ConsoleCommandContext cmdContext,
-			String alignmentName) {
+	protected Alignment initAlignment(CommandContext cmdContext, String alignmentName) {
 		Alignment alignment = GlueDataObject.create(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), updateExistingAlignment);
 
 		ReferenceSequence refSequence = alignment.getRefSequence();

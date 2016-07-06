@@ -4,12 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -108,6 +110,7 @@ public class BlastRunner implements Plugin {
 		try {
 			resultDocs = GlueXmlUtils.documentsFromBytes(blastProcessResult.getOutputBytes());
 		} catch(Exception e) {
+			GlueLogger.log(Level.FINE, "BLAST stderr:\n"+new String(blastProcessResult.getErrorBytes()));
 			throw new BlastException(BlastException.Code.BLAST_OUTPUT_FORMAT_ERROR, e.getLocalizedMessage());
 		}
 		// use same xPathEngine across results, should save some init time.

@@ -49,11 +49,14 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 				.orElse(95.0);
 	}
 
-	public final FastaAlignmentImporterResult doImport(ConsoleCommandContext cmdContext, String fileName, String alignmentName, String sourceName) {
+	public FastaAlignmentImporterResult doPreview(ConsoleCommandContext cmdContext, String fileName, String sourceName) {
+		return doImport(cmdContext, fileName, null, sourceName);
+	}
+	
+	public final FastaAlignmentImporterResult doImport(ConsoleCommandContext cmdContext, String fileName, Alignment alignment, String sourceName) {
 		byte[] fastaFileBytes = cmdContext.loadBytes(fileName);
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaFileBytes);
 		
-		Alignment alignment = initAlignment(cmdContext, alignmentName);
 		
 		Map<String, DNASequence> sequenceMap = FastaUtils.parseFasta(fastaFileBytes);
 		
@@ -72,11 +75,17 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 			String memberSourceName = foundSequence.getSource().getName();
 			String memberSequenceID = foundSequence.getSequenceID();
 			
-			AlignmentMember almtMember = createAlignmentMember(cmdContext, alignment, foundSequence);
-			List<QueryAlignedSegment> existingSegs = almtMember.getAlignedSegments().stream()
-					.map(AlignedSegment::asQueryAlignedSegment)
-					.collect(Collectors.toList());
-			
+			AlignmentMember almtMember = null; 
+			List<QueryAlignedSegment> existingSegs = null;
+			if(alignment != null) {
+				almtMember = createAlignmentMember(cmdContext, alignment, foundSequence);
+				existingSegs = almtMember.getAlignedSegments().stream()
+						.map(AlignedSegment::asQueryAlignedSegment)
+						.collect(Collectors.toList());
+			} else {
+				existingSegs = new ArrayList<QueryAlignedSegment>();
+			}
+
 			List<QueryAlignedSegment> queryAlignedSegs = null; 
 
 			DNASequence alignmentRowDnaSequence = entry.getValue();
@@ -125,12 +134,14 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 				continue;
 			}
 			
-			for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
-				AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
-						AlignedSegment.pkMap(alignmentName, memberSourceName, memberSequenceID, 
-								queryAlignedSeg.getRefStart(), queryAlignedSeg.getRefEnd(), 
-								queryAlignedSeg.getQueryStart(), queryAlignedSeg.getQueryEnd()), false);
-				alignedSegment.setAlignmentMember(almtMember);
+			if(alignment != null) {
+				for(QueryAlignedSegment queryAlignedSeg: queryAlignedSegs) {
+					AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
+							AlignedSegment.pkMap(alignment.getName(), memberSourceName, memberSequenceID, 
+									queryAlignedSeg.getRefStart(), queryAlignedSeg.getRefEnd(), 
+									queryAlignedSeg.getQueryStart(), queryAlignedSeg.getQueryEnd()), false);
+					alignedSegment.setAlignmentMember(almtMember);
+				}
 			}
 			
 			Map<String, Object> memberResultMap = new LinkedHashMap<String, Object>();
