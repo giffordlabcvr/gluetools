@@ -27,6 +27,7 @@ public class NewickPhyloTreeVisitor implements PhyloTreeVisitor {
 	@Override
 	public void postVisitInternal(PhyloInternal phyloInternal) {
 		buf.append(")");
+		Optional.ofNullable(phyloInternal.getName()).ifPresent(name -> buf.append(name));
 	}
 
 	@Override

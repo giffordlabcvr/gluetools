@@ -6,7 +6,10 @@ public class PhyloNewickException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		ILLEGAL_NEWICK_NODE_NAME("nodeName");
+		ILLEGAL_NEWICK_NODE_NAME("nodeName"),
+		SYNTAX_ERROR("characterPosition"), 
+		UNEXPECTED_NEWICK_TOKEN("token", "characterPosition"),
+		PARSE_ERROR;
 
 		private String[] argNames;
 		private Code(String... argNames) {
