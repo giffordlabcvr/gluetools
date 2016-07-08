@@ -24,6 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.Freemark
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRenderer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -60,7 +61,9 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(VariationFrequenciesGenerator.class);
 
 		registerPluginClass(WebAnalysisTool.class);
-		
+
+		registerPluginClass(TreeRenderer.class);
+
 	}
 	
 }

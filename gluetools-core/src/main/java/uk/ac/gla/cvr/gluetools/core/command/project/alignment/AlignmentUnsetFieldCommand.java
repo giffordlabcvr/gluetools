@@ -18,8 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Unset a field value for the feature", 
-	furtherHelp="After the command has executed, the feature will have no value for the specified field.") 
+	description="Unset a field value for the alignment", 
+	furtherHelp="After the command has executed, the alignment will have no value for the specified field.") 
 public class AlignmentUnsetFieldCommand extends AlignmentModeCommand<UpdateResult> {
 
 	public static final String FIELD_NAME = PropertyCommandDelegate.FIELD_NAME;

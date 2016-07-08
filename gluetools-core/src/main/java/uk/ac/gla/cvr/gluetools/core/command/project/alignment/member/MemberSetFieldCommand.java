@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import org.w3c.dom.Element;
 
@@ -18,8 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 			"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Set a field value for the alignment") 
-public class AlignmentSetFieldCommand extends AlignmentModeCommand<UpdateResult> {
+	description="Set a field value for the alignment member") 
+public class MemberSetFieldCommand extends MemberModeCommand<UpdateResult> {
 
 	public static final String FIELD_NAME = PropertyCommandDelegate.FIELD_NAME;
 	public static final String FIELD_VALUE = PropertyCommandDelegate.FIELD_VALUE;

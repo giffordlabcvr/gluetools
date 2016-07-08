@@ -50,6 +50,7 @@ import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
@@ -84,6 +85,7 @@ public class ModelBuilder {
 		variation(Variation.class),
 		feature(Feature.class),
 		alignment(Alignment.class),
+		alignment_member(AlignmentMember.class),
 		var_almt_note(VarAlmtNote.class);
 		
 		private Class<? extends GlueDataObject> dataObjectClass;

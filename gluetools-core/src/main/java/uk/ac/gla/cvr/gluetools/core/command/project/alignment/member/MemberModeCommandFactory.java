@@ -27,6 +27,11 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(RenderObjectCommand.class);
 
+		registerCommandClass(MemberShowPropertyCommand.class);
+		registerCommandClass(MemberListPropertyCommand.class);
+		registerCommandClass(MemberSetFieldCommand.class);
+		registerCommandClass(MemberUnsetFieldCommand.class);
+		
 		registerCommandClass(ExitCommand.class);
 	}
 	

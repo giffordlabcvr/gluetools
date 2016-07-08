@@ -17,12 +17,18 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -30,17 +36,20 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"demote", "member"},
 		docoptUsages={
-				"<childAlmtName> (-m <sourceName> <sequenceID> | -w <whereClause> | -a)"},
+				"<childAlmtName> (-m <sourceName> <sequenceID> | -w <whereClause> | -a) [-r <retainedField> <retainedValue>]"},
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
 			"-m, --member                                   Demote specific member",
+			"-r, --retainedFieldValue                       Field/value to set on retained members",
 			"-w <whereClause>, --whereClause <whereClause>  Qualify demoted members",
 		    "-a, --allMembers                               Demote all members"},
 		description="Move certain members to a child alignment",
 		furtherHelp="The <childAlmtName> argument must specify a child of this alignment. "+
 				"The member or members of this alignment specified are added to the child alignment. "+
 				"The demoted members will also be removed from this alignment unless they are references of "+
-				"some child of this alignment."
+				"some child of this alignment. In the case that these retained members are references of some "+
+				"child of this alignment, and <retainedField> / <retainedValue> is defined, then this field / value "+
+				"is set on the retained member."
 	) 
 public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult> {
 
@@ -49,6 +58,9 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 	public static final String SEQUENCE_ID = "sequenceID";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
+	public static final String RETAINED_FIELD_VALUE = "retainedFieldValue";
+	public static final String RETAINED_FIELD = "retainedField";
+	public static final String RETAINED_VALUE = "retainedValue";
 	public static final String MEMBER = "member";
 	
 	private String childAlmtName;
@@ -57,6 +69,9 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
 	private Boolean member;
+	private Boolean retainedFieldValue;
+	private String retainedField;
+	private String retainedValue;
 
 	
 	@Override
@@ -73,18 +88,33 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 				(!sourceName.isPresent() && !sequenceID.isPresent() && !member && !whereClause.isPresent() && allMembers)||
 				(!sourceName.isPresent() && !sequenceID.isPresent() && !member && whereClause.isPresent() && !allMembers)
 			)) {
-			usageError();
+			usageError1();
+		}
+		retainedFieldValue = PluginUtils.configureBooleanProperty(configElem, RETAINED_FIELD_VALUE, true);
+		retainedField = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, RETAINED_FIELD, false)).orElse(null);
+		retainedValue = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, RETAINED_VALUE, false)).orElse(null);
+		if(!(
+				(retainedField != null && retainedValue != null && retainedFieldValue)||
+				(retainedField == null && retainedValue == null && !retainedFieldValue)
+			)) {
+			usageError2();
 		}
 	}
 
-	private void usageError() {
+	private void usageError1() {
 		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Either both sourceName and sequenceID or whereClause or allMembers must be specified");
+	}
+
+	private void usageError2() {
+		throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "If retainedFieldValue is specified then both retainedField and retainedValue must be specified, otherwise neither may be specified");
 	}
 
 	
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		Alignment thisAlignment = lookupAlignment(cmdContext);
+		Project project = getAlignmentMode(cmdContext).getProject();
+		
 		Alignment childAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(childAlmtName));
 		if(childAlignment.getParent() == null || !childAlignment.getParent().getName().equals(thisAlignment.getName())) {
 			throw new AlignmentException(AlignmentException.Code.ALIGNMENT_NOT_CHILD_OF_PARENT, childAlmtName, thisAlignment.getName());
@@ -129,8 +159,14 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 			}
 			*/
 			
-			// if member is not the reference of a child of this alignment, delete it.
-			if(!isReferenceOfSomeChild(thisAlignment, memberToDemote)) {
+			// if member is the reference of a child of this alignment
+			if(isReferenceOfSomeChild(thisAlignment, memberToDemote)) {
+				// retain member, and set special field if necessary.
+				if(retainedFieldValue) {
+					PropertyCommandDelegate.executeSet(cmdContext, project, ConfigurableTable.alignment_member, memberToDemote, retainedField, retainedValue, false);
+				}
+			} else {
+				// if not, delete it.
 				GlueDataObject.delete(cmdContext, AlignmentMember.class, memberToDemote.pkMap(), true);
 			}
 		});
@@ -142,6 +178,19 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 	public static final class Completer extends AlignmentMemberCompleter {
 		public Completer() {
 			super();
+			registerVariableInstantiator("retainedField", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+					Project project = insideProjectMode.getProject();
+					List<String> listableFieldNames = project.getModifiableFieldNames(ConfigurableTable.alignment_member);
+					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
+				}
+			});
+			
 			registerVariableInstantiator("childAlmtName", new VariableInstantiator() {
 				
 				@Override

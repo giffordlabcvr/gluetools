@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import org.w3c.dom.Element;
 
@@ -12,34 +12,35 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 
 @CommandClass( 
-	commandWords={"set", "field"}, 
-	docoptUsages={"[-C] <fieldName> <fieldValue>"},
+	commandWords={"unset", "field"}, 
+	docoptUsages={"[-C] <fieldName>"},
 	docoptOptions={
-			"-C, --noCommit     Don't commit to the database [default: false]",
+		"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Set a field value for the alignment") 
-public class AlignmentSetFieldCommand extends AlignmentModeCommand<UpdateResult> {
+	description="Unset a field value for the alignment member", 
+	furtherHelp="After the command has executed, the alignment member will have no value for the specified field.") 
+public class MemberUnsetFieldCommand extends MemberModeCommand<UpdateResult> {
 
 	public static final String FIELD_NAME = PropertyCommandDelegate.FIELD_NAME;
-	public static final String FIELD_VALUE = PropertyCommandDelegate.FIELD_VALUE;
 	public static final String NO_COMMIT = PropertyCommandDelegate.NO_COMMIT;
-
 	
 	private PropertyCommandDelegate propertyCommandDelegate = new PropertyCommandDelegate();
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		propertyCommandDelegate.configureSet(pluginConfigContext, configElem);
+		propertyCommandDelegate.configureUnset(pluginConfigContext, configElem);
 	}
+
 
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
-		return propertyCommandDelegate.executeSet(cmdContext);
+		return propertyCommandDelegate.executeUnset(cmdContext);
 	}
 
 	@CompleterClass
 	public static class Completer extends PropertyCommandDelegate.ModifiableFieldNameCompleter {}
+
 
 }

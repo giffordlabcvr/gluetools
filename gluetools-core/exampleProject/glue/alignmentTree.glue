@@ -6,13 +6,13 @@ alignment AL_All
   add member -w "outbreak != null"
 
   extract child AL_Yambuku_DRC_1976_1977 -r REF_Yambuku_DRC_1976_1977
-  demote member AL_Yambuku_DRC_1976_1977 -w "sequence.outbreak = 'Yambuku_DRC_1976_1977'"
+  demote member AL_Yambuku_DRC_1976_1977 -w "sequence.outbreak = 'Yambuku_DRC_1976_1977'" -r reference_member true
 
   extract child AL_Post_1977 -r REF_Post_1977
-  demote member AL_Post_1977 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'"
-  demote member AL_Post_1977 -w "sequence.outbreak = 'Ilembe_Gabon_2002'"
-  demote member AL_Post_1977 -w "sequence.outbreak = 'Gabon_1994_1996'"
-  demote member AL_Post_1977 -w "sequence.outbreak = 'Kikwit_DRC_1995'"
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'" -r reference_member true
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Ilembe_Gabon_2002'" -r reference_member true
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Gabon_1994_1996'" -r reference_member true
+  demote member AL_Post_1977 -w "sequence.outbreak = 'Kikwit_DRC_1995'" -r reference_member true
 
   exit
 
@@ -20,12 +20,12 @@ alignment AL_Post_1977
   set field description "Superclade of all outbreaks after 1977"
 
   extract child AL_2002_to_2008 -r REF_2002_to_2008
-  demote member AL_2002_to_2008 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'"
-  demote member AL_2002_to_2008 -w "sequence.outbreak = 'Ilembe_Gabon_2002'"
+  demote member AL_2002_to_2008 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'" -r reference_member true
+  demote member AL_2002_to_2008 -w "sequence.outbreak = 'Ilembe_Gabon_2002'" -r reference_member true
 
   extract child AL_1994_to_1996 -r REF_1994_to_1996
-  demote member AL_1994_to_1996 -w "sequence.outbreak = 'Gabon_1994_1996'"
-  demote member AL_1994_to_1996 -w "sequence.outbreak = 'Kikwit_DRC_1995'"
+  demote member AL_1994_to_1996 -w "sequence.outbreak = 'Gabon_1994_1996'" -r reference_member true
+  demote member AL_1994_to_1996 -w "sequence.outbreak = 'Kikwit_DRC_1995'" -r reference_member true
 
   exit
   
@@ -33,10 +33,10 @@ alignment AL_2002_to_2008
   set field description "Superclade of all outbreaks 2002-2008"
 
   extract child AL_Luebo_DRC_2007_2008 -r REF_Luebo_DRC_2007_2008
-  demote member AL_Luebo_DRC_2007_2008 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'"
+  demote member AL_Luebo_DRC_2007_2008 -w "sequence.outbreak = 'Luebo_DRC_2007_2008'" -r reference_member true
 
   extract child AL_Ilembe_Gabon_2002 -r REF_Ilembe_Gabon_2002
-  demote member AL_Ilembe_Gabon_2002 -w "sequence.outbreak = 'Ilembe_Gabon_2002'"
+  demote member AL_Ilembe_Gabon_2002 -w "sequence.outbreak = 'Ilembe_Gabon_2002'" -r reference_member true
 
   exit
   
@@ -44,10 +44,10 @@ alignment AL_1994_to_1996
   set field description "Superclade of all outbreaks 1994-1996"
 
   extract child AL_Gabon_1994_to_1996 -r REF_Gabon_1994_to_1996
-  demote member AL_Gabon_1994_to_1996 -w "sequence.outbreak = 'Gabon_1994_1996'"
+  demote member AL_Gabon_1994_to_1996 -w "sequence.outbreak = 'Gabon_1994_1996'" -r reference_member true
 
   extract child AL_Kikwit_DRC_1995 -r REF_Kikwit_DRC_1995
-  demote member AL_Kikwit_DRC_1995 -w "sequence.outbreak = 'Kikwit_DRC_1995'"
+  demote member AL_Kikwit_DRC_1995 -w "sequence.outbreak = 'Kikwit_DRC_1995'" -r reference_member true
   
   exit
   

@@ -18,3 +18,8 @@ table sequence
   create field gb_collection_month_day INTEGER
   create field outbreak VARCHAR 100
   exit
+
+table alignment_member
+  create field reference_member BOOLEAN
+  exit
+    
