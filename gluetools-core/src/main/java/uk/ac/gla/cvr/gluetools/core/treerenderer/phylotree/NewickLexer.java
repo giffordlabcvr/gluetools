@@ -15,9 +15,20 @@ public class NewickLexer {
 		RIGHTPAREN("\\)"),
 		COLON(":"),
 		COMMA(","),
-		NUMBER("[0-9]+(?:\\.[0-9+])"),
-		NAME("[^ \t\f\r\n;:,\\(\\)\\[\\]]+"),
-		COMMENT("\\[[^\\[\\]]+\\]"),
+		NUMBER("[0-9]+(?:\\.[0-9]+)"),
+		NAME("[^ \t\f\r\n;:,\\(\\)\\[\\]\\{\\}]+"),
+		COMMENT("\\[[^\\[\\]]+\\]") {
+			@Override
+			protected String render(String data) {
+				return data.substring(1, data.length()-1);
+			}
+		},
+		BRANCHLABEL("\\{[0-9]+\\}") {
+			@Override
+			protected String render(String data) {
+				return data.substring(1, data.length()-1);
+			}
+		},
 		WHITESPACE("[ \t\f\r\n]+");
 
 		public final String pattern;
