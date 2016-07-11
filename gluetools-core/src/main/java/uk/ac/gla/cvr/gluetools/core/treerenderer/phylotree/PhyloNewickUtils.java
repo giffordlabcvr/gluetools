@@ -12,7 +12,7 @@ public class PhyloNewickUtils {
 		if(nodeName.length() == 0) {
 			return false;
 		}
-		if(nodeName.contains("(") || nodeName.contains(")") || 
+		if(nodeName.contains("(") || nodeName.contains(")") || nodeName.contains("[") || nodeName.contains("]") || 
 				nodeName.contains(";") || nodeName.contains(",") || nodeName.contains(":")) {
 			return false;
 		}

@@ -16,7 +16,8 @@ public class NewickLexer {
 		COLON(":"),
 		COMMA(","),
 		NUMBER("[0-9]+(?:\\.[0-9+])"),
-		NAME("[^ \t\f\r\n;:,\\(\\)]+"),
+		NAME("[^ \t\f\r\n;:,\\(\\)\\[\\]]+"),
+		COMMENT("\\[[^\\[\\]]+\\]"),
 		WHITESPACE("[ \t\f\r\n]+");
 
 		public final String pattern;
