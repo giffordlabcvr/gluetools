@@ -91,18 +91,20 @@ public class ProcessUtils {
 			boolean inputExhausted = false;
 			boolean processComplete = false;
 			while(!processComplete) {
-				if(!inputExhausted) {
-					try {
-						int inBytes = drainBytes(inputStream, drainBuffer, processStdIn);
-						if(inBytes < 0) { 
-							processStdIn.close(); 
-							inputExhausted = true;
-						}
-					} catch(IOException ioe2) {
-						throw new ProcessUtilsException(ioe2, 
-								ProcessUtilsException.Code.PROCESS_IO_STDIN_ERROR, commandWords[0], 
-								ioe2.getLocalizedMessage());
-					} 
+				if(inputStream != null) {
+					if(!inputExhausted) {
+						try {
+							int inBytes = drainBytes(inputStream, drainBuffer, processStdIn);
+							if(inBytes < 0) { 
+								processStdIn.close(); 
+								inputExhausted = true;
+							}
+						} catch(IOException ioe2) {
+							throw new ProcessUtilsException(ioe2, 
+									ProcessUtilsException.Code.PROCESS_IO_STDIN_ERROR, commandWords[0], 
+									ioe2.getLocalizedMessage());
+						} 
+					}
 				}
 				try {
 					processComplete = process.waitFor(PROCESS_WAIT_INTERVAL_MS, TimeUnit.MILLISECONDS);
