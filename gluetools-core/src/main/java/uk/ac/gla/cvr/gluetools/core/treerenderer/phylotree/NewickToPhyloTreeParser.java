@@ -27,7 +27,7 @@ public class NewickToPhyloTreeParser {
 			stateStack.peek().consume(stateStack, token);
 		}
 		if(!stateStack.isEmpty()) {
-			throw new PhyloNewickException(PhyloNewickException.Code.PARSE_ERROR);
+			throw new PhyloNewickException(PhyloNewickException.Code.PARSE_ERROR, null, null, null);
 		}
 		return treeState.phyloTree;
 	}
@@ -101,7 +101,10 @@ public class NewickToPhyloTreeParser {
 				pop(token, stateStack, TreeState.class);
 				break;
 			default:
-				throw new PhyloNewickException(PhyloNewickException.Code.PARSE_ERROR);
+				String tokenType = token.getType().name();
+				String tokenValue = token.render();
+				String position = Integer.toString(token.getPosition());
+				throw new PhyloNewickException(PhyloNewickException.Code.PARSE_ERROR, tokenType, tokenValue, position);
 			}
 		}
 
