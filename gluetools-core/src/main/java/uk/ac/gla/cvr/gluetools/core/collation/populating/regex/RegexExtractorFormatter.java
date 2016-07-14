@@ -14,7 +14,9 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorExcepti
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -33,6 +35,7 @@ public class RegexExtractorFormatter implements Plugin {
 	
 	private List<Pattern> matchPatterns = new ArrayList<Pattern>();
 	private Template outputTemplate;
+	private String outputString;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
@@ -41,6 +44,10 @@ public class RegexExtractorFormatter implements Plugin {
 				.map(rgxString -> PluginUtils.parseRegexPattern("matchPattern", rgxString))
 				.collect(Collectors.toList());
 		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputTemplate", false);
+		outputString = PluginUtils.configureStringProperty(configElem, "outputString", false);
+		if(outputTemplate != null && outputString != null) {
+			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Either outputTemplate or outputString may be defined but not both");
+		}
 	}
 	
 	
@@ -61,6 +68,9 @@ public class RegexExtractorFormatter implements Plugin {
 				return null;
 			}
 			if(outputTemplate == null) {
+				if(outputString != null) {
+					return outputString;
+				}
 				return workingMatcher.group(0);
 			}
 			final Matcher workingMatcherF = workingMatcher;
@@ -84,6 +94,9 @@ public class RegexExtractorFormatter implements Plugin {
 			};
 		} else {
 			if(outputTemplate == null) {
+				if(outputString != null) {
+					return outputString;
+				}
 				return input;
 			}
 			variableResolver = new TemplateHashModel() {
@@ -142,7 +155,16 @@ public class RegexExtractorFormatter implements Plugin {
 
 	public void setOutputTemplate(Template outputTemplate) {
 		this.outputTemplate = outputTemplate;
+		this.outputString = null;
 	}
-	
+
+	public String getOutputString() {
+		return outputString;
+	}
+
+	public void setOutputString(String outputString) {
+		this.outputString = outputString;
+		this.outputTemplate = null;
+	}
 	
 }

@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
@@ -25,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRenderer;
+import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -64,6 +66,9 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 
 		registerPluginClass(TreeRenderer.class);
 
-	}
+		registerPluginClass(MaxLikelihoodGenotyper.class);
+
+		registerPluginClass(TreeTransformer.class);
+}
 	
 }

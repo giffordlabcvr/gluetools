@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulatorRuleFactory;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -39,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="textFilePopulator")
 public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
@@ -47,9 +51,9 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	private static final String UPDATE_MULTIPLE = "updateMultiple";
 	private static final String COLUMN_DELIMITER_REGEX = "columnDelimiterRegex";
 	
-	private List<TextFilePopulatorColumn> identifierColumns;
-	private List<TextFilePopulatorColumn> headerColumns;
-	private List<TextFilePopulatorColumn> numberColumns;
+	private List<BaseTextFilePopulatorColumn> identifierColumns;
+	private List<BaseTextFilePopulatorColumn> headerColumns;
+	private List<BaseTextFilePopulatorColumn> numberColumns;
 	private boolean skipMissing;
 	private boolean updateMultiple;
 	private Pattern columnDelimiterRegex;
@@ -71,8 +75,13 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		updateMultiple = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, UPDATE_MULTIPLE, false)).orElse(false);
 		columnDelimiterRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, COLUMN_DELIMITER_REGEX, false)).orElse(Pattern.compile("\\t"));
-		List<TextFilePopulatorColumn> populatorColumns = PluginFactory.createPlugins(pluginConfigContext, TextFilePopulatorColumn.class, 
-				PluginUtils.findConfigElements(configElem, "textFileColumn"));
+		
+		
+		TextFilePopulatorColumnFactory populatorColumnFactory = PluginFactory.get(TextFilePopulatorColumnFactory.creator);
+		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(populatorColumnFactory.getElementNames());
+		List<Element> columnElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
+		List<BaseTextFilePopulatorColumn> populatorColumns = populatorColumnFactory.createFromElements(pluginConfigContext, columnElems);
+
 		identifierColumns = populatorColumns.stream().filter(c -> c.getIdentifier().orElse(false)).collect(Collectors.toList());
 		if(identifierColumns.isEmpty()) {
 			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "At least one column must be an identifier");
@@ -91,11 +100,11 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
 		populatorContext.cmdContext = cmdContext;
 		if(!numberColumns.isEmpty()) {
-			populatorContext.positionToColumn = new LinkedHashMap<Integer, TextFilePopulatorColumn>();
-			populatorContext.columnToPosition = new LinkedHashMap<TextFilePopulatorColumn, Integer>();
+			populatorContext.positionToColumn = new LinkedHashMap<Integer, List<BaseTextFilePopulatorColumn>>();
+			populatorContext.columnToPosition = new LinkedHashMap<BaseTextFilePopulatorColumn, Integer>();
 			numberColumns.forEach(c -> {
 				Integer j = c.getNumber().get();
-				populatorContext.positionToColumn.put(j, c);
+				populatorContext.positionToColumn.computeIfAbsent(j, x -> new ArrayList<BaseTextFilePopulatorColumn>()).add(c);
 				populatorContext.columnToPosition.put(c, j);
 			});
 		}
@@ -124,7 +133,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		int linesProcessed = 0;
 	}
 
-	private void checkFieldsExist(List<TextFilePopulatorColumn> columns, List<String> definedFieldNames) {
+	private void checkFieldsExist(List<BaseTextFilePopulatorColumn> columns, List<String> definedFieldNames) {
 		columns.forEach(col -> {
 			String fieldName = col.getFieldName();
 			if(!definedFieldNames.contains(fieldName)) {
@@ -166,9 +175,13 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
 				for(int i = 0; i < cellValues.length; i++) {
 					String cellText = cellValues[i];
-					TextFilePopulatorColumn populatorColumn = populatorContext.positionToColumn.get(i);
-					if(populatorColumn != null && !populatorColumn.getIdentifier().orElse(false)) {
-						populatorColumn.processCellText(populatorContext, cellText);
+					List<BaseTextFilePopulatorColumn> columns = populatorContext.positionToColumn.get(i);
+					if(columns != null) {
+						for(BaseTextFilePopulatorColumn populatorColumn : columns) {
+							if(!populatorColumn.getIdentifier().orElse(false)) {
+								populatorColumn.processCellText(populatorContext, cellText);
+							}
+						}
 					}
 				}
 			}
@@ -179,13 +192,13 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	public void consumeHeaderLine(TextFilePopulatorContext populatorContext,
 			String[] cellValues) {
-		populatorContext.positionToColumn = new LinkedHashMap<Integer, TextFilePopulatorColumn>();
-		populatorContext.columnToPosition = new LinkedHashMap<TextFilePopulatorColumn, Integer>();
+		populatorContext.positionToColumn = new LinkedHashMap<Integer, List<BaseTextFilePopulatorColumn>>();
+		populatorContext.columnToPosition = new LinkedHashMap<BaseTextFilePopulatorColumn, Integer>();
 		headerColumns.forEach(c -> {
 			for(int i = 0; i < cellValues.length; i++) {
 				final int j = i;
 				if(c.getHeader().get().equals(cellValues[j])) {
-					populatorContext.positionToColumn.put(j, c);
+					populatorContext.positionToColumn.computeIfAbsent(j, x -> new ArrayList<BaseTextFilePopulatorColumn>()).add(c);
 					populatorContext.columnToPosition.put(c, j);
 					return;
 				}

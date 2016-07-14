@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +22,7 @@ public class NewickToPhyloTreeParser {
 		push(null, stateStack, treeState);
 		
 		for(Token token: meaningfulTokens) {
-			//System.out.println("CONSUME: "+token);
+			// System.out.println("TOKEN: "+token);
 			stateStack.peek().consume(stateStack, token);
 		}
 		if(!stateStack.isEmpty()) {
@@ -128,8 +127,10 @@ public class NewickToPhyloTreeParser {
 				break;
 			case COMMA:
 				assertTrue(token, internal.getBranches().size() > 0);
-				assertTrue(token, !allBranches);
-				{
+				if(allBranches) {
+					pop(token, stateStack, InternalState.class);
+					peek(token, stateStack, BranchState.class).consume(stateStack, token);
+				} else {
 					BranchState branchState = new BranchState();
 					push(token, stateStack, branchState);
 					internal.addBranch(branchState.branch);

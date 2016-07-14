@@ -1,0 +1,144 @@
+package uk.ac.gla.cvr.gluetools.programs.mafft.add;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.commons.io.IOUtils;
+import org.biojava.nbio.core.sequence.DNASequence;
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.programs.mafft.MafftException;
+import uk.ac.gla.cvr.gluetools.programs.mafft.MafftException.Code;
+import uk.ac.gla.cvr.gluetools.programs.mafft.MafftUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
+import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
+
+public class MafftAddRunner implements Plugin {
+
+	public static final String GAP_OPENING_PENALTY = "gapOpeningPenalty";
+	public static final String EXTENSION_PENALTY = "extensionPenalty";
+	public static final String MAX_ITERATE = "maxIterate";
+	
+	private Double gapOpeningPenalty;
+	private Double extensionPenalty;
+	private Integer maxIterate;
+
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		Plugin.super.configure(pluginConfigContext, configElem);
+		gapOpeningPenalty = PluginUtils.configureDoubleProperty(configElem, GAP_OPENING_PENALTY, false);
+		extensionPenalty = PluginUtils.configureDoubleProperty(configElem, EXTENSION_PENALTY, false);
+		maxIterate = PluginUtils.configureIntProperty(configElem, MAX_ITERATE, false);
+	}
+	
+	public MafftAddResult executeMafftAdd(CommandContext cmdContext, Map<String, DNASequence> alignment, Map<String, DNASequence> query) {
+
+		String mafftTempDir = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
+		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined"); }
+
+		String mafftExecutable = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(MafftUtils.MAFFT_EXECUTABLE_PROPERTY);
+		if(mafftExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT executable not defined"); }
+
+		int mafftCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(MafftUtils.MAFFT_NUMBER_CPUS, "1"));
+		
+		String uuid = UUID.randomUUID().toString();
+		File tempDir = new File(mafftTempDir, uuid);
+		try {
+			boolean mkdirsResult = tempDir.mkdirs();
+			if((!mkdirsResult) || !(tempDir.exists() && tempDir.isDirectory())) {
+				throw new MafftException(Code.MAFFT_FILE_EXCEPTION, "Failed to create MAFFT temporary directory: "+tempDir.getAbsolutePath());
+			}
+			File alignmentFile = new File(tempDir, "alignment.fasta");
+			writeFastaFile(tempDir, alignmentFile, alignment);
+
+			File queryFile = new File(tempDir, "query.fasta");
+			writeFastaFile(tempDir, queryFile, query);
+
+			List<String> commandWords = new ArrayList<String>();
+			commandWords.add(mafftExecutable);
+
+			// threads / number of CPUs
+			commandWords.add("--thread");
+			commandWords.add(Integer.toString(mafftCpus));
+
+			if(this.gapOpeningPenalty != null) {
+				commandWords.add("--op");
+				commandWords.add(Double.toString(gapOpeningPenalty));
+			}
+
+			if(this.extensionPenalty != null) {
+				commandWords.add("--ep");
+				commandWords.add(Double.toString(extensionPenalty));
+			}
+
+			if(this.maxIterate != null) {
+				commandWords.add("--maxiterate");
+				commandWords.add(Integer.toString(maxIterate));
+			}
+			
+			// query file
+			commandWords.add("--add");
+			commandWords.add(queryFile.getAbsolutePath());
+
+			// alignment file
+			commandWords.add(alignmentFile.getAbsolutePath());
+			
+			ProcessResult mafftAddProcessResult = ProcessUtils.runProcess(null, commandWords); 
+
+			if(mafftAddProcessResult.getExitCode() != 0) {
+				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stdout was:");
+				GlueLogger.getGlueLogger().severe(new String(mafftAddProcessResult.getOutputBytes()));
+				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stderr was:");
+				GlueLogger.getGlueLogger().severe(new String(mafftAddProcessResult.getErrorBytes()));
+				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT process "+uuid+" failed, see log for output/error content");
+			}
+
+			return resultObjectFromProcessResult(mafftAddProcessResult);
+		} finally {
+			boolean allFilesDeleted = true;
+			for(File file : tempDir.listFiles()) {
+				boolean fileDeleteResult = file.delete();
+				if(!fileDeleteResult) {
+					GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT file "+file.getAbsolutePath());
+					allFilesDeleted = false;
+					break;
+				}
+			}
+			if(allFilesDeleted) {
+				boolean dirDeleteResult = tempDir.delete();
+				if(!dirDeleteResult) {
+					GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT directory "+tempDir.getAbsolutePath());
+				}
+			}
+		}
+	}
+
+	private MafftAddResult resultObjectFromProcessResult(ProcessResult processResult) {
+		MafftAddResult mafftAddResult = new MafftAddResult();
+		Map<String, DNASequence> alignmentWithQuery = FastaUtils.parseFasta(processResult.getOutputBytes());
+		mafftAddResult.setAlignmentWithQuery(alignmentWithQuery);
+		return mafftAddResult;
+	}
+
+	private void writeFastaFile(File tempDir, File file, Map<String, DNASequence> alignment) {
+		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
+		try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+			IOUtils.write(fastaBytes, fileOutputStream);
+		} catch (IOException e) {
+			throw new MafftException(e, Code.MAFFT_FILE_EXCEPTION, "Failed to write "+file.getAbsolutePath()+": "+e.getLocalizedMessage());
+		}
+	}
+	
+}
