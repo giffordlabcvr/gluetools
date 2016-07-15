@@ -133,10 +133,10 @@ public class Project extends _Project {
 	}
 
 	public List<String> getListableMemberFields() {
-		List<String> validMemberFieldsList = new ArrayList<String>(getListableProperties(ConfigurableTable.alignment_member));
+		Set<String> validMemberFieldsList = new LinkedHashSet<String>(getListableProperties(ConfigurableTable.alignment_member));
 		validMemberFieldsList.addAll(getListableProperties(ConfigurableTable.sequence).stream().
 			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList()));
-		return validMemberFieldsList;
+		return new ArrayList<String>(validMemberFieldsList);
 	}
 
 	@Override
