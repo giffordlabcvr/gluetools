@@ -22,11 +22,13 @@ import freemarker.template.TemplateModel;
 
 public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExporter<T>> extends ModulePlugin<T> {
 
-	private static final String ID_TEMPLATE = "idTemplate";
-	private static final String DEDUPLICATE = "deduplicate";
+	public static final String ID_TEMPLATE = "idTemplate";
+	public static final String DEDUPLICATE = "deduplicate";
 	private Template idTemplate;
 	private Boolean deduplicate;
-	
+
+	public static final String DEFAULT_ID_TEMPLATE = "${alignment.name}.${sequence.source.name}.${sequence.sequenceID}";
+
 	public AbstractFastaAlignmentExporter() {
 		super();
 		addSimplePropertyName(ID_TEMPLATE);
@@ -39,11 +41,11 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		super.configure(pluginConfigContext, configElem);
 		idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
-				.orElse(FreemarkerUtils.templateFromString("${alignment.name}.${sequence.source.name}.${sequence.sequenceID}", pluginConfigContext.getFreemarkerConfiguration()));
+				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));
 		deduplicate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DEDUPLICATE, false)).orElse(false);
 	}
 
-	protected String generateFastaId(AlignmentMember almtMember) {
+	protected static String generateFastaId(Template idTemplate, AlignmentMember almtMember) {
 		TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(almtMember);
 		return FreemarkerUtils.processTemplate(idTemplate, templateModel);
 	}
@@ -59,7 +61,7 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		}
 	}
 
-	protected void checkAlignment(Alignment alignment, String featureName, Boolean recursive) {
+	protected static void checkAlignment(Alignment alignment, String featureName, Boolean recursive) {
 		ReferenceSequence refSequence = alignment.getRefSequence();
 		if(refSequence == null && recursive) {
 			throw new FastaExporterException(Code.CANNOT_SPECIFY_RECURSIVE_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
@@ -73,5 +75,10 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		return deduplicate;
 	}
 
+	protected Template getIdTemplate() {
+		return idTemplate;
+	}
 
+	
+	
 }

@@ -60,7 +60,7 @@ public class GenotypeCommand extends ModulePluginCommand<GenotypingCommandResult
 		}
 		List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 		Map<String, DNASequence> querySequenceMap = new LinkedHashMap<String, DNASequence>();
-		List<GenotypingResult> genotypingResults = modulePlugin.genotype(querySequenceMap);
+		List<GenotypingResult> genotypingResults = modulePlugin.genotype(cmdContext, querySequenceMap);
 		return new GenotypingCommandResult(genotypingResults);
 	}
 

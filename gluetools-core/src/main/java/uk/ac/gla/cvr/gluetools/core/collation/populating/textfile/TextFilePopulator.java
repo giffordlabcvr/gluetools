@@ -17,8 +17,6 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulatorRuleFactory;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;

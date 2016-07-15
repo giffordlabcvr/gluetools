@@ -31,6 +31,11 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
 	public static final String FILE_NAME = "fileName";
+	public static final String ORDER_STRATEGY = "orderStrategy";
+	
+	public enum OrderStrategy {
+		increasing_start_segment
+	}
 	
 	private String fileName;
 	private String alignmentName;
@@ -40,12 +45,14 @@ public class FastaAlignmentExportCommandDelegate {
 	private String featureName;
 	private Boolean recursive;
 	private Boolean preview;
+	private OrderStrategy orderStrategy;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
 		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
+		orderStrategy = PluginUtils.configureEnumProperty(OrderStrategy.class, configElem, ORDER_STRATEGY, false);
 		acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, featureRequired);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, featureRequired);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
@@ -109,10 +116,17 @@ public class FastaAlignmentExportCommandDelegate {
 
 
 
+	public OrderStrategy getOrderStrategy() {
+		return orderStrategy;
+	}
+
+
+
 	public static class ExportCompleter extends AdvancedCmdCompleter {
 		public ExportCompleter() {
 			super();
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
+			registerEnumLookup("orderStrategy", OrderStrategy.class);
 			registerVariableInstantiator("acRefName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override

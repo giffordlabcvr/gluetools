@@ -1,5 +1,3 @@
- 
-
 package uk.ac.gla.cvr.gluetools.core.treerenderer;
 
 import java.math.BigDecimal;
@@ -13,24 +11,18 @@ import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRendererException.Code;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import freemarker.template.Template;
 
 @PluginClass(elemName="treeRenderer")
 public class TreeRenderer extends ModulePlugin<TreeRenderer> {
@@ -42,16 +34,8 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 	public static final String OMIT_SINGLE_CHILD_INTERNALS = "omitSingleChildInternals";
 	public static final String FORCE_BIFURCATING = "forceBifurcating";
 	
-	// field on alignments to be used for branch length
-	private String almtBranchLengthProperty;
-	// field on members to be used for branch length
-	private String memberBranchLengthProperty;
-
-	private Template alignmentNameTemplate;
-	private Template memberNameTemplate;
-	
-	private Boolean omitSingleChildInternals;
-	private Boolean forceBifurcating;
+	public static final String DEFAULT_ALIGNMENT_NAME_TEMPLATE = "alignment/${name}";
+	public static final String DEFAULT_MEMBER_NAME_TEMPLATE = "member/${sequence.source.name}/${sequence.sequenceID}";
 
 	public TreeRenderer() {
 		super();
@@ -64,97 +48,119 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		addModulePluginCmdClass(RenderTreeNewickCommand.class);
 	}
 	
+	private TreeRendererContext treeRendererContext = new TreeRendererContext();
+	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.almtBranchLengthProperty = PluginUtils.configureStringProperty(configElem, ALMT_BRANCH_LENGTH_PROPERTY, false);
-		this.memberBranchLengthProperty = PluginUtils.configureStringProperty(configElem, ALMT_BRANCH_LENGTH_PROPERTY, false);
-		this.alignmentNameTemplate = FreemarkerUtils.templateFromString(
-				Optional.ofNullable(PluginUtils.configureStringProperty(configElem, ALMT_NAME_TEMPLATE, false)).orElse("alignment/${name}"), 
-				pluginConfigContext.getFreemarkerConfiguration());
-		this.memberNameTemplate = FreemarkerUtils.templateFromString(
-				Optional.ofNullable(PluginUtils.configureStringProperty(configElem, MEMBER_NAME_TEMPLATE, false)).orElse("member/${sequence.source.name}/${sequence.sequenceID}"), 
-				pluginConfigContext.getFreemarkerConfiguration());
-		this.omitSingleChildInternals = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, OMIT_SINGLE_CHILD_INTERNALS, false)).orElse(false);
-		this.forceBifurcating = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, FORCE_BIFURCATING, false)).orElse(false);
-		// possibly disallow branch length properties if omitSingleChildInternals / forceBifurcating are used.
+		this.treeRendererContext.configure(pluginConfigContext, configElem);
+		if(treeRendererContext.getAlignmentNameTemplateString() == null) {
+			treeRendererContext.setAlignmentNameTemplateString(DEFAULT_ALIGNMENT_NAME_TEMPLATE);
+		}
+		if(treeRendererContext.getMemberNameTemplateString() == null) {
+			treeRendererContext.setMemberNameTemplateString(DEFAULT_MEMBER_NAME_TEMPLATE);
+		}
 	}
 	
 	@Override
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
-		InsideProjectMode insideProjectMode = ((InsideProjectMode) cmdContext.peekCommandMode());
-		Project project = insideProjectMode.getProject();
-		if(almtBranchLengthProperty != null) {
-			project.checkProperty(ConfigurableTable.alignment, almtBranchLengthProperty, FieldType.DOUBLE, false);
-		}
-		if(memberBranchLengthProperty != null) {
-			project.checkProperty(ConfigurableTable.alignment_member, memberBranchLengthProperty, FieldType.DOUBLE, false);
-		}
+		this.treeRendererContext.validate(cmdContext);
 	}
 
+	public PhyloTree phyloTreeFromAlignment(CommandContext cmdContext,
+			Alignment alignment, Optional<Expression> whereClause, boolean recursive, boolean deduplicate) {
+		List<AlignmentMember> allMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, 
+				recursive, deduplicate, whereClause);
+		return phyloTreeFromAlignment(cmdContext, alignment, allMembers, treeRendererContext);
+	}
 
-
-	public PhyloTree phyloTreeFromAlignment(CommandContext cmdContext, Alignment alignment, Optional<Expression> memberWhereClause) {
-		List<AlignmentMember> allMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, true, true, memberWhereClause);
+	
+	public static PhyloTree phyloTreeFromAlignment(CommandContext cmdContext, 
+			Alignment alignment, List<AlignmentMember> allMembers, TreeRendererContext treeRendererContext) {
 		Map<String, List<AlignmentMember>> almtNameToMembers = new LinkedHashMap<String, List<AlignmentMember>>();
 		allMembers.forEach(almtMember -> {
 			almtNameToMembers.
 				computeIfAbsent(almtMember.getAlignment().getName(), name -> new ArrayList<AlignmentMember>())
 				.add(almtMember);
 		});
+		if(emptyAlignment(almtNameToMembers, alignment)) {
+			throw new TreeRendererException(Code.ALIGNMENT_HAS_NO_MEMBERS_OR_CHILDREN, alignment.getName());
+		}
 		PhyloTree phyloTree = new PhyloTree();
-		phyloTree.setRoot(buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers));
+		phyloTree.setRoot(buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers, treeRendererContext));
 		return phyloTree;
 	}
+
+	private static boolean emptyAlignment(Map<String, List<AlignmentMember>> almtNameToMembers, Alignment alignment) {
+		String almtName = alignment.getName();
+		List<AlignmentMember> members = almtNameToMembers.get(almtName);
+		if(members != null && !(members.isEmpty())) {
+			return false;
+		}
+		List<Alignment> childAlmts = alignment.getChildren();
+		for(Alignment childAlmt: childAlmts) {
+			if(!emptyAlignment(almtNameToMembers, childAlmt)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
-	private PhyloSubtree buildAlmtPhyloSubtree(CommandContext cmdContext, Alignment alignment, Map<String, List<AlignmentMember>> almtNameToMembers) {
+	private static PhyloSubtree buildAlmtPhyloSubtree(CommandContext cmdContext, 
+			Alignment alignment, Map<String, List<AlignmentMember>> almtNameToMembers,
+			TreeRendererContext treeRendererContext) {
 		PhyloSubtree almtPhyloSubtree;
 		List<AlignmentMember> members = almtNameToMembers.get(alignment.getName());
 		List<Alignment> childAlignments = alignment.getChildren();
-		if( members == null && childAlignments.isEmpty()) {
-			almtPhyloSubtree = new PhyloLeaf();
-		} else {
-			PhyloInternal almtPhyloInternal = new PhyloInternal();
-			almtPhyloSubtree = almtPhyloInternal;
-			if(members != null) {
-				for(AlignmentMember member: members) {
-					almtPhyloInternal.addBranch(buildMemberPhyloBranch(member));
-				}
-			}
-			for(Alignment childAlignment: childAlignments) {
-				almtPhyloInternal.addBranch(buildAlmtPhyloBranch(cmdContext, childAlignment, almtNameToMembers));
-			}
-			if(forceBifurcating && almtPhyloInternal.getBranches().size() > 2) {
-				// clearly branch lengths will be wrong in this scenario
-				List<PhyloBranch> oldBranches = almtPhyloInternal.getBranches();
-				List<PhyloBranch> newBranches = new ArrayList<PhyloBranch>(oldBranches.subList(0, 2));
-				almtPhyloInternal.setBranches(newBranches);
-				for(PhyloBranch oldBranch: oldBranches.subList(2, oldBranches.size())) {
-					PhyloInternal newInternal = new PhyloInternal();
-					PhyloBranch branchToOldInternal = new PhyloBranch();
-					branchToOldInternal.setSubtree(almtPhyloSubtree);
-					newInternal.addBranch(branchToOldInternal);
-					newInternal.addBranch(oldBranch);
-					almtPhyloSubtree = newInternal;
-				}
-			}
-			if(omitSingleChildInternals && almtPhyloInternal.getBranches().size() == 1) {
-				PhyloBranch singleBranch = almtPhyloInternal.getBranches().get(0);
-				// clearly branch lengths will be wrong in this scenario
-				return singleBranch.getSubtree();
+		PhyloInternal almtPhyloInternal = treeRendererContext.phyloInternalForAlignment(cmdContext, alignment);
+		almtPhyloSubtree = almtPhyloInternal;
+		if(members != null) {
+			for(AlignmentMember member: members) {
+				almtPhyloInternal.addBranch(buildMemberPhyloBranch(cmdContext, member, treeRendererContext));
 			}
 		}
-		almtPhyloSubtree.setName(FreemarkerUtils.processTemplate(alignmentNameTemplate, FreemarkerUtils.templateModelForGlueDataObject(alignment)));
+		for(Alignment childAlignment: childAlignments) {
+			if(!emptyAlignment(almtNameToMembers, childAlignment)) {
+				almtPhyloInternal.addBranch(buildAlmtPhyloBranch(cmdContext, childAlignment, almtNameToMembers, 
+						treeRendererContext));
+			}
+		}
+		if(treeRendererContext.getForceBifurcating() && almtPhyloInternal.getBranches().size() > 2) {
+			List<PhyloBranch> oldBranches = almtPhyloInternal.getBranches();
+			PhyloInternal currentPhyloInternal = almtPhyloInternal;
+			int branchIndex = 0;
+			while(branchIndex < oldBranches.size() - 2) {
+				List<PhyloBranch> newBranches = new ArrayList<PhyloBranch>(oldBranches.subList(branchIndex, branchIndex+1));
+				PhyloBranch newBranch = new PhyloBranch();
+				PhyloInternal newPhyloInternal = new PhyloInternal();
+				newBranch.setSubtree(newPhyloInternal);
+				newBranches.add(newBranch);
+				currentPhyloInternal.setBranches(newBranches);
+				currentPhyloInternal = newPhyloInternal;
+			}
+			currentPhyloInternal.setBranches(new ArrayList<PhyloBranch>(oldBranches.subList(oldBranches.size() - 2, oldBranches.size())));
+		}
+		if(treeRendererContext.getOmitSingleChildInternals() && almtPhyloInternal.getBranches().size() == 1) {
+			PhyloBranch singleBranch = almtPhyloInternal.getBranches().get(0);
+			// clearly branch lengths will be wrong in this scenario
+			
+			PhyloSubtree singleBranchSubtree = singleBranch.getSubtree();
+			singleBranchSubtree.setUserData(treeRendererContext.mergeUserData(almtPhyloInternal, singleBranchSubtree));
+			return singleBranchSubtree;
+		}
 		return almtPhyloSubtree;
 	}
 
-	private PhyloBranch buildAlmtPhyloBranch(CommandContext cmdContext,
+	private static PhyloBranch buildAlmtPhyloBranch(CommandContext cmdContext,
 			Alignment alignment,
-			Map<String, List<AlignmentMember>> almtNameToMembers) {
-		PhyloSubtree childPhyloSubtree = buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers);
+			Map<String, List<AlignmentMember>> almtNameToMembers,
+			TreeRendererContext treeRendererContext) {
+		PhyloSubtree childPhyloSubtree = 
+				buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers, treeRendererContext);
 		PhyloBranch almtPhyloBranch = new PhyloBranch();
 		almtPhyloBranch.setSubtree(childPhyloSubtree);
+		String almtBranchLengthProperty = treeRendererContext.getAlmtBranchLengthProperty();
 		if(almtBranchLengthProperty != null) {
 			Double almtBranchLength = (Double) alignment.readProperty(almtBranchLengthProperty);
 			if(almtBranchLength != null) {
@@ -164,11 +170,12 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		return almtPhyloBranch;
 	}
 
-	private PhyloBranch buildMemberPhyloBranch(AlignmentMember member) {
-		PhyloLeaf memberPhyloLeaf = new PhyloLeaf();
-		memberPhyloLeaf.setName(FreemarkerUtils.processTemplate(memberNameTemplate, FreemarkerUtils.templateModelForGlueDataObject(member)));
+	private static PhyloBranch buildMemberPhyloBranch(
+			CommandContext cmdContext, AlignmentMember member, TreeRendererContext treeRendererContext) {
+		PhyloLeaf memberPhyloLeaf = treeRendererContext.phyloLeafForMember(cmdContext, member);
 		PhyloBranch memberPhyloBranch = new PhyloBranch();
 		memberPhyloBranch.setSubtree(memberPhyloLeaf);
+		String memberBranchLengthProperty = treeRendererContext.getMemberBranchLengthProperty();
 		if(memberBranchLengthProperty != null) {
 			Double memberBranchLength = (Double) member.readProperty(memberBranchLengthProperty);
 			if(memberBranchLength != null) {
@@ -177,5 +184,6 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		}
 		return memberPhyloBranch;
 	}
+
 	
 }

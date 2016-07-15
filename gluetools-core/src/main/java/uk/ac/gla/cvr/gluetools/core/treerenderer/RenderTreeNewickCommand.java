@@ -60,7 +60,8 @@ public class RenderTreeNewickCommand extends ModulePluginCommand<CommandResult, 
 	protected CommandResult execute(CommandContext cmdContext, TreeRenderer treeRenderer) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName));
 		alignment.getConstrainingRef(); // check constrained
-		PhyloTree phyloTree = treeRenderer.phyloTreeFromAlignment(cmdContext, alignment, whereClause);
+		PhyloTree phyloTree = 
+				treeRenderer.phyloTreeFromAlignment(cmdContext, alignment, whereClause, true, true);
 		String newickString = PhyloNewickUtils.phyloTreeToNewick(phyloTree);
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		consoleCmdContext.saveBytes(fileName, newickString.getBytes());

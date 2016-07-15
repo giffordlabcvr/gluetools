@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.core.sequence.AccessionID;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.biojava.nbio.core.sequence.ProteinSequence;
@@ -57,7 +58,15 @@ public class FastaUtils {
 		}
 		return idToSequence;
 	}
-
+	
+	public static DNASequence ntStringToSequence(String ntString) {
+		try {
+			return new DNASequence(ntString, AmbiguityDNACompoundSet.getDNACompoundSet());
+		} catch (CompoundNotFoundException cnfe) {
+			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
+		}
+	}
+	
 	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes,
 			SequenceHeaderParserInterface<ProteinSequence, AminoAcidCompound> headerParser) {
 		

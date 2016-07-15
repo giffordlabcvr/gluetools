@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treetransformer;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
@@ -20,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 

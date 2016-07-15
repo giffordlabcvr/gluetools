@@ -17,16 +17,17 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-d <orderStrategy>] [-i] (-o <fileName> | -p)"},
 		docoptOptions={
-			"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining reference",
-			"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
-			"-c, --recursive                                Include descendent members",
-			"-w <whereClause>, --whereClause <whereClause>  Qualify exported members",
-		    "-a, --allMembers                               Export all members",
-		    "-i, --includeAllColumns                        Include columns for all NTs",
-			"-o <fileName>, --fileName <fileName>           FASTA output file",
-			"-p, --preview                                  Preview output"},
+			"-r <acRefName>, --acRefName <acRefName>               Ancestor-constraining reference",
+			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
+			"-c, --recursive                                       Include descendent members",
+			"-w <whereClause>, --whereClause <whereClause>         Qualify exported members",
+		    "-a, --allMembers                                      Export all members",
+		    "-i, --includeAllColumns                               Include columns for all NTs",
+		    "-d <orderStrategy>, --orderStrategy <orderStrategy>   Specify row ordering strategy",
+			"-o <fileName>, --fileName <fileName>                  FASTA output file",
+			"-p, --preview                                         Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Export nucleotide alignment to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
@@ -48,7 +49,7 @@ public class FastaAlignmentExportCommand extends ModulePluginCommand<CommandResu
 	protected CommandResult execute(CommandContext cmdContext, FastaAlignmentExporter exporterPlugin) {
 		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
 				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
-				delegate.getFeatureName(), delegate.getRecursive(), delegate.getPreview(), includeAllColumns);
+				delegate.getFeatureName(), delegate.getRecursive(), delegate.getPreview(), includeAllColumns, delegate.getOrderStrategy());
 	}
 	
 	@CompleterClass

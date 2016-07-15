@@ -13,22 +13,29 @@ public class GenotypingResult {
 	// For genotyping of stored query sequences, sequenceName will be <sourceName>/<sequenceID>
 	private String sequenceName;
 	
-	// Name of the most recent alignment (clade) which genotyping grouped the query inside
+	// Alignment / source / seq. ID of the alignment member which genotyping believes is the closest 
+	// to the query.
 	// Mandatory
-	private String alignmentName;
-	
-	// String, name of the reference sequence which genotyping believes is the closest reference sequence to the query.
-	// Mandatory
-	private String closestReference;
+	private String closestMemberAlmtName;
+	private String closestMemberSourceName;
+	private String closestMemberSequenceID;
 
-	// Boolean, what percentage of the closest reference does the query cover
+	// Name of the (clade) which genotyping grouped the query inside
+	// Optional
+	// May or may not be equal to the alignment of the closest member (it may be an ancestor alignment).
+	private String groupingAlignmentName;
+	
+
+	
+	// Boolean, what percentage of the closest member does the query cover
 	// Mandatory
-	private String queryReferenceCoverage;
+	private String queryClosestMemberCoverage;
 
 	// Double, of the area covered, what percentage of nuclotides are identical to those of the nearest reference.
 	// Mandatory
-	private String referenceNtIdentity;
+	private String queryClosestMemberNtIdentity;
 
+	// Pairwise alignment between the query and the closest member.
 	// Mandatory
 	private List<QueryAlignedSegment> queryAlignedSegments;
 	
@@ -40,16 +47,8 @@ public class GenotypingResult {
 		return additionalData;
 	}
 
-	public String getAlignmentName() {
-		return alignmentName;
-	}
-
 	public void setAdditionalData(Map<String, Object> additionalData) {
 		this.additionalData = additionalData;
-	}
-
-	public void setAlignmentName(String alignmentName) {
-		this.alignmentName = alignmentName;
 	}
 
 	public List<QueryAlignedSegment> getQueryAlignedSegments() {
@@ -69,29 +68,54 @@ public class GenotypingResult {
 		this.sequenceName = sequenceName;
 	}
 
-	public String getClosestReference() {
-		return closestReference;
+	public String getClosestMemberAlmtName() {
+		return closestMemberAlmtName;
 	}
 
-	public void setClosestReference(String closestReference) {
-		this.closestReference = closestReference;
+	public void setClosestMemberAlmtName(String closestMemberAlmtName) {
+		this.closestMemberAlmtName = closestMemberAlmtName;
 	}
 
-	public String getQueryReferenceCoverage() {
-		return queryReferenceCoverage;
+	public String getClosestMemberSourceName() {
+		return closestMemberSourceName;
 	}
 
-	public void setQueryReferenceCoverage(String queryReferenceCoverage) {
-		this.queryReferenceCoverage = queryReferenceCoverage;
+	public void setClosestMemberSourceName(String closestMemberSourceName) {
+		this.closestMemberSourceName = closestMemberSourceName;
 	}
 
-	public String getReferenceNtIdentity() {
-		return referenceNtIdentity;
+	public String getClosestMemberSequenceID() {
+		return closestMemberSequenceID;
 	}
 
-	public void setReferenceNtIdentity(String referenceNtIdentity) {
-		this.referenceNtIdentity = referenceNtIdentity;
+	public void setClosestMemberSequenceID(String closestMemberSequenceID) {
+		this.closestMemberSequenceID = closestMemberSequenceID;
 	}
+
+	public String getQueryClosestMemberCoverage() {
+		return queryClosestMemberCoverage;
+	}
+
+	public void setQueryClosestMemberCoverage(String queryClosestMemberCoverage) {
+		this.queryClosestMemberCoverage = queryClosestMemberCoverage;
+	}
+
 	
+	public String getQueryClosestMemberNtIdentity() {
+		return queryClosestMemberNtIdentity;
+	}
+
+	public void setQueryClosestMemberNtIdentity(String queryClosestMemberNtIdentity) {
+		this.queryClosestMemberNtIdentity = queryClosestMemberNtIdentity;
+	}
+
+	public String getGroupingAlignmentName() {
+		return groupingAlignmentName;
+	}
+
+	public void setGroupingAlignmentName(String groupingAlignmentName) {
+		this.groupingAlignmentName = groupingAlignmentName;
+	}
+
 	
 }
