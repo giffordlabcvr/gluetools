@@ -49,7 +49,7 @@ public class CorrectAlignmentCommand extends ProjectModeCommand<OkResult> {
 		byte[] fastaBytes = consoleCommandContext.loadBytes(filePath);
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes);
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName)); // check alignment existence.
 		Map<String, String> corrected = new LinkedHashMap<String, String>();
 		idToSequence.forEach( (id, dnaSequence) -> {
 			String[] bits = id.split("\\.");
