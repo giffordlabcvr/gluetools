@@ -104,27 +104,28 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 						rootAlignment, almtMembers);
 		
 		// we rename query and member sequences (a) to avoid clashes and (b) to work around program ID limitations.
-		int rowNameIndex = 0;
+		int referenceRowNameIndex = 0;
 		Map<String, Map<String,String>> rowNameToMemberPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<Map<String,String>, String> memberPkMapToRowName = new LinkedHashMap<Map<String,String>, String>();
 		
 		Map<String, DNASequence> almtFastaContent = new LinkedHashMap<String, DNASequence>();
 		for(Map.Entry<Map<String,String>, DNASequence> entry: memberPkMapToAlignmentRow.entrySet()) {
-			String rowName = "R"+rowNameIndex;
+			String rowName = "R"+referenceRowNameIndex;
 			rowNameToMemberPkMap.put(rowName, entry.getKey());
 			memberPkMapToRowName.put(entry.getKey(), rowName);
 			almtFastaContent.put(rowName, entry.getValue());
-			rowNameIndex++;
+			referenceRowNameIndex++;
 		}
 		
 		Map<String, String> rowNameToQueryMap = new LinkedHashMap<String, String>();
+		int queryRowNameIndex = 0;
 		
 		Map<String, DNASequence> queryFastaContent = new LinkedHashMap<String, DNASequence>();
 		for(Map.Entry<String, DNASequence> entry: querySequenceMap.entrySet()) {
-			String rowName = "Q"+rowNameIndex;
+			String rowName = "Q"+queryRowNameIndex;
 			rowNameToQueryMap.put(rowName, entry.getKey());
 			queryFastaContent.put(rowName, entry.getValue());
-			rowNameIndex++;
+			queryRowNameIndex++;
 		}
 
 		MafftAddResult maftAddResult = mafftAddRunner.executeMafftAdd(cmdContext, almtFastaContent, queryFastaContent);
