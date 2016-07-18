@@ -1,21 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;

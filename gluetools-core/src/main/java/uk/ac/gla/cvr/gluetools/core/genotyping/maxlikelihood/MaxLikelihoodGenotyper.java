@@ -178,6 +178,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		}
 
 		// almtPhyloInternal is being optimized away, so we need to save any user data to singleBranchSubtree
+		@SuppressWarnings("unchecked")
 		@Override
 		public Map<String, Object> mergeUserData(
 				PhyloInternal almtPhyloInternal,

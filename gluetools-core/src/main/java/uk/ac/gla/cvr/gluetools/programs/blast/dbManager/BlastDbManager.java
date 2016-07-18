@@ -112,6 +112,7 @@ public class BlastDbManager {
 			String makeBlastDbExecutable = propertiesConfiguration.getPropertyValue(MAKEBLASTDB_EXECUTABLE_PROPERTY);
 			String title = blastDB.getTitle();
 			ProcessResult processResult = ProcessUtils.runProcess(blastDB.getFastaContentInputStream(cmdContext), 
+					null,
 					makeBlastDbExecutable, 
 					"-in", "-", // sequence data will be piped into the input stream.
 					// Note: parse_seqids is unnecessary at present

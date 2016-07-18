@@ -45,13 +45,13 @@ public class MafftAddRunner implements Plugin {
 	
 	public MafftAddResult executeMafftAdd(CommandContext cmdContext, Map<String, DNASequence> alignment, Map<String, DNASequence> query) {
 
-		String mafftTempDir = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
+		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
 		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined"); }
 
-		String mafftExecutable = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(MafftUtils.MAFFT_EXECUTABLE_PROPERTY);
+		String mafftExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_EXECUTABLE_PROPERTY);
 		if(mafftExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT executable not defined"); }
 
-		int mafftCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(MafftUtils.MAFFT_NUMBER_CPUS, "1"));
+		int mafftCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_NUMBER_CPUS, "1"));
 		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(mafftTempDir, uuid);
@@ -95,7 +95,7 @@ public class MafftAddRunner implements Plugin {
 			// alignment file
 			commandWords.add(alignmentFile.getAbsolutePath());
 			
-			ProcessResult mafftAddProcessResult = ProcessUtils.runProcess(null, commandWords); 
+			ProcessResult mafftAddProcessResult = ProcessUtils.runProcess(null, null, commandWords); 
 
 			if(mafftAddProcessResult.getExitCode() != 0) {
 				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stdout was:");

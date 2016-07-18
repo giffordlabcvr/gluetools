@@ -110,9 +110,9 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 	private static PhyloSubtree buildAlmtPhyloSubtree(CommandContext cmdContext, 
 			Alignment alignment, Map<String, List<AlignmentMember>> almtNameToMembers,
 			TreeRendererContext treeRendererContext) {
+		//GlueLogger.getGlueLogger().fine("Building phylo subtree based on alignment "+alignment.getName());
 		PhyloSubtree almtPhyloSubtree;
 		List<AlignmentMember> members = almtNameToMembers.get(alignment.getName());
-		List<Alignment> childAlignments = alignment.getChildren();
 		PhyloInternal almtPhyloInternal = treeRendererContext.phyloInternalForAlignment(cmdContext, alignment);
 		almtPhyloSubtree = almtPhyloInternal;
 		if(members != null) {
@@ -120,6 +120,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 				almtPhyloInternal.addBranch(buildMemberPhyloBranch(cmdContext, member, treeRendererContext));
 			}
 		}
+		List<Alignment> childAlignments = alignment.getChildren();
 		for(Alignment childAlignment: childAlignments) {
 			if(!emptyAlignment(almtNameToMembers, childAlignment)) {
 				almtPhyloInternal.addBranch(buildAlmtPhyloBranch(cmdContext, childAlignment, almtNameToMembers, 
@@ -138,6 +139,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 				newBranches.add(newBranch);
 				currentPhyloInternal.setBranches(newBranches);
 				currentPhyloInternal = newPhyloInternal;
+				branchIndex++;
 			}
 			currentPhyloInternal.setBranches(new ArrayList<PhyloBranch>(oldBranches.subList(oldBranches.size() - 2, oldBranches.size())));
 		}
@@ -156,6 +158,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 			Alignment alignment,
 			Map<String, List<AlignmentMember>> almtNameToMembers,
 			TreeRendererContext treeRendererContext) {
+		//GlueLogger.getGlueLogger().fine("Building phylo branch based on alignment "+alignment.getName());
 		PhyloSubtree childPhyloSubtree = 
 				buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers, treeRendererContext);
 		PhyloBranch almtPhyloBranch = new PhyloBranch();
@@ -172,6 +175,8 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 
 	private static PhyloBranch buildMemberPhyloBranch(
 			CommandContext cmdContext, AlignmentMember member, TreeRendererContext treeRendererContext) {
+		//GlueLogger.getGlueLogger().fine("Building phylo branch based on member "+member.pkMap().toString());
+
 		PhyloLeaf memberPhyloLeaf = treeRendererContext.phyloLeafForMember(cmdContext, member);
 		PhyloBranch memberPhyloBranch = new PhyloBranch();
 		memberPhyloBranch.setSubtree(memberPhyloLeaf);

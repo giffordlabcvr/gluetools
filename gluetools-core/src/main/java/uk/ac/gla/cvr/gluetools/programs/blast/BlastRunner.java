@@ -102,7 +102,7 @@ public class BlastRunner implements Plugin {
 				commandWords.add(numericOption.getValue().toString());
 			}
 			// run blast based on the ref DB.
-			blastProcessResult = ProcessUtils.runProcess(new ByteArrayInputStream(fastaBytes), commandWords); 
+			blastProcessResult = ProcessUtils.runProcess(new ByteArrayInputStream(fastaBytes), null, commandWords); 
 		} finally {
 			blastDB.readLock().unlock();
 		}

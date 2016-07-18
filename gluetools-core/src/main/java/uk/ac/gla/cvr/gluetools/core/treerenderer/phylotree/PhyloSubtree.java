@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class PhyloSubtree {

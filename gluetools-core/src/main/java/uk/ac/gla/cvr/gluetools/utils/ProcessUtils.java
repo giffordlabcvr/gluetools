@@ -43,11 +43,11 @@ public class ProcessUtils {
 		}
 	}
 
-	public static ProcessResult runProcess(InputStream inputStream, List<String> commandWords) {
-		return runProcess(inputStream, commandWords.toArray(new String[]{}));
+	public static ProcessResult runProcess(InputStream inputStream, File workingDirectory, List<String> commandWords) {
+		return runProcess(inputStream, workingDirectory, commandWords.toArray(new String[]{}));
 	}
 	
-	public static ProcessResult runProcess(InputStream inputStream, String... commandWords) {
+	public static ProcessResult runProcess(InputStream inputStream, File workingDirectory, String... commandWords) {
 		if(commandWords.length == 0) {
 			throw new ProcessUtilsException(ProcessUtilsException.Code.UNABLE_TO_START_PROCESS, 
 					"No command words supplied");
@@ -62,6 +62,9 @@ public class ProcessUtils {
 					"Not an executable file: "+executableFile.getPath());
 		}
 		ProcessBuilder processBuilder = new ProcessBuilder(commandWords);
+		if(workingDirectory != null) {
+			processBuilder.directory(workingDirectory);
+		}
 		Process process = null;
 		ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
 		ByteArrayOutputStream errorBytes = new ByteArrayOutputStream();

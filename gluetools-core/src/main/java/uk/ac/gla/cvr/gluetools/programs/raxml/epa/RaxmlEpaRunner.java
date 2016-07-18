@@ -41,28 +41,28 @@ public class RaxmlEpaRunner implements Plugin {
 	public static final String THOROUGH_INSERTION_FRACTION = "thoroughInsertionFraction";
 	public static final String RANDOM_NUMBER_SEED = "randomNumberSeed";
 	
-	private String substitutionModel;
-	private Double thoroughInsertionFraction;
-	private Integer randomNumberSeed;
+	private String substitutionModel = "GTRCAT";
+	private Double thoroughInsertionFraction = 0.1;
+	private Integer randomNumberSeed = 12345;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		Plugin.super.configure(pluginConfigContext, configElem);
-		substitutionModel = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SUBSTITUTION_MODEL, false)).orElse("GTRCAT");
-		thoroughInsertionFraction = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, THOROUGH_INSERTION_FRACTION, false)).orElse(0.1);
-		randomNumberSeed = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, RANDOM_NUMBER_SEED, false)).orElse(12345);
+		substitutionModel = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SUBSTITUTION_MODEL, false)).orElse(substitutionModel);
+		thoroughInsertionFraction = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, THOROUGH_INSERTION_FRACTION, false)).orElse(thoroughInsertionFraction);
+		randomNumberSeed = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, RANDOM_NUMBER_SEED, false)).orElse(randomNumberSeed);
 	}
 	
 	public RaxmlEpaResult executeRaxmlEpa(CommandContext cmdContext, PhyloTree phyloTree, Map<String, DNASequence> alignment) {
 
-		String raxmlTempDir = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(RaxmlUtils.RAXML_TEMP_DIR_PROPERTY);
+		String raxmlTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXML_TEMP_DIR_PROPERTY);
 		if(raxmlTempDir == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML temp directory not defined"); }
 
-		String raxmlExecutable = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(RaxmlUtils.RAXMLHPC_EXECUTABLE_PROPERTY);
+		String raxmlExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXMLHPC_EXECUTABLE_PROPERTY);
 		if(raxmlExecutable == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML executable not defined"); }
 
-		int raxmlCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty(RaxmlUtils.RAXMLHPC_NUMBER_CPUS, "1"));
+		int raxmlCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXMLHPC_NUMBER_CPUS, "1"));
 		
 		checkPhyloTree(phyloTree);
 		checkAlignment(alignment);
@@ -111,7 +111,7 @@ public class RaxmlEpaRunner implements Plugin {
 			commandWords.add("-n");
 			commandWords.add(runSpecifier);
 			
-			ProcessResult raxmlEpaProcessResult = ProcessUtils.runProcess(null, commandWords); 
+			ProcessResult raxmlEpaProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
 			if(raxmlEpaProcessResult.getExitCode() != 0) {
 				GlueLogger.getGlueLogger().severe("RAxML process "+uuid+" failure, the RAxML stdout was:");

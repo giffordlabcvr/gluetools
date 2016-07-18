@@ -6,7 +6,8 @@
 		<jdbcUrl>jdbc:mysql://localhost:3306/GLUE_TOOLS</jdbcUrl>	
 	</database>
 	<properties>
-	         <property>
+		<!-- BLAST related config -->
+	    <property>
 			<name>gluetools.core.programs.blast.blastn.executable</name>
 			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/bin/blastn</value>
 		</property>
@@ -20,8 +21,35 @@
 		</property>
 		<property>
 			<name>gluetools.core.programs.blast.db.dir</name>
-			<value>/Users/joshsinger/blast/ncbi-blast-2.2.31+/blastdbs</value>
+			<value>/Users/joshsinger/tmp/blastdbs</value>
 		</property>
+		<!-- RAxML-specific config -->
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.executable</name>
+			<value>/Users/joshsinger/RAxML/bin/raxmlHPC-PTHREADS-AVX2</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.cpus</name>
+			<value>4</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.temp.dir</name>
+			<value>/Users/joshsinger/tmp/raxmlfiles</value>
+		</property>
+		<!-- MAFFT-specific config -->
+		<property>
+			<name>gluetools.core.programs.mafft.executable</name>
+			<value>/usr/local/bin/mafft</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.cpus</name>
+			<value>4</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.temp.dir</name>
+			<value>/Users/joshsinger/tmp/mafftfiles</value>
+		</property>
+		<!-- Cayenne -->
 		<property>
 			<name>gluetools.core.digs.db.jdbc.url</name>
 			<value>jdbc:mysql://localhost:3666</value>

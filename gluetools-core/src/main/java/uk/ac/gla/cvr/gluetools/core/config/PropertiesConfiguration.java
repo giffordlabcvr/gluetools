@@ -55,5 +55,13 @@ public class PropertiesConfiguration implements Plugin {
 			return null;
 		}
 	}
+	
+	public String getPropertyValue(String propertyName, String defaultValue) {
+		String configuredValue = getPropertyValue(propertyName);
+		if(configuredValue != null) {
+			return configuredValue;
+		}
+		return defaultValue;
+	}
 
 }
