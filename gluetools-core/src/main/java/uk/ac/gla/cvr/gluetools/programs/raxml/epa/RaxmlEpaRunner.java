@@ -151,7 +151,8 @@ public class RaxmlEpaRunner implements Plugin {
 		} catch (IOException e) {
 			throw new RaxmlException(Code.RAXML_FILE_EXCEPTION, "Failed to read RAxML output file: "+jPlaceFile.getAbsolutePath());
 		}
-		JsonObject jsonObject = JsonUtils.stringToJsonObject(new String(jPlaceBytes));
+		String jPlaceString = new String(jPlaceBytes);
+		JsonObject jsonObject = JsonUtils.stringToJsonObject(jPlaceString);
 		JPlaceResult jPlaceResult = JPlaceResult.parse(jsonObject);
 		raxmlEpaResult.setjPlaceResult(jPlaceResult);
 		return raxmlEpaResult;

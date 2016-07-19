@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.json.JsonArray;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickToPhyloTreeParser;
@@ -19,13 +21,13 @@ public class JPlaceResult {
 	
 	private List<JPlacePQuery> pQueries = new ArrayList<JPlacePQuery>();
 	
-	private Map<String, String> metadata = new LinkedHashMap<String, String>();
+	private Map<String, Object> metadata = new LinkedHashMap<String, Object>();
 	
 	private Integer version;
 	
 	private List<String> fields = new ArrayList<String>();
 
-	public List<JPlacePQuery> getpQueries() {
+	public List<JPlacePQuery> getPQueries() {
 		return pQueries;
 	}
 
@@ -37,11 +39,11 @@ public class JPlaceResult {
 		this.tree = tree;
 	}
 
-	public Map<String, String> getMetadata() {
+	public Map<String, Object> getMetadata() {
 		return metadata;
 	}
 
-	public void setMetadata(Map<String, String> metadata) {
+	public void setMetadata(Map<String, Object> metadata) {
 		this.metadata = metadata;
 	}
 
@@ -61,23 +63,43 @@ public class JPlaceResult {
 		this.fields = fields;
 	}
 	
+	public static Object jsonValueToObject(JsonValue value) {
+		switch(value.getValueType()) {
+		case NUMBER:
+			JsonNumber number = (JsonNumber) value;
+			if(number.isIntegral()) {
+				return number.intValue();
+			} else {
+				return number.bigDecimalValue();
+			}
+		case STRING:
+			return ((JsonString) value).getString();
+		case TRUE:
+			return new Boolean(true);
+		case FALSE:
+			return new Boolean(false);
+		default:
+			throw new RuntimeException("Unexpected JSON value type");
+		}
+	}
+
 	public static JPlaceResult parse(JsonObject jsonObject) {
 		JPlaceResult jPlaceResult = new JPlaceResult();
 		jPlaceResult.setVersion(jsonObject.getInt("version"));
 		
 		JsonObject metadataJsonObject = jsonObject.getJsonObject("metadata");
 		metadataJsonObject.forEach( (key, value) -> {
-			jPlaceResult.getMetadata().put(key, value.toString());
+			jPlaceResult.getMetadata().put(key, jsonValueToObject(value));
 		});
 		
 		JsonArray fieldsArray = jsonObject.getJsonArray("fields");
 		for(JsonValue fieldNameJsonValue: fieldsArray) {
-			jPlaceResult.getFields().add(fieldNameJsonValue.toString());
+			jPlaceResult.getFields().add((String) jsonValueToObject(fieldNameJsonValue));
 		}
 
 		JsonArray placementsArray = jsonObject.getJsonArray("placements");
 		for(JsonValue placementGroupJsonObject: placementsArray) {
-			jPlaceResult.getpQueries().add(JPlacePQuery.parse(((JsonObject) placementGroupJsonObject)));
+			jPlaceResult.getPQueries().add(JPlacePQuery.parse(((JsonObject) placementGroupJsonObject)));
 		}
 		
 		NewickToPhyloTreeParser treeParser = new NewickToPhyloTreeParser();

@@ -127,21 +127,8 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 						treeRendererContext));
 			}
 		}
-		if(treeRendererContext.getForceBifurcating() && almtPhyloInternal.getBranches().size() > 2) {
-			List<PhyloBranch> oldBranches = almtPhyloInternal.getBranches();
-			PhyloInternal currentPhyloInternal = almtPhyloInternal;
-			int branchIndex = 0;
-			while(branchIndex < oldBranches.size() - 2) {
-				List<PhyloBranch> newBranches = new ArrayList<PhyloBranch>(oldBranches.subList(branchIndex, branchIndex+1));
-				PhyloBranch newBranch = new PhyloBranch();
-				PhyloInternal newPhyloInternal = new PhyloInternal();
-				newBranch.setSubtree(newPhyloInternal);
-				newBranches.add(newBranch);
-				currentPhyloInternal.setBranches(newBranches);
-				currentPhyloInternal = newPhyloInternal;
-				branchIndex++;
-			}
-			currentPhyloInternal.setBranches(new ArrayList<PhyloBranch>(oldBranches.subList(oldBranches.size() - 2, oldBranches.size())));
+		if(treeRendererContext.getForceBifurcating()) {
+			almtPhyloInternal.forceBifurcating();
 		}
 		if(treeRendererContext.getOmitSingleChildInternals() && almtPhyloInternal.getBranches().size() == 1) {
 			PhyloBranch singleBranch = almtPhyloInternal.getBranches().get(0);

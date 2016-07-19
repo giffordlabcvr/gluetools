@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloObject;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import freemarker.template.Template;
@@ -110,7 +111,7 @@ public class TreeRendererContext {
 	}
 
 	protected void setAlignmentPhyloInternalName(CommandContext commandContext,
-			Alignment alignment, PhyloInternal alignmentPhyloInternal) {
+			Alignment alignment, PhyloSubtree alignmentPhyloInternal) {
 		String alignmentNameTemplateString = getAlignmentNameTemplateString();
 		if(alignmentNameTemplateString != null) {
 			Template template = FreemarkerUtils.templateFromString(alignmentNameTemplateString, commandContext.getGluetoolsEngine().getFreemarkerConfiguration());
@@ -134,8 +135,8 @@ public class TreeRendererContext {
 		}
 	}
 
-	public Map<String, Object> mergeUserData(PhyloInternal almtPhyloInternal,
-			PhyloSubtree singleBranchSubtree) {
+	public Map<String, Object> mergeUserData(PhyloObject almtPhyloInternal,
+			PhyloObject singleBranchSubtree) {
 		return singleBranchSubtree.getUserData();
 	}
 }

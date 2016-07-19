@@ -1,10 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -19,6 +23,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.genotyping.GenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyperException.Code;
+import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
+import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -26,10 +32,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRenderer;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRendererContext;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloObject;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftAddResult;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftAddRunner;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
@@ -132,14 +141,202 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		
 		Map<String, DNASequence> alignmentWithQuery = maftAddResult.getAlignmentWithQuery();
 
-		PhyloTree phyloTree = TreeRenderer.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
+		PhyloTree glueAlmtPhyloTree = TreeRenderer.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
 				new MaxLikelihoodTreeRendererContext(memberPkMapToRowName));
 		
-		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, phyloTree, alignmentWithQuery);
+		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueAlmtPhyloTree, alignmentWithQuery);
 
+		// reconcile the RAxML jPlace phylo tree with the GLUE alignment phylo tree
+		PhyloTreeReconciler phyloTreeReconciler = new PhyloTreeReconciler(glueAlmtPhyloTree);
+		PhyloTree jPlacePhyloTree = raxmlEpaResult.getjPlaceResult().getTree();
+		jPlacePhyloTree.accept(phyloTreeReconciler);
 		
-		return new ArrayList<GenotypingResult>();
+		// Identify the mapping from JPlace integer branch label to JPlace branch.
+		PhyloTreeBranchLabelCollector branchLabelCollector = new PhyloTreeBranchLabelCollector();
+		jPlacePhyloTree.accept(branchLabelCollector);
+		Map<Integer, PhyloBranch> labelToJPlaceBranch = branchLabelCollector.getLabelToJPlaceBranch();
+		
+		List<GenotypingResult> genotypingResults = initGenotypingResults(querySequenceMap.keySet());
+		findClosestMembers(cmdContext, rowNameToQueryMap, labelToJPlaceBranch, raxmlEpaResult, glueAlmtPhyloTree, genotypingResults);
+		
+		return genotypingResults;
 	}
+	
+	private List<GenotypingResult> initGenotypingResults(Set<String> querySequenceNames) {
+		List<GenotypingResult> genotypingResults = new ArrayList<GenotypingResult>();
+		querySequenceNames.forEach(seqName -> 
+		{
+			GenotypingResult genotypingResult = new GenotypingResult();
+			genotypingResult.setSequenceName(seqName);
+			genotypingResults.add(genotypingResult);	
+		});
+		return genotypingResults;
+	}
+
+	private void findClosestMembers(CommandContext cmdContext,
+			Map<String, String> rowNameToQueryMap, 
+			Map<Integer, PhyloBranch> labelToJPlaceBranch,
+			RaxmlEpaResult raxmlEpaResult, 
+			PhyloTree glueAlmtPhyloTree,
+			List<GenotypingResult> genotypingResults) {
+		
+		Map<String, List<JPlacePlacement>> seqNameToPlacements = extractPlacements(rowNameToQueryMap, raxmlEpaResult);
+		List<String> fields = raxmlEpaResult.getjPlaceResult().getFields();
+		
+		int edgeNumIndex = findIndex(fields, "edge_num");
+		int likelihoodIndex = findIndex(fields, "likelihood");
+		// int likeWeightRatioIndex = findIndex(fields, "like_weight_ratio"); // unused
+		int distalLengthIndex = findIndex(fields, "distal_length");
+		int pendantLengthIndex = findIndex(fields, "pendant_length");
+		
+		for(GenotypingResult genotypingResult: genotypingResults) {
+			String seqName = genotypingResult.getSequenceName();
+			List<JPlacePlacement> placements = seqNameToPlacements.get(seqName);
+			if(placements == null) {
+				throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+						"No JPlace placements found for query sequence "+seqName);
+			}
+			JPlacePlacement bestPlacement = getBestPlacement(likelihoodIndex, placements);
+			int edgeNum = getInt(bestPlacement.getFieldValues(), edgeNumIndex);
+			BigDecimal distalLength = getBigDecimal(bestPlacement.getFieldValues(), distalLengthIndex);
+			BigDecimal pendantLength = getBigDecimal(bestPlacement.getFieldValues(), pendantLengthIndex);
+			PhyloBranch jPlacePlacementBranch = labelToJPlaceBranch.get(edgeNum);
+			MemberSearchNode nearestMemberNode = findNearestMember(jPlacePlacementBranch, distalLength);
+
+			
+
+			
+			System.out.println("log");
+		}
+		
+	}
+
+	private MemberSearchNode findNearestMember(PhyloBranch placementBranch, BigDecimal distalLength) {
+		LinkedList<MemberSearchNode> nodeQueue = new LinkedList<MemberSearchNode>();
+		BigDecimal branchLength = placementBranch.getLength();
+		// The two nodes attached to the placement branch.
+		PhyloInternal towardsRoot = placementBranch.getParentPhyloInternal();
+		PhyloSubtree awayFromRoot = placementBranch.getSubtree();
+		nodeQueue.add(new MemberSearchNode(distalLength, towardsRoot));
+		nodeQueue.add(new MemberSearchNode(branchLength.subtract(distalLength), awayFromRoot));
+		
+		Set<PhyloSubtree> visited = new LinkedHashSet<PhyloSubtree>();
+		MemberSearchNode bestNode = null;
+		while(!nodeQueue.isEmpty()) {
+			MemberSearchNode currentNode = nodeQueue.pop();
+			visited.add(currentNode.phyloSubtree);
+			if(bestNode != null && currentNode.totalLength.compareTo(bestNode.totalLength) >= 0) {
+				continue;
+			}
+			if(currentNode.phyloSubtree instanceof PhyloLeaf) {
+				if(bestNode == null || currentNode.totalLength.compareTo(bestNode.totalLength) < 0) {
+					bestNode = currentNode;
+				}
+			} else {
+				PhyloInternal currentPhyloInternal = (PhyloInternal) currentNode.phyloSubtree;
+				PhyloBranch parentPhyloBranch = currentPhyloInternal.getParentPhyloBranch();
+				if(parentPhyloBranch != null) {
+					PhyloInternal parentPhyloInternal = parentPhyloBranch.getParentPhyloInternal();
+					if(parentPhyloInternal != null && !visited.contains(parentPhyloInternal)) {
+						BigDecimal parentBranchLength = parentPhyloBranch.getLength();
+						nodeQueue.add(new MemberSearchNode(currentNode.totalLength.add(parentBranchLength), parentPhyloInternal));
+					}
+				}
+				for(PhyloBranch childPhyloBranch: currentPhyloInternal.getBranches()) {
+					BigDecimal childBranchLength = childPhyloBranch.getLength();
+					nodeQueue.add(new MemberSearchNode(currentNode.totalLength.add(childBranchLength), childPhyloBranch.getSubtree()));
+				}
+			}
+		}
+		return bestNode;
+	}
+	
+	private class MemberSearchNode {
+		BigDecimal totalLength;
+		PhyloSubtree phyloSubtree;
+		public MemberSearchNode(BigDecimal totalLength, PhyloSubtree phyloSubtree) {
+			super();
+			this.totalLength = totalLength;
+			this.phyloSubtree = phyloSubtree;
+		}
+		
+	}
+
+	private JPlacePlacement getBestPlacement(int likelihoodIndex, List<JPlacePlacement> placements) {
+		JPlacePlacement bestPlacement = null;
+		BigDecimal bestLikelihood = null;
+		for(JPlacePlacement placement: placements) {
+			BigDecimal likelihood = getBigDecimal(placement.getFieldValues(), likelihoodIndex);
+			if(bestPlacement == null || likelihood.compareTo(bestLikelihood) > 0) {
+				bestPlacement = placement;
+				bestLikelihood = likelihood;
+			}
+		}
+		return bestPlacement;
+	}
+
+	private BigDecimal getBigDecimal(List<Object> values, int index) {
+		return getValue(values, BigDecimal.class, index);
+	}
+
+	private Integer getInt(List<Object> values, int index) {
+		return getValue(values, Integer.class, index);
+	}
+
+	private <D> D getValue(List<Object> values, Class<D> theClass, int index) {
+		if(index > values.size()-1) {
+			throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+					"Incorrect number of placement values");
+		}
+		Object value = values.get(index);
+		if(!theClass.isAssignableFrom(value.getClass())) {
+			throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+					"Placement values is of incorrect type");
+		}
+		return theClass.cast(value);
+	}
+	
+	private int findIndex(List<String> fields, String fieldName) {
+		int index = fields.indexOf(fieldName);
+		if(index < 0) {
+			throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+					"Could not find placement field "+fieldName);
+		}
+		return index;
+	}
+
+	private Map<String, List<JPlacePlacement>> extractPlacements(Map<String, String> rowNameToQueryMap, RaxmlEpaResult raxmlEpaResult) {
+		Map<String, List<JPlacePlacement>> seqNameToPlacements = new LinkedHashMap<String, List<JPlacePlacement>>();
+		
+		raxmlEpaResult.getjPlaceResult().getPQueries().forEach(pQuery -> {
+			if(!(pQuery instanceof JPlaceNamePQuery)) {
+				throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+						"Expected JPlace pQueries to be name-based.");
+			}
+			JPlaceNamePQuery jPlaceNamePQuery = (JPlaceNamePQuery) pQuery;
+			List<String> pQueryNames = jPlaceNamePQuery.getNames();
+			if(pQueryNames.size() != 1) {
+				throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+						"Expected JPlace NamePQuery to contain exactly one name.");
+			}
+			String rowName = pQueryNames.get(0);
+			String seqName = rowNameToQueryMap.get(rowName);
+			if(seqName == null) {
+				throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+						"Row name \""+rowName+"\" in JPlace result was unrecognized.");
+			}
+			List<JPlacePlacement> placements = pQuery.getPlacements();
+			if(placements.size() == 0) {
+				throw new MaxLikelihoodGenotyperException(MaxLikelihoodGenotyperException.Code.JPLACE_STRUCTURE_ERROR, 
+						"Expected JPlace Placements to contain one or more placements.");
+			}
+			seqNameToPlacements.put(seqName, placements);
+		});
+		
+		return seqNameToPlacements;
+	}
+
+
 	
 	// Renderer of alignment to NewickTree, suitable for downstream consumption.
 	private class MaxLikelihoodTreeRendererContext extends TreeRendererContext {
@@ -157,7 +354,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		public PhyloInternal phyloInternalForAlignment(
 				CommandContext commandContext, Alignment alignment) {
 			PhyloInternal phyloInternal = super.phyloInternalForAlignment(commandContext, alignment);
-			LinkedHashMap<String, Object> userData = new LinkedHashMap<String, Object>();
+			Map<String, Object> userData = phyloInternal.ensureUserData();
 			List<String> alignmentNames = new ArrayList<String>();
 			alignmentNames.add(alignment.getName());
 			userData.put(PHYLO_SUBTREE_ALIGNMENTS_KEY, alignmentNames);
@@ -169,7 +366,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		public PhyloLeaf phyloLeafForMember(CommandContext commandContext,
 				AlignmentMember alignmentMember) {
 			PhyloLeaf phyloLeaf = super.phyloLeafForMember(commandContext, alignmentMember);
-			LinkedHashMap<String, Object> userData = new LinkedHashMap<String, Object>();
+			Map<String, Object> userData = phyloLeaf.ensureUserData();
 			List<String> alignmentNames = new ArrayList<String>();
 			userData.put(PHYLO_SUBTREE_ALIGNMENTS_KEY, alignmentNames);
 			userData.put(PHYLO_SUBTREE_MEMBER_KEY, alignmentMember.pkMap());
@@ -181,8 +378,8 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		@SuppressWarnings("unchecked")
 		@Override
 		public Map<String, Object> mergeUserData(
-				PhyloInternal almtPhyloInternal,
-				PhyloSubtree singleBranchSubtree) {
+				PhyloObject almtPhyloInternal,
+				PhyloObject singleBranchSubtree) {
 			Map<String, Object> subtreeUserData = singleBranchSubtree.getUserData();
 			Map<String, Object> internalUserData = almtPhyloInternal.getUserData();
 			if(subtreeUserData == null) {
@@ -200,7 +397,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		@Override
 		protected void setAlignmentPhyloInternalName(
 				CommandContext commandContext, Alignment alignment,
-				PhyloInternal alignmentPhyloInternal) {
+				PhyloSubtree alignmentPhyloInternal) {
 			// no names required.
 		}
 
@@ -209,10 +406,28 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 				AlignmentMember alignmentMember, PhyloLeaf memberPhyloLeaf) {
 			memberPhyloLeaf.setName(memberPkMapToRowName.get(alignmentMember.pkMap()));
 		}
-		
-		
-		
 
 	}
+
+	// collects branch labels from the JPlace tree and stores them in a map from label to branch object
+	private class PhyloTreeBranchLabelCollector implements PhyloTreeVisitor {
+
+		private Map<Integer, PhyloBranch> labelToJPlaceBranch = new LinkedHashMap<Integer, PhyloBranch>();
+		
+		@Override
+		public void preVisitBranch(int branchIndex, PhyloBranch jPlacePhyloBranch) {
+			Integer branchLabel = jPlacePhyloBranch.getBranchLabel();
+			if(branchLabel == null) {
+				throw new MaxLikelihoodGenotyperException(Code.JPLACE_BRANCH_LABEL_ERROR, "Expected jPlace branch to have an integer label");
+			}
+			labelToJPlaceBranch.put(branchLabel, jPlacePhyloBranch);
+		}
+
+		public Map<Integer, PhyloBranch> getLabelToJPlaceBranch() {
+			return labelToJPlaceBranch;
+		}
+	}
+
+	
 	
 }

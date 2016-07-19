@@ -2,8 +2,9 @@ package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 
 import java.math.BigDecimal;
 
-public class PhyloBranch {
+public class PhyloBranch extends PhyloObject {
 
+	private PhyloInternal parentPhyloInternal; // phyloInternal for now (later may allow PhlyoTree?)
 	private PhyloSubtree subtree;
 	private BigDecimal length;
 	private String comment;
@@ -23,6 +24,7 @@ public class PhyloBranch {
 
 	public void setSubtree(PhyloSubtree subtree) {
 		this.subtree = subtree;
+		subtree.setParentPhyloBranch(this);
 	}
 	
 	public BigDecimal getLength() {
@@ -39,6 +41,14 @@ public class PhyloBranch {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	
+	public PhyloInternal getParentPhyloInternal() {
+		return parentPhyloInternal;
+	}
+
+	void setParentPhyloInternal(PhyloInternal parentPhyloInternal) {
+		this.parentPhyloInternal = parentPhyloInternal;
 	}
 
 	public void accept(int branchIndex, PhyloTreeVisitor visitor) {

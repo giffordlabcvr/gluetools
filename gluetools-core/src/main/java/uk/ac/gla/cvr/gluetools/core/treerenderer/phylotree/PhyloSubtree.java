@@ -1,12 +1,18 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 
-import java.util.Map;
+public abstract class PhyloSubtree extends PhyloObject {
 
-public abstract class PhyloSubtree {
-
+	private PhyloBranch parentPhyloBranch;
+	
 	private String name;
 	
-	private Map<String, Object> userData;
+	public PhyloBranch getParentPhyloBranch() {
+		return parentPhyloBranch;
+	}
+
+	void setParentPhyloBranch(PhyloBranch parentPhyloBranch) {
+		this.parentPhyloBranch = parentPhyloBranch;
+	}
 
 	public String getName() {
 		return name;
@@ -16,14 +22,6 @@ public abstract class PhyloSubtree {
 		this.name = name;
 	}
 	
-	public Map<String, Object> getUserData() {
-		return userData;
-	}
-
-	public void setUserData(Map<String, Object> userData) {
-		this.userData = userData;
-	}
-
 	public abstract void accept(PhyloTreeVisitor visitor);
 	
 }

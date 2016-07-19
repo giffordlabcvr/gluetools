@@ -1,6 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 
-public class PhyloTree {
+public class PhyloTree extends PhyloObject {
 
 	private PhyloSubtree root;
 	
@@ -10,7 +10,7 @@ public class PhyloTree {
 		visitor.postVisitTree(this);
 	}
 
-	public PhyloSubtree getRoot() {
+	public PhyloObject getRoot() {
 		return root;
 	}
 

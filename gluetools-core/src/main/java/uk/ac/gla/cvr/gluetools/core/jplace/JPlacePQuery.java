@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.json.JsonArray;
-import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
@@ -44,28 +43,7 @@ public abstract class JPlacePQuery {
 			JsonArray valuesArray = ((JsonArray) pJsonValue);
 			JPlacePlacement placement = new JPlacePlacement();
 			for(JsonValue value: valuesArray) {
-				Object object;
-				switch(value.getValueType()) {
-				case NUMBER:
-					JsonNumber number = (JsonNumber) value;
-					if(number.isIntegral()) {
-						object = number.intValue();
-					} else {
-						object = number.doubleValue();
-					}
-					break;
-				case STRING:
-					object = ((JsonString) value).getString();
-					break;
-				case TRUE:
-					object = new Boolean(true);
-					break;
-				case FALSE:
-					object = new Boolean(false);
-					break;
-				default:
-					throw new RuntimeException("Unexpected JSON type in p array");
-				}
+				Object object = JPlaceResult.jsonValueToObject(value);
 				placement.getFieldValues().add(object);
 			}
 			pQuery.getPlacements().add(placement);
