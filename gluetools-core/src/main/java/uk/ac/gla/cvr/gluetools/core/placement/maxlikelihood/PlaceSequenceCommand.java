@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,27 +15,24 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.genotyping.GenotypingCommandResult;
-import uk.ac.gla.cvr.gluetools.core.genotyping.GenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
-		commandWords={"genotype"}, 
-		description = "Determine genotype of one or more sequences", 
+		commandWords={"place", "sequence"}, 
+		description = "Place one or more stored sequences into a phylogeny", 
 		docoptUsages = { "(-w <whereClause> | -a)" },
 		docoptOptions = { 
-				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be genotyped",
-				"-a, --allSequences                             Genotype all sequences in the project",
+				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be placed",
+				"-a, --allSequences                             Place all sequences in the project",
 		},
 		furtherHelp = "",
 		metaTags = {}	
 )
-public class GenotypeCommand extends ModulePluginCommand<GenotypingCommandResult, MaxLikelihoodGenotyper> {
+public class PlaceSequenceCommand extends AbstractPlaceCommand {
 
 	public final static String WHERE_CLAUSE = "whereClause";
 	public final static String ALL_SEQUENCES = "allSequences";
@@ -54,7 +51,7 @@ public class GenotypeCommand extends ModulePluginCommand<GenotypingCommandResult
 	}
 
 	@Override
-	protected GenotypingCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper modulePlugin) {
+	protected PlaceCommandResult execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
 		SelectQuery selectQuery;
 		if(this.allSequences) {
 			selectQuery = new SelectQuery(Sequence.class);
@@ -67,8 +64,8 @@ public class GenotypeCommand extends ModulePluginCommand<GenotypingCommandResult
 			querySequenceMap.put(seq.getSource().getName()+"/"+seq.getSequenceID(), 
 					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
-		List<GenotypingResult> genotypingResults = modulePlugin.genotype(cmdContext, querySequenceMap);
-		return new GenotypingCommandResult(genotypingResults);
+		Map<String, List<PlacementResult>> seqNameToPlacementResults = maxLikelihoodPlacer.place(cmdContext, querySequenceMap, null);
+		return generatePlaceCommandResult(seqNameToPlacementResults);
 	}
 
 	@CompleterClass

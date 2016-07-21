@@ -22,6 +22,8 @@ public class GenbankXmlPopulatorRuleFactory extends XmlPopulatorRuleFactory {
 		registerPluginClass(GenbankSimpleFieldRule.OtherID.class);
 		registerPluginClass(GenbankSimpleFieldRule.CreateDate.class);
 		registerPluginClass(GenbankSimpleFieldRule.UpdateDate.class);
+		registerPluginClass(GenbankSimpleFieldRule.ReferenceTitle.class);
+		registerPluginClass(GenbankSimpleFieldRule.ReferencePubmed.class);
 	}
 	
 }

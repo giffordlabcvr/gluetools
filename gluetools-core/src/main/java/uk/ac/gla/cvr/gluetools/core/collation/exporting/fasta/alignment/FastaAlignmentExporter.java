@@ -217,8 +217,16 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			Map<String,String> pkMap = almtMember.pkMap();
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
 			if(acRef != null) {
+				// ancestor-constraining reference specified in order to specify feature location
 				Alignment tipAlmt = almtMember.getAlignment();
 				memberQaSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef);
+			} else {
+				// no feature location but still need to translate to ancestor-constraining reference, 
+				// because member is of a descendent alignment.
+				if(!alignment.getName().equals(almtMember.getAlignment().getName())) {
+					ReferenceSequence acRef2 = alignment.getRefSequence();
+					memberQaSegs = almtMember.getAlignment().translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef2);
+				}
 			}
 			if(featureRefSegs != null) {
 				memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());

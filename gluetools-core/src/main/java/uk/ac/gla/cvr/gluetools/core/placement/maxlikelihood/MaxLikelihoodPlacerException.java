@@ -1,8 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class MaxLikelihoodGenotyperException extends GlueException {
+public class MaxLikelihoodPlacerException extends GlueException {
 
 public enum Code implements GlueErrorCode {
 		
@@ -21,11 +21,11 @@ public enum Code implements GlueErrorCode {
 		}
 	}
 
-	public MaxLikelihoodGenotyperException(Code code, Object... errorArgs) {
+	public MaxLikelihoodPlacerException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public MaxLikelihoodGenotyperException(Throwable cause, Code code,
+	public MaxLikelihoodPlacerException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

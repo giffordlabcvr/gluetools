@@ -77,4 +77,16 @@ public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 		public CreateDate() { super("/GBSeq/GBSeq_create-date/text()"); }	
 	}
 
+	@PluginClass(elemName="gbReferenceTitle")
+	public static class ReferenceTitle extends GenbankSimpleFieldRule {
+		public ReferenceTitle() { super("/GBSeq/GBSeq_references/GBReference/GBReference_title/text()"); }	
+	}
+
+	@PluginClass(elemName="gbReferencePubmed")
+	public static class ReferencePubmed extends GenbankSimpleFieldRule {
+		public ReferencePubmed() { super("/GBSeq/GBSeq_references/GBReference/GBReference_pubmed/text()"); }	
+	}
+
+	
+	
 }

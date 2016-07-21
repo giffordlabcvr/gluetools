@@ -1,9 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyperException.Code;
+import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacerException.Code;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
@@ -44,7 +44,7 @@ public class PhyloTreeReconciler implements PhyloTreeVisitor {
 	public void postVisitTree(PhyloTree jPlacePhyloTree) {
 		pop(PhyloTree.class);
 		if(!glueAlmtPhyloObjStack.isEmpty()) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected stack to be empty");
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected stack to be empty");
 		}
 
 	}
@@ -58,7 +58,7 @@ public class PhyloTreeReconciler implements PhyloTreeVisitor {
 		
 		List<PhyloBranch> glueAlmtInternalBranches = glueAlmtPhyloInternal.getBranches();
 		if(glueAlmtInternalBranches.size() != jPlacePhyloInternal.getBranches().size()) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected internal nodes to have same number of branches");
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected internal nodes to have same number of branches");
 		}
 		if(!glueAlmtInternalBranches.isEmpty()) {
 			push(glueAlmtInternalBranches.get(0));
@@ -104,22 +104,22 @@ public class PhyloTreeReconciler implements PhyloTreeVisitor {
 	
 	private <D extends PhyloObject> D pop(Class<D> theClass) {
 		if(glueAlmtPhyloObjStack.isEmpty()) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but stack was empty");
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but stack was empty");
 		}
 		PhyloObject popped = glueAlmtPhyloObjStack.pop();
 		if(!theClass.isAssignableFrom(popped.getClass())) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but found "+popped.getClass().getSimpleName());
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but found "+popped.getClass().getSimpleName());
 		}
 		return theClass.cast(popped);
 	}
 
 	private <D extends PhyloObject> D peek(Class<D> theClass) {
 		if(glueAlmtPhyloObjStack.isEmpty()) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but stack was empty");
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but stack was empty");
 		}
 		PhyloObject peeked = glueAlmtPhyloObjStack.peek();
 		if(!theClass.isAssignableFrom(peeked.getClass())) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but found "+peeked.getClass().getSimpleName());
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but found "+peeked.getClass().getSimpleName());
 		}
 		return theClass.cast(peeked);
 	}
@@ -133,7 +133,7 @@ public class PhyloTreeReconciler implements PhyloTreeVisitor {
 			return;
 		}
 		if(value1 == null || value2 == null || !value1.equals(value2)) {
-			throw new MaxLikelihoodGenotyperException(Code.PHYLO_TREE_RECONCILER_ERROR, "Mismatched values: "+value1+" does not equal "+value2);
+			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Mismatched values: "+value1+" does not equal "+value2);
 		}
 	}
 }

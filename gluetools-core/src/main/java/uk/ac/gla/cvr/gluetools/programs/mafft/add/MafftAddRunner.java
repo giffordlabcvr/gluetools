@@ -13,6 +13,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -43,7 +44,7 @@ public class MafftAddRunner implements Plugin {
 		maxIterate = PluginUtils.configureIntProperty(configElem, MAX_ITERATE, false);
 	}
 	
-	public MafftAddResult executeMafftAdd(CommandContext cmdContext, Map<String, DNASequence> alignment, Map<String, DNASequence> query) {
+	public MafftAddResult executeMafftAdd(CommandContext cmdContext, Map<String, DNASequence> alignment, Map<String, DNASequence> query, File dataDirFile) {
 
 		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
 		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined"); }
@@ -109,6 +110,11 @@ public class MafftAddRunner implements Plugin {
 		} finally {
 			boolean allFilesDeleted = true;
 			for(File file : tempDir.listFiles()) {
+				if(dataDirFile != null) {
+					byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
+					File fileToSave = new File(dataDirFile, file.getName());
+					ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
+				}
 				boolean fileDeleteResult = file.delete();
 				if(!fileDeleteResult) {
 					GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT file "+file.getAbsolutePath());

@@ -17,6 +17,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
@@ -54,7 +55,7 @@ public class RaxmlEpaRunner implements Plugin {
 		randomNumberSeed = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, RANDOM_NUMBER_SEED, false)).orElse(randomNumberSeed);
 	}
 	
-	public RaxmlEpaResult executeRaxmlEpa(CommandContext cmdContext, PhyloTree phyloTree, Map<String, DNASequence> alignment) {
+	public RaxmlEpaResult executeRaxmlEpa(CommandContext cmdContext, PhyloTree phyloTree, Map<String, DNASequence> alignment, File dataDirFile) {
 
 		String raxmlTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXML_TEMP_DIR_PROPERTY);
 		if(raxmlTempDir == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML temp directory not defined"); }
@@ -125,6 +126,11 @@ public class RaxmlEpaRunner implements Plugin {
 		} finally {
 			boolean allFilesDeleted = true;
 			for(File file : tempDir.listFiles()) {
+				if(dataDirFile != null) {
+					byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
+					File fileToSave = new File(dataDirFile, file.getName());
+					ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
+				}
 				boolean fileDeleteResult = file.delete();
 				if(!fileDeleteResult) {
 					GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML file "+file.getAbsolutePath());
