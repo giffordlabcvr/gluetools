@@ -33,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
@@ -214,6 +215,10 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 				List<QueryAlignedSegment> qaSegsToAdd = null;
 
+				// sort required so that subtract works correctly.
+				existingQaSegs = IReferenceSegment.sortByRefStart(existingQaSegs, ArrayList<QueryAlignedSegment>::new);
+				newQaSegs = IReferenceSegment.sortByRefStart(newQaSegs, ArrayList<QueryAlignedSegment>::new);
+				
 				switch(segmentMergeStrategy) {
 				case OVERWRITE:
 					qaSegsToAdd = newQaSegs;
@@ -231,16 +236,16 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				}
 
 				for(AlignedSegment existingSegment: existingSegs) {
-					GlueDataObject.delete(cmdContext, AlignedSegment.class, existingSegment.pkMap(), false);
+					Map<String, String> pkMap = existingSegment.pkMap();
+					GlueDataObject.delete(cmdContext, AlignedSegment.class, pkMap, false);
 				}
 				cmdContext.commit();
 
 				for(QueryAlignedSegment qaSegmentToAdd: qaSegsToAdd) {
-					AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
-							AlignedSegment.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID, 
-									qaSegmentToAdd.getRefStart(), qaSegmentToAdd.getRefEnd(), 
-									qaSegmentToAdd.getQueryStart(), qaSegmentToAdd.getQueryEnd())
-									, false);
+					Map<String, String> pkMap = AlignedSegment.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID, 
+							qaSegmentToAdd.getRefStart(), qaSegmentToAdd.getRefEnd(), 
+							qaSegmentToAdd.getQueryStart(), qaSegmentToAdd.getQueryEnd());
+					AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, pkMap, false);
 					alignedSegment.setAlignmentMember(currentAlmtMember);
 				}
 				cmdContext.commit();

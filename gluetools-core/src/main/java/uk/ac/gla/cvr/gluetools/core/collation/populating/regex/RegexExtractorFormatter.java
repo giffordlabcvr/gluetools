@@ -60,8 +60,7 @@ public class RegexExtractorFormatter implements Plugin {
 				final Matcher candidateMatcher = matchPattern.matcher(input);
 				if(candidateMatcher.find()) {
 					workingMatcher = candidateMatcher;
-				} else {
-					continue;
+					break;
 				}
 			}
 			if(workingMatcher == null) {

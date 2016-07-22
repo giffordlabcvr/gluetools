@@ -503,4 +503,6 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return result;
 	}
 	
+	
+	
 }

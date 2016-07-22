@@ -80,7 +80,7 @@ public interface IReferenceSegment {
 	public static class RefStartComparator implements Comparator<IReferenceSegment> {
 		@Override
 		public int compare(IReferenceSegment o1, IReferenceSegment o2) {
-			return Integer.compare(o1.getRefStart(), o1.getRefStart());
+			return Integer.compare(o1.getRefStart(), o2.getRefStart());
 		}
 	}
 
