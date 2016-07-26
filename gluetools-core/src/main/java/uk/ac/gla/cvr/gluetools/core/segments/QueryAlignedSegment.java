@@ -308,6 +308,15 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 			}
 		}
 	}
+
+	public static Integer minQueryStart(List<? extends IQueryAlignedSegment> segList) {
+		return segList.stream().map(s -> s.getQueryStart()).min(Integer::compare).orElse(null);
+	}
+
+	public static Integer maxQueryEnd(List<? extends IQueryAlignedSegment> segList) {
+		return segList.stream().map(s -> s.getQueryEnd()).max(Integer::compare).orElse(null);
+	}
+
 	
 	
 }

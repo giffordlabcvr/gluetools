@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastUtils;
+import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner.BlastType;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
@@ -102,7 +103,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 			BlastDbManager blastDbManager = BlastDbManager.getInstance();
 			if(featureName == null) {
 				SingleReferenceBlastDB refDB = blastDbManager.ensureSingleReferenceDB(cmdContext, refName);
-				List<BlastResult> blastResults = getBlastRunner().executeBlast(cmdContext, refDB, fastaBytes);
+				List<BlastResult> blastResults = getBlastRunner().executeBlast(cmdContext, BlastType.BLASTN, refDB, fastaBytes);
 				fastaIdToAlignedSegments.putAll(BlastUtils.blastNResultsToAlignedSegmentsMap(refName, blastResults, 
 						new MyBlastHspFilter()));
 			} else {
@@ -122,7 +123,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 						List<BlastResult> blastResults;
 						try {
 							BlastDB refDB = blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, blastRefName, refNTs.toString());
-							blastResults = getBlastRunner().executeBlast(cmdContext, refDB, fastaBytes);
+							blastResults = getBlastRunner().executeBlast(cmdContext, BlastType.BLASTN, refDB, fastaBytes);
 						} finally {
 							blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);
 						}

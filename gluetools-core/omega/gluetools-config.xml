@@ -19,6 +19,10 @@
 			<value>/home/sing01j/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
 		</property>
 		<property>
+			<name>gluetools.core.programs.blast.search.threads</name>
+			<value>4</value>
+		</property>
+		<property>
 			<name>gluetools.core.programs.blast.db.dir</name>
 			<value>/home/sing01j/gluetools/blastdbs</value>
 		</property>

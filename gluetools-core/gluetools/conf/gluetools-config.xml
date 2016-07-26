@@ -23,6 +23,10 @@
 			<name>gluetools.core.programs.blast.db.dir</name>
 			<value>/home/fred/gluetools/tmp/blastdbs</value>
 		</property>
+		<property>
+			<name>gluetools.core.programs.blast.search.threads</name>
+			<value>4</value>
+		</property>
 		<!-- RAxML-specific config -->
 		<property>
 			<name>gluetools.core.programs.raxml.raxmlhpc.executable</name>

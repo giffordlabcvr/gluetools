@@ -23,6 +23,10 @@
 			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs</value>
 		</property>
 		<property>
+			<name>gluetools.core.programs.blast.search.threads</name>
+			<value>4</value>
+		</property>
+		<property>
 			<name>cayenne.querycache.size</name>
 			<value>30000</value>
 		</property>

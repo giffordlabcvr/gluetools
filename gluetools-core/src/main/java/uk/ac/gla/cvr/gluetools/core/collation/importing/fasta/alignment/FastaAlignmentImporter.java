@@ -47,7 +47,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 	private Pattern sequenceGapRegex = null;
 	private Boolean allowAmbiguousSegments = false;
 	private Boolean skipRowsWithMissingSegments;
-
+	
 	public FastaAlignmentImporter() {
 		super();
 		addModulePluginCmdClass(ImportCommand.class);
@@ -73,8 +73,6 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 		skipRowsWithMissingSegments = Optional
 				.ofNullable(PluginUtils.configureBooleanProperty(configElem, SKIP_ROWS_WITH_MISSING_SEGMENTS, false))
 				.orElse(false);
-
-		
 	}
 
 	
@@ -83,7 +81,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 	@Override
 	protected List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
 			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
-			String fastaID) {
+			String fastaID, List<ReferenceSegment> navigationRegion) {
 
 		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext);
 		
@@ -208,7 +206,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 		@Override
 		protected FastaAlignmentImporterResult execute(CommandContext cmdContext, FastaAlignmentImporter importerPlugin) {
 			Alignment alignment = importerPlugin.initAlignment(cmdContext, alignmentName);
-			return importerPlugin.doImport((ConsoleCommandContext) cmdContext, fileName, alignment, sourceName);
+			return importerPlugin.doImport((ConsoleCommandContext) cmdContext, fileName, alignment, sourceName, null);
 		}
 		
 		@CompleterClass
@@ -260,7 +258,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 		
 		@Override
 		protected FastaAlignmentImporterResult execute(CommandContext cmdContext, FastaAlignmentImporter importerPlugin) {
-			return importerPlugin.doPreview((ConsoleCommandContext) cmdContext, fileName, sourceName);
+			return importerPlugin.doPreview((ConsoleCommandContext) cmdContext, fileName, sourceName, null);
 		}
 		
 		@CompleterClass

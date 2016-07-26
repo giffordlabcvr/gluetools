@@ -35,6 +35,8 @@ public class BlastRunner implements Plugin {
 		BLASTN_EXECUTABLE_PROPERTY = "gluetools.core.programs.blast.blastn.executable"; 
 	public static String 
 		TBLASTN_EXECUTABLE_PROPERTY = "gluetools.core.programs.blast.tblastn.executable"; 
+	public static String 
+		BLAST_SEARCH_THREADS_PROPERTY = "gluetools.core.programs.blast.search.threads"; 
 
 
 	@SuppressWarnings("rawtypes")
@@ -68,11 +70,6 @@ public class BlastRunner implements Plugin {
 	
 
 	@SuppressWarnings("rawtypes")
-	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastDB blastDB, byte[] fastaBytes) {
-		return executeBlast(cmdContext, BlastType.BLASTN, blastDB, fastaBytes);
-	}
-	
-	@SuppressWarnings("rawtypes")
 	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
 		blastDB.readLock().lock();
 		ProcessResult blastProcessResult;
@@ -89,8 +86,16 @@ public class BlastRunner implements Plugin {
 			default:
 				throw new BlastException(Code.UNKNOWN_BLAST_TYPE, blastType.name());
 			}
+			
+			Integer blastSearchThreads = null;
+			String blastSearchThreadsString = propsConfig.getPropertyValue(BLAST_SEARCH_THREADS_PROPERTY);
+			if(blastSearchThreadsString != null) {
+				blastSearchThreads = Integer.parseInt(blastSearchThreadsString);
+			}
+			
 			List<String> commandWords = new ArrayList<String>();
 			commandWords.add(blastExecutable);
+			
 			// supply reference DB
 			commandWords.add("-db");
 			commandWords.add(new File(blastDB.getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());
@@ -100,6 +105,10 @@ public class BlastRunner implements Plugin {
 			for(Option numericOption : numericCommandLineOptions) {
 				commandWords.add("-"+numericOption.getName());
 				commandWords.add(numericOption.getValue().toString());
+			}
+			if(blastSearchThreads != null) {
+				commandWords.add("-num_threads");
+				commandWords.add(Integer.toString(blastSearchThreads));
 			}
 			// run blast based on the ref DB.
 			blastProcessResult = ProcessUtils.runProcess(new ByteArrayInputStream(fastaBytes), null, commandWords); 
