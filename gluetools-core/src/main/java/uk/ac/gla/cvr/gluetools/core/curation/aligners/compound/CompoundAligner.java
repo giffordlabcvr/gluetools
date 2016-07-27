@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner.CompoundAlignerResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAlignerException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -38,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
  *
  */
 @PluginClass(elemName="compoundAligner")
-public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAligner> {
+public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAligner> implements SupportsComputeConstrained {
 
 	private List<Aligner<?,?>> aligners = new ArrayList<Aligner<?,?>>();
 	
@@ -69,12 +70,12 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 
 
 	@Override
-	public CompoundAlignerResult doAlign(CommandContext cmdContext,
+	public CompoundAlignerResult computeConstrained(CommandContext cmdContext,
 			String refName, Map<String, DNASequence> queryIdToNucleotides) {
 		List<AlignerResult> alignerResults = new ArrayList<AlignerResult>();
 		
 		for(Aligner<?,?> aligner: aligners) {
-			alignerResults.add(aligner.doAlign(cmdContext, refName, queryIdToNucleotides));
+			alignerResults.add(aligner.computeConstrained(cmdContext, refName, queryIdToNucleotides));
 		}
 		
 		final Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
@@ -110,7 +111,7 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 	
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Class<? extends Aligner.AlignCommand> getAlignCommandClass() {
+	public Class<? extends Aligner.AlignCommand> getComputeConstrainedCommandClass() {
 		return CompoundAlignCommand.class;
 	}
 	
@@ -122,7 +123,7 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 
 	@CommandClass(
 			commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
-			description = "Align sequence data to a reference using codon-aware BLAST", 
+			description = "Align sequence data to a reference", 
 			docoptUsages = {}, 
 			metaTags={  CmdMeta.inputIsComplex },
 			furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
@@ -131,13 +132,13 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 
 		@Override
 		protected CompoundAlignerResult execute(CommandContext cmdContext, CompoundAligner modulePlugin) {
-			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides());
+			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
 		}
 	}
 
 	@CommandClass(
 			commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
-			description = "Align sequence file to a reference using codon-aware BLAST", 
+			description = "Align sequence file to a reference", 
 			docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
 			metaTags = {  CmdMeta.consoleOnly },
 			furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
@@ -146,7 +147,7 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 
 		@Override
 		protected CompoundAlignerResult execute(CommandContext cmdContext, CompoundAligner modulePlugin) {
-			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
+			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
 		}
 		
 		@CompleterClass
@@ -158,6 +159,19 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 			}
 		}
 
+	}
+
+	@Override
+	public boolean supportsComputeConstrained() {
+		for(Aligner<?, ?> aligner : aligners) {
+			if(!(aligner instanceof SupportsComputeConstrained)) {
+				return false;
+			}
+			if(!((SupportsComputeConstrained) aligner).supportsComputeConstrained()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

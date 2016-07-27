@@ -9,7 +9,6 @@ import java.util.Map;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
@@ -120,9 +119,6 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 	
 	
-	@SuppressWarnings("rawtypes")
-	public abstract Class<? extends Aligner.AlignCommand> getAlignCommandClass();
-	
 	public abstract static class AlignerResult extends CommandResult {
 
 		protected AlignerResult(String rootObjectName, Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments) {
@@ -160,27 +156,25 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <R extends AlignerResult, C extends Command<R>> Class<C> getAlignCommandClass(
-			CommandContext cmdContext, String alignerModuleName) {
-		// Look up the module by name, check it is an aligner, and get its align command class.
-		Aligner<?, ?> alignerModule = getAligner(cmdContext, alignerModuleName);
-		return (Class<C>) alignerModule.getAlignCommandClass();
-	}
-
 	public static Aligner<?, ?> getAligner(CommandContext cmdContext,
 			String alignerModuleName) {
 		return Module.resolveModulePlugin(cmdContext, Aligner.class, alignerModuleName);
 	}
 
-	public final R doAlign(CommandContext cmdContext, String refName, String queryId, DNASequence nucleotides) {
+	public final R computeConstrained(CommandContext cmdContext, String refName, String queryId, DNASequence nucleotides) {
 		Map<String, DNASequence> queryIdToNucleotides = new LinkedHashMap<String, DNASequence>();
 		queryIdToNucleotides.put(queryId, nucleotides);
-		return doAlign(cmdContext, refName, queryIdToNucleotides);
+		return computeConstrained(cmdContext, refName, queryIdToNucleotides);
 	}
 	
-	public abstract R doAlign(CommandContext cmdContext, String refName, Map<String, DNASequence> queryIdToNucleotides);
+	public R computeConstrained(CommandContext cmdContext, String refName, Map<String, DNASequence> queryIdToNucleotides) {
+		throw new RuntimeException("Compute of constrained alignments is unsupported.");
+	}
 
+	public R extendUnconstrained(CommandContext cmdContext, Map<String, DNASequence> existingIdToNucleotides, Map<String, DNASequence> queryIdToNucleotides) {
+		throw new RuntimeException("Extend of unconstrained alignments is unsupported.");
+	}
+	
 	protected Map<String, List<QueryAlignedSegment>> initFastaIdToAlignedSegments(Collection<String> queryIds) {
 		Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = new LinkedHashMap<String, List<QueryAlignedSegment>>();
 		for(String queryId: queryIds) {
@@ -189,4 +183,6 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 		return fastaIdToAlignedSegments;
 	}
 
+
+	
 }

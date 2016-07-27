@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException.Code;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -30,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="blastAligner")
-public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAlignerResult, BlastAligner> {
+public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAlignerResult, BlastAligner> implements SupportsComputeConstrained {
 
 	public BlastAligner() {
 		super();
@@ -49,7 +50,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 
 		@Override
 		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides());
+			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
 		}
 	}
 
@@ -64,7 +65,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 
 		@Override
 		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
+			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
 		}
 		
 		@CompleterClass
@@ -87,12 +88,12 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 	
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Class<? extends Aligner.AlignCommand> getAlignCommandClass() {
+	public Class<? extends Aligner.AlignCommand> getComputeConstrainedCommandClass() {
 		return BlastAlignCommand.class;
 	}
 
 	@Override
-	public BlastAlignerResult doAlign(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
+	public BlastAlignerResult computeConstrained(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
 		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
 		final Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
 		
@@ -140,5 +141,6 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 		}
 		return new BlastAlignerResult(fastaIdToAlignedSegments);
 	}
+	
 	
 }

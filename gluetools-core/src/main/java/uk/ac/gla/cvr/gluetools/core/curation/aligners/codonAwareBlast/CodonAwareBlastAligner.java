@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.AbstractBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner.CodonAwareBlastAlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -40,7 +41,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporaryMultiSeqBlastDB
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="codonAwareBlastAligner")
-public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlastAlignerResult, CodonAwareBlastAligner> {
+public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlastAlignerResult, CodonAwareBlastAligner> implements SupportsComputeConstrained {
 
 
 	public CodonAwareBlastAligner() {
@@ -62,7 +63,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 
 
 	@Override
-	public CodonAwareBlastAlignerResult doAlign(CommandContext cmdContext,
+	public CodonAwareBlastAlignerResult computeConstrained(CommandContext cmdContext,
 			String refName, Map<String, DNASequence> queryIdToNucleotides) {
 		String featureName = getFeatureName();
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName));
@@ -130,7 +131,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 	
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Class<? extends Aligner.AlignCommand> getAlignCommandClass() {
+	public Class<? extends Aligner.AlignCommand> getComputeConstrainedCommandClass() {
 		return CodonAwareBlastAlignCommand.class;
 	}
 	
@@ -151,7 +152,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 
 		@Override
 		protected CodonAwareBlastAlignerResult execute(CommandContext cmdContext, CodonAwareBlastAligner modulePlugin) {
-			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides());
+			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
 		}
 	}
 
@@ -166,7 +167,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 
 		@Override
 		protected CodonAwareBlastAlignerResult execute(CommandContext cmdContext, CodonAwareBlastAligner modulePlugin) {
-			return modulePlugin.doAlign(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
+			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
 		}
 		
 		@CompleterClass
@@ -180,4 +181,6 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 
 	}
 
+
+	
 }

@@ -78,7 +78,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 	public AlignerResult alignToTargetReference(CommandContext cmdContext, String targetRefName, 
 			String fastaID, DNASequence fastaNTSeq) {
 		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, getAlignerModuleName());
-		return aligner.doAlign(cmdContext, targetRefName, fastaID, fastaNTSeq);
+		return aligner.computeConstrained(cmdContext, targetRefName, fastaID, fastaNTSeq);
 	}
 	
 	

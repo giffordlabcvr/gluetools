@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsExtendUnconstrained;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -33,23 +34,22 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-// could make this a module, but it seems quite fundamental to the model, 
-// and doesn't seem to require much if any configuration.
-
 @CommandClass(
-		commandWords={"compute", "alignment"}, 
-		description = "Align member segments using an aligner module", 
-		docoptUsages = {"<alignmentName> <alignerModuleName> [-w <whereClause>] [-b <batchSize>]"}, 
+		commandWords={"extend", "alignment"}, 
+		description = "Extend alignment to recompute certain members", 
+		docoptUsages = {"<alignmentName> <alignerModuleName> -w <whereClause> [-b <batchSize>]"}, 
 		docoptOptions = {
 				"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned",
 				"-b <batchSize>, --batchSize <batchSize>        Re-alignment batch size"},
 		metaTags={CmdMeta.updatesDatabase},
-		furtherHelp = "Computes the aligned segments of certain members of the specified alignment, using a given aligner module. "+
-		"If <whereClause> is not specified, all members of the alignment are re-aligned. "+
+		furtherHelp = "(Re-)computes the aligned segments of certain members of the specified unconstrained alignment, "+
+		"using a given aligner module. The specified member rows are (re-)computed using the existing unconstrained "+
+		"alignment as part of the input. The existing alignment may be updated as a result, in order to introduce gaps "+
+		"to accommodate the recomputed segments, but is otherwise unaltered. "+
 		"Alignment members are aligned in batches, according to <batchSize>. Default <batchSize> is 50."+
-		" Example: compute alignment AL1 blastAligner -w \"sequence.genotype = 4\""
+		" Example: exted alignment AL1 mafftAligner -w \"sequence.genotype = 4\""
 )
-public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignmentCommand.ComputeAlignmentResult> {
+public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCommand.ExtendAlignmentResult> {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
@@ -66,27 +66,25 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		super.configure(pluginConfigContext, configElem);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
-		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
+		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, true);
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(50);
 	}
 	
 
 	@Override
-	public ComputeAlignmentResult execute(CommandContext cmdContext) {
+	public ExtendAlignmentResult execute(CommandContext cmdContext) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		Aligner<?, ?> alignerModule = Aligner.getAligner(cmdContext, alignerModuleName);
-		if(!alignment.isConstrained()) {
+		if(alignment.isConstrained()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, 
-					"Command is currently limited to constrained alignments but alignment '"+alignmentName+"' is unconstrained.");
+					"Command is currently limited to unconstrained alignments but alignment '"+alignmentName+"' is constrained.");
 		}
-		if(	(!(alignerModule instanceof SupportsComputeConstrained)) ||
-				!((SupportsComputeConstrained) alignerModule).supportsComputeConstrained()) {
+		if(	(!(alignerModule instanceof SupportsExtendUnconstrained)) ||
+				!((SupportsExtendUnconstrained) alignerModule).supportsExtendUnconstrained()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, 
-					"Aligner module '"+alignerModuleName+"' does not support computing of constrained alignments.");
+					"Aligner module '"+alignerModuleName+"' does not support extending of unconstrained alignments.");
 		}
 		
-		// enter the alignment command mode to get the reference sequence name 
-
 		GlueLogger.getGlueLogger().finest("Searching for members to align");
 		// enter the alignment command mode to get the member ID maps selected by the where clause
 		List<Map<String, Object>> memberIDs = AlignmentComputationUtils.getMemberSequenceIdMaps(cmdContext, alignmentName, whereClause);
@@ -95,7 +93,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		// modify the aligned segments and generate alignment results results for each selected member.
 		List<Map<String, Object>> resultListOfMaps = 
 				getComputeConstrainedResults(cmdContext, new ArrayList<Map<String,Object>>(memberIDs), alignment.getRefSequence().getName());
-		return new ComputeAlignmentResult(resultListOfMaps);
+		return new ExtendAlignmentResult(resultListOfMaps);
 	}
 
 
@@ -104,16 +102,14 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		// get the align command's class for the module.
 		// Look up the module by name, check it is an aligner, and get its align command class.
 		Aligner<?, ?> alignerModule = Aligner.getAligner(cmdContext, alignerModuleName);
-		@SuppressWarnings("unchecked")
-		Class<C> alignCommandClass = (Class<C>) ((SupportsComputeConstrained) alignerModule).getComputeConstrainedCommandClass();
-		
+
 		int membersAligned = 0;
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
 		
 		while(membersAligned < memberIDs.size()) {
 			int nextMembersAligned = Math.min(membersAligned+batchSize, memberIDs.size());
 			List<Map<String, Object>> membersBatch = memberIDs.subList(membersAligned, nextMembersAligned);
-			getBatchResult(cmdContext, membersBatch, refName, alignCommandClass, resultListOfMaps);
+			getBatchResult(cmdContext, membersBatch, refName, alignerModule, resultListOfMaps);
 			membersAligned = nextMembersAligned;
 			GlueLogger.getGlueLogger().finest("Aligned "+membersAligned+" members");
 			cmdContext.newObjectContext();
@@ -122,54 +118,45 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	}
 
 
-	private <R extends AlignerResult, C extends Command<R>> void getBatchResult(
+	private <R extends AlignerResult> void getBatchResult(
 			CommandContext cmdContext,
 			List<Map<String, Object>> memberIDs, String refName,
-			Class<C> alignCommandClass,
+			Aligner<R, ?> aligner,
 			List<Map<String, Object>> resultListOfMaps) {
 		Map<String,String> queryIdToNucleotides = AlignmentComputationUtils.getMembersNtMap(cmdContext, memberIDs);
-		R alignerResult = getAlignerResult(cmdContext, alignCommandClass, refName, queryIdToNucleotides);
+		R alignerResult = getAlignerResult(cmdContext, aligner, refName, queryIdToNucleotides);
 		Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = alignerResult.getQueryIdToAlignedSegments();
 		for(Map<String, Object> memberIDmap: memberIDs) {
 			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
 			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
 			String memberFastaId = AlignmentComputationUtils.constructQueryId(memberSourceName, memberSeqId);
 			List<QueryAlignedSegment> memberAlignedSegments = queryIdToAlignedSegments.get(memberFastaId);
-			Map<String, Object> memberResultMap = AlignmentComputationUtils.applyMemberAlignedSegments(cmdContext,alignmentName,
-					memberSourceName, memberSeqId, memberAlignedSegments);
+			Map<String, Object> memberResultMap = AlignmentComputationUtils.applyMemberAlignedSegments(cmdContext,
+					alignmentName, memberSourceName, memberSeqId, memberAlignedSegments);
 			resultListOfMaps.add(memberResultMap);
 		}
 	}
 
-	private <R extends AlignerResult, C extends Command<R>> R getAlignerResult(
-			CommandContext cmdContext, Class<C> alignCommandClass, 
+	private <R extends AlignerResult> R getAlignerResult(
+			CommandContext cmdContext, Aligner<R,?> aligner, 
 			String refName, Map<String, String> queryIdToNucleotides) {
-		R alignerResult;
-		try(ModeCloser moduleMode = cmdContext.pushCommandMode("module", alignerModuleName)) {
-			CommandBuilder<R, C> alignCmdBuilder = cmdContext.cmdBuilder(alignCommandClass)
-				.set(AlignCommand.REFERENCE_NAME, refName);
-			ArrayBuilder seqArrayBuilder = alignCmdBuilder
-				.setArray(AlignCommand.SEQUENCE);
-			queryIdToNucleotides.forEach((queryId, nts) ->
-			{
-				seqArrayBuilder.addObject()
-					.set(AlignCommand.QUERY_ID, queryId)
-					.set(AlignCommand.NUCLEOTIDES, nts);
-			});
-			alignerResult = alignCmdBuilder.execute();
-		}
+		R alignerResult = null;
+		
+		// TODO!
+		
 		return alignerResult;
 	}
 	
 	
 
-	
-	public static class ComputeAlignmentResult extends TableResult {
+
+
+	public static class ExtendAlignmentResult extends TableResult {
 		public static final String REMOVED_SEGMENTS = "removedSegments";
 		public static final String ADDED_SEGMENTS = "addedSegments";
 		
-		protected ComputeAlignmentResult(List<Map<String, Object>> listOfMaps) {
-			super("computeAlignmentResult",  
+		protected ExtendAlignmentResult(List<Map<String, Object>> listOfMaps) {
+			super("extendAlignmentResult",  
 					Arrays.asList(
 							AlignmentMember.SOURCE_NAME_PATH, 
 							AlignmentMember.SEQUENCE_ID_PATH, 

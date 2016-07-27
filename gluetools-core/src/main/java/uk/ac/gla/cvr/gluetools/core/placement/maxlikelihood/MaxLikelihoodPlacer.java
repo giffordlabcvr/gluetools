@@ -39,8 +39,8 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloObject;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftAddResult;
-import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftAddRunner;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaRunner;
 
@@ -56,7 +56,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	private String rootAlignmentName;
 	private Optional<Expression> phyloMemberWhereClause;
 	
-	private MafftAddRunner mafftAddRunner = new MafftAddRunner();
+	private MafftRunner mafftRunner = new MafftRunner();
 	private RaxmlEpaRunner raxmlEpaRunner = new RaxmlEpaRunner();
 	
 	public MaxLikelihoodPlacer() {
@@ -74,9 +74,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		this.phyloMemberWhereClause = 
 				Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, PHYLO_MEMBER_WHERE_CLAUSE, false));
 		
-		Element mafftAddRunnerElem = PluginUtils.findConfigElement(configElem, "mafftAddRunner");
-		if(mafftAddRunnerElem != null) {
-			PluginFactory.configurePlugin(pluginConfigContext, mafftAddRunnerElem, mafftAddRunner);
+		Element mafftRunnerElem = PluginUtils.findConfigElement(configElem, "mafftRunner");
+		if(mafftRunnerElem != null) {
+			PluginFactory.configurePlugin(pluginConfigContext, mafftRunnerElem, mafftRunner);
 		}
 		Element raxmlEpaRunnerElem = PluginUtils.findConfigElement(configElem, "raxmlEpaRunner");
 		if(raxmlEpaRunnerElem != null) {
@@ -138,7 +138,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			queryRowNameIndex++;
 		}
 
-		MafftAddResult maftAddResult = mafftAddRunner.executeMafftAdd(cmdContext, almtFastaContent, queryFastaContent, dataDirFile);
+		MafftAddResult maftAddResult = mafftRunner.executeMafftAdd(cmdContext, almtFastaContent, queryFastaContent, dataDirFile);
 		
 		Map<String, DNASequence> alignmentWithQuery = maftAddResult.getAlignmentWithQuery();
 
