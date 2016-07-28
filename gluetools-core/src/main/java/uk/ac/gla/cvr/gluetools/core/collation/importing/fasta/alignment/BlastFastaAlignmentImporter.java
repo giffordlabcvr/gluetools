@@ -60,9 +60,9 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 	}
 
 	@Override
-	protected List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
+	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
 			List<QueryAlignedSegment> existingSegs, String alignmentRowNTs, 
-			String fastaID, List<ReferenceSegment> navigationRegion) {
+			List<ReferenceSegment> navigationRegion) {
 		if(navigationRegion.isEmpty()) {
 			return Collections.emptyList();
 		}

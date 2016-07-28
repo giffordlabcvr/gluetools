@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
-public class MafftAddResult {
+public class MafftResult {
 
 	private Map<String, DNASequence> alignmentWithQuery;
 

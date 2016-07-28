@@ -45,6 +45,17 @@ public class AlignmentComputationUtils {
 	public static String constructQueryId(String sourceName, String sequenceID) {
 		return sourceName+"."+sequenceID;
 	}
+
+	public static Map<String, Object> applyMemberAlignedSegments(
+			CommandContext cmdContext,
+			Map<String, String> memberPkMap,
+			List<QueryAlignedSegment> memberAlignedSegments) {
+		return applyMemberAlignedSegments(cmdContext, 
+				memberPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH), 
+				memberPkMap.get(AlignmentMember.SOURCE_NAME_PATH), 
+				memberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH), 
+				memberAlignedSegments);
+	}
 	
 	public static Map<String, Object> applyMemberAlignedSegments(
 			CommandContext cmdContext,

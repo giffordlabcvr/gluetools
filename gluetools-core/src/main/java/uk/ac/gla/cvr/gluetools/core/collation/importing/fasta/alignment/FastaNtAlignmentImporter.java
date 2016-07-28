@@ -146,7 +146,7 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 
 			DNASequence alignmentRowDnaSequence = entry.getValue();
 			String alignmentRowAsString = alignmentRowDnaSequence.getSequenceAsString();
-			queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, alignmentRowAsString, fastaID, foundSequenceNavigationRegion);
+			queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, alignmentRowAsString, foundSequenceNavigationRegion);
 			if(queryAlignedSegs == null) {
 				// null return value means skip this alignment row. A warning should log the reason.
 				continue;
@@ -280,8 +280,17 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 		return navigationRegion;
 	}
 
-	protected abstract List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
-			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, String fastaID, List<ReferenceSegment> foundSequenceNavigationRegion);
+	public abstract List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
+			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
+			List<ReferenceSegment> foundSequenceNavigationRegion);
+
+	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext,
+			Sequence foundSequence, List<QueryAlignedSegment> existingSegs,
+			String fastaAlignmentNTs) {
+		int foundSeqLength = foundSequence.getSequenceObject().getNucleotides(cmdContext).length();
+		List<ReferenceSegment> navigationRegion = new ArrayList<ReferenceSegment>(Arrays.asList(new ReferenceSegment(1, foundSeqLength)));
+		return findAlignedSegs(cmdContext, foundSequence, existingSegs, fastaAlignmentNTs, navigationRegion);
+	}
 
 
 }

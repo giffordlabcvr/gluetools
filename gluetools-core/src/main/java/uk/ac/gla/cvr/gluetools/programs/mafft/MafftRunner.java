@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftAddResult;
+import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
@@ -34,6 +34,11 @@ public class MafftRunner implements Plugin {
 	private Double extensionPenalty;
 	private Integer maxIterate;
 
+	public enum Task {
+		ADD,
+		ADD_KEEPLENGTH
+	}
+	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
@@ -43,7 +48,7 @@ public class MafftRunner implements Plugin {
 		maxIterate = PluginUtils.configureIntProperty(configElem, MAX_ITERATE, false);
 	}
 	
-	public MafftAddResult executeMafftAdd(CommandContext cmdContext, Map<String, DNASequence> alignment, Map<String, DNASequence> query, File dataDirFile) {
+	public MafftResult executeMafft(CommandContext cmdContext, Task task, Map<String, DNASequence> alignment, Map<String, DNASequence> query, File dataDirFile) {
 
 		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
 		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined"); }
@@ -87,25 +92,41 @@ public class MafftRunner implements Plugin {
 				commandWords.add("--maxiterate");
 				commandWords.add(Integer.toString(maxIterate));
 			}
-			
-			// query file
-			commandWords.add("--add");
-			commandWords.add(queryFile.getAbsolutePath());
+
+			if(task == null) {
+				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT task was null");
+			}
+
+			switch(task) {
+			case ADD:
+				commandWords.add("--add");
+				// query file
+				commandWords.add(queryFile.getAbsolutePath());
+				break;
+			case ADD_KEEPLENGTH:
+				commandWords.add("--add");
+				// query file
+				commandWords.add(queryFile.getAbsolutePath());
+				commandWords.add("--keeplength");
+				break;
+			default:
+				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "Unknown MAFFT task "+task.name());
+			}
 
 			// alignment file
 			commandWords.add(alignmentFile.getAbsolutePath());
 			
-			ProcessResult mafftAddProcessResult = ProcessUtils.runProcess(null, null, commandWords); 
+			ProcessResult mafftProcessResult = ProcessUtils.runProcess(null, null, commandWords); 
 
-			if(mafftAddProcessResult.getExitCode() != 0) {
+			if(mafftProcessResult.getExitCode() != 0) {
 				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stdout was:");
-				GlueLogger.getGlueLogger().severe(new String(mafftAddProcessResult.getOutputBytes()));
+				GlueLogger.getGlueLogger().severe(new String(mafftProcessResult.getOutputBytes()));
 				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stderr was:");
-				GlueLogger.getGlueLogger().severe(new String(mafftAddProcessResult.getErrorBytes()));
+				GlueLogger.getGlueLogger().severe(new String(mafftProcessResult.getErrorBytes()));
 				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT process "+uuid+" failed, see log for output/error content");
 			}
 
-			return resultObjectFromProcessResult(mafftAddProcessResult);
+			return resultObjectFromProcessResult(mafftProcessResult);
 		} finally {
 			boolean allFilesDeleted = true;
 			for(File file : tempDir.listFiles()) {
@@ -130,11 +151,11 @@ public class MafftRunner implements Plugin {
 		}
 	}
 
-	private MafftAddResult resultObjectFromProcessResult(ProcessResult processResult) {
-		MafftAddResult mafftAddResult = new MafftAddResult();
+	private MafftResult resultObjectFromProcessResult(ProcessResult processResult) {
+		MafftResult mafftResult = new MafftResult();
 		Map<String, DNASequence> alignmentWithQuery = FastaUtils.parseFasta(processResult.getOutputBytes());
-		mafftAddResult.setAlignmentWithQuery(alignmentWithQuery);
-		return mafftAddResult;
+		mafftResult.setAlignmentWithQuery(alignmentWithQuery);
+		return mafftResult;
 	}
 
 	private void writeFastaFile(File tempDir, File file, Map<String, DNASequence> alignment) {

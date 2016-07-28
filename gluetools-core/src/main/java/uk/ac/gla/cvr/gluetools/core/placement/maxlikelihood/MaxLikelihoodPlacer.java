@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
-import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftAddResult;
+import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaRunner;
 
@@ -138,9 +138,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			queryRowNameIndex++;
 		}
 
-		MafftAddResult maftAddResult = mafftRunner.executeMafftAdd(cmdContext, almtFastaContent, queryFastaContent, dataDirFile);
+		MafftResult maftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD, almtFastaContent, queryFastaContent, dataDirFile);
 		
-		Map<String, DNASequence> alignmentWithQuery = maftAddResult.getAlignmentWithQuery();
+		Map<String, DNASequence> alignmentWithQuery = maftResult.getAlignmentWithQuery();
 
 		PhyloTree glueAlmtPhyloTree = TreeRenderer.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
 				new MaxLikelihoodTreeRendererContext(memberPkMapToRowName));
