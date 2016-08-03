@@ -118,11 +118,15 @@ public class MafftRunner implements Plugin {
 			
 			ProcessResult mafftProcessResult = ProcessUtils.runProcess(null, null, commandWords); 
 
-			if(mafftProcessResult.getExitCode() != 0) {
+			byte[] errorBytes = mafftProcessResult.getErrorBytes();
+			if(mafftProcessResult.getExitCode() != 0 || 
+					(errorBytes != null && 
+					 errorBytes.length > 0 && 
+					 (new String(errorBytes)).contains("ERROR"))) {
 				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stdout was:");
 				GlueLogger.getGlueLogger().severe(new String(mafftProcessResult.getOutputBytes()));
 				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stderr was:");
-				GlueLogger.getGlueLogger().severe(new String(mafftProcessResult.getErrorBytes()));
+				GlueLogger.getGlueLogger().severe(new String(errorBytes));
 				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT process "+uuid+" failed, see log for output/error content");
 			}
 

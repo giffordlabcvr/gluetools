@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.curation.aligners;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,9 @@ public interface SupportsExtendUnconstrained<R extends AlignerResult> {
 		return true;
 	}
 
-	public Map<Map<String, String>, List<QueryAlignedSegment>> extendUnconstrained(CommandContext cmdContext,Boolean preserveExistingRows,List<Map<String, String>> existingMembersPkMaps,List<Map<String, String>> recomputedMembersPkMaps);;
+	public Map<Map<String, String>, List<QueryAlignedSegment>> extendUnconstrained(CommandContext cmdContext,
+			Boolean preserveExistingRows, String alignmentName,
+			List<Map<String, String>> existingMembersPkMaps,
+			List<Map<String, String>> recomputedMembersPkMaps, File dataDir);
 
 }

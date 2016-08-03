@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -121,8 +122,10 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Map<String, DNASequence> almtFastaContent = new LinkedHashMap<String, DNASequence>();
 		for(Map.Entry<Map<String,String>, DNASequence> entry: memberPkMapToAlignmentRow.entrySet()) {
 			String rowName = "R"+referenceRowNameIndex;
-			rowNameToMemberPkMap.put(rowName, entry.getKey());
-			memberPkMapToRowName.put(entry.getKey(), rowName);
+			Map<String, String> pkMap = entry.getKey();
+			super.log(Level.FINEST, "Mapped reference "+pkMap+" as "+rowName);
+			rowNameToMemberPkMap.put(rowName, pkMap);
+			memberPkMapToRowName.put(pkMap, rowName);
 			almtFastaContent.put(rowName, entry.getValue());
 			referenceRowNameIndex++;
 		}
@@ -133,7 +136,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Map<String, DNASequence> queryFastaContent = new LinkedHashMap<String, DNASequence>();
 		for(Map.Entry<String, DNASequence> entry: querySequenceMap.entrySet()) {
 			String rowName = "Q"+queryRowNameIndex;
-			rowNameToQueryMap.put(rowName, entry.getKey());
+			String seqName = entry.getKey();
+			super.log(Level.FINEST, "Mapped query sequence "+seqName+" as "+rowName);
+			rowNameToQueryMap.put(rowName, seqName);
 			queryFastaContent.put(rowName, entry.getValue());
 			queryRowNameIndex++;
 		}

@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -8,8 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -19,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
@@ -31,16 +33,16 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"extend", "alignment"}, 
 		description = "Extend alignment to recompute certain members", 
-		docoptUsages = {"<alignmentName> <alignerModuleName> [-p] -w <whereClause> [-b <batchSize>]"}, 
+		docoptUsages = {"<alignmentName> <alignerModuleName> [-p] -w <whereClause> [-b <batchSize>] [-d <dataDir>]"}, 
 		docoptOptions = {
 				"-p, --preserveExistingRows                     Existing alignment rows should not change",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned",
-				"-b <batchSize>, --batchSize <batchSize>        Re-alignment batch size"},
+				"-b <batchSize>, --batchSize <batchSize>        Re-alignment batch size",
+				"-d <dataDir>, --dataDir <dataDir>              Directory to save temporary data in"},
 		metaTags={CmdMeta.updatesDatabase},
 		furtherHelp = "(Re-)computes the aligned segments of certain members of the specified unconstrained alignment, "+
 		"using a given aligner module. The specified member rows are (re-)computed using the existing unconstrained "+
@@ -57,9 +59,11 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 	public static final String PRESERVE_EXISTING_ROWS = "preserveExistingRows";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String BATCH_SIZE = "batchSize";
+	public static final String DATA_DIR = "dataDir";
 	
 	private String alignmentName;
 	private String alignerModuleName;
+	private String dataDirString;
 	private Boolean preserveExistingRows;
 	private Expression whereClause;
 	private int batchSize;
@@ -72,6 +76,7 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 		preserveExistingRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, PRESERVE_EXISTING_ROWS, false)).orElse(false);
 		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, true);
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(50);
+		dataDirString = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
 	}
 	
 
@@ -88,9 +93,14 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, 
 					"Aligner module '"+alignerModuleName+"' does not support extending of unconstrained alignments.");
 		}
-		SelectQuery recomputedSelectQuery = new SelectQuery(AlignmentMember.class, whereClause);
+		Expression recomputedExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignmentName)
+				.andExp(whereClause);
+		SelectQuery recomputedSelectQuery = new SelectQuery(AlignmentMember.class, 
+				recomputedExp);
 		List<AlignmentMember> recomputedMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, recomputedSelectQuery);
-		SelectQuery existingSelectQuery = new SelectQuery(AlignmentMember.class, whereClause.notExp());
+		Expression existingExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignmentName)
+				.andExp(whereClause.notExp());
+		SelectQuery existingSelectQuery = new SelectQuery(AlignmentMember.class, existingExp);
 		List<AlignmentMember> existingMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, existingSelectQuery);
 		if(	existingMembers.isEmpty() ) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, 
@@ -162,8 +172,19 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 			List<Map<String,String>> recomputedMembersPkMaps,
 			List<Map<String, Object>> resultListOfMaps) {
 
+		File dataDir = null;
+		if(dataDirString != null) {
+			if(!(cmdContext instanceof ConsoleCommandContext)) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <dataDir> option is only available from the console");
+			}
+			ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
+			dataDir = consoleCommandContext.fileStringToFile(dataDirString);
+			consoleCommandContext.mkdirs(dataDir);
+		}
+		
 		Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToNewSegments = 
-				alignerModule.extendUnconstrained(cmdContext, preserveExistingRows, existingMembersPkMaps, recomputedMembersPkMaps);
+				alignerModule.extendUnconstrained(cmdContext, preserveExistingRows, 
+						alignmentName, existingMembersPkMaps, recomputedMembersPkMaps, dataDir);
 		
 		pkMapToNewSegments.forEach( (pkMap, qaSegs) -> {
 			if(recomputedMembersPkMaps.contains(pkMap)|| !preserveExistingRows) {
@@ -195,6 +216,7 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("alignerModuleName", Module.class, Module.NAME_PROPERTY);
+			registerPathLookup("dataDir", true);
 		}
 	}
 
