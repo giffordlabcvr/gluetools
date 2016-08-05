@@ -1,4 +1,4 @@
 /.settings/
-/WebContent/www/gluetools/downloads/exampleProject*.zip
-/WebContent/www/gluetools/downloads/gluetools-core-all-*.jar
-/WebContent/www/gluetools/downloads/gluetools-config.xml
+/WebContent/www/gluetoolsApp/downloads/exampleProject*.zip
+/WebContent/www/gluetoolsApp/downloads/gluetools-core-all-*.jar
+/WebContent/www/gluetoolsApp/downloads/gluetools-config.xml
