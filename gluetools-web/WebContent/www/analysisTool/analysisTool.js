@@ -19,6 +19,8 @@ console.log("after analysisTool module definition");
 analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig',
     function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig) {
 
+	addUtilsToScope($scope);
+
 	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
 
 	$scope.variationsPerRow = 8;
@@ -43,7 +45,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		dialogs.create($scope.analysisToolURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
 	}
 	
-	$scope.analysisView = 'variationSummary';
+	$scope.analysisView = 'typingSummary';
 	$scope.enableVariationSummary = true;
 
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
@@ -180,8 +182,6 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	}
 	
 	$scope.analysisViewChanged = function() {
-		if($scope.analysisView == 'genomeDetail') {
-		}
 	}
 	
 	$scope.switchToFeatureDetail = function(refName, featureName) {
@@ -322,12 +322,11 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 
 			if($scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult &&
 					$scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult.length > 0) {
-				$scope.analysisView = 'variationSummary';
 				$scope.enableVariationSummary = true;
 			} else {
-				$scope.analysisView = 'genomeDetail';
 				$scope.enableVariationSummary = false;
 			}
+			$scope.analysisView = 'typingSummary';
 			if($scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis.length >= 0) {
 				$scope.selectedQueryAnalysis = $scope.fileItemUnderAnalysis.webAnalysisResult.queryAnalysis[0];
 				console.log("selected query analysis: ", $scope.selectedQueryAnalysis);

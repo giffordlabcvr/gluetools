@@ -108,8 +108,45 @@
 				<h3>Analysis Results</h3>
 				<div class="btn-group">
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
+						ng-model="analysisView" btn-radio="'typingSummary'">Typing summary</label>
+					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
 						ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
-					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" ng-model="analysisView" btn-radio="'genomeDetail'">Genome detail</label>
+					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" 
+						ng-model="analysisView" btn-radio="'genomeDetail'">Genome detail</label>
+				</div>
+
+
+				<div ng-show="analysisView == 'typingSummary'">
+					<table class="table" width="100%">
+						<thead>
+							<tr>
+								<th>File</th>
+								<th>Query sequence</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{fileItemUnderAnalysis.file.name}}</td>
+								<td>
+									<select ng-model="selectedQueryAnalysis" 
+										ng-options="queryAnalysis.fastaId for queryAnalysis in fileItemUnderAnalysis.webAnalysisResult.queryAnalysis"
+										>
+								    </select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table class="table table-bordered table-striped">
+						<tr><td><b>Query sequence containing clade:</b></td><td>
+							<a href="#/project/alignment/{{selectedQueryAnalysis.typingAnalysis.typeAlignmentName}}" target="_blank">
+								{{selectedQueryAnalysis.typingAnalysis.typeAlignmentDisplayName}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
+						<tr><td><b>Closest reference sequence:</b></td><td>
+							<a href="#/project/sequence/{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}" target="_blank">
+								{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
+						<tr><td><b>Distance to closest reference:</b></td><td>{{toFixed(selectedQueryAnalysis.typingAnalysis.distanceToClosestMember,4)}}</td></tr>
+						<tr><td><b>Likelihood / weight ratio:</b></td><td>{{selectedQueryAnalysis.typingAnalysis.likeWeightRatio}}</td></tr>
+					</table>
+					
 				</div>
 
 				<div ng-show="analysisView == 'variationSummary'">
