@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -15,8 +15,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -24,18 +25,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
-		commandWords={"place", "sequence"}, 
-		description = "Place one or more stored sequences into a phylogeny", 
+		commandWords={"genotype", "sequence"}, 
+		description = "Genotype one or more stored sequences", 
 		docoptUsages = { "(-w <whereClause> | -a) [-d <dataDir>]" },
 		docoptOptions = { 
-				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be placed",
-				"-a, --allSequences                             Place all sequences in the project",
+				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be genotyped",
+				"-a, --allSequences                             Genotype all sequences in the project",
 				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory",
 		},
-		furtherHelp = "",
+		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {}	
 )
-public class PlaceSequenceCommand extends AbstractPlaceCommand {
+public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
 
 	public final static String WHERE_CLAUSE = "whereClause";
 	public final static String ALL_SEQUENCES = "allSequences";
@@ -55,9 +56,9 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand {
 		}
 		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
 	}
-
+	
 	@Override
-	protected PlaceCommandResult execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+	protected GenotypeCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
 		SelectQuery selectQuery;
 		if(this.allSequences) {
 			selectQuery = new SelectQuery(Sequence.class);
@@ -71,8 +72,8 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand {
 					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		Map<String, List<PlacementResult>> seqNameToPlacementResults = maxLikelihoodPlacer.place(cmdContext, querySequenceMap, dataDirFile);
-		return generatePlaceCommandResult(seqNameToPlacementResults);
+		Map<String, GenotypeResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
+		return generateCommandResults(genotypeResults);
 	}
 
 	@CompleterClass

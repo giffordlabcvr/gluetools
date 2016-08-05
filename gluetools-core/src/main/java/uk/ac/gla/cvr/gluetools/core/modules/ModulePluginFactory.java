@@ -19,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
@@ -74,7 +75,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(TreeRenderer.class);
 
 		registerPluginClass(MaxLikelihoodPlacer.class);
-
+		registerPluginClass(MaxLikelihoodGenotyper.class);
+		
 		registerPluginClass(TreeTransformer.class);
 }
 	

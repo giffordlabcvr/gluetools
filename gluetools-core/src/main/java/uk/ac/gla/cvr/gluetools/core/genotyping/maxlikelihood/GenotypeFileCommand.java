@@ -1,7 +1,6 @@
-package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -19,8 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
-		commandWords={"place", "file"}, 
-		description = "Place sequences from a file into a phylogeny", 
+		commandWords={"genotype", "file"}, 
+		description = "Genotype sequences in a file", 
 		docoptUsages = { "-f <fileName> [-d <dataDir>]" },
 		docoptOptions = { 
 				"-f <fileName>, --fileName <fileName>  FASTA file path",
@@ -29,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class PlaceFileCommand extends AbstractPlaceCommand {
+public class GenotypeFileCommand extends AbstractGenotypeCommand {
 
 	public final static String FILE_NAME = "fileName";
 	public final static String DATA_DIR = "dataDir";
@@ -43,17 +42,16 @@ public class PlaceFileCommand extends AbstractPlaceCommand {
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
 	}
-
+	
 	@Override
-	protected PlaceCommandResult execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+	protected GenotypeCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		byte[] fastaBytes = consoleCommandContext.loadBytes(fileName);
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		Map<String, List<PlacementResult>> seqNameToPlacementResults = 
-				maxLikelihoodPlacer.place(cmdContext, querySequenceMap, dataDirFile);
-		return generatePlaceCommandResult(seqNameToPlacementResults);
+		Map<String, GenotypeResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
+		return generateCommandResults(genotypeResults);
 	}
 
 	@CompleterClass
@@ -64,5 +62,6 @@ public class PlaceFileCommand extends AbstractPlaceCommand {
 			registerPathLookup("dataDir", true);
 		}
 	}
+
 	
 }
