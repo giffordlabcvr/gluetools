@@ -18,11 +18,11 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.programs.mafft.MafftException.Code;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
-import uk.ac.gla.cvr.gluetools.programs.mafft.MafftException.Code;
 
 public class MafftRunner implements Plugin {
 

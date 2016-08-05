@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,9 +19,11 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
+
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -34,6 +37,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult.SummaryCode;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -58,10 +64,14 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 	public static final String FASTA_SEQUENCE_REPORTER_MODULE_NAME = "fastaSequenceReporterModuleName";
 	public static final String FEATURE_ANALYSIS_HINT = "featureAnalysisHint";
 	public static final String VARIATION_CATEGORY = "variationCategory";
+	public static final String MAX_LIKELIHOOD_GENOTYPER_MODULE_NAME = "maxLikelihoodGenotyperModuleName";
 
-	private String fastaSequenceReporterModuleName;
+
 	private List<FeatureAnalysisHint> featureAnalysisHints;
 	private Map<String, VariationCategory> vCatNameToCategory = new LinkedHashMap<String, VariationCategory>();
+	private String fastaSequenceReporterModuleName;
+	private String maxLikelihoodGenotyperModuleName;
+
 	
 	public WebAnalysisTool() {
 		super();
@@ -69,6 +79,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		addModulePluginCmdClass(AnalysisCommand.class);
 		addModulePluginCmdClass(ListVariationCategoryCommand.class);
 		addSimplePropertyName(FASTA_SEQUENCE_REPORTER_MODULE_NAME);
+		addSimplePropertyName(MAX_LIKELIHOOD_GENOTYPER_MODULE_NAME);
 	}
 
 	@Override
@@ -85,20 +96,23 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		for(VariationCategory variationCategory: variationCategories) {
 			vCatNameToCategory.put(variationCategory.getName(), variationCategory);
 		}
-		
-		
+		this.maxLikelihoodGenotyperModuleName = PluginUtils.configureStringProperty(configElem, MAX_LIKELIHOOD_GENOTYPER_MODULE_NAME, true);
 	}
 
 	public WebAnalysisResult analyse(CommandContext cmdContext, byte[] fastaBytes, List<String> vCatNames) {
 		
-		FastaSequenceReporter fastaSequenceReporter = 
-				Module.resolveModulePlugin(cmdContext, FastaSequenceReporter.class, fastaSequenceReporterModuleName);
+		FastaSequenceReporter fastaSequenceReporter = resolveFastaSequenceReporter(cmdContext);
+		MaxLikelihoodGenotyper maxLikelihoodGenotyper = resolveMaxLikelihoodGenotyper(cmdContext);
 
 		Map<String, QueryAnalysis> fastaIdToQueryAnalysis = new LinkedHashMap<String, QueryAnalysis>();
 		Map<String, ReferenceAnalysis> refNameToAnalysis = new LinkedHashMap<String, ReferenceAnalysis>();
 
+		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
+		Map<String, DNASequence> fastaIdToSequence = FastaUtils.parseFasta(fastaBytes);
 		
-		initRefAndQueryAnalyses(cmdContext, fastaBytes, fastaSequenceReporter,
+		Map<String, GenotypeResult> fastaIdToGenotypeResult = maxLikelihoodGenotyper.genotype(cmdContext, fastaIdToSequence, null);
+		
+		initRefAndQueryAnalyses(cmdContext, fastaIdToSequence, fastaIdToGenotypeResult,
 				refNameToAnalysis, fastaIdToQueryAnalysis);
 		
 		checkVCatNames(vCatNames);
@@ -127,8 +141,18 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				variationCategoryResults);
 	}
 
-	
-	
+	private FastaSequenceReporter resolveFastaSequenceReporter(CommandContext cmdContext) {
+		FastaSequenceReporter fastaSequenceReporter = 
+				Module.resolveModulePlugin(cmdContext, FastaSequenceReporter.class, fastaSequenceReporterModuleName);
+		return fastaSequenceReporter;
+	}
+
+	private MaxLikelihoodGenotyper resolveMaxLikelihoodGenotyper(CommandContext cmdContext) {
+		MaxLikelihoodGenotyper maxLikelihoodGenotyper = 
+				Module.resolveModulePlugin(cmdContext, MaxLikelihoodGenotyper.class, maxLikelihoodGenotyperModuleName);
+		return maxLikelihoodGenotyper;
+	}
+
 	private void populateVariationMatchGroups(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter,
 			AllColumnsAlignment<Key> allColsAlmt,
@@ -291,19 +315,44 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 	}
 	
 	private void initRefAndQueryAnalyses(
-			CommandContext cmdContext, byte[] fastaBytes,
-			FastaSequenceReporter fastaSequenceReporter,
+			CommandContext cmdContext, 
+			Map<String, DNASequence> fastaIdToSequence,
+			Map<String, GenotypeResult> fastaIdToGenotypeResult,
 			Map<String, ReferenceAnalysis> refNameToAnalysis,
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis) {
 		
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
-		Map<String, DNASequence> fastaIdToSequence = FastaUtils.parseFasta(fastaBytes);
-		
 		fastaIdToSequence.forEach((fastaId, sequence) -> {
-			String targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(cmdContext, fastaId);
-			ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
-			AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(null);
+			
+			GenotypeResult genotypeResult = fastaIdToGenotypeResult.get(fastaId);
+			if(genotypeResult.getSummaryCode() == SummaryCode.NEGATIVE) {
+				throw new WebAnalysisException(Code.GENOTYPING_FAILED, fastaId);
+			}
+			Map<String, String> closestMemberPkMap = genotypeResult.getPlacementResult().getClosestMemberPkMap();
+			AlignmentMember tipAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, closestMemberPkMap);
+			
+			List<ReferenceSequence> closestMemberReferences = tipAlmtMember.getSequence().getReferenceSequences();
 			Alignment tipAlmt = tipAlmtMember.getAlignment();
+			ReferenceSequence targetRef = null;
+			if(closestMemberReferences.isEmpty()) {
+				targetRef = tipAlmt.getConstrainingRef();
+			} else if(closestMemberReferences.size() == 1) {
+				// single reference, choose that.
+				targetRef = closestMemberReferences.get(0);
+			} else {
+				// if one of the references is the constraining ref, choose that.
+				for(ReferenceSequence refSeq: closestMemberReferences) {
+					if(refSeq.getName().equals(tipAlmt.getConstrainingRef().getName())) {
+						targetRef = refSeq;
+						break;
+					}
+				}
+				if(targetRef == null) {
+					throw new WebAnalysisException(Code.CANNOT_DETERMINE_REFERENCE_FROM_CLOSEST_MEMBER, 
+							tipAlmt.getName(), tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID());
+				}
+			}
+
+			String targetRefName = targetRef.getName();
 			List<Alignment> ancestors = tipAlmt.getAncestors();
 			List<String> ancestorRefNames = new ArrayList<String>();
 			List<String> ancestorAlmtNames = new ArrayList<String>();
@@ -334,10 +383,24 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 						new ReferenceAnalysis(targetRef, tipAlmt, tipAlmtMember));
 				}
 			}
+			TypingAnalysis typingAnalysis = new TypingAnalysis();
+			typingAnalysis.closestMemberAlignmentName = tipAlmt.getName();
+			typingAnalysis.closestMemberAlignmentDisplayName = tipAlmt.getDisplayName();
+			typingAnalysis.closestMemberSourceName = tipAlmtMember.getSequence().getSource().getName();
+			typingAnalysis.closestMemberSequenceID = tipAlmtMember.getSequence().getSequenceID();
+			typingAnalysis.distanceToClosestMember = genotypeResult.getPlacementResult().getDistanceToClosestMember().doubleValue();
+			typingAnalysis.likeWeightRatio = genotypeResult.getPlacementResult().getLikeWeightRatio();
+			typingAnalysis.summaryCode = genotypeResult.getSummaryCode().name();
+			String typeAlignmentName = genotypeResult.getTypeAlignmentName();
+			typingAnalysis.typeAlignmentName = typeAlignmentName;
+			Alignment typeAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(typeAlignmentName));
+			typingAnalysis.typeAlignmentDisplayName = typeAlignment.getDisplayName();
+			
 			QueryAnalysis queryAnalysis = new QueryAnalysis(fastaId, new FastaSequenceObject(fastaId, sequence.getSequenceAsString()), targetRefName);
 			queryAnalysis.ancestorRefName = ancestorRefNames;
 			queryAnalysis.ancestorAlmtName = ancestorAlmtNames;
 			queryAnalysis.tipAlignmentName = tipAlmt.getName();
+			queryAnalysis.typingAnalysis = typingAnalysis;
 			fastaIdToQueryAnalysis.put(fastaId, queryAnalysis);
 		});
 	}
@@ -910,6 +973,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			// check renderer module exists and is of the correct type
 			ObjectRenderer.getRenderer(cmdContext, variationCategory.getObjectRendererModule());
 		}
+		resolveFastaSequenceReporter(cmdContext);
+		resolveMaxLikelihoodGenotyper(cmdContext);
 	}
 
 	public List<VariationCategory> getVariationCategories() {

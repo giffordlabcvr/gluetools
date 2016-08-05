@@ -48,9 +48,9 @@ public class AnalysisCommand extends ModulePluginCommand<PojoCommandResult<WebAn
 
 
 	@Override
-	protected PojoCommandResult<WebAnalysisResult> execute(CommandContext cmdContext, WebAnalysisTool variationAnalyser) {
+	protected PojoCommandResult<WebAnalysisResult> execute(CommandContext cmdContext, WebAnalysisTool webAnalysisTool) {
 		byte[] fileContent = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
-		return new PojoCommandResult<WebAnalysisResult>(variationAnalyser.analyse(cmdContext, fileContent, vCategories));
+		return new PojoCommandResult<WebAnalysisResult>(webAnalysisTool.analyse(cmdContext, fileContent, vCategories));
 	}
 	
 	@CompleterClass

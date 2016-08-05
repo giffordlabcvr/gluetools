@@ -7,6 +7,8 @@ public class WebAnalysisException extends GlueException {
 	public enum Code implements GlueErrorCode {
 
 		UNKNOWN_VARIATION_CATEGORY("vCatName"),
+		GENOTYPING_FAILED("fastaID"),
+		CANNOT_DETERMINE_REFERENCE_FROM_CLOSEST_MEMBER("alignmentName","sourceName","sequenceID"),
 		INVALID_CONFIG("errorTxt"),;
 
 		private String[] argNames;

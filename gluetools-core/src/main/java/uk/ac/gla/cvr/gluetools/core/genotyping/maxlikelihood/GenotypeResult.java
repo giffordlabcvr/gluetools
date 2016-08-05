@@ -1,8 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.PlacementResult;
 
 

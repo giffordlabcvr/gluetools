@@ -32,6 +32,11 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(RenderObjectCommand.class);
 		
+		registerCommandClass(ReferenceListPropertyCommand.class);
+		registerCommandClass(ReferenceShowPropertyCommand.class);
+		registerCommandClass(ReferenceSetFieldCommand.class);
+		registerCommandClass(ReferenceUnsetFieldCommand.class);
+		
 		registerCommandClass(ExitCommand.class);
 	}
 	

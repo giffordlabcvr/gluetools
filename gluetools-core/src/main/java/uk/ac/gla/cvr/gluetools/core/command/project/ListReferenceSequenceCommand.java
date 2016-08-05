@@ -1,51 +1,40 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.Optional;
-
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.query.SelectQuery;
-import org.w3c.dom.Element;
-
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass(
-	commandWords={"list", "reference"}, 
-	docoptUsages={"[-w <whereClause>]"},
-	docoptOptions={
-	"-w <whereClause>, --whereClause <whereClause>  Qualify result set"},
-	description="List reference sequences") 
-public class ListReferenceSequenceCommand extends ProjectModeCommand<ListResult> {
+		commandWords={"list", "reference"}, 
+		docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [<fieldName> ...]"},
+		docoptOptions={
+				"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
+				"-p <pageSize>, --pageSize <pageSize>           Tune ORM page size",
+				"-l <fetchLimit>, --fetchLimit <fetchLimit>     Limit max number of records",
+		"-o <fetchOffset>, --fetchOffset <fetchOffset>  Record number offset"},
+		description="List references",
+		furtherHelp=
+		"The <pageSize> option is for performance tuning. The default page size\n"+
+		"is 250 records.\n"+
+		"The optional whereClause qualifies which references are displayed.\n"+
+		"Where fieldNames are specified, only these field values will be displayed.\n"+
+		"Examples:\n"+
+		"  list reference -w \"name like 'NS%'\"\n"+
+		"  list reference -w \"custom_field = 'value1'\"\n"+
+		"  list reference name custom_field") 
+public class ListReferenceSequenceCommand extends AbstractListCTableCommand<ReferenceSequence> {
 
-	public static final String WHERE_CLAUSE = "whereClause";
-	private Optional<Expression> whereClause;
-
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-	}
-
-	@Override
-	public ListResult execute(CommandContext cmdContext) {
-		SelectQuery selectQuery;
-		if(whereClause.isPresent()) {
-			selectQuery = new SelectQuery(ReferenceSequence.class, whereClause.get());
-		} else {
-			selectQuery = new SelectQuery(ReferenceSequence.class);
-		}
-		return CommandUtils.runListCommand(cmdContext, ReferenceSequence.class, selectQuery);
+	public ListReferenceSequenceCommand() {
+		super(ConfigurableTable.reference);
 	}
 
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {}
+	public static final class Completer extends FieldNameCompleter {
+		public Completer() {
+			super(ConfigurableTable.reference);
+		}
+	}
 
 }

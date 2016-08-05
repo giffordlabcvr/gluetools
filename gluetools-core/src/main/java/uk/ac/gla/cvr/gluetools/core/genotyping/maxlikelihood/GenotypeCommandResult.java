@@ -16,7 +16,7 @@ public class GenotypeCommandResult extends BaseTableResult<GenotypeResult> {
 				column("closestMemberSourceName", gResult -> gResult.getPlacementResult().getClosestMemberPkMap().get(AlignmentMember.SOURCE_NAME_PATH)),
 				column("closestMemberSequenceID", gResult -> gResult.getPlacementResult().getClosestMemberPkMap().get(AlignmentMember.SEQUENCE_ID_PATH)),
 				column("likeWeightRatio", gResult -> gResult.getPlacementResult().getLikeWeightRatio()),
-				column("distanceToClosestmember", gResult -> gResult.getPlacementResult().getDistanceToClosestMember().doubleValue())
+				column("distanceToClosestMember", gResult -> gResult.getPlacementResult().getDistanceToClosestMember().doubleValue())
 				);
 	}
 

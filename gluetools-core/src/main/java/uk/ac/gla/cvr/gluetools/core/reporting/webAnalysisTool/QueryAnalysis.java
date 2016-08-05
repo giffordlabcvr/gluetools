@@ -32,6 +32,9 @@ public class QueryAnalysis {
 	@PojoResultField
 	public List<QuerySequenceFeatureAnalysis> sequenceFeatureAnalysis;
 
+	@PojoResultField
+	public TypingAnalysis typingAnalysis;
+	
 	private AbstractSequenceObject sequenceObj;
 
 	private List<QueryAlignedSegment> queryToTargetRefSegs;

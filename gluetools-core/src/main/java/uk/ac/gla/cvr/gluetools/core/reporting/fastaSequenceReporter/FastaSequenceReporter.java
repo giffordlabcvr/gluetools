@@ -61,9 +61,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		if(fastaIdTextToReferenceQueryModuleName == null) {
 			throw new FastaSequenceException(Code.NO_TARGET_REFERENCE_DEFINED);
 		}
-		TextToQueryTransformer fastaIdTextToReferenceQueryTransformer = 
-				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, fastaIdTextToReferenceQueryModuleName,
-						TextToQueryTransformer.DataClassEnum.ReferenceSequence);
+		TextToQueryTransformer fastaIdTextToReferenceQueryTransformer = resolveIdToRefQueryModule(cmdContext);
 		List<String> referenceSeqNames = fastaIdTextToReferenceQueryTransformer.textToQuery(cmdContext, fastaId).
 				getColumnValues(ReferenceSequence.NAME_PROPERTY);
 		if(referenceSeqNames.size() == 0) {
@@ -73,6 +71,14 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 			throw new FastaSequenceException(Code.TARGET_REFERENCE_AMBIGUOUS, fastaId, referenceSeqNames.toString());
 		}
 		return referenceSeqNames.get(0);
+	}
+
+	private TextToQueryTransformer resolveIdToRefQueryModule(
+			CommandContext cmdContext) {
+		TextToQueryTransformer fastaIdTextToReferenceQueryTransformer = 
+				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, fastaIdTextToReferenceQueryModuleName,
+						TextToQueryTransformer.DataClassEnum.ReferenceSequence);
+		return fastaIdTextToReferenceQueryTransformer;
 	}
 
 	public AlignerResult alignToTargetReference(CommandContext cmdContext, String targetRefName, 
@@ -109,6 +115,16 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 
 
 	
+	@Override
+	public void validate(CommandContext cmdContext) {
+		super.validate(cmdContext);
+		if(this.fastaIdTextToReferenceQueryModuleName != null) {
+			resolveIdToRefQueryModule(cmdContext);
+		}
+	}
+
+
+
 	public static class TranslatedQueryAlignedSegment {
 
 		private QueryAlignedSegment queryAlignedSegment;
