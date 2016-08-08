@@ -32,7 +32,7 @@
 		<!-- RAxML-specific config -->
 		<property>
 			<name>gluetools.core.programs.raxml.raxmlhpc.executable</name>
-			<value>/opt/gluetools/raxml/bin/raxmlHPC-PTHREADS-AVX2</value>
+			<value>/opt/gluetools/raxml/bin/raxmlHPC-PTHREADS-SSE3</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.raxml.raxmlhpc.cpus</name>
