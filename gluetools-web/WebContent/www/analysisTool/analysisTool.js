@@ -41,10 +41,6 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.resultVariationMatchesAbsent = null;
 	}
 	
-	$scope.seqPrepDialog = function() {
-		dialogs.create($scope.analysisToolURL+'/dialogs/seqPrepDialog.html','seqPrepDialog',{},{});
-	}
-	
 	$scope.analysisView = 'typingSummary';
 	$scope.enableVariationSummary = true;
 
