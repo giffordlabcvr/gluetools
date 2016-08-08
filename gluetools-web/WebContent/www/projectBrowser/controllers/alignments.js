@@ -11,6 +11,7 @@ projectBrowser.controller('alignmentsCtrl',
 	glueWS.runGlueCommand("", {
     	"list": { 
     		"alignment": {
+    			"whereClause":"refSequence.name != null",
     			"fieldName":[
     			                "name",
     			                "displayName",

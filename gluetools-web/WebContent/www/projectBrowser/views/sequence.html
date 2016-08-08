@@ -8,9 +8,9 @@
 			</a>
 		</div>
 	</p>
-	<h3>Alignment memberships</h3>	
+	<h3>Clade memberships</h3>	
 	<span ng-show="!renderResult.sequence.alignmentMembership">None</span>
-	<div ng-repeat="alignment in renderResult.sequence.alignmentMembership track by $index">
+	<div ng-repeat="alignment in renderResult.sequence.alignmentMembership track by $index" ng-show="alignment.constrainingReference">
 		<a href="#project/alignment/{{alignment.name}}/member/{{renderResult.sequence.sourceName}}/{{renderResult.sequence.sequenceID}}">
 			{{alignment.renderedName}}
 		</a>

@@ -62,9 +62,9 @@ function ($scope, glueWS, glueWebToolConfig) {
 	$scope.brand = "HCV-GLUE";
 	$scope.homeMenuTitle = "Home";
 	$scope.analysisMenuTitle = "Analysis";
-	$scope.analysisToolMenuTitle = "Sequence file analysis";
+	$scope.analysisToolMenuTitle = "Sequence typing and interpretation";
 	$scope.projectBrowserMenuTitle = "Project";
-	$scope.projectBrowserAlignmentMenuTitle = "Alignments";
+	$scope.projectBrowserAlignmentMenuTitle = "Clades";
 	$scope.projectBrowserReferenceSequenceMenuTitle = "Reference sequences";
 	$scope.projectBrowserSequenceMenuTitle = "Sequences";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");

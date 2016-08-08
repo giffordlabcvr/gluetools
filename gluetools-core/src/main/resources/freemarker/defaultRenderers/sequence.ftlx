@@ -7,6 +7,12 @@
 	<alignmentMembership glueType="Object[]">
 		<name>${alignmentMembership.alignment.name}</name>
 		<renderedName>${alignmentMembership.alignment.getRenderedName()}</renderedName>
+<#if alignmentMembership.alignment.refSequence ??>
+		<constrainingReference>
+			<name>${alignmentMembership.alignment.refSequence.name}</name>
+			<renderedName>${alignmentMembership.alignment.refSequence.getRenderedName()}</renderedName>
+		</constrainingReference>
+</#if>
 	</alignmentMembership>
 </#list>
 <#list referenceSequences as referenceSequence>

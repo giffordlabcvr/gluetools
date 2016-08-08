@@ -1,20 +1,20 @@
 <div ng-show="renderResult" ng-app="projectBrowser">
-	<h1>Alignment: {{renderResult.alignment.renderedName}}</h1>
+	<h1>Clade: {{renderResult.alignment.renderedName}}</h1>
 	
-	<div ng-show="renderResult.alignment.constrainingReference">
+	<div>
 		<p>
-			Constraining reference sequence: <a href="#project/reference/{{renderResult.alignment.constrainingReference.name}}">
+			Clade reference sequence: <a href="#project/reference/{{renderResult.alignment.constrainingReference.name}}">
 			{{renderResult.alignment.constrainingReference.renderedName}}</a>
 		</p>
 		<p>
-			Parent alignment: 
+			Parent clade: 
 			<a ng-show="renderResult.alignment.parent" href="#project/alignment/{{renderResult.alignment.parent.name}}">
 				{{renderResult.alignment.parent.renderedName}}
 			</a>
 			<span ng-show="!renderResult.alignment.parent">-</span>
 		</p>
 		<p>
-			Child alignments: <span ng-show="!renderResult.alignment.child">None</span>
+			Child clades: <span ng-show="!renderResult.alignment.child">None</span>
 			<div ng-repeat="child in renderResult.alignment.child track by $index">
 				<a href="#project/alignment/{{child.name}}">
 					{{child.renderedName}}
@@ -22,8 +22,7 @@
 			</div>
 		</p>
 	</div>
-	<div ng-show="!renderResult.alignment.constrainingReference"><p>Unconstrained</p></div>
-	<h3>Alignment members</h3>	
+	<h3>Clade member sequences</h3>	
 	<span ng-show="!renderResult.alignment.memberSequence">None</span>
 	<div ng-repeat="member in renderResult.alignment.memberSequence track by $index">
 		<a href="#project/alignment/{{renderResult.alignment.name}}/member/{{member.sourceName}}/{{member.sequenceID}}">

@@ -4,7 +4,8 @@
 <div ng-app="analysisTool">
 
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
-		<h2>Sequence file analysis</h2>
+		<h2>Sequence typing and interpretation</h2>
+		<p>Submit your sequence files in FASTA nucleotide format for automated analysis of the sequence type and interpretation of the nucleotide content.</p>
 		<div>
 			<div>
 	
@@ -113,7 +114,7 @@
 
 
 				<div ng-show="analysisView == 'typingSummary'">
-					<table class="table" width="100%">
+					<table class="table table-nonfluid" width="100%">
 						<thead>
 							<tr>
 								<th>File</th>
@@ -132,21 +133,27 @@
 							</tr>
 						</tbody>
 					</table>
-					<table class="table table-bordered table-striped">
-						<tr><td><b>Query sequence containing clade:</b></td><td>
-							<a href="#/project/alignment/{{selectedQueryAnalysis.typingAnalysis.typeAlignmentName}}" target="_blank">
-								{{selectedQueryAnalysis.typingAnalysis.typeAlignmentDisplayName}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
-						<tr><td><b>Closest reference sequence:</b></td><td>
-							<a href="#/project/sequence/{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}" target="_blank">
-								{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
-						<tr><td><b>Distance to closest reference:</b></td><td>{{toFixed(selectedQueryAnalysis.typingAnalysis.distanceToClosestMember,4)}}</td></tr>
-						<tr><td><b>Likelihood / weight ratio:</b></td><td>{{selectedQueryAnalysis.typingAnalysis.likeWeightRatio}}</td></tr>
+					<table class="table table-bordered table-striped table-nonfluid">
+						<thead>
+							<col width="300px"></col>
+							<col width="300px"></col>
+						</thead>
+						<tbody>
+							<tr><td><b>Query sequence clade</b></td><td>
+								<a href="#/project/alignment/{{selectedQueryAnalysis.typingAnalysis.typeAlignmentName}}" target="_blank">
+									{{selectedQueryAnalysis.typingAnalysis.typeAlignmentDisplayName}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
+							<tr><td><b>Closest reference sequence</b></td><td>
+								<a href="#/project/sequence/{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}" target="_blank">
+									{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
+							<tr><td><b>Distance to closest reference sequence</b></td><td>{{toFixed(selectedQueryAnalysis.typingAnalysis.distanceToClosestMember,4)}}</td></tr>
+							<tr><td><b>Likelihood / weight ratio</b></td><td>{{selectedQueryAnalysis.typingAnalysis.likeWeightRatio}}</td></tr>
+						<tbody>
 					</table>
 					
 				</div>
 
 				<div ng-show="analysisView == 'variationSummary'">
-					<table class="table" width="100%">
+					<table class="table table-nonfluid" width="100%">
 						<thead>
 							<tr>
 								<th>File</th>
@@ -237,7 +244,7 @@
 				</div>
 				
 				<div ng-show="analysisView == 'genomeDetail'">
-					<table class="table" width="100%">
+					<table class="table table-nonfluid" width="100%">
 						<thead>
 							<tr>
 								<th>File</th>
