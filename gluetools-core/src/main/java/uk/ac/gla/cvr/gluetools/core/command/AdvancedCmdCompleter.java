@@ -308,6 +308,31 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 	}
 
+	public static class CustomTableNameInstantiator extends VariableInstantiator {
+		
+
+		public CustomTableNameInstantiator() {
+		}
+
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(
+				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			return getProject(cmdContext).getCustomTables()
+					.stream()
+					.map(t -> new CompletionSuggestion(t.getName(), true))
+					.collect(Collectors.toList());
+		}
+
+		private Project getProject(ConsoleCommandContext cmdContext) {
+			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+			Project project = insideProjectMode.getProject();
+			return project;
+		}
+	}
+
+	
 	public static final class CustomFieldNameInstantiator extends FieldNameInstantiator {
 		public CustomFieldNameInstantiator(ConfigurableTable cTable) {
 			super(cTable);

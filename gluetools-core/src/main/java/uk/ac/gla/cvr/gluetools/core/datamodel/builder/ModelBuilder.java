@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPath;
@@ -31,7 +32,9 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.map.DataMap;
 import org.apache.cayenne.map.DbAttribute;
 import org.apache.cayenne.map.DbEntity;
+import org.apache.cayenne.map.EntityResolver;
 import org.apache.cayenne.merge.AddColumnToDb;
+import org.apache.cayenne.merge.CreateTableToDb;
 import org.apache.cayenne.merge.DropColumnToDb;
 import org.apache.cayenne.merge.DropTableToDb;
 import org.apache.cayenne.merge.ExecutingMergerContext;
@@ -43,6 +46,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.bcelgenerated.CustomTableObjectClassCreator;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
@@ -52,8 +56,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -155,6 +162,20 @@ public class ModelBuilder {
 
 		String projectName = project.getName();
 		List<Field> fields = project.getFields();
+		List<CustomTable> customTables = project.getCustomTables();
+		
+		// ensure custom table classes are available to GLUE class loaders.
+		for(CustomTable customTable: customTables) {
+			String className = CustomTableObjectClassCreator.getFullClassName(projectName, customTable.getName());
+			synchronized(gluetoolsEngine) {
+				if(!gluetoolsEngine.containsClass(className)) {
+					CustomTableObjectClassCreator classCreator = new CustomTableObjectClassCreator(projectName, customTable.getName());
+					byte[] classBytes = classCreator.create();
+					gluetoolsEngine.addClass(className, classBytes);
+				}
+			}
+		}
+		
 		List<String> projectTableNames = new ArrayList<String>();
 		Document cayenneDomainDocument;
 		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_DOMAIN_RESOURCE)) {
@@ -183,6 +204,21 @@ public class ModelBuilder {
 		XmlNamespaceContext namespaceContext = new GlueXmlUtils.XmlNamespaceContext();
 		namespaceContext.addNamespace("cay", CAYENNE_NS);
 		xPath.setNamespaceContext(namespaceContext);
+		
+		// add custom tables.
+		XPathExpression dataMapXPathExpression = 
+				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map");
+		Element dataMapElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, dataMapXPathExpression);
+		for(CustomTable customTable : customTables) {
+			Element dbEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "db-entity");
+			dbEntityElem.setAttribute("name", customTable.getName());
+			Element idAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
+			idAttributeElem.setAttribute("name", "id");
+			idAttributeElem.setAttribute("type", "VARCHAR");
+			idAttributeElem.setAttribute("isPrimaryKey", "true");
+			idAttributeElem.setAttribute("isMandatory", "true");
+			idAttributeElem.setAttribute("length", "50");
+		}
 		
 		Map<ConfigurableTable, List<Field>> cTableToFields = new LinkedHashMap<ConfigurableTable, List<Field>>();
 
@@ -223,6 +259,19 @@ public class ModelBuilder {
 			}
 		}
 		
+		for(CustomTable customTable : customTables) {
+			Element dbEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "obj-entity");
+			String tableName = customTable.getName();
+			dbEntityElem.setAttribute("name", tableName);
+			dbEntityElem.setAttribute("className", CustomTableObjectClassCreator.getFullClassName(projectName, tableName));
+			dbEntityElem.setAttribute("dbEntityName", tableName);
+			dbEntityElem.setAttribute("superClassName", CustomTableObject.class.getCanonicalName());
+			Element idAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "obj-attribute");
+			idAttributeElem.setAttribute("name", "id");
+			idAttributeElem.setAttribute("db-attribute-path", "id");
+			idAttributeElem.setAttribute("type", FieldType.VARCHAR.javaType());
+		}
+		
 		{
 			XPathExpression xPathExpression = 
 					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship");
@@ -260,13 +309,27 @@ public class ModelBuilder {
 		// XmlUtils.prettyPrint(cayenneDomainDocument, System.out);
 		// XmlUtils.prettyPrint(cayenneMapDocument, System.out);
 
-		ServerRuntime projectRuntime = new ServerRuntime(
-					    projectDomainName, 
-					    dbConfigModule(dbConfiguration, propertiesConfiguration),
-					     binder -> binder.bind(ResourceLocator.class)
-					                     .to(GlueResourceLocator.class));
-		// ensure it is created by getting the obj context.
-		projectRuntime.getContext();
+		ServerRuntime projectRuntime = null;
+		projectRuntime = new ServerRuntime(
+				projectDomainName, 
+				dbConfigModule(dbConfiguration, propertiesConfiguration),
+				binder -> binder.bind(ResourceLocator.class)
+				.to(GlueResourceLocator.class));
+		EntityResolver entityResolver = projectRuntime.getContext().getEntityResolver();
+		gluetoolsEngine.runWithGlueClassloader(new Supplier<Void>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public Void get() {
+				for(CustomTable customTable: customTables) {
+					// ensure all entity classes are loaded, and associated with table objects.
+					Class<? extends CustomTableObject> customTableRowClass =
+							(Class<? extends CustomTableObject>) entityResolver
+							.getClassDescriptor(customTable.getName()).getObjectClass();
+					customTable.setRowObjectClass(customTableRowClass);
+				}
+				return null;
+			}
+		});
 		Set<String> tableNamesInDB; 
 		try {
 			tableNamesInDB = getNameTablesInDB(projectRuntime.getDataDomain().getDataNode("glueproject-node"));
@@ -297,11 +360,9 @@ public class ModelBuilder {
 		elem.setAttribute(attrName, specializeTableName(tableName, projectName));
 	}
 
-	public static String specializeTableName(String tableName,
-			String projectName) {
+	public static String specializeTableName(String tableName, String projectName) {
 		return projectName+"_"+tableName;
 	}
-
 	
 	private static Set<String> getNameTablesInDB(DataNode dataNode)
             throws SQLException {
@@ -369,6 +430,34 @@ public class ModelBuilder {
 			}
 		}
 	}
+	
+	public static void addTableToModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		ServerRuntime projectRuntime = null;
+		try {
+			projectRuntime = createProjectModel(gluetoolsEngine, project);
+			MergerContext mergerContext = getMergerContext(project, projectRuntime);
+			CreateTableToDb createTableToken = getCreateTableToken(project, customTable, mergerContext);
+			createTableToken.execute(mergerContext);
+		} finally {
+			if(projectRuntime != null) {
+				projectRuntime.shutdown();
+			}
+		}
+	}
+
+	public static void deleteTableFromModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		ServerRuntime projectRuntime = null;
+		try {
+			projectRuntime = createProjectModel(gluetoolsEngine, project);
+			MergerContext mergerContext = getMergerContext(project, projectRuntime);
+			DropTableToDb dropTableToken = getDropTableToken(project, customTable, mergerContext);
+			dropTableToken.execute(mergerContext);
+		} finally {
+			if(projectRuntime != null) {
+				projectRuntime.shutdown();
+			}
+		}
+	}
 
 	private static AddColumnToDb getAddColumnToken(Project project, Field field, MergerContext mergerContext) {
 		DbEntity tableToModify = 
@@ -383,6 +472,23 @@ public class ModelBuilder {
 		return new AddColumnToDb(tableToModify, column);
 	}
 
+	private static CreateTableToDb getCreateTableToken(Project project, CustomTable customTable, MergerContext mergerContext) {
+		DbEntity dbEntity = new DbEntity(specializeTableName(customTable.getName(), project.getName()));
+		DbAttribute idColumn = new DbAttribute("id");
+		idColumn.setType(TypesMapping.getSqlTypeByName(FieldType.VARCHAR.cayenneType()));
+		idColumn.setMandatory(true);
+		idColumn.setMaxLength(50);
+		idColumn.setPrimaryKey(true);
+		dbEntity.addAttribute(idColumn);
+		return new CreateTableToDb(dbEntity);
+	}
+
+	private static DropTableToDb getDropTableToken(Project project, CustomTable customTable, MergerContext mergerContext) {
+		DbEntity tableToDelete = 
+				mergerContext.getDataMap().getDbEntity(specializeTableName(customTable.getName(), project.getName()));
+		return new DropTableToDb(tableToDelete);
+	}
+	
 	private static MergerContext getMergerContext(Project project,
 			ServerRuntime projectRuntime) {
 		DataDomain domain = projectRuntime.getDataDomain();
@@ -491,6 +597,7 @@ public class ModelBuilder {
 		newObject.setPKValues(pkMap);
 		return newObject;
 	}
+
 
 	
 	

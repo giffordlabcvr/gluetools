@@ -17,6 +17,11 @@ public class ProjectSchemaModeCommandFactory extends BaseCommandFactory {
 		super.populateCommandTree();
 		registerCommandClass(TableCommand.class);
 		registerCommandClass(ExitCommand.class);
+
+		registerCommandClass(CreateCustomTableCommand.class);
+		registerCommandClass(DeleteCustomTableCommand.class);
+		registerCommandClass(ListCustomTableCommand.class);
+
 	}
 	
 

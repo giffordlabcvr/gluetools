@@ -3,7 +3,10 @@ package uk.ac.gla.cvr.gluetools.core;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
@@ -11,6 +14,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.classloader.GlueClassLoader;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration.Vendor;
@@ -56,6 +60,9 @@ public class GluetoolsEngine implements Plugin {
 	private PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
 	private ServerRuntime rootServerRuntime;
 	private Properties gluecoreProperties;
+	private Map<String, byte[]> classNameToBytes = new LinkedHashMap<String, byte[]>();
+	private GlueClassLoader glueClassLoader = new GlueClassLoader(GluetoolsEngine.class.getClassLoader(), this);
+
 	
 	private GluetoolsEngine(String configFilePath) {
 		gluecoreProperties = new Properties();
@@ -187,6 +194,35 @@ public class GluetoolsEngine implements Plugin {
 
 	public Configuration getFreemarkerConfiguration() {
 		return freemarkerConfiguration;
+	}
+
+	public void addClass(String className, byte[] bytes) {
+		synchronized(classNameToBytes) {
+			classNameToBytes.put(className, bytes);
+		}
+	}
+
+	public boolean containsClass(String className) {
+		synchronized(classNameToBytes) {
+			return classNameToBytes.containsKey(className);
+		}
+	}
+
+	public byte[] getBytes(String className) {
+		synchronized(classNameToBytes) {
+			return classNameToBytes.get(className);
+		}
+	}
+
+	public <X> X runWithGlueClassloader(Supplier<X> supplier) {
+		ClassLoader prevContextClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			// not sure what the effects are of not parenting to the current context classloader here
+			Thread.currentThread().setContextClassLoader(glueClassLoader);
+			return supplier.get();
+		} finally {
+			Thread.currentThread().setContextClassLoader(prevContextClassLoader);
+		}
 	}
 	
 }

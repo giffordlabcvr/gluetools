@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.project;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -28,10 +31,16 @@ public class Project extends _Project {
 	public static Map<String, String> pkMap(String name) {
 		return Collections.singletonMap(NAME_PROPERTY, name);
 	}
-
+	
 	@Override
 	public void setPKValues(Map<String, String> idMap) {
 		setName(idMap.get(NAME_PROPERTY));
+	}
+
+	public CustomTable getCustomTable(String tableName) {
+		return getCustomTables().stream()
+				.filter(t -> t.getName().equals(tableName))
+				.findFirst().orElse(null);
 	}
 	
 	public Field getCustomField(ConfigurableTable cTable, String fieldName) {

@@ -82,6 +82,9 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(ProjectGenerateGlueConfigCommand.class);
 
+		registerCommandClass(CreateCustomTableRowCommand.class);
+		registerCommandClass(DeleteCustomTableRowCommand.class);
+		
 		// remove this when no longer needed
 		registerCommandClass(CorrectAlignmentCommand.class);
 		

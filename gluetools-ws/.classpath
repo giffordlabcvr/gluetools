@@ -80,6 +80,11 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.bcel/bcel/6.0/206dfd32271b9b0150d8211070e5dbbe69cf5154/bcel-6.0-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.bcel/bcel/6.0/7d08bcac4832f81467d3e2ca5bd58ad627288656/bcel-6.0.jar" exported="true">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
 	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet/2.19/83a1e0713989e6f2cf62ddcfc7b8fa6a9b0d5620/jersey-container-servlet-2.19-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.glassfish.jersey.containers/jersey-container-servlet/2.19/1650ded636f994f82b975d2e6d147b752aba2fd9/jersey-container-servlet-2.19.jar" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>

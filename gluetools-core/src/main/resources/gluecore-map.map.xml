@@ -5,6 +5,10 @@
 	 project-version="6">
 	<property name="defaultPackage" value="uk.ac.gla.cvr.gluetools.core.datamodel"/>
 	<property name="defaultSuperclass" value="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject"/>
+	<db-entity name="custom_table">
+		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="project_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="field">
 		<db-attribute name="max_length" type="INTEGER"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
@@ -12,26 +16,58 @@
 		<db-attribute name="table_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="type" type="VARCHAR" isMandatory="true" length="20"/>
 	</db-entity>
+	<db-entity name="link_field">
+		<db-attribute name="dest_table_name" type="VARCHAR" isMandatory="true" length="50"/>
+		<db-attribute name="multiplicity" type="VARCHAR" length="50"/>
+		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="project_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="table_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+	</db-entity>
 	<db-entity name="project">
 		<db-attribute name="description" type="VARCHAR" length="200"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
+	<obj-entity name="CustomTable" className="uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable" dbEntityName="custom_table" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+	</obj-entity>
 	<obj-entity name="Field" className="uk.ac.gla.cvr.gluetools.core.datamodel.field.Field" dbEntityName="field" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="maxLength" type="java.lang.Integer" db-attribute-path="max_length"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 		<obj-attribute name="table" type="java.lang.String" db-attribute-path="table_name"/>
 		<obj-attribute name="type" type="java.lang.String" db-attribute-path="type"/>
 	</obj-entity>
+	<obj-entity name="LinkField" className="uk.ac.gla.cvr.gluetools.core.datamodel.linkfield.LinkField" dbEntityName="link_field" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="destTableName" type="java.lang.String" db-attribute-path="dest_table_name"/>
+		<obj-attribute name="multiplicity" type="java.lang.String" db-attribute-path="multiplicity"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="table" type="java.lang.String" db-attribute-path="table_name"/>
+	</obj-entity>
 	<obj-entity name="Project" className="uk.ac.gla.cvr.gluetools.core.datamodel.project.Project" dbEntityName="project" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
+	<db-relationship name="project" source="custom_table" target="project" toMany="false">
+		<db-attribute-pair source="project_name" target="name"/>
+	</db-relationship>
 	<db-relationship name="project" source="field" target="project" toMany="false">
 		<db-attribute-pair source="project_name" target="name"/>
+	</db-relationship>
+	<db-relationship name="project" source="link_field" target="project" toMany="false">
+		<db-attribute-pair source="project_name" target="name"/>
+	</db-relationship>
+	<db-relationship name="custom_tables" source="project" target="custom_table" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="name" target="project_name"/>
 	</db-relationship>
 	<db-relationship name="fields" source="project" target="field" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="name" target="project_name"/>
 	</db-relationship>
+	<db-relationship name="link_fields" source="project" target="link_field" toDependentPK="true" toMany="true">
+		<db-attribute-pair source="name" target="project_name"/>
+	</db-relationship>
+	<obj-relationship name="project" source="CustomTable" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
 	<obj-relationship name="project" source="Field" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="project" source="LinkField" target="Project" deleteRule="Nullify" db-relationship-path="project"/>
+	<obj-relationship name="customTables" source="Project" target="CustomTable" deleteRule="Cascade" db-relationship-path="custom_tables"/>
 	<obj-relationship name="fields" source="Project" target="Field" deleteRule="Cascade" db-relationship-path="fields"/>
+	<obj-relationship name="linkFields" source="Project" target="LinkField" deleteRule="Deny" db-relationship-path="link_fields"/>
 </data-map>
