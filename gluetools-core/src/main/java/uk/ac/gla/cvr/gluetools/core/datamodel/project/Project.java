@@ -62,6 +62,25 @@ public class Project extends _Project {
 				.collect(Collectors.toList());
 	}
 
+	public void checkTableName(String tableName) {
+		CustomTable customTable = getCustomTable(tableName);
+		if(customTable != null) {
+			return;
+		}
+		try {
+			Enum.valueOf(ConfigurableTable.class, tableName).getDataObjectClass();
+		} catch(IllegalArgumentException iae) {
+			throw new ProjectModeCommandException(Code.NO_SUCH_TABLE, tableName);
+		}
+	}
+	
+	public List<String> getTableNames() {
+		List<String> tableNames = new ArrayList<String>();
+		tableNames.addAll(Arrays.asList(ConfigurableTable.values()).stream().map(v -> v.name()).collect(Collectors.toList()));
+		tableNames.addAll(getCustomTables().stream().map(t -> t.getName()).collect(Collectors.toList()));
+		return tableNames;
+	}
+	
 	public Class<? extends GlueDataObject> getDataObjectClass(String tableName) {
 		CustomTable customTable = getCustomTable(tableName);
 		if(customTable != null) {

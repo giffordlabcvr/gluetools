@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -205,53 +204,83 @@ public class ModelBuilder {
 		namespaceContext.addNamespace("cay", CAYENNE_NS);
 		xPath.setNamespaceContext(namespaceContext);
 		
-		// add custom tables.
+		Map<String, List<Field>> tableNameToFields = new LinkedHashMap<String, List<Field>>();
+
+		project.getTableNames().forEach(t -> tableNameToFields.put(t, new ArrayList<Field>()));
+		
+		for(Field f: fields) {
+			String tableName = f.getTable();
+			tableNameToFields.get(tableName).add(f);
+		}
+
+		// Custom tables -- DB entities.
 		XPathExpression dataMapXPathExpression = 
 				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map");
 		Element dataMapElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, dataMapXPathExpression);
 		for(CustomTable customTable : customTables) {
 			Element dbEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "db-entity");
-			dbEntityElem.setAttribute("name", customTable.getName());
+			String tableName = customTable.getName();
+			dbEntityElem.setAttribute("name", tableName);
 			Element idAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
 			idAttributeElem.setAttribute("name", "id");
 			idAttributeElem.setAttribute("type", "VARCHAR");
 			idAttributeElem.setAttribute("isPrimaryKey", "true");
 			idAttributeElem.setAttribute("isMandatory", "true");
 			idAttributeElem.setAttribute("length", "50");
+			List<Field> customTableFields = tableNameToFields.get(tableName);
+			customTableFields.forEach(f -> {
+				Element dbAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
+				dbAttributeElem.setAttribute("name", f.getName());
+				dbAttributeElem.setAttribute("type", f.getFieldType().cayenneType());
+				Optional.ofNullable(f.getMaxLength()).ifPresent(
+						len -> { dbAttributeElem.setAttribute("length", Integer.toString(len)); });
+			});
 		}
 		
-		Map<ConfigurableTable, List<Field>> cTableToFields = new LinkedHashMap<ConfigurableTable, List<Field>>();
+		// Custom tables -- Object entities.
+		for(CustomTable customTable : customTables) {
+			Element objEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "obj-entity");
+			String tableName = customTable.getName();
+			objEntityElem.setAttribute("name", tableName);
+			objEntityElem.setAttribute("className", CustomTableObjectClassCreator.getFullClassName(projectName, tableName));
+			objEntityElem.setAttribute("dbEntityName", tableName);
+			objEntityElem.setAttribute("superClassName", CustomTableObject.class.getCanonicalName());
+			Element idAttributeElem = GlueXmlUtils.appendElementNS(objEntityElem, CAYENNE_NS, "obj-attribute");
+			idAttributeElem.setAttribute("name", "id");
+			idAttributeElem.setAttribute("db-attribute-path", "id");
+			idAttributeElem.setAttribute("type", FieldType.VARCHAR.javaType());
+			List<Field> customTableFields = tableNameToFields.get(tableName);
+			customTableFields.forEach(f -> {
+				Element objAttributeElem = GlueXmlUtils.appendElementNS(objEntityElem, CAYENNE_NS, "obj-attribute");
+				objAttributeElem.setAttribute("name", f.getName());
+				objAttributeElem.setAttribute("db-attribute-path", f.getName());
+				objAttributeElem.setAttribute("type", f.getFieldType().javaType());
+			});
+
+		}
 
 		for(ConfigurableTable cTable : ConfigurableTable.values()) {
-			cTableToFields.put(cTable, new LinkedList<Field>());
-		}
-		
-		for(Field f: fields) {
-			ConfigurableTable cTable = ConfigurableTable.valueOf(f.getTable());
-			cTableToFields.get(cTable).add(f);
-		}
-		
-		
-		for(ConfigurableTable cTable : ConfigurableTable.values()) {
-			List<Field> cTableFields = cTableToFields.get(cTable);
+			List<Field> cTableFields = tableNameToFields.get(cTable.name());
+			// Configurable tables -- DB entities.
 			{
 				XPathExpression xPathExpression = 
 						GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+cTable.name()+"']");
-				Element sequenceTableElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+				Element dbEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 				cTableFields.forEach(f -> {
-					Element dbAttributeElem = GlueXmlUtils.appendElementNS(sequenceTableElem, CAYENNE_NS, "db-attribute");
+					Element dbAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
 					dbAttributeElem.setAttribute("name", f.getName());
 					dbAttributeElem.setAttribute("type", f.getFieldType().cayenneType());
 					Optional.ofNullable(f.getMaxLength()).ifPresent(
 							len -> { dbAttributeElem.setAttribute("length", Integer.toString(len)); });
 				});
 			}
+			// Configurable tables -- Obj entities.
 			{
 				XPathExpression xPathExpression = 
 						GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:obj-entity[@name='"+cTable.getDataObjectClass().getSimpleName()+"']");
-				Element sequenceObjElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+				Element objEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 				cTableFields.forEach(f -> {
-					Element objAttributeElem = GlueXmlUtils.appendElementNS(sequenceObjElem, CAYENNE_NS, "obj-attribute");
+					Element objAttributeElem = GlueXmlUtils.appendElementNS(objEntityElem, CAYENNE_NS, "obj-attribute");
 					objAttributeElem.setAttribute("name", f.getName());
 					objAttributeElem.setAttribute("db-attribute-path", f.getName());
 					objAttributeElem.setAttribute("type", f.getFieldType().javaType());
@@ -259,19 +288,7 @@ public class ModelBuilder {
 			}
 		}
 		
-		for(CustomTable customTable : customTables) {
-			Element dbEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "obj-entity");
-			String tableName = customTable.getName();
-			dbEntityElem.setAttribute("name", tableName);
-			dbEntityElem.setAttribute("className", CustomTableObjectClassCreator.getFullClassName(projectName, tableName));
-			dbEntityElem.setAttribute("dbEntityName", tableName);
-			dbEntityElem.setAttribute("superClassName", CustomTableObject.class.getCanonicalName());
-			Element idAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "obj-attribute");
-			idAttributeElem.setAttribute("name", "id");
-			idAttributeElem.setAttribute("db-attribute-path", "id");
-			idAttributeElem.setAttribute("type", FieldType.VARCHAR.javaType());
-		}
-		
+		// specialize various names so that they are specific to the project
 		{
 			XPathExpression xPathExpression = 
 					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-relationship");

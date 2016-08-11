@@ -65,7 +65,7 @@ public class DeleteFieldCommand extends TableModeCommand<DeleteResult> {
 					String projectName = tableMode.getProject().getName();
 					List<Field> fields = GlueDataObject.query(cmdContext, Field.class, 
 							new SelectQuery(Field.class, ExpressionFactory.matchExp(Field.PROJECT_PROPERTY, projectName)
-									.andExp(ExpressionFactory.matchExp(Field.TABLE_PROPERTY, tableMode.getConfigurableTable().name()))));
+									.andExp(ExpressionFactory.matchExp(Field.TABLE_PROPERTY, tableMode.getTableName()))));
 					return fields.stream().map(f -> new CompletionSuggestion(f.getName(), true)).collect(Collectors.toList());
 				}
 			});

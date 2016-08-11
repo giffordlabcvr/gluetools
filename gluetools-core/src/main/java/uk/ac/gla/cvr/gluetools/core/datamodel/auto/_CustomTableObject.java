@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.auto;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 
 public abstract class _CustomTableObject extends GlueDataObject {
 
