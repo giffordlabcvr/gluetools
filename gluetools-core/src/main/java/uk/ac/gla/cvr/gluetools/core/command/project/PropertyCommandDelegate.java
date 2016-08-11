@@ -57,7 +57,7 @@ public class PropertyCommandDelegate {
 		Project project = configurableObjectMode.getProject();
 		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		FieldType fieldType = project.getModifiableFieldType(cTable, fieldName);
+		FieldType fieldType = project.getModifiableFieldType(cTable.name(), fieldName);
 		Object newValue = fieldType.getFieldTranslator().valueFromString(fieldValue);
 		return executeSet(cmdContext, project, cTable, configurableObject, 
 				fieldName, newValue, noCommit);
@@ -67,7 +67,7 @@ public class PropertyCommandDelegate {
 			ConfigurableTable cTable, GlueDataObject configurableObject, 
 			String fieldName, Object newValue, boolean noCommit) {
 		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
-		project.checkModifiableFieldNames(cTable, Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(cTable.name(), Collections.singletonList(fieldName));
 		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue != null && newValue != null && oldValue.equals(newValue)) {
 			return new UpdateResult(dataObjectClass, 0);
@@ -88,7 +88,7 @@ public class PropertyCommandDelegate {
 		Project project = configurableObjectMode.getProject();
 		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
 		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
-		project.checkModifiableFieldNames(cTable, Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(cTable.name(), Collections.singletonList(fieldName));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue == null) {
@@ -105,7 +105,7 @@ public class PropertyCommandDelegate {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
 		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-		project.checkListableProperties(cTable, Collections.singletonList(property));
+		project.checkListableProperties(cTable.name(), Collections.singletonList(property));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object value = configurableObject.readNestedProperty(property);
 		if(value == null) {
@@ -120,7 +120,7 @@ public class PropertyCommandDelegate {
 		Project project = configurableObjectMode.getProject();
 		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		return new ListPropertyResult(project.getListableProperties(cTable), configurableObject);
+		return new ListPropertyResult(project.getListableProperties(cTable.name()), configurableObject);
 	}
 
 	
@@ -137,7 +137,7 @@ public class PropertyCommandDelegate {
 					ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 					Project project = configurableObjectMode.getProject();
 					ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-					List<String> listableFieldNames = project.getModifiableFieldNames(cTable);
+					List<String> listableFieldNames = project.getModifiableFieldNames(cTable.name());
 					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
 				}
 			});
@@ -157,7 +157,7 @@ public class PropertyCommandDelegate {
 					ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 					Project project = configurableObjectMode.getProject();
 					ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-					List<String> listableFieldNames = project.getListableProperties(cTable);
+					List<String> listableFieldNames = project.getListableProperties(cTable.name());
 					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
 				}
 			});

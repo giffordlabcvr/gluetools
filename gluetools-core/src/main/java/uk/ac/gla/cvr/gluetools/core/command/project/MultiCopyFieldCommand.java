@@ -46,9 +46,9 @@ public class MultiCopyFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkModifiableFieldNames(getCTable(), Arrays.asList(fromFieldName, toFieldName));
-		FieldType fromFieldType = project.getModifiableFieldType(getCTable(), fromFieldName);
-		FieldType toFieldType = project.getModifiableFieldType(getCTable(), toFieldName);
+		project.checkModifiableFieldNames(getCTable().name(), Arrays.asList(fromFieldName, toFieldName));
+		FieldType fromFieldType = project.getModifiableFieldType(getCTable().name(), fromFieldName);
+		FieldType toFieldType = project.getModifiableFieldType(getCTable().name(), toFieldName);
 		if(!fromFieldType.equals(toFieldType)) {
 			throw new ProjectModeCommandException(Code.INCOMPATIBLE_TYPES_FOR_COPY, fromFieldName, fromFieldType.name(), toFieldName, toFieldType.name());
 		}

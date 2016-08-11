@@ -716,7 +716,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	private boolean initCachedGiNumbers(CommandContext cmdContext) {
 		boolean cachedGiNumbers = true;
-		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence);
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence.name());
 		if(!customSequenceFieldNames.contains(giNumberFieldName)) {
 			cachedGiNumbers = false;
 			GlueLogger.getGlueLogger().warning("No sequence field \""+giNumberFieldName+"\" exists in the project. Importer performance will be impeded as a result.");
@@ -726,7 +726,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	private boolean initStoreIsAssembly(CommandContext cmdContext) {
 		boolean storeIsAssembly = true;
-		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence);
+		List<String> customSequenceFieldNames = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject().getCustomFieldNames(ConfigurableTable.sequence.name());
 		if(!customSequenceFieldNames.contains(isAssemblyFieldName)) {
 			storeIsAssembly = false;
 			GlueLogger.getGlueLogger().warning("No sequence field \""+isAssemblyFieldName+"\" exists in the project. Importer will not record whether sequences are assemblies.");

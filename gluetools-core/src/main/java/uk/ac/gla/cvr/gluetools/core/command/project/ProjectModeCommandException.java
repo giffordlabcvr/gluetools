@@ -5,11 +5,12 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class ProjectModeCommandException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		INVALID_PROPERTY("invalidProperty", "validProperties", "cTable"),
+		INVALID_PROPERTY("invalidProperty", "validProperties", "tableName"),
 		INCOMPATIBLE_TYPES_FOR_COPY("fromFieldName", "toFieldName"), 
-		NO_SUCH_MODIFIABLE_PROPERTY("cTable", "fieldName"), 
-		NO_SUCH_PROPERTY("cTable", "fieldName"),
-		INCORRECT_FIELD_TYPE("cTable", "fieldName", "requiredFieldType", "actualFieldType");
+		NO_SUCH_MODIFIABLE_PROPERTY("tableName", "fieldName"), 
+		NO_SUCH_PROPERTY("tableName", "fieldName"),
+		NO_SUCH_TABLE("tableName"),
+		INCORRECT_FIELD_TYPE("tableName", "fieldName", "requiredFieldType", "actualFieldType");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

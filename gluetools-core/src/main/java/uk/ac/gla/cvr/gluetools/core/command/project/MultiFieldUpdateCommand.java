@@ -104,7 +104,7 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 				return null;
 			}
 			return 
-					getProjectMode(cmdContext).getProject().getModifiableFieldNames(cTable)
+					getProjectMode(cmdContext).getProject().getModifiableFieldNames(cTable.name())
 					.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 	}

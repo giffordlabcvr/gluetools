@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -41,42 +42,54 @@ public class Project extends _Project {
 				.findFirst().orElse(null);
 	}
 	
-	public Field getCustomField(ConfigurableTable cTable, String fieldName) {
+	public Field getCustomField(String tableName, String fieldName) {
 		return getFields().stream()
-				.filter(f -> f.getTable().equals(cTable.name()))
+				.filter(f -> f.getTable().equals(tableName))
 				.filter(f -> f.getName().equals(fieldName))
 				.findFirst().orElse(null);
 	}
 
-	public List<String> getCustomFieldNames(ConfigurableTable cTable) {
+	public List<String> getCustomFieldNames(String tableName) {
 		return getFields().stream()
-				.filter(f -> f.getTable().equals(cTable.name()))
+				.filter(f -> f.getTable().equals(tableName))
 				.map(Field::getName)
 				.collect(Collectors.toList());
 	}
 
-	public List<Field> getCustomFields(ConfigurableTable cTable) {
+	public List<Field> getCustomFields(String tableName) {
 		return getFields().stream()
-				.filter(f -> f.getTable().equals(cTable.name()))
+				.filter(f -> f.getTable().equals(tableName))
 				.collect(Collectors.toList());
 	}
 
-	public List<String> getListableProperties(ConfigurableTable cTable) {
-		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
+	public Class<? extends GlueDataObject> getDataObjectClass(String tableName) {
+		CustomTable customTable = getCustomTable(tableName);
+		if(customTable != null) {
+			return customTable.getRowClass();
+		}
+		try {
+			return Enum.valueOf(ConfigurableTable.class, tableName).getDataObjectClass();
+		} catch(IllegalArgumentException iae) {
+			throw new ProjectModeCommandException(Code.NO_SUCH_TABLE, tableName);
+		}
+	}
+	
+	public List<String> getListableProperties(String tableName) {
+		GlueDataClass dataClassAnnotation = getDataObjectClass(tableName).getAnnotation(GlueDataClass.class);
 		List<String> listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
-		listableProperties.addAll(getCustomFieldNames(cTable));
+		listableProperties.addAll(getCustomFieldNames(tableName));
 		return listableProperties;
 	}
 
-	public List<String> getModifiableFieldNames(ConfigurableTable cTable) {
-		GlueDataClass dataClassAnnotation = cTable.getDataObjectClass().getAnnotation(GlueDataClass.class);
+	public List<String> getModifiableFieldNames(String tableName) {
+		GlueDataClass dataClassAnnotation = getDataObjectClass(tableName).getAnnotation(GlueDataClass.class);
 		List<String> modifiableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInProperties()));
-		modifiableFields.addAll(getCustomFieldNames(cTable));
+		modifiableFields.addAll(getCustomFieldNames(tableName));
 		return modifiableFields;
 	}
 	
-	public FieldType getModifiableFieldType(ConfigurableTable cTable, String fieldName) {
-		Field customField = getCustomField(cTable, fieldName);
+	public FieldType getModifiableFieldType(String tableName, String fieldName) {
+		Field customField = getCustomField(tableName, fieldName);
 		if(customField != null) {
 			return customField.getFieldType();
 		}
@@ -89,37 +102,37 @@ public class Project extends _Project {
 		return pkMap(getName());
 	}
 
-	public void checkListableProperties(ConfigurableTable cTable, List<String> propertyNames) {
-		List<String> listableProperties = getListableProperties(cTable);
+	public void checkListableProperties(String tableName, List<String> propertyNames) {
+		List<String> listableProperties = getListableProperties(tableName);
 		Set<String> validPropertyNames = new LinkedHashSet<String>(listableProperties);
 		if(propertyNames != null) {
 			propertyNames.forEach(f-> {
 				if(!validPropertyNames.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, listableProperties, cTable.name());
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, listableProperties, tableName);
 				}
 			});
 		}
 	}
 
-	public void checkCustomFieldNames(ConfigurableTable cTable, List<String> fieldNames) {
-		List<String> validFieldNamesList = getCustomFieldNames(cTable);
+	public void checkCustomFieldNames(String tableName, List<String> fieldNames) {
+		List<String> validFieldNamesList = getCustomFieldNames(tableName);
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, cTable.name());
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, tableName);
 				}
 			});
 		}
 	}
 
-	public void checkModifiableFieldNames(ConfigurableTable cTable, List<String> fieldNames) {
-		List<String> validFieldNamesList = getModifiableFieldNames(cTable);
+	public void checkModifiableFieldNames(String tableName, List<String> fieldNames) {
+		List<String> validFieldNamesList = getModifiableFieldNames(tableName);
 		Set<String> validFieldNames = new LinkedHashSet<String>(validFieldNamesList);
 		if(fieldNames != null) {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, cTable.name());
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, tableName);
 				}
 			});
 		}
@@ -140,8 +153,8 @@ public class Project extends _Project {
 	}
 
 	public List<String> getListableMemberFields() {
-		Set<String> validMemberFieldsList = new LinkedHashSet<String>(getListableProperties(ConfigurableTable.alignment_member));
-		validMemberFieldsList.addAll(getListableProperties(ConfigurableTable.sequence).stream().
+		Set<String> validMemberFieldsList = new LinkedHashSet<String>(getListableProperties(ConfigurableTable.alignment_member.name()));
+		validMemberFieldsList.addAll(getListableProperties(ConfigurableTable.sequence.name()).stream().
 			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList()));
 		return new ArrayList<String>(validMemberFieldsList);
 	}
@@ -166,31 +179,31 @@ public class Project extends _Project {
 	/**
 	 * Check that a property exists, is of the correct type, and (optionally) is modifiable.
 	 */
-	public void checkProperty(ConfigurableTable cTable, String propertyName, FieldType requiredFieldType, boolean requireModifiable) {
+	public void checkProperty(String tableName, String propertyName, FieldType requiredFieldType, boolean requireModifiable) {
 		if(requireModifiable) {
-			List<String> validList = getModifiableFieldNames(cTable);
+			List<String> validList = getModifiableFieldNames(tableName);
 			if(!validList.contains(propertyName)) {
 				throw new ProjectModeCommandException(ProjectModeCommandException.Code.NO_SUCH_MODIFIABLE_PROPERTY, 
-						cTable.name(), propertyName);
+						tableName, propertyName);
 			}
 			if(requiredFieldType != null) {
-				FieldType fieldType = getModifiableFieldType(cTable, propertyName);
+				FieldType fieldType = getModifiableFieldType(tableName, propertyName);
 				if(fieldType != requiredFieldType) {
 					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INCORRECT_FIELD_TYPE, 
-							cTable.name(), propertyName, requiredFieldType.name(), fieldType.name());
+							tableName, propertyName, requiredFieldType.name(), fieldType.name());
 				}
 			}
 		} else {
-			List<String> validList = getListableProperties(cTable);
+			List<String> validList = getListableProperties(tableName);
 			if(!validList.contains(propertyName)) {
 				throw new ProjectModeCommandException(ProjectModeCommandException.Code.NO_SUCH_PROPERTY, 
-						cTable.name(), propertyName);
+						tableName, propertyName);
 			}
 			if(requiredFieldType != null) {
-				FieldType fieldType = getModifiableFieldType(cTable, propertyName);
+				FieldType fieldType = getModifiableFieldType(tableName, propertyName);
 				if(fieldType != requiredFieldType) {
 					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INCORRECT_FIELD_TYPE, 
-							cTable.name(), propertyName, requiredFieldType.name(), fieldType.name());
+							tableName, propertyName, requiredFieldType.name(), fieldType.name());
 				}
 			}
 		}

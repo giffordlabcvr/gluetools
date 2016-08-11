@@ -71,7 +71,7 @@ public abstract class ProjectModeCommand<R extends CommandResult> extends Comman
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return 
-					getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence)
+					getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence.name())
 					.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 	}

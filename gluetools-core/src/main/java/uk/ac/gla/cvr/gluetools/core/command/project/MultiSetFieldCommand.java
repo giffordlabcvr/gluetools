@@ -48,7 +48,7 @@ public class MultiSetFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkModifiableFieldNames(getCTable(), Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(getCTable().name(), Collections.singletonList(fieldName));
 		return executeUpdates(cmdContext);
 	}
 
@@ -66,7 +66,7 @@ public class MultiSetFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	protected void updateObject(CommandContext cmdContext, GlueDataObject object) {
 		Project project = getProjectMode(cmdContext).getProject();
-		FieldType modifiableFieldType = project.getModifiableFieldType(getCTable(), fieldName);
+		FieldType modifiableFieldType = project.getModifiableFieldType(getCTable().name(), fieldName);
 		Object newValue = modifiableFieldType.getFieldTranslator().valueFromString(fieldValue);
 		object.writeProperty(fieldName, newValue);
 	}

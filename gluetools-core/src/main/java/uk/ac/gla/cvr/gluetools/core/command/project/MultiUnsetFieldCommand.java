@@ -46,7 +46,7 @@ public class MultiUnsetFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkModifiableFieldNames(getCTable(), Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(getCTable().name(), Collections.singletonList(fieldName));
 		return executeUpdates(cmdContext);
 	}
 

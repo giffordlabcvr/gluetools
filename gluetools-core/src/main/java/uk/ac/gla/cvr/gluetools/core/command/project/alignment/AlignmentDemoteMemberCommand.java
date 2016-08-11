@@ -184,7 +184,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 						String prefix) {
 					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
 					Project project = insideProjectMode.getProject();
-					List<String> listableFieldNames = project.getModifiableFieldNames(ConfigurableTable.alignment_member);
+					List<String> listableFieldNames = project.getModifiableFieldNames(ConfigurableTable.alignment_member.name());
 					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
 				}
 			});

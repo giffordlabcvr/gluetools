@@ -104,7 +104,7 @@ public class CopySequenceCommand extends ProjectModeCommand<CopySequenceCommand.
 				row.put("fromSourceName", sequence.getSource().getName());
 				row.put("toSourceName", toSource.getName());
 				rowData.add(row);
-				List<String> customFieldNames = getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence);
+				List<String> customFieldNames = getProjectMode(cmdContext).getProject().getCustomFieldNames(ConfigurableTable.sequence.name());
 				Map<String, Object> customFieldValues = new LinkedHashMap<String, Object>();
 				for(String fieldName: customFieldNames) {
 					customFieldValues.put(fieldName, sequence.readProperty(fieldName));

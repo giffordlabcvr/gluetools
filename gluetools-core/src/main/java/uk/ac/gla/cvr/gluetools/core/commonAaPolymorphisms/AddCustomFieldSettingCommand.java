@@ -44,7 +44,7 @@ public class AddCustomFieldSettingCommand extends ModuleDocumentCommand<OkResult
 	@Override
 	protected OkResult processDocument(CommandContext cmdContext, Module module, Document modulePluginDoc) {
 		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-		insideProjectMode.getProject().checkCustomFieldNames(ConfigurableTable.variation, Arrays.asList(fieldName));
+		insideProjectMode.getProject().checkCustomFieldNames(ConfigurableTable.variation.name(), Arrays.asList(fieldName));
 		Element customFieldSettingElem = GlueXmlUtils.appendElement(modulePluginDoc.getDocumentElement(), "customFieldSetting");
 		GlueXmlUtils.appendElementWithText(customFieldSettingElem, "fieldName", fieldName);
 		GlueXmlUtils.appendElementWithText(customFieldSettingElem, "fieldValue", fieldValue);

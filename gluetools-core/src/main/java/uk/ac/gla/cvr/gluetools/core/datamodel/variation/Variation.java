@@ -184,11 +184,11 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 				indent(glueConfigBuf, indent).append("set location "+noCommit+"-n "+getRefStart()+" "+getRefEnd()).append("\n");
 			}
 		}
-		List<String> modifiableFieldNames = glueConfigContext.getProject().getModifiableFieldNames(ConfigurableTable.variation);
+		List<String> modifiableFieldNames = glueConfigContext.getProject().getModifiableFieldNames(ConfigurableTable.variation.name());
 		for(String fieldName: modifiableFieldNames) {
 			Object value = readProperty(fieldName);
 			if(value != null) {
-				FieldType fieldType = glueConfigContext.getProject().getModifiableFieldType(ConfigurableTable.variation, fieldName);
+				FieldType fieldType = glueConfigContext.getProject().getModifiableFieldType(ConfigurableTable.variation.name(), fieldName);
 				FieldTranslator<?> fieldTranslator = fieldType.getFieldTranslator();
 				String valueAsString = fieldTranslator.objectValueToString(value);
 				indent(glueConfigBuf, indent).append("set field "+noCommit+fieldName+" "+Lexer.quotifyIfNecessary(valueAsString)).append("\n");

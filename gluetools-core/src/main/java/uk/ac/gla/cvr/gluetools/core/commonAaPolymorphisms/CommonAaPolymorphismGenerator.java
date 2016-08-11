@@ -358,17 +358,17 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 		super.validate(cmdContext);
 		 InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
 		 if(referenceAaField != null) {
-			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, referenceAaField, FieldType.VARCHAR, true);
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation.name(), referenceAaField, FieldType.VARCHAR, true);
 		 }
 		 if(codonField != null) {
-			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, codonField, FieldType.VARCHAR, true);
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation.name(), codonField, FieldType.VARCHAR, true);
 		 }
 		 if(variationAaField != null) {
-			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, variationAaField, FieldType.VARCHAR, true);
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation.name(), variationAaField, FieldType.VARCHAR, true);
 		 }
 		 
 		 for(CustomFieldSetting customFieldSetting: customFieldSettings) {
-			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation, customFieldSetting.getFieldName(), null, true);
+			 insideProjectMode.getProject().checkProperty(ConfigurableTable.variation.name(), customFieldSetting.getFieldName(), null, true);
 		 }
 	}
 

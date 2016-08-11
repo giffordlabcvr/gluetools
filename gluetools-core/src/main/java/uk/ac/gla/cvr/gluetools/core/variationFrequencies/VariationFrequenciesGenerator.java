@@ -124,7 +124,7 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
 		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-		insideProjectMode.getProject().checkProperty(ConfigurableTable.var_almt_note, frequencyFieldName, FieldType.DOUBLE, true);
+		insideProjectMode.getProject().checkProperty(ConfigurableTable.var_almt_note.name(), frequencyFieldName, FieldType.DOUBLE, true);
 	}
 	
 	

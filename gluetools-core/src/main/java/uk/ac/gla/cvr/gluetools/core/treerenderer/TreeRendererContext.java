@@ -49,10 +49,10 @@ public class TreeRendererContext {
 		InsideProjectMode insideProjectMode = ((InsideProjectMode) cmdContext.peekCommandMode());
 		Project project = insideProjectMode.getProject();
 		if(almtBranchLengthProperty != null) {
-			project.checkProperty(ConfigurableTable.alignment, almtBranchLengthProperty, FieldType.DOUBLE, false);
+			project.checkProperty(ConfigurableTable.alignment.name(), almtBranchLengthProperty, FieldType.DOUBLE, false);
 		}
 		if(memberBranchLengthProperty != null) {
-			project.checkProperty(ConfigurableTable.alignment_member, memberBranchLengthProperty, FieldType.DOUBLE, false);
+			project.checkProperty(ConfigurableTable.alignment_member.name(), memberBranchLengthProperty, FieldType.DOUBLE, false);
 		}
 	}
 

@@ -123,7 +123,7 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 			if(fieldNames == null) {
 				return new ListResult(dataObjectClass, resultDataObjects);
 			} else {
-				project.checkListableProperties(cTable, fieldNames);
+				project.checkListableProperties(cTable.name(), fieldNames);
 				return new ListResult(dataObjectClass, resultDataObjects, fieldNames);
 			}
 		}

@@ -339,7 +339,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
-			return getProject(cmdContext).getCustomFieldNames(getCTable());
+			return getProject(cmdContext).getCustomFieldNames(getCTable().name());
 		}
 	}
 
@@ -349,7 +349,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
-			return getProject(cmdContext).getModifiableFieldNames(getCTable());
+			return getProject(cmdContext).getModifiableFieldNames(getCTable().name());
 		}
 	}
 
@@ -359,7 +359,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
-			return getProject(cmdContext).getListableProperties(getCTable());
+			return getProject(cmdContext).getListableProperties(getCTable().name());
 		}
 	}
 
