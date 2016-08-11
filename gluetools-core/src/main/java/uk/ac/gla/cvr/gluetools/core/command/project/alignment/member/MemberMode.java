@@ -64,8 +64,8 @@ public class MemberMode extends CommandMode<MemberCommand> implements InsideProj
 	}
 
 	@Override
-	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.alignment_member;
+	public String getTableName() {
+		return ConfigurableTable.alignment_member.name();
 	}
 
 	@Override

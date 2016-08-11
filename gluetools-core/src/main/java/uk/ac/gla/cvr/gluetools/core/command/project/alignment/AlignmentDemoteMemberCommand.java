@@ -161,7 +161,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 			if(isReferenceOfSomeChild(thisAlignment, memberToDemote)) {
 				// retain member, and set special field if necessary.
 				if(retainedFieldValue) {
-					PropertyCommandDelegate.executeSet(cmdContext, project, ConfigurableTable.alignment_member, memberToDemote, retainedField, retainedValue, false);
+					PropertyCommandDelegate.executeSet(cmdContext, project, ConfigurableTable.alignment_member.name(), memberToDemote, retainedField, retainedValue, false);
 				}
 			} else {
 				// if not, delete it.

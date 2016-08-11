@@ -74,8 +74,8 @@ public class VariationMode extends CommandMode<VariationCommand> implements Conf
 	}
 
 	@Override
-	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.variation;
+	public String getTableName() {
+		return ConfigurableTable.variation.name();
 	}
 
 	

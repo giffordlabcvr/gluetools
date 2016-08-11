@@ -61,8 +61,8 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Config
 	}
 
 	@Override
-	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.sequence;
+	public String getTableName() {
+		return ConfigurableTable.sequence.name();
 	}
 
 	@Override

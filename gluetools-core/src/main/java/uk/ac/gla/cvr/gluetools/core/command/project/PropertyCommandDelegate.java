@@ -14,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -55,19 +54,19 @@ public class PropertyCommandDelegate {
 	public UpdateResult executeSet(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
-		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
+		String tableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		FieldType fieldType = project.getModifiableFieldType(cTable.name(), fieldName);
+		FieldType fieldType = project.getModifiableFieldType(tableName, fieldName);
 		Object newValue = fieldType.getFieldTranslator().valueFromString(fieldValue);
-		return executeSet(cmdContext, project, cTable, configurableObject, 
+		return executeSet(cmdContext, project, tableName, configurableObject, 
 				fieldName, newValue, noCommit);
 	}
 
 	public static UpdateResult executeSet(CommandContext cmdContext, Project project,
-			ConfigurableTable cTable, GlueDataObject configurableObject, 
+			String tableName, GlueDataObject configurableObject, 
 			String fieldName, Object newValue, boolean noCommit) {
-		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
-		project.checkModifiableFieldNames(cTable.name(), Collections.singletonList(fieldName));
+		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
+		project.checkModifiableFieldNames(tableName, Collections.singletonList(fieldName));
 		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue != null && newValue != null && oldValue.equals(newValue)) {
 			return new UpdateResult(dataObjectClass, 0);
@@ -86,9 +85,9 @@ public class PropertyCommandDelegate {
 	public UpdateResult executeUnset(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
-		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
-		project.checkModifiableFieldNames(cTable.name(), Collections.singletonList(fieldName));
+		String tableName = configurableObjectMode.getTableName();
+		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
+		project.checkModifiableFieldNames(tableName, Collections.singletonList(fieldName));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue == null) {
@@ -104,8 +103,8 @@ public class PropertyCommandDelegate {
 	public PropertyValueResult executeShowProperty(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
-		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-		project.checkListableProperties(cTable.name(), Collections.singletonList(property));
+		String tableName = configurableObjectMode.getTableName();
+		project.checkListableProperties(tableName, Collections.singletonList(property));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object value = configurableObject.readNestedProperty(property);
 		if(value == null) {
@@ -118,9 +117,9 @@ public class PropertyCommandDelegate {
 	public ListPropertyResult executeListProperty(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
-		ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
+		String tableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		return new ListPropertyResult(project.getListableProperties(cTable.name()), configurableObject);
+		return new ListPropertyResult(project.getListableProperties(tableName), configurableObject);
 	}
 
 	
@@ -136,8 +135,8 @@ public class PropertyCommandDelegate {
 
 					ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 					Project project = configurableObjectMode.getProject();
-					ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-					List<String> listableFieldNames = project.getModifiableFieldNames(cTable.name());
+					String tableName = configurableObjectMode.getTableName();
+					List<String> listableFieldNames = project.getModifiableFieldNames(tableName);
 					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
 				}
 			});
@@ -156,8 +155,8 @@ public class PropertyCommandDelegate {
 
 					ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 					Project project = configurableObjectMode.getProject();
-					ConfigurableTable cTable = configurableObjectMode.getConfigurableTable();
-					List<String> listableFieldNames = project.getListableProperties(cTable.name());
+					String tableName = configurableObjectMode.getTableName();
+					List<String> listableFieldNames = project.getListableProperties(tableName);
 					return listableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
 				}
 			});

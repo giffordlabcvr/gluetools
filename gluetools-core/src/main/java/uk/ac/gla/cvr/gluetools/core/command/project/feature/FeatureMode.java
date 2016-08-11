@@ -46,8 +46,8 @@ public class FeatureMode extends CommandMode<FeatureCommand> implements Configur
 	}
 
 	@Override
-	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.feature;
+	public String getTableName() {
+		return ConfigurableTable.feature.name();
 	}
 
 	@Override

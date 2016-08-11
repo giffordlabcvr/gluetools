@@ -58,8 +58,8 @@ public class ReferenceSequenceMode extends CommandMode<ReferenceSequenceCommand>
 	}
 
 	@Override
-	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.reference;
+	public String getTableName() {
+		return ConfigurableTable.reference.name();
 	}
 
 	@Override

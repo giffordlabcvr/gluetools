@@ -46,8 +46,8 @@ public class AlignmentMode extends CommandMode<AlignmentCommand> implements Conf
 	}
 
 	@Override
-	public ConfigurableTable getConfigurableTable() {
-		return ConfigurableTable.alignment;
+	public String getTableName() {
+		return ConfigurableTable.alignment.name();
 	}
 
 	@Override
