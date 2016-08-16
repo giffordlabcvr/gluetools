@@ -26,10 +26,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 			"  list feature -w \"name like 'NS%'\"\n"+
 			"  list feature -w \"custom_field = 'value1'\"\n"+
 			"  list feature name custom_field") 
-public class ListFeatureCommand extends AbstractListCTableCommand<Feature> {
+public class ListFeatureCommand extends AbstractListCTableCommand {
 
 	public ListFeatureCommand() {
-		super(ConfigurableTable.feature);
+		super();
+		setTableName(ConfigurableTable.feature.name());
 		setSortComparator(new Comparator<Feature>(){
 			@Override
 			public int compare(Feature f1, Feature f2) {
@@ -41,7 +42,7 @@ public class ListFeatureCommand extends AbstractListCTableCommand<Feature> {
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.feature);
+			super(ConfigurableTable.feature.name());
 		}
 	}
 

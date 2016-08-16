@@ -24,17 +24,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 		"  list variation -w \"name like 'NS%'\"\n"+
 		"  list variation -w \"custom_field = 'value1'\"\n"+
 		"  list variation name custom_field") 
-public class ListVariationCommand extends AbstractListCTableCommand<Variation> {
+public class ListVariationCommand extends AbstractListCTableCommand {
 
 	public ListVariationCommand() {
-		super(ConfigurableTable.variation);
+		super();
+		setTableName(ConfigurableTable.variation.name());
 		setSortComparator(new VariationSortComparator());
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.variation);
+			super(ConfigurableTable.variation.name());
 		}
 	}
 

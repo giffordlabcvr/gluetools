@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 
 @CommandClass(
 		commandWords={"list", "var-almt-note"}, 
@@ -23,16 +22,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 		"  list var-almt-note -w \"alignment.name like 'AL_3%'\"\n"+
 		"  list var-almt-note -w \"custom_field = 'value1'\"\n"+
 		"  list var-almt-note alignment.name custom_field") 
-public class ListVarAlmtNoteCommand extends AbstractListCTableCommand<VarAlmtNote> {
+public class ListVarAlmtNoteCommand extends AbstractListCTableCommand {
 
 	public ListVarAlmtNoteCommand() {
-		super(ConfigurableTable.var_almt_note);
+		super();
+		setTableName(ConfigurableTable.var_almt_note.name());
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.var_almt_note);
+			super(ConfigurableTable.var_almt_note.name());
 		}
 	}
 

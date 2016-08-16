@@ -92,16 +92,32 @@ public class Project extends _Project {
 			throw new ProjectModeCommandException(Code.NO_SUCH_TABLE, tableName);
 		}
 	}
+
+	public GlueDataClass getDataClassAnnotation(String tableName) {
+		Class<? extends GlueDataObject> dataObjectClass = getDataObjectClass(tableName);
+		return getDataClassAnnotation(dataObjectClass);
+	}
+
+	public static GlueDataClass getDataClassAnnotation(Class<? extends GlueDataObject> dataObjectClass) {
+		GlueDataClass dataClassAnnotation = dataObjectClass.getAnnotation(GlueDataClass.class);
+		if(dataClassAnnotation == null) {
+			// Hack: see CustomTableObject for details.
+			Class<?> superclass = dataObjectClass.getSuperclass();
+			return superclass.getAnnotation(GlueDataClass.class);
+		}
+		return dataClassAnnotation;
+	}
+
 	
 	public List<String> getListableProperties(String tableName) {
-		GlueDataClass dataClassAnnotation = getDataObjectClass(tableName).getAnnotation(GlueDataClass.class);
+		GlueDataClass dataClassAnnotation = getDataClassAnnotation(tableName);
 		List<String> listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
 		listableProperties.addAll(getCustomFieldNames(tableName));
 		return listableProperties;
 	}
 
 	public List<String> getModifiableFieldNames(String tableName) {
-		GlueDataClass dataClassAnnotation = getDataObjectClass(tableName).getAnnotation(GlueDataClass.class);
+		GlueDataClass dataClassAnnotation = getDataClassAnnotation(tableName);
 		List<String> modifiableFields = new ArrayList<String>(Arrays.asList(dataClassAnnotation.modifiableBuiltInProperties()));
 		modifiableFields.addAll(getCustomFieldNames(tableName));
 		return modifiableFields;

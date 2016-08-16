@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 
 @CommandClass(
@@ -23,16 +22,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 		"  list alignment -w \"name like 'NS%'\"\n"+
 		"  list alignment -w \"custom_field = 'value1'\"\n"+
 		"  list alignment name custom_field") 
-public class ListAlignmentCommand extends AbstractListCTableCommand<Alignment> {
+public class ListAlignmentCommand extends AbstractListCTableCommand {
 
 	public ListAlignmentCommand() {
-		super(ConfigurableTable.alignment);
+		super();
+		setTableName(ConfigurableTable.alignment.name());
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.alignment);
+			super(ConfigurableTable.alignment.name());
 		}
 	}
 

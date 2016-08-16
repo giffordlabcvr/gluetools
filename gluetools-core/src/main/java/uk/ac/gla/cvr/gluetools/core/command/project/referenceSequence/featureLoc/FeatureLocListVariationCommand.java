@@ -40,12 +40,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		"  list variation name custom_field")
 public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListResult> {
 	
-	private AbstractListCTableDelegate<Variation> listCTableDelegate = new AbstractListCTableDelegate<Variation>();
+	private AbstractListCTableDelegate listCTableDelegate = new AbstractListCTableDelegate();
 	
 	
 	public FeatureLocListVariationCommand() {
 		super();
-		listCTableDelegate.setcTable(ConfigurableTable.variation);
+		listCTableDelegate.setTableName(ConfigurableTable.variation.name());
 		listCTableDelegate.setSortComparator(new VariationSortComparator());
 	}
 
@@ -81,7 +81,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 	@CompleterClass
 	public static class Completer extends AbstractListCTableCommand.FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.variation);
+			super(ConfigurableTable.variation.name());
 		}
 	}
 

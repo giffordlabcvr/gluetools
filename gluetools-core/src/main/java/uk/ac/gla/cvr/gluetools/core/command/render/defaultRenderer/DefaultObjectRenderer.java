@@ -7,8 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectException;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.DocumentResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.IObjectRenderer;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -27,7 +27,7 @@ public class DefaultObjectRenderer implements IObjectRenderer {
 
 	
 	private DefaultObjectRenderer(Class<? extends GlueDataObject> dataObjectClass) {
-		String ftlFile = dataObjectClass.getAnnotation(GlueDataClass.class).defaultObjectRendererFtlFile();
+		String ftlFile = Project.getDataClassAnnotation(dataObjectClass).defaultObjectRendererFtlFile();
 		if(ftlFile == null || ftlFile.length() == 0) {
 			throw new RenderObjectException(Code.NO_DEFAULT_RENDERER_DEFINED, dataObjectClass.getName());
 		}

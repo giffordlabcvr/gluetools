@@ -55,7 +55,7 @@ public class AddCustomFieldSettingCommand extends ModuleDocumentCommand<OkResult
 	public static final class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerVariableInstantiator("fieldName", new CustomFieldNameInstantiator(ConfigurableTable.variation));
+			registerVariableInstantiator("fieldName", new CustomFieldNameInstantiator(ConfigurableTable.variation.name()));
 		}
 	}
 

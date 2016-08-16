@@ -85,6 +85,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(CreateCustomTableRowCommand.class);
 		registerCommandClass(DeleteCustomTableRowCommand.class);
 		registerCommandClass(CustomTableRowCommand.class);
+		registerCommandClass(ListCustomTableRowCommand.class);
 		
 		// remove this when no longer needed
 		registerCommandClass(CorrectAlignmentCommand.class);

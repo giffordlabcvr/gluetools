@@ -39,12 +39,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		"  list var-almt-note alignment.name custom_field")
 public class VariationListAlmtNoteCommand extends VariationModeCommand<ListResult> {
 	
-	private AbstractListCTableDelegate<VarAlmtNote> listCTableDelegate = new AbstractListCTableDelegate<VarAlmtNote>();
+	private AbstractListCTableDelegate listCTableDelegate = new AbstractListCTableDelegate();
 	
 	
 	public VariationListAlmtNoteCommand() {
 		super();
-		listCTableDelegate.setcTable(ConfigurableTable.var_almt_note);
+		listCTableDelegate.setTableName(ConfigurableTable.var_almt_note.name());
 		listCTableDelegate.setSortComparator(new VarAlmtNoteSortComparator());
 	}
 
@@ -81,7 +81,7 @@ public class VariationListAlmtNoteCommand extends VariationModeCommand<ListResul
 	@CompleterClass
 	public static class Completer extends AbstractListCTableCommand.FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.var_almt_note);
+			super(ConfigurableTable.var_almt_note.name());
 		}
 	}
 

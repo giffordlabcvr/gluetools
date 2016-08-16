@@ -102,12 +102,15 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	
 	@SuppressWarnings("rawtypes")
 	public static <C extends GlueDataObject> List<C> query(CommandContext cmdContext, Class<C> objClass, SelectQuery query) {
-		List<?> queryResult = null;
 		try {
-			queryResult = cmdContext.getGluetoolsEngine().runWithGlueClassloader(new Supplier<List>(){
+			return cmdContext.getGluetoolsEngine().runWithGlueClassloader(new Supplier<List<C>>(){
 				@Override
-				public List get() {
-					return cmdContext.getObjectContext().performQuery(query);
+				public List<C> get() {
+					List<?> queryResults = cmdContext.getObjectContext().performQuery(query);
+					return queryResults.stream().map(obj -> { 
+						C dataObject = objClass.cast(obj);
+						return dataObject;
+					}).collect(Collectors.toList());
 				}
 			});
 		} catch(CayenneRuntimeException cre) {
@@ -118,12 +121,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			} else {
 				throw cre;
 			}
-			
 		}
-		return queryResult.stream().map(obj -> { 
-			C dataObject = objClass.cast(obj);
-			return dataObject;
-		}).collect(Collectors.toList());
 	}
 
 	public static <C extends GlueDataObject> C create(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 

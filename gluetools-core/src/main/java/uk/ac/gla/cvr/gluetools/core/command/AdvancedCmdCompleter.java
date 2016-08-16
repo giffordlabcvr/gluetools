@@ -15,7 +15,6 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
@@ -281,10 +280,10 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	
 	private static abstract class FieldNameInstantiator extends VariableInstantiator {
 		
-		private ConfigurableTable cTable;
+		private String tableName;
 
-		protected FieldNameInstantiator(ConfigurableTable cTable) {
-			this.cTable = cTable;
+		protected FieldNameInstantiator(String tableName) {
+			this.tableName = tableName;
 		}
 
 		@Override
@@ -295,8 +294,8 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			return getFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 
-		protected ConfigurableTable getCTable() {
-			return cTable;
+		protected String getTableName() {
+			return tableName;
 		}
 		
 		protected abstract List<String> getFieldNames(ConsoleCommandContext cmdContext);
@@ -334,32 +333,32 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 	
 	public static final class CustomFieldNameInstantiator extends FieldNameInstantiator {
-		public CustomFieldNameInstantiator(ConfigurableTable cTable) {
-			super(cTable);
+		public CustomFieldNameInstantiator(String tableName) {
+			super(tableName);
 		}
 		@Override
 		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
-			return getProject(cmdContext).getCustomFieldNames(getCTable().name());
+			return getProject(cmdContext).getCustomFieldNames(getTableName());
 		}
 	}
 
 	public static final class ModifiableFieldNameInstantiator extends FieldNameInstantiator {
-		public ModifiableFieldNameInstantiator(ConfigurableTable cTable) {
-			super(cTable);
+		public ModifiableFieldNameInstantiator(String tableName) {
+			super(tableName);
 		}
 		@Override
 		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
-			return getProject(cmdContext).getModifiableFieldNames(getCTable().name());
+			return getProject(cmdContext).getModifiableFieldNames(getTableName());
 		}
 	}
 
 	public static final class ListablePropertyInstantiator extends FieldNameInstantiator {
-		public ListablePropertyInstantiator(ConfigurableTable cTable) {
-			super(cTable);
+		public ListablePropertyInstantiator(String tableName) {
+			super(tableName);
 		}
 		@Override
 		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
-			return getProject(cmdContext).getListableProperties(getCTable().name());
+			return getProject(cmdContext).getListableProperties(getTableName());
 		}
 	}
 

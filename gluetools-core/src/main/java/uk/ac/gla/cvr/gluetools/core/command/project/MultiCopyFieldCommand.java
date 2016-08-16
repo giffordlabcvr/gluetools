@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"multi-copy", "field"}, 
-		docoptUsages={"<cTable> (-w <whereClause> | -a) <fromFieldName> <toFieldName> [-b <batchSize>]"},
+		docoptUsages={"<tableName> (-w <whereClause> | -a) <fromFieldName> <toFieldName> [-b <batchSize>]"},
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify updated objects", 
@@ -46,9 +46,10 @@ public class MultiCopyFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkModifiableFieldNames(getCTable().name(), Arrays.asList(fromFieldName, toFieldName));
-		FieldType fromFieldType = project.getModifiableFieldType(getCTable().name(), fromFieldName);
-		FieldType toFieldType = project.getModifiableFieldType(getCTable().name(), toFieldName);
+		String tableName = getTableName();
+		project.checkModifiableFieldNames(tableName, Arrays.asList(fromFieldName, toFieldName));
+		FieldType fromFieldType = project.getModifiableFieldType(tableName, fromFieldName);
+		FieldType toFieldType = project.getModifiableFieldType(tableName, toFieldName);
 		if(!fromFieldType.equals(toFieldType)) {
 			throw new ProjectModeCommandException(Code.INCOMPATIBLE_TYPES_FOR_COPY, fromFieldName, fromFieldType.name(), toFieldName, toFieldType.name());
 		}
@@ -65,7 +66,7 @@ public class MultiCopyFieldCommand extends MultiFieldUpdateCommand {
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerEnumLookup("cTable", ConfigurableTable.class);
+			registerVariableInstantiator("tableName", new MultiFieldUpdateCommand.TableNameInstantiator());
 			registerVariableInstantiator("fromFieldName", new ModifiableFieldInstantiator());
 			registerVariableInstantiator("toFieldName", new ModifiableFieldInstantiator());
 		}

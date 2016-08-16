@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -25,7 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"multi-delete"}, 
-		docoptUsages={"<cTable> (-w <whereClause> | -a) [-b <batchSize>]"},
+		docoptUsages={"<tableName> (-w <whereClause> | -a) [-b <batchSize>]"},
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify deleted objects", 
@@ -39,17 +40,17 @@ public class MultiDeleteCommand extends ProjectModeCommand<DeleteResult> {
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_OBJECTS = "allObjects";
-	public static final String CONFIGURABLE_TABLE = "cTable";
+	public static final String TABLE_NAME = "tableName";
 
 	private Boolean allObjects;
-	private ConfigurableTable cTable;
+	private String tableName;
 	private Optional<Expression> whereClause;
 	private int batchSize;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		cTable = PluginUtils.configureEnumProperty(ConfigurableTable.class, configElem, CONFIGURABLE_TABLE, true);
+		tableName = PluginUtils.configureStringProperty(configElem, TABLE_NAME, true);
 		allObjects = PluginUtils.configureBooleanProperty(configElem, ALL_OBJECTS, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
@@ -64,7 +65,10 @@ public class MultiDeleteCommand extends ProjectModeCommand<DeleteResult> {
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
+		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		Project project = insideProjectMode.getProject();
+		project.checkTableName(tableName);
+		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
 		String objectWord = dataObjectClass.getSimpleName()+"s";
 		
 		SelectQuery selectQuery = null;
@@ -78,7 +82,7 @@ public class MultiDeleteCommand extends ProjectModeCommand<DeleteResult> {
 				GlueDataObject.query(cmdContext, dataObjectClass, selectQuery);
 		
 		
-		if(cTable.equals(ConfigurableTable.sequence)) {
+		if(tableName.equals(ConfigurableTable.sequence.name())) {
 			// filter out reference sequences
 			objectsToDelete = objectsToDelete.stream()
 					.filter(obj -> ((Sequence) obj).getReferenceSequences().isEmpty())
@@ -107,7 +111,7 @@ public class MultiDeleteCommand extends ProjectModeCommand<DeleteResult> {
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerEnumLookup("cTable", ConfigurableTable.class);
+			registerVariableInstantiator("tableName", new MultiFieldUpdateCommand.TableNameInstantiator());
 		}
 	}
 	

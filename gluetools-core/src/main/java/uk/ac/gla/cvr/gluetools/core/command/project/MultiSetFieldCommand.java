@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"multi-set", "field"}, 
-		docoptUsages={"<cTable> (-w <whereClause> | -a) <fieldName> <fieldValue> [-b <batchSize>]"},
+		docoptUsages={"<tableName> (-w <whereClause> | -a) <fieldName> <fieldValue> [-b <batchSize>]"},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify updated objects", 
 				"-a, --allObjects                               Update all objects in table",
@@ -48,7 +48,7 @@ public class MultiSetFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkModifiableFieldNames(getCTable().name(), Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(getTableName(), Collections.singletonList(fieldName));
 		return executeUpdates(cmdContext);
 	}
 
@@ -57,7 +57,7 @@ public class MultiSetFieldCommand extends MultiFieldUpdateCommand {
 
 		public Completer() {
 			super();
-			registerEnumLookup("cTable", ConfigurableTable.class);
+			registerVariableInstantiator("tableName", new MultiFieldUpdateCommand.TableNameInstantiator());
 			registerVariableInstantiator("fieldName", new ModifiableFieldInstantiator());
 		}
 		
@@ -66,7 +66,7 @@ public class MultiSetFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	protected void updateObject(CommandContext cmdContext, GlueDataObject object) {
 		Project project = getProjectMode(cmdContext).getProject();
-		FieldType modifiableFieldType = project.getModifiableFieldType(getCTable().name(), fieldName);
+		FieldType modifiableFieldType = project.getModifiableFieldType(getTableName(), fieldName);
 		Object newValue = modifiableFieldType.getFieldTranslator().valueFromString(fieldValue);
 		object.writeProperty(fieldName, newValue);
 	}

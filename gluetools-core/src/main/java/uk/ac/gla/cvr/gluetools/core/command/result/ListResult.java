@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 // TODO -- default list command for web interface should return only IDs
 // TODO -- some kind of pagination for list commands.
@@ -52,7 +53,7 @@ public class ListResult extends TableResult {
 	
 	
 	public static <D extends GlueDataObject> List<String> propertyPaths(Class<D> objectClass) {
-		return Arrays.asList(objectClass.getAnnotation(GlueDataClass.class).defaultListedProperties());
+		return Arrays.asList(Project.getDataClassAnnotation(objectClass).defaultListedProperties());
 	}
 	
 	

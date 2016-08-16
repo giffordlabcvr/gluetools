@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.CustomTableRowCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.RenderableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
@@ -14,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObjec
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 @CommandModeClass(commandFactoryClass = CustomTableRowModeCommandFactory.class)
-public class CustomTableRowMode extends CommandMode<CustomTableRowCommand> implements ConfigurableObjectMode {
+public class CustomTableRowMode extends CommandMode<CustomTableRowCommand> implements ConfigurableObjectMode, RenderableObjectMode {
 
 	
 	private CustomTable customTable;
@@ -64,6 +65,11 @@ public class CustomTableRowMode extends CommandMode<CustomTableRowCommand> imple
 
 	protected CustomTableObject lookupCustomTableRow(CommandContext cmdContext) {
 		return GlueDataObject.lookup(cmdContext, customTable.getRowClass(), CustomTableObject.pkMap(rowId));
+	}
+
+	@Override
+	public GlueDataObject getRenderableObject(CommandContext cmdContext) {
+		return lookupCustomTableRow(cmdContext);
 	}
 
 	

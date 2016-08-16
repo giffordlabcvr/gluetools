@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -27,17 +29,17 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_OBJECTS = "allObjects";
-	public static final String CONFIGURABLE_TABLE = "cTable";
+	public static final String TABLE_NAME = "tableName";
 
 	private Boolean allObjects;
-	private ConfigurableTable cTable;
+	private String tableName;
 	private Optional<Expression> whereClause;
 	private int batchSize;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		cTable = PluginUtils.configureEnumProperty(ConfigurableTable.class, configElem, CONFIGURABLE_TABLE, true);
+		tableName = PluginUtils.configureStringProperty(configElem, TABLE_NAME, true);
 		allObjects = PluginUtils.configureBooleanProperty(configElem, ALL_OBJECTS, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
@@ -51,7 +53,10 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 	}
 
 	protected final UpdateResult executeUpdates(CommandContext cmdContext) {
-		Class<? extends GlueDataObject> dataObjectClass = cTable.getDataObjectClass();
+		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		Project project = insideProjectMode.getProject();
+		project.checkTableName(tableName);
+		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
 		String objectWord = dataObjectClass.getSimpleName()+"s";
 		
 		SelectQuery selectQuery = null;
@@ -83,11 +88,24 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 		return new UpdateResult(dataObjectClass, numUpdated);
 	}
 
-	protected ConfigurableTable getCTable() {
-		return cTable;
+	protected String getTableName() {
+		return tableName;
 	}
 	
 	protected abstract void updateObject(CommandContext cmdContext, GlueDataObject object);
+	
+	public static class TableNameInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
+		@Override
+		@SuppressWarnings("rawtypes")
+		protected List<CompletionSuggestion> instantiate(
+				ConsoleCommandContext cmdContext,
+				Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+			return insideProjectMode.getProject().getTableNames()
+					.stream().map(t -> new CompletionSuggestion(t, true)).collect(Collectors.toList());
+		}
+	}
 	
 	public static class ModifiableFieldInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
 		@Override
@@ -96,16 +114,13 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			
-			String cTableName = (String) bindings.get("cTable");
-			ConfigurableTable cTable = null;
-			try {
-				cTable = ConfigurableTable.valueOf(cTableName);
-			} catch(IllegalArgumentException iae) {
-				return null;
+			String tableName = (String) bindings.get("tableName");
+			Project project = getProjectMode(cmdContext).getProject();
+			if(project.getDataObjectClass(tableName) != null) {
+				return project.getModifiableFieldNames(tableName)
+						.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 			}
-			return 
-					getProjectMode(cmdContext).getProject().getModifiableFieldNames(cTable.name())
-					.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+			return new ArrayList<CompletionSuggestion>();
 		}
 	}
 

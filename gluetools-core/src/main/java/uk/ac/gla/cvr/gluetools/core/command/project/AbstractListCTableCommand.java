@@ -13,30 +13,32 @@ import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-public abstract class AbstractListCTableCommand<T extends GlueDataObject> extends ProjectModeCommand<ListResult> {
+public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListResult> {
 
 	public static final String FIELD_NAME = "fieldName";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String PAGE_SIZE = "pageSize";
 	public static final String FETCH_LIMIT = "fetchLimit";
 	public static final String FETCH_OFFSET = "fetchOffset";
-	private AbstractListCTableDelegate<T> listCTableDelegate = new AbstractListCTableDelegate<T>();
+	private AbstractListCTableDelegate listCTableDelegate = new AbstractListCTableDelegate();
 	
-	protected AbstractListCTableCommand(ConfigurableTable cTable) {
+	protected AbstractListCTableCommand() {
 		super();
-		this.listCTableDelegate.cTable = cTable;
 	}
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		listCTableDelegate.configure(pluginConfigContext, configElem);
+	}
+	
+	protected void setTableName(String tableName) {
+		listCTableDelegate.tableName = tableName;
 	}
 	
 	@Override
@@ -46,20 +48,20 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 	
 	public static class FieldNameCompleter extends AdvancedCmdCompleter {
 
-		public FieldNameCompleter(ConfigurableTable cTable) {
+		public FieldNameCompleter(String tableName) {
 			super();
-			registerVariableInstantiator("fieldName", new ListablePropertyInstantiator(cTable));
+			registerVariableInstantiator("fieldName", new ListablePropertyInstantiator(tableName));
 		}
 	}
 		
 	
-	protected void setSortComparator(Comparator<T> comparator) {
+	protected void setSortComparator(Comparator<? extends GlueDataObject> comparator) {
 		this.listCTableDelegate.sortComparator = comparator;
 	}
 
-	public static class AbstractListCTableDelegate<T extends GlueDataObject> {
-		private ConfigurableTable cTable;
-		private Comparator<T> sortComparator = null;
+	public static class AbstractListCTableDelegate {
+		private String tableName;
+		private Comparator<? extends GlueDataObject> sortComparator = null;
 		
 		private Optional<Expression> whereClause;
 		private List<String> fieldNames;
@@ -75,10 +77,6 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 			this.whereClause = whereClause;
 		}
 
-		public void setcTable(ConfigurableTable cTable) {
-			this.cTable = cTable;
-		}
-
 		public List<String> getFieldNames() {
 			return fieldNames;
 		}
@@ -87,7 +85,7 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 			this.fieldNames = fieldNames;
 		}
 
-		public void setSortComparator(Comparator<T> sortComparator) {
+		public void setSortComparator(Comparator<? extends GlueDataObject> sortComparator) {
 			this.sortComparator = sortComparator;
 		}
 
@@ -103,9 +101,11 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 		}
 
 		@SuppressWarnings("unchecked")
-		public ListResult execute(CommandContext cmdContext) {
+		public <D extends GlueDataObject> ListResult execute(CommandContext cmdContext) {
 			SelectQuery selectQuery;
-			Class<T> dataObjectClass = (Class<T>) cTable.getDataObjectClass();
+			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+			Project project = insideProjectMode.getProject();
+			Class<D> dataObjectClass = (Class<D>) project.getDataObjectClass(tableName);
 			if(whereClause.isPresent()) {
 				selectQuery = new SelectQuery(dataObjectClass, whereClause.get());
 			} else {
@@ -114,18 +114,20 @@ public abstract class AbstractListCTableCommand<T extends GlueDataObject> extend
 			selectQuery.setPageSize(pageSize);
 			fetchLimit.ifPresent(limit -> selectQuery.setFetchLimit(limit));
 			fetchOffset.ifPresent(offset -> selectQuery.setFetchOffset(offset));
-			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-			Project project = insideProjectMode.getProject();
-			List<T> resultDataObjects = (List<T>) GlueDataObject.query(cmdContext, dataObjectClass, selectQuery);
+			List<D> resultDataObjects = GlueDataObject.query(cmdContext, dataObjectClass, selectQuery);
 			if(sortComparator != null) {
-				Collections.sort(resultDataObjects, sortComparator);
+				Collections.sort(resultDataObjects, (Comparator<D>) sortComparator);
 			}
 			if(fieldNames == null) {
 				return new ListResult(dataObjectClass, resultDataObjects);
 			} else {
-				project.checkListableProperties(cTable.name(), fieldNames);
+				project.checkListableProperties(tableName, fieldNames);
 				return new ListResult(dataObjectClass, resultDataObjects, fieldNames);
 			}
+		}
+
+		public void setTableName(String tableName) {
+			this.tableName = tableName;
 		}
 	}
 

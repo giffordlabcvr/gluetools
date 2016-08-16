@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 
 @CommandClass( 
@@ -25,17 +24,18 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 	"  list sequence -w \"sequenceID like 'f%' and custom_field = 'value1'\"\n"+
 	"  list sequence sequenceID custom_field"
 ) 
-public class ListSequenceCommand extends AbstractListCTableCommand<Sequence> {
+public class ListSequenceCommand extends AbstractListCTableCommand {
 
 	
 	public ListSequenceCommand() {
-		super(ConfigurableTable.sequence);
+		super();
+		setTableName(ConfigurableTable.sequence.name());
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.sequence);
+			super(ConfigurableTable.sequence.name());
 		}
 	}
 

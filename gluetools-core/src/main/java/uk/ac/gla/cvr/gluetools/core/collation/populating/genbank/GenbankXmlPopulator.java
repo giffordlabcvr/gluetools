@@ -187,7 +187,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		public static class Completer extends AdvancedCmdCompleter {
 			public Completer() {
 				super();
-				registerVariableInstantiator("fieldName", new ModifiableFieldNameInstantiator(ConfigurableTable.sequence));
+				registerVariableInstantiator("fieldName", new ModifiableFieldNameInstantiator(ConfigurableTable.sequence.name()));
 			}
 		}
 		

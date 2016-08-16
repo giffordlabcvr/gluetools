@@ -57,6 +57,7 @@ public class CustomTableObjectClassCreator {
 	}
 
 	private void createAnnotation_0() {
+		// Does not work B(: see CustomTableObject for details.
 		ObjectType objectType = new ObjectType("uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass");
 
 		ArrayList<ElementValuePairGen> elemValuePairs = new ArrayList<ElementValuePairGen>();

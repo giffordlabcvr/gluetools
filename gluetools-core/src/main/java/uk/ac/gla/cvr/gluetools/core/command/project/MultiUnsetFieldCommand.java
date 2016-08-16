@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"multi-unset", "field"}, 
-		docoptUsages={"<cTable> (-w <whereClause> | -a) <fieldName>  [-b <batchSize>]"},
+		docoptUsages={"<tableName> (-w <whereClause> | -a) <fieldName>  [-b <batchSize>]"},
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify updated objects", 
@@ -46,7 +46,7 @@ public class MultiUnsetFieldCommand extends MultiFieldUpdateCommand {
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
 		Project project = getProjectMode(cmdContext).getProject();
-		project.checkModifiableFieldNames(getCTable().name(), Collections.singletonList(fieldName));
+		project.checkModifiableFieldNames(getTableName(), Collections.singletonList(fieldName));
 		return executeUpdates(cmdContext);
 	}
 
@@ -59,7 +59,7 @@ public class MultiUnsetFieldCommand extends MultiFieldUpdateCommand {
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerEnumLookup("cTable", ConfigurableTable.class);
+			registerVariableInstantiator("tableName", new MultiFieldUpdateCommand.TableNameInstantiator());
 			registerVariableInstantiator("fieldName", new ModifiableFieldInstantiator());
 		}
 		

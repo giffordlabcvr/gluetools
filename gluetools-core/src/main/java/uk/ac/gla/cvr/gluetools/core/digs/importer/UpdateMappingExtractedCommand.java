@@ -96,7 +96,7 @@ public class UpdateMappingExtractedCommand extends ModuleDocumentCommand<UpdateR
 			super();
 			List<String> extractedFields = Arrays.asList(Extracted.ALL_PROPERTIES);
 			registerStringListLookup("digsExtractedField", extractedFields);
-			registerVariableInstantiator("glueSequenceField", new CustomFieldNameInstantiator(ConfigurableTable.sequence));
+			registerVariableInstantiator("glueSequenceField", new CustomFieldNameInstantiator(ConfigurableTable.sequence.name()));
 		}
 		
 	}

@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 
 
 @CommandClass(
@@ -24,16 +23,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 		"  list reference -w \"name like 'NS%'\"\n"+
 		"  list reference -w \"custom_field = 'value1'\"\n"+
 		"  list reference name custom_field") 
-public class ListReferenceSequenceCommand extends AbstractListCTableCommand<ReferenceSequence> {
+public class ListReferenceSequenceCommand extends AbstractListCTableCommand {
 
 	public ListReferenceSequenceCommand() {
-		super(ConfigurableTable.reference);
+		super();
+		setTableName(ConfigurableTable.reference.name());
 	}
 
 	@CompleterClass
 	public static final class Completer extends FieldNameCompleter {
 		public Completer() {
-			super(ConfigurableTable.reference);
+			super(ConfigurableTable.reference.name());
 		}
 	}
 
