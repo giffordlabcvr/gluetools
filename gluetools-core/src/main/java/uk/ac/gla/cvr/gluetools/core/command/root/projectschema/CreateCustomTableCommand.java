@@ -1,16 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.command.root.projectschema;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -43,7 +38,7 @@ public class CreateCustomTableCommand extends ProjectSchemaModeCommand<CreateRes
 
 		CustomTable customTable = GlueDataObject.create(cmdContext, CustomTable.class, CustomTable.pkMap(getProjectName(), tableName), false);
 		Project project = GlueDataObject.lookup(cmdContext, Project.class, Project.pkMap(getProjectName()));
-		ModelBuilder.addTableToModel(cmdContext.getGluetoolsEngine(), project, customTable);
+		ModelBuilder.addCustomTableToModel(cmdContext.getGluetoolsEngine(), project, customTable);
 		customTable.setProject(project);
 		cmdContext.commit();
 		return new CreateResult(CustomTable.class, 1);

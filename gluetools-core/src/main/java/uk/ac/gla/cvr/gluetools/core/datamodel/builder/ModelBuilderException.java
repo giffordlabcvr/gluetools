@@ -11,7 +11,7 @@ public class ModelBuilderException extends GlueException {
 		SCHEMA_MIGRATION_NOT_IMPLEMENTED("dbSchemaVersion", "currentSchemaVersion", 
 				"mysqlLine", "username", "password", "dbName"), 
 		MIGRATE_SCHEMA_OPTION_REMINDER("dbSchemaVersion", "currentSchemaVersion"),
-		PROJECT_SCHEMA_INVALID("errorTxt");
+		INVALID_SCHEMA_CHANGE("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

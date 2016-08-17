@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 
 @GlueDataClass(defaultListedProperties = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
@@ -59,6 +60,18 @@ public class Project extends _Project {
 	public List<Field> getCustomFields(String tableName) {
 		return getFields().stream()
 				.filter(f -> f.getTable().equals(tableName))
+				.collect(Collectors.toList());
+	}
+
+	public List<Link> getLinksForWhichSource(String tableName) {
+		return getLinks().stream()
+				.filter(l -> l.getSrcTableName().equals(tableName))
+				.collect(Collectors.toList());
+	}
+
+	public List<Link> getLinksForWhichDestination(String tableName) {
+		return getLinks().stream()
+				.filter(l -> l.getDestTableName().equals(tableName))
 				.collect(Collectors.toList());
 	}
 

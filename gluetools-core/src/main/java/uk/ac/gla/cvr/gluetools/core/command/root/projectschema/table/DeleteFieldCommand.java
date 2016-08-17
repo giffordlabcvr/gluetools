@@ -44,7 +44,7 @@ public class DeleteFieldCommand extends TableModeCommand<DeleteResult> {
 		
 		Map<String, String> pkMap = Field.pkMap(getProjectName(), getTableName(), fieldName);
 		Field field = GlueDataObject.lookup(cmdContext, Field.class, pkMap);
-		ModelBuilder.deleteTableColumnFromModel(cmdContext.getGluetoolsEngine(), field.getProject(), field);
+		ModelBuilder.deleteFieldFromModel(cmdContext.getGluetoolsEngine(), field.getProject(), field);
 		DeleteResult result = GlueDataObject.delete(cmdContext, Field.class, pkMap, true);
 		cmdContext.commit();
 		return result;

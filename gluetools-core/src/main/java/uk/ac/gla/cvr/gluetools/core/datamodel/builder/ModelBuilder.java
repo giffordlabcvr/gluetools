@@ -451,7 +451,8 @@ public class ModelBuilder {
 		}
 	}
 	
-	public static void addTableColumnToModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+	public static void addFieldToModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+		validateAddField(gluetoolsEngine, project, field);
 		ServerRuntime projectRuntime = null;
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
@@ -465,10 +466,10 @@ public class ModelBuilder {
 		}
 	}
 	
-	public static void addTableToModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+	public static void addCustomTableToModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		validateAddCustomTable(gluetoolsEngine, project, customTable);
 		ServerRuntime projectRuntime = null;
 		try {
-			validateAddCustomTable(gluetoolsEngine, project, customTable);
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 			CreateTableToDb createTableToken = getCreateTableToken(project, customTable, mergerContext);
@@ -481,20 +482,118 @@ public class ModelBuilder {
 	}
 
 	private static void validateAddCustomTable(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		String tableName = customTable.getName();
+		// Check that custom table name does not overlap existing custom table
+		for(CustomTable existingCustomTable: project.getCustomTables()) {
+			if(existingCustomTable.getName().equals(customTable.getName())) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom table with name '"+tableName+"': this is used by an existing custom table");
+			}
+		}
+		// Check that custom table name does not overlap core DB entity.
 		XPath xPath = createNamespacingXpath();
 		Document cayenneMapDocument = getProjectMapDocument();
-
-		// Check that custom table name does not overlap core DB entity.
-		String tableName = customTable.getName();
 		XPathExpression xPathExpression = 
 				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+tableName+"']");
 		Element dbEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 		if(dbEntityElem != null) {
-			throw new ModelBuilderException(Code.PROJECT_SCHEMA_INVALID, "Custom table name '"+tableName+"' overlaps a core GLUE DB entity");
+			throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom table with name '"+tableName+"': this is used by a core GLUE DB entity");
 		}
 	}
 
-	public static void deleteTableFromModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+	private static void validateDeleteCustomTable(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		String tableName = customTable.getName();
+		if(!project.getLinksForWhichSource(tableName).isEmpty()) {
+			throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Custom table '"+tableName+"' cannot be deleted as it is the source table of a custom relational link");
+		}
+		if(!project.getLinksForWhichDestination(tableName).isEmpty()) {
+			throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Custom table '"+tableName+"' cannot be deleted as it is the destination table of a custom relational link");
+		}
+	}
+
+	private static void validateAddField(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+		String fieldName = field.getName();
+		String tableName = field.getTable();
+		for(Field existingField: project.getCustomFields(tableName)) {
+			if(existingField.getName().equals(fieldName)) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom field with name '"+fieldName+"': this is used by an existing custom field on table '"+tableName+"'");
+			}
+		}
+		for(Link existingLink: project.getLinksForWhichSource(tableName)) {
+			if(existingLink.getSrcLinkName().equals(fieldName)) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom field with name '"+fieldName+"': this is used as the source link name by a custom link with source table '"+tableName+"'");
+			}
+		}
+		for(Link existingLink: project.getLinksForWhichDestination(tableName)) {
+			if(existingLink.getDestLinkName().equals(fieldName)) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom field with name '"+fieldName+"': this is used as the destination link name by a custom link with destination table '"+tableName+"'");
+			}
+		}
+		if(project.getCustomTable(tableName) != null && fieldName.equals(CustomTableObject.ID_PROPERTY)) {
+			throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom field with name '"+fieldName+"': this is already used as the primary key for '"+tableName+"'");
+		} else {
+			XPath xPath = createNamespacingXpath();
+			Document cayenneMapDocument = getProjectMapDocument();
+			XPathExpression xPathExpression = 
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+tableName+"']/cay:db-attribute[@name='"+fieldName+"']");
+			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			if(dbAttributeElem != null) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom field with name '"+fieldName+"': this is used by an existing core field on table '"+tableName+"'");
+			}
+		}
+	}
+
+	private static void validateDeleteField(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+	}
+
+	private static void validateAddLink(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
+		String srcTableName = link.getSrcTableName();
+		String srcLinkName = link.getSrcLinkName();
+		String destTableName = link.getDestTableName();
+		String destLinkName = link.getDestLinkName();
+		for(Link existingLink: project.getLinks()) {
+			if(srcTableName.equals(existingLink.getSrcTableName()) && srcLinkName.equals(existingLink.getSrcLinkName())) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"': such a link already exists");
+			}
+			if(destTableName.equals(existingLink.getDestTableName()) && destLinkName.equals(existingLink.getDestLinkName())) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"': such a link already exists");
+			}
+		}
+		for(Field existingField: project.getCustomFields(srcTableName)) {
+			if(existingField.getName().equals(srcLinkName)) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"': a custom field with this name on this table already exists");
+			}
+		}
+		for(Field existingField: project.getCustomFields(destTableName)) {
+			if(existingField.getName().equals(destLinkName)) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"': a custom field with this name on this table already exists");
+			}
+		}
+		XPath xPath = createNamespacingXpath();
+		Document cayenneMapDocument = getProjectMapDocument();
+		{
+			XPathExpression xPathExpression = 
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+srcTableName+"']/cay:db-attribute[@name='"+srcLinkName+"']");
+			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			if(dbAttributeElem != null) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"': this is used by an existing core field on this table");
+			}
+		}
+		{
+			XPathExpression xPathExpression = 
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+destTableName+"']/cay:db-attribute[@name='"+destLinkName+"']");
+			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+			if(dbAttributeElem != null) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"': this is used by an existing core field on this table");
+			}
+		}
+	}
+
+	private static void validateDeleteLink(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
+	}
+
+	
+	public static void deleteCustomTableFromModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		validateDeleteCustomTable(gluetoolsEngine, project, customTable);
 		ServerRuntime projectRuntime = null;
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
@@ -547,7 +646,8 @@ public class ModelBuilder {
 		return mergerContext;
 	}
 
-	public static void deleteTableColumnFromModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+	public static void deleteFieldFromModel(GluetoolsEngine gluetoolsEngine, Project project, Field field) {
+		validateDeleteField(gluetoolsEngine, project, field);
 		ServerRuntime projectRuntime = null;
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
@@ -648,11 +748,11 @@ public class ModelBuilder {
 	}
 
 	public static void addLinkToModel(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
+		validateAddLink(gluetoolsEngine, project, link);
 	}
 
-	public static void deleteLinkFromModel(GluetoolsEngine gluetoolsEngine,
-			Project project, Link link) {
-		// TODO Auto-generated method stub
+	public static void deleteLinkFromModel(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
+		validateDeleteLink(gluetoolsEngine, project, link);
 		
 	}
 

@@ -36,7 +36,7 @@ public class DeleteCustomTableCommand extends ProjectSchemaModeCommand<DeleteRes
 	public DeleteResult execute(CommandContext cmdContext) {
 		Project project = GlueDataObject.lookup(cmdContext, Project.class, Project.pkMap(getProjectName()));
 		CustomTable customTable = GlueDataObject.lookup(cmdContext, CustomTable.class, CustomTable.pkMap(getProjectName(), tableName), false);
-		ModelBuilder.deleteTableFromModel(cmdContext.getGluetoolsEngine(), project, customTable);
+		ModelBuilder.deleteCustomTableFromModel(cmdContext.getGluetoolsEngine(), project, customTable);
 		GlueDataObject.delete(cmdContext, CustomTable.class, CustomTable.pkMap(getProjectName(), tableName), false);
 		cmdContext.commit();
 		return new DeleteResult(CustomTable.class, 1);
