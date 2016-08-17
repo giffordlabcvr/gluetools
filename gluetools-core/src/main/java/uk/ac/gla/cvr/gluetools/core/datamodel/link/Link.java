@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 public class Link extends _Link {
 
 	public enum Multiplicity {
-		ONE_TO_ONE, ONE_TO_MANY, MANY_TO_MANY
+		ONE_TO_ONE, ONE_TO_MANY
 	}
 	
 	public static Map<String, String> pkMap(String projectName, String table, String name) {
