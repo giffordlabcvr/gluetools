@@ -60,6 +60,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObjec
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -160,9 +161,31 @@ public class ModelBuilder {
 		PropertiesConfiguration propertiesConfiguration = gluetoolsEngine.getPropertiesConfiguration();
 
 		String projectName = project.getName();
-		List<Field> fields = project.getFields();
 		List<CustomTable> customTables = project.getCustomTables();
+		List<Field> fields = project.getFields();
+		List<Link> links = project.getLinks();
 		
+		
+		List<String> projectTableNames = new ArrayList<String>();
+		Document cayenneDomainDocument;
+		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_DOMAIN_RESOURCE)) {
+			cayenneDomainDocument = GlueXmlUtils.documentFromStream(domainInputStream);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (SAXException e) {
+			throw new RuntimeException(e);
+		}
+
+		
+		String projectDomainName = "cayenne-project-"+projectName+"-domain.xml";
+		String projectMapName = projectMapName(projectName);
+		Element domainElem = cayenneDomainDocument.getDocumentElement();
+		GlueXmlUtils.findChildElements(domainElem, "map").get(0).setAttribute("name", projectMapName);
+		Element nodeElem = GlueXmlUtils.findChildElements(domainElem, "node").get(0);
+		GlueXmlUtils.findChildElements(nodeElem, "map-ref").get(0).setAttribute("name", projectMapName);
+		
+		Document cayenneMapDocument = getProjectMapDocument();
+
 		// ensure custom table classes are available to GLUE class loaders.
 		for(CustomTable customTable: customTables) {
 			String className = CustomTableObjectClassCreator.getFullClassName(projectName, customTable.getName());
@@ -175,34 +198,7 @@ public class ModelBuilder {
 			}
 		}
 		
-		List<String> projectTableNames = new ArrayList<String>();
-		Document cayenneDomainDocument;
-		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_DOMAIN_RESOURCE)) {
-			cayenneDomainDocument = GlueXmlUtils.documentFromStream(domainInputStream);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (SAXException e) {
-			throw new RuntimeException(e);
-		}
-		String projectDomainName = "cayenne-project-"+projectName+"-domain.xml";
-		String projectMapName = projectMapName(projectName);
-		Element domainElem = cayenneDomainDocument.getDocumentElement();
-		GlueXmlUtils.findChildElements(domainElem, "map").get(0).setAttribute("name", projectMapName);
-		Element nodeElem = GlueXmlUtils.findChildElements(domainElem, "node").get(0);
-		GlueXmlUtils.findChildElements(nodeElem, "map-ref").get(0).setAttribute("name", projectMapName);
-		
-		Document cayenneMapDocument;
-		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_MAP_RESOURCE)) {
-			cayenneMapDocument = GlueXmlUtils.documentFromStream(domainInputStream);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (SAXException e) {
-			throw new RuntimeException(e);
-		}
-		XPath xPath = GlueXmlUtils.createXPathEngine();
-		XmlNamespaceContext namespaceContext = new GlueXmlUtils.XmlNamespaceContext();
-		namespaceContext.addNamespace("cay", CAYENNE_NS);
-		xPath.setNamespaceContext(namespaceContext);
+		XPath xPath = createNamespacingXpath();
 		
 		Map<String, List<Field>> tableNameToFields = new LinkedHashMap<String, List<Field>>();
 
@@ -365,6 +361,27 @@ public class ModelBuilder {
 		return projectRuntime;
 	}
 
+	private static Document getProjectMapDocument() {
+		Document cayenneMapDocument;
+		try(InputStream domainInputStream = ModelBuilder.class.getResourceAsStream("/"+PROJECT_MAP_RESOURCE)) {
+			cayenneMapDocument = GlueXmlUtils.documentFromStream(domainInputStream);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (SAXException e) {
+			throw new RuntimeException(e);
+		}
+		return cayenneMapDocument;
+	}
+
+	private static XPath createNamespacingXpath() {
+		XPath xPath = GlueXmlUtils.createXPathEngine();
+		XmlNamespaceContext namespaceContext = new GlueXmlUtils.XmlNamespaceContext();
+		namespaceContext.addNamespace("cay", CAYENNE_NS);
+		xPath.setNamespaceContext(namespaceContext);
+		return xPath;
+	}
+
+
 	// Not sure why the project has to have a different map name.
 	public static String projectMapName(String projectName) {
 		String projectMapName = "project-"+projectName+"-map";
@@ -451,6 +468,7 @@ public class ModelBuilder {
 	public static void addTableToModel(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
 		ServerRuntime projectRuntime = null;
 		try {
+			validateAddCustomTable(gluetoolsEngine, project, customTable);
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
 			CreateTableToDb createTableToken = getCreateTableToken(project, customTable, mergerContext);
@@ -459,6 +477,20 @@ public class ModelBuilder {
 			if(projectRuntime != null) {
 				projectRuntime.shutdown();
 			}
+		}
+	}
+
+	private static void validateAddCustomTable(GluetoolsEngine gluetoolsEngine, Project project, CustomTable customTable) {
+		XPath xPath = createNamespacingXpath();
+		Document cayenneMapDocument = getProjectMapDocument();
+
+		// Check that custom table name does not overlap core DB entity.
+		String tableName = customTable.getName();
+		XPathExpression xPathExpression = 
+				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+tableName+"']");
+		Element dbEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
+		if(dbEntityElem != null) {
+			throw new ModelBuilderException(Code.PROJECT_SCHEMA_INVALID, "Custom table name '"+tableName+"' overlaps a core GLUE DB entity");
 		}
 	}
 
@@ -614,6 +646,16 @@ public class ModelBuilder {
 		newObject.setPKValues(pkMap);
 		return newObject;
 	}
+
+	public static void addLinkToModel(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
+	}
+
+	public static void deleteLinkFromModel(GluetoolsEngine gluetoolsEngine,
+			Project project, Link link) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 
 	

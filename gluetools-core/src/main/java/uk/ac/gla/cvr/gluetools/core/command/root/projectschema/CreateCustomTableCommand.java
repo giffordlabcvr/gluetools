@@ -25,8 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptUsages={"<tableName>"},
 		description="Create a new custom table",
 		metaTags={CmdMeta.updatesDatabase},
-		furtherHelp="The table name must be a valid database identifier, e.g. my_table_1."+
-		"The table name cannot be one of the standard GLUE tables: "+ModelBuilder.configurableTablesString) 
+		furtherHelp="The table name must be a valid database identifier, e.g. my_table_1.") 
 public class CreateCustomTableCommand extends ProjectSchemaModeCommand<CreateResult> {
 
 	public static final String TABLE_NAME = "tableName";
@@ -37,13 +36,6 @@ public class CreateCustomTableCommand extends ProjectSchemaModeCommand<CreateRes
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		tableName = PluginUtils.configureIdentifierProperty(configElem, TABLE_NAME, true);
-		
-		if(Arrays.asList(ModelBuilder.ConfigurableTable.values())
-				.stream()
-				.map(v -> v.name())
-				.collect(Collectors.toList()).contains(tableName)) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Custom table names must not overlap with standard GLUE table names: "+ModelBuilder.configurableTablesString);
-		}
 	}
 
 	@Override

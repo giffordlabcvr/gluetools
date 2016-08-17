@@ -482,7 +482,7 @@ public class PluginUtils {
 
 	public static String configureIdentifierProperty(Element configElem, String propertyName, boolean required) {
 		String identifierValue = configureStringProperty(configElem, propertyName, required);
-		if(!identifierValue.matches("[a-z][a-z0-9_]*")) {
+		if(identifierValue != null && !identifierValue.matches("[a-z][a-z0-9_]*")) {
 			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, 
 					"Identifier must begin with a lower-case letter, and may contain lower-case letters, digits and underscores.", propertyName);
 		}

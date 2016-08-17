@@ -22,6 +22,10 @@ public class ProjectSchemaModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteCustomTableCommand.class);
 		registerCommandClass(ListCustomTableCommand.class);
 
+		registerCommandClass(CreateLinkCommand.class);
+		registerCommandClass(DeleteLinkCommand.class);
+		registerCommandClass(ListLinkCommand.class);
+
 	}
 	
 

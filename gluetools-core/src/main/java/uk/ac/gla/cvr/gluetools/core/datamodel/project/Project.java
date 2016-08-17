@@ -73,6 +73,14 @@ public class Project extends _Project {
 			throw new ProjectModeCommandException(Code.NO_SUCH_TABLE, tableName);
 		}
 	}
+
+	public void checkCustomTableName(String tableName) {
+		CustomTable customTable = getCustomTable(tableName);
+		if(customTable == null) {
+			throw new ProjectModeCommandException(Code.NO_SUCH_CUSTOM_TABLE, tableName);
+		}
+	}
+
 	
 	public List<String> getTableNames() {
 		List<String> tableNames = new ArrayList<String>();

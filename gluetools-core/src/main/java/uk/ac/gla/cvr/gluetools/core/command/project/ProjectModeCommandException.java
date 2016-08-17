@@ -10,6 +10,7 @@ public class ProjectModeCommandException extends GlueException {
 		NO_SUCH_MODIFIABLE_PROPERTY("tableName", "fieldName"), 
 		NO_SUCH_PROPERTY("tableName", "fieldName"),
 		NO_SUCH_TABLE("tableName"),
+		NO_SUCH_CUSTOM_TABLE("tableName"),
 		INCORRECT_FIELD_TYPE("tableName", "fieldName", "requiredFieldType", "actualFieldType");
 		
 		private String[] argNames;
