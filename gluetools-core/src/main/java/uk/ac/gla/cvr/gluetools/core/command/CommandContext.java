@@ -49,24 +49,37 @@ public class CommandContext {
 		return description;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ModeCloser pushCommandMode(String... words) {
+		pushCommandModeReturnNumWordsUsed(words);
+		return new ModeCloser();
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public int pushCommandModeReturnNumWordsUsed(String... words) {
+		if(words.length == 0) {
+			return 0;
+		}
 		String enterModeCommandWord = words[0];
+		int used = 1;
 		Class<? extends Command> enterModeCmdClass = 
 				peekCommandMode().getCommandFactory().identifyCommandClass(this, 
 				Collections.singletonList(enterModeCommandWord));
+		if(enterModeCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
+			throw new CommandException(Code.NOT_A_MODE_COMMAND, String.join(" ", words), getModePath());
+		}
 		EnterModeCommandDescriptor enterModeCommandDescriptor = 
 				EnterModeCommandDescriptor.getDescriptorForClass(enterModeCmdClass);
 		String[] enterModeArgNames = enterModeCommandDescriptor.enterModeArgNames();
-		if(enterModeCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
-			throw new CommandException(Code.NOT_A_MODE_COMMAND, String.join(" ", words), getModePath());
+		if(words.length < enterModeArgNames.length+1) {
+			return 0;
 		}
 		CommandBuilder cmdBuilder = cmdBuilder(enterModeCmdClass);
 		for(int i = 0; i < enterModeArgNames.length; i++) {
 			cmdBuilder.set(enterModeArgNames[i], words[i+1]);
+			used++;
 		}
 		cmdBuilder.execute();
-		return new ModeCloser();
+		return used;
 	}
 	
 	public class ModeCloser implements AutoCloseable {

@@ -20,7 +20,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.Keyword;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.PkPath;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
@@ -276,9 +280,59 @@ public class Project extends _Project {
 		}
 	}
 
-	public Link getLink(String srcTableName, String srcLinkName) {
+	public ModePathElement[] getModePathForTable(String tableName) {
+		CustomTable customTable = getCustomTable(tableName);
+		if(customTable != null) {
+			return new ModePathElement[]{new Keyword("custom-table-row"), new Keyword(tableName), new PkPath(CustomTableObject.ID_PROPERTY)};
+		} else {
+			return ConfigurableTable.valueOf(tableName).getModePath();
+		}
+	}
+	
+	public Link getSrcTableLink(String srcTableName, String srcLinkName) {
 		return getLinksForWhichSource(srcTableName).stream()
 				.filter(l -> l.getSrcLinkName().equals(srcLinkName))
 				.findFirst().orElse(null);
 	}
+
+	public Link getDestTableLink(String destTableName, String destLinkName) {
+		return getLinksForWhichDestination(destTableName).stream()
+				.filter(l -> l.getDestLinkName().equals(destLinkName))
+				.findFirst().orElse(null);
+	}
+
+	public Map<String, String> targetPathToPkMap(String tableName, String targetPath) {
+		ModePathElement[] modePath = getModePathForTable(tableName);
+		String[] bits = targetPath.split("/");
+		if(bits.length == modePath.length) {
+			Map<String, String> pkMap = new LinkedHashMap<String, String>();
+			for(int i = 0; i < modePath.length; i++) {
+				if(modePath[i] instanceof Keyword) {
+					Keyword keyword = (Keyword) modePath[i];
+					if(!bits[i].equals(keyword.getKeyword())) {
+						throw new ProjectModeCommandException(Code.INVALID_TARGET_PATH, tableName, targetPath, correctForm(modePath));
+					}
+				} else if(modePath[i] instanceof PkPath) {
+					pkMap.put(((PkPath) modePath[i]).getPkPath(), bits[i]);
+				} else {
+					throw new RuntimeException("Unknown type of ModePathElement "+modePath[i]);
+				}
+			}
+			return pkMap;
+		}
+		throw new ProjectModeCommandException(Code.INVALID_TARGET_PATH, tableName, targetPath, correctForm(modePath));
+	}
+	
+	private String correctForm(ModePathElement[] modePath) {
+		StringBuffer buf = new StringBuffer();
+		for(int i = 0; i < modePath.length; i++) {
+			if(i > 0) {
+				buf.append("/");
+			}
+			ModePathElement modePathElement = modePath[i];
+			buf.append(modePathElement.correctForm());
+		}
+		return buf.toString();
+	}
+	
 }

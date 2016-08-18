@@ -13,10 +13,12 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 public abstract class GlueDataObject extends CayenneDataObject {
@@ -140,6 +142,13 @@ public abstract class GlueDataObject extends CayenneDataObject {
 				return cmdContext.getObjectContext().newObject(objClass);
 			}
 		});
+		
+		pkMap.values().forEach(pkVal -> {
+			if(pkVal.contains("/")) {
+				throw new DataModelException(Code.ILLEGAL_PRIMARY_KEY_VALUE, objClass.getSimpleName(), pkVal);
+			}
+		});
+		
 		newObject.setPKValues(pkMap);
 		return newObject;
 	}

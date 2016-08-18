@@ -12,17 +12,17 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 
 @CommandClass( 
-	commandWords={"set", "link"}, 
-	docoptUsages={"[-C] <linkName> <targetId>"},
+	commandWords={"set", "link-target"}, 
+	docoptUsages={"[-C] <linkName> <targetPath>"},
 	docoptOptions={
 			"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
 	description="Set the target object on a link") 
-public class CustomTableRowSetLinkCommand extends CustomTableRowModeCommand<UpdateResult> {
+public class CustomTableRowSetLinkTargetCommand extends CustomTableRowModeCommand<UpdateResult> {
 
 	public static final String LINK_NAME = PropertyCommandDelegate.LINK_NAME;
-	public static final String TARGET_ID = PropertyCommandDelegate.TARGET_ID;
+	public static final String TARGET_PATH = PropertyCommandDelegate.TARGET_PATH;
 	public static final String NO_COMMIT = PropertyCommandDelegate.NO_COMMIT;
 
 	
@@ -31,15 +31,15 @@ public class CustomTableRowSetLinkCommand extends CustomTableRowModeCommand<Upda
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		propertyCommandDelegate.configureSetLink(pluginConfigContext, configElem);
+		propertyCommandDelegate.configureSetLinkTarget(pluginConfigContext, configElem);
 	}
 
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
-		return propertyCommandDelegate.executeSetLink(cmdContext);
+		return propertyCommandDelegate.executeSetLinkTarget(cmdContext);
 	}
 
 	@CompleterClass
-	public static class Completer extends PropertyCommandDelegate.LinkNameAndIdCompleter {}
+	public static class Completer extends PropertyCommandDelegate.LinkNameAndTargetPathCompleter {}
 
 }

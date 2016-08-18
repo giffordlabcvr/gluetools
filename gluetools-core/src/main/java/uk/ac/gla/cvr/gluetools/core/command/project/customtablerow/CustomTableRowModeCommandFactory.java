@@ -22,7 +22,7 @@ public class CustomTableRowModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(CustomTableRowShowPropertyCommand.class);
 		registerCommandClass(CustomTableRowListPropertyCommand.class);
 
-		registerCommandClass(CustomTableRowSetLinkCommand.class);
+		registerCommandClass(CustomTableRowSetLinkTargetCommand.class);
 		
 		registerCommandClass(RenderObjectCommand.class);
 

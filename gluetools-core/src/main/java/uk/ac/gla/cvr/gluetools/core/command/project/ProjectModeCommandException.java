@@ -11,7 +11,8 @@ public class ProjectModeCommandException extends GlueException {
 		NO_SUCH_PROPERTY("tableName", "fieldName"),
 		NO_SUCH_TABLE("tableName"),
 		NO_SUCH_CUSTOM_TABLE("tableName"),
-		INCORRECT_FIELD_TYPE("tableName", "fieldName", "requiredFieldType", "actualFieldType");
+		INCORRECT_FIELD_TYPE("tableName", "fieldName", "requiredFieldType", "actualFieldType"),
+		INVALID_TARGET_PATH("tableName", "targetPath", "correctForm");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

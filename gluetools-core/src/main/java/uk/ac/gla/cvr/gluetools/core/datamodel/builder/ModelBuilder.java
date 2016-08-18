@@ -91,25 +91,95 @@ public class ModelBuilder {
 	
 	// tables within a project where fields can be added / deleted.
 	public enum ConfigurableTable { 
-		sequence(Sequence.class),
-		variation(Variation.class),
-		feature(Feature.class),
-		alignment(Alignment.class),
-		reference(ReferenceSequence.class),
-		alignment_member(AlignmentMember.class),
-		var_almt_note(VarAlmtNote.class);
+		sequence(Sequence.class, 
+				keyword("sequence"), 
+				pkPath(Sequence.SOURCE_NAME_PATH), 
+				pkPath(Sequence.SEQUENCE_ID_PROPERTY)),
+		variation(Variation.class, 
+				keyword("reference"), 
+				pkPath(Variation.REF_SEQ_NAME_PATH), 
+				keyword("feature-location"), 
+				pkPath(Variation.FEATURE_NAME_PATH), 
+				keyword("variation"), 
+				pkPath(Variation.NAME_PROPERTY)),
+		feature(Feature.class, 
+				keyword("feature"), 
+				pkPath(Feature.NAME_PROPERTY)),
+		alignment(Alignment.class, 
+				keyword("alignment"), 
+				pkPath(Alignment.NAME_PROPERTY)),
+		reference(ReferenceSequence.class, 
+				keyword("reference"), 
+				pkPath(ReferenceSequence.NAME_PROPERTY)),
+		alignment_member(AlignmentMember.class, 
+				keyword("alignment"), 
+				pkPath(AlignmentMember.ALIGNMENT_NAME_PATH), 
+				keyword("member"), 
+				pkPath(AlignmentMember.SOURCE_NAME_PATH),
+				pkPath(AlignmentMember.SEQUENCE_ID_PATH)),
+		var_almt_note(VarAlmtNote.class, 
+				keyword("reference"), 
+				pkPath(VarAlmtNote.REF_SEQ_NAME_PATH), 
+				keyword("feature-location"), 
+				pkPath(VarAlmtNote.FEATURE_NAME_PATH), 
+				keyword("variation"), 
+				pkPath(VarAlmtNote.VARIATION_NAME_PATH),
+				keyword("var-almt-note"), 
+				pkPath(VarAlmtNote.ALIGNMENT_NAME_PATH));
 		
 		private Class<? extends GlueDataObject> dataObjectClass;
+		private ModePathElement[] modePath;
 
-		private ConfigurableTable(Class <? extends GlueDataObject> dataObjectClass) {
+		private ConfigurableTable(Class <? extends GlueDataObject> dataObjectClass, ModePathElement ... modePath) {
 			this.dataObjectClass = dataObjectClass;
+			this.modePath = modePath;
 		}
 
 		public Class<? extends GlueDataObject> getDataObjectClass() {
 			return dataObjectClass;
 		}
 		
+		public ModePathElement[] getModePath() {
+			return modePath;
+		}
+		
 	};
+	
+	public static abstract class ModePathElement {
+
+		public abstract String correctForm();
+	}
+	public static class Keyword extends ModePathElement {
+		private String keyword;
+		public Keyword(String keyword) {
+			super();
+			this.keyword = keyword;
+		}
+		public String getKeyword() {
+			return keyword;
+		}
+		@Override
+		public String correctForm() {
+			return keyword;
+		}
+	}
+	private static Keyword keyword(String keyword) { return new Keyword(keyword); }
+	public static class PkPath extends ModePathElement {
+		private String pkPath;
+		public PkPath(String pkPath) {
+			super();
+			this.pkPath = pkPath;
+		}
+		public String getPkPath() {
+			return pkPath;
+		}
+		@Override
+		public String correctForm() {
+			return "<"+pkPath+">";
+		}
+	}
+	private static PkPath pkPath(String pkPath) { return new PkPath(pkPath); }
+	
 	
 	public static final String configurableTablesString = "[sequence, variation, feature, alignment, reference, alignment_member, var_almt_note]";
 	
@@ -209,21 +279,8 @@ public class ModelBuilder {
 				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map");
 		Element dataMapElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, dataMapXPathExpression);
 
-		for(CustomTable customTable : project.getCustomTables()) {
-			Element dbEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "db-entity");
-			String tableName = customTable.getName();
-			dbEntityElem.setAttribute("name", tableName);
-			Element idAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
-			idAttributeElem.setAttribute("name", "id");
-			idAttributeElem.setAttribute("type", "VARCHAR");
-			idAttributeElem.setAttribute("isPrimaryKey", "true");
-			idAttributeElem.setAttribute("isMandatory", "true");
-			idAttributeElem.setAttribute("length", "50");
-		}
-
-		for(String tableName: project.getTableNames()) {
-			project.setTablePkFields(tableName, tableNameToPkFields(cayenneMapDocument, tableName));
-		}
+		addCustomTablesToDocument(cayenneMapDocument, project);
+		ensureProjectTablePkFields(cayenneMapDocument, project);
 
 		for(CustomTable customTable : customTables) {
 			String tableName = customTable.getName();
@@ -413,7 +470,14 @@ public class ModelBuilder {
 		return projectRuntime;
 	}
 
-	private static void addCustomTableDbEntities(Project project, Document cayenneMapDocument) {
+	private static void ensureProjectTablePkFields(Document cayenneMapDocument,
+			Project project) {
+		for(String tableName: project.getTableNames()) {
+			project.setTablePkFields(tableName, tableNameToPkFields(cayenneMapDocument, tableName));
+		}
+	}
+
+	private static void addCustomTablesToDocument(Document cayenneMapDocument, Project project) {
 		XPath xPath = createNamespacingXpath();
 		XPathExpression dataMapXPathExpression = 
 				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map");
@@ -667,6 +731,11 @@ public class ModelBuilder {
 	}
 
 	private static void validateAddLink(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
+		
+		Document cayenneMapDocumentExtended = getProjectMapDocument();
+		addCustomTablesToDocument(cayenneMapDocumentExtended, project);
+		ensureProjectTablePkFields(cayenneMapDocumentExtended, project);
+
 		String srcTableName = link.getSrcTableName();
 		String srcLinkName = link.getSrcLinkName();
 		String destTableName = link.getDestTableName();
@@ -679,38 +748,33 @@ public class ModelBuilder {
 				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"': such a link already exists");
 			}
 		}
-		for(Field existingField: project.getCustomFields(srcTableName)) {
-			String existingFieldName = existingField.getName();
-			for(PkField pkField : linkFieldsForSrcTable(project, link)) {
+		XPath xPath = createNamespacingXpath();
+		for(PkField pkField : linkFieldsForSrcTable(project, link)) {
+			XPathExpression xPathExpression = 
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+srcTableName+"']/cay:db-attribute[@name='"+pkField.getName()+"']");
+			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocumentExtended, xPathExpression);
+			if(dbAttributeElem != null) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"': because a core field on this table named '"+pkField.getName()+"' already exists");
+			}
+			for(Field existingField: project.getCustomFields(srcTableName)) {
+				String existingFieldName = existingField.getName();
 				if(existingFieldName.equals(pkField.getName())) {
 					throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"', because a custom field on this table named '"+existingFieldName+"' already exists");
 				}
 			}
 		}
-		for(Field existingField: project.getCustomFields(destTableName)) {
-			String existingFieldName = existingField.getName();
-			for(PkField pkField : linkFieldsForDestTable(project, link)) {
+		for(PkField pkField : linkFieldsForDestTable(project, link)) {
+			XPathExpression xPathExpression = 
+					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+destTableName+"']/cay:db-attribute[@name='"+pkField.getName()+"']");
+			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocumentExtended, xPathExpression);
+			if(dbAttributeElem != null) {
+				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+srcLinkName+"': because a core field on this table named '"+pkField.getName()+"' already exists");
+			}
+			for(Field existingField: project.getCustomFields(destTableName)) {
+				String existingFieldName = existingField.getName();
 				if(existingFieldName.equals(pkField.getName())) {
 					throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"', because a custom field on this table named '"+existingFieldName+"' already exists");
 				}
-			}
-		}
-		XPath xPath = createNamespacingXpath();
-		Document cayenneMapDocument = getProjectMapDocument();
-		{
-			XPathExpression xPathExpression = 
-					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+srcTableName+"']/cay:db-attribute[@name='"+srcLinkName+"']");
-			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
-			if(dbAttributeElem != null) {
-				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"': this is used by an existing core field on this table");
-			}
-		}
-		{
-			XPathExpression xPathExpression = 
-					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+destTableName+"']/cay:db-attribute[@name='"+destLinkName+"']");
-			Element dbAttributeElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
-			if(dbAttributeElem != null) {
-				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"': this is used by an existing core field on this table");
 			}
 		}
 	}
