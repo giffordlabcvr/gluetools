@@ -63,6 +63,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link.Multiplicity;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.PkField;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -208,16 +209,28 @@ public class ModelBuilder {
 				GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map");
 		Element dataMapElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, dataMapXPathExpression);
 
-		addCustomTableDbEntities(project, cayenneMapDocument);
+		for(CustomTable customTable : project.getCustomTables()) {
+			Element dbEntityElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "db-entity");
+			String tableName = customTable.getName();
+			dbEntityElem.setAttribute("name", tableName);
+			Element idAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
+			idAttributeElem.setAttribute("name", "id");
+			idAttributeElem.setAttribute("type", "VARCHAR");
+			idAttributeElem.setAttribute("isPrimaryKey", "true");
+			idAttributeElem.setAttribute("isMandatory", "true");
+			idAttributeElem.setAttribute("length", "50");
+		}
 
-		Map<String, List<Element>> tableNameToPkElems = tableNameToPkElems(project, cayenneMapDocument);
-		
+		for(String tableName: project.getTableNames()) {
+			project.setTablePkFields(tableName, tableNameToPkFields(cayenneMapDocument, tableName));
+		}
+
 		for(CustomTable customTable : customTables) {
 			String tableName = customTable.getName();
 			XPathExpression xPathExpression = 
 					GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+tableName+"']");
 				Element dbEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
-			addCustomDbAttributesForTable(project, tableNameToPkElems, dbEntityElem, tableName);
+			addCustomDbAttributesForTable(project, dbEntityElem, tableName);
 		}
 		
 		Map<String, String> tableNameToObjEntity = new LinkedHashMap<String, String>();
@@ -255,7 +268,7 @@ public class ModelBuilder {
 				XPathExpression xPathExpression = 
 						GlueXmlUtils.compileXPathExpression(xPath, "/cay:data-map/cay:db-entity[@name='"+tableName+"']");
 					Element dbEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
-				addCustomDbAttributesForTable(project, tableNameToPkElems, dbEntityElem, tableName);
+				addCustomDbAttributesForTable(project, dbEntityElem, tableName);
 			}
 			// Configurable tables -- Obj entities.
 			{
@@ -281,20 +294,24 @@ public class ModelBuilder {
 			} else {
 				dbRelSrcToDestElem.setAttribute("toMany", "false");
 			}
-			for(Element destPkElem : tableNameToPkElems.get(destTableName)) {
+			for(PkField destPkField : project.getTablePkFields(destTableName)) {
 				Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelSrcToDestElem, CAYENNE_NS, "db-attribute-pair");
-				dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(srcLinkName, destPkElem.getAttribute("name")));
-				dbAttrPairElem.setAttribute("target", destPkElem.getAttribute("name"));
+				dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(srcLinkName, destPkField.getName()));
+				dbAttrPairElem.setAttribute("target", destPkField.getName());
 			}
 			Element dbRelDestToSrcElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "db-relationship");
 			dbRelDestToSrcElem.setAttribute("name", destLinkName);
 			dbRelDestToSrcElem.setAttribute("source", destTableName);
 			dbRelDestToSrcElem.setAttribute("target", srcTableName);
-			dbRelDestToSrcElem.setAttribute("toMany", "false");
-			for(Element srcPkElem : tableNameToPkElems.get(srcTableName)) {
+			if(link.getMultiplicity().equals(Link.Multiplicity.MANY_TO_ONE.name())) {
+				dbRelDestToSrcElem.setAttribute("toMany", "true");
+			} else {
+				dbRelDestToSrcElem.setAttribute("toMany", "false");
+			}
+			for(PkField srcPkField : project.getTablePkFields(srcTableName)) {
 				Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelDestToSrcElem, CAYENNE_NS, "db-attribute-pair");
-				dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(destLinkName, srcPkElem.getAttribute("name")));
-				dbAttrPairElem.setAttribute("target", srcPkElem.getAttribute("name"));
+				dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(destLinkName, srcPkField.getName()));
+				dbAttrPairElem.setAttribute("target", srcPkField.getName());
 			}
 		}
 
@@ -426,8 +443,7 @@ public class ModelBuilder {
 		});
 	}
 
-	private static void addCustomDbAttributesForTable(Project project,
-			Map<String, List<Element>> tableNameToPkElems, Element dbEntityElem, String tableName) {
+	private static void addCustomDbAttributesForTable(Project project, Element dbEntityElem, String tableName) {
 		List<Field> customFields = project.getCustomFields(tableName);
 		customFields.forEach(f -> {
 			Element dbAttributeElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
@@ -438,32 +454,25 @@ public class ModelBuilder {
 		});
 		List<Link> linksForWhichSource = project.getLinksForWhichSource(tableName);
 		linksForWhichSource.forEach(l -> {
-			String multiplicity = l.getMultiplicity();
-			if(multiplicity.equals(Link.Multiplicity.ONE_TO_ONE.name())) {
-				String destTableName = l.getDestTableName();
-				String srcLinkName = l.getSrcLinkName();
-				List<Element> destPkElems = tableNameToPkElems.get(destTableName);
-				for(Element destPkElem: destPkElems) {
-					Element linkAttrElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
-					linkAttrElem.setAttribute("name", dbAttributeNameForLinkPK(srcLinkName, destPkElem.getAttribute("name")));
-					linkAttrElem.setAttribute("type", destPkElem.getAttribute("type"));
-					linkAttrElem.setAttribute("length", destPkElem.getAttribute("length"));
+			for(PkField pkField: linkFieldsForSrcTable(project, l)) {
+				Element linkAttrElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
+				linkAttrElem.setAttribute("name", pkField.getName());
+				linkAttrElem.setAttribute("type", pkField.getCayenneType());
+				Integer maxLength = pkField.getMaxLength();
+				if(maxLength != null) {
+					linkAttrElem.setAttribute("length", Integer.toString(maxLength));
 				}
 			}
 		});
 		List<Link> linksForWhichDest = project.getLinksForWhichDestination(tableName);
 		linksForWhichDest.forEach(l -> {
-			String multiplicity = l.getMultiplicity();
-			if(multiplicity.equals(Link.Multiplicity.ONE_TO_MANY.name()) || 
-					multiplicity.equals(Link.Multiplicity.ONE_TO_ONE.name())) {
-				String srcTableName = l.getSrcTableName();
-				String destLinkName = l.getDestLinkName();
-				List<Element> srcPkElems = tableNameToPkElems.get(srcTableName);
-				for(Element srcPkElem: srcPkElems) {
-					Element linkAttrElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
-					linkAttrElem.setAttribute("name", dbAttributeNameForLinkPK(destLinkName, srcPkElem.getAttribute("name")));
-					linkAttrElem.setAttribute("type", srcPkElem.getAttribute("type"));
-					linkAttrElem.setAttribute("length", srcPkElem.getAttribute("length"));
+			for(PkField pkField: linkFieldsForDestTable(project, l)) {
+				Element linkAttrElem = GlueXmlUtils.appendElementNS(dbEntityElem, CAYENNE_NS, "db-attribute");
+				linkAttrElem.setAttribute("name", pkField.getName());
+				linkAttrElem.setAttribute("type", pkField.getCayenneType());
+				Integer maxLength = pkField.getMaxLength();
+				if(maxLength != null) {
+					linkAttrElem.setAttribute("length", Integer.toString(maxLength));
 				}
 			}
 		});
@@ -569,7 +578,7 @@ public class ModelBuilder {
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
-			AddColumnToDb addToken = getAddColumnToken(project, field.getTable(), field.getName(), field.getFieldType().cayenneType(), field.getMaxLength(), mergerContext);
+			AddColumnToDb addToken = getAddColumnToken(project, mergerContext, field.getTable(), field.getName(), field.getFieldType().cayenneType(), field.getMaxLength());
 			addToken.execute(mergerContext);
 		} finally {
 			if(projectRuntime != null) {
@@ -671,13 +680,19 @@ public class ModelBuilder {
 			}
 		}
 		for(Field existingField: project.getCustomFields(srcTableName)) {
-			if(existingField.getName().equals(srcLinkName)) {
-				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"': a custom field with this name on this table already exists");
+			String existingFieldName = existingField.getName();
+			for(PkField pkField : linkFieldsForSrcTable(project, link)) {
+				if(existingFieldName.equals(pkField.getName())) {
+					throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with source table '"+srcTableName+"' and source link name '"+srcLinkName+"', because a custom field on this table named '"+existingFieldName+"' already exists");
+				}
 			}
 		}
 		for(Field existingField: project.getCustomFields(destTableName)) {
-			if(existingField.getName().equals(destLinkName)) {
-				throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"': a custom field with this name on this table already exists");
+			String existingFieldName = existingField.getName();
+			for(PkField pkField : linkFieldsForDestTable(project, link)) {
+				if(existingFieldName.equals(pkField.getName())) {
+					throw new ModelBuilderException(Code.INVALID_SCHEMA_CHANGE, "Cannot add a custom link with destination table '"+destTableName+"' and destination link name '"+destLinkName+"', because a custom field on this table named '"+existingFieldName+"' already exists");
+				}
 			}
 		}
 		XPath xPath = createNamespacingXpath();
@@ -719,7 +734,7 @@ public class ModelBuilder {
 		}
 	}
 
-	private static AddColumnToDb getAddColumnToken(Project project, String tableName, String columnName, String cayenneType, Integer maxLength, MergerContext mergerContext) {
+	private static AddColumnToDb getAddColumnToken(Project project, MergerContext mergerContext, String tableName, String columnName, String cayenneType, Integer maxLength) {
 		DbEntity tableToModify = 
 				mergerContext.getDataMap().getDbEntity(specializeTableName(tableName, project.getName()));
 		DbAttribute column = new DbAttribute(columnName);
@@ -763,7 +778,7 @@ public class ModelBuilder {
 		try {
 			projectRuntime = createProjectModel(gluetoolsEngine, project);
 			MergerContext mergerContext = getMergerContext(project, projectRuntime);
-			AddColumnToDb addToken = getAddColumnToken(project, field.getTable(), field.getName(), field.getFieldType().cayenneType(), field.getMaxLength(), mergerContext);
+			AddColumnToDb addToken = getAddColumnToken(project, mergerContext, field.getTable(), field.getName(), field.getFieldType().cayenneType(), field.getMaxLength());
 			DropColumnToDb dropToken = new DropColumnToDb(addToken.getEntity(), addToken.getColumn());
 			dropToken.execute(mergerContext);
 		} finally {
@@ -879,40 +894,51 @@ public class ModelBuilder {
 	private static List<AddColumnToDb> addColumnTokensForLink(Project project,
 			MergerContext mergerContext, Link link) {
 		List<AddColumnToDb> addTokens = new ArrayList<AddColumnToDb>();
-		
-		Document cayenneMapDocument = getProjectMapDocument();
-		addCustomTableDbEntities(project, cayenneMapDocument);
-
-		Map<String, List<Element>> tableNameToPkElems = tableNameToPkElems(project, cayenneMapDocument);
 		String srcTableName = link.getSrcTableName();
 		String destTableName = link.getDestTableName();
-		String srcLinkName = link.getSrcLinkName();
-		String destLinkName = link.getDestLinkName();
-		if(!link.getMultiplicity().equals(Multiplicity.ONE_TO_MANY.name())) {
-			List<Element> destPkElems = tableNameToPkElems.get(destTableName);
-			for(Element destPkElem: destPkElems) {
-				String columnName = dbAttributeNameForLinkPK(srcLinkName, destPkElem.getAttribute("name"));
-				String columnType = destPkElem.getAttribute("type");
-				String columnLengthString = destPkElem.getAttribute("length");
-				Integer columnLength = null;
-				if(columnLengthString != null && columnLengthString.length() > 0) {
-					columnLength = Integer.parseInt(columnLengthString);
-				}
-				addTokens.add(getAddColumnToken(project, srcTableName, columnName, columnType, columnLength, mergerContext));
-			}
-		}
-		List<Element> srcPkElems = tableNameToPkElems.get(srcTableName);
-		for(Element srcPkElem: srcPkElems) {
-			String columnName = dbAttributeNameForLinkPK(destLinkName, srcPkElem.getAttribute("name"));
-			String columnType = srcPkElem.getAttribute("type");
-			String columnLengthString = srcPkElem.getAttribute("length");
-			Integer columnLength = null;
-			if(columnLengthString != null && columnLengthString.length() > 0) {
-				columnLength = Integer.parseInt(columnLengthString);
-			}
-			addTokens.add(getAddColumnToken(project, destTableName, columnName, columnType, columnLength, mergerContext));
-		}
+		addTokens.addAll(linkFieldsForSrcTable(project, link)
+				.stream()
+				.map(pkf -> 
+					getAddColumnToken(project, mergerContext, srcTableName, pkf.getName(), pkf.getCayenneType(), pkf.getMaxLength()))
+				.collect(Collectors.toList()));
+		addTokens.addAll(linkFieldsForDestTable(project, link)
+				.stream()
+				.map(pkf -> 
+					getAddColumnToken(project, mergerContext, destTableName, pkf.getName(), pkf.getCayenneType(), pkf.getMaxLength()))
+				.collect(Collectors.toList()));
 		return addTokens;
+	}
+	
+	private static List<PkField> linkFieldsForSrcTable(Project project, Link link) {
+		String destTableName = link.getDestTableName();
+		String srcLinkName = link.getSrcLinkName();
+		List<PkField> linkFields = new ArrayList<PkField>();
+		if(!link.getMultiplicity().equals(Multiplicity.ONE_TO_MANY.name())) {
+			List<PkField> destPkFields = project.getTablePkFields(destTableName);
+			for(PkField destPkField: destPkFields) {
+				String columnName = dbAttributeNameForLinkPK(srcLinkName, destPkField.getName());
+				String columnType = destPkField.getCayenneType();
+				Integer columnLength = destPkField.getMaxLength();
+				linkFields.add(new PkField(columnName, columnType, columnLength));
+			}
+		}
+		return linkFields;
+	}
+
+	private static List<PkField> linkFieldsForDestTable(Project project, Link link) {
+		String srcTableName = link.getSrcTableName();
+		String destLinkName = link.getDestLinkName();
+		List<PkField> linkFields = new ArrayList<PkField>();
+		if(!link.getMultiplicity().equals(Multiplicity.MANY_TO_ONE.name())) {
+			List<PkField> srcPkFields = project.getTablePkFields(srcTableName);
+			for(PkField srcPkField: srcPkFields) {
+				String columnName = dbAttributeNameForLinkPK(destLinkName, srcPkField.getName());
+				String columnType = srcPkField.getCayenneType();
+				Integer columnLength = srcPkField.getMaxLength();
+				linkFields.add(new PkField(columnName, columnType, columnLength));
+			}
+		}
+		return linkFields;
 	}
 
 	public static void deleteLinkFromModel(GluetoolsEngine gluetoolsEngine, Project project, Link link) {
@@ -936,18 +962,22 @@ public class ModelBuilder {
 	}
 
 
-	private static Map<String, List<Element>> tableNameToPkElems(Project project, Document cayenneMapDocument) {
-		// build map of the primary keys of tables.
+	private static List<PkField> tableNameToPkFields(Document cayenneMapDocument, String tableName) {
 		XPath xPath = createNamespacingXpath();
-		Map<String, List<Element>> tableNameToPkElems = new LinkedHashMap<String, List<Element>>();
-		for(String tableName: project.getTableNames()) {
-			XPathExpression xPathExpression = 
-					GlueXmlUtils.compileXPathExpression(xPath, 
-							"/cay:data-map/cay:db-entity[@name='"+tableName+"']/cay:db-attribute[@isPrimaryKey = 'true']");
-			tableNameToPkElems.put(tableName, 
-					GlueXmlUtils.getXPathElements(cayenneMapDocument, xPathExpression));
-		}
-		return tableNameToPkElems;
+		XPathExpression xPathExpression = 
+				GlueXmlUtils.compileXPathExpression(xPath, 
+						"/cay:data-map/cay:db-entity[@name='"+tableName+"']/cay:db-attribute[@isPrimaryKey = 'true']");
+		List<Element> pkElements = GlueXmlUtils.getXPathElements(cayenneMapDocument, xPathExpression);
+		return pkElements.stream().map(pkElem -> {
+			String columnName = pkElem.getAttribute("name");
+			String columnType = pkElem.getAttribute("type");
+			String columnLengthString = pkElem.getAttribute("length");
+			Integer columnLength = null;
+			if(columnLengthString != null && columnLengthString.length() > 0) {
+				columnLength = Integer.parseInt(columnLengthString);
+			}
+			return new PkField(columnName, columnType, columnLength);
+		}).collect(Collectors.toList());
 	}
 
 	

@@ -37,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		furtherHelp="If <srcLinkName> is not supplied then <destTableName> will be used if possible. "+
 		"Similarly if <destLinkName> is not supplied then <srcTableName> will be used. Any configured link name "+
 		"must be a valid DB identifier, e.g. my_link_1. "+
-		"The <multiplicity> can be ONE_TO_ONE, ONE_TO_MANY, MANY_TO_MANY, the default is ONE_TO_ONE.") 
+		"The <multiplicity> can be ONE_TO_ONE, ONE_TO_MANY, MANY_TO_ONE, the default is ONE_TO_ONE.") 
 public class CreateLinkCommand extends ProjectSchemaModeCommand<CreateResult> {
 
 	public static final String SRC_TABLE_NAME = "srcTableName";
@@ -66,7 +66,7 @@ public class CreateLinkCommand extends ProjectSchemaModeCommand<CreateResult> {
 	public CreateResult execute(CommandContext cmdContext) {
 		Project project = GlueDataObject.lookup(cmdContext, Project.class, Project.pkMap(getProjectName()));
 		project.checkTableName(srcTableName);
-		project.checkCustomTableName(destTableName);
+		project.checkTableName(destTableName);
 		
 		Link link = GlueDataObject.create(cmdContext, Link.class, Link.pkMap(getProjectName(), this.srcTableName, this.srcLinkName), false);
 		link.setMultiplicity(multiplicity.name());
@@ -102,9 +102,9 @@ public class CreateLinkCommand extends ProjectSchemaModeCommand<CreateResult> {
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
 					InsideProjectMode insideProjectMode = (ProjectSchemaMode) cmdContext.peekCommandMode();
-					return insideProjectMode.getProject().getCustomTables()
+					return insideProjectMode.getProject().getTableNames()
 							.stream()
-							.map(ct -> new CompletionSuggestion(ct.getName(), true))
+							.map(n -> new CompletionSuggestion(n, true))
 							.collect(Collectors.toList());
 				}
 			});

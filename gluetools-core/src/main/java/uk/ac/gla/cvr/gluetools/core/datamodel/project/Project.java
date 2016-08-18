@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.project;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 @GlueDataClass(defaultListedProperties = {_Project.NAME_PROPERTY, _Project.DESCRIPTION_PROPERTY})
 public class Project extends _Project {
 
+	private Map<String, List<PkField>> tableNameToPkFields = new LinkedHashMap<String, List<PkField>>();
+	
 	public static Map<String, String> pkMap(String name) {
 		return Collections.singletonMap(NAME_PROPERTY, name);
 	}
@@ -35,6 +38,14 @@ public class Project extends _Project {
 	@Override
 	public void setPKValues(Map<String, String> idMap) {
 		setName(idMap.get(NAME_PROPERTY));
+	}
+
+	public void setTablePkFields(String tableName, List<PkField> pkFields) {
+		tableNameToPkFields.put(tableName, pkFields);
+	}
+
+	public List<PkField> getTablePkFields(String tableName) {
+		return tableNameToPkFields.get(tableName);
 	}
 
 	public CustomTable getCustomTable(String tableName) {
@@ -263,5 +274,11 @@ public class Project extends _Project {
 				}
 			}
 		}
+	}
+
+	public Link getLink(String srcTableName, String srcLinkName) {
+		return getLinksForWhichSource(srcTableName).stream()
+				.filter(l -> l.getSrcLinkName().equals(srcLinkName))
+				.findFirst().orElse(null);
 	}
 }

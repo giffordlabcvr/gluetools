@@ -30,13 +30,13 @@ public class VariationUnsetFieldCommand extends VariationModeCommand<UpdateResul
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		propertyCommandDelegate.configureUnset(pluginConfigContext, configElem);
+		propertyCommandDelegate.configureUnsetField(pluginConfigContext, configElem);
 	}
 
 
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
-		return propertyCommandDelegate.executeUnset(cmdContext);
+		return propertyCommandDelegate.executeUnsetField(cmdContext);
 	}
 
 	@CompleterClass

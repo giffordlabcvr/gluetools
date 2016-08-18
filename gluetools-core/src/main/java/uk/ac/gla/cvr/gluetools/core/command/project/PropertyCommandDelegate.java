@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -25,24 +28,39 @@ public class PropertyCommandDelegate {
 	public static final String PROPERTY = "property";
 	public static final String FIELD_NAME = "fieldName";
 	public static final String FIELD_VALUE = "fieldValue";
+	public static final String LINK_NAME = "linkName";
+	public static final String TARGET_ID = "targetId";
 	public static final String NO_COMMIT = "noCommit";
 	
 	private String property;
 	private String fieldName;
 	private String fieldValue;
+	private String linkName;
+	private String targetId;
 	private Boolean noCommit;
 	
-	public void configureSet(PluginConfigContext pluginConfigContext, Element configElem) {
+	public void configureSetField(PluginConfigContext pluginConfigContext, Element configElem) {
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
 		fieldValue = PluginUtils.configureStringProperty(configElem, FIELD_VALUE, true);
 		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
 
-	public void configureUnset(PluginConfigContext pluginConfigContext, Element configElem) {
+	public void configureUnsetField(PluginConfigContext pluginConfigContext, Element configElem) {
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
 		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
 
+	public void configureSetLink(PluginConfigContext pluginConfigContext, Element configElem) {
+		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+		targetId = PluginUtils.configureStringProperty(configElem, TARGET_ID, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
+	}
+
+	public void configureUnsetLink(PluginConfigContext pluginConfigContext, Element configElem) {
+		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
+	}
+	
 	public void configureShowProperty(PluginConfigContext pluginConfigContext, Element configElem) {
 		property = PluginUtils.configureStringProperty(configElem, PROPERTY, true);
 	}
@@ -51,18 +69,18 @@ public class PropertyCommandDelegate {
 	}
 
 	
-	public UpdateResult executeSet(CommandContext cmdContext) {
+	public UpdateResult executeSetField(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
 		String tableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		FieldType fieldType = project.getModifiableFieldType(tableName, fieldName);
 		Object newValue = fieldType.getFieldTranslator().valueFromString(fieldValue);
-		return executeSet(cmdContext, project, tableName, configurableObject, 
+		return executeSetField(cmdContext, project, tableName, configurableObject, 
 				fieldName, newValue, noCommit);
 	}
 
-	public static UpdateResult executeSet(CommandContext cmdContext, Project project,
+	public static UpdateResult executeSetField(CommandContext cmdContext, Project project,
 			String tableName, GlueDataObject configurableObject, 
 			String fieldName, Object newValue, boolean noCommit) {
 		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
@@ -82,7 +100,7 @@ public class PropertyCommandDelegate {
 	}
 
 	
-	public UpdateResult executeUnset(CommandContext cmdContext) {
+	public UpdateResult executeUnsetField(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
 		String tableName = configurableObjectMode.getTableName();
@@ -123,6 +141,35 @@ public class PropertyCommandDelegate {
 	}
 
 	
+	public UpdateResult executeSetLink(CommandContext cmdContext) {
+		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+		Project project = configurableObjectMode.getProject();
+		String tableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+		Link link = project.getLink(tableName, linkName);
+		return executeSetLink(cmdContext, project, tableName, configurableObject, 
+				link, targetId, noCommit);
+	}
+
+	public static UpdateResult executeSetLink(CommandContext cmdContext, Project project,
+			String tableName, GlueDataObject configurableObject, 
+			Link link, String targetId, boolean noCommit) {
+		// TODO: check multiplicity is ONE_TO_ONE
+		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
+		
+		// TODO: check update is required.
+		
+		Class<? extends GlueDataObject> destObjectClass = project.getDataObjectClass(link.getDestTableName());
+		CustomTableObject target = (CustomTableObject) GlueDataObject.lookup(cmdContext, destObjectClass, CustomTableObject.pkMap(targetId));
+		configurableObject.writeProperty(link.getSrcLinkName(), target);
+		target.writeProperty(link.getDestLinkName(), configurableObject);
+		
+		if(!noCommit) {
+			cmdContext.commit();
+		}
+		return new UpdateResult(dataObjectClass, 1);
+	}
+
 	public static class ModifiableFieldNameCompleter extends AdvancedCmdCompleter {
 		public ModifiableFieldNameCompleter() {
 			super();
@@ -143,6 +190,55 @@ public class PropertyCommandDelegate {
 		}
 	}
 
+	public static class LinkNameCompleter extends AdvancedCmdCompleter {
+		public LinkNameCompleter() {
+			super();
+			registerVariableInstantiator("linkName", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+
+					ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+					Project project = configurableObjectMode.getProject();
+					String tableName = configurableObjectMode.getTableName();
+					List<Link> linksForWhichSource = project.getLinksForWhichSource(tableName);
+					return linksForWhichSource.stream().map(n -> new CompletionSuggestion(n.getSrcLinkName(), true)).collect(Collectors.toList());
+				}
+			});
+		}
+	}
+
+	
+	public static class LinkNameAndIdCompleter extends LinkNameCompleter {
+		public LinkNameAndIdCompleter() {
+			super();
+			registerVariableInstantiator("targetId", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String srcLinkName = (String) bindings.get("linkName");
+					if(srcLinkName != null) {
+						ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+						Project project = configurableObjectMode.getProject();
+						String tableName = configurableObjectMode.getTableName();
+						Link link = project.getLink(tableName, srcLinkName);
+						if(link != null) {
+							String destTableName = link.getDestTableName();
+							return listNames(cmdContext, prefix, project.getDataObjectClass(destTableName), CustomTableObject.ID_PROPERTY);
+						}
+					}
+					return new ArrayList<CompletionSuggestion>();
+				}
+			});
+		}
+	}
+
+	
+	
 	public static class ListablePropertyCompleter extends AdvancedCmdCompleter {
 		public ListablePropertyCompleter() {
 			super();

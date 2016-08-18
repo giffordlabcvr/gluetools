@@ -31,12 +31,12 @@ public class SequenceSetFieldCommand extends SequenceModeCommand<UpdateResult> {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		propertyCommandDelegate.configureSet(pluginConfigContext, configElem);
+		propertyCommandDelegate.configureSetField(pluginConfigContext, configElem);
 	}
 
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
-		return propertyCommandDelegate.executeSet(cmdContext);
+		return propertyCommandDelegate.executeSetField(cmdContext);
 	}
 
 	@CompleterClass

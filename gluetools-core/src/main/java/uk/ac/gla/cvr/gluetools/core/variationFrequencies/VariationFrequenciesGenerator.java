@@ -114,7 +114,7 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 			varAlmtNote = VariationCreateAlmtNoteCommand.createAlmtNote(cmdContext, 
 					almtVarReport.variation, almtVarReport.alignment);
 		}
-		PropertyCommandDelegate.executeSet(cmdContext, insideProjectMode.getProject(), 
+		PropertyCommandDelegate.executeSetField(cmdContext, insideProjectMode.getProject(), 
 				ConfigurableTable.var_almt_note.name(), varAlmtNote, frequencyFieldName, 
 				new Double(almtVarReport.frequency), true);
 		cmdContext.cacheUncommitted(varAlmtNote);
