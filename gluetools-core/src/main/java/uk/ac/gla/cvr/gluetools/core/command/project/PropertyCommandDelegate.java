@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.LinkUpdateContext.UpdateType;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -62,11 +63,28 @@ public class PropertyCommandDelegate {
 		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
 
-	public void configureUnsetLink(PluginConfigContext pluginConfigContext, Element configElem) {
+	public void configureAddLinkTarget(PluginConfigContext pluginConfigContext, Element configElem) {
+		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+		targetPath = PluginUtils.configureStringProperty(configElem, TARGET_PATH, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
+	}
+
+	public void configureRemoveLinkTarget(PluginConfigContext pluginConfigContext, Element configElem) {
+		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+		targetPath = PluginUtils.configureStringProperty(configElem, TARGET_PATH, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
+	}
+
+	public void configureUnsetLinkTarget(PluginConfigContext pluginConfigContext, Element configElem) {
 		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
 		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 	}
-	
+
+	public void configureClearLinkTarget(PluginConfigContext pluginConfigContext, Element configElem) {
+		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
+	}
+
 	public void configureShowProperty(PluginConfigContext pluginConfigContext, Element configElem) {
 		property = PluginUtils.configureStringProperty(configElem, PROPERTY, true);
 	}
@@ -152,48 +170,76 @@ public class PropertyCommandDelegate {
 		Project project = configurableObjectMode.getProject();
 		String modeTableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		return executeSetLinkTarget(cmdContext, project, configurableObject, modeTableName, 
-				linkName, targetPath, noCommit);
+		LinkUpdateContext linkUpdateContext = new LinkUpdateContext(project, modeTableName, linkName);
+		return executeLinkTargetUpdate(cmdContext, project, configurableObject, noCommit, targetPath, 
+				linkUpdateContext, UpdateType.SET);
 	}
 
-	public static UpdateResult executeSetLinkTarget(CommandContext cmdContext, Project project,
-			GlueDataObject thisObject, String thisTableName, 
-			String linkName, String targetPath, boolean noCommit) {
-		boolean isSrcLink = false;
-		Link link = project.getSrcTableLink(thisTableName, linkName);
-		if(link != null) {
-			isSrcLink = true;
+	public UpdateResult executeUnsetLinkTarget(CommandContext cmdContext) {
+		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+		Project project = configurableObjectMode.getProject();
+		String modeTableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+		LinkUpdateContext linkUpdateContext = new LinkUpdateContext(project, modeTableName, linkName);
+		return executeLinkTargetUpdate(cmdContext, project, configurableObject, noCommit, targetPath, 
+				linkUpdateContext, UpdateType.UNSET);
+	}
+
+	public UpdateResult executeAddLinkTarget(CommandContext cmdContext) {
+		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+		Project project = configurableObjectMode.getProject();
+		String modeTableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+		LinkUpdateContext linkUpdateContext = new LinkUpdateContext(project, modeTableName, linkName);
+		return executeLinkTargetUpdate(cmdContext, project, configurableObject, noCommit, targetPath, 
+				linkUpdateContext, UpdateType.ADD);
+	}
+
+	public UpdateResult executeRemoveLinkTarget(CommandContext cmdContext) {
+		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+		Project project = configurableObjectMode.getProject();
+		String modeTableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+		LinkUpdateContext linkUpdateContext = new LinkUpdateContext(project, modeTableName, linkName);
+		return executeLinkTargetUpdate(cmdContext, project, configurableObject, noCommit, targetPath, 
+				linkUpdateContext, UpdateType.REMOVE);
+	}
+
+	public UpdateResult executeClearLinkTarget(CommandContext cmdContext) {
+		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+		Project project = configurableObjectMode.getProject();
+		String modeTableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+		LinkUpdateContext linkUpdateContext = new LinkUpdateContext(project, modeTableName, linkName);
+		return executeLinkTargetUpdate(cmdContext, project, configurableObject, noCommit, targetPath, 
+				linkUpdateContext, UpdateType.CLEAR);
+	}
+
+	
+	
+	public static UpdateResult executeLinkTargetUpdate(CommandContext cmdContext, Project project,
+			GlueDataObject thisObject, boolean noCommit, String targetPath,
+			LinkUpdateContext linkUpdateContext, UpdateType updateType) {
+		
+		updateType.checkMultiplicity(linkUpdateContext);
+		GlueDataObject otherObject = null;
+		if(targetPath != null) {
+			Class<? extends GlueDataObject> otherObjectClass = project.getDataObjectClass(linkUpdateContext.getOtherTableName());
+			Map<String,String> otherPkMap = project.targetPathToPkMap(linkUpdateContext.getOtherTableName(), targetPath);
+			otherObject = GlueDataObject.lookup(cmdContext, otherObjectClass, otherPkMap);
+		}
+
+		Class<? extends GlueDataObject> thisObjectClass = project.getDataObjectClass(linkUpdateContext.getThisTableName());
+		if(updateType.updateRequired(linkUpdateContext, thisObject, otherObject)) {
+			updateType.execute(linkUpdateContext, thisObject, otherObject);
+			
+			if(!noCommit) {
+				cmdContext.commit();
+			}
+			return new UpdateResult(thisObjectClass, 1);
 		} else {
-			link = project.getDestTableLink(thisTableName, linkName);
+			return new UpdateResult(thisObjectClass, 0);
 		}
-		String otherTableName;
-		String thisLinkName, otherLinkName;
-		if(isSrcLink) {
-			thisLinkName = link.getSrcLinkName();
-			otherLinkName = link.getDestLinkName();
-			otherTableName = link.getDestTableName();
-		} else {
-			thisLinkName = link.getDestLinkName();
-			otherLinkName = link.getSrcLinkName();
-			otherTableName = link.getSrcTableName();
-		}
-		
-		// TODO: check multiplicity is ONE_TO_ONE
-		Class<? extends GlueDataObject> otherObjectClass = project.getDataObjectClass(otherTableName);
-		
-		// TODO: check update is required.
-		
-		Map<String,String> otherPkMap = project.targetPathToPkMap(otherTableName, targetPath);
-		
-		GlueDataObject otherObject = GlueDataObject.lookup(cmdContext, otherObjectClass, otherPkMap);
-		thisObject.writeProperty(thisLinkName, otherObject);
-		otherObject.writeProperty(otherLinkName, thisObject);
-		
-		if(!noCommit) {
-			cmdContext.commit();
-		}
-		Class<? extends GlueDataObject> thisObjectClass = project.getDataObjectClass(thisTableName);
-		return new UpdateResult(thisObjectClass, 1);
 	}
 
 	public static class ModifiableFieldNameCompleter extends AdvancedCmdCompleter {
