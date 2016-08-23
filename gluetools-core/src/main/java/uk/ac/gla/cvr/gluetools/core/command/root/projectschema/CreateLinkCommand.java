@@ -59,8 +59,8 @@ public class CreateLinkCommand extends ProjectSchemaModeCommand<CreateResult> {
 		super.configure(pluginConfigContext, configElem);
 		this.srcTableName = PluginUtils.configureStringProperty(configElem, SRC_TABLE_NAME, true);
 		this.destTableName = PluginUtils.configureStringProperty(configElem, DEST_TABLE_NAME, true);
-		this.srcLinkName = Optional.ofNullable(PluginUtils.configureIdentifierProperty(configElem, SRC_LINK_NAME, false)).orElse(destTableName);
-		this.destLinkName = Optional.ofNullable(PluginUtils.configureIdentifierProperty(configElem, DEST_LINK_NAME, false)).orElse(srcTableName);
+		this.srcLinkName = PluginUtils.configureIdentifierProperty(configElem, SRC_LINK_NAME, false);
+		this.destLinkName =PluginUtils.configureIdentifierProperty(configElem, DEST_LINK_NAME, false);
 		this.multiplicity = Optional.ofNullable(PluginUtils.configureEnumProperty(Link.Multiplicity.class, configElem, MULTIPLICITY, false)).orElse(Multiplicity.ONE_TO_ONE);
 		
 		if(this.srcTableName.equals(destTableName)) {
@@ -70,6 +70,12 @@ public class CreateLinkCommand extends ProjectSchemaModeCommand<CreateResult> {
 		}
 		if(srcLinkName != null && destLinkName != null && srcLinkName.equals(destLinkName)) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <srcLinkName> and <destLinkName> must not be the same");
+		}
+		if(srcLinkName == null) {
+			srcLinkName = destTableName;
+		}
+		if(destLinkName == null) {
+			destLinkName = srcTableName;
 		}
 	}
 
