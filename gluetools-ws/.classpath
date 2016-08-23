@@ -30,7 +30,7 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.freemarker/freemarker/2.3.24-incubating/cad2f272ac0ed56b18b83f097705a6af26464c5/freemarker-2.3.24-incubating-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.freemarker/freemarker/2.3.24-incubating/2b741197704a2df0f0b11cadb7a9e54a5604b2a6/freemarker-2.3.24-incubating.jar" exported="true">
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.freemarker/freemarker/2.3.25-incubating/2adddae6c2f4d79b337581f95618e5a7fc271e22/freemarker-2.3.25-incubating-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.freemarker/freemarker/2.3.25-incubating/9b31ed0d0321dfc1ae7ce63f2557df04b52a79e3/freemarker-2.3.25-incubating.jar" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
