@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -27,10 +28,7 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(RenderObjectCommand.class);
 
-		registerCommandClass(MemberShowPropertyCommand.class);
-		registerCommandClass(MemberListPropertyCommand.class);
-		registerCommandClass(MemberSetFieldCommand.class);
-		registerCommandClass(MemberUnsetFieldCommand.class);
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 		
 		registerCommandClass(ExitCommand.class);
 	}

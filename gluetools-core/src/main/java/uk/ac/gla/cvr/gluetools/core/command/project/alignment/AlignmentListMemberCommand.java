@@ -82,9 +82,9 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 
 		List<AlignmentMember> members = listMembers(cmdContext, lookupAlignment(cmdContext), recursive, false, whereClause);
 		if(fieldNames == null) {
-			return new ListResult(AlignmentMember.class, members);
+			return new ListResult(cmdContext, AlignmentMember.class, members);
 		} else {
-			return new ListResult(AlignmentMember.class, members, fieldNames);
+			return new ListResult(cmdContext, AlignmentMember.class, members, fieldNames);
 		}
 	}
 

@@ -1,11 +1,11 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.customtablerow;
+package uk.ac.gla.cvr.gluetools.core.command.configurableobject;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.project.PropertyValueResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
@@ -13,8 +13,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 @CommandClass( 
 		commandWords={"show", "property"}, 
 		docoptUsages={"<property>"},
-		description="Show a property value for the row") 
-public class CustomTableRowShowPropertyCommand extends CustomTableRowModeCommand<PropertyValueResult> {
+		description="Show a property value for the current mode object") 
+public class ConfigurableObjectShowPropertyCommand extends Command<PropertyValueResult> {
 
 	public static final String PROPERTY = PropertyCommandDelegate.PROPERTY;
 	

@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 public class ListDigsDbsCommand extends DigsImporterCommand<ListDigsDbsResult> implements ProvidedProjectModeCommand {
 	@Override
 	protected ListDigsDbsResult execute(CommandContext cmdContext, DigsImporter digsImporter) {
-		return new ListDigsDbsResult(DigsImporter.listDigsDatabases(cmdContext));
+		return new ListDigsDbsResult(cmdContext, DigsImporter.listDigsDatabases(cmdContext));
 	}
 
 	

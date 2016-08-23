@@ -17,12 +17,12 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectSetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentAminoAcidFrequencyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetLocationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetPatternCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -303,40 +303,40 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 						.set(VariationSetPatternCommand.REGEX, aaPolymorphism.getRegex())
 						.build().execute(cmdContext);
 
-						cmdContext.cmdBuilder(VariationSetFieldCommand.class)
-						.set(VariationSetFieldCommand.FIELD_NAME, Variation.DISPLAY_NAME_PROPERTY)
-						.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationDisplayName())
-						.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+						cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
+						.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, Variation.DISPLAY_NAME_PROPERTY)
+						.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationDisplayName())
+						.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 						.build().execute(cmdContext);
 
 						
 						 if(referenceAaField != null) {
-							cmdContext.cmdBuilder(VariationSetFieldCommand.class)
-							.set(VariationSetFieldCommand.FIELD_NAME, referenceAaField)
-							.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getRefAa())
-							.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+							cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
+							.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, referenceAaField)
+							.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getRefAa())
+							.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 							.build().execute(cmdContext);
 						 }
 						 if(codonField != null) {
-								cmdContext.cmdBuilder(VariationSetFieldCommand.class)
-								.set(VariationSetFieldCommand.FIELD_NAME, codonField)
-								.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getCodonLabel())
-								.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+								cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
+								.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, codonField)
+								.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getCodonLabel())
+								.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 								.build().execute(cmdContext);
 						 }
 						 if(variationAaField != null) {
-								cmdContext.cmdBuilder(VariationSetFieldCommand.class)
-								.set(VariationSetFieldCommand.FIELD_NAME, variationAaField)
-								.set(VariationSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationAa())
-								.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+								cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
+								.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, variationAaField)
+								.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationAa())
+								.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 								.build().execute(cmdContext);
 						 }
 						
 						for(CustomFieldSetting customFieldSetting: customFieldSettings) {
-							cmdContext.cmdBuilder(VariationSetFieldCommand.class)
-							.set(VariationSetFieldCommand.FIELD_NAME, customFieldSetting.fieldName)
-							.set(VariationSetFieldCommand.FIELD_VALUE, customFieldSetting.fieldValue)
-							.set(VariationSetFieldCommand.NO_COMMIT, Boolean.TRUE)
+							cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
+							.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, customFieldSetting.fieldName)
+							.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, customFieldSetting.fieldValue)
+							.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 							.build().execute(cmdContext);
 						}
 					}

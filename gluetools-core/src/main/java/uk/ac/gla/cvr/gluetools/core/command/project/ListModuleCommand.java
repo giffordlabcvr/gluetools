@@ -22,7 +22,7 @@ public class ListModuleCommand extends ProjectModeCommand<ListResult> {
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
 		List<Module> modules = GlueDataObject.query(cmdContext, Module.class, new SelectQuery(Module.class));
-		return new ListResult(Module.class, modules, Arrays.asList("name", "type"), 
+		return new ListResult(cmdContext, Module.class, modules, Arrays.asList("name", "type"), 
 				new BiFunction<Module, String, Object>() {
 					@Override
 					public Object apply(Module t, String u) {

@@ -7,23 +7,19 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 
 @CommandClass( 
-	commandWords={"set", "link-target"}, 
-	docoptUsages={"[-C] <linkName> <targetPath>"},
-	docoptOptions={
-			"-C, --noCommit     Don't commit to the database [default: false]",
-	},
+	commandWords={"list", "link-target"}, 
+	docoptUsages={"<linkName>"},
+	docoptOptions={},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Set the target object on a link") 
-public class ConfigurableObjectSetLinkTargetCommand extends Command<UpdateResult> {
+	description="List target objects on a link") 
+public class ConfigurableObjectListLinkTargetCommand extends Command<ListResult> {
 
 	public static final String LINK_NAME = PropertyCommandDelegate.LINK_NAME;
-	public static final String TARGET_PATH = PropertyCommandDelegate.TARGET_PATH;
-	public static final String NO_COMMIT = PropertyCommandDelegate.NO_COMMIT;
 
 	
 	private PropertyCommandDelegate propertyCommandDelegate = new PropertyCommandDelegate();
@@ -31,15 +27,15 @@ public class ConfigurableObjectSetLinkTargetCommand extends Command<UpdateResult
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		propertyCommandDelegate.configureSetLinkTarget(pluginConfigContext, configElem);
+		propertyCommandDelegate.configureListLinkTarget(pluginConfigContext, configElem);
 	}
 
 	@Override
-	public UpdateResult execute(CommandContext cmdContext) {
-		return propertyCommandDelegate.executeSetLinkTarget(cmdContext);
+	public ListResult execute(CommandContext cmdContext) {
+		return propertyCommandDelegate.executeListLinkTarget(cmdContext);
 	}
 
 	@CompleterClass
-	public static class Completer extends PropertyCommandDelegate.ToOneLinkNameAndTargetPathCompleter {}
+	public static class Completer extends PropertyCommandDelegate.ToManyLinkNameAndTargetPathCompleter {}
 
 }

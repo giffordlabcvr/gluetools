@@ -150,7 +150,7 @@ public class ConsoleCompleter implements Completer {
 				}
 			}
 		} else {
-			List<CompletionSuggestion> completionSuggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, prefix, true, requireModeWrappable);
+			List<CompletionSuggestion> completionSuggestions = commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, prefix, true, requireModeWrappable, true);
 
 			List<CompletionSuggestion> suggestions = completionSuggestions.
 					stream().filter(s -> s.getSuggestedWord().startsWith(prefix)).collect(Collectors.toList());

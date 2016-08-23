@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
@@ -14,20 +17,23 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
 public class ListResult extends TableResult {
 
+
+
+
 	public static final String LIST_RESULT = "listResult";
 	public static final String OBJECT_TYPE = "objectType";
 
 
-	public <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results) {
-		this(objectClass, results, propertyPaths(objectClass));
+	public <D extends GlueDataObject> ListResult(CommandContext cmdContext, Class<D> objectClass, List<D> results) {
+		this(cmdContext, objectClass, results, propertyPaths(objectClass));
 	}	
 	
-	public <D extends GlueDataObject> ListResult(Class<D> objectClass, List<D> results, List<String> headers) {
-		this(objectClass, results, headers, new MapResult.DefaultResolveHeaderFunction<D>());
+	public <D extends GlueDataObject> ListResult(CommandContext cmdContext, Class<D> objectClass, List<D> results, List<String> headers) {
+		this(cmdContext, objectClass, results, headers, new ListResult.DefaultResolveHeaderFunction<D>(cmdContext));
 	}
 
 	
-	public <D> ListResult(Class<D> objectClass, List<D> results, List<String> headers, 
+	public <D> ListResult(CommandContext cmdContext, Class<D> objectClass, List<D> results, List<String> headers, 
 			BiFunction<D, String, Object> resolveHeaderFunction) {
 		super(LIST_RESULT, headers, listOfMapsFromDataObjects(results, headers, resolveHeaderFunction));
 		getDocumentBuilder().set(OBJECT_TYPE, objectClass.getSimpleName());
@@ -54,7 +60,38 @@ public class ListResult extends TableResult {
 	public static <D extends GlueDataObject> List<String> propertyPaths(Class<D> objectClass) {
 		return Arrays.asList(Project.getDataClassAnnotation(objectClass).defaultListedProperties());
 	}
+
+	public static <D extends GlueDataObject> Object generateResultValue(CommandContext cmdContext, D dataObject, String header) {
+		Object nestedPropertyValue = dataObject.readNestedProperty(header);
+		if(nestedPropertyValue instanceof GlueDataObject) {
+			CommandMode<?> cmdMode = cmdContext.peekCommandMode();
+			@SuppressWarnings("unchecked")
+			Class<? extends GlueDataObject> theClass = (Class<? extends GlueDataObject>) nestedPropertyValue.getClass();
+			if(cmdMode instanceof InsideProjectMode) {
+				Project project = ((InsideProjectMode) cmdMode).getProject();
+				String tableName = project.getTableNameForDataObjectClass(theClass);
+				return project.pkMapToTargetPath(tableName, ((GlueDataObject) nestedPropertyValue).pkMap());
+			} else {
+				throw new RuntimeException("Can't resolve column value for data object of class "+theClass.getCanonicalName()+" outside of a project mode");
+			}
+		}
+		return nestedPropertyValue;
+	}
+
 	
+	public static class DefaultResolveHeaderFunction<D extends GlueDataObject> implements BiFunction<D, String, Object> {
+		private CommandContext cmdContext;
+		
+		public DefaultResolveHeaderFunction(CommandContext cmdContext) {
+			super();
+			this.cmdContext = cmdContext;
+		}
+	
+		@Override
+		public Object apply(D dataObject, String header) {
+			return generateResultValue(cmdContext, dataObject, header);
+		}
+	}
 	
 
 }

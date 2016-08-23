@@ -1,7 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.command.project;
+package uk.ac.gla.cvr.gluetools.core.command.configurableobject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,8 +17,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.LinkUpdateContext.UpdateType;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.LinkUpdateContext.UpdateType;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListPropertyResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.PropertyValueResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -25,6 +30,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.Keyword;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
+import uk.ac.gla.cvr.gluetools.core.datamodel.link.LinkException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.link.LinkException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -92,6 +99,10 @@ public class PropertyCommandDelegate {
 	public void configureListProperty(PluginConfigContext pluginConfigContext, Element configElem) {
 	}
 
+	public void configureListLinkTarget(PluginConfigContext pluginConfigContext, Element configElem) {
+		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+	}
+
 	
 	public UpdateResult executeSetField(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
@@ -148,7 +159,7 @@ public class PropertyCommandDelegate {
 		String tableName = configurableObjectMode.getTableName();
 		project.checkListableProperties(tableName, Collections.singletonList(property));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		Object value = configurableObject.readNestedProperty(property);
+		Object value = ListResult.generateResultValue(cmdContext, configurableObject, property);
 		if(value == null) {
 			return new PropertyValueResult(property, null);
 		} else {
@@ -161,7 +172,34 @@ public class PropertyCommandDelegate {
 		Project project = configurableObjectMode.getProject();
 		String tableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
-		return new ListPropertyResult(project.getListableProperties(tableName), configurableObject);
+		return new ListPropertyResult(cmdContext, project.getListableProperties(tableName), configurableObject);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <D extends GlueDataObject> ListResult executeListLinkTarget(CommandContext cmdContext) {
+		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
+		Project project = configurableObjectMode.getProject();
+		String tableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+
+		Link link = project.getLink(tableName, linkName);
+		String otherTableName;
+		if(linkName.equals(link.getSrcLinkName()) && tableName.equals(link.getSrcTableName())) {
+			otherTableName = link.getDestTableName();
+			if(!link.isToMany())
+				throw new LinkException(Code.LINK_MULTIPLICITY_ERROR, tableName, linkName, 
+						"Cannot use 'list link-target' on source object of link with multiplicity "+link.getMultiplicity()+
+						": use 'show property' instead");
+		} else {
+			otherTableName = link.getSrcTableName();
+			if(!link.isFromMany())
+				throw new LinkException(Code.LINK_MULTIPLICITY_ERROR, tableName, linkName, 
+						"Cannot use 'list link-target' on destination object of link with multiplicity "+link.getMultiplicity()+
+						": use 'show property' instead");
+		}
+		Class<D> theClass = (Class<D>) project.getDataObjectClass(otherTableName);
+		Collection<D> targets = (Collection<D>) configurableObject.readNestedProperty(linkName);
+		return new ListResult(cmdContext, theClass, new LinkedList<D>(targets));
 	}
 
 	
@@ -262,9 +300,13 @@ public class PropertyCommandDelegate {
 		}
 	}
 
-	public static class LinkNameCompleter extends AdvancedCmdCompleter {
-		public LinkNameCompleter() {
+	public static abstract class LinkNameCompleter extends AdvancedCmdCompleter {
+		private boolean requireToOne;
+		private boolean requireToMany;
+		public LinkNameCompleter(boolean requireToOne, boolean requireToMany) {
 			super();
+			this.requireToOne = requireToOne;
+			this.requireToMany = requireToMany;
 			registerVariableInstantiator("linkName", new VariableInstantiator() {
 				@Override
 				protected List<CompletionSuggestion> instantiate(
@@ -276,19 +318,39 @@ public class PropertyCommandDelegate {
 					Project project = configurableObjectMode.getProject();
 					String tableName = configurableObjectMode.getTableName();
 					List<Link> linksForWhichSource = project.getLinksForWhichSource(tableName);
-					List<CompletionSuggestion> suggestions = linksForWhichSource.stream().map(n -> new CompletionSuggestion(n.getSrcLinkName(), true)).collect(Collectors.toList());
+					List<CompletionSuggestion> suggestions = linksForWhichSource
+							.stream()
+							.filter(l -> l.isToOne() || !LinkNameCompleter.this.requireToOne)
+							.filter(l -> l.isToMany() || !LinkNameCompleter.this.requireToMany)
+							.map(n -> new CompletionSuggestion(n.getSrcLinkName(), true))
+							.collect(Collectors.toList());
 					List<Link> linksForWhichDestination = project.getLinksForWhichDestination(tableName);
-					suggestions.addAll(linksForWhichDestination.stream().map(n -> new CompletionSuggestion(n.getDestLinkName(), true)).collect(Collectors.toList()));
+					suggestions.addAll(linksForWhichDestination.stream()
+							.filter(l -> l.isFromOne() || !LinkNameCompleter.this.requireToOne)
+							.filter(l -> l.isFromMany() || !LinkNameCompleter.this.requireToMany)
+							.map(n -> new CompletionSuggestion(n.getDestLinkName(), true))
+							.collect(Collectors.toList()));
 					return suggestions;
 				}
 			});
 		}
 	}
 
-	
-	public static class LinkNameAndTargetPathCompleter extends LinkNameCompleter {
-		public LinkNameAndTargetPathCompleter() {
-			super();
+	public static class ToOneLinkNameCompleter extends LinkNameCompleter {
+		public ToOneLinkNameCompleter() {
+			super(true, false);
+		}
+	}
+
+	public static class ToManyLinkNameCompleter extends LinkNameCompleter {
+		public ToManyLinkNameCompleter() {
+			super(false, false);
+		}
+	}
+
+	public abstract static class LinkNameAndTargetPathCompleter extends LinkNameCompleter {
+		public LinkNameAndTargetPathCompleter(boolean requireToOne, boolean requireToMany) {
+			super(requireToOne, requireToMany);
 			registerVariableInstantiator("targetPath", new VariableInstantiator() {
 				@Override
 				protected List<CompletionSuggestion> instantiate(
@@ -314,9 +376,40 @@ public class PropertyCommandDelegate {
 			});
 		}
 	}
+	
+	public static class ToOneLinkNameAndTargetPathCompleter extends LinkNameAndTargetPathCompleter {
+		public ToOneLinkNameAndTargetPathCompleter() {
+			super(true, false);
+		}
+	}
+
+	public static class ToManyLinkNameAndTargetPathCompleter extends LinkNameAndTargetPathCompleter {
+		public ToManyLinkNameAndTargetPathCompleter() {
+			super(false, true);
+		}
+	}
+
+	private static List<CompletionSuggestion> completeTargetPath(ConsoleCommandContext cmdContext, Project project, String tableName, String prefix) {
+		String lastSuggestion = prefix;
+		while(true) {
+			List<CompletionSuggestion> intermediateSuggs = completeTargetPathAux(cmdContext, project, tableName, lastSuggestion);
+			if(intermediateSuggs.size() != 1) {
+				return intermediateSuggs;
+			}
+			CompletionSuggestion onlySuggestion = intermediateSuggs.get(0);
+			if(onlySuggestion.isCompleted()) {
+				return intermediateSuggs;
+			}
+			String nextSuggestion = onlySuggestion.getSuggestedWord();
+			if(lastSuggestion != null && nextSuggestion.equals(lastSuggestion)) {
+				return intermediateSuggs;
+			}
+			lastSuggestion = nextSuggestion;
+		}
+	}
 
 	@SuppressWarnings("rawtypes")
-	private static List<CompletionSuggestion> completeTargetPath(ConsoleCommandContext cmdContext, Project project, String tableName, String prefix) {
+	private static List<CompletionSuggestion> completeTargetPathAux(ConsoleCommandContext cmdContext, Project project, String tableName, String prefix) {
 		List<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>();
 		ModePathElement[] modePath = project.getModePathForTable(tableName);
 		String[] prefixBits = prefix.split("/", -1);
@@ -393,7 +486,7 @@ public class PropertyCommandDelegate {
 				buf.append(word);
 			}
 			List<CompletionSuggestion> lastCmdSuggestions = 
-					commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, words.get(words.size()-1), true, false);
+					commandFactory.getCommandWordSuggestions(cmdContext, lookupBasis, words.get(words.size()-1), true, false, false);
 			for(CompletionSuggestion lastCmdSuggestion: lastCmdSuggestions) {
 				String suggPrefix = buf.toString()+"/";
 				String fullSuggestedWord = suggPrefix+lastCmdSuggestion.getSuggestedWord();

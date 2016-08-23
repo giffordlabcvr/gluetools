@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationCreateAlmtNoteCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;

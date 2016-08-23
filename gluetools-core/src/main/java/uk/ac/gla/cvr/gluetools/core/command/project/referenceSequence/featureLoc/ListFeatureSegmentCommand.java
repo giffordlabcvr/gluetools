@@ -29,7 +29,7 @@ public class ListFeatureSegmentCommand extends FeatureLocModeCommand<ListResult>
 		List<FeatureSegment> segments = GlueDataObject.query(cmdContext, FeatureSegment.class, new SelectQuery(FeatureSegment.class, exp));
 		segments = IReferenceSegment.sortByRefStart(segments, ArrayList::new);
 		
-		return new ListResult(FeatureSegment.class, segments);
+		return new ListResult(cmdContext, FeatureSegment.class, segments);
 	}
 
 }

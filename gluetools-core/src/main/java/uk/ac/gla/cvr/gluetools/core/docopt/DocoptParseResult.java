@@ -38,7 +38,8 @@ public class DocoptParseResult {
 	private DocoptParseResult() {
 	}
 
-	public static DocoptParseResult parse(List<String> args, Map<Character, String> optionsMap, Node startNode, OptionsDisplay optionsDisplay) {
+	public static DocoptParseResult parse(List<String> args, Map<Character, String> optionsMap, 
+			Node startNode, boolean includeOptions, OptionsDisplay optionsDisplay) {
 		Node currentNode = startNode;
 		DocoptParseResult result = new DocoptParseResult();
 		for(String arg: args) {
@@ -94,13 +95,15 @@ public class DocoptParseResult {
 				String variableName = ((VariableTransition) finalTransition).getVariableName();
 				result.nextVariable = variableName;
 			} else if(finalTransition instanceof OptionTransition) {
-				String option = ((OptionTransition) finalTransition).getOption();
-				if(option.startsWith("--")) {
-					if(optionsDisplay == OptionsDisplay.BOTH || optionsDisplay == OptionsDisplay.LONG_ONLY) {
+				if(includeOptions) {
+					String option = ((OptionTransition) finalTransition).getOption();
+					if(option.startsWith("--")) {
+						if(optionsDisplay == OptionsDisplay.BOTH || optionsDisplay == OptionsDisplay.LONG_ONLY) {
+							result.nextLiterals.add(option);
+						}
+					} else if(optionsDisplay == OptionsDisplay.BOTH || optionsDisplay == OptionsDisplay.SHORT_ONLY) {
 						result.nextLiterals.add(option);
 					}
-				} else if(optionsDisplay == OptionsDisplay.BOTH || optionsDisplay == OptionsDisplay.SHORT_ONLY) {
-					result.nextLiterals.add(option);
 				}
 			} 	
 		}

@@ -1,12 +1,12 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.customtablerow;
+package uk.ac.gla.cvr.gluetools.core.command.configurableobject;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
@@ -18,8 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 			"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Set a field value for the row") 
-public class CustomTableRowSetFieldCommand extends CustomTableRowModeCommand<UpdateResult> {
+	description="Set a field value for the current mode object") 
+public class ConfigurableObjectSetFieldCommand extends Command<UpdateResult> {
 
 	public static final String FIELD_NAME = PropertyCommandDelegate.FIELD_NAME;
 	public static final String FIELD_VALUE = PropertyCommandDelegate.FIELD_VALUE;

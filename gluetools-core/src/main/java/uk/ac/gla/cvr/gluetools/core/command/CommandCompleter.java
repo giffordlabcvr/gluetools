@@ -13,14 +13,14 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 public abstract class CommandCompleter {
 	
 	public List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext cmdContext, 
-			Class<? extends Command> cmdClass, List<String> argStrings, String prefix) {
-		List<String> completionSuggestions = completionSuggestions(cmdContext, cmdClass, argStrings);
+			Class<? extends Command> cmdClass, List<String> argStrings, String prefix, boolean includeOptions) {
+		List<String> completionSuggestions = completionSuggestions(cmdContext, cmdClass, argStrings, includeOptions);
 		return completionSuggestions.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 	}
 	
 	
 	public List<String> completionSuggestions(ConsoleCommandContext cmdContext, 
-			Class<? extends Command> cmdClass, List<String> argStrings) {
+			Class<? extends Command> cmdClass, List<String> argStrings, boolean includeOptions) {
 		return Collections.emptyList();
 	}
 	

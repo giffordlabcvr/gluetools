@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project;
+package uk.ac.gla.cvr.gluetools.core.command.configurableobject;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -17,79 +17,62 @@ public class LinkUpdateContext {
 		SET(Multiplicity.ONE_TO_ONE, Multiplicity.MANY_TO_ONE) {
 			@Override
 			public boolean updateRequired(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				GlueDataObject currentValue = (GlueDataObject) thisObject.readProperty(linkUpdateContext.thisLinkName);
-				if(currentValue == null || !currentValue.pkMap().equals(otherObject.pkMap())) {
-					return true;
-				}
-				return false;
+				return !linkUpdateContext.linkTargetPresent(thisObject, otherObject);
 			}
 			@Override
 			public void execute(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				thisObject.setToOneTarget(linkUpdateContext.getThisLinkName(), otherObject, true);
+				linkUpdateContext.addLinkTarget(thisObject, otherObject);
 			}
 		}, 
 		UNSET(Multiplicity.ONE_TO_ONE, Multiplicity.MANY_TO_ONE) {
 			@Override
 			public boolean updateRequired(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				GlueDataObject currentValue = (GlueDataObject) thisObject.readProperty(linkUpdateContext.thisLinkName);
-				if(currentValue != null) {
-					return true;
-				}
-				return false;
+				GlueDataObject currentTarget = (GlueDataObject) thisObject.readProperty(linkUpdateContext.thisLinkName);
+				return currentTarget != null;
 			}
 
 			@Override
 			public void execute(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				thisObject.setToOneTarget(linkUpdateContext.getThisLinkName(), null, true);
+				GlueDataObject currentTarget = (GlueDataObject) thisObject.readProperty(linkUpdateContext.thisLinkName);
+				linkUpdateContext.removeLinkTarget(thisObject, currentTarget);
 			}
 		}, 
 		CLEAR(Multiplicity.ONE_TO_MANY) {
 			@Override
 			public boolean updateRequired(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
 				List<?> currentValue = (List<?>) thisObject.readProperty(linkUpdateContext.thisLinkName);
-				if(!currentValue.isEmpty()) {
-					return true;
-				}
-				return false;
+				return !currentValue.isEmpty();
 			}
 
 			@Override
 			public void execute(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
 				@SuppressWarnings("unchecked")
-				List<GlueDataObject> currentValues = new ArrayList<GlueDataObject>((List<GlueDataObject>) thisObject.readProperty(linkUpdateContext.thisLinkName));
-				for(GlueDataObject value: currentValues) {
-					thisObject.removeToManyTarget(linkUpdateContext.getThisLinkName(), value, true);
+				List<GlueDataObject> currentTargets = new ArrayList<GlueDataObject>((List<GlueDataObject>) thisObject.readProperty(linkUpdateContext.thisLinkName));
+				for(GlueDataObject target: currentTargets) {
+					linkUpdateContext.removeLinkTarget(thisObject, target);
 				}
 			}
 		}, 
 		ADD(Multiplicity.ONE_TO_MANY) {
 			@Override
 			public boolean updateRequired(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				GlueDataObject currentOtherValue = (GlueDataObject) otherObject.readProperty(linkUpdateContext.otherLinkName);
-				if(currentOtherValue == null || !currentOtherValue.pkMap().equals(thisObject.pkMap())) {
-					return true;
-				}
-				return false;
+				return !linkUpdateContext.linkTargetPresent(thisObject, otherObject);
 			}
 
 			@Override
 			public void execute(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				thisObject.addToManyTarget(linkUpdateContext.getThisLinkName(), otherObject, true);
+				linkUpdateContext.addLinkTarget(thisObject, otherObject);
 			}
 		}, 
 		REMOVE(Multiplicity.ONE_TO_MANY) {
 			@Override
 			public boolean updateRequired(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				List<?> currentOtherValue = (List<?>) otherObject.readProperty(linkUpdateContext.otherLinkName);
-				if(!currentOtherValue.isEmpty()) {
-					return true;
-				}
-				return false;
+				return linkUpdateContext.linkTargetPresent(thisObject, otherObject);
 			}
 
 			@Override
 			public void execute(LinkUpdateContext linkUpdateContext, GlueDataObject thisObject, GlueDataObject otherObject) {
-				thisObject.removeToManyTarget(linkUpdateContext.getThisLinkName(), otherObject, true);
+				linkUpdateContext.removeLinkTarget(thisObject, otherObject);
 			}
 		};
 		
@@ -183,4 +166,78 @@ public class LinkUpdateContext {
 	public Link.Multiplicity getOtherToThisMultiplicity() {
 		return otherToThisMultiplicity;
 	}
+	
+	private boolean linkTargetPresent(GlueDataObject thisObject, GlueDataObject otherObject) {
+		switch(thisToOtherMultiplicity) {
+		case ONE_TO_ONE: {
+			GlueDataObject thisCurrentTarget = (GlueDataObject) thisObject.readProperty(thisLinkName);
+			return thisCurrentTarget != null && thisCurrentTarget.pkMap().equals(otherObject.pkMap());
+		}
+		case ONE_TO_MANY: {
+			GlueDataObject otherCurrentTarget = (GlueDataObject) otherObject.readProperty(otherLinkName);
+			return otherCurrentTarget != null && otherCurrentTarget.pkMap().equals(thisObject.pkMap());
+		}
+		case MANY_TO_ONE: {
+			GlueDataObject thisCurrentTarget = (GlueDataObject) thisObject.readProperty(thisLinkName);
+			return thisCurrentTarget != null && thisCurrentTarget.pkMap().equals(otherObject.pkMap());
+		}
+		default: 
+			throw new RuntimeException("Unknown multiplicity");
+		}
+	}
+	
+	// precondition -- link exists between this and other.
+	private void removeLinkTarget(GlueDataObject thisObject, GlueDataObject otherObject) {
+		switch(thisToOtherMultiplicity) {
+		case ONE_TO_ONE: {
+			thisObject.setToOneTarget(thisLinkName, null, false);
+			otherObject.setToOneTarget(otherLinkName, null, false);
+			return;
+		}
+		case ONE_TO_MANY: {
+			thisObject.removeToManyTarget(thisLinkName, otherObject, false);
+			otherObject.setToOneTarget(otherLinkName, null, false);
+			return;
+		}
+		case MANY_TO_ONE: {
+			thisObject.setToOneTarget(thisLinkName, null, false);
+			otherObject.removeToManyTarget(otherLinkName, thisObject, false);
+			return;
+		}
+		default: 
+			throw new RuntimeException("Unknown multiplicity");
+		}
+	}
+
+	private void addLinkTarget(GlueDataObject thisObject, GlueDataObject otherObject) {
+		switch(thisToOtherMultiplicity) {
+		case ONE_TO_ONE: {
+			thisObject.setToOneTarget(thisLinkName, otherObject, false);
+			otherObject.setToOneTarget(otherLinkName, thisObject, false);
+			return;
+		}
+		case ONE_TO_MANY: {
+			GlueDataObject otherCurrentTarget = (GlueDataObject) otherObject.readProperty(otherLinkName);
+			if(otherCurrentTarget != null) {
+				removeLinkTarget(otherCurrentTarget, otherObject);
+			}
+			thisObject.addToManyTarget(thisLinkName, otherObject, false);
+			otherObject.setToOneTarget(otherLinkName, thisObject, false);
+			return;
+		}
+		case MANY_TO_ONE: {
+			GlueDataObject thisCurrentTarget = (GlueDataObject) thisObject.readProperty(thisLinkName);
+			if(thisCurrentTarget != null) {
+				removeLinkTarget(thisObject, thisCurrentTarget);
+			}
+			thisObject.setToOneTarget(thisLinkName, otherObject, false);
+			otherObject.addToManyTarget(otherLinkName, thisObject, false);
+			return;
+		}
+		default: 
+			throw new RuntimeException("Unknown multiplicity");
+		}
+	}
+
+	
 }

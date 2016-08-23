@@ -36,13 +36,13 @@ public class MemberListSegmentCommand extends MemberModeCommand<MemberListSegmen
 						new SelectQuery(AlignedSegment.class, exp));
 		segments = IReferenceSegment.sortByRefStart(segments, ArrayList::new);
 		
-		return new ListAlignedSegmentResult(segments);
+		return new ListAlignedSegmentResult(cmdContext, segments);
 	}
 
 	public static class ListAlignedSegmentResult extends ListResult {
 
-		public ListAlignedSegmentResult(List<AlignedSegment> segments) {
-			super(AlignedSegment.class, segments, 
+		public ListAlignedSegmentResult(CommandContext cmdContext, List<AlignedSegment> segments) {
+			super(cmdContext, AlignedSegment.class, segments, 
 					Arrays.asList(
 							AlignedSegment.REF_START_PROPERTY, 
 							AlignedSegment.REF_END_PROPERTY, 

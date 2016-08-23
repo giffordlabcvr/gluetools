@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import jline.console.ConsoleReader;
@@ -307,16 +308,23 @@ public class Console implements CommandResultRenderingContext
 		if(console.version) {
 			console.output(console.versionLine());
 		} else {
-			GluetoolsEngine.getInstance().dbWarning();
-			if(console.batchFilePath != null) {
-				console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
-			}
-			if(console.inlineCmdWords != null) {
-				console.runInlineCommand(console.inlineCmdWords, console.noEcho, console.noOutput);
-			}
-			if((console.inlineCmdWords == null || console.inlineCmdWords.isEmpty()) && !console.nonInteractive) {
-				console.interactiveSession();
-			}
+			GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
+			gluetoolsEngine.dbWarning();
+			gluetoolsEngine.runWithGlueClassloader(new Supplier<Void>() {
+				@Override
+				public Void get() {
+					if(console.batchFilePath != null) {
+						console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
+					}
+					if(console.inlineCmdWords != null) {
+						console.runInlineCommand(console.inlineCmdWords, console.noEcho, console.noOutput);
+					}
+					if((console.inlineCmdWords == null || console.inlineCmdWords.isEmpty()) && !console.nonInteractive) {
+						console.interactiveSession();
+					}
+					return null;
+				}
+			});
 		}
 		console.shutdown();
 	}

@@ -12,6 +12,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -60,6 +62,15 @@ public class CreateLinkCommand extends ProjectSchemaModeCommand<CreateResult> {
 		this.srcLinkName = Optional.ofNullable(PluginUtils.configureIdentifierProperty(configElem, SRC_LINK_NAME, false)).orElse(destTableName);
 		this.destLinkName = Optional.ofNullable(PluginUtils.configureIdentifierProperty(configElem, DEST_LINK_NAME, false)).orElse(srcTableName);
 		this.multiplicity = Optional.ofNullable(PluginUtils.configureEnumProperty(Link.Multiplicity.class, configElem, MULTIPLICITY, false)).orElse(Multiplicity.ONE_TO_ONE);
+		
+		if(this.srcTableName.equals(destTableName)) {
+			if(srcLinkName == null || destLinkName == null) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "For reflexive links, both <srcLinkName> and <destLinkName> must be defined");
+			}
+		}
+		if(srcLinkName != null && destLinkName != null && srcLinkName.equals(destLinkName)) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <srcLinkName> and <destLinkName> must not be the same");
+		}
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -32,10 +33,7 @@ public class ReferenceSequenceModeCommandFactory extends BaseCommandFactory {
 
 		registerCommandClass(RenderObjectCommand.class);
 		
-		registerCommandClass(ReferenceListPropertyCommand.class);
-		registerCommandClass(ReferenceShowPropertyCommand.class);
-		registerCommandClass(ReferenceSetFieldCommand.class);
-		registerCommandClass(ReferenceUnsetFieldCommand.class);
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 		
 		registerCommandClass(ExitCommand.class);
 	}

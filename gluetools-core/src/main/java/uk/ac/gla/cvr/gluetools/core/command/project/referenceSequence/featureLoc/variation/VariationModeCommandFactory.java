@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -24,10 +25,7 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(VariationShowLocationCommand.class);
 		registerCommandClass(VariationShowLabeledCodonLocationCommand.class);
 
-		registerCommandClass(VariationSetFieldCommand.class);
-		registerCommandClass(VariationUnsetFieldCommand.class);
-		registerCommandClass(VariationShowPropertyCommand.class);
-		registerCommandClass(VariationListPropertyCommand.class);
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 		
 		registerCommandClass(VariationShowDescriptionCommand.class);
 

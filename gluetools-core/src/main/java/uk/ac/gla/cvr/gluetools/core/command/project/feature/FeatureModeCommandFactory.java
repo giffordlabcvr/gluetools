@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.feature;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -20,11 +21,7 @@ public class FeatureModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(FeatureUnsetParentCommand.class);
 		registerCommandClass(FeatureShowParentCommand.class);
 
-		registerCommandClass(FeatureSetFieldCommand.class);
-		registerCommandClass(FeatureUnsetFieldCommand.class);
-		registerCommandClass(FeatureShowPropertyCommand.class);
-		registerCommandClass(FeatureListPropertyCommand.class);
-
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 		
 		registerCommandClass(FeatureSetMetatagCommand.class);
 		registerCommandClass(FeatureUnsetMetatagCommand.class);

@@ -149,7 +149,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	@SuppressWarnings("unchecked")
 	@Override
 	public final List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext cmdContext,
-			@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, List<String> argStrings, String prefix) {
+			@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, List<String> argStrings, String prefix, boolean includeOptions) {
 
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		Map<Character, String> optionsMap = cmdUsage.optionsMap();
@@ -162,7 +162,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		if(optionsDisplay == OptionsDisplay.LONG_ONLY && prefix.matches("^-[a-zA-Z]$")) {
 			optionsDisplay = OptionsDisplay.BOTH;
 		}
-		DocoptParseResult parseResult = DocoptParseResult.parse(argStrings, optionsMap, startNode, optionsDisplay);
+		DocoptParseResult parseResult = DocoptParseResult.parse(argStrings, optionsMap, startNode, includeOptions, optionsDisplay);
 		String variableName = parseResult.getNextVariable();
 		List<CompletionSuggestion> results = new ArrayList<CompletionSuggestion>();
 		if(variableName != null) {

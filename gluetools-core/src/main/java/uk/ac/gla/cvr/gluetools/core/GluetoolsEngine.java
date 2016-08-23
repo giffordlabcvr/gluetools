@@ -218,6 +218,7 @@ public class GluetoolsEngine implements Plugin {
 		ClassLoader prevContextClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			// not sure what the effects are of not parenting to the current context classloader here
+			// might need to revisit that.
 			Thread.currentThread().setContextClassLoader(glueClassLoader);
 			return supplier.get();
 		} finally {

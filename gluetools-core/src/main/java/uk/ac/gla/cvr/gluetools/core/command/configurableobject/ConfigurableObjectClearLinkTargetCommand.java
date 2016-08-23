@@ -12,35 +12,33 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 
 @CommandClass( 
-	commandWords={"unset", "field"}, 
-	docoptUsages={"[-C] <fieldName>"},
+	commandWords={"clear", "link-target"}, 
+	docoptUsages={"[-C] <linkName>"},
 	docoptOptions={
-		"-C, --noCommit     Don't commit to the database [default: false]",
+			"-C, --noCommit     Don't commit to the database [default: false]",
 	},
 	metaTags={CmdMeta.updatesDatabase},
-	description="Unset a field value for the current mode object", 
-	furtherHelp="After the command has executed, the current mode object will have no value for the specified field.") 
-public class ConfigurableObjectUnsetFieldCommand extends Command<UpdateResult> {
+	description="Clear target objects on a link") 
+public class ConfigurableObjectClearLinkTargetCommand extends Command<UpdateResult> {
 
-	public static final String FIELD_NAME = PropertyCommandDelegate.FIELD_NAME;
+	public static final String LINK_NAME = PropertyCommandDelegate.LINK_NAME;
 	public static final String NO_COMMIT = PropertyCommandDelegate.NO_COMMIT;
+
 	
 	private PropertyCommandDelegate propertyCommandDelegate = new PropertyCommandDelegate();
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		propertyCommandDelegate.configureUnsetField(pluginConfigContext, configElem);
+		propertyCommandDelegate.configureClearLinkTarget(pluginConfigContext, configElem);
 	}
-
 
 	@Override
 	public UpdateResult execute(CommandContext cmdContext) {
-		return propertyCommandDelegate.executeUnsetField(cmdContext);
+		return propertyCommandDelegate.executeClearLinkTarget(cmdContext);
 	}
 
 	@CompleterClass
-	public static class Completer extends PropertyCommandDelegate.ModifiableFieldNameCompleter {}
-
+	public static class Completer extends PropertyCommandDelegate.ToManyLinkNameAndTargetPathCompleter {}
 
 }

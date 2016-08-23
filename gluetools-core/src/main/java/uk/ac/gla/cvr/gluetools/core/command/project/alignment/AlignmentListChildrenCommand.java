@@ -20,7 +20,7 @@ public class AlignmentListChildrenCommand extends AlignmentModeCommand<ListResul
 		Alignment alignment = lookupAlignment(cmdContext);
 		List<Alignment> children = alignment.getChildren();
 		List<String> columnHeaders = Arrays.asList(Alignment.NAME_PROPERTY, Alignment.REF_SEQ_NAME_PATH);
-		return new ListResult(Alignment.class, children, columnHeaders);
+		return new ListResult(cmdContext, Alignment.class, children, columnHeaders);
 	}
 	
 

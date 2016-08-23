@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.varAlmtNote;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -16,9 +17,7 @@ public class VarAlmtNoteModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 
-		registerCommandClass(VarAlmtNoteSetFieldCommand.class);
-		registerCommandClass(VarAlmtNoteShowPropertyCommand.class);
-		registerCommandClass(VarAlmtNoteUnsetFieldCommand.class);
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 		
 		registerCommandClass(ExitCommand.class);
 	}

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPath;
@@ -307,7 +306,8 @@ public class ModelBuilder {
 			String objEntityName = tableName;
 			tableNameToObjEntity.put(tableName, objEntityName);
 			objEntityElem.setAttribute("name", objEntityName);
-			objEntityElem.setAttribute("className", CustomTableObjectClassCreator.getFullClassName(projectName, tableName));
+			String customTableClassName = CustomTableObjectClassCreator.getFullClassName(projectName, tableName);
+			objEntityElem.setAttribute("className", customTableClassName);
 			objEntityElem.setAttribute("dbEntityName", tableName);
 			objEntityElem.setAttribute("superClassName", CustomTableObject.class.getCanonicalName());
 			Element idAttributeElem = GlueXmlUtils.appendElementNS(objEntityElem, CAYENNE_NS, "obj-attribute");
@@ -334,6 +334,7 @@ public class ModelBuilder {
 				Element objEntityElem = (Element) GlueXmlUtils.getXPathNode(cayenneMapDocument, xPathExpression);
 				addCustomObjAttributesForTable(project, objEntityElem, tableName);
 			}
+			project.setClassTableName(cTable.dataObjectClass, tableName);
 		}
 		
 		// add DB relationships in both directions for each link.
@@ -346,29 +347,42 @@ public class ModelBuilder {
 			dbRelSrcToDestElem.setAttribute("name", srcLinkName);
 			dbRelSrcToDestElem.setAttribute("source", srcTableName);
 			dbRelSrcToDestElem.setAttribute("target", destTableName);
-			if(link.getMultiplicity().equals(Link.Multiplicity.ONE_TO_MANY.name())) {
+			if(link.isToMany()) {
 				dbRelSrcToDestElem.setAttribute("toMany", "true");
+				// table on ONE side of ONE_TO_MANY relationship does not have specific field.
+				for(PkField srcPkField : project.getTablePkFields(srcTableName)) {
+					Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelSrcToDestElem, CAYENNE_NS, "db-attribute-pair");
+					dbAttrPairElem.setAttribute("source", srcPkField.getName());
+					dbAttrPairElem.setAttribute("target", dbAttributeNameForLinkPK(destLinkName, srcPkField.getName()));
+				}
 			} else {
 				dbRelSrcToDestElem.setAttribute("toMany", "false");
-			}
-			for(PkField destPkField : project.getTablePkFields(destTableName)) {
-				Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelSrcToDestElem, CAYENNE_NS, "db-attribute-pair");
-				dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(srcLinkName, destPkField.getName()));
-				dbAttrPairElem.setAttribute("target", destPkField.getName());
+				// one-to-one or many-to-one
+				for(PkField destPkField : project.getTablePkFields(destTableName)) {
+					Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelSrcToDestElem, CAYENNE_NS, "db-attribute-pair");
+					dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(srcLinkName, destPkField.getName()));
+					dbAttrPairElem.setAttribute("target", destPkField.getName());
+				}
 			}
 			Element dbRelDestToSrcElem = GlueXmlUtils.appendElementNS(dataMapElem, CAYENNE_NS, "db-relationship");
 			dbRelDestToSrcElem.setAttribute("name", destLinkName);
 			dbRelDestToSrcElem.setAttribute("source", destTableName);
 			dbRelDestToSrcElem.setAttribute("target", srcTableName);
-			if(link.getMultiplicity().equals(Link.Multiplicity.MANY_TO_ONE.name())) {
+			if(link.isFromMany()) {
 				dbRelDestToSrcElem.setAttribute("toMany", "true");
+				// table on ONE side of MANY_TO_ONE relationship does not have specific field.
+				for(PkField destPkField : project.getTablePkFields(destTableName)) {
+					Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelDestToSrcElem, CAYENNE_NS, "db-attribute-pair");
+					dbAttrPairElem.setAttribute("source", destPkField.getName());
+					dbAttrPairElem.setAttribute("target", dbAttributeNameForLinkPK(srcLinkName, destPkField.getName()));
+				}
 			} else {
 				dbRelDestToSrcElem.setAttribute("toMany", "false");
-			}
-			for(PkField srcPkField : project.getTablePkFields(srcTableName)) {
-				Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelDestToSrcElem, CAYENNE_NS, "db-attribute-pair");
-				dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(destLinkName, srcPkField.getName()));
-				dbAttrPairElem.setAttribute("target", srcPkField.getName());
+				for(PkField srcPkField : project.getTablePkFields(srcTableName)) {
+					Element dbAttrPairElem = GlueXmlUtils.appendElementNS(dbRelDestToSrcElem, CAYENNE_NS, "db-attribute-pair");
+					dbAttrPairElem.setAttribute("source", dbAttributeNameForLinkPK(destLinkName, srcPkField.getName()));
+					dbAttrPairElem.setAttribute("target", srcPkField.getName());
+				}
 			}
 		}
 
@@ -438,20 +452,15 @@ public class ModelBuilder {
 				binder -> binder.bind(ResourceLocator.class)
 				.to(GlueResourceLocator.class));
 		EntityResolver entityResolver = projectRuntime.getContext().getEntityResolver();
-		gluetoolsEngine.runWithGlueClassloader(new Supplier<Void>() {
+		for(CustomTable customTable: customTables) {
+			// ensure all entity classes are loaded, and associated with table objects.
 			@SuppressWarnings("unchecked")
-			@Override
-			public Void get() {
-				for(CustomTable customTable: customTables) {
-					// ensure all entity classes are loaded, and associated with table objects.
-					Class<? extends CustomTableObject> customTableRowClass =
-							(Class<? extends CustomTableObject>) entityResolver
-							.getClassDescriptor(customTable.getName()).getObjectClass();
-					customTable.setRowObjectClass(customTableRowClass);
-				}
-				return null;
-			}
-		});
+			Class<? extends CustomTableObject> customTableRowClass =
+					(Class<? extends CustomTableObject>) entityResolver
+					.getClassDescriptor(customTable.getName()).getObjectClass();
+			customTable.setRowObjectClass(customTableRowClass);
+			project.setClassTableName(customTableRowClass, customTable.getName());
+		}
 		Set<String> tableNamesInDB; 
 		try {
 			tableNamesInDB = getNameTablesInDB(projectRuntime.getDataDomain().getDataNode("glueproject-node"));

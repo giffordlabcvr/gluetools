@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.datamodel;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.CayenneDataObject;
@@ -13,12 +12,10 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
-import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 public abstract class GlueDataObject extends CayenneDataObject {
@@ -47,13 +44,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			Expression qualifier) {
 
 		SelectQuery query = new SelectQuery(objClass, qualifier);
-		List<?> results = cmdContext.getGluetoolsEngine().runWithGlueClassloader(new Supplier<List>() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public List get() {
-				return cmdContext.getObjectContext().performQuery(query);
-			}
-		});
+		List<?> results = cmdContext.getObjectContext().performQuery(query);
 		if(results.isEmpty()) {
 			if(allowNull) {
 				return null;
@@ -82,14 +73,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		C object = lookup(cmdContext, objClass, pkMap, allowNull);
 		if(object != null) {
 			try {
-				cmdContext.getGluetoolsEngine().runWithGlueClassloader(new Supplier<Void>() {
-					@Override
-					public Void get() {
-						cmdContext.getObjectContext().deleteObject(object);
-						return null;
-					}
-					
-				});
+				cmdContext.getObjectContext().deleteObject(object);
 			} catch(DeleteDenyException dde) {
 				String relationship = dde.getRelationship();
 				throw new DataModelException(dde, Code.DELETE_DENIED, objClass.getSimpleName(), pkMap, relationship);
@@ -105,16 +89,11 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	@SuppressWarnings("rawtypes")
 	public static <C extends GlueDataObject> List<C> query(CommandContext cmdContext, Class<C> objClass, SelectQuery query) {
 		try {
-			return cmdContext.getGluetoolsEngine().runWithGlueClassloader(new Supplier<List<C>>(){
-				@Override
-				public List<C> get() {
-					List<?> queryResults = cmdContext.getObjectContext().performQuery(query);
-					return queryResults.stream().map(obj -> { 
-						C dataObject = objClass.cast(obj);
-						return dataObject;
-					}).collect(Collectors.toList());
-				}
-			});
+			List<?> queryResults = cmdContext.getObjectContext().performQuery(query);
+			return queryResults.stream().map(obj -> { 
+				C dataObject = objClass.cast(obj);
+				return dataObject;
+			}).collect(Collectors.toList());
 		} catch(CayenneRuntimeException cre) {
 			Throwable cause = cre.getCause();
 			Expression qualifier = query.getQualifier();
@@ -136,13 +115,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 				throw new DataModelException(Code.OBJECT_ALREADY_EXISTS, objClass.getSimpleName(), pkMap);
 			}
 		}
-		final C newObject = cmdContext.getGluetoolsEngine().runWithGlueClassloader(new Supplier<C>() {
-			@Override
-			public C get() {
-				return cmdContext.getObjectContext().newObject(objClass);
-			}
-		});
-		
+		C newObject = cmdContext.getObjectContext().newObject(objClass);
 		pkMap.values().forEach(pkVal -> {
 			if(pkVal.contains("/")) {
 				throw new DataModelException(Code.ILLEGAL_PRIMARY_KEY_VALUE, objClass.getSimpleName(), pkVal);
@@ -200,6 +173,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		}
 		return result;
 	}
+
 
 
 

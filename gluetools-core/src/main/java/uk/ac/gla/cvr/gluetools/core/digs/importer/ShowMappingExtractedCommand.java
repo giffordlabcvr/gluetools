@@ -23,7 +23,7 @@ public class ShowMappingExtractedCommand extends ModuleDocumentCommand<ShowMappi
 			CommandContext cmdContext, Module module, Document modulePluginDoc) {
 		Element digsImporterElem = module.getConfigDoc().getDocumentElement();
 		PluginConfigContext pluginConfigContext = cmdContext.getGluetoolsEngine().createPluginConfigContext();
-		return new ShowMappingExtractedResult(new ArrayList<ImportExtractedFieldRule>(DigsImporter.initRulesMap(pluginConfigContext, digsImporterElem).values()));
+		return new ShowMappingExtractedResult(cmdContext, new ArrayList<ImportExtractedFieldRule>(DigsImporter.initRulesMap(pluginConfigContext, digsImporterElem).values()));
 	}
 
 }

@@ -93,7 +93,7 @@ public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer>
 		Expression expression = CayenneUtils.parseExpression(expressionString);
 		@SuppressWarnings("rawtypes")
 		List query = dataClassEnum.dataClass.query(cmdContext, expression);
-		return new ListResult(dataClassEnum.dataClass.theClass, query);
+		return new ListResult(cmdContext, dataClassEnum.dataClass.theClass, query);
 	}
 	
 	

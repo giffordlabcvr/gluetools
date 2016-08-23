@@ -16,11 +16,27 @@ public class Link extends _Link {
 			public Multiplicity inverse() {
 				return ONE_TO_ONE;
 			}
+			@Override
+			public boolean isToOne() {
+				return true;
+			}
+			@Override
+			public boolean isToMany() {
+				return false;
+			}
 		}, 
 		ONE_TO_MANY {
 			@Override
 			public Multiplicity inverse() {
 				return MANY_TO_ONE;
+			}
+			@Override
+			public boolean isToOne() {
+				return false;
+			}
+			@Override
+			public boolean isToMany() {
+				return true;
 			}
 		}, 
 		MANY_TO_ONE {
@@ -28,9 +44,21 @@ public class Link extends _Link {
 			public Multiplicity inverse() {
 				return ONE_TO_MANY;
 			}
+			@Override
+			public boolean isToOne() {
+				return true;
+			}
+			@Override
+			public boolean isToMany() {
+				return false;
+			}
 		};
 		
 		public abstract Multiplicity inverse();
+
+		public abstract boolean isToOne();
+
+		public abstract boolean isToMany();
 	}
 	
 	public static Map<String, String> pkMap(String projectName, String table, String name) {
@@ -50,6 +78,26 @@ public class Link extends _Link {
 	@Override
 	public Map<String, String> pkMap() {
 		return pkMap(getProject().getName(), getSrcTableName(), getSrcLinkName());
+	}
+
+	public boolean isToOne() {
+		Multiplicity multEnum = Multiplicity.valueOf(getMultiplicity());
+		return multEnum.isToOne();
+	}
+
+	public boolean isToMany() {
+		Multiplicity multEnum = Multiplicity.valueOf(getMultiplicity());
+		return multEnum.isToMany();
+	}
+
+	public boolean isFromOne() {
+		Multiplicity multEnum = Multiplicity.valueOf(getMultiplicity());
+		return multEnum.inverse().isToOne();
+	}
+
+	public boolean isFromMany() {
+		Multiplicity multEnum = Multiplicity.valueOf(getMultiplicity());
+		return multEnum.inverse().isToMany();
 	}
 
 }

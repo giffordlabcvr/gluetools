@@ -55,9 +55,9 @@ public class HelpCommand extends Command<ConsoleCommandResult> {
 	@CompleterClass
 	public static class HelpCommandCompleter extends CommandCompleter {
 		@Override
-		public List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext commandContext, Class<? extends Command> cmdClass, List<String> argStrings, String prefix) {
+		public List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext commandContext, Class<? extends Command> cmdClass, List<String> argStrings, String prefix, boolean includeOptions) {
 			CommandFactory commandFactory = commandContext.peekCommandMode().getCommandFactory();
-			return commandFactory.getCommandWordSuggestions(commandContext, argStrings, prefix, false, commandContext.isRequireModeWrappable());
+			return commandFactory.getCommandWordSuggestions(commandContext, argStrings, prefix, false, commandContext.isRequireModeWrappable(), true);
 		}
 		
 	}

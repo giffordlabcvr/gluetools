@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -28,10 +29,7 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentUnsetParentCommand.class);
 		registerCommandClass(AlignmentShowParentCommand.class);
 
-		registerCommandClass(AlignmentSetFieldCommand.class);
-		registerCommandClass(AlignmentUnsetFieldCommand.class);
-		registerCommandClass(AlignmentShowPropertyCommand.class);
-		registerCommandClass(AlignmentListPropertyCommand.class);
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 
 		registerCommandClass(AlignmentListChildrenCommand.class);
 		registerCommandClass(AlignmentListDescendentCommand.class);

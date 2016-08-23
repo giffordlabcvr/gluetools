@@ -1,0 +1,54 @@
+schema-project example
+  create custom-table tab1
+  create custom-table tab2
+  create link tab1 tab2 -m ONE_TO_MANY
+  create link tab2 sequence -m MANY_TO_ONE
+  create link tab1 feature -m ONE_TO_MANY
+  create link alignment tab1 -m ONE_TO_ONE
+  create link alignment_member -s after alignment_member -d before -m ONE_TO_ONE
+  
+  list link
+  exit
+  
+project example
+  create custom-table-row tab1 obj1a
+  create custom-table-row tab1 obj1b
+  create custom-table-row tab2 obj2a
+  create custom-table-row tab2 obj2b
+  create custom-table-row tab2 obj2c
+  create custom-table-row tab2 obj2d
+
+  custom-table-row tab1 obj1a
+    add link-target tab2 custom-table-row/tab2/obj2a
+    add link-target tab2 custom-table-row/tab2/obj2b
+    exit
+
+  custom-table-row tab2 obj2c set link-target tab1 custom-table-row/tab1/obj1b
+  custom-table-row tab2 obj2d set link-target tab1 custom-table-row/tab1/obj1b
+    
+  custom-table-row tab1 obj1a list link-target tab2
+  custom-table-row tab1 obj1b list link-target tab2
+  custom-table-row tab2 obj2a show property tab1
+  custom-table-row tab2 obj2b show property tab1
+  custom-table-row tab2 obj2c show property tab1
+  custom-table-row tab2 obj2d show property tab1
+  
+  custom-table-row tab1 obj1b
+    remove link-target tab2 custom-table-row/tab2/obj2c
+    exit
+
+  custom-table-row tab1 obj1a
+    remove link-target tab2 custom-table-row/tab2/obj2b
+    exit
+  
+  custom-table-row tab2 obj2a unset link-target tab1
+  custom-table-row tab2 obj2d unset link-target tab1
+
+  custom-table-row tab1 obj1a list link-target tab2
+  custom-table-row tab1 obj1b list link-target tab2
+  custom-table-row tab2 obj2a show property tab1
+  custom-table-row tab2 obj2b show property tab1
+  custom-table-row tab2 obj2c show property tab1
+  custom-table-row tab2 obj2d show property tab1
+  
+  exit

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
 
@@ -69,14 +68,6 @@ public class MapResult extends CommandResult {
 			map.put(header, resolveHeaderFunction.apply(dataObject, header));
 		}
 		return map;
-	}
-	
-	public static class DefaultResolveHeaderFunction<D extends GlueDataObject> implements BiFunction<D, String, Object> {
-		@Override
-		public Object apply(D dataObject, String header) {
-			return dataObject.readNestedProperty(header);
-		}
-		
 	}
 	
 	

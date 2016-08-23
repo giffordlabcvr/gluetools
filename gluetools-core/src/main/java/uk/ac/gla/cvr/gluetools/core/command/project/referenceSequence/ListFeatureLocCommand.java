@@ -32,7 +32,7 @@ public class ListFeatureLocCommand extends ReferenceSequenceModeCommand<ListResu
 				return Feature.compareDisplayOrderKeyLists(fLoc1.getFeature().getDisplayOrderKeyList(), fLoc2.getFeature().getDisplayOrderKeyList());
 			}
 		});
-		return new ListResult(FeatureLocation.class, featureLocs);
+		return new ListResult(cmdContext, FeatureLocation.class, featureLocs);
 
 	}
 

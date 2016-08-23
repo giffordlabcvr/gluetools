@@ -18,14 +18,14 @@ public abstract class CommandUtils {
 			CommandContext cmdContext, Class<C> theClass, SelectQuery query, List<String> fields) {
 		
 		List<C> resultDataObjects = GlueDataObject.query(cmdContext, theClass, query);
-		return new ListResult(theClass, resultDataObjects, fields);
+		return new ListResult(cmdContext, theClass, resultDataObjects, fields);
 	}
 
 	public static <C extends GlueDataObject> ListResult runListCommand(
 			CommandContext cmdContext, Class<C> theClass, SelectQuery query) {
 		
 		List<C> resultDataObjects = GlueDataObject.query(cmdContext, theClass, query);
-		return new ListResult(theClass, resultDataObjects);
+		return new ListResult(cmdContext, theClass, resultDataObjects);
 	}
 
 
@@ -33,7 +33,7 @@ public abstract class CommandUtils {
 			CommandContext cmdContext, Class<C> theClass, Comparator<C> sortComparator, SelectQuery query) {
 		List<C> resultDataObjects = GlueDataObject.query(cmdContext, theClass, query);
 		Collections.sort(resultDataObjects, sortComparator);
-		return new ListResult(theClass, resultDataObjects);
+		return new ListResult(cmdContext, theClass, resultDataObjects);
 	}
 
 	public static File ensureDataDir(CommandContext cmdContext, String dataDirString) {

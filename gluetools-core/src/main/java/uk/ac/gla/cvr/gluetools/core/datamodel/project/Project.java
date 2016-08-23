@@ -34,6 +34,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 public class Project extends _Project {
 
 	private Map<String, List<PkField>> tableNameToPkFields = new LinkedHashMap<String, List<PkField>>();
+	private Map<String, String> classNameToTableName = new LinkedHashMap<String, String>();
 	
 	public static Map<String, String> pkMap(String name) {
 		return Collections.singletonMap(NAME_PROPERTY, name);
@@ -50,6 +51,10 @@ public class Project extends _Project {
 
 	public List<PkField> getTablePkFields(String tableName) {
 		return tableNameToPkFields.get(tableName);
+	}
+
+	public void setClassTableName(Class<? extends GlueDataObject> theClass, String tableName) {
+		classNameToTableName.put(theClass.getCanonicalName(), tableName);
 	}
 
 	public CustomTable getCustomTable(String tableName) {
@@ -149,6 +154,17 @@ public class Project extends _Project {
 		GlueDataClass dataClassAnnotation = getDataClassAnnotation(tableName);
 		List<String> listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
 		listableProperties.addAll(getCustomFieldNames(tableName));
+		
+		List<Link> toOneLinksForWhichSource = 
+				getLinksForWhichSource(tableName).stream().filter(l -> l.isToOne()).collect(Collectors.toList());
+		listableProperties
+			.addAll(toOneLinksForWhichSource.stream().map(l -> l.getSrcLinkName()).collect(Collectors.toList()));
+
+		List<Link> fromOneLinksForWhichDest = 
+				getLinksForWhichDestination(tableName).stream().filter(l -> l.isFromOne()).collect(Collectors.toList());
+		listableProperties
+			.addAll(fromOneLinksForWhichDest.stream().map(l -> l.getDestLinkName()).collect(Collectors.toList()));
+
 		return listableProperties;
 	}
 
@@ -289,6 +305,10 @@ public class Project extends _Project {
 		}
 	}
 	
+	public String getTableNameForDataObjectClass(Class<? extends GlueDataObject> theClass) {
+		return classNameToTableName.get(theClass.getCanonicalName());
+	}
+	
 	public Link getSrcTableLink(String srcTableName, String srcLinkName) {
 		return getLinksForWhichSource(srcTableName).stream()
 				.filter(l -> l.getSrcLinkName().equals(srcLinkName))
@@ -301,6 +321,26 @@ public class Project extends _Project {
 				.findFirst().orElse(null);
 	}
 
+	public String pkMapToTargetPath(String tableName, Map<String, String> pkMap) {
+		ModePathElement[] modePath = getModePathForTable(tableName);
+		StringBuffer buf = new StringBuffer();
+		for(int i = 0; i < modePath.length; i++) {
+			if(i > 0) {
+				buf.append("/");
+			}
+			if(modePath[i] instanceof Keyword) {
+				Keyword keyword = (Keyword) modePath[i];
+				buf.append(keyword.getKeyword());
+			} else if(modePath[i] instanceof PkPath) {
+				PkPath pkPath = (PkPath) modePath[i];
+				buf.append(pkMap.get(pkPath.getPkPath()));
+			} else {
+				throw new RuntimeException("Unknown type of ModePathElement "+modePath[i]);
+			}
+		}
+		return buf.toString();
+	}
+	
 	public Map<String, String> targetPathToPkMap(String tableName, String targetPath) {
 		ModePathElement[] modePath = getModePathForTable(tableName);
 		String[] bits = targetPath.split("/");
@@ -333,6 +373,18 @@ public class Project extends _Project {
 			buf.append(modePathElement.correctForm());
 		}
 		return buf.toString();
+	}
+
+	public Link getLink(String tableName, String linkName) {
+		Link link = getLinksForWhichSource(tableName).stream()
+				.filter(l -> l.getSrcLinkName().equals(linkName))
+				.findFirst().orElse(null);
+		if(link == null) {
+			link = getLinksForWhichDestination(tableName).stream()
+					.filter(l -> l.getDestLinkName().equals(linkName))
+					.findFirst().orElse(null);
+		}
+		return link;
 	}
 	
 }

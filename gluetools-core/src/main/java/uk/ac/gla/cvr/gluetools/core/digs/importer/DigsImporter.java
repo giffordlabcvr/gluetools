@@ -325,7 +325,7 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 
 	public ListExtractedResult listExtracted(CommandContext cmdContext, String digsDbName, Optional<Expression> whereClause, List<String> fieldNames) {
 		List<Extracted> extracteds = listExtracted(cmdContext, digsDbName, whereClause);
-		return new ListExtractedResult(extracteds, fieldNames);
+		return new ListExtractedResult(cmdContext, extracteds, fieldNames);
 	}
 	
 	

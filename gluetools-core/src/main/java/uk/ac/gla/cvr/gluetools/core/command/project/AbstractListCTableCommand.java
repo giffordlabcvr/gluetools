@@ -119,10 +119,10 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 				Collections.sort(resultDataObjects, (Comparator<D>) sortComparator);
 			}
 			if(fieldNames == null) {
-				return new ListResult(dataObjectClass, resultDataObjects);
+				return new ListResult(cmdContext, dataObjectClass, resultDataObjects);
 			} else {
 				project.checkListableProperties(tableName, fieldNames);
-				return new ListResult(dataObjectClass, resultDataObjects, fieldNames);
+				return new ListResult(cmdContext, dataObjectClass, resultDataObjects, fieldNames);
 			}
 		}
 

@@ -63,7 +63,7 @@ private static Multiton factories = new Multiton();
 	
 
 	@SuppressWarnings("rawtypes")
-	protected void registerCommandClass(Class<? extends Command> cmdClass) {
+	public void registerCommandClass(Class<? extends Command> cmdClass) {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
 		cmdUsage.validate(cmdClass);
@@ -195,8 +195,7 @@ private static Multiton factories = new Multiton();
 		@SuppressWarnings("rawtypes")
 		public List<CompletionSuggestion> getCommandWordSuggestions(ConsoleCommandContext cmdContext, 
 				LinkedList<String> commandWords, String prefix,
-				boolean commandCompleters,
-				boolean requireModeWrappable) {
+				boolean commandCompleters, boolean requireModeWrappable, boolean includeOptions) {
 			if(commandWords.size() == 0) {
 				List<CompletionSuggestion> suggestions = new LinkedList<CompletionSuggestion>();
 				Set<String> childNodeElemNames = childNodes.keySet();
@@ -222,7 +221,7 @@ private static Multiton factories = new Multiton();
 						CommandCompleter cmdCompleter = CommandCompleter.commandCompleterForCmdClass(cmdClass);
 						if(cmdCompleter != null) {
 							if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-								return cmdCompleter.completionSuggestions(cmdContext, cmdClass, commandWords, prefix);
+								return cmdCompleter.completionSuggestions(cmdContext, cmdClass, commandWords, prefix, includeOptions);
 							}
 						}
 					}
@@ -231,7 +230,7 @@ private static Multiton factories = new Multiton();
 				if(requireModeWrappable && !treeNode.modeWrappable) {
 					return new LinkedList<CompletionSuggestion>();
 				} else {
-					return treeNode.getCommandWordSuggestions(cmdContext, commandWords, prefix, commandCompleters, requireModeWrappable);
+					return treeNode.getCommandWordSuggestions(cmdContext, commandWords, prefix, commandCompleters, requireModeWrappable, includeOptions);
 				}
 			}
 		}
@@ -270,10 +269,10 @@ private static Multiton factories = new Multiton();
 	}
 
 	public List<CompletionSuggestion> getCommandWordSuggestions(ConsoleCommandContext cmdContext, List<String> lookupBasis, 
-			String prefix, boolean commandCompleters, boolean requireModeWrappable) {
+			String prefix, boolean commandCompleters, boolean requireModeWrappable, boolean includeOptions) {
 		refreshCommandTree(cmdContext);
 		ArrayList<CompletionSuggestion> suggestions = new ArrayList<CompletionSuggestion>(rootNode.getCommandWordSuggestions(cmdContext, 
-				new LinkedList<String>(lookupBasis), prefix, commandCompleters, requireModeWrappable));
+				new LinkedList<String>(lookupBasis), prefix, commandCompleters, requireModeWrappable, includeOptions));
 		Collections.sort(suggestions);
 		return suggestions;
 	}
