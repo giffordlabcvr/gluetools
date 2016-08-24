@@ -28,7 +28,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -37,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 
 @GlueDataClass(defaultListedProperties = {FeatureLocation.FEATURE_NAME_PATH})
@@ -276,7 +276,7 @@ public class FeatureLocation extends _FeatureLocation {
 						QueryAlignedSegment.abutsPredicate());
 		
 		for(NtQueryAlignedSegment ntQaSeg: queryToFeatureLocRefNtSegsMerged) {
-			variationScanResults.addAll(variationScanSegment(translator, codon1Start, ntQaSeg, variationsToScan, excludeAbsent));
+			variationScanResults.addAll(variationScanSegment(cmdContext, translator, codon1Start, ntQaSeg, variationsToScan, excludeAbsent));
 		}
 		return variationScanResults;
 	}
@@ -295,61 +295,43 @@ public class FeatureLocation extends _FeatureLocation {
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 	
-	public List<VariationScanResult> variationScanSegment(Translator translator, Integer codon1Start,
+	public List<VariationScanResult> variationScanSegment(CommandContext cmdContext, Translator translator, Integer codon1Start,
 			NtQueryAlignedSegment ntQaSeg, List<Variation> variationsToScan, boolean excludeAbsent) {
 		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 		
-		String fullProteinTranslation = null;
+		String fullAminoAcidTranslation = null;
 		NtQueryAlignedSegment ntQaSegCdnAligned = null;
 		if(getFeature().codesAminoAcids()) {
 			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, Arrays.asList(ntQaSeg));
 			if(ntQaSegsCdnAligned.isEmpty()) {
-				fullProteinTranslation = "";
+				fullAminoAcidTranslation = "";
 			} else {
 				ntQaSegCdnAligned = ntQaSegsCdnAligned.get(0);
-				fullProteinTranslation = translator.translate(ntQaSegCdnAligned.getNucleotides());
+				fullAminoAcidTranslation = translator.translate(ntQaSegCdnAligned.getNucleotides());
 			}
 		}
 		
 		for(Variation variationToScan: variationsToScan) {
-			Integer refStart = variationToScan.getRefStart();
-			Integer refEnd = variationToScan.getRefEnd();
-			int varLengthNt = refEnd - refStart + 1;
-			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID && fullProteinTranslation.length() > 0) {
-				Integer proteinTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
-				Integer proteinTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
-				if(!( refStart >= proteinTranslationRefNtStart && refEnd <= proteinTranslationRefNtEnd )) {
-					continue;
-				}
-				int segToVariationStartOffset = refStart - proteinTranslationRefNtStart;
-				int startAA = segToVariationStartOffset / 3;
-				int endAA = startAA + ( (varLengthNt / 3) - 1);
-				CharSequence proteinTranslationForVariation = fullProteinTranslation.subSequence(startAA, endAA+1);
-				int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
-				VariationScanResult proteinScanResult = variationToScan.scanProteinTranslation(proteinTranslationForVariation, scanQueryNtStart);
-				if(proteinScanResult.isPresent() || !excludeAbsent) {
-					variationScanResults.add(proteinScanResult);
-				}
+			VariationScanResult scanResult;
+			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID && fullAminoAcidTranslation.length() > 0) {
+				scanResult = variationToScan.scanAminoAcids(cmdContext, ntQaSegCdnAligned, fullAminoAcidTranslation);
 			} else if(variationToScan.getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
-				if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
-					continue;
-				}
-				ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
-				List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
-						ReferenceSegment.cloneLeftSegMerger());
-				if(intersection.isEmpty()) {
-					continue;
-				}
-				NtQueryAlignedSegment intersectionSeg = intersection.get(0);
-				CharSequence nucleotides = intersectionSeg.getNucleotides();
-				VariationScanResult ntScanResult = variationToScan.scanNucleotides(nucleotides, intersectionSeg.getQueryStart());
-				if(ntScanResult.isPresent() || !excludeAbsent) {
-					variationScanResults.add(ntScanResult);
+				scanResult = variationToScan.scanNucleotideVariation(cmdContext, ntQaSeg);
+			} else {
+				throw new RuntimeException("Unknown translation format");
+			}
+			if(scanResult != null) {
+				if(scanResult.isPresent() || !excludeAbsent) {
+					variationScanResults.add(scanResult);
+				} else {
+					return null;
 				}
 			}
 		}
 		
 		return variationScanResults;
 	}
+
+
 }
 

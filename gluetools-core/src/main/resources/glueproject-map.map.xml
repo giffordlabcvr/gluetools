@@ -93,10 +93,11 @@
 		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="pattern" type="VARCHAR" length="1000"/>
 		<db-attribute name="ref_end" type="INTEGER"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="ref_start" type="INTEGER"/>
-		<db-attribute name="regex" type="VARCHAR" length="1000"/>
+		<db-attribute name="scanner_module_name" type="VARCHAR" length="50"/>
 		<db-attribute name="translation_type" type="VARCHAR" length="50"/>
 	</db-entity>
 	<obj-entity name="AlignedSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment" dbEntityName="aligned_segment" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
@@ -161,9 +162,10 @@
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
 		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="display_name"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="pattern" type="java.lang.String" db-attribute-path="pattern"/>
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
-		<obj-attribute name="regex" type="java.lang.String" db-attribute-path="regex"/>
+		<obj-attribute name="scannerModuleName" type="java.lang.String" db-attribute-path="scanner_module_name"/>
 		<obj-attribute name="translationType" type="java.lang.String" db-attribute-path="translation_type"/>
 	</obj-entity>
 	<db-relationship name="alignment_member" source="aligned_segment" target="alignment_member" toMany="false">

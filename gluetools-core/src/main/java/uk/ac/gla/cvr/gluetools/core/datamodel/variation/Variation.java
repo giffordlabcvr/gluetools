@@ -3,12 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
 import gnu.trove.map.TIntObjectMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -28,26 +28,39 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldTranslator;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseAminoAcidVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseNucleotideVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchAminoAcidVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchNucleotideVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexAminoAcidVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexNucleotideVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @GlueDataClass(
 		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
 		listableBuiltInProperties = { _Variation.NAME_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
-				Variation.REGEX_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
-		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY })		
+				Variation.PATTERN_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
+		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY, _Variation.PATTERN_PROPERTY })		
 public class Variation extends _Variation implements IReferenceSegment, HasDisplayName {
 
 	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("[NACGT]+");
 	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("[ACDEFGHIKLMNOPQRSTUVWYX*]+");
 	
-	private Pattern regexPattern;
+	// map for the scanner module to put computed values
+	private Map<String, Object> scannerDataCache = new LinkedHashMap<String, Object>();
+	
 	private Boolean isSimpleMatch = null;
+	private BaseVariationScanner<?,?> scanner = null;
 
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
 	public static final String REF_SEQ_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+_ReferenceSequence.NAME_PROPERTY;
@@ -82,7 +95,7 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 	}
 	
 	private Boolean buildIsSimpleMatch() {
-		String regex = getRegex();
+		String regex = getPattern();
 		int ntLength = (getRefEnd()-getRefStart())+1;
 		if(getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
 			if(ntLength == regex.length() && SIMPLE_NT_PATTERN.matcher(regex).find()) {
@@ -97,26 +110,17 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 		}
 	}	
 	
-
-	
-	
-	public Pattern getRegexPattern() {
-		if(regexPattern == null) {
-			regexPattern = buildRegexPattern();
-		}
-		return regexPattern;
-	}
-	
-	private Pattern buildRegexPattern() {
-		return Pattern.compile(getRegex());
-	}	
 	
 	@Override
 	public void writePropertyDirectly(String propName, Object val) {
 		super.writePropertyDirectly(propName, val);
-		if(propName.equals(REGEX_PROPERTY)) {
-			regexPattern = null;
+		if(propName.equals(PATTERN_PROPERTY)) {
+			this.scannerDataCache.clear();
+		} else if(propName.equals(SCANNER_MODULE_NAME_PROPERTY)) {
+			this.scanner = null;
+			this.scannerDataCache.clear();
 		}
+		
 	}
 
 
@@ -130,8 +134,8 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 			throw new VariationException(Code.VARIATION_LOCATION_UNDEFINED, 
 					refSeq.getName(), feature.getName(), getName());
 		}
-		if(getRegex() == null) {
-			throw new VariationException(Code.VARIATION_REGEX_UNDEFINED, 
+		if(getPattern() == null) {
+			throw new VariationException(Code.VARIATION_PATTERN_UNDEFINED, 
 					refSeq.getName(), feature.getName(), getName());
 		}
 		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
@@ -160,15 +164,14 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
 						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}
-			
 		}
-
+		getScanner(cmdContext).validateVariation(this);;
 	}	
 
 	@Override
 	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
 		String noCommit = glueConfigContext.getNoCommit() ? "--noCommit " : "";
-		String regex = getRegex();
+		String regex = getPattern();
 		if(regex != null) {
 			indent(glueConfigBuf, indent).append("set pattern "+noCommit+"\""+regex+"\"").append("\n");
 		}
@@ -197,61 +200,91 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 		
 	}
 
-	public VariationScanResult scanProteinTranslation(CharSequence proteinTranslation, int zeroIndexNtStart) {
-		boolean result;
-		Integer ntStart = null;
-		Integer ntEnd = null;
-		if(isSimpleMatch()) {
-			result = charSequencesEqual(getRegex(), proteinTranslation);
-			if(result) {
-				ntStart = zeroIndexNtStart;
-				ntEnd = zeroIndexNtStart+(proteinTranslation.length() * 3)-1;
-			}
-		} else {
-			Pattern regexPattern = getRegexPattern();
-			Matcher matcher = regexPattern.matcher(proteinTranslation);
-			result = matcher.find();
-			if(result) {
-				ntStart = zeroIndexNtStart + ( matcher.start() * 3 );
-				ntEnd = zeroIndexNtStart + ( matcher.end() * 3 ) - 1;
-			}
+	public VariationScanResult scanNucleotideVariation(
+			CommandContext cmdContext, NtQueryAlignedSegment ntQaSeg) {
+		BaseVariationScanner<?, ?> scanner = this.getScanner(cmdContext);
+		BaseNucleotideVariationScanner<?, ?> nucleotideScanner;
+		try {
+			nucleotideScanner = (BaseNucleotideVariationScanner<?, ?>) scanner;
+		} catch(ClassCastException cce) {
+			throw new VariationException(Code.WRONG_SCANNER_TYPE, 
+					this.getFeatureLoc().getReferenceSequence().getName(), this.getFeatureLoc().getFeature().getName(), this.getName(), 
+					BaseNucleotideVariationScanner.class.getSimpleName());
 		}
-		return new VariationScanResult(this, result, ntStart, ntEnd);
+		Integer refStart = this.getRefStart();
+		Integer refEnd = this.getRefEnd();
+		if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
+			return null;
+		}
+		ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
+		List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
+				ReferenceSegment.cloneLeftSegMerger());
+		if(intersection.isEmpty()) {
+			return null;
+		}
+		NtQueryAlignedSegment intersectionSeg = intersection.get(0);
+		CharSequence nucleotides = intersectionSeg.getNucleotides();
+		return nucleotideScanner.scanNucleotides(this, nucleotides, intersectionSeg.getQueryStart());
 	}
 
-	private boolean charSequencesEqual(CharSequence seq1, CharSequence seq2) {
-		if(seq1.length() != seq2.length()) {
-			return false;
+
+	public VariationScanResult scanAminoAcids(
+			CommandContext cmdContext, NtQueryAlignedSegment ntQaSegCdnAligned,
+			String fullAminoAcidTranslation) {
+		BaseAminoAcidVariationScanner<?, ?> aminoAcidScanner;
+		try {
+			aminoAcidScanner = (BaseAminoAcidVariationScanner<?, ?>) this.scanner;
+		} catch(ClassCastException cce) {
+			throw new VariationException(Code.WRONG_SCANNER_TYPE, 
+					this.getFeatureLoc().getReferenceSequence().getName(), this.getFeatureLoc().getFeature().getName(), this.getName(), 
+					BaseAminoAcidVariationScanner.class.getSimpleName());
 		}
-		for(int i = 0; i < seq1.length(); i++) {
-			if(seq1.charAt(i) != seq2.charAt(i)) {
-				return false;
-			}
+		Integer refStart = this.getRefStart();
+		Integer refEnd = this.getRefEnd();
+		int varLengthNt = refEnd - refStart + 1;
+		Integer aaTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
+		Integer aaTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
+		if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
+			return null;
 		}
-		return true;
+		int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
+		int startAA = segToVariationStartOffset / 3;
+		int endAA = startAA + ( (varLengthNt / 3) - 1);
+		CharSequence aminoAcidsForVariation = fullAminoAcidTranslation.subSequence(startAA, endAA+1);
+		int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
+		return aminoAcidScanner.scanAminoAcids(this, aminoAcidsForVariation, scanQueryNtStart);
 	}
+
 	
-	
-	public VariationScanResult scanNucleotides(CharSequence nucleotides, int zeroIndexNtStart) {
-		boolean result;
-		Integer ntStart = null;
-		Integer ntEnd = null;
-		if(isSimpleMatch()) {
-			result = charSequencesEqual(getRegex(), nucleotides);
-			if(result) {
-				ntStart = zeroIndexNtStart;
-				ntEnd = zeroIndexNtStart+nucleotides.length()-1;
-			}
-		} else {
-			Pattern regexPattern = getRegexPattern();
-			Matcher matcher = regexPattern.matcher(nucleotides);
-			result = matcher.find();
-			if(result) {
-				ntStart = zeroIndexNtStart + matcher.start();
-				ntEnd = zeroIndexNtStart + matcher.end() - 1;
-			}
+	private BaseVariationScanner<?, ?> getScanner(CommandContext cmdContext) {
+		if(this.scanner == null) {
+			this.scanner = buildScanner(cmdContext);
 		}
-		return new VariationScanResult(this, result, ntStart, ntEnd);
+		return this.scanner;
+	}
+
+	private BaseVariationScanner<?, ?> buildScanner(CommandContext cmdContext) {
+		String scannerModuleName = getScannerModuleName();
+		if(scannerModuleName != null) {
+			return Module.resolveModulePlugin(cmdContext, BaseVariationScanner.class, scannerModuleName);
+		}
+		TranslationFormat translationFormat = getTranslationFormat();
+		switch(translationFormat) {
+		case NUCLEOTIDE:
+			if(isSimpleMatch()) {
+				return ExactMatchNucleotideVariationScanner.getDefaultInstance();
+			} else {
+				return RegexNucleotideVariationScanner.getDefaultInstance();
+			}
+		case AMINO_ACID:
+			if(isSimpleMatch()) {
+				return ExactMatchAminoAcidVariationScanner.getDefaultInstance();
+			} else {
+				return RegexAminoAcidVariationScanner.getDefaultInstance();
+			}
+		default:
+			throw new RuntimeException("Unknown translation type");
+		}
 	}
 	
 	/**
@@ -281,4 +314,12 @@ public class Variation extends _Variation implements IReferenceSegment, HasDispl
 		throw new RuntimeException("Variation.clone() not supported");
 	}
 	
+	public void setScannerData(String key, Object data) {
+		scannerDataCache.put(key, data);
+	}
+
+	public Object getScannerData(String key) {
+		return scannerDataCache.get(key);
+	}
+
 }

@@ -24,7 +24,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMembe
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetLocationCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetPatternCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -298,9 +297,11 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 						.set(VariationSetLocationCommand.LC_START, codonLabel)
 						.set(VariationSetLocationCommand.LC_END, codonLabel)
 						.build().execute(cmdContext);
-						cmdContext.cmdBuilder(VariationSetPatternCommand.class)
-						.set(VariationSetPatternCommand.NO_COMMIT, Boolean.TRUE)
-						.set(VariationSetPatternCommand.REGEX, aaPolymorphism.getRegex())
+						
+						cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
+						.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, Variation.PATTERN_PROPERTY)
+						.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getRegex())
+						.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 						.build().execute(cmdContext);
 
 						cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
@@ -308,7 +309,6 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 						.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationDisplayName())
 						.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
 						.build().execute(cmdContext);
-
 						
 						 if(referenceAaField != null) {
 							cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)

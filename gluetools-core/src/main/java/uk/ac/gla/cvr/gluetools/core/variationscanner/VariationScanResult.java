@@ -1,8 +1,10 @@
-package uk.ac.gla.cvr.gluetools.core.datamodel.variation;
+package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
 public class VariationScanResult {
 

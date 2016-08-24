@@ -3,7 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanResult> {
 

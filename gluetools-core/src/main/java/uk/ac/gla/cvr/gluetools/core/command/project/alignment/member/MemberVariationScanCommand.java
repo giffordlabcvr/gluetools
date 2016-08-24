@@ -20,12 +20,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 

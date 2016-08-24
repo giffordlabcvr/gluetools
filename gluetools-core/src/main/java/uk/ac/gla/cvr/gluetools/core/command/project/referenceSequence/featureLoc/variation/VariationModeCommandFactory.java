@@ -18,16 +18,11 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		
-		registerCommandClass(VariationSetPatternCommand.class);
-		registerCommandClass(VariationShowPatternCommand.class);
-		
 		registerCommandClass(VariationSetLocationCommand.class);
 		registerCommandClass(VariationShowLocationCommand.class);
 		registerCommandClass(VariationShowLabeledCodonLocationCommand.class);
 
 		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
-		
-		registerCommandClass(VariationShowDescriptionCommand.class);
 
 		registerCommandClass(VariationValidateCommand.class);
 

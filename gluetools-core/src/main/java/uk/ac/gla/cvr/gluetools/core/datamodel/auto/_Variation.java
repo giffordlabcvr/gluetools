@@ -17,9 +17,10 @@ public abstract class _Variation extends GlueDataObject {
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String DISPLAY_NAME_PROPERTY = "displayName";
     public static final String NAME_PROPERTY = "name";
+    public static final String PATTERN_PROPERTY = "pattern";
     public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
-    public static final String REGEX_PROPERTY = "regex";
+    public static final String SCANNER_MODULE_NAME_PROPERTY = "scannerModuleName";
     public static final String TRANSLATION_TYPE_PROPERTY = "translationType";
     public static final String FEATURE_LOC_PROPERTY = "featureLoc";
     public static final String VAR_ALMT_NOTES_PROPERTY = "varAlmtNotes";
@@ -49,6 +50,13 @@ public abstract class _Variation extends GlueDataObject {
         return (String)readProperty(NAME_PROPERTY);
     }
 
+    public void setPattern(String pattern) {
+        writeProperty(PATTERN_PROPERTY, pattern);
+    }
+    public String getPattern() {
+        return (String)readProperty(PATTERN_PROPERTY);
+    }
+
     public void setRefEnd(Integer refEnd) {
         writeProperty(REF_END_PROPERTY, refEnd);
     }
@@ -63,11 +71,11 @@ public abstract class _Variation extends GlueDataObject {
         return (Integer)readProperty(REF_START_PROPERTY);
     }
 
-    public void setRegex(String regex) {
-        writeProperty(REGEX_PROPERTY, regex);
+    public void setScannerModuleName(String scannerModuleName) {
+        writeProperty(SCANNER_MODULE_NAME_PROPERTY, scannerModuleName);
     }
-    public String getRegex() {
-        return (String)readProperty(REGEX_PROPERTY);
+    public String getScannerModuleName() {
+        return (String)readProperty(SCANNER_MODULE_NAME_PROPERTY);
     }
 
     public void setTranslationType(String translationType) {

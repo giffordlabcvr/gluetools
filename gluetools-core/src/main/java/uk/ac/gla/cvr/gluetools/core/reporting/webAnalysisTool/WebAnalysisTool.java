@@ -33,7 +33,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult.SummaryCode;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
@@ -52,6 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 

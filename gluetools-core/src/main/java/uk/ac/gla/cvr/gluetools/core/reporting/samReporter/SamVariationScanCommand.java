@@ -29,7 +29,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
@@ -41,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
@@ -222,7 +222,7 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 												readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd(),
 												SegmentUtils.base1SubString(readString, readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd()));
 
-								variationScanResults.addAll(featureLoc.variationScanSegment(translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment, false));
+								variationScanResults.addAll(featureLoc.variationScanSegment(cmdContext, translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment, false));
 							}
 						}
 

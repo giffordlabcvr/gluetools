@@ -3,7 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 public class MemberVariationScanResult extends BaseTableResult<VariationScanResult> {
 
