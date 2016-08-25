@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentAminoAcid
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetLocationCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationCreatePatternLocCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -291,19 +291,14 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 					.build().execute(cmdContext);
 					try(ModeCloser varationMode = cmdContext.pushCommandMode("variation", variationName)) {
 						String codonLabel = aaPolymorphism.getCodonLabel();
-						cmdContext.cmdBuilder(VariationSetLocationCommand.class)
-						.set(VariationSetLocationCommand.NO_COMMIT, Boolean.TRUE)
-						.set(VariationSetLocationCommand.LC_BASED, Boolean.TRUE)
-						.set(VariationSetLocationCommand.LC_START, codonLabel)
-						.set(VariationSetLocationCommand.LC_END, codonLabel)
+						cmdContext.cmdBuilder(VariationCreatePatternLocCommand.class)
+						.set(VariationCreatePatternLocCommand.NO_COMMIT, Boolean.TRUE)
+						.set(VariationCreatePatternLocCommand.PATTERN, aaPolymorphism.getRegex())
+						.set(VariationCreatePatternLocCommand.LC_BASED, Boolean.TRUE)
+						.set(VariationCreatePatternLocCommand.LC_START, codonLabel)
+						.set(VariationCreatePatternLocCommand.LC_END, codonLabel)
 						.build().execute(cmdContext);
 						
-						cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
-						.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, Variation.PATTERN_PROPERTY)
-						.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getRegex())
-						.set(ConfigurableObjectSetFieldCommand.NO_COMMIT, Boolean.TRUE)
-						.build().execute(cmdContext);
-
 						cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)
 						.set(ConfigurableObjectSetFieldCommand.FIELD_NAME, Variation.DISPLAY_NAME_PROPERTY)
 						.set(ConfigurableObjectSetFieldCommand.FIELD_VALUE, aaPolymorphism.getVariationDisplayName())

@@ -10,7 +10,7 @@ public class VariationException extends GlueException {
 				"variationName"),
 		VARIATION_LOCATION_OUT_OF_RANGE("refSeqName", "featureName", 
 				"variationName", "refStart", "refEnd"),
-		VARIATION_ENDPOINTS_REVERSED("refSeqName", "featureName", 
+		VARIATION_LOCATION_ENDPOINTS_REVERSED("refSeqName", "featureName", 
 				"variationName", "refStart", "refEnd"), 
 		AMINO_ACID_VARIATION_MUST_BE_DEFINED_ON_CODING_FEATURE("refSeqName", "featureName", 
 				"variationName"),

@@ -45,8 +45,10 @@ public class VariationScanMemberCount {
 			@Override
 			public int compare(VariationScanMemberCount o1, VariationScanMemberCount o2) {
 				int comp = o1.getVariation().getFeatureLoc().getReferenceSequence().getName().compareTo(o2.getVariation().getFeatureLoc().getReferenceSequence().getName());
-				if(comp == 0) {
-					comp = Integer.compare(o1.getVariation().getRefStart(), o2.getVariation().getRefStart());
+				Integer minLocStart1 = o1.getVariation().minLocStart();
+				Integer minLocStart2 = o2.getVariation().minLocStart();
+				if(comp == 0 && minLocStart1 != null && minLocStart2 != null) {
+					comp = Integer.compare(minLocStart1, minLocStart2);
 				}
 				if(comp == 0) {
 					comp = o1.getVariation().getName().compareTo(o2.getVariation().getName());

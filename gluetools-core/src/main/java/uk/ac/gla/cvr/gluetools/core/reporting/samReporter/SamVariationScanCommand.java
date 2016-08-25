@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -159,9 +160,9 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 				if(variationsToScan.isEmpty()) {
 					continue;
 				}
-				ReferenceSegmentTree<Variation> variationSegmentTree = new ReferenceSegmentTree<Variation>();
+				ReferenceSegmentTree<PatternLocation> variationSegmentTree = new ReferenceSegmentTree<PatternLocation>();
 				for(Variation variation: variationsToScan) {
-					variationSegmentTree.add(variation);
+					variation.getPatternLocs().forEach(ploc -> variationSegmentTree.add(ploc));
 				}
 
 				Feature feature = featureLoc.getFeature();
@@ -214,14 +215,16 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 						List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
 						for(QueryAlignedSegment readToAncConstrRefSeg: readToAncConstrRefSegsMerged) {
 
-							List<Variation> variationsToScanForSegment = new LinkedList<Variation>();
-							variationSegmentTree.findOverlapping(readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), variationsToScanForSegment);
-							if(!variationsToScanForSegment.isEmpty()) {
+							List<PatternLocation> patternLocsToScanForSegment = new LinkedList<PatternLocation>();
+							variationSegmentTree.findOverlapping(readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), patternLocsToScanForSegment);
+							if(!patternLocsToScanForSegment.isEmpty()) {
 								NtQueryAlignedSegment readToAncConstrRefNtSeg = 
 										new NtQueryAlignedSegment(
 												readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd(),
 												SegmentUtils.base1SubString(readString, readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd()));
-
+								
+								List<Variation> variationsToScanForSegment = findVariationsFromPatternLocs(patternLocsToScanForSegment);
+								
 								variationScanResults.addAll(featureLoc.variationScanSegment(cmdContext, translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment, false));
 							}
 						}
@@ -271,6 +274,21 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 		
 	}
 	
+	private List<Variation> findVariationsFromPatternLocs(List<PatternLocation> patternLocsToScanForSegment) {
+		Map<Variation, List<PatternLocation>> variationToLocs = new LinkedHashMap<Variation, List<PatternLocation>>();
+		patternLocsToScanForSegment.forEach(loc -> {
+			Variation variation = loc.getVariation();
+			variationToLocs.computeIfAbsent(variation, v -> new ArrayList<PatternLocation>()).add(loc);
+		});
+		List<Variation> variations = new ArrayList<Variation>();
+		variationToLocs.forEach((v, pLocs) -> {
+			if(v.getPatternLocs().size() == pLocs.size()) {
+				variations.add(v);
+			}
+		});
+		return variations;
+	}
+
 	private class VariationInfo {
 		Variation variation;
 		int readsConfirmedPresent = 0;

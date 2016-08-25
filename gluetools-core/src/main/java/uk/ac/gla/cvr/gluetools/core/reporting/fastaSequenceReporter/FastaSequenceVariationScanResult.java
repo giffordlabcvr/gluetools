@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanResult> {
@@ -23,8 +24,8 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 				column(FEATURE_NAME, vsr -> vsr.getVariation().getFeatureLoc().getFeature().getName()),
 				column(VARIATION_NAME, vsr -> vsr.getVariation().getName()),
 				column(PRESENT, vsr -> vsr.isPresent()),
-				column(QUERY_NT_START, vsr -> vsr.getQueryNtStart()), 
-				column(QUERY_NT_END, vsr -> vsr.getQueryNtEnd()));
+				column(QUERY_NT_START, vsr -> ReferenceSegment.minRefStart(vsr.getQueryMatchLocations())), 
+				column(QUERY_NT_END, vsr -> ReferenceSegment.maxRefEnd(vsr.getQueryMatchLocations())));
 	}
 
 }

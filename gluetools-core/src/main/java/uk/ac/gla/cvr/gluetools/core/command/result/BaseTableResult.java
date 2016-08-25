@@ -51,7 +51,7 @@ public class BaseTableResult<D> extends CommandResult {
 
 	}
 	
-	protected static <D> TableColumn<D> column(String header, Function<D, Object> columnPopulator) {
+	public static <D> TableColumn<D> column(String header, Function<D, Object> columnPopulator) {
 		return new TableColumn<D>(header, columnPopulator);
 	}
 

@@ -4,7 +4,6 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -243,6 +242,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 								variationMatch.variationRenderedName = vsr.getVariation().getRenderedName();
 								variationMatchGroup.variationMatch.add(variationMatch);
 								if(vsr.isPresent()) {
+									// TODO -- need to adapt this for multiple segments per scan result.
+									/*
 									Integer queryNtStart = vsr.getQueryNtStart();
 									Integer queryNtEnd = vsr.getQueryNtEnd();
 									QueryAlignedSegment vsrQaSeg = 
@@ -264,6 +265,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									}
 									trackSegTree.add(varSeg);
 									variationMatch.track = varSeg.track;
+									*/
 								}
 							});
 

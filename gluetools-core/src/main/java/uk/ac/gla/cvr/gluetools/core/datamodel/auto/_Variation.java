@@ -4,6 +4,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 
 /**
@@ -17,12 +18,10 @@ public abstract class _Variation extends GlueDataObject {
     public static final String DESCRIPTION_PROPERTY = "description";
     public static final String DISPLAY_NAME_PROPERTY = "displayName";
     public static final String NAME_PROPERTY = "name";
-    public static final String PATTERN_PROPERTY = "pattern";
-    public static final String REF_END_PROPERTY = "refEnd";
-    public static final String REF_START_PROPERTY = "refStart";
     public static final String SCANNER_MODULE_NAME_PROPERTY = "scannerModuleName";
     public static final String TRANSLATION_TYPE_PROPERTY = "translationType";
     public static final String FEATURE_LOC_PROPERTY = "featureLoc";
+    public static final String PATTERN_LOCS_PROPERTY = "patternLocs";
     public static final String VAR_ALMT_NOTES_PROPERTY = "varAlmtNotes";
 
     public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
@@ -50,27 +49,6 @@ public abstract class _Variation extends GlueDataObject {
         return (String)readProperty(NAME_PROPERTY);
     }
 
-    public void setPattern(String pattern) {
-        writeProperty(PATTERN_PROPERTY, pattern);
-    }
-    public String getPattern() {
-        return (String)readProperty(PATTERN_PROPERTY);
-    }
-
-    public void setRefEnd(Integer refEnd) {
-        writeProperty(REF_END_PROPERTY, refEnd);
-    }
-    public Integer getRefEnd() {
-        return (Integer)readProperty(REF_END_PROPERTY);
-    }
-
-    public void setRefStart(Integer refStart) {
-        writeProperty(REF_START_PROPERTY, refStart);
-    }
-    public Integer getRefStart() {
-        return (Integer)readProperty(REF_START_PROPERTY);
-    }
-
     public void setScannerModuleName(String scannerModuleName) {
         writeProperty(SCANNER_MODULE_NAME_PROPERTY, scannerModuleName);
     }
@@ -91,6 +69,18 @@ public abstract class _Variation extends GlueDataObject {
 
     public FeatureLocation getFeatureLoc() {
         return (FeatureLocation)readProperty(FEATURE_LOC_PROPERTY);
+    }
+
+
+    public void addToPatternLocs(PatternLocation obj) {
+        addToManyTarget(PATTERN_LOCS_PROPERTY, obj, true);
+    }
+    public void removeFromPatternLocs(PatternLocation obj) {
+        removeToManyTarget(PATTERN_LOCS_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<PatternLocation> getPatternLocs() {
+        return (List<PatternLocation>)readProperty(PATTERN_LOCS_PROPERTY);
     }
 
 

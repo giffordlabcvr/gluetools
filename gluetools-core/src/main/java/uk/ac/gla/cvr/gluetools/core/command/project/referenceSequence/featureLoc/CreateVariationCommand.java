@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -20,27 +21,32 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 @CommandClass( 
 		commandWords={"create","variation"}, 
-		docoptUsages={"[-C] <variationName> [-t <type>] [<description>]"},
+		docoptUsages={"[-C] <variationName> [-t <type>] [-m <scannerModule>] [<description>]"},
 		docoptOptions={
-				"-C, --noCommit     Don't commit to the database [default: false]",
-				"-t <type>, --translationType <type>  Possible values: [NUCLEOTIDE, AMINO_ACID]"
+				"-C, --noCommit                                       Don't commit to the database [default: false]",
+				"-t <type>, --translationType <type>                  Possible values: [NUCLEOTIDE, AMINO_ACID]", 
+				"-m <scannerModule>, --scannerModule <scannerModule>  Scanner module"
 		},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Create a new feature variation", 
 		furtherHelp="A variation is a known motif which may occur in a sequence aligned to a reference. "+
 		"The <type> of the variation defines whether its regular expression pattern is matched against the "+
-		"nucleotides in the sequence or against the amino acid translation. If omitted, NUCLEOTIDE is the default.") 
+		"nucleotides in the sequence or against the amino acid translation. If omitted, NUCLEOTIDE is the default. "+
+		"The scanner module names an module which is used to perform the variation scan. If omitted, a default "+
+		"exact-match or regular expression variation scanner is used, based on the pattern.") 
 public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> {
 
 	public static final String NO_COMMIT = "noCommit";
 	public static final String VARIATION_NAME = "variationName";
 	public static final String DESCRIPTION = "description";
 	public static final String TRANSLATION_TYPE = "translationType";
+	public static final String SCANNER_MODULE = "scannerModule";
 
 	private Boolean noCommit;
 	private String variationName;
 	private Optional<String> description;
 	private TranslationFormat translationFormat;
+	private Optional<String> scannerModule;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -51,6 +57,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 				PluginUtils.configureEnumProperty(TranslationFormat.class, configElem, TRANSLATION_TYPE, false)).
 				orElse(TranslationFormat.NUCLEOTIDE);
 		description = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DESCRIPTION, false));
+		scannerModule = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SCANNER_MODULE, false));
 	}
 
 	@Override
@@ -63,7 +70,8 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 						featureLoc.getFeature().getName(), variationName), false);
 		variation.setFeatureLoc(featureLoc);
 		variation.setTranslationType(translationFormat.name());
-		description.ifPresent(d -> {variation.setDescription(d);});
+		description.ifPresent(d -> variation.setDescription(d));
+		scannerModule.ifPresent(sm -> variation.setScannerModuleName(sm));
 		if(noCommit) {
 			cmdContext.cacheUncommitted(variation);
 		} else {
@@ -77,6 +85,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		public Completer() {
 			super();
 			registerEnumLookup("type", TranslationFormat.class);
+			registerDataObjectNameLookup("scannerModule", Module.class, Module.NAME_PROPERTY);
 		}
 	}
 

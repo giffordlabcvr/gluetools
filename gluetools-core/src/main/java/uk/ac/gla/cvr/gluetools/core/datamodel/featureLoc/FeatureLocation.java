@@ -18,7 +18,6 @@ import org.apache.cayenne.query.SortOrder;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
@@ -229,30 +228,6 @@ public class FeatureLocation extends _FeatureLocation {
 		return codons;
 	}
 	
-	@Override
-	public void generateGlueConfig(int indent, StringBuffer glueConfigBuf, GlueConfigContext glueConfigContext) {
-		String noCommit = glueConfigContext.getNoCommit() ? "--noCommit " : "";
-		if(glueConfigContext.getIncludeVariations()) {
-			for(Variation variation: getVariations()) {
-				indent(glueConfigBuf, indent).append("create variation "+noCommit).append(variation.getName())
-					.append(" -t ").append(variation.getTranslationType());
-				String description = variation.getDescription();
-				if(description != null) {
-					glueConfigBuf.append(" \""+description+"\"");
-				}
-				glueConfigBuf.append("\n");
-
-				StringBuffer variationConfigBuf = new StringBuffer();
-				variation.generateGlueConfig(indent+INDENT, variationConfigBuf, glueConfigContext);
-				if(variationConfigBuf.length() > 0) {
-					indent(glueConfigBuf, indent).append("variation ").append(variation.getName()).append("\n");
-					glueConfigBuf.append(variationConfigBuf.toString());
-					indent(glueConfigBuf, indent+INDENT).append("exit\n");
-				}
-			}
-		}
-	}
-
 	
 	public List<ReferenceSegment> segmentsAsReferenceSegments() {
 		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
@@ -290,7 +265,6 @@ public class FeatureLocation extends _FeatureLocation {
 			variationWhereClause = variationWhereClause.andExp(variationWhereClauseExtra);
 		}
 		SelectQuery query = new SelectQuery(Variation.class, variationWhereClause);
-		query.addOrdering(Variation.REF_START_PROPERTY, SortOrder.ASCENDING);
 		query.addOrdering(Variation.NAME_PROPERTY, SortOrder.ASCENDING);
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}

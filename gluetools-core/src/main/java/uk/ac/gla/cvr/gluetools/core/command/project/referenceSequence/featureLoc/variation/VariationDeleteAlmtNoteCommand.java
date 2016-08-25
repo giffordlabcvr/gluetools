@@ -18,10 +18,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
-	commandWords={"delete", "var-almt-note"}, 
-	docoptUsages={"<alignmentName>"},
-	metaTags={CmdMeta.updatesDatabase},
-	description="Delete a variation-alignment note") 
+		commandWords={"delete", "var-almt-note"}, 
+		docoptUsages={"<alignmentName>"},
+		metaTags={CmdMeta.updatesDatabase},
+		description="Delete a variation-alignment note") 
 public class VariationDeleteAlmtNoteCommand extends VariationModeCommand<DeleteResult> {
 
 	private String alignmentName;

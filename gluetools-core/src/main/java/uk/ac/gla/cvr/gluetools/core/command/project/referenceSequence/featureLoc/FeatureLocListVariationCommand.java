@@ -66,7 +66,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 		if(listCTableDelegate.getFieldNames() == null) {
 			listCTableDelegate.setFieldNames(
 					Arrays.asList(_Variation.NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, 
-					Variation.PATTERN_PROPERTY, _Variation.DESCRIPTION_PROPERTY ));
+					_Variation.DESCRIPTION_PROPERTY ));
 
 		}
 		
@@ -94,8 +94,8 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 			if(formatCmpResult != 0) {
 				return formatCmpResult;
 			}
-			Integer refStart1 = o1.getRefStart();
-			Integer refStart2 = o2.getRefStart();
+			Integer refStart1 = o1.minLocStart();
+			Integer refStart2 = o2.minLocStart();
 			if(refStart1 != null && refStart2 != null) {
 				int refStartCmpResult = Integer.compare(refStart1, refStart2);
 				if(refStartCmpResult != 0) {

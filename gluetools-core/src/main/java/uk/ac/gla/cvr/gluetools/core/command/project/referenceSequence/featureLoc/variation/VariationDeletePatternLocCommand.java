@@ -11,10 +11,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
@@ -22,26 +24,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
-
 @CommandClass( 
-		commandWords={"set","location"}, 
-		docoptUsages={"[-C] ( -n <ntStart> <ntEnd> | -c <lcStart> <lcEnd> )"},
+		commandWords={"delete", "pattern-location"}, 
+		docoptUsages={"(-n <ntStart> <ntEnd> | -c <lcStart> <lcEnd> )"},
 		docoptOptions={
-				"-C, --noCommit     Don't commit to the database [default: false]",
-				"-n, --nucleotide     Set location based on reference sequence nucleotide",
-				"-c, --labeledCodon   Set location based on labeled codons"},
+				"-n, --nucleotide     Location based on reference sequence nucleotide",
+				"-c, --labeledCodon   Location based on labeled codons"},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Set the variation's location", 
-		furtherHelp="The variation's location is the region of a sequence which should be scanned for the variation's pattern. "+
-				"The variation's location can be set in different ways. "+ 
-				"If the --nucleotide option is used, <ntStart> and <ntEnd> define simply the NT region of the variation's reference sequence, "+
-				"using that reference sequence's own coordinates. "+
-				"For variations of type AMINO_ACID, the --labeledCodon option may be used. "+
-				"In this case labeled codon locations <lcStart>, <lcEnd> are specified using the "+
-				"codon-labeling scheme of the variation's feature location.") 
-public class VariationSetLocationCommand extends VariationModeCommand<OkResult> {
+		description="Delete a pattern-location") 
+public class VariationDeletePatternLocCommand extends VariationModeCommand<DeleteResult> {
 
-	public static final String NO_COMMIT = "noCommit";
 	public static final String NT_BASED = "nucleotide";
 	public static final String NT_START = "ntStart";
 	public static final String NT_END = "ntEnd";
@@ -50,7 +42,6 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 	public static final String LC_END = "lcEnd";
 
 	
-	private Boolean noCommit;
 	private Integer ntStart;
 	private Integer ntEnd;
 	private Boolean nucleotideBased;
@@ -62,7 +53,6 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		nucleotideBased = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_BASED, false)).orElse(false);
@@ -77,9 +67,8 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 	}
 
 	@Override
-	public OkResult execute(CommandContext cmdContext) {
+	public DeleteResult execute(CommandContext cmdContext) {
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-
 		Variation variation = lookupVariation(cmdContext);
 		TranslationFormat translationFormat = variation.getTranslationFormat();
 		
@@ -107,24 +96,15 @@ public class VariationSetLocationCommand extends VariationModeCommand<OkResult> 
 			}
 			ntEnd = endLabeledCodon.getNtStart()+2;
 		}
-
 		
+		DeleteResult result = GlueDataObject.delete(cmdContext, PatternLocation.class, 
+				PatternLocation.pkMap(getRefSeqName(), getFeatureName(), getVariationName(), ntStart, ntEnd), true);
 		
-		if(ntStart > ntEnd) {
-			throw new VariationException(Code.VARIATION_ENDPOINTS_REVERSED, 
-					getRefSeqName(), getFeatureName(), getVariationName(), Integer.toString(ntStart), Integer.toString(ntEnd));
-		}
-		
-		variation.setRefStart(ntStart);
-		variation.setRefEnd(ntEnd);
-		
-		
-		if(!noCommit) {
-			cmdContext.commit();
-		}
-		return new UpdateResult(Variation.class, 1);
+		cmdContext.commit();
+		return result;
 	}
 
+	
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
