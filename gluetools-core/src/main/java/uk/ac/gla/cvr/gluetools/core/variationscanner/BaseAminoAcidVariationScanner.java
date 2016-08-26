@@ -14,7 +14,7 @@ public abstract class BaseAminoAcidVariationScanner<V extends ModulePlugin<V>, R
 	@Override
 	public void validateVariation(Variation variation) {
 		super.validateVariation(variation);
-		if(variation.getTranslationFormat() != TranslationFormat.NUCLEOTIDE) {
+		if(variation.getTranslationFormat() != TranslationFormat.AMINO_ACID) {
 			throw new VariationException(Code.WRONG_SCANNER_TYPE, 
 					variation.getFeatureLoc().getReferenceSequence().getName(), 
 					variation.getFeatureLoc().getFeature().getName(), variation.getName(), 

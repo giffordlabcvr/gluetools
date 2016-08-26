@@ -286,9 +286,11 @@ public class FeatureLocation extends _FeatureLocation {
 		}
 		
 		for(Variation variationToScan: variationsToScan) {
-			VariationScanResult scanResult;
-			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID && fullAminoAcidTranslation.length() > 0) {
-				scanResult = variationToScan.scanAminoAcids(cmdContext, ntQaSegCdnAligned, fullAminoAcidTranslation);
+			VariationScanResult scanResult = null;
+			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
+				if(fullAminoAcidTranslation.length() > 0) {
+					scanResult = variationToScan.scanAminoAcids(cmdContext, ntQaSegCdnAligned, fullAminoAcidTranslation);
+				}
 			} else if(variationToScan.getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
 				scanResult = variationToScan.scanNucleotideVariation(cmdContext, ntQaSeg);
 			} else {
@@ -297,9 +299,7 @@ public class FeatureLocation extends _FeatureLocation {
 			if(scanResult != null) {
 				if(scanResult.isPresent() || !excludeAbsent) {
 					variationScanResults.add(scanResult);
-				} else {
-					return null;
-				}
+				} 
 			}
 		}
 		
