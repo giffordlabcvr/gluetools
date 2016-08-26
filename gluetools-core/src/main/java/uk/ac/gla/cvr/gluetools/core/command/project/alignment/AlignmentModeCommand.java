@@ -83,7 +83,7 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 	protected static boolean isReferenceOfSomeChild(Alignment parentAlmt, AlignmentMember almtMember) {
 		List<ReferenceSequence> referenceSequences = almtMember.getSequence().getReferenceSequences();
 		for(ReferenceSequence referenceSequence: referenceSequences) {
-			List<Alignment> refSeqAlmts = referenceSequence.getAlignments();
+			List<Alignment> refSeqAlmts = referenceSequence.getAlignmentsWhereRefSequence();
 			for(Alignment refSeqAlmt: refSeqAlmts) {
 				Alignment parent = refSeqAlmt.getParent();
 				if(parent != null && parent.getName().equals(parentAlmt.getName())) {

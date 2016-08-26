@@ -327,7 +327,7 @@
 	<obj-relationship name="resources" source="Module" target="ModuleResource" deleteRule="Cascade" db-relationship-path="resources"/>
 	<obj-relationship name="module" source="ModuleResource" target="Module" deleteRule="Nullify" db-relationship-path="module"/>
 	<obj-relationship name="variation" source="PatternLocation" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
-	<obj-relationship name="alignments" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignments_where_ref_sequence"/>
+	<obj-relationship name="alignmentsWhereRefSequence" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignments_where_ref_sequence"/>
 	<obj-relationship name="featureLocations" source="ReferenceSequence" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="feature_locations"/>
 	<obj-relationship name="sequence" source="ReferenceSequence" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
 	<obj-relationship name="sequence" source="SeqOrigData" target="Sequence" deleteRule="Cascade" db-relationship-path="sequence"/>

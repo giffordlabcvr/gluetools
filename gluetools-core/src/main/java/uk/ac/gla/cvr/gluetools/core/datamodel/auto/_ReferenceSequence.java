@@ -18,7 +18,7 @@ public abstract class _ReferenceSequence extends GlueDataObject {
     public static final String CREATION_TIME_PROPERTY = "creationTime";
     public static final String DISPLAY_NAME_PROPERTY = "displayName";
     public static final String NAME_PROPERTY = "name";
-    public static final String ALIGNMENTS_PROPERTY = "alignments";
+    public static final String ALIGNMENTS_WHERE_REF_SEQUENCE_PROPERTY = "alignmentsWhereRefSequence";
     public static final String FEATURE_LOCATIONS_PROPERTY = "featureLocations";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
@@ -46,15 +46,15 @@ public abstract class _ReferenceSequence extends GlueDataObject {
         return (String)readProperty(NAME_PROPERTY);
     }
 
-    public void addToAlignments(Alignment obj) {
-        addToManyTarget(ALIGNMENTS_PROPERTY, obj, true);
+    public void addToAlignmentsWhereRefSequence(Alignment obj) {
+        addToManyTarget(ALIGNMENTS_WHERE_REF_SEQUENCE_PROPERTY, obj, true);
     }
-    public void removeFromAlignments(Alignment obj) {
-        removeToManyTarget(ALIGNMENTS_PROPERTY, obj, true);
+    public void removeFromAlignmentsWhereRefSequence(Alignment obj) {
+        removeToManyTarget(ALIGNMENTS_WHERE_REF_SEQUENCE_PROPERTY, obj, true);
     }
     @SuppressWarnings("unchecked")
-    public List<Alignment> getAlignments() {
-        return (List<Alignment>)readProperty(ALIGNMENTS_PROPERTY);
+    public List<Alignment> getAlignmentsWhereRefSequence() {
+        return (List<Alignment>)readProperty(ALIGNMENTS_WHERE_REF_SEQUENCE_PROPERTY);
     }
 
 

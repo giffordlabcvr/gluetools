@@ -88,15 +88,18 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				function(g) {
 					    		_.each($scope.varProps, function(varProp) {
 					    			g.append(svgElem('g', {}, function(g2) {
-					    				var locationRect = svgElem('rect', {
-						    				"class": "varLocation", 
-						    				x: varProp.x,
-						    				width: varProp.width,
-						    				height: varProp.locationHeight
+						    			varProp.highlightRects = [];
+							    		_.each(varProp.propLocations, function(propLocation) {
+							    				var highlightRect = svgElem('rect', {
+								    				"class": "varHighlight", 
+								    				x: propLocation.x,
+								    				width: propLocation.width,
+								    				height: varProp.highlightHeight
+								    			});
+							    				highlightRect.addClass("display-hide");
+							    				varProp.highlightRects.push(highlightRect);
+								    			g2.append(highlightRect);
 						    			});
-					    				locationRect.addClass("display-hide");
-					    				varProp.locationRect = locationRect;
-						    			g2.append(locationRect);
 					    			}));
 					    		});
 				    		}));
@@ -172,37 +175,43 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				function(g) {
 				    			_.each($scope.varProps, function(varProp) {
 					    			g.append(svgElem('g', {}, function(g2) {
-					    				var rectElem1 = svgElem('rect', {
-						    				id: varProp.id,
-						    				"class": "vcat_"+varProp.variationCategory,
-						    				x: varProp.x,
-						    				y: varProp.y,
-						    				width:varProp.width,
-						    				height:varProp.height
+						    			_.each(varProp.propLocations, function(propLocation) {
+						    				var rectElem1 = svgElem('rect', {
+							    				id: varProp.id,
+							    				"class": "vcat_"+varProp.variationCategory,
+							    				x: propLocation.x,
+							    				y: propLocation.y,
+							    				width:propLocation.width,
+							    				height:propLocation.height
+							    			});
+						    				rectElem1.on("click", function() {
+						    					$scope.displayVariationQS(varProp);
+						    				});
+						    				// IE event issues require Angular 1.4.9
+						    				// https://github.com/angular/angular.js/issues/10259
+						    				
+						    				rectElem1.on("mouseenter", function() {
+						    					_.each(varProp.highlightRects, function(highlightRect) {
+							    					highlightRect.removeClass("display-hide");
+						    					});
+						    				});
+						    				rectElem1.on("mouseleave", function() {
+						    					_.each(varProp.highlightRects, function(highlightRect) {
+							    					highlightRect.addClass("display-hide");
+						    					});
+						    				});
+						    				g2.append(rectElem1);
+							    			g2.append(svgElem('rect', {
+							    				"class": "varBox",
+							    				x: propLocation.x,
+							    				y: propLocation.y,
+							    				width:propLocation.width,
+							    				height:propLocation.height
+							    			}));
 						    			});
-					    				rectElem1.on("click", function() {
-					    					$scope.displayVariationQS(varProp);
-					    				});
-					    				// IE event issues require Angular 1.4.9
-					    				// https://github.com/angular/angular.js/issues/10259
-					    				
-					    				rectElem1.on("mouseenter", function() {
-					    					varProp.locationRect.removeClass("display-hide");
-					    				});
-					    				rectElem1.on("mouseleave", function() {
-					    					varProp.locationRect.addClass("display-hide");
-					    				});
 					    				g2.append(svgElem('title', {}, function(title) {
 					    					title.append(varProp.text);
 					    				}));
-					    				g2.append(rectElem1);
-						    			g2.append(svgElem('rect', {
-						    				"class": "varBox",
-						    				x: varProp.x,
-						    				y: varProp.y,
-						    				width:varProp.width,
-						    				height:varProp.height
-						    			}));
 					    				
 					    			}));
 					    		});
@@ -224,7 +233,9 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 		    	};
 		    	
 		    	$scope.displayVariationQS = function(varProp) {
-					varProp.locationRect.addClass("display-hide");
+					_.each(varProp.highlightRects, function(highlightRect) {
+    					highlightRect.addClass("display-hide");
+					});
 		    		var tooltip = varProp.text;
 		    		varProp.text = null;
 
@@ -263,9 +274,11 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    			varProp.text = tooltip;
 				    		});
 				    })
-				    .error(function() {
+				    .error(function(data, status, headers, config) {
+				    	var standardErrFunction = glueWS.raiseErrorDialog(dialogs, "rendering variation "+varProp.variationName);
+				    	console.log("error!")
 		    			varProp.text = tooltip;
-				    	glueWS.raiseErrorDialog(dialogs, "rendering variation "+varProp.variationName);
+				    	standardErrFunction(data, status, headers, config);
 				    });
 		    	}
 		    	

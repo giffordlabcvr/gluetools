@@ -242,20 +242,29 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 								variationMatch.variationRenderedName = vsr.getVariation().getRenderedName();
 								variationMatchGroup.variationMatch.add(variationMatch);
 								if(vsr.isPresent()) {
-									// TODO -- need to adapt this for multiple segments per scan result.
-									/*
-									Integer queryNtStart = vsr.getQueryNtStart();
-									Integer queryNtEnd = vsr.getQueryNtEnd();
-									QueryAlignedSegment vsrQaSeg = 
-											new QueryAlignedSegment(queryNtStart, queryNtEnd, queryNtStart, queryNtEnd);
+									List<QueryAlignedSegment> vsrQaSegs = vsr.getQueryMatchLocations()
+										.stream()
+										.map(seg -> 
+											new QueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), 
+																	seg.getRefStart(), seg.getRefEnd()))
+										.collect(Collectors.toList());
+									
 									List<QueryAlignedSegment> vsrUSegs = 
-											QueryAlignedSegment.translateSegments(Arrays.asList(vsrQaSeg), queryToUSegs);
-									variationMatch.startUIndex = ReferenceSegment.minRefStart(vsrUSegs);
-									variationMatch.endUIndex = ReferenceSegment.maxRefEnd(vsrUSegs);
+											QueryAlignedSegment.translateSegments(vsrQaSegs, queryToUSegs);
+									
+									vsrUSegs.forEach(vsrUSeg -> {
+										VariationMatchLocation location = new VariationMatchLocation();
+										location.startUIndex = vsrUSeg.getRefStart();
+										location.endUIndex = vsrUSeg.getRefEnd();
+										variationMatch.locations.add(location);
+									});
+									
+									variationMatch.minStartUIndex = ReferenceSegment.minRefStart(vsrUSegs);
+									variationMatch.maxEndUIndex = ReferenceSegment.maxRefEnd(vsrUSegs);
 									List<VariationRefSegment> overlapping = new ArrayList<VariationRefSegment>();
 									VariationRefSegment varSeg = new VariationRefSegment(
-											variationMatch.variationName, variationMatch.startUIndex, variationMatch.endUIndex);
-									trackSegTree.findOverlapping(variationMatch.startUIndex, variationMatch.endUIndex, overlapping);
+											variationMatch.variationName, variationMatch.minStartUIndex, variationMatch.maxEndUIndex);
+									trackSegTree.findOverlapping(variationMatch.minStartUIndex, variationMatch.maxEndUIndex, overlapping);
 									varSeg.track = 0;
 									while(true) {
 										if(!overlapping.stream().anyMatch(vSeg -> vSeg.track == varSeg.track)) {
@@ -265,11 +274,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									}
 									trackSegTree.add(varSeg);
 									variationMatch.track = varSeg.track;
-									*/
 								}
 							});
-
-							
 							
 						}
 					} );

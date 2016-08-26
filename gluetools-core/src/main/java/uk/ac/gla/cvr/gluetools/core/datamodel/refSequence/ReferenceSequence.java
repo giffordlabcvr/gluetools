@@ -135,7 +135,7 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 	}
 	
 	public Alignment getUniqueAlignmentThisConstrains() {
-		List<Alignment> alignmentsThisConstrains = getAlignments();
+		List<Alignment> alignmentsThisConstrains = getAlignmentsWhereRefSequence();
 		if(alignmentsThisConstrains.size() == 0) {
 			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_DOES_NOT_CONSTRAIN_ANY_ALIGNMENT, getName());
 		}

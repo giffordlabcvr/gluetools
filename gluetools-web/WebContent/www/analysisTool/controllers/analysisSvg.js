@@ -116,21 +116,36 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 						var varMatchGroup = seqFeatAnalysis.variationMatchGroupPresent[i];
 						for(var j = 0; j < varMatchGroup.variationMatch.length; j++) {
 							var varMatch = varMatchGroup.variationMatch[j];
-							if(varMatch.endUIndex < featAnalysis.startUIndex) {
+							if(varMatch.maxEndUIndex < featAnalysis.startUIndex) {
 								continue;
 							}
-							if(varMatch.startUIndex > featAnalysis.endUIndex) {
+							if(varMatch.minStartUIndex > featAnalysis.endUIndex) {
 								continue;
 							}
-			        		var nts = (varMatch.endUIndex - varMatch.startUIndex) + 1;
-			    			var varWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
-			    			var varHeight = params.varHeight;
+							
 
-			    			var locationHeight = 
+			    			var highlightHeight = 
 			    				params.aaHeight + 
 			    				params.ntHeight + 
 			    				params.ntIndexHeight + 
 			    				( varMatch.track * (params.varHeight + params.varGap) );
+
+			    			var propLocations = [];
+							for(var k = 0; k < varMatch.locations.length; k++) {
+								var varMatchLocation = varMatch.locations[k];
+				        		var nts = (varMatchLocation.endUIndex - varMatchLocation.startUIndex) + 1;
+				    			var locWidth = (nts * params.ntWidth) + ( (nts-1) * params.ntGap );
+				    			var locHeight = params.varHeight;
+				    			var propLocation = {
+					    			x: (varMatchLocation.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
+					    			y: varMatch.track * (params.varHeight + params.varGap),
+					    			width: locWidth,
+					    			height: locHeight,
+					    			dx: locWidth / 2.0,
+					    			dy: locHeight / 2.0,
+				    			};
+				    			propLocations.push(propLocation);
+							}
 			    			
 							var varProp = {
 								id: varMatchGroup.referenceName+"_"+varMatchGroup.featureName+"_"+varMatch.variationName,
@@ -138,14 +153,9 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 								varFeatureName: varMatchGroup.featureName,
 								variationCategory: varMatchGroup.variationCategory,
 								variationName: varMatch.variationName,
-				    			x: (varMatch.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
-				    			y: varMatch.track * (params.varHeight + params.varGap),
-				    			width: varWidth,
-				    			height: varHeight,
-				    			dx: varWidth / 2.0,
-				    			dy: varHeight / 2.0,
-				    			text: varMatch.variationRenderedName,
-				    			locationHeight: locationHeight
+								propLocations: propLocations,
+								text: varMatch.variationRenderedName,
+								highlightHeight: highlightHeight
 							};
 							varProps.push(varProp);
 							if(varMatch.track >= params.numVarTracks) {

@@ -57,7 +57,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		} else {
 			AlignmentMember tipAlmtMember = null;
 
-			List<Alignment> almtsConstrainedByTipRef = tipReference.getAlignments();
+			List<Alignment> almtsConstrainedByTipRef = tipReference.getAlignmentsWhereRefSequence();
 			if(almtsConstrainedByTipRef.size() == 1) {
 				// this reference constrains a single alignment.
 				Alignment almtConstrainedByRef = almtsConstrainedByTipRef.get(0);

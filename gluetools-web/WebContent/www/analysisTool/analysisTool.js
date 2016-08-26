@@ -122,9 +122,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	    		    // Finally handler
 	    		});
 	    })
-	    .error(function() {
-	    	glueWS.raiseErrorDialog(dialogs, "rendering variation "+variationName);
-	    });
+	    .error(glueWS.raiseErrorDialog(dialogs, "rendering variation "+variationName));
 	}
 
 	

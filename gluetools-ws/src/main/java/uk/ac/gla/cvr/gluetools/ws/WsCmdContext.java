@@ -141,9 +141,16 @@ public class WsCmdContext extends CommandContext {
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
-		String commandResult = command.execute(this).getJsonObject().toString();
+		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
+			@Override
+			public CommandResult get() {
+				return command.execute(WsCmdContext.this);
+			}
+			
+		});
+		String cmdResultString = cmdResult.getJsonObject().toString();
 		addCacheDisablingHeaders(response);
-		return commandResult;
+		return cmdResultString;
 	}
 	
 	

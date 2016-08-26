@@ -15,8 +15,9 @@
 <div class="modal-body">
 	<h4>Details</h4>
 	<table class="table table-bordered table-striped">
-		<tr><td><b>Resistant amino acid:</b></td><td>{{handleNull(variation.pattern)}}</td></tr>
-		<tr><td><b>Defining GLUE reference sequence / feature:</b></td><td>{{variation.referenceSequence}} / {{variation.feature}}</td></tr>
+		<tr><td><b>Virus protein:</b></td><td>{{variation.feature}}</td></tr>
+		<tr><td><b>Resistant substitution(s):</b></td><td>{{handleNull(variation.substitutions)}}</td></tr>
+		<tr><td><b>Applicable to:</b></td><td>{{variation.cladeDisplayName}}</td></tr>
 	</table>
 
 	<div ng-include src="'../analysisTool/dialogs/freqView.html'"></div>
