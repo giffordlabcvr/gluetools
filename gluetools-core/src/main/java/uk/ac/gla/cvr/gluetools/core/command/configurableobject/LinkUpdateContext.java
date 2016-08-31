@@ -128,6 +128,9 @@ public class LinkUpdateContext {
 		} else {
 			this.link = project.getDestTableLink(thisTableName, linkName);
 		}
+		if(link == null) {
+			throw new LinkException(Code.NO_SUCH_LINK, thisTableName, linkName);
+		}
 		if(this.isSrcLink) {
 			this.thisLinkName = this.link.getSrcLinkName();
 			this.otherLinkName = this.link.getDestLinkName();

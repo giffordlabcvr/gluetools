@@ -6,6 +6,7 @@
 	<property name="defaultPackage" value="uk.ac.gla.cvr.gluetools.core.datamodel"/>
 	<property name="defaultSuperclass" value="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject"/>
 	<db-entity name="custom_table">
+		<db-attribute name="id_field_length" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="project_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
@@ -29,6 +30,7 @@
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<obj-entity name="CustomTable" className="uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable" dbEntityName="custom_table" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="idFieldLength" type="java.lang.Integer" db-attribute-path="id_field_length"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
 	<obj-entity name="Field" className="uk.ac.gla.cvr.gluetools.core.datamodel.field.Field" dbEntityName="field" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">

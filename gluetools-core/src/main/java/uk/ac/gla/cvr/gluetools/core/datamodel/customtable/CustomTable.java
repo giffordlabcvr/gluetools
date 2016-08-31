@@ -8,7 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._CustomTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
 
-@GlueDataClass(defaultListedProperties = {_CustomTable.NAME_PROPERTY})
+@GlueDataClass(defaultListedProperties = {_CustomTable.NAME_PROPERTY, _CustomTable.ID_FIELD_LENGTH_PROPERTY})
 public class CustomTable extends _CustomTable {
 
 	private Class<? extends CustomTableObject> rowClass;

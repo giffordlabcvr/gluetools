@@ -182,7 +182,7 @@ public class PropertyCommandDelegate {
 		String tableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 
-		Link link = project.getLink(tableName, linkName);
+		Link link = resolveLink(project, tableName, linkName);
 		String otherTableName;
 		if(linkName.equals(link.getSrcLinkName()) && tableName.equals(link.getSrcTableName())) {
 			otherTableName = link.getDestTableName();
@@ -200,6 +200,14 @@ public class PropertyCommandDelegate {
 		Class<D> theClass = (Class<D>) project.getDataObjectClass(otherTableName);
 		Collection<D> targets = (Collection<D>) configurableObject.readNestedProperty(linkName);
 		return new ListResult(cmdContext, theClass, new LinkedList<D>(targets));
+	}
+
+	private Link resolveLink(Project project, String tableName, String linkName) {
+		Link link = project.getLink(tableName, linkName);
+		if(link == null) {
+			throw new LinkException(Code.NO_SUCH_LINK, tableName, linkName);
+		}
+		return link;
 	}
 
 	

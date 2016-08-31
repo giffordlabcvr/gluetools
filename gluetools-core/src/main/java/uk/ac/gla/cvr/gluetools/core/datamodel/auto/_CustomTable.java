@@ -11,11 +11,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
  */
 public abstract class _CustomTable extends GlueDataObject {
 
+    public static final String ID_FIELD_LENGTH_PROPERTY = "idFieldLength";
     public static final String NAME_PROPERTY = "name";
     public static final String PROJECT_PROPERTY = "project";
 
     public static final String NAME_PK_COLUMN = "name";
     public static final String PROJECT_NAME_PK_COLUMN = "project_name";
+
+    public void setIdFieldLength(Integer idFieldLength) {
+        writeProperty(ID_FIELD_LENGTH_PROPERTY, idFieldLength);
+    }
+    public Integer getIdFieldLength() {
+        return (Integer)readProperty(ID_FIELD_LENGTH_PROPERTY);
+    }
 
     public void setName(String name) {
         writeProperty(NAME_PROPERTY, name);

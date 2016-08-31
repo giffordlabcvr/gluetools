@@ -6,6 +6,7 @@ public class LinkException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
+		NO_SUCH_LINK("tableName", "linkName"),
 		LINK_MULTIPLICITY_ERROR("tableName", "linkName", "errorTxt");
 
 		private String[] argNames;

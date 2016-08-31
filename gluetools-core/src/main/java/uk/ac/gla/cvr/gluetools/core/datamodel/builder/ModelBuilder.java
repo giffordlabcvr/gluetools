@@ -501,7 +501,7 @@ public class ModelBuilder {
 			idAttributeElem.setAttribute("type", "VARCHAR");
 			idAttributeElem.setAttribute("isPrimaryKey", "true");
 			idAttributeElem.setAttribute("isMandatory", "true");
-			idAttributeElem.setAttribute("length", "50");
+			idAttributeElem.setAttribute("length", Integer.toString(customTable.getIdFieldLength()));
 		}
 	}
 
@@ -824,7 +824,7 @@ public class ModelBuilder {
 		DbAttribute idColumn = new DbAttribute("id");
 		idColumn.setType(TypesMapping.getSqlTypeByName(FieldType.VARCHAR.cayenneType()));
 		idColumn.setMandatory(true);
-		idColumn.setMaxLength(50);
+		idColumn.setMaxLength(customTable.getIdFieldLength());
 		idColumn.setPrimaryKey(true);
 		dbEntity.addAttribute(idColumn);
 		return new CreateTableToDb(dbEntity);
