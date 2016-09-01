@@ -175,6 +175,25 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				function(g) {
 				    			_.each($scope.varProps, function(varProp) {
 					    			g.append(svgElem('g', {}, function(g2) {
+					    				var rectElems = [];
+					    				if(varProp.pLocConnector) {
+						    				var connectorElem = svgElem('rect', {
+							    				"class": "vcat_"+varProp.variationCategory,
+							    				x: varProp.pLocConnector.x,
+							    				y: varProp.pLocConnector.y,
+							    				width:varProp.pLocConnector.width,
+							    				height:varProp.pLocConnector.height
+							    			});
+						    				g2.append(connectorElem);
+							    			g2.append(svgElem('rect', {
+							    				"class": "varBox",
+							    				x: varProp.pLocConnector.x,
+							    				y: varProp.pLocConnector.y,
+							    				width:varProp.pLocConnector.width,
+							    				height:varProp.pLocConnector.height
+							    			}));
+							    			rectElems.push(connectorElem);
+					    				}
 						    			_.each(varProp.propLocations, function(propLocation) {
 						    				var rectElem1 = svgElem('rect', {
 							    				id: varProp.id,
@@ -184,23 +203,8 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 							    				width:propLocation.width,
 							    				height:propLocation.height
 							    			});
-						    				rectElem1.on("click", function() {
-						    					$scope.displayVariationQS(varProp);
-						    				});
-						    				// IE event issues require Angular 1.4.9
-						    				// https://github.com/angular/angular.js/issues/10259
-						    				
-						    				rectElem1.on("mouseenter", function() {
-						    					_.each(varProp.highlightRects, function(highlightRect) {
-							    					highlightRect.removeClass("display-hide");
-						    					});
-						    				});
-						    				rectElem1.on("mouseleave", function() {
-						    					_.each(varProp.highlightRects, function(highlightRect) {
-							    					highlightRect.addClass("display-hide");
-						    					});
-						    				});
 						    				g2.append(rectElem1);
+						    				rectElems.push(rectElem1);
 							    			g2.append(svgElem('rect', {
 							    				"class": "varBox",
 							    				x: propLocation.x,
@@ -208,6 +212,23 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 							    				width:propLocation.width,
 							    				height:propLocation.height
 							    			}));
+						    			});
+						    			_.each(rectElems, function(rectElem) {
+						    				rectElem.on("click", function() {
+						    					$scope.displayVariationQS(varProp);
+						    				});
+						    				// IE event issues require Angular 1.4.9
+						    				// https://github.com/angular/angular.js/issues/10259
+						    				rectElem.on("mouseenter", function() {
+						    					_.each(varProp.highlightRects, function(highlightRect) {
+							    					highlightRect.removeClass("display-hide");
+						    					});
+						    				});
+						    				rectElem.on("mouseleave", function() {
+						    					_.each(varProp.highlightRects, function(highlightRect) {
+							    					highlightRect.addClass("display-hide");
+						    					});
+						    				});
 						    			});
 					    				g2.append(svgElem('title', {}, function(title) {
 					    					title.append(varProp.text);

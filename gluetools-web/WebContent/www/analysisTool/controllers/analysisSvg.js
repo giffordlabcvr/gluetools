@@ -12,6 +12,7 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 			codonLabelHeight: 35,
 			aaHeight: 25,
 			varHeight: 20,
+			pLocConnectorHeight: 8,
 			varTooltipHeight: 30,
 			varTooltipGap: 10,
 			varTooltipExtraWidth: 10,
@@ -131,6 +132,7 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 			    				( varMatch.track * (params.varHeight + params.varGap) );
 
 			    			var propLocations = [];
+			    			var propY = varMatch.track * (params.varHeight + params.varGap);
 							for(var k = 0; k < varMatch.locations.length; k++) {
 								var varMatchLocation = varMatch.locations[k];
 				        		var nts = (varMatchLocation.endUIndex - varMatchLocation.startUIndex) + 1;
@@ -138,7 +140,7 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 				    			var locHeight = params.varHeight;
 				    			var propLocation = {
 					    			x: (varMatchLocation.startUIndex - featAnalysis.startUIndex) * (params.ntWidth + params.ntGap),
-					    			y: varMatch.track * (params.varHeight + params.varGap),
+					    			y: propY,
 					    			width: locWidth,
 					    			height: locHeight,
 					    			dx: locWidth / 2.0,
@@ -146,7 +148,15 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 				    			};
 				    			propLocations.push(propLocation);
 							}
-			    			
+							var pLocConnector = null;
+			    			if(propLocations.length > 1) {
+			    				pLocConnector = {
+			    					x: propLocations[0].x + propLocations[0].width,
+			    					y: (propY + locHeight / 2.0) - (params.pLocConnectorHeight / 2.0),
+			    					width: propLocations[propLocations.length-1].x - (propLocations[0].x + propLocations[0].width),
+			    					height: params.pLocConnectorHeight
+			    				};
+			    			}
 							var varProp = {
 								id: varMatchGroup.referenceName+"_"+varMatchGroup.featureName+"_"+varMatch.variationName,
 								varReferenceName: varMatchGroup.referenceName,
@@ -155,7 +165,8 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 								variationName: varMatch.variationName,
 								propLocations: propLocations,
 								text: varMatch.variationRenderedName,
-								highlightHeight: highlightHeight
+								highlightHeight: highlightHeight,
+								pLocConnector: pLocConnector
 							};
 							varProps.push(varProp);
 							if(varMatch.track >= params.numVarTracks) {
