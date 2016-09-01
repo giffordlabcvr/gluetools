@@ -190,7 +190,12 @@ public class WsCmdContext extends CommandContext {
 				enterModeCommandClass = null;
 				// run enter mode command
 				try {
-					cmdBuilder.execute();
+					getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
+						@Override
+						public CommandResult get() {
+							return cmdBuilder.execute();
+						}
+					});
 				} catch(DataModelException dme) {
 					if(dme.getCode() == DataModelException.Code.OBJECT_NOT_FOUND) {
 						throw new NotFoundException(dme);
