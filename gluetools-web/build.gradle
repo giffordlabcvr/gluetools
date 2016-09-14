@@ -8,6 +8,12 @@ remotes {
     user = 'js460b'
     identity = file('/Users/joshsinger/.ssh/gluehome_id_rsa')
   }
+  gluehome_aws {
+    host = '52.16.113.119'
+    user = 'ubuntu'
+    identity = file('/Users/joshsinger/.ssh/gluehome-aws.pem')
+  }
+  
 }
 
 buildscript {
@@ -62,5 +68,35 @@ task deployWebAppWarGlueHome(dependsOn: ['war']) {
 	  glueWebAppWarTouchfile.createNewFile()
   }
 }
+
+
+task deployWebAppWarGlueHomeAWS(dependsOn: ['war']) {
+  ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web-'+version+'.war')
+  ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWarGlueHomeAWS.touchfile')
+  inputs.file glueWebAppWarFile
+  outputs.file glueWebAppWarTouchfile
+  doLast {
+	  println "Uploading "+glueWebAppWarFile.name
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+	      put from: glueWebAppWarFile.absolutePath, into: '/tmp/gluetools-web.war'
+	      execute 'sudo service tomcat7 stop'
+	      execute 'sudo rm -rf /var/lib/tomcat7/webapps/gluetools-web'
+	      execute 'sudo rm -rf /var/lib/tomcat7/webapps/gluetools-web.war'
+	      execute 'sudo mv /tmp/gluetools-web.war /var/lib/tomcat7/webapps'
+	      execute 'sudo service tomcat7 start'
+	    }
+	  }
+	  glueWebAppWarTouchfile.delete()
+	  buildDir.mkdirs()
+	  glueWebAppWarTouchfile.createNewFile()
+  }
+}
+
+
+
+
+
+
 
 
