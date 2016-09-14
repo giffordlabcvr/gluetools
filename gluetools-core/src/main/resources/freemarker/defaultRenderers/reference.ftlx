@@ -7,7 +7,7 @@
 		<sourceName>${sequence.source.name}</sourceName>
 		<sequenceID>${sequence.sequenceID}</sequenceID>
 	</sequence>
-<#list alignments as alignment>
+<#list alignmentsWhereRefSequence as alignment>
 	<constrainsAlignment glueType="Object[]">
 		<name>${alignment.name}</name>
 		<renderedName>${alignment.getRenderedName()}</renderedName>
