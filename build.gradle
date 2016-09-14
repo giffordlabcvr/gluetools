@@ -22,6 +22,13 @@ task deployAll(dependsOn: [
 	':gluetools-web:deployWebAppWarGlueHome']) {
 }
 
+task deployHcvGlueAWS(dependsOn: [
+	':gluetools-core:deployGlueDbToGlueHomeAWS', 
+	':gluetools-ws:deployWarGlueHomeAWS', 
+	':gluetools-web:deployWebAppWarGlueHomeAWS']) {
+}
+
+
 configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 
 	dependencies {

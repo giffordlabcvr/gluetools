@@ -230,7 +230,7 @@ task deployGlueDbToGlueHome(dependsOn: ['zipGlueDB']) {
   }
 }
 
-task deployGlueDbToGlueHomeAws(dependsOn: ['zipGlueDB']) {
+task deployGlueDbToGlueHomeAWS(dependsOn: ['zipGlueDB']) {
   doLast {
 	  println "Uploading GLUE DB"
 	  ssh.run {
@@ -357,6 +357,7 @@ task glueInstallDirZip(type: Zip) {
 
 
 // assumes Ubuntu 14.04
+// mafft download line might fail if they change the version available on the web.
 task initGlueAWSWebServer {
   doLast {
 	  ssh.run {
@@ -383,15 +384,18 @@ task initGlueAWSWebServer {
 			// tell Tomcat where to find Java
 			execute "sudo sed -i 's/#JAVA_HOME.*/JAVA_HOME=\\/usr\\/lib\\/jvm\\/java-8-oracle\\/jre/g' /etc/default/tomcat7"
 
-			// Required for running on port 80
+			// Required for running Tomcat on port 80
 			execute "sudo apt-get install -y authbind"
 			execute "sudo sed -i 's/#AUTHBIND=no/AUTHBIND=yes/g' /etc/default/tomcat7"
+			// Increase Tomcat's Java heap to 1 Gb
+			execute "sudo sed -i 's/JAVA_OPTS.*/JAVA_OPTS=\"-Djava.awt.headless=true -Xmx1024m -XX:+UseConcMarkSweepGC\"/g' /etc/default/tomcat7"
+
 			execute "sudo touch /etc/authbind/byport/80"
 			execute "sudo chmod 500 /etc/authbind/byport/80"
 			execute "sudo chown tomcat7 /etc/authbind/byport/80"
 			
 
-			put from: 'gluetools_aws/server.xml', into: '/home/ubuntu/server.xml'
+			put from: 'gluehome_aws/server.xml', into: '/home/ubuntu/server.xml'
 			execute "sudo cp /home/ubuntu/server.xml /etc/tomcat7/server.xml"
 			
 			// start Tomcat
@@ -421,31 +425,43 @@ task initGlueAWSWebServer {
 			execute "sudo apt-get install -y gcc" 
 			
 			// RAXML
-			execute "git clone https://github.com/stamatak/standard-RAxML.git"
-			execute "cd standard-RAxML/ ; git checkout 3abe69b"
-			execute "cd standard-RAxML/ ; make -f Makefile.AVX.PTHREADS.gcc"
+			execute "cd ~; git clone https://github.com/stamatak/standard-RAxML.git"
+			execute "cd ~/standard-RAxML/ ; git checkout 3abe69b"
+			execute "cd ~/standard-RAxML/ ; make -f Makefile.AVX.PTHREADS.gcc"
 			execute "sudo mkdir -p /opt/gluetools/raxml/bin"
 			execute "sudo mkdir -p /opt/gluetools/raxml/tmp"
 			execute "sudo chmod a+rwx /opt/gluetools/raxml/tmp"
-			execute "sudo cp standard-RAxML/raxmlHPC-PTHREADS-AVX /opt/gluetools/raxml/bin"
+			execute "sudo cp ~/standard-RAxML/raxmlHPC-PTHREADS-AVX /opt/gluetools/raxml/bin"
 
 			// MAFFT
 			execute "sudo mkdir -p /opt/gluetools/mafft/tmp"
 			execute "sudo chmod a+rwx /opt/gluetools/mafft/tmp"
-			execute "wget http://mafft.cbrc.jp/alignment/software/mafft-7.305-with-extensions-src.tgz"
+			execute "cd ~; wget http://mafft.cbrc.jp/alignment/software/mafft-7.305-with-extensions-src.tgz"
 			execute "tar xvfz mafft-7.305-with-extensions-src.tgz"
-			execute "cd mafft-7.305-with-extensions/core ; make clean ; make ; sudo make install"
+			execute "cd ~/mafft-7.305-with-extensions/core ; make clean ; make ; sudo make install"
 
 			// BLAST			
 			execute "sudo mkdir -p /opt/gluetools/blast"
-			execute "wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/ncbi-blast-2.2.31+-x64-linux.tar.gz"
-			execute "tar xvfz ncbi-blast-2.2.31+-x64-linux.tar.gz"
-			execute "sudo cp -r ncbi-blast-2.2.31+ /opt/gluetools/blast"
+			execute "cd ~; wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/ncbi-blast-2.2.31+-x64-linux.tar.gz"
+			execute "cd ~; tar xvfz ncbi-blast-2.2.31+-x64-linux.tar.gz"
+			execute "sudo cp -r ~/ncbi-blast-2.2.31+ /opt/gluetools/blast"
 			execute "sudo mkdir -p /opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs"
 			execute "sudo chmod a+rwx /opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs"
 
 	    }
 	  }
+  }
+}
+
+
+// add stuff inside this task for testing setup
+task initGlueAWSWebServerTemp {
+  doLast {
+	  ssh.run {
+	    // session(remotes.gluetest) {
+	    session(remotes.gluehome_aws) {
+		}
+	}
   }
 }
 
