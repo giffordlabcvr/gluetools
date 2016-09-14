@@ -11,41 +11,24 @@ var hcvApp = angular.module('hcvApp', [
 
 console.log("after hcvApp module definition");
 
-hcvApp.config(['$routeProvider',
-  function($routeProvider) {
+hcvApp.config(['$routeProvider', 'projectBrowserStandardRoutesProvider',
+  function($routeProvider, projectBrowserStandardRoutesProvider) {
+	
+	var projectBrowserStandardRoutes = projectBrowserStandardRoutesProvider.$get();
+	var projectBrowserURL = "../projectBrowser";
+
+	projectBrowserStandardRoutes.addReferencesRoute($routeProvider, projectBrowserURL);
+	projectBrowserStandardRoutes.addReferenceRoute($routeProvider, projectBrowserURL);
+	projectBrowserStandardRoutes.addSequencesRoute($routeProvider, projectBrowserURL);
+	projectBrowserStandardRoutes.addSequenceRoute($routeProvider, projectBrowserURL);
+	projectBrowserStandardRoutes.addAlignmentsRoute($routeProvider, projectBrowserURL);
+	projectBrowserStandardRoutes.addAlignmentRoute($routeProvider, projectBrowserURL);
+	projectBrowserStandardRoutes.addAlignmentMemberRoute($routeProvider, projectBrowserURL);
+	
     $routeProvider.
       when('/analysisTool', {
         templateUrl: '../analysisTool/analysisTool.html',
         controller: 'analysisToolCtrl'
-      }).
-      // the below routing should maybe happen inside the projectBrowser module?
-      when('/project/reference', {
-    	  templateUrl: '../projectBrowser/views/references.html',
-    	  controller: 'referencesCtrl'
-      }).
-      when('/project/reference/:refName', {
-    	  templateUrl: '../projectBrowser/views/reference.html',
-    	  controller: 'referenceCtrl'
-      }).
-      when('/project/sequence', {
-    	  templateUrl: '../projectBrowser/views/sequences.html',
-    	  controller: 'sequencesCtrl'
-      }).
-      when('/project/sequence/:sourceName/:sequenceID', {
-    	  templateUrl: '../projectBrowser/views/sequence.html',
-    	  controller: 'sequenceCtrl'
-      }).
-      when('/project/alignment', {
-    	  templateUrl: '../projectBrowser/views/alignments.html',
-    	  controller: 'alignmentsCtrl'
-      }).
-      when('/project/alignment/:alignmentName', {
-    	  templateUrl: '../projectBrowser/views/alignment.html',
-    	  controller: 'alignmentCtrl'
-      }).
-      when('/project/alignment/:alignmentName/member/:sourceName/:sequenceID', {
-    	  templateUrl: '../projectBrowser/views/alignmentMember.html',
-    	  controller: 'alignmentMemberCtrl'
       }).
       when('/home', {
     	  templateUrl: './modules/home/home.html',
