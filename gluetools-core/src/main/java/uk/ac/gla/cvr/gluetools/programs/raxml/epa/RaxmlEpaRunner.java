@@ -124,24 +124,26 @@ public class RaxmlEpaRunner implements Plugin {
 
 			return resultObjectFromTempDir(tempDir, runSpecifier);
 		} finally {
-			boolean allFilesDeleted = true;
-			for(File file : tempDir.listFiles()) {
-				if(dataDirFile != null) {
-					byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
-					File fileToSave = new File(dataDirFile, file.getName());
-					ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
+			if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
+				boolean allFilesDeleted = true;
+				for(File file : tempDir.listFiles()) {
+					if(dataDirFile != null) {
+						byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
+						File fileToSave = new File(dataDirFile, file.getName());
+						ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
+					}
+					boolean fileDeleteResult = file.delete();
+					if(!fileDeleteResult) {
+						GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML file "+file.getAbsolutePath());
+						allFilesDeleted = false;
+						break;
+					}
 				}
-				boolean fileDeleteResult = file.delete();
-				if(!fileDeleteResult) {
-					GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML file "+file.getAbsolutePath());
-					allFilesDeleted = false;
-					break;
-				}
-			}
-			if(allFilesDeleted) {
-				boolean dirDeleteResult = tempDir.delete();
-				if(!dirDeleteResult) {
-					GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML directory "+tempDir.getAbsolutePath());
+				if(allFilesDeleted) {
+					boolean dirDeleteResult = tempDir.delete();
+					if(!dirDeleteResult) {
+						GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML directory "+tempDir.getAbsolutePath());
+					}
 				}
 			}
 		}
