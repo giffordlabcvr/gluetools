@@ -27,9 +27,7 @@ projectBrowser.controller('alignmentsCtrl',
 		  $scope.listAlignmentResult = tableResultAsObjectList(data);
 		  console.info('list alignment result as object list', $scope.listAlignmentResult);
     })
-    .error(function() {
-    	glueWS.raiseErrorDialog(dialogs, "listing alignments");
-    });
+    .error(glueWS.raiseErrorDialog(dialogs, "listing alignments"));
 
 	
 }]);

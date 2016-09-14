@@ -14,9 +14,7 @@ projectBrowser.controller('referencesCtrl',
 		  $scope.listReferenceResult = tableResultAsObjectList(data);
 		  console.info('list reference result as object list', $scope.listReferenceResult);
     })
-    .error(function() {
-    	glueWS.raiseErrorDialog(dialogs, "listing references");
-    });
+    .error(glueWS.raiseErrorDialog(dialogs, "listing references"));
 
 	
 }]);

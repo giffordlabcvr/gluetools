@@ -14,9 +14,7 @@ projectBrowser.controller('sequencesCtrl',
 		  $scope.listSequenceResult = tableResultAsObjectList(data);
 		  console.info('list sequence result as object list', $scope.listSequenceResult);
     })
-    .error(function() {
-    	glueWS.raiseErrorDialog(dialogs, "listing sequences");
-    });
+    .error(glueWS.raiseErrorDialog(dialogs, "listing sequences"));
 
 	
 }]);

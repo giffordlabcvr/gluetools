@@ -1,5 +1,5 @@
-projectBrowser.controller('renderableObjectBaseCtrl', [ '$scope', 'glueObjectPath', 'glueWS', 'glueWebToolConfig',
-        function($scope, glueObjectPath, glueWS, glueWebToolConfig) {
+projectBrowser.controller('renderableObjectBaseCtrl', [ '$scope', 'glueObjectPath', 'glueWS', 'glueWebToolConfig', 'dialogs',
+        function($scope, glueObjectPath, glueWS, glueWebToolConfig, dialogs) {
 	
 	$scope.projectBrowserURL = glueWebToolConfig.getProjectBrowserURL();
 
@@ -12,9 +12,7 @@ projectBrowser.controller('renderableObjectBaseCtrl', [ '$scope', 'glueObjectPat
 		  console.info('render result', data);
 		  $scope.renderResult = data;
     })
-    .error(function() {
-    	glueWS.raiseErrorDialog(dialogs, "rendering object");
-    });
+    .error(glueWS.raiseErrorDialog(dialogs, "rendering object"));
 
 	
 }]);
