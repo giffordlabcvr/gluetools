@@ -20,6 +20,16 @@ remotes {
     user = 'sing01j'
     identity = file('/Users/joshsinger/.ssh/alpha_id_rsa')
   }
+  gluehome_aws {
+    host = '52.16.113.119'
+    user = 'ubuntu'
+    identity = file('/Users/joshsinger/.ssh/gluehome-aws.pem')
+  }
+  gluetest {
+    host = '192.168.56.20'
+    user = 'ubuntu'
+    identity = file('/Users/joshsinger/.ssh/gluetest_id_rsa')
+  }
 }
 
 buildscript {
@@ -72,6 +82,29 @@ task deployGlueConfigGlueHome {
 	  glueConfigTouchfile.createNewFile()
   }
 }
+
+
+// config for Glue which tells it where to find its database. 
+task deployGlueConfigGlueHomeAWS {
+  ext.glueConfigFile = new File(projectDir, '/gluehome_aws/gluetools-config.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigGlueHomeAWS.touchfile')
+  inputs.file glueConfigFile
+  outputs.file glueConfigTouchfile
+  doLast {
+	  println "Uploading "+glueConfigFile.name
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+	      execute "sudo mkdir -p /opt/gluetools/conf"
+	      put from: glueConfigFile, into: '/tmp'
+	      execute "sudo mv /tmp/gluetools-config.xml /opt/gluetools/conf/"
+	    }
+	  }
+	  glueConfigTouchfile.delete()
+	  buildDir.mkdirs()
+	  glueConfigTouchfile.createNewFile()
+  }
+}
+
 
 // config for Glue which tells it where to find its database. 
 task deployGlueConfigOmega {
@@ -197,6 +230,20 @@ task deployGlueDbToGlueHome(dependsOn: ['zipGlueDB']) {
   }
 }
 
+task deployGlueDbToGlueHomeAws(dependsOn: ['zipGlueDB']) {
+  doLast {
+	  println "Uploading GLUE DB"
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
+	      execute 'echo "drop database GLUE_TOOLS; create database GLUE_TOOLS;" | mysql -u gluetools --password=gluetools GLUE_TOOLS'
+	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUE_TOOLS'
+	      execute 'rm /tmp/gluedb.sql.gz'
+	    }
+	  }
+  }
+}
+
 task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
   doLast {
 	  println "Uploading GLUE DB"
@@ -307,4 +354,100 @@ task glueInstallDirZip(type: Zip) {
 	  glueInstallDirTouchfile.createNewFile()
     }
 }
+
+
+// assumes Ubuntu 14.04
+task initGlueAWSWebServer {
+  doLast {
+	  ssh.run {
+	    // session(remotes.gluetest) {
+	    session(remotes.gluehome_aws) {
+
+	    	// stuff to manipulate package installer settings to allow non-interactive config
+		    execute 'sudo apt-get install -y python-software-properties debconf-utils'
+	    
+	    	// Oracle Java 8
+			// this repo contains Oracle Java installer 
+			execute 'sudo add-apt-repository -y ppa:webupd8team/java'
+			execute 'sudo apt-get update'
+			// accept oracle license
+			execute 'echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections'
+			// install java8 jdk
+			execute 'sudo apt-get install -y oracle-java8-installer'
+
+
+
+
+            // Apache Tomcat 7
+			execute 'sudo apt-get install -y tomcat7' 
+			// tell Tomcat where to find Java
+			execute "sudo sed -i 's/#JAVA_HOME.*/JAVA_HOME=\\/usr\\/lib\\/jvm\\/java-8-oracle\\/jre/g' /etc/default/tomcat7"
+
+			// Required for running on port 80
+			execute "sudo apt-get install -y authbind"
+			execute "sudo sed -i 's/#AUTHBIND=no/AUTHBIND=yes/g' /etc/default/tomcat7"
+			execute "sudo touch /etc/authbind/byport/80"
+			execute "sudo chmod 500 /etc/authbind/byport/80"
+			execute "sudo chown tomcat7 /etc/authbind/byport/80"
+			
+
+			put from: 'gluetools_aws/server.xml', into: '/home/ubuntu/server.xml'
+			execute "sudo cp /home/ubuntu/server.xml /etc/tomcat7/server.xml"
+			
+			// start Tomcat
+			execute 'sudo service tomcat7 start'
+
+			// MySQL (normally 5.5)
+			execute 'echo "mysql-server mysql-server/root_password password root123" | sudo debconf-set-selections'
+			execute 'echo "mysql-server mysql-server/root_password_again password root123" | sudo debconf-set-selections'
+			execute 'sudo apt-get -y install mysql-server'
+			// start on boot
+			execute 'sudo update-rc.d mysql defaults'
+			
+			// create user gluetools with correct grants
+			execute "echo 'GRANT ALL ON GLUE_TOOLS.* TO \"gluetools\"@\"localhost\" identified by \"gluetools\";' | mysql -u root --password=root123"
+			// create GLUE_TOOLS database
+			execute "echo 'create database GLUE_TOOLS;' | mysql -u gluetools --password=gluetools" 
+			
+			execute "sudo mkdir -p /opt/gluetools"
+			
+			// GIT
+			execute "sudo apt-get install -y git"
+			
+			// MAKE
+			execute "sudo apt-get install -y make" 
+
+			// GCC
+			execute "sudo apt-get install -y gcc" 
+			
+			// RAXML
+			execute "git clone https://github.com/stamatak/standard-RAxML.git"
+			execute "cd standard-RAxML/ ; git checkout 3abe69b"
+			execute "cd standard-RAxML/ ; make -f Makefile.AVX.PTHREADS.gcc"
+			execute "sudo mkdir -p /opt/gluetools/raxml/bin"
+			execute "sudo mkdir -p /opt/gluetools/raxml/tmp"
+			execute "sudo chmod a+rwx /opt/gluetools/raxml/tmp"
+			execute "sudo cp standard-RAxML/raxmlHPC-PTHREADS-AVX /opt/gluetools/raxml/bin"
+
+			// MAFFT
+			execute "sudo mkdir -p /opt/gluetools/mafft/tmp"
+			execute "sudo chmod a+rwx /opt/gluetools/mafft/tmp"
+			execute "wget http://mafft.cbrc.jp/alignment/software/mafft-7.305-with-extensions-src.tgz"
+			execute "tar xvfz mafft-7.305-with-extensions-src.tgz"
+			execute "cd mafft-7.305-with-extensions/core ; make clean ; make ; sudo make install"
+
+			// BLAST			
+			execute "sudo mkdir -p /opt/gluetools/blast"
+			execute "wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/ncbi-blast-2.2.31+-x64-linux.tar.gz"
+			execute "tar xvfz ncbi-blast-2.2.31+-x64-linux.tar.gz"
+			execute "sudo cp -r ncbi-blast-2.2.31+ /opt/gluetools/blast"
+			execute "sudo mkdir -p /opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs"
+			execute "sudo chmod a+rwx /opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs"
+
+	    }
+	  }
+  }
+}
+
+
 
