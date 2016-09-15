@@ -1,7 +1,7 @@
 'use strict';
 
 var projectBrowser = angular.module('projectBrowser', 
-		['glueWS', 'ui.bootstrap','dialogs.main', 'glueWebToolConfig', 'ngRoute']);
+		['glueWS', 'ui.bootstrap','dialogs.main']);
 
 projectBrowser.factory("projectBrowserStandardRoutes", function() {
 	return {

@@ -1,0 +1,32 @@
+<div ng-show="renderResult" ng-app="hcvApp">
+	<h2>{{renderResult.alignment.renderedName}}</h2>
+	
+	<div>
+		<p>
+			Clade reference sequence: <a href="#project/reference/{{renderResult.alignment.constrainingReference.name}}">
+			{{renderResult.alignment.constrainingReference.renderedName}}</a>
+		</p>
+		<p>
+			Parent clade: 
+			<a ng-show="renderResult.alignment.parent" href="#project/alignment/{{renderResult.alignment.parent.name}}">
+				{{renderResult.alignment.parent.renderedName}}
+			</a>
+			<span ng-show="!renderResult.alignment.parent">-</span>
+		</p>
+		<p>
+			Child clades: <span ng-show="!renderResult.alignment.child">None</span>
+			<div ng-repeat="child in renderResult.alignment.child track by $index">
+				<a href="#project/alignment/{{child.name}}">
+					{{child.renderedName}}
+				</a>
+			</div>
+		</p>
+	</div>
+	<h3>Clade member sequences</h3>	
+	<span ng-show="!renderResult.alignment.memberSequence">None</span>
+	<div ng-repeat="member in renderResult.alignment.memberSequence track by $index">
+		<a href="#project/alignment/{{renderResult.alignment.name}}/member/{{member.sourceName}}/{{member.sequenceID}}">
+			{{member.sourceName}}/{{member.sequenceID}}
+		</a>
+	</div>	
+</div>

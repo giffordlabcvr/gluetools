@@ -6,7 +6,8 @@ var hcvApp = angular.module('hcvApp', [
     'projectBrowser', 
     'home',
     'glueWS',
-    'glueWebToolConfig'
+    'glueWebToolConfig',
+    'treeControl'
   ]);
 
 console.log("after hcvApp module definition");
@@ -21,8 +22,19 @@ hcvApp.config(['$routeProvider', 'projectBrowserStandardRoutesProvider',
 	projectBrowserStandardRoutes.addReferenceRoute($routeProvider, projectBrowserURL);
 	projectBrowserStandardRoutes.addSequencesRoute($routeProvider, projectBrowserURL);
 	projectBrowserStandardRoutes.addSequenceRoute($routeProvider, projectBrowserURL);
-	projectBrowserStandardRoutes.addAlignmentsRoute($routeProvider, projectBrowserURL);
-	projectBrowserStandardRoutes.addAlignmentRoute($routeProvider, projectBrowserURL);
+	//projectBrowserStandardRoutes.addAlignmentsRoute($routeProvider, projectBrowserURL);
+    // custom alignments view
+	$routeProvider.
+    when('/project/alignment', {
+	  templateUrl: 'views/hcvAlignments.html',
+	  controller: 'hcvAlignmentsCtrl'
+    });
+	// custom single alignment view
+	$routeProvider.
+    when('/project/alignment/:alignmentName', {
+	  templateUrl: 'views/hcvAlignment.html',
+	  controller: 'hcvAlignmentCtrl'
+    });
 	projectBrowserStandardRoutes.addAlignmentMemberRoute($routeProvider, projectBrowserURL);
 	
     $routeProvider.
@@ -46,9 +58,9 @@ function ($scope, glueWS, glueWebToolConfig) {
 	$scope.homeMenuTitle = "Home";
 	$scope.analysisMenuTitle = "Analysis";
 	$scope.analysisToolMenuTitle = "Sequence typing and interpretation";
-	$scope.projectBrowserMenuTitle = "Project";
-	$scope.projectBrowserAlignmentMenuTitle = "Clades";
-	$scope.projectBrowserReferenceSequenceMenuTitle = "Reference sequences";
+	$scope.projectBrowserMenuTitle = "Database";
+	$scope.projectBrowserAlignmentMenuTitle = "Clade Tree";
+	$scope.projectBrowserReferenceSequenceMenuTitle = "Reference Sequences";
 	$scope.projectBrowserSequenceMenuTitle = "Sequences";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");
 	glueWebToolConfig.setAnalysisToolURL("../analysisTool");

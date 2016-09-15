@@ -1,0 +1,24 @@
+<div ng-app="hcvApp">
+	<h2>Clade Tree</h2>
+	<p>
+	HCV genotypes, subtypes, etc. arranged in a tree matching the hypothesised evolutionary relationships. 
+	</p>
+	<p>
+	</p>
+	<treecontrol class="tree-light"
+	   tree-model="descendentTree"
+	   expanded-nodes="expandedNodes"
+	   options="treeOptions">
+	   <a href="./#/project/alignment/{{node.alignmentName}}">{{node.alignmentDisplayName}}</a> 
+	</treecontrol>
+	<h4>Notes</h4>
+	<ul>
+		<li>HCV-GLUE clade definitions are based on 
+	the <a href="http://talk.ictvonline.org/ictv_wikis/flaviviridae/w/sg_flavi/56.hcv-classification" 
+	target="_blank">ICTV HCV classification resource</a>, updated in May 2015.</li>
+		<li>Subtypes marked as "unassigned" do not yet have enough distinct isolates to assign a designation.</li>
+		<li>Subtypes marked as "provisional" have been assigned a designation, but require further distinct isolates for confirmation.</li>
+		<li>Intergenotypic circulating recombinant forms are modelled as sibling clades of the main genotypes.</li>
+	</ul>
+	
+</div>

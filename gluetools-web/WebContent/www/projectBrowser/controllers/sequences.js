@@ -1,8 +1,6 @@
 projectBrowser.controller('sequencesCtrl', 
-		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', 'glueWebToolConfig',
-    function($scope, $route, $routeParams, glueWS, dialogs, glueWebToolConfig) {
-
-	$scope.projectBrowserURL = glueWebToolConfig.getProjectBrowserURL();
+		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs',
+    function($scope, $route, $routeParams, glueWS, dialogs) {
 
 	$scope.listSequenceResult = null;
 	
