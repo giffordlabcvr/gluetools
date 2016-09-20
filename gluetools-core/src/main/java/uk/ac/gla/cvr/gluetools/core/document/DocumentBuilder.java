@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.document;
 
 import javax.json.JsonObject;
+import javax.json.stream.JsonGenerator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,6 +33,10 @@ public class DocumentBuilder extends ObjectBuilder {
 
 	public JsonObject getJsonObject() {
 		return JsonUtils.documentToJSonObjectBuilder(getXmlDocument()).build();
+	}
+
+	public void generateJson(JsonGenerator jsonGenerator) {
+		JsonUtils.generateJsonFromDocument(jsonGenerator, getXmlDocument());
 	}
 
 }

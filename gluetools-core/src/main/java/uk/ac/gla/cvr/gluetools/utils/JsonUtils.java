@@ -208,5 +208,11 @@ public class JsonUtils {
 			throw new RuntimeException("Unable to handle JsonValue: "+item);
 		}
 	}
+
+	public static void generateJsonFromDocument(JsonGenerator jsonGenerator, Document document) {
+		Element docElem = document.getDocumentElement();
+		JsonObjectBuilder docBuilder = jsonObjectBuilder();
+		elementToJSon(docBuilder, docElem);
+	}
 	
 }

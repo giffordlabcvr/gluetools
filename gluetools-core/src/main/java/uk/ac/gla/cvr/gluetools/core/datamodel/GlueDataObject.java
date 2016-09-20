@@ -22,7 +22,18 @@ public abstract class GlueDataObject extends CayenneDataObject {
 
 	protected static final int INDENT = 2;
 
+	private static long timeSpentInDbOperations = 0L;
+	public static void resetTimeSpentInDbOperations() {
+		timeSpentInDbOperations = 0L;
+	}
+	public static long getTimeSpentInDbOperations() {
+		return timeSpentInDbOperations;
+	}
+	
+	
+	
 	public abstract void setPKValues(Map <String, String> pkMap);
+	
 
 	public static <C extends GlueDataObject> C lookup(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap) {
 		return lookup(cmdContext, objClass, pkMap, false);
@@ -44,7 +55,9 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			Expression qualifier) {
 
 		SelectQuery query = new SelectQuery(objClass, qualifier);
+		long startTime = System.currentTimeMillis();
 		List<?> results = cmdContext.getObjectContext().performQuery(query);
+		timeSpentInDbOperations += System.currentTimeMillis() - startTime;
 		if(results.isEmpty()) {
 			if(allowNull) {
 				return null;
@@ -73,7 +86,9 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		C object = lookup(cmdContext, objClass, pkMap, allowNull);
 		if(object != null) {
 			try {
+				long startTime = System.currentTimeMillis();
 				cmdContext.getObjectContext().deleteObject(object);
+				timeSpentInDbOperations += System.currentTimeMillis() - startTime;
 			} catch(DeleteDenyException dde) {
 				String relationship = dde.getRelationship();
 				throw new DataModelException(dde, Code.DELETE_DENIED, objClass.getSimpleName(), pkMap, relationship);
@@ -89,7 +104,10 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	@SuppressWarnings("rawtypes")
 	public static <C extends GlueDataObject> List<C> query(CommandContext cmdContext, Class<C> objClass, SelectQuery query) {
 		try {
+			long startTime = System.currentTimeMillis();
 			List<?> queryResults = cmdContext.getObjectContext().performQuery(query);
+			timeSpentInDbOperations += System.currentTimeMillis() - startTime;
+
 			return queryResults.stream().map(obj -> { 
 				C dataObject = objClass.cast(obj);
 				return dataObject;
@@ -115,7 +133,10 @@ public abstract class GlueDataObject extends CayenneDataObject {
 				throw new DataModelException(Code.OBJECT_ALREADY_EXISTS, objClass.getSimpleName(), pkMap);
 			}
 		}
+		long startTime = System.currentTimeMillis();
 		C newObject = cmdContext.getObjectContext().newObject(objClass);
+		timeSpentInDbOperations += System.currentTimeMillis() - startTime;
+
 		pkMap.values().forEach(pkVal -> {
 			if(pkVal.contains("/")) {
 				throw new DataModelException(Code.ILLEGAL_PRIMARY_KEY_VALUE, objClass.getSimpleName(), pkVal);

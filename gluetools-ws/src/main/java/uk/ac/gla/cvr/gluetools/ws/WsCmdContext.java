@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -38,12 +39,15 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
 import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 public class WsCmdContext extends CommandContext {
 
+	public static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.ws");
+	
 	public WsCmdContext(GluetoolsEngine gluetoolsEngine) {
 		super(gluetoolsEngine, "the GLUE web API");
 		ServerRuntime rootServerRuntime = gluetoolsEngine.getRootServerRuntime();
@@ -68,6 +72,8 @@ public class WsCmdContext extends CommandContext {
 	@Produces(MediaType.APPLICATION_JSON)
 	@SuppressWarnings("rawtypes")
 	public String postAsCommand(String commandString, @Context HttpServletResponse response) {
+		logger.info("Command string: "+commandString);
+		GlueDataObject.resetTimeSpentInDbOperations();
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
@@ -78,13 +84,18 @@ public class WsCmdContext extends CommandContext {
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
+		long cmdExecutionStart = System.currentTimeMillis();
 		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
 			@Override
 			public CommandResult get() {
 				return command.execute(WsCmdContext.this);
 			}
 		});
+		logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
+		logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart)+"ms");
+		long jsonSerializationStart = System.currentTimeMillis();
 		String commandResult = cmdResult.getJsonObject().toString();
+		logger.info("Time spent in JSON serialization: "+(System.currentTimeMillis() - jsonSerializationStart)+"ms");
 		addCacheDisablingHeaders(response);
 		return commandResult;
 	}
@@ -116,6 +127,8 @@ public class WsCmdContext extends CommandContext {
 	@SuppressWarnings({ "rawtypes" })
 	private String multipartCommand(InputStream fileInputStream,
 			String commandString, HttpServletResponse response) {
+		logger.info("Command string: "+commandString);
+		GlueDataObject.resetTimeSpentInDbOperations();
 		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
 		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
@@ -141,6 +154,7 @@ public class WsCmdContext extends CommandContext {
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
+		long cmdExecutionStart = System.currentTimeMillis();
 		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
 			@Override
 			public CommandResult get() {
@@ -148,7 +162,11 @@ public class WsCmdContext extends CommandContext {
 			}
 			
 		});
+		logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
+		logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
+		long jsonSerializationStart = System.currentTimeMillis();
 		String cmdResultString = cmdResult.getJsonObject().toString();
+		logger.info("Time spent in JSON serialization: "+(System.currentTimeMillis() - jsonSerializationStart)+"ms");
 		addCacheDisablingHeaders(response);
 		return cmdResultString;
 	}

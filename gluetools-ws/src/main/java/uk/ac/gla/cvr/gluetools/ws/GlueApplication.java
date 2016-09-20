@@ -28,7 +28,7 @@ import com.mysql.jdbc.AbandonedConnectionCleanupThread;
 @ApplicationPath("/")
 public class GlueApplication extends ResourceConfig implements ServletContextListener {
 
-	private static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.ws");
+	public static Logger logger = Logger.getLogger("uk.ac.gla.cvr.gluetools.ws");
 	
 	public GlueApplication() {
 		super();

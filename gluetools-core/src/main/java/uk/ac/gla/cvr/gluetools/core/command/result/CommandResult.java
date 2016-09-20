@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import javax.json.JsonObject;
+import javax.json.stream.JsonGenerator;
 
 import org.w3c.dom.Document;
 
@@ -53,6 +54,10 @@ public abstract class CommandResult {
 			jsonObject = documentBuilder.getJsonObject();
 		}
 		return jsonObject;
+	}
+	
+	public void generateJson(JsonGenerator jsonGenerator) {
+		documentBuilder.generateJson(jsonGenerator);
 	}
 
 	public final void renderToConsole(CommandResultRenderingContext renderCtx) {
