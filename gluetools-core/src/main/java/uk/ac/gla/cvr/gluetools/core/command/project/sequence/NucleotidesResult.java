@@ -11,7 +11,7 @@ public class NucleotidesResult extends MapResult {
 				.put("nucleotides", nucleotides));
 	}
 	public String getNucleotides() {
-		return getDocumentReader().stringValue("nucleotides");
+		return getCommandDocument().getString("nucleotides");
 	}
 	
 	

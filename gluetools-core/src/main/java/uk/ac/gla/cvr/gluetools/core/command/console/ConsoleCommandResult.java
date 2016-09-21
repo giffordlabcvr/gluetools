@@ -20,7 +20,7 @@ public class ConsoleCommandResult extends MapResult {
 	
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
-		String text = getDocumentReader().stringValue("resultText");
+		String text = getCommandDocument().getString("resultText");
 		if(wrap) {
 			int terminalWidth = renderCtx.getTerminalWidth();
 			renderCtx.output(WordUtils.wrap(text, terminalWidth, "\n", false));

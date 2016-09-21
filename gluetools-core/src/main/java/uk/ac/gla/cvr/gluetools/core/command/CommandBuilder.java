@@ -1,16 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 
 public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 
 	private CommandContext cmdContext;
-	private DocumentBuilder documentBuilder;
+	private CommandDocument documentBuilder;
 	private Class<C> cmdClass;
-	private ObjectBuilder cmdObjectBuilder;
+	private CommandObject cmdObjectBuilder;
 	
 	public CommandBuilder(CommandContext cmdContext, Class<C> cmdClass) {
 		super();
@@ -18,7 +19,7 @@ public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 		this.cmdClass = cmdClass;
 		cmdContext.checkCommmandIsExecutable(cmdClass);
 		String[] cmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass);
-		documentBuilder = new DocumentBuilder(cmdWords[0]);
+		documentBuilder = new CommandDocument(cmdWords[0]);
 		cmdObjectBuilder = documentBuilder;
 		for(int i = 1; i < cmdWords.length; i++) {
 			cmdObjectBuilder = cmdObjectBuilder.setObject(cmdWords[i]);
@@ -55,12 +56,12 @@ public class CommandBuilder<R extends CommandResult, C extends Command<R>> {
 		return this;
 	}
 
-	public ArrayBuilder setArray(String name) {
+	public CommandArray setArray(String name) {
 		return cmdObjectBuilder.setArray(name);
 	}
 	
 	public C build() {
-		return cmdClass.cast(cmdContext.commandFromElement(documentBuilder.getXmlDocument().getDocumentElement()));
+		return cmdClass.cast(cmdContext.commandFromElement(CommandDocumentXmlUtils.commandDocumentToXmlDocument(documentBuilder).getDocumentElement()));
 	}
 
 	@SuppressWarnings("rawtypes")

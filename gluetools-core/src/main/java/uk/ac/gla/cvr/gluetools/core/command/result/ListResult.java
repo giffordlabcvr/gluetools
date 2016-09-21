@@ -36,7 +36,7 @@ public class ListResult extends TableResult {
 	public <D> ListResult(CommandContext cmdContext, Class<D> objectClass, List<D> results, List<String> headers, 
 			BiFunction<D, String, Object> resolveHeaderFunction) {
 		super(LIST_RESULT, headers, listOfMapsFromDataObjects(results, headers, resolveHeaderFunction));
-		getDocumentBuilder().set(OBJECT_TYPE, objectClass.getSimpleName());
+		getCommandDocument().set(OBJECT_TYPE, objectClass.getSimpleName());
 	}
 
 	
@@ -44,7 +44,7 @@ public class ListResult extends TableResult {
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		List<String> columnHeaders = super.getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps();
-		String objectType = getDocumentReader().stringValue(OBJECT_TYPE);
+		String objectType = getCommandDocument().getString(OBJECT_TYPE);
 		ArrayList<TablePage> tablePages = renderToTablePages(columnHeaders, listOfMaps, renderCtx);
 		if(tablePages.size() == 0) {
 			renderCtx.output(objectType+"s found: "+listOfMaps.size());

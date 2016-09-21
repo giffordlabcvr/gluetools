@@ -12,8 +12,7 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -32,10 +31,10 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		this.queryStart = queryStart;
 		this.queryEnd = queryEnd;
 	}
-	public QueryAlignedSegment(ObjectReader objectReader) {
-		super(objectReader);
-		this.queryStart = objectReader.intValue(QUERY_START);
-		this.queryEnd = objectReader.intValue(QUERY_END);
+	public QueryAlignedSegment(CommandObject commandObject) {
+		super(commandObject);
+		this.queryStart = commandObject.getInteger(QUERY_START);
+		this.queryEnd = commandObject.getInteger(QUERY_END);
 	}
 	
 	public QueryAlignedSegment(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -99,7 +98,7 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return queryStart - getRefStart() == other.queryStart - other.getRefStart();
 	}
 	
-	public void toDocument(ObjectBuilder builder) {
+	public void toDocument(CommandObject builder) {
 		super.toDocument(builder);
 		builder
 			.set(QUERY_START, getQueryStart())

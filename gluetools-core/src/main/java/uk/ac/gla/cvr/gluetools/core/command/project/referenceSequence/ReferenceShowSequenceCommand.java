@@ -29,11 +29,11 @@ public class ReferenceShowSequenceCommand extends ReferenceSequenceModeCommand<R
 		}
 
 		public String getSourceName() {
-			return getDocumentReader().stringValue(ReferenceSequence.SEQ_SOURCE_NAME_PATH);
+			return getCommandDocument().getString(ReferenceSequence.SEQ_SOURCE_NAME_PATH);
 		}
 
 		public String getSequenceID() {
-			return getDocumentReader().stringValue(ReferenceSequence.SEQ_ID_PATH);
+			return getCommandDocument().getString(ReferenceSequence.SEQ_ID_PATH);
 		}
 
 		

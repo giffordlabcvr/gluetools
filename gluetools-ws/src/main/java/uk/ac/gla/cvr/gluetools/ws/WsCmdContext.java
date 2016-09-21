@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.ws;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import javax.json.stream.JsonGenerator;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotFoundException;
@@ -22,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
@@ -40,9 +43,11 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public class WsCmdContext extends CommandContext {
 
@@ -74,8 +79,9 @@ public class WsCmdContext extends CommandContext {
 	public String postAsCommand(String commandString, @Context HttpServletResponse response) {
 		logger.info("Command string: "+commandString);
 		GlueDataObject.resetTimeSpentInDbOperations();
-		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
-		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
+		CommandDocument commandDocument = CommandFormatUtils.commandDocumentFromJsonString(commandString);
+		Document cmdXmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(commandDocument);
+		Element cmdDocElem = cmdXmlDocument.getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
 		if(cmdClass != null) {
 			checkCommmandIsExecutable(cmdClass);
@@ -84,6 +90,7 @@ public class WsCmdContext extends CommandContext {
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
+		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
 		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
 			@Override
@@ -91,13 +98,11 @@ public class WsCmdContext extends CommandContext {
 				return command.execute(WsCmdContext.this);
 			}
 		});
-		logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
-		logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart)+"ms");
-		long jsonSerializationStart = System.currentTimeMillis();
-		String commandResult = cmdResult.getJsonObject().toString();
-		logger.info("Time spent in JSON serialization: "+(System.currentTimeMillis() - jsonSerializationStart)+"ms");
+		//logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
+		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart)+"ms");
+		String cmdResultString = serializeToJson(cmdResult);
 		addCacheDisablingHeaders(response);
-		return commandResult;
+		return cmdResultString;
 	}
 	
 	@POST()
@@ -129,8 +134,10 @@ public class WsCmdContext extends CommandContext {
 			String commandString, HttpServletResponse response) {
 		logger.info("Command string: "+commandString);
 		GlueDataObject.resetTimeSpentInDbOperations();
-		DocumentBuilder documentBuilder = CommandFormatUtils.documentBuilderFromJsonString(commandString);
-		Element cmdDocElem = documentBuilder.getXmlDocument().getDocumentElement();
+		CommandDocument commandDocument = CommandFormatUtils.commandDocumentFromJsonString(commandString);
+		Document commandXmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(commandDocument);
+		
+		Element cmdDocElem = commandXmlDocument.getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
 		String[] cmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass);
 		if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.consumesBinary)) {
@@ -147,13 +154,13 @@ public class WsCmdContext extends CommandContext {
 		for(int i = 1; i < cmdWords.length; i ++) {
 			currentElem = GlueXmlUtils.findChildElements(currentElem, cmdWords[i]).get(0);
 		}
-		ObjectBuilder objectBuilder = new ObjectBuilder(currentElem, false);
 		String fileBase64 = new String(Base64.getEncoder().encode(fileBytes));
-		objectBuilder.set(Command.BINARY_INPUT_PROPERTY, fileBase64);
+		GlueXmlUtils.appendElementWithText(currentElem, Command.BINARY_INPUT_PROPERTY, fileBase64);
 		Command command = commandFromElement(cmdDocElem);
 		if(command == null) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
 		}
+		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
 		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
 			@Override
@@ -162,12 +169,22 @@ public class WsCmdContext extends CommandContext {
 			}
 			
 		});
-		logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
-		logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
-		long jsonSerializationStart = System.currentTimeMillis();
-		String cmdResultString = cmdResult.getJsonObject().toString();
-		logger.info("Time spent in JSON serialization: "+(System.currentTimeMillis() - jsonSerializationStart)+"ms");
+		// logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
+		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
+		String cmdResultString = serializeToJson(cmdResult);
 		addCacheDisablingHeaders(response);
+		return cmdResultString;
+	}
+
+	private String serializeToJson(CommandResult cmdResult) {
+		@SuppressWarnings("unused")
+		long jsonSerializationStart = System.currentTimeMillis();
+		StringWriter stringWriter = new StringWriter();
+		JsonGenerator jsonGenerator = JsonUtils.jsonGenerator(stringWriter);
+		CommandDocumentJsonUtils.commandDocumentGenerateJson(jsonGenerator, cmdResult.getCommandDocument());
+		jsonGenerator.flush();
+		String cmdResultString = stringWriter.toString();
+		//logger.info("Time spent in JSON serialization: "+(System.currentTimeMillis() - jsonSerializationStart)+"ms");
 		return cmdResultString;
 	}
 	

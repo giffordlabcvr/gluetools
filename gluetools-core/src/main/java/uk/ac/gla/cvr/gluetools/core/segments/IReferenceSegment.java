@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 
 
 public interface IReferenceSegment {
@@ -64,7 +64,7 @@ public interface IReferenceSegment {
 	public IReferenceSegment clone();
 	
 	
-	public default void toDocument(ObjectBuilder builder) {
+	public default void toDocument(CommandObject builder) {
 		builder
 			.set(REF_START, getRefStart())
 			.set(REF_END, getRefEnd());

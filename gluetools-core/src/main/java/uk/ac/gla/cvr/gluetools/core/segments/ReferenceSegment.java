@@ -9,7 +9,7 @@ import java.util.function.BiPredicate;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -24,9 +24,9 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		this.refStart = refStart;
 		this.refEnd = refEnd;
 	}
-	public ReferenceSegment(ObjectReader objectReader) {
-		this(objectReader.intValue(REF_START),
-				objectReader.intValue(REF_END));
+	public ReferenceSegment(CommandObject commandObject) {
+		this(commandObject.getInteger(REF_START),
+				commandObject.getInteger(REF_END));
 	}
 	
 	public ReferenceSegment(PluginConfigContext pluginConfigContext,

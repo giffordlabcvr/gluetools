@@ -14,10 +14,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 /**
@@ -27,8 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class ReferenceFeatureTreeResult extends CommandResult {
 
-	private ObjectBuilder objectBuilder = null;
-	private ObjectReader objectReader = null;
+	private CommandObject commandObject = null;
 	
 	private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
 	private String referenceName;
@@ -43,26 +40,18 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		this.referenceName = referenceName;
 	}
 
-	protected ReferenceFeatureTreeResult(String referenceName, ReferenceFeatureTreeResult parentTreeResult, ObjectBuilder objectBuilder) {
+	protected ReferenceFeatureTreeResult(String referenceName, ReferenceFeatureTreeResult parentTreeResult, CommandObject commandObject) {
 		this(referenceName);
 		this.parentTreeResult = parentTreeResult;
-		this.objectBuilder = objectBuilder;
- 	 	this.objectReader = objectBuilder.getObjectReader();
+		this.commandObject = commandObject;
 	}
 
 
-	private ObjectReader getObjectReader() {
-		if(objectReader != null) {
-			return objectReader;
+	private CommandObject getCommandObject() {
+		if(commandObject != null) {
+			return commandObject;
 		}
-		return getDocumentReader();
-	}
-	
-	protected ObjectBuilder getObjectBuilder() {
-		if(objectBuilder != null) {
-			return objectBuilder;
-		}
-		return getDocumentBuilder();
+		return getCommandDocument();
 	}
 	
 
@@ -93,52 +82,48 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		if(featureTreeResult != null) {
 			return featureTreeResult;
 		}
-		ObjectBuilder objectBuilder = parentFeatureTreeResult.getObjectBuilder().setArray("features").addObject();
-		featureToDocument(feature, objectBuilder);
-		featureTreeResult = createChildFeatureTreeResult(parentFeatureTreeResult, objectBuilder);
+		CommandArray featuresArray = parentFeatureTreeResult.getCommandObject().getArray("features");
+		if(featuresArray == null) {
+			featuresArray = parentFeatureTreeResult.getCommandObject().setArray("features");
+		}
+		CommandObject childCommandObject = featuresArray.addObject();
+		featureToCommandObject(feature, childCommandObject);
+		featureTreeResult = createChildFeatureTreeResult(parentFeatureTreeResult, childCommandObject);
 		parentFeatureTreeResult.featureNameToTreeResult.put(feature.getName(), featureTreeResult);
 		return featureTreeResult;
 	}
 
 	protected ReferenceFeatureTreeResult createChildFeatureTreeResult(
 			ReferenceFeatureTreeResult parentFeatureTreeResult,
-			ObjectBuilder objectBuilder) {
-		return new ReferenceFeatureTreeResult(referenceName, parentFeatureTreeResult, objectBuilder);
+			CommandObject childCommandObject) {
+		return new ReferenceFeatureTreeResult(referenceName, parentFeatureTreeResult, childCommandObject);
 	}
 
-	private void featureToDocument(Feature feature, ObjectBuilder objectBuilder) {
+	private void featureToCommandObject(Feature feature, CommandObject commandObject) {
 		Set<FeatureMetatag.Type> metatagTypes = feature.getMetatagTypes();
-		objectBuilder.set("referenceName", referenceName);
-		objectBuilder.set("featureName", feature.getName());
-		objectBuilder.set("featureDescription", feature.getDescription());
-		ArrayBuilder metatagArray = objectBuilder.setArray("featureMetatag");
+		commandObject.set("referenceName", referenceName);
+		commandObject.set("featureName", feature.getName());
+		commandObject.set("featureDescription", feature.getDescription());
+		CommandArray metatagArray = commandObject.setArray("featureMetatag");
 		metatagTypes.forEach(t -> metatagArray.addString(t.name()));
 	}
 
 	public ReferenceFeatureTreeResult addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation) {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
-		ObjectBuilder objectBuilder = featureTreeResult.getObjectBuilder();
+		CommandObject commandObject = featureTreeResult.getCommandObject();
 		if(feature.codesAminoAcids()) {
 			Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
-			objectBuilder.setInt("codon1Start", codon1Start);
+			commandObject.setInt("codon1Start", codon1Start);
 		}
 		List<FeatureSegment> featureLocSegments = featureLocation.getSegments();
 		featureTreeResult.referenceSegments.addAll(featureLocSegments.stream()
 				.map(featureLocSeg -> new ReferenceSegment(featureLocSeg.getRefStart(), featureLocSeg.getRefEnd()))
 				.collect(Collectors.toList()));
-		ArrayBuilder refSegArray = objectBuilder.setArray("referenceSegment");
+		CommandArray refSegArray = commandObject.setArray("referenceSegment");
 		featureTreeResult.referenceSegments.forEach(refSeg -> {
 			refSeg.toDocument(refSegArray.addObject());
 		});
-		/*
-		ArrayBuilder variationArray = objectBuilder.setArray("variation");
-		for(Variation variation: featureLocation.getVariations()) {
-			VariationDocument variationDocument = variation.getVariationDocument();
-			featureTreeResult.variationDocuments.add(variationDocument);
-			variationDocument.toDocument(variationArray.addObject());
-		}
-		*/
 		return featureTreeResult;
 	}
 	
@@ -158,15 +143,15 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	}
 	
 	public Integer getCodon1Start() {
-		return getObjectReader().intValue("codon1Start");
+		return getCommandObject().getInteger("codon1Start");
 	}
 
 	public String getOrfAncestorFeatureName() {
-		return getObjectReader().stringValue("orfAncestorFeature");
+		return getCommandObject().getString("orfAncestorFeature");
 	}
 
 	public String getFeatureName() {
-		return getObjectReader().stringValue("featureName");
+		return getCommandObject().getString("featureName");
 	}
 
 	public String getReferenceName() {
@@ -174,10 +159,10 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	}
 
 	public Set<String> getFeatureMetatags() {
-		ArrayReader featureMetatagArray = getObjectReader().getArray("featureMetatag");
+		CommandArray featureMetatagArray = getCommandObject().getArray("featureMetatag");
 		Set<String> metatags = new LinkedHashSet<String>();
 		for(int i = 0; i < featureMetatagArray.size(); i++) {
-			metatags.add(featureMetatagArray.stringValue(i));
+			metatags.add(featureMetatagArray.getString(i));
 		}
 		return metatags;
 	}

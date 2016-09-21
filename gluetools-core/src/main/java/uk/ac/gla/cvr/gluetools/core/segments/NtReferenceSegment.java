@@ -2,8 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.segments;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -17,9 +16,9 @@ public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtR
 		super(refStart, refEnd);
 		setNucleotides(nucleotides);
 	}
-	public NtReferenceSegment(ObjectReader objectReader) {
-		super(objectReader);
-		setNucleotides(objectReader.stringValue(NUCLEOTIDES));
+	public NtReferenceSegment(CommandObject commandObject) {
+		super(commandObject);
+		setNucleotides(commandObject.getString(NUCLEOTIDES));
 	}
 	
 	public NtReferenceSegment(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -91,7 +90,7 @@ public class NtReferenceSegment extends ReferenceSegment implements Plugin, INtR
 		return true;
 	}
 
-	public void toDocument(ObjectBuilder builder) {
+	public void toDocument(CommandObject builder) {
 		super.toDocument(builder);
 		builder.set(NUCLEOTIDES, getNucleotides());
 	}

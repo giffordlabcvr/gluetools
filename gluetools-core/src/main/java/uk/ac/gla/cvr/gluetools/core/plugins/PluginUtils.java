@@ -22,7 +22,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
-import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.core.ParseException;
 import freemarker.template.Configuration;
@@ -470,7 +470,7 @@ public class PluginUtils {
 			Node node = attributes.item(j);
 			if(node instanceof Attr) {
 				String nodeName = node.getNodeName();
-				if(!nodeName.equals(GlueTypeUtils.GLUE_TYPE_ATTRIBUTE)) {
+				if(!nodeName.equals(CommandDocumentXmlUtils.GLUE_TYPE_ATTRIBUTE)) {
 					if(!PluginUtils.isValidConfig(node)) {
 						throw new PluginConfigException(PluginConfigException.Code.UNKNOWN_CONFIG_ATTRIBUTE, xPathBase+"@"+nodeName);
 					}

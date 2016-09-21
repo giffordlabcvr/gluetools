@@ -27,7 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -148,7 +148,7 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		try(ModeCloser moduleMode = cmdContext.pushCommandMode("module", alignerModuleName)) {
 			CommandBuilder<R, C> alignCmdBuilder = cmdContext.cmdBuilder(alignCommandClass)
 				.set(AlignCommand.REFERENCE_NAME, refName);
-			ArrayBuilder seqArrayBuilder = alignCmdBuilder
+			CommandArray seqArrayBuilder = alignCmdBuilder
 				.setArray(AlignCommand.SEQUENCE);
 			queryIdToNucleotides.forEach((queryId, nts) ->
 			{

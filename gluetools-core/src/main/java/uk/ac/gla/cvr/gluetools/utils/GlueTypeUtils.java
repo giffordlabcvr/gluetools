@@ -2,38 +2,74 @@ package uk.ac.gla.cvr.gluetools.utils;
 
 import java.util.Date;
 
-import org.w3c.dom.Element;
-
 public class GlueTypeUtils {
 
 	public enum GlueType {
-		Object, 
-		Integer,
-		Double,
-		String,
-		Boolean,
-		Date,
-		Null
+		Object {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				throw new RuntimeException("Cannot render Object type as string");
+			}
+		}, 
+		Integer {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				return java.lang.Integer.toString((Integer) value);
+			}
+		},
+		Double {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				return java.lang.Double.toString((Integer) value);
+			}
+		},
+		String {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				return (String) value;
+			}
+		},
+		Boolean {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				return java.lang.Boolean.toString((Boolean) value);
+			}
+		},
+		Date {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				return DateUtils.render((Date) value);
+			}
+		},
+		Null {
+			@Override
+			public java.lang.String renderAsString(Object value) {
+				throw new RuntimeException("Cannot render Null type as string");
+			}
+		};
+
+		public abstract String renderAsString(Object value);
 	}
 
-	public static Object elementToObject(Element elem) {
-		GlueType glueType = GlueTypeUtils.getGlueType(elem);
+	public static Object typeStringToObject(GlueTypeUtils.GlueType glueType, String string) {
 		switch(glueType) {
 		case Double:
-			return Double.parseDouble(elem.getTextContent());
+			return Double.parseDouble(string);
 		case Integer:
-			return Integer.parseInt(elem.getTextContent());
+			return Integer.parseInt(string);
 		case Boolean:
-			return Boolean.parseBoolean(elem.getTextContent());
+			return Boolean.parseBoolean(string);
 		case Date:
-			return DateUtils.parse(elem.getTextContent());
+			return DateUtils.parse(string);
 		case String:
-			return elem.getTextContent();
+			return string;
 		case Null:
 			return null;
+		case Object:
+			throw new RuntimeException("Cannot transform string to object for type Object");
 		default:
 			// maybe it could be a map?
-			throw new RuntimeException("Element "+elem.getNodeName()+" cannot be cast to an object");
+			throw new RuntimeException("Unknown glueType: "+glueType);
 		}
 	}
 
@@ -55,38 +91,5 @@ public class GlueTypeUtils {
 		}
 	}
 
-	public static final String GLUE_TYPE_ATTRIBUTE = "glueType";
-	public static void setGlueType(Element elem, GlueType glueType, boolean isArray) {
-		if(isArray) {
-			elem.setAttribute(GLUE_TYPE_ATTRIBUTE, glueType.name()+"[]");
-		} else {
-			elem.setAttribute(GLUE_TYPE_ATTRIBUTE, glueType.name());
-		}
-	}
-
-	public static GlueType getGlueType(Element elem) {
-		String typeString = elem.getAttribute(GLUE_TYPE_ATTRIBUTE);
-		if(typeString.length() == 0) {
-			if(GlueXmlUtils.findChildElements(elem).isEmpty()) {
-				typeString = GlueType.String.name();
-			} else {
-				typeString = GlueType.Object.name();
-			}
-		}
-		typeString = typeString.replace("[]", "");
-		try {
-			return GlueType.valueOf(typeString);
-		} catch(IllegalArgumentException iae) {
-			throw new RuntimeException("Attribute value "+typeString+" is not a valid GLUE type.");
-		}
-	}
-
-	public static boolean isGlueArray(Element elem) {
-		String typeString = elem.getAttribute(GLUE_TYPE_ATTRIBUTE);
-		if(typeString == null) {
-			throw new RuntimeException("Element "+elem.getNodeName()+" has no GLUE type attribute.");
-		}
-		return typeString.endsWith("[]");
-	}
 
 }

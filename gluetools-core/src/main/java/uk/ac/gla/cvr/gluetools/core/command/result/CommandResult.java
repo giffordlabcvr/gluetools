@@ -1,13 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import javax.json.JsonObject;
-import javax.json.stream.JsonGenerator;
 
 import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleOutputFormat;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
@@ -16,50 +16,20 @@ public abstract class CommandResult {
 	public static OkResult OK = new OkResult();
 	
 	
-	private DocumentBuilder documentBuilder;
-	private DocumentReader documentReader;
-
-	private Document xmlDocument;
-	private JsonObject jsonObject;
+	private CommandDocument commandDocument;
 
 	protected CommandResult(String rootObjectName) {
-		this.documentBuilder = new DocumentBuilder(rootObjectName);
+		this.commandDocument = new CommandDocument(rootObjectName);
 	}
 	
-	protected CommandResult(Document xmlDocument) {
-		this.xmlDocument = xmlDocument;
-		this.documentBuilder = new DocumentBuilder(xmlDocument);
+	protected CommandResult(CommandDocument commandDocument) {
+		this.commandDocument = commandDocument;
 	}
 
-	protected DocumentBuilder getDocumentBuilder() {
-		return documentBuilder;
+	public CommandDocument getCommandDocument() {
+		return commandDocument;
 	}
 	
-	protected DocumentReader getDocumentReader() {
-		if(documentReader == null) {
-			documentReader = new DocumentReader(getDocument());
-		}
-		return documentReader;
-	}
-
-	public Document getDocument() {
-		if(xmlDocument == null) {
-			xmlDocument = documentBuilder.getXmlDocument();
-		}
-		return xmlDocument;
-	}
-	
-	public JsonObject getJsonObject() {
-		if(jsonObject == null) {
-			jsonObject = documentBuilder.getJsonObject();
-		}
-		return jsonObject;
-	}
-	
-	public void generateJson(JsonGenerator jsonGenerator) {
-		documentBuilder.generateJson(jsonGenerator);
-	}
-
 	public final void renderToConsole(CommandResultRenderingContext renderCtx) {
 		ConsoleOutputFormat consoleOutputFormat = renderCtx.getConsoleOutputFormat();
 		switch(consoleOutputFormat) {
@@ -82,13 +52,13 @@ public abstract class CommandResult {
 	}
 
 	protected final void renderToConsoleAsXml(CommandResultRenderingContext renderCtx) {
-		Document document = getDocument();
-		byte[] docBytes = GlueXmlUtils.prettyPrint(document);
+		Document xmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(getCommandDocument());
+		byte[] docBytes = GlueXmlUtils.prettyPrint(xmlDocument);
 		renderCtx.output(new String(docBytes));
 	}
 
 	protected final void renderToConsoleAsJson(CommandResultRenderingContext renderCtx) {
-		JsonObject jsonObject = getJsonObject();
+		JsonObject jsonObject = CommandDocumentJsonUtils.commandDocumentToJsonObject(getCommandDocument());
 		renderCtx.output(JsonUtils.prettyPrint(jsonObject));
 	}
 

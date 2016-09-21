@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 
 public class MapResult extends CommandResult {
 
@@ -16,7 +15,7 @@ public class MapResult extends CommandResult {
 
 	public MapResult(String rootObjectName, Map<String, Object> map) {
 		super(rootObjectName);
-		DocumentBuilder documentBuilder = getDocumentBuilder();
+		CommandDocument documentBuilder = getCommandDocument();
 		map.forEach((name, value) -> {
 			documentBuilder.set(name, value);
 		});
@@ -24,10 +23,10 @@ public class MapResult extends CommandResult {
 
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
-		DocumentReader documentReader = getDocumentReader();
-		renderCtx.output(documentReader.getName());
-		for(String fieldName: documentReader.getFieldNames()) {
-			Object value = documentReader.value(fieldName);
+		CommandDocument commandDocument = getCommandDocument();
+		renderCtx.output(commandDocument.getRootName());
+		for(String fieldName: commandDocument.getFieldNames()) {
+			Object value = commandDocument.getSimpleValue(fieldName);
 			if(value == null) {
 				renderCtx.output("  "+fieldName+": -");
 			} else {
@@ -53,9 +52,9 @@ public class MapResult extends CommandResult {
 	
 	public Map<String, Object> asMap() {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
-		DocumentReader documentReader = getDocumentReader();
-		for(String fieldName : documentReader.getFieldNames()) {
-			map.put(fieldName, documentReader.value(fieldName));
+		CommandDocument commandDocument = getCommandDocument();
+		for(String fieldName : commandDocument.getFieldNames()) {
+			map.put(fieldName, commandDocument.getSimpleValue(fieldName));
 		}
 		return map;
 	}

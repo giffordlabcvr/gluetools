@@ -43,7 +43,11 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 	
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
-		return listCTableDelegate.execute(cmdContext);
+		@SuppressWarnings("unused")
+		long startTime = System.currentTimeMillis();
+		ListResult listResult = listCTableDelegate.execute(cmdContext);
+		// System.out.println("Time spent in AbstractListCTableCommand: "+(System.currentTimeMillis()-startTime));
+		return listResult;
 	}
 	
 	public static class FieldNameCompleter extends AdvancedCmdCompleter {
@@ -118,12 +122,17 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 			if(sortComparator != null) {
 				Collections.sort(resultDataObjects, (Comparator<D>) sortComparator);
 			}
+			@SuppressWarnings("unused")
+			long startTime = System.currentTimeMillis();
+			ListResult listResult = null;
 			if(fieldNames == null) {
-				return new ListResult(cmdContext, dataObjectClass, resultDataObjects);
+				listResult = new ListResult(cmdContext, dataObjectClass, resultDataObjects);
 			} else {
 				project.checkListableProperties(tableName, fieldNames);
-				return new ListResult(cmdContext, dataObjectClass, resultDataObjects, fieldNames);
+				listResult = new ListResult(cmdContext, dataObjectClass, resultDataObjects, fieldNames);
 			}
+			//System.out.println("Time spent initializing ListResult: "+(System.currentTimeMillis() - startTime));
+			return listResult;
 		}
 
 		public void setTableName(String tableName) {

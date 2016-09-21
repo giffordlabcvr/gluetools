@@ -4,8 +4,7 @@ import java.util.function.BiFunction;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -18,9 +17,9 @@ public class NtQueryAlignedSegment extends QueryAlignedSegment implements INtTra
 		this.nucleotides = nucleotides;
 	}
 
-	public NtQueryAlignedSegment(ObjectReader objectReader) {
-		super(objectReader);
-		setNucleotides(objectReader.stringValue(NUCLEOTIDES));
+	public NtQueryAlignedSegment(CommandObject commandObject) {
+		super(commandObject);
+		setNucleotides(commandObject.getString(NUCLEOTIDES));
 	}
 
 	public NtQueryAlignedSegment(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -34,7 +33,7 @@ public class NtQueryAlignedSegment extends QueryAlignedSegment implements INtTra
 	}
 
 	@Override
-	public void toDocument(ObjectBuilder builder) {
+	public void toDocument(CommandObject builder) {
 		super.toDocument(builder);
 		builder.set(NUCLEOTIDES, getNucleotides());
 	}

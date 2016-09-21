@@ -1,7 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 
 public abstract class OkCrudResult extends OkResult {
 
@@ -28,17 +28,17 @@ public abstract class OkCrudResult extends OkResult {
 	@Override
 	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
 		super.renderToConsoleAsText(renderCtx);
-		DocumentReader documentReader = getDocumentReader();
-		int number = documentReader.intValue(NUMBER);
-		String objectTypeString = documentReader.stringValue(OBJECT_TYPE);
+		CommandDocument commandDocument = getCommandDocument();
+		int number = commandDocument.getInteger(NUMBER);
+		String objectTypeString = commandDocument.getString(OBJECT_TYPE);
 		if(number != 1) {
 			objectTypeString+="s";
 		}
-		String operationString = documentReader.stringValue(OPERATION).toLowerCase()+"d";
+		String operationString = commandDocument.getString(OPERATION).toLowerCase()+"d";
 		renderCtx.output("("+number+" "+objectTypeString+" "+operationString+")");
 	}
 	
 	public int getNumber() {
-		return getDocumentReader().intValue(NUMBER);
+		return getCommandDocument().getInteger(NUMBER);
 	}
 }

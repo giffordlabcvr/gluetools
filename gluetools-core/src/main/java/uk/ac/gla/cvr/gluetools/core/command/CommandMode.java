@@ -4,6 +4,7 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -88,10 +89,10 @@ public abstract class CommandMode<C extends Command> {
 	protected void appendModeConfigToElem(Element elem, String name, Object value) {
 		if(value == null) {
 			Element newElem = GlueXmlUtils.appendElement(elem, name);
-			GlueTypeUtils.setGlueType(newElem, GlueTypeUtils.GlueType.Null, false);
+			CommandDocumentXmlUtils.setGlueType(newElem, GlueTypeUtils.GlueType.Null, false);
 		} else {
 			Element newElem = (Element) GlueXmlUtils.appendElementWithText(elem, name, value.toString()).getParentNode();
-			GlueTypeUtils.setGlueType(newElem, GlueTypeUtils.glueTypeFromObject(value), false);
+			CommandDocumentXmlUtils.setGlueType(newElem, GlueTypeUtils.glueTypeFromObject(value), false);
 		}
 	}
 

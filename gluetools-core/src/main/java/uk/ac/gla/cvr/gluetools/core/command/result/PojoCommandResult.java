@@ -5,17 +5,17 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultException.Code;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 
 public final class PojoCommandResult<D> extends CommandResult {
 
 	public PojoCommandResult(D pojo) {
 		super(propertyNameForClass(pojo.getClass()));
-		setPojoProperties(getDocumentBuilder(), pojo);
+		setPojoProperties(getCommandDocument(), pojo);
 	}
 	
-	private void setPojoProperties(ObjectBuilder objectBuilder, Object pojo) {
+	private void setPojoProperties(CommandObject objectBuilder, Object pojo) {
 		Field[] fields = pojo.getClass().getFields();
 		for(Field field: fields) {
 			PojoResultField pojoResultFieldAnno = field.getAnnotation(PojoResultField.class);
@@ -48,13 +48,13 @@ public final class PojoCommandResult<D> extends CommandResult {
 					} else if(fieldType.equals(List.class)) {
 						List<?> theList = (List<?>) readResult;
 						if(theList != null && !theList.isEmpty()) {
-							ArrayBuilder arrayBuilder = objectBuilder.setArray(resultName);
+							CommandArray arrayBuilder = objectBuilder.setArray(resultName);
 							for(Object elem: theList) {
 								addToArray(arrayBuilder, elem);
 							}
 						}
 					} else if(fieldType.isAnnotationPresent(PojoResultClass.class)) {
-						ObjectBuilder fieldObjBuilder = objectBuilder.setObject(resultName);
+						CommandObject fieldObjBuilder = objectBuilder.setObject(resultName);
 						setPojoProperties(fieldObjBuilder, readResult);
 					}
 				} else {
@@ -64,7 +64,7 @@ public final class PojoCommandResult<D> extends CommandResult {
 		}
 	}
 
-	private void addToArray(ArrayBuilder arrayBuilder, Object elem) {
+	private void addToArray(CommandArray arrayBuilder, Object elem) {
 		if(elem == null) {
 			arrayBuilder.addNull();
 			return;
@@ -81,7 +81,7 @@ public final class PojoCommandResult<D> extends CommandResult {
 		} else if(elemType.equals(Boolean.class)) {
 			arrayBuilder.addBoolean((Boolean) elem);
 		} else if(elemType.isAnnotationPresent(PojoResultClass.class)) {
-			ObjectBuilder elemObjBuilder = arrayBuilder.addObject();
+			CommandObject elemObjBuilder = arrayBuilder.addObject();
 			setPojoProperties(elemObjBuilder, elem);
 		}
 	}

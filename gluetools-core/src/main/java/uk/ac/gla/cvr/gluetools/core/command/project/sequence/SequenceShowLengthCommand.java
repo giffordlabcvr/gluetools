@@ -25,7 +25,7 @@ public class SequenceShowLengthCommand extends SequenceModeCommand<SequenceShowL
 		}
 		
 		public Integer getLength() {
-			return getDocumentReader().intValue("length");
+			return getCommandDocument().getInteger("length");
 		}
 
 	}

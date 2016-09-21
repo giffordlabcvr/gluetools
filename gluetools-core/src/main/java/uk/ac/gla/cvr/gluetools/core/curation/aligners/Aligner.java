@@ -15,10 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -123,13 +121,13 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 
 		protected AlignerResult(String rootObjectName, Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments) {
 			super(rootObjectName);
-			ArrayBuilder sequenceArrayBuilder = getDocumentBuilder().setArray("sequence");
+			CommandArray sequenceArrayBuilder = getCommandDocument().setArray("sequence");
 			queryIdToAlignedSegments.forEach((queryId, alignedSegments) -> {
-				ObjectBuilder sequenceObjectBuilder = sequenceArrayBuilder.addObject();
+				CommandObject sequenceObjectBuilder = sequenceArrayBuilder.addObject();
 				sequenceObjectBuilder.set("queryId", queryId);
-				ArrayBuilder alignedSegmentArrayBuilder = sequenceObjectBuilder.setArray("alignedSegment");
+				CommandArray alignedSegmentArrayBuilder = sequenceObjectBuilder.setArray("alignedSegment");
 				for(QueryAlignedSegment segment: alignedSegments) {
-					ObjectBuilder alignedSegmentObjectBuilder = alignedSegmentArrayBuilder.addObject();
+					CommandObject alignedSegmentObjectBuilder = alignedSegmentArrayBuilder.addObject();
 					segment.toDocument(alignedSegmentObjectBuilder);
 				}
 			});
@@ -138,16 +136,16 @@ public abstract class Aligner<R extends Aligner.AlignerResult, P extends ModuleP
 		public Map<String, List<QueryAlignedSegment>> getQueryIdToAlignedSegments() {
 			Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = 
 					new LinkedHashMap<String, List<QueryAlignedSegment>>();
-			ArrayReader sequencesReader = getDocumentReader().getArray("sequence");
-			for(int i = 0 ; i < sequencesReader.size(); i++) {
-				ObjectReader sequenceObjectReader = sequencesReader.getObject(i);
-				String queryId = sequenceObjectReader.stringValue("queryId");
-				ArrayReader alignedSegmentsReader = 
-						sequenceObjectReader.getArray("alignedSegment");
+			CommandArray sequencesArray = getCommandDocument().getArray("sequence");
+			for(int i = 0 ; i < sequencesArray.size(); i++) {
+				CommandObject sequenceCommandObject = sequencesArray.getObject(i);
+				String queryId = sequenceCommandObject.getString("queryId");
+				CommandArray alignedSegmentsArray = 
+						sequenceCommandObject.getArray("alignedSegment");
 				List<QueryAlignedSegment> segments = new ArrayList<QueryAlignedSegment>();
-				for(int j = 0; j < alignedSegmentsReader.size(); j++) {
-					ObjectReader objectReader = alignedSegmentsReader.getObject(j);
-					segments.add(new QueryAlignedSegment(objectReader));
+				for(int j = 0; j < alignedSegmentsArray.size(); j++) {
+					CommandObject alignedSegmentsObject = alignedSegmentsArray.getObject(j);
+					segments.add(new QueryAlignedSegment(alignedSegmentsObject));
 
 				}
 				queryIdToAlignedSegments.put(queryId, segments);

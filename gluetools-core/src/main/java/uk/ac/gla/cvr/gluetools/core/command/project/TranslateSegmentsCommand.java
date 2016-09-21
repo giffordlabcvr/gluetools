@@ -12,8 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -93,17 +92,17 @@ public class TranslateSegmentsCommand extends Command<TranslateSegmentsCommand.T
 
 		protected TranslateSegmentsResult(List<QueryAlignedSegment> resultSegments) {
 			super("translateSegmentsResult");
-			ArrayBuilder resultSegmentArrayBuilder = getDocumentBuilder().setArray("queryToRef2Segments");
+			CommandArray resultSegmentArrayBuilder = getCommandDocument().setArray("queryToRef2Segments");
 			for(QueryAlignedSegment resultSegment: resultSegments) {
 				resultSegment.toDocument(resultSegmentArrayBuilder.addObject());
 			}
 		}
 		
 		public List<QueryAlignedSegment> getResultSegments() {
-			ArrayReader arrayReader = getDocumentReader().getArray("queryToRef2Segments");
+			CommandArray queryToRef2SegmentsArray = getCommandDocument().getArray("queryToRef2Segments");
 			List<QueryAlignedSegment> resultSegments = new ArrayList<QueryAlignedSegment>();
-			for(int i = 0; i < arrayReader.size(); i++) {
-				resultSegments.add(new QueryAlignedSegment(arrayReader.getObject(i)));
+			for(int i = 0; i < queryToRef2SegmentsArray.size(); i++) {
+				resultSegments.add(new QueryAlignedSegment(queryToRef2SegmentsArray.getObject(i)));
 			}
 			return resultSegments;
 		}

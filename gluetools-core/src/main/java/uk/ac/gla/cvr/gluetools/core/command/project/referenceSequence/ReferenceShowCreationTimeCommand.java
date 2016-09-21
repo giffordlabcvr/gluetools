@@ -26,7 +26,7 @@ public class ReferenceShowCreationTimeCommand extends ReferenceSequenceModeComma
 		}
 
 		public long getCreationTime() {
-			return Long.parseLong(getDocumentReader().stringValue("creationTime"));
+			return Long.parseLong(getCommandDocument().getString("creationTime"));
 		}
 
 		

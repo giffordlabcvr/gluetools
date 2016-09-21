@@ -12,11 +12,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayReader;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.DocumentReader;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 import com.brsanthu.dataexporter.model.AlignType;
@@ -36,14 +34,14 @@ public class BaseTableResult<D> extends CommandResult {
 	@SafeVarargs
 	public BaseTableResult(String rootObjectName, List<D> rowObjects, TableColumn<D> ... tableColumns) {
 		super(rootObjectName);
-		DocumentBuilder builder = getDocumentBuilder();
-		ArrayBuilder columnsArrayBuilder = builder.setArray(COLUMN);
+		CommandDocument builder = getCommandDocument();
+		CommandArray columnsArrayBuilder = builder.setArray(COLUMN);
 		for(TableColumn<D> column: tableColumns) {
 			columnsArrayBuilder.add(column.getColumnHeader());
 		}
-		ArrayBuilder objectArrayBuilder = builder.setArray(ROW);
+		CommandArray objectArrayBuilder = builder.setArray(ROW);
 		for(D rowObject: rowObjects) {
-			ArrayBuilder valueArrayBuilder = objectArrayBuilder.addObject().setArray(VALUE);
+			CommandArray valueArrayBuilder = objectArrayBuilder.addObject().setArray(VALUE);
 			for(TableColumn<D> column: tableColumns) {
 				valueArrayBuilder.add(column.populateColumn(rowObject));
 			}
@@ -75,12 +73,12 @@ public class BaseTableResult<D> extends CommandResult {
 		List<String> headers = getColumnHeaders();
 		int index = headers.indexOf(columnName);
 		List<String> values = new ArrayList<String>();
-		DocumentReader documentReader = getDocumentReader();
-		ArrayReader rowsReader = documentReader.getArray(ROW);
-		for(int i = 0; i < rowsReader.size(); i++) {
-			ObjectReader rowReader = rowsReader.getObject(i);
-			ArrayReader valuesReader = rowReader.getArray(VALUE);
-			Object value = valuesReader.value(index);
+		CommandDocument commandDocument = getCommandDocument();
+		CommandArray rowsArray = commandDocument.getArray(ROW);
+		for(int i = 0; i < rowsArray.size(); i++) {
+			CommandObject rowObject = rowsArray.getObject(i);
+			CommandArray valuesArray = rowObject.getArray(VALUE);
+			Object value = valuesArray.getSimpleValue(index);
 			if(value == null) {
 				values.add(null);
 			} else {
@@ -94,16 +92,16 @@ public class BaseTableResult<D> extends CommandResult {
 
 
 	public List<Map<String, Object>> asListOfMaps(List<String> headers) {
-		DocumentReader documentReader = getDocumentReader();
-		ArrayReader rowsReader = documentReader.getArray(ROW);
+		CommandDocument commandDocument = getCommandDocument();
+		CommandArray rowsArray = commandDocument.getArray(ROW);
 		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-		for(int i = 0; i < rowsReader.size(); i++) {
+		for(int i = 0; i < rowsArray.size(); i++) {
 			Map<String, Object> map = new LinkedHashMap<String, Object>();
-			ObjectReader rowReader = rowsReader.getObject(i);
-			ArrayReader valuesReader = rowReader.getArray(VALUE);
+			CommandObject rowObject = rowsArray.getObject(i);
+			CommandArray valuesArray = rowObject.getArray(VALUE);
 			for(int j = 0; j < headers.size(); j++) {
 				String header = headers.get(j);
-				map.put(header, valuesReader.value(j));
+				map.put(header, valuesArray.getSimpleValue(j));
 			}
 			results.add(map);
 		}
@@ -115,10 +113,10 @@ public class BaseTableResult<D> extends CommandResult {
 	}
 
 	public List<String> getColumnHeaders() {
-		ArrayReader columnsReader = getDocumentReader().getArray(COLUMN);
+		CommandArray columnsArray = getCommandDocument().getArray(COLUMN);
 		List<String> headers = new ArrayList<String>();
-		for(int i = 0; i < columnsReader.size(); i++) {
-			headers.add(columnsReader.stringValue(i));
+		for(int i = 0; i < columnsArray.size(); i++) {
+			headers.add(columnsArray.getString(i));
 		}
 		return headers;
 	}

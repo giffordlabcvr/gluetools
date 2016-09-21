@@ -32,11 +32,11 @@ public class OriginalDataResult extends MapResult {
 	}
 
 	public String getBase64String() {
-		return getDocumentReader().stringValue("base64");
+		return getCommandDocument().getString("base64");
 	}
 
 	public String getFormatString() {
-		return getDocumentReader().stringValue("format");
+		return getCommandDocument().getString("format");
 	}
 	
 	public SequenceFormat getFormat() {

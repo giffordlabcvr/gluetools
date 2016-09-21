@@ -23,6 +23,7 @@ import jline.console.history.MemoryHistory;
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
+import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
@@ -45,10 +46,13 @@ import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
-import uk.ac.gla.cvr.gluetools.core.document.ArrayBuilder;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLoggingFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
+import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
@@ -235,11 +239,13 @@ public class Console implements CommandResultRenderingContext
 			}
 		}
 		if(!enterModeCmd && console != null) {
+			Document cmdXmlDoc = command.getCmdElem().getOwnerDocument();
 			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
-				console.output(new String(GlueXmlUtils.prettyPrint(command.getCmdElem().getOwnerDocument())));
+				console.output(new String(GlueXmlUtils.prettyPrint(cmdXmlDoc)));
 			}
 			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_JSON).equals("true")) {
-				console.output(JsonUtils.prettyPrint(JsonUtils.documentToJSonObjectBuilder(command.getCmdElem().getOwnerDocument()).build()));
+				CommandDocument commandDocument = CommandDocumentXmlUtils.xmlDocumentToCommandDocument(cmdXmlDoc);
+				console.output(JsonUtils.prettyPrint(CommandDocumentJsonUtils.commandDocumentToJsonObject(commandDocument)));
 			}
 		}
 		return command;
@@ -273,7 +279,7 @@ public class Console implements CommandResultRenderingContext
 			}
 			if(value instanceof Collection<?>) {
 				@SuppressWarnings("rawtypes")
-				ArrayBuilder arrayBuilder = cmdBuilder.setArray(tagName);
+				CommandArray arrayBuilder = cmdBuilder.setArray(tagName);
 				((Collection <?>) value).forEach(item -> {
 					arrayBuilder.add(item.toString());
 				});

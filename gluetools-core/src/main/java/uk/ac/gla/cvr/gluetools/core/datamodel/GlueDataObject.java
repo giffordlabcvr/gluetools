@@ -107,11 +107,14 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			long startTime = System.currentTimeMillis();
 			List<?> queryResults = cmdContext.getObjectContext().performQuery(query);
 			timeSpentInDbOperations += System.currentTimeMillis() - startTime;
-
-			return queryResults.stream().map(obj -> { 
+			@SuppressWarnings("unused")
+			long start2 = System.currentTimeMillis();
+			List<C> classMappedResults = queryResults.stream().map(obj -> { 
 				C dataObject = objClass.cast(obj);
 				return dataObject;
 			}).collect(Collectors.toList());
+			//System.out.println("Time spent casting results to GlueDataObject class: "+(System.currentTimeMillis() - start2));
+			return classMappedResults;
 		} catch(CayenneRuntimeException cre) {
 			Throwable cause = cre.getCause();
 			Expression qualifier = query.getQualifier();

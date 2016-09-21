@@ -33,7 +33,7 @@ public class AlignmentShowReferenceSequenceCommand extends AlignmentModeCommand<
 		}
 
 		public String getReferenceName() {
-			return getDocumentReader().stringValue("referenceName");
+			return getCommandDocument().getString("referenceName");
 		}
 		
 	}

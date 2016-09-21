@@ -2,8 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.segments;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.document.ObjectBuilder;
-import uk.ac.gla.cvr.gluetools.core.document.ObjectReader;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -17,9 +16,9 @@ public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaR
 		super(refStart, refEnd);
 		setAminoAcids(aminoAcids);
 	}
-	public AaReferenceSegment(ObjectReader objectReader) {
-		super(objectReader);
-		setAminoAcids(objectReader.stringValue(AMINO_ACIDS));
+	public AaReferenceSegment(CommandObject commandObject) {
+		super(commandObject);
+		setAminoAcids(commandObject.getString(AMINO_ACIDS));
 	}
 	
 	public AaReferenceSegment(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -91,7 +90,7 @@ public class AaReferenceSegment extends ReferenceSegment implements Plugin, IAaR
 		return true;
 	}
 
-	public void toDocument(ObjectBuilder builder) {
+	public void toDocument(CommandObject builder) {
 		super.toDocument(builder);
 		builder.set(AMINO_ACIDS, getAminoAcids());
 	}

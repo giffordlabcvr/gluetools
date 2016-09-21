@@ -98,9 +98,10 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		whereClause.ifPresent(wc ->
 			cmdBuilder.set(ListSequenceCommand.WHERE_CLAUSE, wc.toString())
 		);
-		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SOURCE_NAME_PATH);
-		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.SEQUENCE_ID_PROPERTY);
-		cmdBuilder.set(ListSequenceCommand.FIELD_NAME, Sequence.FORMAT_PROPERTY);
+		cmdBuilder.setArray(ListSequenceCommand.FIELD_NAME)
+			.addString(Sequence.SOURCE_NAME_PATH)
+			.addString(Sequence.SEQUENCE_ID_PROPERTY)
+			.addString(Sequence.FORMAT_PROPERTY);
 		ListResult listResult = cmdBuilder.execute();
 		List<Map<String,Object>> sequenceMaps = listResult.asListOfMaps();
 		List<Map<String,Object>> rowData = new LinkedList<Map<String, Object>>();
