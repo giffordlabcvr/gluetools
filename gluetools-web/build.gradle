@@ -60,6 +60,7 @@ task deployWebAppWarGlueHome(dependsOn: ['war']) {
 	      execute 'sudo -n rm -rf /usr/share/tomcat/webapps/gluetools-web'
 	      execute 'sudo -n rm -rf /usr/share/tomcat/webapps/gluetools-web.war'
 	      execute 'sudo -n mv /tmp/gluetools-web.war /usr/share/tomcat/webapps'
+	      execute 'sudo -n rm -rf /var/cache/tomcat/work/Catalina/localhost/gluetools-web'
 	      execute 'sudo -n systemctl start tomcat'
 	    }
 	  }
@@ -84,6 +85,7 @@ task deployWebAppWarGlueHomeAWS(dependsOn: ['war']) {
 	      execute 'sudo rm -rf /var/lib/tomcat7/webapps/gluetools-web'
 	      execute 'sudo rm -rf /var/lib/tomcat7/webapps/gluetools-web.war'
 	      execute 'sudo mv /tmp/gluetools-web.war /var/lib/tomcat7/webapps'
+	      execute 'sudo rm -rf /var/lib/tomcat7/work/Catalina/localhost/gluetools-web'
 	      execute 'sudo service tomcat7 start'
 	    }
 	  }
