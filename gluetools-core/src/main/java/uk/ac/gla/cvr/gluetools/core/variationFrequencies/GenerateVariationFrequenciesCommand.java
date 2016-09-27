@@ -112,7 +112,9 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 					column("referenceName", avr -> avr.variation.getFeatureLoc().getReferenceSequence().getName()),
 					column("featureName", avr -> avr.variation.getFeatureLoc().getFeature().getName()),
 					column("variationName", avr -> avr.variation.getName()),
-					column("frequency", avr -> avr.frequency)
+					column("frequency", avr -> avr.frequency),
+					column("totalPresent", avr -> avr.totalPresent),
+					column("totalAbsent", avr -> avr.totalAbsent)
 					);
 		}
 	}

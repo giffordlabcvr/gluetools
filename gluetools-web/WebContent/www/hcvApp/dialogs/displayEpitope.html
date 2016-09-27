@@ -36,6 +36,11 @@
 		<tr><td><b>Defining GLUE reference sequence / feature:</b></td><td>{{variation.referenceSequence}} / {{variation.feature}}</td></tr>
 	</table>
 
+	<h4>Frequency across HCV genotypes and subtypes</h4>
+	<p>The tables below summarise the occurence of {{variation.renderedName}} in various HCV clades 
+	   (genotypes and subtypes). The figures are based on a set of NCBI sequences which are curated 
+	   in the HCV-GLUE project. Clades are omitted if fewer than 
+	   30 clade members were available, or if fewer than 1% of clade members contained the variant.</p>		
 	<div ng-include src="'../analysisTool/dialogs/freqView.html'"></div>
 	
 </div>

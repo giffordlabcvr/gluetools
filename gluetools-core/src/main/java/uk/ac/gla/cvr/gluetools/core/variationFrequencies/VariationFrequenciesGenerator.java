@@ -30,14 +30,22 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 		Alignment alignment;
 		Variation variation;
 		double frequency;
+		int totalPresent;
+		int totalAbsent;
 	}
 
 	public static String FREQUENCY_FIELD_NAME = "frequencyFieldName";
+	public static String TOTAL_PRESENT_FIELD_NAME = "totalPresentFieldName";
+	public static String TOTAL_ABSENT_FIELD_NAME = "totalAbsentFieldName";
 	public static String MIN_FREQUENCY_PCT = "minFrequencyPct";
 	public static String MIN_SAMPLE_SIZE = "minSampleSize";
 	
 	// name of a DOUBLE field on var-almt-note, where the frequency will be set.
 	private String frequencyFieldName; 
+	// name of an INTEGER field on var-almt-note, where the total present will be set.
+	private String totalPresentFieldName; 
+	// name of an INTEGER field on var-almt-note, where the total absent will be set.
+	private String totalAbsentFieldName; 
 	// if frequency percentage is below this value, no varAlmtNote will be generated / updated.
 	// default: 1.0%
 	private Double minFrequencyPct; 
@@ -48,6 +56,8 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 		super();
 		addModulePluginCmdClass(GenerateVariationFrequenciesCommand.class);
 		addSimplePropertyName(FREQUENCY_FIELD_NAME);
+		addSimplePropertyName(TOTAL_PRESENT_FIELD_NAME);
+		addSimplePropertyName(TOTAL_ABSENT_FIELD_NAME);
 		addSimplePropertyName(MIN_FREQUENCY_PCT);
 		addSimplePropertyName(MIN_SAMPLE_SIZE);
 	}
@@ -57,6 +67,8 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.frequencyFieldName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, FREQUENCY_FIELD_NAME, false)).orElse("frequency");
+		this.totalPresentFieldName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, TOTAL_PRESENT_FIELD_NAME, false)).orElse("total_present");
+		this.totalAbsentFieldName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, TOTAL_ABSENT_FIELD_NAME, false)).orElse("total_absent");
 		this.minFrequencyPct = 
 				Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_FREQUENCY_PCT, 0.0, true, 100.0, true, false)).orElse(1.0);
 		this.minSampleSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_SAMPLE_SIZE, 1, true, null, true, false)).orElse(30);
@@ -76,6 +88,8 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 					almtVarReport.alignment = alignment;
 					almtVarReport.variation = memberCount.getVariation();
 					almtVarReport.frequency = frequency;
+					almtVarReport.totalPresent = memberCount.getMembersWherePresent();
+					almtVarReport.totalAbsent = memberCount.getMembersWhereAbsent();
 					almtVarReports.add(almtVarReport);
 
 					if(almtVarReports.size() % 500 == 0) {
@@ -117,6 +131,12 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 		PropertyCommandDelegate.executeSetField(cmdContext, insideProjectMode.getProject(), 
 				ConfigurableTable.var_almt_note.name(), varAlmtNote, frequencyFieldName, 
 				new Double(almtVarReport.frequency), true);
+		PropertyCommandDelegate.executeSetField(cmdContext, insideProjectMode.getProject(), 
+				ConfigurableTable.var_almt_note.name(), varAlmtNote, totalPresentFieldName, 
+				new Integer(almtVarReport.totalPresent), true);
+		PropertyCommandDelegate.executeSetField(cmdContext, insideProjectMode.getProject(), 
+				ConfigurableTable.var_almt_note.name(), varAlmtNote, totalAbsentFieldName, 
+				new Integer(almtVarReport.totalAbsent), true);
 		cmdContext.cacheUncommitted(varAlmtNote);
 	}
 

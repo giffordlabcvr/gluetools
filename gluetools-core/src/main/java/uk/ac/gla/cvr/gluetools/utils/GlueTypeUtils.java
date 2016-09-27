@@ -20,7 +20,7 @@ public class GlueTypeUtils {
 		Double {
 			@Override
 			public java.lang.String renderAsString(Object value) {
-				return java.lang.Double.toString((Integer) value);
+				return java.lang.Double.toString((Double) value);
 			}
 		},
 		String {
