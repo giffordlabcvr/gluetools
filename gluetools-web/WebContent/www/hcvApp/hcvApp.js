@@ -26,9 +26,14 @@ hcvApp.config(['$routeProvider', 'projectBrowserStandardRoutesProvider',
     // custom alignments view
 	$routeProvider.
     when('/project/alignment', {
-	  templateUrl: 'views/hcvAlignments.html',
-	  controller: 'hcvAlignmentsCtrl'
-    });
+  	  templateUrl: 'views/hcvAlignments.html',
+  	  controller: 'hcvAlignmentsCtrl'
+      });
+	$routeProvider.
+    when('/project/drug', {
+  	  templateUrl: 'views/hcvDrugs.html',
+  	  controller: 'hcvDrugsCtrl'
+      });
 	// custom single alignment view
 	$routeProvider.
     when('/project/alignment/:alignmentName', {
@@ -60,6 +65,7 @@ function ($scope, glueWS, glueWebToolConfig) {
 	$scope.analysisToolMenuTitle = "Sequence typing and interpretation";
 	$scope.projectBrowserMenuTitle = "Database";
 	$scope.projectBrowserAlignmentMenuTitle = "Clade Tree";
+	$scope.projectBrowserDrugMenuTitle = "DAA Drugs";
 	$scope.projectBrowserReferenceSequenceMenuTitle = "Reference Sequences";
 	$scope.projectBrowserSequenceMenuTitle = "Sequences";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");
