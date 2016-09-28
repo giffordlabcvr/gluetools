@@ -41,6 +41,30 @@ hcvApp.config(['$routeProvider', 'projectBrowserStandardRoutesProvider',
     	  templateUrl: 'views/hcvDrug.html',
     	  controller: 'hcvDrugCtrl'
         });
+	// Drug resistance publications overview
+	$routeProvider.
+    when('/project/drug_resistance_publication', {
+    	  templateUrl: 'views/hcvDrugResistancePublications.html',
+    	  controller: 'hcvDrugResistancePublicationsCtrl'
+        });
+	// specific drug resistance publication
+	$routeProvider.
+    when('/project/drug_resistance_publication/:id', {
+    	  templateUrl: 'views/hcvDrugResistancePublication.html',
+    	  controller: 'hcvDrugResistancePublicationCtrl'
+        });
+	// specific RAV
+	$routeProvider.
+    when('/project/rav/:referenceName/:featureName/:variationName', {
+    	  templateUrl: 'views/hcvRav.html',
+    	  controller: 'hcvRavCtrl'
+        });
+	// RAVs overview
+	$routeProvider.
+    when('/project/rav', {
+    	  templateUrl: 'views/hcvRavs.html',
+    	  controller: 'hcvRavsCtrl'
+        });
 	// custom single alignment view
 	$routeProvider.
     when('/project/alignment/:alignmentName', {
@@ -69,10 +93,13 @@ function ($scope, glueWS, glueWebToolConfig) {
 	$scope.brand = "HCV-GLUE";
 	$scope.homeMenuTitle = "Home";
 	$scope.analysisMenuTitle = "Analysis";
-	$scope.analysisToolMenuTitle = "Sequence typing and interpretation";
-	$scope.projectBrowserMenuTitle = "Database";
+	$scope.analysisToolMenuTitle = "Sequence Typing and Interpretation";
+	$scope.projectBrowserMenuTitle = "Sequence Database";
+	$scope.drugResistanceMenuTitle = "Drug Resistance";
 	$scope.projectBrowserAlignmentMenuTitle = "Clade Tree";
-	$scope.projectBrowserDrugMenuTitle = "DAA Drugs";
+	$scope.projectBrowserDrugMenuTitle = "Direct-acting Antivirals";
+	$scope.projectBrowserRavMenuTitle = "Resistance-associated Substitutions";
+	$scope.projectBrowserDrugPubMenuTitle = "Drug Resistance References";
 	$scope.projectBrowserReferenceSequenceMenuTitle = "Reference Sequences";
 	$scope.projectBrowserSequenceMenuTitle = "Sequences";
 	glueWS.setProjectURL("../../../gluetools-ws/project/hcv");

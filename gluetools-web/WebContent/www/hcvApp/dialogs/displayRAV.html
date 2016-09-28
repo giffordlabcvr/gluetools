@@ -29,17 +29,14 @@
 					<tr>
 						<th>Drug</th>
 						<th>Clade</th>
-						<th>Resistance level</th>
-						<th>Study type</th>
-						<th>EC<sub>50</sub> fold change</th>
+						<th>Study Type</th>
+						<th>EC<sub>50</sub> Fold Change</th>
 						<th>Reference</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="finding in variation.drugResistanceFinding track by $index">
 					<td>{{finding.drug}}</b></td>
 					<td>{{finding.clade}}</td>
-					<td ng-show="finding.resistanceLevel == 'resistant'">Resistant</td>
-					<td ng-show="finding.resistanceLevel == 'possibly_resistant'">Possibly resistant</td>
 					<td ng-show="finding.studyType == 'clinical'">Clinical</td>
 					<td ng-show="finding.studyType == 'in_vitro'"><em>In vitro</em></td>
 					<td ng-show="!finding.foldChange">N/A</td>

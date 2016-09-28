@@ -50,6 +50,7 @@ public class FreemarkerUtils {
 		return result.toString();
 	}
 
+	// pretty sure this can be replaced by Configuration.getObjectWrapper().wrap(renderableObject)?
 	public static TemplateModel templateModelForGlueDataObject(GlueDataObject renderableObject) {
 		DefaultObjectWrapperBuilder objectWrapperBuilder = new DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_21);
 		DefaultObjectWrapper objectWrapper = objectWrapperBuilder.build();

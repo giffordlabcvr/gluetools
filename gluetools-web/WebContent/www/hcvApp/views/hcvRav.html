@@ -1,0 +1,64 @@
+<div ng-cloak ng-app="hcvApp">
+	<h2>{{rav.renderedName}}</h2>
+	<p>
+	Virus protein: {{rav.feature}}
+	<br/>
+	Resistant substitution(s): {{handleNull(rav.substitutions)}}
+	</p>
+	<h4>Drug resistance</h4>
+	<div ng-show="!rav.drugResistanceFinding">
+		<p>No resistance findings have been collated</p>
+	</div>
+	<div ng-show="rav.drugResistanceFinding.length > 0">
+		<p>
+			<table class="table table-nonfluid table-striped table-bordered">
+				<thead>
+					<tr>
+						<th>Drug</th>
+						<th>Clade</th>
+						<th>Study Type</th>
+						<th>EC<sub>50</sub> Fold Change</th>
+						<th>Reference</th>
+					</tr>
+				</thead>
+				<tr ng-repeat="finding in rav.drugResistanceFinding track by $index">
+					<td><a href="#project/drug/{{finding.drug}}">{{finding.drug}}</a></td>
+					<td>{{finding.clade}}</td>
+					<td ng-show="finding.studyType == 'clinical'">Clinical</td>
+					<td ng-show="finding.studyType == 'in_vitro'"><em>In vitro</em></td>
+					<td ng-show="!finding.foldChange">N/A</td>
+					<td ng-show="finding.foldChange">{{toFixed(finding.foldChange, 2)}}</td>
+					<td><a href="#project/drug_resistance_publication/{{finding.publication.id}}">
+					{{finding.publication.displayName}}</a></td>
+				</tr>
+			</table>
+		</p>
+	</div>
+
+	<h4>Frequency across HCV genotypes and subtypes</h4>
+	<div ng-show="!rav.alignmentNote">
+		<p>Not present at significant numbers</p>
+	</div>
+	<div ng-show="rav.alignmentNote.length > 0">
+	<p>The table below summarises the occurence of {{rav.renderedName}} in various HCV clades 
+	   (genotypes and subtypes). The figures are based on a set of NCBI sequences which are curated 
+	   in the HCV-GLUE project. Clades are omitted if fewer than 
+	   30 clade members were available, or if fewer than 1% of clade members contained the variant.</p>		
+		<p>
+			<table class="table table-nonfluid table-striped table-bordered">
+				<thead>
+					<th>Clade</th>
+					<th>Frequency</th>
+				</thead>
+				<tr ng-repeat="cladeFreq in rav.alignmentNote track by $index">
+					<td><a href="#project/alignment/{{cladeFreq.alignmentName}}">{{cladeFreq.alignmentRenderedName}}</a></td>
+					<td>{{cladeFreq.ncbiCuratedTotalPresent}} of {{cladeFreq.ncbiCuratedTotalPresent + cladeFreq.ncbiCuratedTotalAbsent}} ({{toFixed(cladeFreq.ncbiCuratedFrequencyPct, 2)}}%)</td>
+				</tr>
+			</table>
+		</p>
+	</div>
+
+	
+
+
+</div>

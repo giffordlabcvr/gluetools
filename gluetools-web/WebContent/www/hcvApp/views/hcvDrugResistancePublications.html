@@ -1,0 +1,19 @@
+<div ng-cloak ng-app="hcvApp">
+	<h2>Drug Resistance References</h2>
+	<p>
+	Drug resistance findings have been collated from these sources.
+	</p>
+	<ol>
+		<li ng-repeat="drPub in drugResistancePublications track by $index">
+		{{drPub.authors}}
+		<br/>
+		<b>{{drPub.title}}</b>
+		<br/>
+		<em>{{drPub.publication}}</em>, {{drPub.pub_location}}, <b>{{drPub.year}}</b>
+		<br/>
+		<a href="{{drPub.webLink}}" target="_blank">View publication <span class="glyphicon glyphicon-link"></span></a>
+		<a href="#project/drug_resistance_publication/{{drPub.id}}">View collated resistance findings <span class="glyphicon glyphicon-link"></span></a>
+		</li>
+	</ol>
+
+</div>

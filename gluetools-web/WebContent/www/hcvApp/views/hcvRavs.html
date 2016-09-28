@@ -1,0 +1,28 @@
+<div ng-app="hcvApp">
+	<h2>Resistance-associated substitutions</h2>
+	<p>
+	HCV-GLUE analyses sequences for these individual or combined amino acid substitutions, which have been 
+	associated with HCV drug resistance.
+	</p>
+
+	<table class="table table-nonfluid table-striped table-bordered">
+		<thead>
+			<th>Gene</th>		
+			<th>Substitution(s)</th>		
+			<th></th>		
+		</thead>
+		<tbody>
+			<tr ng-repeat="rav in ravs track by $index">
+				<td>{{rav['featureLoc.feature.name']}}</td>
+				<td>{{rav['rav_substitutions']}}</td>
+				<td><a href="#project/rav/{{rav['featureLoc.referenceSequence.name']}}/{{rav['featureLoc.feature.name']}}/{{rav['name']}}">View resistance findings  <span class="glyphicon glyphicon-link"></span></a></td>
+			</tr>
+		</tbody>
+	</table>
+	<h4>Notes</h4>
+	<ul>
+		<li>Codon locations are based on the H77 reference sequence (AF009606)</li>
+	</ul>
+
+
+</div>

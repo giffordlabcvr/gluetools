@@ -13,6 +13,7 @@ import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
+import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
@@ -198,7 +199,11 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		return result;
 	}
 
-
+	// this allows custom fields to be correctly handled with dot-notation in freemarker.
+	// see docs for BeanModel.TemplateModel get(String key)
+	public final Object get(String key) {
+		return readProperty(key);
+	}
 
 
 }
