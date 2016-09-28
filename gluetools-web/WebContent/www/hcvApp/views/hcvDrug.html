@@ -1,0 +1,29 @@
+<div ng-cloak ng-app="hcvApp">
+	<h2>{{drugId}}</h2>
+	{{drugRenderResult.drug.category.displayName}}
+	<br/>	
+	{{drugRenderResult.drug.companyCode ? "Company code: "+drugRenderResult.drug.companyCode : ""}}
+	<h4>Resistance findings</h4>
+	<div ng-show="!drugRenderResult.drug.drugResistanceFinding">
+	No resistance findings collated
+	</div>
+	<table ng-show="drugRenderResult.drug.drugResistanceFinding.length > 0" 
+		class="table table-nonfluid table-striped table-bordered">
+		<thead>
+			<th>Gene</th>		
+			<th>Resistant substitution(s)</th>		
+			<th>Publication</th>		
+		</thead>
+		<tbody>
+			<tr ng-repeat="resistanceFinding in drugRenderResult.drug.drugResistanceFinding track by $index">
+				<td>{{resistanceFinding.variation.featureName}}</td>
+				<td>{{resistanceFinding.variation.substitutions}}</td>
+				<td><a href="{{resistanceFinding.publication.webLink}}" target='_blank'">
+					{{resistanceFinding.publication.displayName}}</a></td>
+			</tr>
+		</tbody>
+	</table>
+	
+
+
+</div>

@@ -29,11 +29,18 @@ hcvApp.config(['$routeProvider', 'projectBrowserStandardRoutesProvider',
   	  templateUrl: 'views/hcvAlignments.html',
   	  controller: 'hcvAlignmentsCtrl'
       });
+	// drugs overview
 	$routeProvider.
     when('/project/drug', {
-  	  templateUrl: 'views/hcvDrugs.html',
-  	  controller: 'hcvDrugsCtrl'
-      });
+    	  templateUrl: 'views/hcvDrugs.html',
+    	  controller: 'hcvDrugsCtrl'
+        });
+	// specific drug
+	$routeProvider.
+    when('/project/drug/:id', {
+    	  templateUrl: 'views/hcvDrug.html',
+    	  controller: 'hcvDrugCtrl'
+        });
 	// custom single alignment view
 	$routeProvider.
     when('/project/alignment/:alignmentName', {

@@ -6,13 +6,13 @@
 
 	<table class="table table-nonfluid table-striped table-bordered">
 		<thead>
-			<th>Drug<br/>(Nonproprietary name)</th>		
+			<th>Drug</th>		
 			<th>Category</th>		
 			<th>Company code</th>		
 		</thead>
 		<tbody>
 			<tr ng-repeat="drug in drugs track by $index">
-				<td>{{drug.id}}</td>
+				<td><a href="#project/drug/{{drug.id}}">{{drug.id}}</a></td>
 				<td>{{categoryIdToDisplayName[drug.drug_category]}}</td>
 				<td>{{handleNull(drug.company_code)}}</td>
 			</tr>
