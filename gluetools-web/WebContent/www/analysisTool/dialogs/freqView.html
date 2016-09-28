@@ -10,7 +10,7 @@
 		<p>
 			<table class="table table-striped table-bordered">
 				<tr ng-repeat="cladeFreq in data.cladeFreqs track by $index">
-					<td><b>{{cladeFreq.alignmentRenderedName}}</b></td>
+					<td><a href="#project/alignment/{{cladeFreq.alignmentName}}" target="_blank">{{cladeFreq.alignmentRenderedName}}</a></td>
 					<td>{{cladeFreq.ncbiCuratedTotalPresent}} of {{cladeFreq.ncbiCuratedTotalPresent + cladeFreq.ncbiCuratedTotalAbsent}} ({{toFixed(cladeFreq.ncbiCuratedFrequencyPct, 2)}}%)</td>
 				</tr>
 			</table>

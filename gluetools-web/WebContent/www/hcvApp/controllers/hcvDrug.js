@@ -14,6 +14,15 @@ hcvApp.controller('hcvDrugCtrl',
 			})
 			.success(function(data, status, headers, config) {
 				$scope.drugRenderResult = data;
+				
+				$scope.drugRenderResult.drug.drugResistanceFinding = 
+					_($scope.drugRenderResult.drug.drugResistanceFinding).chain()
+					  .sortBy('variationSubstitutions')
+					  .sortBy('variationFirstCodon')
+					  .sortBy('variationFeatureName')
+					  .value();
+
+				
 				console.info('$scope.drugRenderResult', $scope.drugRenderResult);
 			})
 			.error(glueWS.raiseErrorDialog(dialogs, "rendering drug"));

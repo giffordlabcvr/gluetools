@@ -14,6 +14,14 @@ hcvApp.controller('hcvDrugResistancePublicationCtrl',
 			})
 			.success(function(data, status, headers, config) {
 				$scope.drPubRenderResult = data;
+				
+				// chained sort: least significant field first
+				$scope.drPubRenderResult.drugPublication.drugResistanceFinding = 
+				_($scope.drPubRenderResult.drugPublication.drugResistanceFinding).chain()
+				  .sortBy('variationSubstitutions')
+				  .sortBy('variationFirstCodon')
+				  .sortBy('variationFeatureName')
+				  .value();
 				console.info('$scope.drPubRenderResult', $scope.drPubRenderResult);
 			})
 			.error(glueWS.raiseErrorDialog(dialogs, "rendering drug resistance publication"));

@@ -13,6 +13,7 @@ hcvApp.controller('hcvRavsCtrl',
 			            "fieldName":[
 			                "featureLoc.feature.name",
 			                "rav_substitutions",
+			                "rav_first_codon",
 			                "featureLoc.referenceSequence.name",
 			                "name"
 			            ]
@@ -21,6 +22,12 @@ hcvApp.controller('hcvRavsCtrl',
 			})
 			.success(function(data, status, headers, config) {
 				$scope.ravs = tableResultAsObjectList(data);
+				// chained sort: least significant field first
+				$scope.ravs = _($scope.ravs).chain()
+				  .sortBy('rav_substitutions')
+				  .sortBy('rav_first_codon')
+				  .sortBy('featureLoc.feature.name')
+				  .value();
 				console.info('$scope.ravs', $scope.ravs);
 			})
 			.error(glueWS.raiseErrorDialog(dialogs, "retrieving resistance associated variants"));

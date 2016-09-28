@@ -24,8 +24,8 @@
 		<tbody>
 			<tr ng-repeat="finding in drPubRenderResult.drugPublication.drugResistanceFinding track by $index">
 				<td><a href="#project/drug/{{finding.drugId}}">{{finding.drugId}}</a></td>
-				<td>{{finding.variation.featureName}}</td>
-				<td><a href="#project/rav/{{finding.variation.referenceSequence}}/{{finding.variation.featureName}}/{{finding.variation.variationName}}">{{finding.variation.substitutions}}</a></td>
+				<td>{{finding.variationFeatureName}}</td>
+				<td><a href="#project/rav/{{finding.variationReferenceSequence}}/{{finding.variationFeatureName}}/{{finding.variationName}}">{{finding.variationSubstitutions}}</a></td>
 				<td>{{finding.clade}}</td>
 				<td ng-show="finding.studyType == 'clinical'">Clinical</td>
 				<td ng-show="finding.studyType == 'in_vitro'"><em>In vitro</em></td>

@@ -3,6 +3,10 @@
 		{{variation.renderedName}}
 	</h3>
 	{{variation.description}}
+	<br/>
+	Virus protein: {{variation.feature}}
+	<br/>
+	Resistant substitution(s): {{handleNull(variation.substitutions)}}
 	<h4>Category</h4>
 	<div style="display:table-row;"" >
 		<svg width="40px" height="22px" style="display:table-cell; padding-right:5px">
@@ -13,11 +17,6 @@
 	</div>
 </div>
 <div class="modal-body">
-	<h4>Details</h4>
-	<table class="table table-bordered table-striped">
-		<tr><td><b>Virus protein:</b></td><td>{{variation.feature}}</td></tr>
-		<tr><td><b>Resistant substitution(s):</b></td><td>{{handleNull(variation.substitutions)}}</td></tr>
-	</table>
 	<h4>Drug resistance</h4>
 	<div ng-show="!variation.drugResistanceFinding">
 		<p>No research findings have been collated</p>
@@ -35,13 +34,13 @@
 					</tr>
 				</thead>
 				<tr ng-repeat="finding in variation.drugResistanceFinding track by $index">
-					<td>{{finding.drug}}</b></td>
+					<td><a href="#project/drug/{{finding.drug}}" target="_blank">{{finding.drug}}</a></td>
 					<td>{{finding.clade}}</td>
 					<td ng-show="finding.studyType == 'clinical'">Clinical</td>
 					<td ng-show="finding.studyType == 'in_vitro'"><em>In vitro</em></td>
 					<td ng-show="!finding.foldChange">N/A</td>
 					<td ng-show="finding.foldChange">{{toFixed(finding.foldChange, 2)}}</td>
-					<td><a href="{{finding.publication.webLink}}" target="_blank">{{finding.publication.displayName}}</a></td>
+					<td><a href="#project/drug_resistance_publication/{{finding.publication.id}}" target="_blank">{{finding.publication.displayName}}</a></td>
 				</tr>
 			</table>
 		</p>
