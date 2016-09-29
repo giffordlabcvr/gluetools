@@ -14,19 +14,16 @@ public class AlignmentShowParentCommand extends AlignmentModeCommand<AlignmentSh
 
 	@Override
 	public AlignmentShowParentResult execute(CommandContext cmdContext) {
-		Alignment alignment = lookupAlignment(cmdContext);
-		String parentName = null;
-		Alignment parent = alignment.getParent();
-		if(parent != null) {
-			parentName = parent.getName();
-		}
-		return new AlignmentShowParentResult(parentName);
+		return new AlignmentShowParentResult(lookupAlignment(cmdContext).getParent());
 	}
 	
 	public class AlignmentShowParentResult extends MapResult {
 
-		public AlignmentShowParentResult(String parentName) {
-			super("alignmentShowParent", mapBuilder().put(Alignment.PARENT_NAME_PATH, parentName));
+		public AlignmentShowParentResult(Alignment parent) {
+			super("alignmentShowParent", mapBuilder()
+					.put(Alignment.PARENT_NAME_PATH, parent != null ? parent.getName() : null)
+					.put(Alignment.PARENT_PROPERTY+"."+"renderedName", parent != null ? parent.getRenderedName() : null)
+					);
 		}
 
 

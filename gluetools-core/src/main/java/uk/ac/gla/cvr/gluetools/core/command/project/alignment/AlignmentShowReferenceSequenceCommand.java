@@ -17,19 +17,16 @@ public class AlignmentShowReferenceSequenceCommand extends AlignmentModeCommand<
 	
 	@Override
 	public ShowReferenceResult execute(CommandContext cmdContext) {
-		Alignment alignment = lookupAlignment(cmdContext);
-		ReferenceSequence refSequence = alignment.getRefSequence();
-		String refName = null;
-		if(refSequence != null) {
-			refName = refSequence.getName();
-		}
-		return new ShowReferenceResult(refName);
+		return new ShowReferenceResult(lookupAlignment(cmdContext).getRefSequence());
 	}
 
 	public static class ShowReferenceResult extends MapResult {
 
-		public ShowReferenceResult(String referenceName) {
-			super("showReferenceResult", mapBuilder().put("referenceName", referenceName));
+		public ShowReferenceResult(ReferenceSequence refSequence) {
+			super("showReferenceResult", mapBuilder()
+					.put("referenceName", refSequence != null ? refSequence.getName() : null)
+					.put("referenceRenderedName", refSequence != null ? refSequence.getRenderedName() : null)
+				);
 		}
 
 		public String getReferenceName() {

@@ -1,4 +1,4 @@
-<div ng-show="renderResult" ng-app="hcvApp">
+<div ng-cloak ng-app="hcvApp">
 	<h2>{{renderResult.alignment.renderedName}}</h2>
 	
 	<div>
@@ -22,11 +22,34 @@
 			</div>
 		</p>
 	</div>
-	<h3>Clade member sequences</h3>	
-	<span ng-show="!renderResult.alignment.memberSequence">None</span>
-	<div ng-repeat="member in renderResult.alignment.memberSequence track by $index">
-		<a href="#project/alignment/{{renderResult.alignment.name}}/member/{{member.sourceName}}/{{member.sequenceID}}">
-			{{member.sourceName}}/{{member.sequenceID}}
-		</a>
-	</div>	
+	<h3>Curated NCBI clade member sequences</h3>
+	<span ng-show="memberList.length == 0">None</span>
+	<div ng-show="memberList.length > 0">
+		<table class="table table-nonfluid table-striped table-bordered">
+			<thead>
+				<th>Primary Accession</th>
+				<th>Creation Date</th>
+				<th>Sequence Length</th>
+				<th>Isolate</th>
+				<th>Country</th>
+				<th>Collection Year</th>
+				<th>Publication</th>
+			</thead>
+			<tbody>
+				<tr ng-repeat="member in memberList track by $index">
+					<td><a href="#project/sequence/ncbi-curated/{{member['sequence.sequenceID']}}">
+							{{member['sequence.sequenceID']}} </a></td>
+					<td>{{member['sequence.gb_create_date']}}</td>
+					<td>{{member['sequence.gb_length']}}</td>
+					<td>{{handleNull(member['sequence.gb_isolate'])}}</td>
+					<td>{{handleNull(member['sequence.gb_country_official'])}}</td>
+					<td>{{handleNull(member['sequence.gb_collection_year'])}}</td>
+					<td ng-show="member['sequence.gb_pubmed_id'] == null">-</td>
+					<td ng-show="member['sequence.gb_pubmed_id'] != null">
+						<a href="https://www.ncbi.nlm.nih.gov/pubmed/{{member['sequence.gb_pubmed_id']}}" target="_blank">PubMed {{member['sequence.gb_pubmed_id']}} <span class="glyphicon glyphicon-link"></span></a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 </div>

@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.util.Date;
 import java.util.LinkedList;
 
 import javax.json.JsonArray;
@@ -132,7 +133,7 @@ public class JsonObjectCmdDocVisitor implements CommandDocumentVisitor {
 			arrayBuilder.add((Boolean) simpleCommandValue.getValue());
 			break;
 		case Date:
-			arrayBuilder.add((String) simpleCommandValue.getValue());
+			arrayBuilder.add(DateUtils.render((Date) simpleCommandValue.getValue()));
 			break;
 		case String:
 			arrayBuilder.add((String) simpleCommandValue.getValue());
