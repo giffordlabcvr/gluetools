@@ -125,20 +125,23 @@
                resourceName="UserDatabase"/>
       </Realm>
 
-      <Host name="localhost"  appBase="webapps"
+      <Host name="hcv.glue.cvr.ac.uk"  appBase="webapps_hcv"
             unpackWARs="true" autoDeploy="true">
 
-        <!-- SingleSignOn valve, share authentication between web applications
-             Documentation at: /docs/config/valve.html -->
-        <!--
-        <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
-        -->
+        <Context docBase="hcvGlue" path="" reloadable="true"/>
 
-        <!-- Access log processes all example.
-             Documentation at: /docs/config/valve.html
-             Note: The pattern used is equivalent to using pattern="common" -->
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="localhost_access_log." suffix=".txt"
+               prefix="hcv_glue_access_log." suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+
+      </Host>
+      <Host name="tools.glue.cvr.ac.uk"  appBase="webapps_tools"
+            unpackWARs="true" autoDeploy="true">
+
+        <Context docBase="gluetoolsApp" path="" reloadable="true"/>
+
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="tools_access_log." suffix=".txt"
                pattern="%h %l %u %t &quot;%r&quot; %s %b" />
 
       </Host>

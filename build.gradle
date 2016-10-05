@@ -12,22 +12,17 @@ project('gluetools-ws') {
 	apply plugin: 'eclipse-wtp'
 }
 
+project('gluetoolsApp') {
+	apply plugin: 'java'
+	apply plugin: 'eclipse-wtp'
+}
+
 
 task deployAll(dependsOn: [
-	':gluetools-core:deployJarGlueHome', 
 	':gluetools-core:deployJarOmega', 
-	':gluetools-core:deployGlueDbToGlueHome', 
 	':gluetools-core:deployGlueDbToOmega', 
-	':gluetools-ws:deployWarGlueHome', 
-	':gluetools-web:deployWebAppWarGlueHome']) {
+	':gluetoolsApp:deployGluetoolsAppGlueHomeAWS']) {
 }
-
-task deployHcvGlueAWS(dependsOn: [
-	':gluetools-core:deployGlueDbToGlueHomeAWS', 
-	':gluetools-ws:deployWarGlueHomeAWS', 
-	':gluetools-web:deployWebAppWarGlueHomeAWS']) {
-}
-
 
 configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 
@@ -59,8 +54,8 @@ configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 scmVersion {
 	hooks {
         pre 'fileUpdate', [file: 'gluetools-core/src/main/resources/gluecore.properties', pattern: {v, c -> /version=$v/}, replacement: {v, c -> "version=$v"}]
-        pre 'fileUpdate', [file: 'gluetools-web/WebContent/www/gluetoolsApp/pages/download/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
-        pre 'fileUpdate', [file: 'gluetools-web/WebContent/www/gluetoolsApp/pages/userGuide/installation/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
+        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/download/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
+        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/userGuide/installation/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
 		pre 'commit', {v, p -> "Release version $v"}
     }
 

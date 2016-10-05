@@ -1,3 +1,4 @@
 include 'gluetools-core'
 include 'gluetools-ws'
 include 'gluetools-web'
+include 'gluetoolsApp'

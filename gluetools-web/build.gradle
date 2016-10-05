@@ -3,11 +3,6 @@ apply plugin: 'war'
 apply plugin: 'org.hidetake.ssh'
 
 remotes {
-  gluehome {
-    host = 'gluehome.cvr.gla.ac.uk'
-    user = 'js460b'
-    identity = file('/Users/joshsinger/.ssh/gluehome_id_rsa')
-  }
   gluehome_aws {
     host = '52.16.113.119'
     user = 'ubuntu'
@@ -27,78 +22,6 @@ buildscript {
 }
 
 war {
-	dependsOn 'copyToDownloads'
 	webAppDirName = 'WebContent'
+	archiveName 'gluetools-web.war'
 }
-
-task copyToDownloads(dependsOn: [':gluetools-core:jarAll', ':gluetools-core:exampleProjectZip', ':gluetools-core:glueInstallDirZip', 'cleanDownloads'], type: Copy) {
-    from '../gluetools-core/build/libs/gluetools-core-all-'+version+'.jar'
-    from '../gluetools-core/build/distributions/exampleProject-'+version+'.zip'
-    from '../gluetools-core/build/distributions/glueInstallDir-'+version+'.zip'
-    from '../gluetools-core/gluetools/conf/gluetools-config.xml'
-    into 'WebContent/www/gluetoolsApp/downloads'
-}
-
-task cleanDownloads(type: Delete) {
-	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'gluetools-core-all-*.jar' }
-	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'exampleProject-*.zip' }
-	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'glueInstallDir-*.zip' }
-	delete fileTree(dir: 'WebContent/www/gluetoolsApp/downloads').matching { include 'gluetools-config.xml' }
-}
-
-task deployWebAppWarGlueHome(dependsOn: ['war']) {
-  ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web-'+version+'.war')
-  ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWarGlueHome.touchfile')
-  inputs.file glueWebAppWarFile
-  outputs.file glueWebAppWarTouchfile
-  doLast {
-	  println "Uploading "+glueWebAppWarFile.name
-	  ssh.run {
-	    session(remotes.gluehome) {
-	      put from: glueWebAppWarFile.absolutePath, into: '/tmp/gluetools-web.war'
-	      execute 'sudo -n systemctl stop tomcat'
-	      execute 'sudo -n rm -rf /usr/share/tomcat/webapps/gluetools-web'
-	      execute 'sudo -n rm -rf /usr/share/tomcat/webapps/gluetools-web.war'
-	      execute 'sudo -n mv /tmp/gluetools-web.war /usr/share/tomcat/webapps'
-	      execute 'sudo -n rm -rf /var/cache/tomcat/work/Catalina/localhost/gluetools-web'
-	      execute 'sudo -n systemctl start tomcat'
-	    }
-	  }
-	  glueWebAppWarTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueWebAppWarTouchfile.createNewFile()
-  }
-}
-
-
-task deployWebAppWarGlueHomeAWS(dependsOn: ['war']) {
-  ext.glueWebAppWarFile = new File(buildDir, '/libs/gluetools-web-'+version+'.war')
-  ext.glueWebAppWarTouchfile = new File(buildDir, '/deployWebAppWarGlueHomeAWS.touchfile')
-  inputs.file glueWebAppWarFile
-  outputs.file glueWebAppWarTouchfile
-  doLast {
-	  println "Uploading "+glueWebAppWarFile.name
-	  ssh.run {
-	    session(remotes.gluehome_aws) {
-	      put from: glueWebAppWarFile.absolutePath, into: '/tmp/gluetools-web.war'
-	      execute 'sudo service tomcat7 stop'
-	      execute 'sudo rm -rf /var/lib/tomcat7/webapps/gluetools-web'
-	      execute 'sudo rm -rf /var/lib/tomcat7/webapps/gluetools-web.war'
-	      execute 'sudo mv /tmp/gluetools-web.war /var/lib/tomcat7/webapps'
-	      execute 'sudo rm -rf /var/lib/tomcat7/work/Catalina/localhost/gluetools-web'
-	      execute 'sudo service tomcat7 start'
-	    }
-	  }
-	  glueWebAppWarTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueWebAppWarTouchfile.createNewFile()
-  }
-}
-
-
-
-
-
-
-
-

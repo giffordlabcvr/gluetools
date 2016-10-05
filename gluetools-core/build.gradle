@@ -5,11 +5,6 @@ apply plugin: 'org.hidetake.ssh'
 sourceCompatibility = 1.8
 
 remotes {
-  gluehome {
-    host = 'gluehome.cvr.gla.ac.uk'
-    user = 'js460b'
-    identity = file('/Users/joshsinger/.ssh/gluehome_id_rsa')
-  }
   omega {
     host = 'omega.cvr.gla.ac.uk'
     user = 'sing01j'
@@ -64,46 +59,6 @@ task jarAll(type: Jar) {
 }
 
 
-// config for Glue which tells it where to find its database. 
-task deployGlueConfigGlueHome {
-  ext.glueConfigFile = new File(projectDir, '/gluehome/gluetools-config.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigGlueHome.touchfile')
-  inputs.file glueConfigFile
-  outputs.file glueConfigTouchfile
-  doLast {
-	  println "Uploading "+glueConfigFile.name
-	  ssh.run {
-	    session(remotes.gluehome) {
-	      put from: glueConfigFile, into: '/opt/gluetools/conf'
-	    }
-	  }
-	  glueConfigTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueConfigTouchfile.createNewFile()
-  }
-}
-
-
-// config for Glue which tells it where to find its database. 
-task deployGlueConfigGlueHomeAWS {
-  ext.glueConfigFile = new File(projectDir, '/gluehome_aws/gluetools-config.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigGlueHomeAWS.touchfile')
-  inputs.file glueConfigFile
-  outputs.file glueConfigTouchfile
-  doLast {
-	  println "Uploading "+glueConfigFile.name
-	  ssh.run {
-	    session(remotes.gluehome_aws) {
-	      execute "sudo mkdir -p /opt/gluetools/conf"
-	      put from: glueConfigFile, into: '/tmp'
-	      execute "sudo mv /tmp/gluetools-config.xml /opt/gluetools/conf/"
-	    }
-	  }
-	  glueConfigTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueConfigTouchfile.createNewFile()
-  }
-}
 
 
 // config for Glue which tells it where to find its database. 
@@ -129,25 +84,6 @@ task deployGlueConfigOmega {
 }
 
 
-// gluetools core jar. 
-task deployJarGlueHome(dependsOn: ['jarAll','deployGlueConfigGlueHome']) {
-  ext.jarFile = new File(buildDir, '/libs/'+project.name+"-all-"+version+'.jar')
-  ext.deployJarGlueHomeTouchfile = new File(buildDir, '/deployJarGlueHome.touchfile')
-  inputs.file jarFile
-  outputs.file deployJarGlueHomeTouchfile
-  doLast {
-	  println "Uploading "+jarFile.name
-	  ssh.run {
-	    session(remotes.gluehome) {
-	      execute 'rm -rf /opt/gluetools/lib/*.jar'
-	      put from: jarFile, into: '/opt/gluetools/lib'
-	    }
-	  }
-	  deployJarGlueHomeTouchfile.delete()
-	  buildDir.mkdirs()
-	  deployJarGlueHomeTouchfile.createNewFile()
-  }
-}
 
 // gluetools core jar on Omega
 task deployJarOmega(dependsOn: ['jarAll']) {
@@ -202,47 +138,6 @@ task zipGlueDB(type: Exec, dependsOn: ['dumpGlueDB']) {
 	commandLine '/usr/bin/gzip', '-f', '/tmp/gluedb.sql'
 }
 
-// TODO implement this task and have other tasks depend on it.
-task buildHcvProject() {
-	ext.hcvProjectDir = new File(projectDir.getParentFile().getParentFile(), 'hcvGlue')
-    ext.buildHcvProjectTouchfile = new File(buildDir, '/buildHcvProject.touchfile')
-    inputs.dir hcvProjectDir
-    outputs.file buildHcvProjectTouchfile
-    doLast {
-	  buildHcvProjectTouchfile.delete()
-	  buildDir.mkdirs()
-	  buildHcvProjectTouchfile.createNewFile()
-    }
-}
-
-
-task deployGlueDbToGlueHome(dependsOn: ['zipGlueDB']) {
-  doLast {
-	  println "Uploading GLUE DB"
-	  ssh.run {
-	    session(remotes.gluehome) {
-	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
-	      execute 'echo "drop database GLUE_TOOLS; create database GLUE_TOOLS;" | mysql -u gluetools --password=gluetools GLUE_TOOLS'
-	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUE_TOOLS'
-	      execute 'rm /tmp/gluedb.sql.gz'
-	    }
-	  }
-  }
-}
-
-task deployGlueDbToGlueHomeAWS(dependsOn: ['zipGlueDB']) {
-  doLast {
-	  println "Uploading GLUE DB"
-	  ssh.run {
-	    session(remotes.gluehome_aws) {
-	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
-	      execute 'echo "drop database GLUE_TOOLS; create database GLUE_TOOLS;" | mysql -u gluetools --password=gluetools GLUE_TOOLS'
-	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUE_TOOLS'
-	      execute 'rm /tmp/gluedb.sql.gz'
-	    }
-	  }
-  }
-}
 
 task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
   doLast {
@@ -257,9 +152,6 @@ task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
 	  }
   }
 }
-
-
-
 
 repositories {
     mavenCentral()
@@ -357,6 +249,7 @@ task glueInstallDirZip(type: Zip) {
 
 
 // assumes Ubuntu 14.04
+// should be idempotent -- if some sections fail, e.g. because of an intermittent timeout issue, just run again.
 // mafft download line might fail if they change the version available on the web.
 task initGlueAWSWebServer {
   doLast {
@@ -395,9 +288,6 @@ task initGlueAWSWebServer {
 			execute "sudo chown tomcat7 /etc/authbind/byport/80"
 			
 
-			put from: 'gluehome_aws/server.xml', into: '/home/ubuntu/server.xml'
-			execute "sudo cp /home/ubuntu/server.xml /etc/tomcat7/server.xml"
-			
 			// start Tomcat
 			execute 'sudo service tomcat7 start'
 
@@ -407,11 +297,6 @@ task initGlueAWSWebServer {
 			execute 'sudo apt-get -y install mysql-server'
 			// start on boot
 			execute 'sudo update-rc.d mysql defaults'
-			
-			// create user gluetools with correct grants
-			execute "echo 'GRANT ALL ON GLUE_TOOLS.* TO \"gluetools\"@\"localhost\" identified by \"gluetools\";' | mysql -u root --password=root123"
-			// create GLUE_TOOLS database
-			execute "echo 'create database GLUE_TOOLS;' | mysql -u gluetools --password=gluetools" 
 			
 			execute "sudo mkdir -p /opt/gluetools"
 			
@@ -425,6 +310,8 @@ task initGlueAWSWebServer {
 			execute "sudo apt-get install -y gcc" 
 			
 			// RAXML
+			execute "rm -rf ~/standard-RAxML"
+			execute "sudo rm -rf /opt/gluetools/raxml"
 			execute "cd ~; git clone https://github.com/stamatak/standard-RAxML.git"
 			execute "cd ~/standard-RAxML/ ; git checkout 3abe69b"
 			execute "cd ~/standard-RAxML/ ; make -f Makefile.AVX.PTHREADS.gcc"
@@ -434,6 +321,9 @@ task initGlueAWSWebServer {
 			execute "sudo cp ~/standard-RAxML/raxmlHPC-PTHREADS-AVX /opt/gluetools/raxml/bin"
 
 			// MAFFT
+			execute "rm -rf ~/mafft-7.305-with-extensions-src.tgz"
+			execute "rm -rf ~/mafft-7.305-with-extensions"
+			execute "sudo rm -rf /opt/gluetools/mafft"
 			execute "sudo mkdir -p /opt/gluetools/mafft/tmp"
 			execute "sudo chmod a+rwx /opt/gluetools/mafft/tmp"
 			execute "cd ~; wget http://mafft.cbrc.jp/alignment/software/mafft-7.305-with-extensions-src.tgz"
@@ -441,6 +331,9 @@ task initGlueAWSWebServer {
 			execute "cd ~/mafft-7.305-with-extensions/core ; make clean ; make ; sudo make install"
 
 			// BLAST			
+			execute "rm -rf ~/ncbi-blast-2.2.31+-x64-linux.tar.gz"
+			execute "rm -rf ~/ncbi-blast-2.2.31+"
+			execute "sudo rm -rf /opt/gluetools/blast"
 			execute "sudo mkdir -p /opt/gluetools/blast"
 			execute "cd ~; wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/ncbi-blast-2.2.31+-x64-linux.tar.gz"
 			execute "cd ~; tar xvfz ncbi-blast-2.2.31+-x64-linux.tar.gz"
@@ -452,6 +345,26 @@ task initGlueAWSWebServer {
 	  }
   }
 }
+
+// this must be invoked only after the relevant root webapps are in place, otherwise tomcat start will fail 
+task updateGlueAWSServerXml {
+  doLast {
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+
+			execute 'sudo service tomcat7 stop'
+			put from: 'gluehome_aws/server.xml', into: '/home/ubuntu/server.xml'
+			execute "sudo cp /home/ubuntu/server.xml /etc/tomcat7/server.xml"
+			execute 'sudo service tomcat7 start'
+
+	    }
+	  }
+  }
+}
+
+
+
+
 
 
 // add stuff inside this task for testing setup

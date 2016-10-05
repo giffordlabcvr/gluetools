@@ -1,0 +1,121 @@
+apply plugin: 'war'
+
+apply plugin: 'org.hidetake.ssh'
+
+remotes {
+  gluehome_aws {
+    host = '52.16.113.119'
+    user = 'ubuntu'
+    identity = file('/Users/joshsinger/.ssh/gluehome-aws.pem')
+  }
+  
+}
+
+buildscript {
+  repositories {
+    // for ssh-deploy stuff
+    jcenter()
+  }
+  dependencies {
+    classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
+    classpath group: 'commons-io', name: 'commons-io', version: '1.3.2'
+    
+  }
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+
+war {
+	webAppDirName = 'WebContent'
+	archiveName 'gluetoolsApp.war'
+	dependsOn 'copyToDownloads'
+}
+
+task deployGluetoolsAppGlueHomeAWS(dependsOn: [
+	'deployGluetoolsWebWarGlueHomeAWS',
+	'deployGluetoolsAppWarGlueHomeAWS'])
+
+task deployGluetoolsWebWarGlueHomeAWS(type: DeployWarTask) {
+    dependsOn ':gluetools-web:war'
+    warFile = new File('../gluetools-web/build/libs/gluetools-web.war')
+    remote = remotes.gluehome_aws
+    taskBuildDir = buildDir
+	warBaseName = org.apache.commons.io.FilenameUtils.getBaseName(warFile.name)
+    touchFile = new File(taskBuildDir.name, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
+    inputs.file warFile
+    outputs.file touchFile
+    taskSsh = ssh
+}
+
+task deployGluetoolsAppWarGlueHomeAWS(type: DeployWarTask, dependsOn: war) {
+    warFile = new File(buildDir, '/libs/gluetoolsApp.war')
+    remote = remotes.gluehome_aws
+    taskBuildDir = buildDir
+	warBaseName = org.apache.commons.io.FilenameUtils.getBaseName(warFile.name)
+    touchFile = new File(taskBuildDir.name, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
+    inputs.file warFile
+    outputs.file touchFile
+    taskSsh = ssh
+}
+
+class DeployWarTask extends DefaultTask {
+	File warFile
+	org.hidetake.groovy.ssh.core.Remote remote
+	File taskBuildDir
+	String warBaseName
+    File touchFile
+    org.hidetake.groovy.ssh.core.Service taskSsh
+
+    @TaskAction
+    def deploy() {
+		  println "Uploading "+warFile
+		  taskSsh.run {
+		    session(remote) {
+		      put from: warFile.absolutePath, into: '/tmp/'+warFile.name
+		      execute 'sudo service tomcat7 stop'
+		      execute 'sudo mkdir -p /var/lib/tomcat7/webapps_tools'
+		      execute 'sudo chmod a+rwx /var/lib/tomcat7/webapps_tools'
+		      execute 'sudo rm -rf /var/lib/tomcat7/webapps_tools/'+warBaseName
+		      execute 'sudo rm -rf /var/lib/tomcat7/webapps_tools/'+warFile.name
+		      execute 'sudo mv /tmp/'+warFile.name+' /var/lib/tomcat7/webapps_tools/'+warFile.name
+		      execute 'sudo rm -rf /var/lib/tomcat7/work/Catalina/tools.glue.cvr.ac.uk/'+warBaseName
+		      execute 'sudo service tomcat7 start'
+		    }
+		  }
+		  touchFile.delete()
+		  taskBuildDir.mkdirs()
+		  touchFile.createNewFile()
+	}
+}
+
+task copyToDownloads(dependsOn: [':gluetools-core:jarAll', ':gluetools-core:exampleProjectZip', ':gluetools-core:glueInstallDirZip', 'cleanDownloads'], type: Copy) {
+    from '../gluetools-core/build/libs/gluetools-core-all-'+version+'.jar'
+    from '../gluetools-core/build/distributions/exampleProject-'+version+'.zip'
+    from '../gluetools-core/build/distributions/glueInstallDir-'+version+'.zip'
+    from '../gluetools-core/gluetools/conf/gluetools-config.xml'
+    into 'WebContent/downloads'
+}
+
+task cleanDownloads(type: Delete) {
+	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-core-all-*.jar' }
+	delete fileTree(dir: 'WebContent/downloads').matching { include 'exampleProject-*.zip' }
+	delete fileTree(dir: 'WebContent/downloads').matching { include 'glueInstallDir-*.zip' }
+	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-config.xml' }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
