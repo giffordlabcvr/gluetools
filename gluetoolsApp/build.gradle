@@ -96,6 +96,7 @@ class DeployWarTask extends DefaultTask {
 		      execute 'sudo rm -rf /var/lib/tomcat7/webapps_tools/'+warFile.name
 		      execute 'sudo mv /tmp/'+warFile.name+' /var/lib/tomcat7/webapps_tools/'+warFile.name
 		      execute 'sudo rm -rf /var/lib/tomcat7/work/Catalina/tools.glue.cvr.ac.uk/'+warBaseName
+		      execute 'sudo rm -rf /var/cache/tomcat7/Catalina/tools.glue.cvr.ac.uk/'+warBaseName
 		      execute 'sudo service tomcat7 start'
 		    }
 		  }
