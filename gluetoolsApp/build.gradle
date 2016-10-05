@@ -19,15 +19,28 @@ buildscript {
   dependencies {
     classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
     classpath group: 'commons-io', name: 'commons-io', version: '1.3.2'
-    
   }
 }
 
 repositories {
+	mavenLocal()
     mavenCentral()
 }
 
+configurations {
+	gluetoolsWebWar
+}
 
+dependencies {
+    gluetoolsWebWar group: 'cvr.ac.uk', name: 'gluetools-web', version: version
+}
+
+task copyGluetoolsWebWar(type: Copy) {
+    dependsOn ':gluetools-web:install'
+    from configurations.gluetoolsWebWar
+    into "$buildDir/runtimeWars"
+    rename('gluetools-web-'+version+'.war', 'gluetools-web.war')
+}
 
 war {
 	webAppDirName = 'WebContent'
@@ -40,7 +53,7 @@ task deployGluetoolsAppGlueHomeAWS(dependsOn: [
 	'deployGluetoolsAppWarGlueHomeAWS'])
 
 task deployGluetoolsWebWarGlueHomeAWS(type: DeployWarTask) {
-    dependsOn ':gluetools-web:war'
+    dependsOn 'copyGluetoolsWebWar'
     warFile = new File('../gluetools-web/build/libs/gluetools-web.war')
     remote = remotes.gluehome_aws
     taskBuildDir = buildDir
