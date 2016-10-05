@@ -54,11 +54,11 @@ task deployGluetoolsAppGlueHomeAWS(dependsOn: [
 
 task deployGluetoolsWebWarGlueHomeAWS(type: DeployWarTask) {
     dependsOn 'copyGluetoolsWebWar'
-    warFile = new File('../gluetools-web/build/libs/gluetools-web.war')
+    warFile = new File(buildDir, 'runtimeWars/gluetools-web.war')
     remote = remotes.gluehome_aws
     taskBuildDir = buildDir
 	warBaseName = org.apache.commons.io.FilenameUtils.getBaseName(warFile.name)
-    touchFile = new File(taskBuildDir.name, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
+    touchFile = new File(taskBuildDir, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
     inputs.file warFile
     outputs.file touchFile
     taskSsh = ssh
@@ -69,7 +69,7 @@ task deployGluetoolsAppWarGlueHomeAWS(type: DeployWarTask, dependsOn: war) {
     remote = remotes.gluehome_aws
     taskBuildDir = buildDir
 	warBaseName = org.apache.commons.io.FilenameUtils.getBaseName(warFile.name)
-    touchFile = new File(taskBuildDir.name, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
+    touchFile = new File(taskBuildDir, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
     inputs.file warFile
     outputs.file touchFile
     taskSsh = ssh
@@ -99,7 +99,9 @@ class DeployWarTask extends DefaultTask {
 		      execute 'sudo service tomcat7 start'
 		    }
 		  }
+		  println("touchFile:"+touchFile)
 		  touchFile.delete()
+		  println("taskBuildDir:"+taskBuildDir)
 		  taskBuildDir.mkdirs()
 		  touchFile.createNewFile()
 	}
