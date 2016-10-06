@@ -6,7 +6,7 @@ public class ProjectModeCommandException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		INVALID_PROPERTY("invalidProperty", "validProperties", "tableName"),
-		INCOMPATIBLE_TYPES_FOR_COPY("fromFieldName", "toFieldName"), 
+		INCOMPATIBLE_TYPES_FOR_COPY("fromFieldName", "fromType", "toFieldName", "toType"), 
 		NO_SUCH_MODIFIABLE_PROPERTY("tableName", "fieldName"), 
 		NO_SUCH_PROPERTY("tableName", "fieldName"),
 		NO_SUCH_TABLE("tableName"),

@@ -28,8 +28,14 @@ projectBrowser.controller('cladeTreeCtrl',
 					$scope.almtNameToExpandedNodes[rootNode.almtName] = [];
 					$scope.almtNameToDescendentTree[rootNode.almtName] = null;
 
+					var cmdOptions = {};
+					
+					if(rootNode.sortProperties) {
+						cmdOptions.sortProperties = rootNode.sortProperties;
+					}
+					
 					glueWS.runGlueCommand("alignment/"+rootNode.almtName, {
-				    	"descendent-tree": {} 
+				    	"descendent-tree": cmdOptions
 					})
 				    .success(function(data, status, headers, config) {
 				    	var topNode = data.alignmentDescendentTreeResult;

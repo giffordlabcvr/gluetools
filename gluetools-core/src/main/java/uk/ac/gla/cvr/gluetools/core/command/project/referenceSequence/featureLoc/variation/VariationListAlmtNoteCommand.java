@@ -79,7 +79,7 @@ public class VariationListAlmtNoteCommand extends VariationModeCommand<ListResul
 	}
 	
 	@CompleterClass
-	public static class Completer extends AbstractListCTableCommand.FieldNameCompleter {
+	public static class Completer extends AbstractListCTableCommand.ListCommandCompleter {
 		public Completer() {
 			super(ConfigurableTable.var_almt_note.name());
 		}

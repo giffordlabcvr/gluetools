@@ -79,7 +79,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 	}
 	
 	@CompleterClass
-	public static class Completer extends AbstractListCTableCommand.FieldNameCompleter {
+	public static class Completer extends AbstractListCTableCommand.ListCommandCompleter {
 		public Completer() {
 			super(ConfigurableTable.variation.name());
 		}

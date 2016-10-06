@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.cayenne.configuration.Constants;
@@ -8,6 +10,8 @@ import org.apache.cayenne.di.MapBuilder;
 import org.apache.cayenne.di.Module;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
+import org.apache.cayenne.query.Ordering;
+import org.apache.cayenne.query.SortOrder;
 
 public class CayenneUtils {
 
@@ -38,6 +42,23 @@ public class CayenneUtils {
 			}
 		}
 		return expression;
+	}
+
+	public static List<Ordering> sortPropertiesToOrderings(String sortProperties) {
+		String[] orderingTerms = sortProperties.split(",");
+		List<Ordering> orderings = new ArrayList<Ordering>();
+		for(String orderingTerm: orderingTerms) {
+			String pathSpec = orderingTerm;
+			SortOrder sortOrder = SortOrder.ASCENDING;
+			if(orderingTerm.startsWith("+")) {
+				pathSpec = orderingTerm.substring(1);
+			} else if(orderingTerm.startsWith("-")) {
+				pathSpec = orderingTerm.substring(1);
+				sortOrder = SortOrder.DESCENDING;
+			} 
+			orderings.add(new Ordering(pathSpec, sortOrder));
+		}
+		return orderings;
 	}
 	
 }

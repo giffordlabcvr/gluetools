@@ -10,17 +10,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 
 @CommandClass(
 	commandWords={"list", "feature"}, 
-			docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [<fieldName> ...]"},
+			docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [-s <sortProperties>] [<fieldName> ...]"},
 			docoptOptions={
-				"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
-				"-p <pageSize>, --pageSize <pageSize>           Tune ORM page size",
-				"-l <fetchLimit>, --fetchLimit <fetchLimit>     Limit max number of records",
-				"-o <fetchOffset>, --fetchOffset <fetchOffset>  Record number offset"},
+				"-w <whereClause>, --whereClause <whereClause>           Qualify result set",
+				"-p <pageSize>, --pageSize <pageSize>                    Tune ORM page size",
+				"-l <fetchLimit>, --fetchLimit <fetchLimit>              Limit max number of records",
+				"-o <fetchOffset>, --fetchOffset <fetchOffset>           Record number offset",
+				"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties"},
 			description="List genome features",
 			furtherHelp=
 			"The <pageSize> option is for performance tuning. The default page size\n"+
 			"is 250 records.\n"+
 			"The optional whereClause qualifies which features are displayed.\n"+
+			"The optional sortProperties allows combined ascending/descending orderings, e.g. +property1,-property2.\n"+
 			"Where fieldNames are specified, only these field values will be displayed.\n"+
 			"Examples:\n"+
 			"  list feature -w \"name like 'NS%'\"\n"+
@@ -40,7 +42,7 @@ public class ListFeatureCommand extends AbstractListCTableCommand {
 	}
 
 	@CompleterClass
-	public static final class Completer extends FieldNameCompleter {
+	public static final class Completer extends ListCommandCompleter {
 		public Completer() {
 			super(ConfigurableTable.feature.name());
 		}

@@ -20,17 +20,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"list", "custom-table-row"}, 
-		docoptUsages={"<tableName> [-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [<fieldName> ...]"},
+		docoptUsages={"<tableName> [-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [-s <sortProperties>] [<fieldName> ...]"},
 		docoptOptions={
-				"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
-				"-p <pageSize>, --pageSize <pageSize>           Tune ORM page size",
-				"-l <fetchLimit>, --fetchLimit <fetchLimit>     Limit max number of records",
-		"-o <fetchOffset>, --fetchOffset <fetchOffset>  Record number offset"},
+				"-w <whereClause>, --whereClause <whereClause>           Qualify result set",
+				"-p <pageSize>, --pageSize <pageSize>                    Tune ORM page size",
+				"-l <fetchLimit>, --fetchLimit <fetchLimit>              Limit max number of records",
+				"-o <fetchOffset>, --fetchOffset <fetchOffset>           Record number offset",
+				"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties"},
 		description="List alignments",
 		furtherHelp=
 		"The <pageSize> option is for performance tuning. The default page size\n"+
 		"is 250 records.\n"+
 		"The optional whereClause qualifies which custom table rows are displayed.\n"+
+		"The optional sortProperties allows combined ascending/descending orderings, e.g. +property1,-property2.\n"+
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list custom-table-row my_table -w \"id like 'NS%'\"\n"+

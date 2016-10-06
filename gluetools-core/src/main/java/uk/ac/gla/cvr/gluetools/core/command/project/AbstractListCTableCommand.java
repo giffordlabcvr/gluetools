@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 
 
 public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListResult> {
@@ -25,6 +26,7 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 	public static final String PAGE_SIZE = "pageSize";
 	public static final String FETCH_LIMIT = "fetchLimit";
 	public static final String FETCH_OFFSET = "fetchOffset";
+	public static final String SORT_PROPERTIES = "sortProperties";
 	private AbstractListCTableDelegate listCTableDelegate = new AbstractListCTableDelegate();
 	
 	protected AbstractListCTableCommand() {
@@ -50,9 +52,9 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 		return listResult;
 	}
 	
-	public static class FieldNameCompleter extends AdvancedCmdCompleter {
+	public static class ListCommandCompleter extends AdvancedCmdCompleter {
 
-		public FieldNameCompleter(String tableName) {
+		public ListCommandCompleter(String tableName) {
 			super();
 			registerVariableInstantiator("fieldName", new ListablePropertyInstantiator(tableName));
 		}
@@ -72,6 +74,7 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 		private int pageSize;
 		private Optional<Integer> fetchLimit;
 		private Optional<Integer> fetchOffset;
+		private String sortProperties;
 		
 		public Optional<Expression> getWhereClause() {
 			return whereClause;
@@ -99,6 +102,7 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 			if(fieldNames.isEmpty()) {
 				fieldNames = null; // default fields
 			}
+			sortProperties = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SORT_PROPERTIES, false)).orElse(null);
 			pageSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, PAGE_SIZE, false)).orElse(250);
 			fetchLimit = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_LIMIT, false));
 			fetchOffset = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_OFFSET, false));
@@ -118,6 +122,9 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 			selectQuery.setPageSize(pageSize);
 			fetchLimit.ifPresent(limit -> selectQuery.setFetchLimit(limit));
 			fetchOffset.ifPresent(offset -> selectQuery.setFetchOffset(offset));
+			if(sortProperties != null) {
+				selectQuery.addOrderings(CayenneUtils.sortPropertiesToOrderings(sortProperties));
+			}
 			List<D> resultDataObjects = GlueDataObject.query(cmdContext, dataObjectClass, selectQuery);
 			if(sortComparator != null) {
 				Collections.sort(resultDataObjects, (Comparator<D>) sortComparator);
@@ -138,6 +145,11 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 		public void setTableName(String tableName) {
 			this.tableName = tableName;
 		}
+
+		public void setSortProperties(String sortProperties) {
+			this.sortProperties = sortProperties;
+		}
+		
 	}
 
 }

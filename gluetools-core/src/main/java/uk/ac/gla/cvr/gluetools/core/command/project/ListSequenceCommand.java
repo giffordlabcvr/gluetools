@@ -7,17 +7,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableT
 
 @CommandClass( 
 	commandWords={"list", "sequence"},
-	docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [<fieldName> ...]"},
+	docoptUsages={"[-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [-s <sortProperties>] [<fieldName> ...]"},
 	docoptOptions={
-		"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
-		"-p <pageSize>, --pageSize <pageSize>           Tune ORM page size",
-		"-l <fetchLimit>, --fetchLimit <fetchLimit>     Limit max number of records",
-		"-o <fetchOffset>, --fetchOffset <fetchOffset>  Record number offset"},
+		"-w <whereClause>, --whereClause <whereClause>           Qualify result set",
+		"-p <pageSize>, --pageSize <pageSize>                    Tune ORM page size",
+		"-l <fetchLimit>, --fetchLimit <fetchLimit>              Limit max number of records",
+		"-o <fetchOffset>, --fetchOffset <fetchOffset>           Record number offset",
+		"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties"},
 	description="List sequences or sequence field values",
 	furtherHelp=
 	"The <pageSize> option is for performance tuning. The default page size\n"+
 	"is 250 records.\n"+
 	"The optional whereClause qualifies which sequences are displayed.\n"+
+	"The optional sortProperties allows combined ascending/descending orderings, e.g. +property1,-property2.\n"+
 	"Where fieldNames are specified, only these field values will be displayed.\n"+
 	"Examples:\n"+
 	"  list sequence -w \"source.name = 'local'\"\n"+
@@ -33,7 +35,7 @@ public class ListSequenceCommand extends AbstractListCTableCommand {
 	}
 
 	@CompleterClass
-	public static final class Completer extends FieldNameCompleter {
+	public static final class Completer extends ListCommandCompleter {
 		public Completer() {
 			super(ConfigurableTable.sequence.name());
 		}
