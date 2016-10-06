@@ -14,7 +14,7 @@ public class AlignmentDescendentTreeResult extends CommandResult {
 
 	private void addNode(CommandObject objectBuilder, Alignment alignment) {
 		objectBuilder.set("alignmentName", alignment.getName());
-		objectBuilder.set("alignmentDisplayName", alignment.getDisplayName());
+		objectBuilder.set("alignmentRenderedName", alignment.getRenderedName());
 		CommandArray childrenArrayBuilder = objectBuilder.setArray("childAlignment");
 		alignment.getChildren().forEach(childAlmt -> {
 			addNode(childrenArrayBuilder.addObject(), childAlmt);
