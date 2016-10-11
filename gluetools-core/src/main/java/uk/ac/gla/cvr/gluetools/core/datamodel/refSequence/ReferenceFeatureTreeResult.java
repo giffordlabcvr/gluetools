@@ -103,6 +103,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		Set<FeatureMetatag.Type> metatagTypes = feature.getMetatagTypes();
 		commandObject.set("referenceName", referenceName);
 		commandObject.set("featureName", feature.getName());
+		commandObject.set("featureRenderedName", feature.getRenderedName());
 		commandObject.set("featureDescription", feature.getDescription());
 		CommandArray metatagArray = commandObject.setArray("featureMetatag");
 		metatagTypes.forEach(t -> metatagArray.addString(t.name()));
