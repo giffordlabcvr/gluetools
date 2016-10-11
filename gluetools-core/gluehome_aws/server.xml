@@ -135,6 +135,16 @@
                pattern="%h %l %u %t &quot;%r&quot; %s %b" />
 
       </Host>
+      <Host name="btv.glue.cvr.ac.uk"  appBase="webapps_btv"
+            unpackWARs="true" autoDeploy="true">
+
+        <Context docBase="btvGlue" path="" reloadable="true"/>
+
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="hcv_glue_access_log." suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+
+      </Host>
       <Host name="tools.glue.cvr.ac.uk"  appBase="webapps_tools"
             unpackWARs="true" autoDeploy="true">
 
