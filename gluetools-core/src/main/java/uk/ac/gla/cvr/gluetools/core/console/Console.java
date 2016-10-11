@@ -311,28 +311,31 @@ public class Console implements CommandResultRenderingContext
 		Map<String, Object> docoptResult = docopt.parse(argsList.toArray(new String[]{}));
 		setupConsoleOptions(docoptResult, console);
 		console.init();
-		if(console.version) {
-			console.output(console.versionLine());
-		} else {
-			GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
-			gluetoolsEngine.dbWarning();
-			gluetoolsEngine.runWithGlueClassloader(new Supplier<Void>() {
-				@Override
-				public Void get() {
-					if(console.batchFilePath != null) {
-						console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
+		try {
+			if(console.version) {
+				console.output(console.versionLine());
+			} else {
+				GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
+				gluetoolsEngine.dbWarning();
+				gluetoolsEngine.runWithGlueClassloader(new Supplier<Void>() {
+					@Override
+					public Void get() {
+						if(console.batchFilePath != null) {
+							console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
+						}
+						if(console.inlineCmdWords != null) {
+							console.runInlineCommand(console.inlineCmdWords, console.noEcho, console.noOutput);
+						}
+						if((console.inlineCmdWords == null || console.inlineCmdWords.isEmpty()) && !console.nonInteractive) {
+							console.interactiveSession();
+						}
+						return null;
 					}
-					if(console.inlineCmdWords != null) {
-						console.runInlineCommand(console.inlineCmdWords, console.noEcho, console.noOutput);
-					}
-					if((console.inlineCmdWords == null || console.inlineCmdWords.isEmpty()) && !console.nonInteractive) {
-						console.interactiveSession();
-					}
-					return null;
-				}
-			});
+				});
+			}
+		} finally {
+			console.shutdown();
 		}
-		console.shutdown();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -512,9 +515,7 @@ public class Console implements CommandResultRenderingContext
 	}
 
 	private void shutdown() {
-		while(!(commandContext.peekCommandMode() instanceof RootCommandMode)) {
-			commandContext.popCommandMode();
-		}
+		commandContext.dispose();
 		GluetoolsEngine.shutdown();
 	}
 

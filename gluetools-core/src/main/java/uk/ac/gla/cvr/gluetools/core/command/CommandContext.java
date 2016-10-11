@@ -15,6 +15,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
@@ -27,6 +28,7 @@ public class CommandContext {
 	private List<ObjectContext> objectContextStack = new LinkedList<ObjectContext>();
 	private String description;
 	private Map<CacheKey, GlueDataObject> uncommittedCache = new LinkedHashMap<CommandContext.CacheKey, GlueDataObject>();
+	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -34,7 +36,6 @@ public class CommandContext {
 		this.description = description;
 	}
 
-	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
 	
 	public void pushCommandMode(CommandMode<?> commandMode) {
 		commandMode.setParentCommandMode(peekCommandMode());
@@ -234,6 +235,12 @@ public class CommandContext {
 			} else if (!pkMap.equals(other.pkMap))
 				return false;
 			return true;
+		}
+	}
+	
+	public void dispose() {
+		while(!(peekCommandMode() instanceof RootCommandMode)) {
+			popCommandMode();
 		}
 	}
 	

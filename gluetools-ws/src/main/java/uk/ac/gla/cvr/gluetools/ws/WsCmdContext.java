@@ -92,12 +92,17 @@ public class WsCmdContext extends CommandContext {
 		}
 		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
-		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
-			@Override
-			public CommandResult get() {
-				return command.execute(WsCmdContext.this);
-			}
-		});
+		CommandResult cmdResult;
+		try {
+			cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
+				@Override
+				public CommandResult get() {
+					return command.execute(WsCmdContext.this);
+				}
+			});
+		} finally {
+			dispose();
+		}
 		//logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
 		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart)+"ms");
 		String cmdResultString = serializeToJson(cmdResult);
@@ -162,13 +167,19 @@ public class WsCmdContext extends CommandContext {
 		}
 		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
-		CommandResult cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
-			@Override
-			public CommandResult get() {
-				return command.execute(WsCmdContext.this);
-			}
-			
-		});
+		CommandResult cmdResult;
+		try {
+			cmdResult = getGluetoolsEngine().runWithGlueClassloader(new Supplier<CommandResult>(){
+				@Override
+				public CommandResult get() {
+					return command.execute(WsCmdContext.this);
+				}
+
+			});
+		} finally {
+			dispose();
+		}
+
 		// logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
 		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
 		String cmdResultString = serializeToJson(cmdResult);
