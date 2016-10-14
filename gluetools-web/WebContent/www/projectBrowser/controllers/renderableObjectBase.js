@@ -1,6 +1,6 @@
 projectBrowser.controller('renderableObjectBaseCtrl', 
-		[ '$scope', 'glueObjectPath', 'rendererModule', 'glueWS', 'glueWebToolConfig', 'dialogs',
-        function($scope, glueObjectPath, rendererModule, glueWS, glueWebToolConfig, dialogs) {
+		[ '$scope', 'glueObjectPath', 'glueWS', 'glueWebToolConfig', 'dialogs',
+        function($scope, glueObjectPath, glueWS, glueWebToolConfig, dialogs, rendererModule) {
 	
 	$scope.projectBrowserURL = glueWebToolConfig.getProjectBrowserURL();
 
