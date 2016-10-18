@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -83,7 +84,7 @@ public class FigTreeAnnotationExporter extends ModulePlugin<FigTreeAnnotationExp
 		List<FigTreeAnnotation> figTreeAnnotationsToUse;
 		if(figTreeAnnotations.isEmpty()) {
 			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-			List<String> listableMemberFields = insideProjectMode.getProject().getListableMemberFields();
+			List<String> listableMemberFields = insideProjectMode.getProject().getListableProperties(ConfigurableTable.alignment_member.name());
 			figTreeAnnotationsToUse = listableMemberFields.stream()
 					.map(fieldName -> {
 						FigTreeAnnotation annot = new FigTreeAnnotation();

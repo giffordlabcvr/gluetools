@@ -1,5 +1,5 @@
 projectBrowser.controller('sequenceCtrl', 
-		[ '$scope', '$routeParams', '$controller', 'glueWS', 'dialogs',
+		[ '$scope', '$routeParams', '$controller', 
 		    function($scope, $routeParams, $controller) {
 
 	$scope.sourceName = $routeParams.sourceName;

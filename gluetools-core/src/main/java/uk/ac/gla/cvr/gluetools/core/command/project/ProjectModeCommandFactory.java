@@ -47,6 +47,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteSequenceCommand.class);
 		registerCommandClass(ListSequenceCommand.class);
 		registerCommandClass(MoveSequenceCommand.class);
+		registerCommandClass(CountSequenceCommand.class);
 		registerCommandClass(CopySequenceCommand.class);
 		registerCommandClass(MultiSetFieldCommand.class);
 		registerCommandClass(MultiUnsetFieldCommand.class);
@@ -63,6 +64,8 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ListFeatureCommand.class);
 
 		registerCommandClass(ListVariationCommand.class);
+		registerCommandClass(ListAlmtMemberCommand.class);
+		registerCommandClass(CountAlmtMemberCommand.class);
 		registerCommandClass(ListVarAlmtNoteCommand.class);
 		
 		registerCommandClass(ProjectSetSettingCommand.class);
@@ -86,6 +89,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(DeleteCustomTableRowCommand.class);
 		registerCommandClass(CustomTableRowCommand.class);
 		registerCommandClass(ListCustomTableRowCommand.class);
+		registerCommandClass(CountCustomTableRowCommand.class);
 		
 		// remove this when no longer needed
 		registerCommandClass(CorrectAlignmentCommand.class);

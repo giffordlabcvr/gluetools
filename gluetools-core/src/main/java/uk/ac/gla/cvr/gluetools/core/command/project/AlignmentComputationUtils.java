@@ -111,9 +111,9 @@ public class AlignmentComputationUtils {
 		try (ModeCloser refMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
 			CommandBuilder<ListResult, AlignmentListMemberCommand> cmdBuilder = cmdContext.cmdBuilder(AlignmentListMemberCommand.class);
 			if(whereClause != null) {
-				cmdBuilder.set(AlignmentListMemberCommand.WHERE_CLAUSE, whereClause.toString());
+				cmdBuilder.set(AbstractListCTableCommand.WHERE_CLAUSE, whereClause.toString());
 			}
-			cmdBuilder.setArray(AlignmentListMemberCommand.FIELD_NAME)
+			cmdBuilder.setArray(AbstractListCTableCommand.FIELD_NAME)
 				.add(AlignmentMember.SOURCE_NAME_PATH)
 				.add(AlignmentMember.SEQUENCE_ID_PATH);
 			return cmdBuilder.execute().asListOfMaps();

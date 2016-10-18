@@ -13,7 +13,6 @@ import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 
-import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
@@ -127,6 +126,29 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		}
 	}
 
+	
+	@SuppressWarnings("rawtypes")
+	public static int count(CommandContext cmdContext, SelectQuery query) {
+		try {
+			long startTime = System.currentTimeMillis();
+			List<?> queryResults = cmdContext.getObjectContext().performQuery(query);
+			timeSpentInDbOperations += System.currentTimeMillis() - startTime;
+			@SuppressWarnings("unused")
+			long start2 = System.currentTimeMillis();
+			//System.out.println("Time spent casting results to GlueDataObject class: "+(System.currentTimeMillis() - start2));
+			return queryResults.size();
+		} catch(CayenneRuntimeException cre) {
+			Throwable cause = cre.getCause();
+			Expression qualifier = query.getQualifier();
+			if(qualifier != null && cause != null && cause instanceof ExpressionException) {
+				throw new DataModelException(Code.EXPRESSION_ERROR, qualifier.toString(), cause.getMessage());
+			} else {
+				throw cre;
+			}
+		}
+	}
+
+	
 	public static <C extends GlueDataObject> C create(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap, 
 			boolean allowExists) {
 		C existing = lookup(cmdContext, objClass, pkMap, true);

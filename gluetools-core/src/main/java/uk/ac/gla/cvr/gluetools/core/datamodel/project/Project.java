@@ -151,10 +151,14 @@ public class Project extends _Project {
 
 	
 	public List<String> getListableProperties(String tableName) {
-		GlueDataClass dataClassAnnotation = getDataClassAnnotation(tableName);
-		List<String> listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
-		listableProperties.addAll(getCustomFieldNames(tableName));
-		
+		List<String> listableProperties; 
+		if(tableName.equals(ConfigurableTable.alignment_member.name())) {
+			listableProperties = getListableMemberFields();
+		} else {
+			GlueDataClass dataClassAnnotation = getDataClassAnnotation(tableName);
+			listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
+			listableProperties.addAll(getCustomFieldNames(tableName));
+		}
 		List<Link> toOneLinksForWhichSource = 
 				getLinksForWhichSource(tableName).stream().filter(l -> l.isToOne()).collect(Collectors.toList());
 		listableProperties
@@ -165,6 +169,7 @@ public class Project extends _Project {
 		listableProperties
 			.addAll(fromOneLinksForWhichDest.stream().map(l -> l.getDestLinkName()).collect(Collectors.toList()));
 
+		
 		return listableProperties;
 	}
 
@@ -226,24 +231,13 @@ public class Project extends _Project {
 	}
 
 	
-	public void checkListableMemberField(List<String> fieldNames) {
-		List<String> validMemberFieldsList = getListableMemberFields();
-		Set<String> validMemberFields = new LinkedHashSet<String>(validMemberFieldsList);
-		if(fieldNames != null) {
-			fieldNames.forEach(f-> {
-				if(!validMemberFields.contains(f)) {
-					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validMemberFieldsList, "member");
-				}
-			});
-		}
-
-	}
-
-	public List<String> getListableMemberFields() {
-		Set<String> validMemberFieldsList = new LinkedHashSet<String>(getListableProperties(ConfigurableTable.alignment_member.name()));
-		validMemberFieldsList.addAll(getListableProperties(ConfigurableTable.sequence.name()).stream().
+	private List<String> getListableMemberFields() {
+		GlueDataClass dataClassAnnotation = getDataClassAnnotation(ConfigurableTable.alignment_member.name());
+		List<String> listableProperties = new ArrayList<String>(Arrays.asList(dataClassAnnotation.listableBuiltInProperties()));
+		listableProperties.addAll(getCustomFieldNames(ConfigurableTable.alignment_member.name()));
+		listableProperties.addAll(getListableProperties(ConfigurableTable.sequence.name()).stream().
 			map(s -> _AlignmentMember.SEQUENCE_PROPERTY+"."+s).collect(Collectors.toList()));
-		return new ArrayList<String>(validMemberFieldsList);
+		return new ArrayList<String>(listableProperties);
 	}
 
 	@Override

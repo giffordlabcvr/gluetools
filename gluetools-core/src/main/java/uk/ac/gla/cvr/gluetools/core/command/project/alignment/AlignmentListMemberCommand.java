@@ -9,26 +9,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.AbstractListCTableCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.AbstractListCTableCommand.AbstractListCTableDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -36,15 +32,22 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"list", "member"},
-		docoptUsages={"[-r] [-w <whereClause>] [<fieldName> ...]"},
+		docoptUsages={"[-r] [-w <whereClause>] [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [-s <sortProperties>] [<fieldName> ...]"},
 		docoptOptions={
-				"-r, --recursive                                Include descendent members",
-				"-w <whereClause>, --whereClause <whereClause>  Qualify result set",
+				"-r, --recursive                                         Include descendent members",
+				"-w <whereClause>, --whereClause <whereClause>           Qualify result set",
+				"-p <pageSize>, --pageSize <pageSize>                    Tune ORM page size",
+				"-l <fetchLimit>, --fetchLimit <fetchLimit>              Limit max number of records",
+				"-o <fetchOffset>, --fetchOffset <fetchOffset>           Record number offset",
+				"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties"
 			},
 		description="List member sequences or field values",
 		furtherHelp=
 		"The optional whereClause qualifies which alignment member are displayed.\n"+
 		"If whereClause is not specified, all alignment members are displayed.\n"+
+		"The <pageSize> option is for performance tuning. The default page size\n"+
+		"is 250 records.\n"+
+		"The optional sortProperties allows combined ascending/descending orderings, e.g. +property1,-property2.\n"+
 		"Where fieldNames are specified, only these field values will be displayed.\n"+
 		"Examples:\n"+
 		"  list member -w \"sequence.source.name = 'local'\"\n"+
@@ -54,38 +57,25 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult> {
 
 	public static final String RECURSIVE = "recursive";
-	public static final String FIELD_NAME = "fieldName";
-	public static final String WHERE_CLAUSE = "whereClause";
+	
+	private AbstractListCTableDelegate listCTableDelegate = new AbstractListCTableDelegate();
 	
 	private Boolean recursive;
-	private Optional<Expression> whereClause;
-	private List<String> fieldNames;
-	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		recursive = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, RECURSIVE, false)).orElse(false);
-		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
-		if(fieldNames.isEmpty()) {
-			fieldNames = null; // default fields
-		}
+		listCTableDelegate.setTableName(ConfigurableTable.alignment_member.name());
+		listCTableDelegate.configure(pluginConfigContext, configElem);
 	}
 
 	
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
-		if(fieldNames != null) {
-			getAlignmentMode(cmdContext).getProject().checkListableMemberField(fieldNames);
-		}
-
-		List<AlignmentMember> members = listMembers(cmdContext, lookupAlignment(cmdContext), recursive, false, whereClause);
-		if(fieldNames == null) {
-			return new ListResult(cmdContext, AlignmentMember.class, members);
-		} else {
-			return new ListResult(cmdContext, AlignmentMember.class, members, fieldNames);
-		}
+		Alignment alignment = lookupAlignment(cmdContext);
+		listCTableDelegate.setWhereClause(Optional.of(getMatchExpression(alignment, recursive, listCTableDelegate.getWhereClause())));
+		return listCTableDelegate.execute(cmdContext);
 	}
 
 
@@ -96,29 +86,22 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 	
 	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
 			Alignment alignment, Boolean recursive, Boolean deduplicate, Optional<Expression> whereClause) {
-		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName());
-		
+		Expression matchExpression = getMatchExpression(alignment, recursive, whereClause);
+
 		Map<String, Integer> alignmentNameToDecOrder = new LinkedHashMap<String, Integer>();
 		alignmentNameToDecOrder.put(alignment.getName(), 0);
 		
-		int decOrder = 1;
 		if(recursive) {
+			int decOrder = 1;
 			List<Alignment> descendents = alignment.getDescendents();
 			for(Alignment descAlignment: descendents) {
 				String descName = descAlignment.getName();
 				alignmentNameToDecOrder.put(descName, decOrder);
 				decOrder++;
-				matchAlignmentOrDescendent = matchAlignmentOrDescendent.orExp(
-						ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, descName));
 			}
 		}
 		
-		SelectQuery selectQuery = null;
-		if(whereClause.isPresent()) {
-			selectQuery = new SelectQuery(AlignmentMember.class, whereClause.get().andExp(matchAlignmentOrDescendent));
-		} else {
-			selectQuery = new SelectQuery(AlignmentMember.class, matchAlignmentOrDescendent);
-		}
+		SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, matchExpression);
 		List<AlignmentMember> result = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
 		if(recursive && deduplicate) {
 			List<AlignmentMember> membersSorted = new ArrayList<AlignmentMember>(result);
@@ -153,29 +136,32 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 		return result;
 	}
 
+
+	static Expression getMatchExpression(Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
+		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName());
+		if(recursive) {
+			List<Alignment> descendents = alignment.getDescendents();
+			for(Alignment descAlignment: descendents) {
+				String descName = descAlignment.getName();
+				matchAlignmentOrDescendent = matchAlignmentOrDescendent.orExp(
+						ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, descName));
+			}
+		}
+		Expression matchExpression;
+		if(whereClause.isPresent()) {
+			matchExpression = whereClause.get().andExp(matchAlignmentOrDescendent);
+		} else {
+			matchExpression = matchAlignmentOrDescendent;
+		}
+		return matchExpression;
+	}
+
 	
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
+	public static class Completer extends AbstractListCTableCommand.ListCommandCompleter {
 		
 		public Completer() {
-			super();
-			registerVariableInstantiator("fieldName", new VariableInstantiator() {
-				@Override
-				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
-						Map<String, Object> bindings, String prefix) {
-					return getMemberFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
-				}
-				protected List<String> getMemberFieldNames(ConsoleCommandContext cmdContext) {
-					return getProject(cmdContext).getListableMemberFields();
-				}
-				private Project getProject(ConsoleCommandContext cmdContext) {
-					InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-					Project project = insideProjectMode.getProject();
-					return project;
-				}
-			});
+			super(ConfigurableTable.alignment_member.name());
 		}
 	}
 	

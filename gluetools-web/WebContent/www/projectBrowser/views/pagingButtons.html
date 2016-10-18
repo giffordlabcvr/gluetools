@@ -1,0 +1,22 @@
+<div class='table paging-buttons'>
+	<div class="row">
+		<button type="button" ng-disabled="pagingContext.firstItemIndex == 1" class="btn btn-default" 
+			ng-click="pagingContext.firstPage()">First</button>
+		<button type="button" ng-disabled="pagingContext.firstItemIndex == 1" class="btn btn-default" 
+			ng-click="pagingContext.prevPage()">Previous</button>
+		<button type="button" ng-disabled="pagingContext.lastItemIndex == pagingContext.totalItems" class="btn btn-default" 
+			ng-click="pagingContext.nextPage()">Next</button>
+		<button type="button" ng-disabled="pagingContext.lastItemIndex == pagingContext.totalItems" class="btn btn-default" 
+			ng-click="pagingContext.lastPage()">Last</button>
+	    
+		<div class="btn-group" dropdown is-open="status.isopen_numclusters">
+	      <button id="numclusters-button" type="button" class="btn btn-default" dropdown-toggle ng-disabled="disabled">
+	        Items per page: {{pagingContext.itemsPerPage}} <span class="caret"></span>
+	      </button>
+	      <ul class="dropdown-menu" role="menu" aria-labelledby="numclusters-button">
+	        <li ng-repeat="availableItemsPerPageValue in pagingContext.availableItemsPerPage" ng-click="pagingContext.setItemsPerPage(availableItemsPerPageValue)" role="menuitem"><a >
+	        	Items per page: {{availableItemsPerPageValue}}</a></li>
+	      </ul>
+		</div>
+	</div>
+</div>

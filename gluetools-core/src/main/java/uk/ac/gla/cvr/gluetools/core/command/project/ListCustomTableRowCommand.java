@@ -27,7 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-l <fetchLimit>, --fetchLimit <fetchLimit>              Limit max number of records",
 				"-o <fetchOffset>, --fetchOffset <fetchOffset>           Record number offset",
 				"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties"},
-		description="List alignments",
+		description="List custom table rows",
 		furtherHelp=
 		"The <pageSize> option is for performance tuning. The default page size\n"+
 		"is 250 records.\n"+
