@@ -6,10 +6,12 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 
+@PluginClass(elemName="exactMatchNucleotideVariationScanner")
 public class ExactMatchNucleotideVariationScanner extends BaseNucleotideVariationScanner<ExactMatchNucleotideVariationScanner, VariationScanResult>{
 
 	private static ExactMatchNucleotideVariationScanner defaultInstance = new ExactMatchNucleotideVariationScanner();

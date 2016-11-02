@@ -31,6 +31,11 @@ import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRenderer;
 import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ComparisonAminoAcidVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchAminoAcidVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchNucleotideVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexAminoAcidVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexNucleotideVariationScanner;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
@@ -78,6 +83,12 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(MaxLikelihoodGenotyper.class);
 		
 		registerPluginClass(TreeTransformer.class);
-}
+		
+		registerPluginClass(ComparisonAminoAcidVariationScanner.class);
+		registerPluginClass(ExactMatchAminoAcidVariationScanner.class);
+		registerPluginClass(RegexAminoAcidVariationScanner.class);
+		registerPluginClass(ExactMatchNucleotideVariationScanner.class);
+		registerPluginClass(RegexNucleotideVariationScanner.class);
+	}
 	
 }

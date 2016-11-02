@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 public abstract class BaseAminoAcidVariationScanner<V extends ModulePlugin<V>, R extends VariationScanResult> extends BaseVariationScanner<V, R> {
 
-	public abstract VariationScanResult scanAminoAcids(Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation);
+	public abstract R scanAminoAcids(Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation);
 
 	@Override
 	public void validateVariation(Variation variation) {

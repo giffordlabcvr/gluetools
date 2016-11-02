@@ -37,8 +37,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 @GlueDataClass(
 		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
 		listableBuiltInProperties = { _Variation.NAME_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
-				 _Variation.DESCRIPTION_PROPERTY },
-		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY })		
+				 _Variation.DESCRIPTION_PROPERTY, _Variation.SCANNER_MODULE_NAME_PROPERTY },
+		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY, _Variation.SCANNER_MODULE_NAME_PROPERTY })		
 public class Variation extends _Variation implements HasDisplayName {
 
 	private Boolean isSimpleMatch = null;

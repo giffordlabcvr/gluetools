@@ -11,9 +11,11 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
+@PluginClass(elemName="regexNucleotideVariationScanner")
 public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScanner<RegexNucleotideVariationScanner, VariationScanResult>{
 
 	private static RegexNucleotideVariationScanner defaultInstance = new RegexNucleotideVariationScanner();
