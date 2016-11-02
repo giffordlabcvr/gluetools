@@ -135,7 +135,8 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 			if(fieldNames == null) {
 				listResult = new ListResult(cmdContext, dataObjectClass, resultDataObjects);
 			} else {
-				project.checkListableProperties(tableName, fieldNames);
+				// this check would need to be more sophisticated to allow nested property paths.
+				// project.checkListableProperties(tableName, fieldNames);
 				listResult = new ListResult(cmdContext, dataObjectClass, resultDataObjects, fieldNames);
 			}
 			//System.out.println("Time spent initializing ListResult: "+(System.currentTimeMillis() - startTime));
