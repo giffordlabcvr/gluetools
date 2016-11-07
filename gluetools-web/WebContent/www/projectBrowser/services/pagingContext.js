@@ -99,6 +99,16 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 			});
 		}
 
+		pagingContext.extendListCmdParams = function(cmdParams) {
+			cmdParams.pageSize = pagingContext.itemsPerPage;
+			cmdParams.fetchLimit = pagingContext.itemsPerPage;
+			cmdParams.fetchOffset = pagingContext.firstItemIndex - 1;
+			var glueSortOrder = pagingContext.getGlueSortOrder();
+			if(glueSortOrder != null) {
+				cmdParams.sortProperties = glueSortOrder;
+			}
+		}
+		
 		pagingContext.getGlueSortOrder = function() {
 			return pagingContext.getGlueSortOrderAux(pagingContext.sortOrder);
 		}

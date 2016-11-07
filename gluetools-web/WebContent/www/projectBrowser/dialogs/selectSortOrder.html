@@ -2,7 +2,7 @@
 	<h2 class="modal-title">Configure sort order</h2>
 	Select which data will be used to sort the table, in what order, ascending or descending. 
 	<div class="row" width="800px">
-		<div class="col-md-6">
+		<div class="col-md-4">
 			<h4>Available sort criteria</h4>
 			<div style="overflow: auto; height:400px">
 				<table class="table">
@@ -26,12 +26,12 @@
 				</table>
 			</div>
 		</div>
-		<div class="col-md-6">
+		<div class="col-md-8">
 			<h4>Current sort criteria</h4>
 			<div style="overflow: auto; height:400px">
 				<table class="table">
 					<tbody>
-						<tr ng-repeat="prop in data.newSortOrder">
+						<tr ng-repeat="prop in data.newSortOrder track by $index">
 							<td>
 								<div style="display:table">
 									<div style="display:table-row">
@@ -49,6 +49,14 @@
 								<button type="button" class="btn btn-primary btn-xs"
 									ng-click="removeFromSortOrder(prop)"/>
 									<span class="glyphicon glyphicon-arrow-left"></span> Remove
+								</button>
+								<button type="button" class="btn btn-primary btn-xs"
+									ng-click="promoteProp(prop)" ng-disabled="$index == 0"/>
+									<span class="glyphicon glyphicon-arrow-up"></span>
+								</button>
+								<button type="button" class="btn btn-primary btn-xs"
+									ng-click="demoteProp(prop)" ng-disabled="$index == data.newSortOrder.length-1"/>
+									<span class="glyphicon glyphicon-arrow-down"></span>
 								</button>
 							</td>
 						</tr>

@@ -36,6 +36,25 @@ projectBrowser.controller('selectSortOrderCtrl',function($scope,$modalInstance,d
 		$scope.data.available = $scope.sortByDisplayName($scope.data.available);
 	}
 
+	$scope.promoteProp = function(sortOrderProp) {
+		var index = _.indexOf($scope.data.newSortOrder, sortOrderProp);
+		if(index == 0) {
+			return;
+		}
+		$scope.data.newSortOrder = _.without($scope.data.newSortOrder, sortOrderProp);
+		$scope.data.newSortOrder.splice(index-1, 0, sortOrderProp)
+	}
+
+	$scope.demoteProp = function(sortOrderProp) {
+		var index = _.indexOf($scope.data.newSortOrder, sortOrderProp);
+		if(index == $scope.data.newSortOrder.length - 1) {
+			return;
+		}
+		$scope.data.newSortOrder = _.without($scope.data.newSortOrder, sortOrderProp);
+		$scope.data.newSortOrder.splice(index+1, 0, sortOrderProp)
+	}
+
+	
 	$scope.resetToDefault = function() {
 		$scope.data.newSortOrder = _($scope.data.defaultSortOrder).clone()
 		$scope.initAvailable();

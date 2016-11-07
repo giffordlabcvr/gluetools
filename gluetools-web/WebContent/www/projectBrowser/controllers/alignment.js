@@ -47,9 +47,7 @@ projectBrowser.controller('alignmentCtrl',
 			            "fieldName":$scope.memberFields,
 					    "whereClause": $scope.memberWhereClause
 				};
-				cmdParams.pageSize = pContext.itemsPerPage;
-				cmdParams.fetchLimit = pContext.itemsPerPage;
-				cmdParams.fetchOffset = pContext.firstItemIndex - 1;
+				pContext.extendListCmdParams(cmdParams);
 				glueWS.runGlueCommand("alignment/"+$scope.almtName, {
 			    	"list": { "member": cmdParams } 
 				})
