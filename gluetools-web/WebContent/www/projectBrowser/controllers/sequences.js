@@ -22,7 +22,8 @@ projectBrowser.controller('sequencesCtrl',
 				})
 			    .success(function(data, status, headers, config) {
 					console.info('count sequence raw result', data);
-					$scope.pagingContext = pagingContext.createPagingContext(data.countResult.count, 10, $scope.updatePage);
+					$scope.pagingContext.setTotalItems(data.countResult.count);
+					$scope.pagingContext.firstPage();
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "counting sequences"));
 			}
@@ -38,6 +39,10 @@ projectBrowser.controller('sequencesCtrl',
 				cmdParams.pageSize = pContext.itemsPerPage;
 				cmdParams.fetchLimit = pContext.itemsPerPage;
 				cmdParams.fetchOffset = pContext.firstItemIndex - 1;
+				var glueSortOrder = pContext.getGlueSortOrder();
+				if(glueSortOrder != null) {
+					cmdParams.sortProperties = glueSortOrder;
+				}
 				glueWS.runGlueCommand("", {
 			    	"list": { "sequence": cmdParams } 
 				})
@@ -49,4 +54,5 @@ projectBrowser.controller('sequencesCtrl',
 			    .error(glueWS.raiseErrorDialog(dialogs, "listing sequences"));
 			}
 			
+			$scope.pagingContext = pagingContext.createPagingContext($scope.updatePage);
 }]);

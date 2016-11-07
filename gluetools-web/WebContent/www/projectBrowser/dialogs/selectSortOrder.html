@@ -1,0 +1,65 @@
+<div class="modal-header">
+	<h2 class="modal-title">Configure sort order</h2>
+	Select which data will be used to sort the table, in what order, ascending or descending. 
+	<div class="row" width="800px">
+		<div class="col-md-6">
+			<h4>Available sort criteria</h4>
+			<div style="overflow: auto; height:400px">
+				<table class="table">
+					<tbody>
+						<tr ng-repeat="prop in data.available">
+							<td>
+								<div style="display:table">
+									<div style="display:table-row">
+										<div style="display:table-cell" class="sortCriterion">{{prop.displayName}}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<button type="button" class="btn btn-primary btn-xs"
+									ng-click="addToSortOrder(prop)"/>
+									<span class="glyphicon glyphicon-arrow-right"></span> Include
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<h4>Current sort criteria</h4>
+			<div style="overflow: auto; height:400px">
+				<table class="table">
+					<tbody>
+						<tr ng-repeat="prop in data.newSortOrder">
+							<td>
+								<div style="display:table">
+									<div style="display:table-row">
+										<div style="display:table-cell" class="sortCriterion">{{prop.displayName}}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<div class="btn-group">
+									<label class="btn btn-default btn-xs ng-pristine ng-untouched ng-valid active" 
+										btn-radio="'+'" ng-model="prop.order">Ascending</label>
+									<label class="btn btn-default btn-xs ng-pristine ng-untouched ng-valid active" 
+										btn-radio="'-'" ng-model="prop.order">Descending</label>
+								</div>
+								<button type="button" class="btn btn-primary btn-xs"
+									ng-click="removeFromSortOrder(prop)"/>
+									<span class="glyphicon glyphicon-arrow-left"></span> Remove
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="accept()">OK</button>
+	<button type="button" class="btn btn-primary" ng-show="data.defaultSortOrder" ng-click="resetToDefault()">Reset to default</button>
+	<button type="button" class="btn btn-cancel" ng-click="dismiss()">Cancel</button>
+</div>

@@ -18,5 +18,9 @@
 	        	Items per page: {{availableItemsPerPageValue}}</a></li>
 	      </ul>
 		</div>
+		<button type="button" ng-show="pagingContext.getSortableProperties()" class="btn btn-default" 
+			ng-click="pagingContext.sortOrderDialog()">Sort order</button>
+
+
 	</div>
 </div>

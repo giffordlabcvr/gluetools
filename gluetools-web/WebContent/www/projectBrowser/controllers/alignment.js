@@ -34,7 +34,8 @@ projectBrowser.controller('alignmentCtrl',
 				})
 			    .success(function(data, status, headers, config) {
 					console.info('count almt-member raw result', data);
-					$scope.pagingContext = pagingContext.createPagingContext(data.countResult.count, 10, $scope.updatePage);
+					$scope.pagingContext.setTotalItems(data.countResult.count);
+					$scope.pagingContext.firstPage();
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "counting alignment members"));
 			}
@@ -59,5 +60,7 @@ projectBrowser.controller('alignmentCtrl',
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "listing alignment members"));
 			}
+			
+			$scope.pagingContext = pagingContext.createPagingContext($scope.updatePage);
 			
 }]);
