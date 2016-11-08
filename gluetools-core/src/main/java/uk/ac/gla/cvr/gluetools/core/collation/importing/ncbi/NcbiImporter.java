@@ -73,11 +73,12 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private static final String SOURCE_NAME = "sourceName";
 	private static final String DATABASE = "database";
 	
-	private static String eUtilsBaseURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils";
+	private static String eUtilsBaseURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 
 	public enum SequenceIdField {
 		GI_NUMBER,
-		PRIMARY_ACCESSION
+		PRIMARY_ACCESSION,
+		ACCESSION_VERSION
 	}
 	
 	private String sourceName;
@@ -87,6 +88,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private int eFetchBatchSize;
 	private List<String> specificGiNumbers;
 	private List<String> specificPrimaryAccessions;
+	private List<String> specificAccessionVersions;
 	private SequenceFormat sequenceFormat;
 	private SequenceIdField sequenceIdField;
 	private String giNumberFieldName;
@@ -122,6 +124,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		eSearchTerm = PluginUtils.configureStringProperty(ncbiImporterElem, E_SEARCH_TERM, false);
 		specificGiNumbers = PluginUtils.configureStrings(ncbiImporterElem, "specificGiNumbers/giNumber/text()", false);
 		specificPrimaryAccessions = PluginUtils.configureStrings(ncbiImporterElem, "specificPrimaryAccessions/primaryAccession/text()", false);
+		specificAccessionVersions = PluginUtils.configureStrings(ncbiImporterElem, "specificAccessionVersions/accessionVersion/text()", false);
 		eSearchRetMax = PluginUtils.configureIntProperty(ncbiImporterElem, E_SEARCH_RET_MAX, 4000);
 		eFetchBatchSize = PluginUtils.configureIntProperty(ncbiImporterElem, E_FETCH_BATCH_SIZE, 200);
 		sequenceFormat = Optional.ofNullable(PluginUtils.configureEnumProperty(SequenceFormat.class, ncbiImporterElem, SEQUENCE_FORMAT, false)).
@@ -136,9 +139,10 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		
 		
 		if(!(
-				(eSearchTerm != null && specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty()) ||
-				(eSearchTerm == null && !specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty()) ||
-				(eSearchTerm == null && specificGiNumbers.isEmpty() && !specificPrimaryAccessions.isEmpty())
+				(eSearchTerm != null && specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty() && specificAccessionVersions.isEmpty()) ||
+				(eSearchTerm == null && !specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty() && specificAccessionVersions.isEmpty()) ||
+				(eSearchTerm == null && specificGiNumbers.isEmpty() && !specificPrimaryAccessions.isEmpty() && specificAccessionVersions.isEmpty()) ||
+				(eSearchTerm == null && specificGiNumbers.isEmpty() && specificPrimaryAccessions.isEmpty() && !specificAccessionVersions.isEmpty())
 			)) {
 			searchTermConfigError();
 		}
@@ -148,7 +152,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		}
 		if(!specificPrimaryAccessions.isEmpty()) {
 			eSearchTerm = primaryAccessionsToESearchTerm(specificPrimaryAccessions);
-		}
+		} else if(!specificAccessionVersions.isEmpty()) {
+			eSearchTerm = accessionVersionsToESearchTerm(specificAccessionVersions);
+		} 
 	}
 
 	private String primaryAccessionsToESearchTerm(List<String> primaryAccessions) {
@@ -158,6 +164,12 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		return String.join(" OR ", disjuncts);
 	}
 
+	private String accessionVersionsToESearchTerm(List<String> accessionVersions) {
+		List<String> disjuncts = accessionVersions.stream()
+				.map(accessionVersion -> "\""+accessionVersion+"\"[Accession Version]")
+				.collect(Collectors.toList());
+		return String.join(" OR ", disjuncts);
+	}
 	
 	private String contigIDsToESearchTerm(Set<String> contigIDs) {
 		return String.join(" OR ", contigIDs);
@@ -165,7 +177,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	
 	private void searchTermConfigError() {
-		throw new NcbiImporterException(Code.CONFIG_ERROR, "Exactly one of <eSearchTerm>, <specificGiNumbers> or <specificPrimaryAccessions> must be specified.");
+		throw new NcbiImporterException(Code.CONFIG_ERROR, "Exactly one of <eSearchTerm>, <specificGiNumbers>, <specificPrimaryAccessions> or <specificAccessionVersions> must be specified.");
 	}
 
 	// Return the set of GI numbers for sequences which match the eSearchTerm, or the specific GiNumbers list if applicable.
@@ -317,7 +329,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					retrievedSequence.sequenceID = primaryAccessionFromDocument(individualDocument);
 				} else if(sequenceIdField == SequenceIdField.GI_NUMBER) {
 					retrievedSequence.sequenceID = giNumberFromDocument(individualDocument);
-				} 
+				} else if(sequenceIdField == SequenceIdField.ACCESSION_VERSION) {
+					retrievedSequence.sequenceID = accessionVersionFromDocument(individualDocument);
+				}
 				if(retrievedSequence.sequenceID == null) {
 					throw new NcbiImporterException(NcbiImporterException.Code.NULL_SEQUENCE_ID, new String(retrievedSequence.data));
 				}
@@ -330,7 +344,11 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private String primaryAccessionFromDocument(Document individualDocument) {
 		return GlueXmlUtils.getXPathString(individualDocument, "/GBSeq/GBSeq_primary-accession/text()");
 	}
-	
+
+	private String accessionVersionFromDocument(Document individualDocument) {
+		return GlueXmlUtils.getXPathString(individualDocument, "/GBSeq/GBSeq_accession-version/text()");
+	}
+
 	private String giNumberFromDocument(Document document) {
 		List<String> seqIds = GlueXmlUtils.getXPathStrings(document, "/GBSeq/GBSeq_other-seqids/GBSeqid/text()");
 		for(String seqId: seqIds) {
