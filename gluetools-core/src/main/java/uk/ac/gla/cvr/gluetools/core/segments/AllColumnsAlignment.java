@@ -1,11 +1,15 @@
 package uk.ac.gla.cvr.gluetools.core.segments;
 
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -187,6 +191,22 @@ public class AllColumnsAlignment<K> {
 		}
 	}
 
+	private static class ColumnDeletionAfter {
+		int leftNT;
+		int length;
+		public ColumnDeletionAfter(int leftNT, int length) {
+			this.leftNT = leftNT;
+			this.length = length;
+		}
+		public void translate(int amount) {
+			leftNT += amount;
+		}
+		public String toString() {
+			return "delete "+length+" columns after "+leftNT;
+		}
+	}
+
+	
 	public void rationalise() {
 		keyToSegments.forEach((key, segs) -> {
 			List<QueryAlignedSegment> merged = 
@@ -226,5 +246,60 @@ public class AllColumnsAlignment<K> {
 				ReferenceSegment.intersection(keyToSegments.get(key), loggedRegion, ReferenceSegment.cloneLeftSegMerger()));
 	}
 
+	public void remove(K key) {
+		keyToSegments.remove(key);
+		this.maxIndex = null;
+	}
+	
+
+	// remove those columns used by fewer than <minUsage> rows.
+	// usageQualifier is a predicate which defines whether the row relating to a key counts as usage.
+	public void removeUnderusedColumns(int minUsage, Predicate<K> usageQualfier) {
+		TIntIntMap indexToUsage = new TIntIntHashMap();
+		Integer initalMaxIndex = getMaxIndex();
+		for(int i = 1; i <= initalMaxIndex; i++) {
+			indexToUsage.put(i, 0);
+		}
+		keyToSegments.forEach( (key, segs) -> {
+			segs.forEach(seg -> {
+				if(usageQualfier.test(key)) {
+					for(int i = seg.getRefStart(); i <= seg.getRefEnd(); i++) {
+						indexToUsage.adjustValue(i, 1);
+					}
+				}
+			});
+		});
+		List<ColumnDeletionAfter> columnDeletions = new ArrayList<ColumnDeletionAfter>();
+		ColumnDeletionAfter currentColDeletion = null;
+		for(int i = 1; i <= initalMaxIndex; i++) {
+			if(indexToUsage.get(i) < minUsage) {
+				if(currentColDeletion != null) {
+					currentColDeletion.length++;
+				} else {
+					currentColDeletion = new ColumnDeletionAfter(i, 1);
+					columnDeletions.add(currentColDeletion);
+				}
+			} else {
+				if(currentColDeletion != null) {
+					currentColDeletion = null;
+				}
+			}
+		}
+		
+		for(int j = 0; j < columnDeletions.size(); j++) {
+			ColumnDeletionAfter colDeletion = columnDeletions.get(j);
+			keyToSegments.forEach((k, segs) -> {
+				List<QueryAlignedSegment> segsCopy = new ArrayList<QueryAlignedSegment>(segs);
+				segs.clear();
+				segs.addAll(QueryAlignedSegment.deleteRefColumnsAfter(colDeletion.leftNT, colDeletion.length, segsCopy));
+			});
+			// shift all subsequent column deletions to the left, by the appropriate number of columns.
+			for(int k = j+1; k < columnDeletions.size(); k++) {
+				ColumnDeletionAfter subsequentColDeletion = columnDeletions.get(k);
+				subsequentColDeletion.translate(-colDeletion.length);
+			}
+		}
+		this.maxIndex = null;
+	}
 	
 }

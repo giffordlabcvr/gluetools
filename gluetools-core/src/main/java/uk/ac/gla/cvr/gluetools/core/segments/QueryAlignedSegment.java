@@ -300,6 +300,48 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return resultQaSegs;
 	}
 
+	
+	public static List<QueryAlignedSegment> deleteRefColumnsAfter(int afterCoord, int numCols, List<QueryAlignedSegment> qaSegs) {
+		List<QueryAlignedSegment> resultQaSegs = new ArrayList<QueryAlignedSegment>();
+		for(QueryAlignedSegment qaSeg: qaSegs) {
+			if(qaSeg.getRefEnd() < afterCoord) {
+				resultQaSegs.add(qaSeg.clone());
+			} else if(qaSeg.getRefStart() >= afterCoord+numCols) {
+				QueryAlignedSegment resultQaSeg = qaSeg.clone();
+				resultQaSeg.translateRef(-numCols);
+				resultQaSegs.add(resultQaSeg);
+			} else if(qaSeg.getRefEnd() >= afterCoord+numCols) {
+				if(qaSeg.getRefStart() < afterCoord) {
+					QueryAlignedSegment resultQaLeftSeg = qaSeg.clone();
+					resultQaLeftSeg.truncateRight( ( qaSeg.getRefEnd() - afterCoord ) + 1);
+					resultQaSegs.add(resultQaLeftSeg);
+
+					QueryAlignedSegment resultQaRightSeg = qaSeg.clone();
+					resultQaRightSeg.truncateLeft( ( afterCoord+numCols ) - qaSeg.getRefStart()); 
+					resultQaRightSeg.translateRef(-numCols);
+					resultQaSegs.add(resultQaRightSeg);
+				} else {
+					QueryAlignedSegment resultQaSeg = qaSeg.clone();
+					resultQaSeg.truncateLeft( ( afterCoord+numCols ) - qaSeg.getRefStart()); 
+					resultQaSeg.translateRef(-numCols);
+					resultQaSegs.add(resultQaSeg);
+				}
+			} else { // qaSeg.getRefEnd() < afterCoord+numCols
+				if(qaSeg.getRefStart() < afterCoord) { 
+					QueryAlignedSegment resultQaSeg = qaSeg.clone();
+					resultQaSeg.truncateRight( ( qaSeg.getRefEnd() - afterCoord ) + 1);
+					resultQaSegs.add(resultQaSeg);
+				} else { // qaSeg.getRefStart() >= afterCoord 
+					continue;
+				}
+			}
+		}
+		return resultQaSegs;
+	}
+
+	
+	
+	
 	public static void checkLengths(List<QueryAlignedSegment> segs) {
 		for(QueryAlignedSegment seg: segs) {
 			if(seg.getRefEnd() - seg.getRefStart() != seg.getQueryEnd() - seg.getQueryStart()) {

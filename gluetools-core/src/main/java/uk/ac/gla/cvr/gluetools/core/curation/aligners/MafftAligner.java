@@ -95,7 +95,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 				.collect(Collectors.toList());
 
 		Map<Map<String, String>, DNASequence> existingPkMapToSequence = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, null, null, false, null, alignment, existingMembers);
+				FastaAlignmentExporter.exportAlignment(cmdContext, null, null, false, null, null, alignment, existingMembers);
 		
 		for(Map<String,String> pkMap: existingMembersPkMaps) {
 			String tempId = "E"+existingIdx;

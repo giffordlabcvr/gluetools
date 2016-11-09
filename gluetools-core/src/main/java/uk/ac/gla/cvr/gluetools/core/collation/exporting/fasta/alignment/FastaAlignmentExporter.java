@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.derby.impl.sql.compile.Predicate;
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException;
@@ -45,23 +46,24 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
 			String alignmentName, Optional<Expression> whereClause, String acRefName, String featureName, 
-			Boolean recursive, Boolean preview, Boolean includeAllColumns, OrderStrategy orderStrategy) {
+			Boolean recursive, Boolean preview, Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy) {
 		String fastaAlmtString = exportAlignment(cmdContext, alignmentName,
 				whereClause, acRefName, featureName, recursive, orderStrategy,
-				includeAllColumns, getDeduplicate(), getIdTemplate());
+				includeAllColumns, minColUsage, getDeduplicate(), getIdTemplate());
 		return formResult(cmdContext, fastaAlmtString, fileName, preview);
 	}
 
 	private static String exportAlignment(CommandContext cmdContext,
 			String alignmentName, Optional<Expression> whereClause,
 			String acRefName, String featureName, Boolean recursive,
-			OrderStrategy orderStrategy, Boolean includeAllColumns, Boolean deduplicate, Template idTemplate) {
+			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
+			Boolean deduplicate, Template idTemplate) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		checkAlignment(alignment, featureName, recursive);
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, deduplicate, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
-				cmdContext, acRefName, featureName, includeAllColumns, orderStrategy,
+				cmdContext, acRefName, featureName, includeAllColumns, minColUsage, orderStrategy,
 				alignment, almtMembers);
 
 		Map<Map<String,String>, String> pkMapToFastaId = new LinkedHashMap<Map<String,String>, String>();
@@ -73,7 +75,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 	public static Map<Map<String, String>, DNASequence> exportAlignment(
 			CommandContext cmdContext, String acRefName, String featureName,
-			Boolean includeAllColumns, OrderStrategy orderStrategy, Alignment alignment,
+			Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy, Alignment alignment,
 			List<AlignmentMember> almtMembers) {
 		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
 		Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs = 
@@ -89,7 +91,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		if(includeAllColumns) {
 			createAlignmentIncludeAllColumns(cmdContext, acRef, featureName,
 					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
-					pkMapToSeqObj);
+					pkMapToSeqObj, minColUsage);
 
 		} else {
 			createAlignment(cmdContext, acRef, featureName,
@@ -107,14 +109,15 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			Alignment alignment, List<AlignmentMember> almtMembers,
 			ReferenceSegment minMaxSeg,
 			Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs,
-			Map<Map<String, String>, AbstractSequenceObject> pkMapToSeqObj) {
+			Map<Map<String, String>, AbstractSequenceObject> pkMapToSeqObj, 
+			Integer minColUsage) {
 		
 		AllColumnsAlignment<Key> allColsAlmt = null;
 		
 		ReferenceSequence refSequence = alignment.getRefSequence();
 
 		if(refSequence != null) {
-			// ensure all necessary references are in the alignment (we will delete them later).
+			// ensure all necessary references are in the alignment (we will ignore them later).
 			Map<String, ReferenceSequence> includedRefs = new LinkedHashMap<String, ReferenceSequence>();
 
 			for(AlignmentMember almtMember: almtMembers) {
@@ -154,6 +157,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 						almtMember.segmentsAsQueryAlignedSegments(), 
 						seqObj.getNucleotides(cmdContext).length());
 				pkMapToSeqObj.put(pkMap, seqObj);
+			}
+			// remove underused columns (based on usage by query sequences)
+			if(minColUsage != null) {
+				allColsAlmt.removeUnderusedColumns(minColUsage, k -> k instanceof QueryKey);
 			}
 			// set the min/max region.
 			if(acRef != null && featureName != null && !almtMembers.isEmpty()) {
@@ -361,6 +368,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				return false;
 			return true;
 		}
+		
+		public String toString() {
+			return "ReferenceKey:"+refName;
+		}
 	}
 
 	private static class QueryKey extends Key {
@@ -401,8 +412,9 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			return true;
 		}
 
-		
-		
+		public String toString() {
+			return "QueryKey:"+pkMap.toString();
+		}
 	}
 
 	

@@ -102,6 +102,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		// could make some of these things configurable if necessary
 		boolean recursive = true;
 		boolean includeAllColumns = false;
+		Integer minColUsage = null;
 		boolean deduplicate = true;
 		String acRefName = null;
 		String featureName = null;
@@ -111,7 +112,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, rootAlignment, recursive, deduplicate, phyloMemberWhereClause);
 		Map<Map<String,String>, DNASequence> memberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						acRefName, featureName, includeAllColumns, orderStrategy, 
+						acRefName, featureName, includeAllColumns, minColUsage, orderStrategy, 
 						rootAlignment, almtMembers);
 		
 		// we rename query and member sequences (a) to avoid clashes and (b) to work around program ID limitations.
