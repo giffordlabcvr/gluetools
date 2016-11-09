@@ -45,6 +45,8 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentAminoAcidFrequencyCommand.class);
 		registerCommandClass(AlignmentVariationFrequencyCommand.class);
 
+		registerCommandClass(AlignmentScoreCoverageCommand.class);
+		
 		registerCommandClass(RenderObjectCommand.class);
 
 		registerCommandClass(ExitCommand.class);
