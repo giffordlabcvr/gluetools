@@ -4,15 +4,15 @@
    vertical-align: middle;
 }
 
-
-.sequenceLabel {
-}
-
-.queryAa, .queryAaDiff, .queryNt, .queryNtDiff, .codonLabel, .referenceAa, .referenceNt {
+.varLocation {
+	fill: #e6f9ff;
 }
 
 .queryNtIndex, .referenceNtIndex {
+    text-anchor: start;
+    alignment-baseline: central;
     writing-mode: tb;
+	font-size: 100%;
 }
 
 .sequenceLabel, .codonLabel, .referenceAa, .queryAa, .queryAaDiff {
@@ -23,16 +23,20 @@
 	font-size: 90%;
 }
 
-.queryNtIndex, .referenceNtIndex {
-	font-size: 100%;
-}
-	
 .sequenceLabel {
 	fill: #222222;
+    text-anchor: start;
+    alignment-baseline: central;
 }
 
 .codonLabel {
 	fill: #222222;
+}
+
+
+.codonLabel, .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff {
+    text-anchor: middle;
+    alignment-baseline: central;
 }
 
 .referenceAa, .queryAa, .queryAaDiff, .referenceNt, .queryNt, .queryNtDiff  {
@@ -92,4 +96,3 @@
 .varTooltipText {
 	fill: #333333;
 }
-
