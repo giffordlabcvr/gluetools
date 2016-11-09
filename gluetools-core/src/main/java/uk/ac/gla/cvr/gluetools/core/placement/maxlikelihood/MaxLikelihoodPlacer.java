@@ -101,8 +101,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	public Map<String, List<PlacementResult>> place(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
 		// could make some of these things configurable if necessary
 		boolean recursive = true;
-		boolean includeAllColumns = false;
-		Integer minColUsage = null;
+		boolean includeAllColumns = true;
+		Integer minColUsage = 2;
 		boolean deduplicate = true;
 		String acRefName = null;
 		String featureName = null;
