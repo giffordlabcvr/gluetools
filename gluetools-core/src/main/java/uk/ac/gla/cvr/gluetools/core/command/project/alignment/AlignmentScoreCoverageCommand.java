@@ -111,7 +111,10 @@ public class AlignmentScoreCoverageCommand extends AlignmentModeCommand<Alignmen
 			List<AlignedSegment> alignedSegments = almtMember.getAlignedSegments();
 			for(AlignedSegment seg: alignedSegments) {
 				for(int j = seg.getRefStart(); j <= seg.getRefEnd(); j++) {
-					memberScore += columnWeights.get(j);
+					int columnWeight = columnWeights.get(j);
+					if(columnWeight > 1) {
+						memberScore += columnWeight;
+					}
 				}
 			}
 			scores.add(new AlignmentCoverageScore(almtMember, memberScore));
