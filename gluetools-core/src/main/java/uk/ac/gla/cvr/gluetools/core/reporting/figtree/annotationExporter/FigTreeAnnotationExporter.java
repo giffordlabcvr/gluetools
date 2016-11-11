@@ -29,7 +29,7 @@ public class FigTreeAnnotationExporter extends ModulePlugin<FigTreeAnnotationExp
 	public static final String MEMBER_NAME_TEMPLATE = "memberNameTemplate";
 	public static final String FIG_TREE_ANNOTATION = "figTreeAnnotation";
 	
-	public static final String DEFAULT_MEMBER_NAME_TEMPLATE = "${alignment.name}.${sequence.source.name}.${sequence.sequenceID}";
+	public static final String DEFAULT_MEMBER_NAME_TEMPLATE = "alignment/${alignment.name}/member/${sequence.source.name}/${sequence.sequenceID}";
 
 	private Template memberNameTemplate;
 	private List<FigTreeAnnotation> figTreeAnnotations;

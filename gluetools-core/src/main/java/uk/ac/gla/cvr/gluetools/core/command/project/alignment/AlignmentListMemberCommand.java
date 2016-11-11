@@ -23,8 +23,11 @@ import uk.ac.gla.cvr.gluetools.core.command.project.AbstractListCTableCommand.Ab
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -78,6 +81,13 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 		return listCTableDelegate.execute(cmdContext);
 	}
 
+	
+	private static void checkListMemberOptions(Alignment alignment, Boolean recursive) {
+		ReferenceSequence refSequence = alignment.getRefSequence();
+		if(refSequence == null && recursive) {
+			throw new AlignmentException(Code.CANNOT_SPECIFY_RECURSIVE_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
+		}
+	}
 
 	// deduplicate: since sequences can be members of multiple alignments, in the recursive case the same sequence may appear
 	// as the member of multiple descendents.
@@ -86,6 +96,8 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 	
 	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
 			Alignment alignment, Boolean recursive, Boolean deduplicate, Optional<Expression> whereClause) {
+		checkListMemberOptions(alignment, recursive);
+		
 		Expression matchExpression = getMatchExpression(alignment, recursive, whereClause);
 
 		Map<String, Integer> alignmentNameToDecOrder = new LinkedHashMap<String, Integer>();

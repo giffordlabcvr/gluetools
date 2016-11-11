@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -42,6 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
+import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaRunner;
 
@@ -116,37 +116,19 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 						rootAlignment, almtMembers);
 		
 		// we rename query and member sequences (a) to avoid clashes and (b) to work around program ID limitations.
-		int referenceRowNameIndex = 0;
 		Map<String, Map<String,String>> rowNameToMemberPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<Map<String,String>, String> memberPkMapToRowName = new LinkedHashMap<Map<String,String>, String>();
-		
-		Map<String, DNASequence> almtFastaContent = new LinkedHashMap<String, DNASequence>();
-		for(Map.Entry<Map<String,String>, DNASequence> entry: memberPkMapToAlignmentRow.entrySet()) {
-			String rowName = "R"+referenceRowNameIndex;
-			Map<String, String> pkMap = entry.getKey();
-			super.log(Level.FINEST, "Mapped reference "+pkMap+" as "+rowName);
-			rowNameToMemberPkMap.put(rowName, pkMap);
-			memberPkMapToRowName.put(pkMap, rowName);
-			almtFastaContent.put(rowName, entry.getValue());
-			referenceRowNameIndex++;
-		}
+		Map<String, DNASequence> almtFastaContent = RaxmlUtils.remapAlignment(
+				memberPkMapToAlignmentRow, rowNameToMemberPkMap, memberPkMapToRowName, "R");
 		
 		Map<String, String> rowNameToQueryMap = new LinkedHashMap<String, String>();
-		int queryRowNameIndex = 0;
+		Map<String, String> queryToRowNameMap = new LinkedHashMap<String, String>();
+		Map<String, DNASequence> queryFastaContent = RaxmlUtils.remapAlignment(
+				querySequenceMap, rowNameToQueryMap, queryToRowNameMap, "Q");
 		
-		Map<String, DNASequence> queryFastaContent = new LinkedHashMap<String, DNASequence>();
-		for(Map.Entry<String, DNASequence> entry: querySequenceMap.entrySet()) {
-			String rowName = "Q"+queryRowNameIndex;
-			String seqName = entry.getKey();
-			super.log(Level.FINEST, "Mapped query sequence "+seqName+" as "+rowName);
-			rowNameToQueryMap.put(rowName, seqName);
-			queryFastaContent.put(rowName, entry.getValue());
-			queryRowNameIndex++;
-		}
-
-		MafftResult maftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD, almtFastaContent, queryFastaContent, dataDirFile);
+		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD, almtFastaContent, queryFastaContent, dataDirFile);
 		
-		Map<String, DNASequence> alignmentWithQuery = maftResult.getAlignmentWithQuery();
+		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 
 		PhyloTree glueAlmtPhyloTree = TreeRenderer.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
 				new MaxLikelihoodTreeRendererContext(memberPkMapToRowName));
@@ -168,6 +150,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
 		return seqNameToPlacementResults;
 	}
+
 	
 
 	@SuppressWarnings("unchecked")

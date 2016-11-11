@@ -11,10 +11,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.apache.derby.impl.sql.compile.Predicate;
 import org.biojava.nbio.core.sequence.DNASequence;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -59,7 +57,6 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
 			Boolean deduplicate, Template idTemplate) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		checkAlignment(alignment, featureName, recursive);
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, deduplicate, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
@@ -77,6 +74,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			CommandContext cmdContext, String acRefName, String featureName,
 			Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy, Alignment alignment,
 			List<AlignmentMember> almtMembers) {
+		
+		checkAlignmentExportOptions(alignment, featureName, includeAllColumns);
+
+		
 		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
 		Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs = 
 				new LinkedHashMap<Map<String, String>, List<QueryAlignedSegment>>();
@@ -111,85 +112,79 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs,
 			Map<Map<String, String>, AbstractSequenceObject> pkMapToSeqObj, 
 			Integer minColUsage) {
-		
+
 		AllColumnsAlignment<Key> allColsAlmt = null;
-		
-		ReferenceSequence refSequence = alignment.getRefSequence();
 
-		if(refSequence != null) {
-			// ensure all necessary references are in the alignment (we will ignore them later).
-			Map<String, ReferenceSequence> includedRefs = new LinkedHashMap<String, ReferenceSequence>();
+		// ensure all necessary references are in the alignment (we will ignore them later).
+		Map<String, ReferenceSequence> includedRefs = new LinkedHashMap<String, ReferenceSequence>();
 
-			for(AlignmentMember almtMember: almtMembers) {
-				List<Alignment> ancestors = almtMember.getAlignment().getAncestors();
-				// process ancestors in reverse order to ensure parent is added before child.
-				for(int i = ancestors.size()-1; i >= 0; i--) {
-					Alignment ancestorAlmt = ancestors.get(i);
-					ReferenceSequence ancRef = ancestorAlmt.getRefSequence();
-					if(!includedRefs.containsKey(ancRef.getName())) {
-						Sequence refSeqSeq = ancRef.getSequence();
-						Alignment parentAlmt = ancestorAlmt.getParent();
-						AbstractSequenceObject seqObj = ancRef.getSequence().getSequenceObject();
-						if(parentAlmt == null) {
-							allColsAlmt = 
-									new AllColumnsAlignment<FastaAlignmentExporter.Key>(
-											new ReferenceKey(ancRef.getName()), seqObj.getNucleotides(cmdContext).length());
-						} else {
-							AlignmentMember refAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class,
-									AlignmentMember.pkMap(parentAlmt.getName(), refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID()));
-							allColsAlmt.addRow(
-									new ReferenceKey(ancRef.getName()), 
-									new ReferenceKey(parentAlmt.getRefSequence().getName()), 
-									refAlmtMember.segmentsAsQueryAlignedSegments(), 
-									seqObj.getNucleotides(cmdContext).length());
-						}
-						includedRefs.put(ancRef.getName(), ancRef);
+		for(AlignmentMember almtMember: almtMembers) {
+			List<Alignment> ancestors = almtMember.getAlignment().getAncestors();
+			// process ancestors in reverse order to ensure parent is added before child.
+			for(int i = ancestors.size()-1; i >= 0; i--) {
+				Alignment ancestorAlmt = ancestors.get(i);
+				ReferenceSequence ancRef = ancestorAlmt.getRefSequence();
+				if(!includedRefs.containsKey(ancRef.getName())) {
+					Sequence refSeqSeq = ancRef.getSequence();
+					Alignment parentAlmt = ancestorAlmt.getParent();
+					AbstractSequenceObject seqObj = ancRef.getSequence().getSequenceObject();
+					if(parentAlmt == null) {
+						allColsAlmt = 
+								new AllColumnsAlignment<FastaAlignmentExporter.Key>(
+										new ReferenceKey(ancRef.getName()), seqObj.getNucleotides(cmdContext).length());
+					} else {
+						AlignmentMember refAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class,
+								AlignmentMember.pkMap(parentAlmt.getName(), refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID()));
+						allColsAlmt.addRow(
+								new ReferenceKey(ancRef.getName()), 
+								new ReferenceKey(parentAlmt.getRefSequence().getName()), 
+								refAlmtMember.segmentsAsQueryAlignedSegments(), 
+								seqObj.getNucleotides(cmdContext).length());
 					}
+					includedRefs.put(ancRef.getName(), ancRef);
 				}
 			}
-			// now add the alignment members themselves
-			for(AlignmentMember almtMember: almtMembers) {
-				Map<String,String> pkMap = almtMember.pkMap();
-				AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
-				allColsAlmt.addRow(
-						new QueryKey(pkMap), 
-						new ReferenceKey(almtMember.getAlignment().getRefSequence().getName()), 
-						almtMember.segmentsAsQueryAlignedSegments(), 
-						seqObj.getNucleotides(cmdContext).length());
-				pkMapToSeqObj.put(pkMap, seqObj);
-			}
-			// remove underused columns (based on usage by query sequences)
-			if(minColUsage != null) {
-				allColsAlmt.removeUnderusedColumns(minColUsage, k -> k instanceof QueryKey);
-			}
-			// set the min/max region.
-			if(acRef != null && featureName != null && !almtMembers.isEmpty()) {
-				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class,
-						FeatureLocation.pkMap(acRef.getName(), featureName));
-				List<ReferenceSegment> featureLocAcRefSegs = featureLoc.segmentsAsReferenceSegments();
-				List<QueryAlignedSegment> acRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(acRef.getName()));
-				List<QueryAlignedSegment> uToAcRefSegs = acRefToUSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
-				List<QueryAlignedSegment> featureUToAcRefSegs = 
-						ReferenceSegment.intersection(featureLocAcRefSegs, uToAcRefSegs, ReferenceSegment.cloneRightSegMerger());
-				List<QueryAlignedSegment> featureAcRefToUSegs = 
-						featureUToAcRefSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
-				minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureAcRefToUSegs));
-				minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureAcRefToUSegs));
-				
-			} else {
-				for(Key key: allColsAlmt.getKeys()) {
-					List<QueryAlignedSegment> qaSegs = allColsAlmt.getSegments(key);
-					minMaxSeg.setRefEnd(Math.max(minMaxSeg.getRefEnd(), ReferenceSegment.maxRefEnd(qaSegs)));
-				}
-			}
-			// finally copy the query rows of the all-columns alignment into the output map.
-			for(Key key: allColsAlmt.getKeys()) {
-				if(key instanceof QueryKey) {
-					pkMapToQaSegs.put(((QueryKey) key).getPkMap(), allColsAlmt.getSegments(key));
-				}
-			}
+		}
+		// now add the alignment members themselves
+		for(AlignmentMember almtMember: almtMembers) {
+			Map<String,String> pkMap = almtMember.pkMap();
+			AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
+			allColsAlmt.addRow(
+					new QueryKey(pkMap), 
+					new ReferenceKey(almtMember.getAlignment().getRefSequence().getName()), 
+					almtMember.segmentsAsQueryAlignedSegments(), 
+					seqObj.getNucleotides(cmdContext).length());
+			pkMapToSeqObj.put(pkMap, seqObj);
+		}
+		// remove underused columns (based on usage by query sequences)
+		if(minColUsage != null) {
+			allColsAlmt.removeUnderusedColumns(minColUsage, k -> k instanceof QueryKey);
+		}
+		// set the min/max region.
+		if(acRef != null && featureName != null && !almtMembers.isEmpty()) {
+			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class,
+					FeatureLocation.pkMap(acRef.getName(), featureName));
+			List<ReferenceSegment> featureLocAcRefSegs = featureLoc.segmentsAsReferenceSegments();
+			List<QueryAlignedSegment> acRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(acRef.getName()));
+			List<QueryAlignedSegment> uToAcRefSegs = acRefToUSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
+			List<QueryAlignedSegment> featureUToAcRefSegs = 
+					ReferenceSegment.intersection(featureLocAcRefSegs, uToAcRefSegs, ReferenceSegment.cloneRightSegMerger());
+			List<QueryAlignedSegment> featureAcRefToUSegs = 
+					featureUToAcRefSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
+			minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureAcRefToUSegs));
+			minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureAcRefToUSegs));
+
 		} else {
-			throw new FastaExporterException(FastaExporterException.Code.INCLUDE_ALL_COLUMNS_UNIMPLEMENTED_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
+			for(Key key: allColsAlmt.getKeys()) {
+				List<QueryAlignedSegment> qaSegs = allColsAlmt.getSegments(key);
+				minMaxSeg.setRefEnd(Math.max(minMaxSeg.getRefEnd(), ReferenceSegment.maxRefEnd(qaSegs)));
+			}
+		}
+		// finally copy the query rows of the all-columns alignment into the output map.
+		for(Key key: allColsAlmt.getKeys()) {
+			if(key instanceof QueryKey) {
+				pkMapToQaSegs.put(((QueryKey) key).getPkMap(), allColsAlmt.getSegments(key));
+			}
 		}
 	}
 	

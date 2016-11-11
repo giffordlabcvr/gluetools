@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.MafftAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
+import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGenerator;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
@@ -89,6 +90,9 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(RegexAminoAcidVariationScanner.class);
 		registerPluginClass(ExactMatchNucleotideVariationScanner.class);
 		registerPluginClass(RegexNucleotideVariationScanner.class);
+
+		registerPluginClass(RaxmlPhylogenyGenerator.class);
+
 	}
 	
 }

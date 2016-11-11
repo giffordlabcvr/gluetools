@@ -61,13 +61,13 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		}
 	}
 
-	protected static void checkAlignment(Alignment alignment, String featureName, Boolean recursive) {
+	protected static void checkAlignmentExportOptions(Alignment alignment, String featureName, Boolean includeAllColumns) {
 		ReferenceSequence refSequence = alignment.getRefSequence();
-		if(refSequence == null && recursive) {
-			throw new FastaExporterException(Code.CANNOT_SPECIFY_RECURSIVE_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
-		}
 		if(refSequence == null && featureName != null) {
 			throw new FastaExporterException(Code.CANNOT_SPECIFY_FEATURE_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
+		}
+		if(refSequence == null && includeAllColumns) {
+			throw new FastaExporterException(Code.CANNOT_SPECIFY_INCLUDE_ALL_COLUMNS_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
 		}
 	}
 

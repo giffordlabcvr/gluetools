@@ -7,7 +7,7 @@ public class FastaExporterException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		CANNOT_SPECIFY_FEATURE_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName"),
 		CANNOT_SPECIFY_RECURSIVE_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName"),
-		INCLUDE_ALL_COLUMNS_UNIMPLEMENTED_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName");
+		CANNOT_SPECIFY_INCLUDE_ALL_COLUMNS_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

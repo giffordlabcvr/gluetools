@@ -10,7 +10,8 @@ public class AlignmentException extends GlueException {
 		REFERENCE_NOT_MEMBER_OF_PARENT("alignmentName", "parentAlignmentName", "referenceName"),
 		REFERENCE_DOES_NOT_CONSTRAIN_ANCESTOR("referenceName", "alignmentName"),
 		ALIGNMENT_NOT_CHILD_OF_PARENT("alignmentName", "parentAlignmentName"),
-		ALIGNMENT_IS_UNCONSTRAINED("alignmentName");
+		ALIGNMENT_IS_UNCONSTRAINED("alignmentName"),
+		CANNOT_SPECIFY_RECURSIVE_FOR_UNCONSTRAINED_ALIGNMENT("alignmentName"); 
 
 		private String[] argNames;
 		private Code(String... argNames) {

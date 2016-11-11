@@ -17,10 +17,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickPhyloTreeVisitor;
@@ -30,40 +27,29 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
+import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlRunner;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
-public class RaxmlEpaRunner implements Plugin {
+public class RaxmlEpaRunner extends RaxmlRunner {
 
-	public static final String SUBSTITUTION_MODEL = "substitutionModel";
 	public static final String THOROUGH_INSERTION_FRACTION = "thoroughInsertionFraction";
-	public static final String RANDOM_NUMBER_SEED = "randomNumberSeed";
 	
-	private String substitutionModel = "GTRCAT";
 	private Double thoroughInsertionFraction = 0.1;
-	private Integer randomNumberSeed = 12345;
 
 	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
-		Plugin.super.configure(pluginConfigContext, configElem);
-		substitutionModel = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SUBSTITUTION_MODEL, false)).orElse(substitutionModel);
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
 		thoroughInsertionFraction = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, THOROUGH_INSERTION_FRACTION, false)).orElse(thoroughInsertionFraction);
-		randomNumberSeed = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, RANDOM_NUMBER_SEED, false)).orElse(randomNumberSeed);
 	}
 	
 	public RaxmlEpaResult executeRaxmlEpa(CommandContext cmdContext, PhyloTree phyloTree, Map<String, DNASequence> alignment, File dataDirFile) {
 
-		String raxmlTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXML_TEMP_DIR_PROPERTY);
-		if(raxmlTempDir == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML temp directory not defined"); }
-
-		String raxmlExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXMLHPC_EXECUTABLE_PROPERTY);
-		if(raxmlExecutable == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML executable not defined"); }
-
-		int raxmlCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXMLHPC_NUMBER_CPUS, "1"));
+		String raxmlTempDir = getRaxmlTempDir(cmdContext);
+		String raxmlExecutable = getRaxmlExecutable(cmdContext);
+		int raxmlCpus = getRaxmlCpus(cmdContext);
 		
 		checkPhyloTree(phyloTree);
 		checkAlignment(alignment);
@@ -101,10 +87,10 @@ public class RaxmlEpaRunner implements Plugin {
 			commandWords.add(phyloTreeFile.getAbsolutePath());
 			// substitution model
 			commandWords.add("-m");
-			commandWords.add(this.substitutionModel);
+			commandWords.add(this.getSubstitutionModel());
 			// random number seed
 			commandWords.add("-p");
-			commandWords.add(Integer.toString(this.randomNumberSeed));
+			commandWords.add(Integer.toString(this.getRandomNumberSeed1()));
 			// threads / number of CPUs
 			commandWords.add("-T");
 			commandWords.add(Integer.toString(raxmlCpus));
@@ -114,38 +100,11 @@ public class RaxmlEpaRunner implements Plugin {
 			
 			ProcessResult raxmlEpaProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
-			if(raxmlEpaProcessResult.getExitCode() != 0) {
-				GlueLogger.getGlueLogger().severe("RAxML process "+uuid+" failure, the RAxML stdout was:");
-				GlueLogger.getGlueLogger().severe(new String(raxmlEpaProcessResult.getOutputBytes()));
-				GlueLogger.getGlueLogger().severe("RAxML process "+uuid+" failure, the RAxML stderr was:");
-				GlueLogger.getGlueLogger().severe(new String(raxmlEpaProcessResult.getErrorBytes()));
-				throw new RaxmlException(Code.RAXML_PROCESS_EXCEPTION, "RAxML process "+uuid+" failed, see log for output/error content");
-			}
+			checkExitCode(uuid, raxmlEpaProcessResult);
 
 			return resultObjectFromTempDir(tempDir, runSpecifier);
 		} finally {
-			if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
-				boolean allFilesDeleted = true;
-				for(File file : tempDir.listFiles()) {
-					if(dataDirFile != null) {
-						byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
-						File fileToSave = new File(dataDirFile, file.getName());
-						ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
-					}
-					boolean fileDeleteResult = file.delete();
-					if(!fileDeleteResult) {
-						GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML file "+file.getAbsolutePath());
-						allFilesDeleted = false;
-						break;
-					}
-				}
-				if(allFilesDeleted) {
-					boolean dirDeleteResult = tempDir.delete();
-					if(!dirDeleteResult) {
-						GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML directory "+tempDir.getAbsolutePath());
-					}
-				}
-			}
+			cleanUpTempDir(dataDirFile, tempDir);
 		}
 	}
 
@@ -169,15 +128,6 @@ public class RaxmlEpaRunner implements Plugin {
 
 
 
-	private void writeAlignmentFile(File tempDir, File alignmentFile, Map<String, DNASequence> alignment) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
-		try(FileOutputStream fileOutputStream = new FileOutputStream(alignmentFile)) {
-			IOUtils.write(fastaBytes, fileOutputStream);
-		} catch (IOException e) {
-			throw new RaxmlException(e, Code.RAXML_FILE_EXCEPTION, "Failed to write "+alignmentFile.getAbsolutePath()+": "+e.getLocalizedMessage());
-		}
-	}
-
 	private void writePhyloTreeFile(File tempDir, File phyloTreeFile, PhyloTree phyloTree) {
 		NewickPhyloTreeVisitor newickPhyloTreeVisitor = new NewickPhyloTreeVisitor();
 		phyloTree.accept(newickPhyloTreeVisitor);
@@ -186,17 +136,6 @@ public class RaxmlEpaRunner implements Plugin {
 			IOUtils.write(newickString.getBytes(), fileOutputStream);
 		} catch (IOException e) {
 			throw new RaxmlException(e, Code.RAXML_FILE_EXCEPTION, "Failed to write "+phyloTreeFile.getAbsolutePath()+": "+e.getLocalizedMessage());
-		}
-	}
-
-
-
-
-	private void checkAlignment(Map<String, DNASequence> alignment) {
-		for(String string: alignment.keySet()) {
-			if(!RaxmlUtils.validRaxmlName(string)) {
-				throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Alignment contains row name \""+string+"\" which is invalid in RAxML");
-			}
 		}
 	}
 
