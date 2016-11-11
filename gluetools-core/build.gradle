@@ -83,6 +83,30 @@ task deployGlueConfigOmega {
   }
 }
 
+// config for Glue which tells it where to find its database. 
+task deployGlueConfigAlpha {
+  ext.alphaDir = new File(projectDir, 'alpha')
+  ext.glueConfigFile = new File(alphaDir, 'gluetools-config.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigAlpha.touchfile')
+  inputs.file glueConfigFile
+  outputs.file glueConfigTouchfile
+  doLast {
+	  println "Uploading "+glueConfigFile.name
+	  ssh.run {
+	    session(remotes.alpha) {
+	      execute 'mkdir -p /home2/sing01j/gluetools/conf'
+	      execute 'chmod a+rw /home2/sing01j/gluetools/conf'
+	      put from: glueConfigFile, into: '/home2/sing01j/gluetools/conf/gluetools-config-sing01j.xml'
+	    }
+	  }
+	  glueConfigTouchfile.delete()
+	  buildDir.mkdirs()
+	  glueConfigTouchfile.createNewFile()
+  }
+}
+
+
+
 
 
 // gluetools core jar on Omega
@@ -152,6 +176,21 @@ task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
 	  }
   }
 }
+
+task deployGlueDbToAlpha(dependsOn: ['zipGlueDB']) {
+  doLast {
+	  println "Uploading GLUE DB"
+	  ssh.run {
+	    session(remotes.alpha) {
+	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
+	      execute 'echo "drop database GLUETOOLS_SING01J; create database GLUETOOLS_SING01J;" | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
+	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
+	      execute 'rm /tmp/gluedb.sql.gz'
+	    }
+	  }
+  }
+}
+
 
 repositories {
     mavenCentral()
