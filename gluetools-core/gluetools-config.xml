@@ -49,11 +49,11 @@
 			<name>gluetools.core.programs.mafft.cpus</name>
 			<value>4</value>
 		</property>
+		<!-- DIGS -->
 		<property>
 			<name>gluetools.core.programs.mafft.temp.dir</name>
 			<value>/Users/joshsinger/tmp/mafftfiles</value>
 		</property>
-		<!-- Cayenne -->
 		<property>
 			<name>gluetools.core.digs.db.jdbc.url</name>
 			<value>jdbc:mysql://localhost:3666</value>
@@ -66,6 +66,20 @@
 			<name>gluetools.core.digs.db.password</name>
 			<value>alpha1234</value>
 		</property>
+		<!-- JModelTest -->
+		<property>
+			<name>gluetools.core.programs.jmodeltester.jar</name>
+			<value>/Users/joshsinger/jmodeltest/jmodeltest-2.1.10/jModelTest.jar</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.jmodeltester.temp.dir</name>
+			<value>/Users/joshsinger/jmodeltest/tmp</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.jmodeltester.cpus</name>
+			<value>4</value>
+		</property>
+		<!-- Cayenne -->
 		<property>
 			<name>cayenne.querycache.size</name>
 			<value>30000</value>

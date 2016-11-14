@@ -68,5 +68,20 @@
 					<name>gluetools.core.programs.mafft.temp.dir</name>
 					<value>/home2/sing01j/mafft/tmp</value>
 				</property>
+
+				<!-- JModelTest -->
+				<property>
+					<name>gluetools.core.programs.jmodeltester.jar</name>
+					<value>/home2/sing01j/jmodeltest/jmodeltest-2.1.10/jModelTest.jar</value>
+				</property>
+				<property>
+					<name>gluetools.core.programs.jmodeltester.temp.dir</name>
+					<value>/home2/sing01j/jmodeltest/tmp</value>
+				</property>
+				<property>
+					<name>gluetools.core.programs.jmodeltester.cpus</name>
+					<value>10</value>
+				</property>
+
         </properties>
 </gluetools>
