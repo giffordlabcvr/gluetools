@@ -1,0 +1,12 @@
+> seq_1_1
+AAA---CCCGGG---TTT
+> seq_1_2
+AAA---CCCGCG---TTT
+> seq_1_3
+AAAGGGCCCGGG---TTT
+> seq_2_1
+TGG---CCCGGGAAATTT
+> seq_2_2
+TGG---CCCGGGATATTT
+> seq_2_3
+AGG---CCCGGGAAATTT

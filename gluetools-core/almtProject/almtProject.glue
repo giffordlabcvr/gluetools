@@ -1,0 +1,97 @@
+delete project almt
+
+create project almt "Toy project illustrating GLUE alignment concepts"
+
+project almt
+  # Sequence data
+  import source sources/source1
+  
+  # Modules to import and export alignments
+  create module --moduleType fastaAlignmentImporter
+  create module --moduleType fastaAlignmentExporter
+
+  # Configure what the FASTA header will be for exported alignments
+  module fastaAlignmentExporter set property idTemplate "${alignment.name}.${sequence.sequenceID}"
+
+  # Import an unconstrained alignment from a file.
+  module fastaAlignmentImporter import AL_UNCONSTRAINED --fileName alignments/unconstrained.fas 
+  
+  # Create the alignment tree.
+  create reference REF_1_1 source1 seq_1_1
+  create reference REF_2_1 source1 seq_2_1
+  
+  create alignment AL_MASTER --refSeqName REF_1_1
+  alignment AL_MASTER
+  	add member source1 seq_1_1
+  	add member source1 seq_2_1
+  	exit
+  
+  create alignment AL_1 --refSeqName REF_1_1 --parentName AL_MASTER
+  alignment AL_1
+    add member source1 seq_1_1
+    add member source1 seq_1_2
+    add member source1 seq_1_3
+    exit
+
+  create alignment AL_2 --refSeqName REF_2_1 --parentName AL_MASTER
+  alignment AL_2
+    add member source1 seq_2_1
+    add member source1 seq_2_2
+    add member source1 seq_2_3
+    exit
+  
+  # Derive constrained alignment segments in the alignment tree
+  alignment AL_MASTER derive segments AL_UNCONSTRAINED --recursive --existingMembersOnly --allMembers
+  
+  # Export the unconstrained alignment, looks the same as the fasta file from which it was imported 
+  # --allMembers [-a]: include all members
+  # --preview [-p]: preview the alignment on the console 
+  module fastaAlignmentExporter export AL_UNCONSTRAINED -a -p 
+  # It looks the same as the fasta file from which it was imported
+
+  # Export AL_1  
+  module fastaAlignmentExporter export AL_1 -a -p
+  # The rows displayed are members of AL_1
+  # The columns shown are those present in the AL_1 reference REF_1_1, i.e. seq_1_1
+
+  # Export AL_2  
+  module fastaAlignmentExporter export AL_2 -a -p
+  # The rows displayed are members of AL_2
+  # The columns shown are those present in the AL_2 reference REF_2_1, i.e. seq_2_1
+
+  # Export AL_MASTER  
+  module fastaAlignmentExporter export AL_MASTER -a -p
+  # The rows displayed are members of AL_MASTER
+  # The columns shown are those present in the AL_MASTER reference REF_1_1, i.e. seq_1_1
+
+  # Export AL_MASTER and, recursively, all its descendent alignments
+  # --recursive [-c]: export members of descendent alignments 
+  module fastaAlignmentExporter export AL_MASTER -c -a -p 
+  # The rows displayed are members of AL_MASTER, AL_1 and AL_2
+  # Sequences seq_1_1 and seq_2_1 are displayed twice because they are each members of two alignments 
+  # The columns shown are those present in the AL_MASTER reference REF_1_1, i.e. seq_1_1
+
+  # Export AL_MASTER recursively, but showing only members of AL_1 and AL_2 
+  # --whereClause ... [-w ...]: qualify exported members
+  module fastaAlignmentExporter export AL_MASTER -c -w "alignment.name in ('AL_1','AL_2')" -p 
+  # The rows displayed are members of AL_1 and AL_2
+  # The columns shown are those present in the AL_MASTER reference REF_1_1, i.e. seq_1_1
+
+  # Export AL_MASTER recursively, showing all members of AL_1 and AL_2, but including all columns 
+  # --includeAllColumns [-i]: include all columns
+  module fastaAlignmentExporter export AL_MASTER -c -w "alignment.name in ('AL_1','AL_2')" -i -p 
+  # The rows displayed are members of AL_1 and AL_2
+  # The columns shown are those present in any selected alignment member.
+  # So, this looks like just like AL_UNCONSTRAINED
+
+  # Export AL_MASTER recursively [-c], showing all members of AL_1 and AL_2, including all columns present in at least 2 rows
+  # --minColUsage [-m]: show only columns present in a certain number of rows.
+  module fastaAlignmentExporter export AL_MASTER -c -w "alignment.name in ('AL_1','AL_2')" -i -m 2 -p 
+  # The rows displayed are members of AL_1 and AL_2
+  # The columns shown are those present at least 2 rows
+
+
+
+
+  
+  exit
