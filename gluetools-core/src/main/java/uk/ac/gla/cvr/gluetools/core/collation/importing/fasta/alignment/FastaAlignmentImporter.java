@@ -144,7 +144,7 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 			}
 		}
 		if(requireTotalCoverage && foundIdxOfSubseq != foundSequenceNtIndex) {
-			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundIdxOfSubseq-1, exceptionReportingID);
+			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundIdxOfSubseq-1, exceptionReportingID, whereClauseString);
 		}
 		if(!allowAmbiguousSegments) {
 			int nextIdxOfSubseq = FastaUtils.find(foundSequenceNTs, subSequence, foundIdxOfSubseq+1);
