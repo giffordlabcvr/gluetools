@@ -40,21 +40,21 @@ project almt
     add member source1 seq_2_3
     exit
   
-  # Derive constrained alignment segments in the alignment tree
+  # Derive constrained alignment segments for all nodes in the alignment tree
   alignment AL_MASTER derive segments AL_UNCONSTRAINED --recursive --existingMembersOnly --allMembers
   
-  # Export the unconstrained alignment, looks the same as the fasta file from which it was imported 
+  # Export the unconstrained alignment
   # --allMembers [-a]: include all members
   # --preview [-p]: preview the alignment on the console 
   module fastaAlignmentExporter export AL_UNCONSTRAINED -a -p 
   # It looks the same as the fasta file from which it was imported
 
-  # Export AL_1  
+  # Export constrained alignment AL_1  
   module fastaAlignmentExporter export AL_1 -a -p
   # The rows displayed are members of AL_1
   # The columns shown are those present in the AL_1 reference REF_1_1, i.e. seq_1_1
 
-  # Export AL_2  
+  # Export constrained alignment AL_2  
   module fastaAlignmentExporter export AL_2 -a -p
   # The rows displayed are members of AL_2
   # The columns shown are those present in the AL_2 reference REF_2_1, i.e. seq_2_1
