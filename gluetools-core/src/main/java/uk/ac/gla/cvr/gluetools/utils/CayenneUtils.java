@@ -56,7 +56,9 @@ public class CayenneUtils {
 				pathSpec = orderingTerm.substring(1);
 				sortOrder = SortOrder.DESCENDING;
 			} 
-			orderings.add(new Ordering(pathSpec, sortOrder));
+			Ordering ordering = new Ordering(pathSpec, sortOrder);
+			ordering.setNullSortedFirst(false);
+			orderings.add(ordering);
 		}
 		return orderings;
 	}
