@@ -10,12 +10,12 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-server/3.1/f32fa3fdde4e2d629d74b8d7fb5f4af3e0b88c9f/cayenne-server-3.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-server/3.1/60dc7f060fc0db06c1968af9e294ce1c78b26098/cayenne-server-3.1.jar" exported="true">
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-server/3.1.1/bd4b4e375ee4222e585ed49ee444f4d9a3f9ae05/cayenne-server-3.1.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-server/3.1.1/6dcf409cfca812de7705e280b9e45ef7541f6966/cayenne-server-3.1.1.jar" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-project/3.1/39529eeaeb2447da0e79cbae81e7279f4e41969/cayenne-project-3.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-project/3.1/9b10cc429e689e7409c2fcf585667e4503cbbb3b/cayenne-project-3.1.jar" exported="true">
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-project/3.1.1/66e1c8643862bfb7929c64bc61c631f74a6e0437/cayenne-project-3.1.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne/cayenne-project/3.1.1/f90c145550944d129d667675ed0fd2ca353f7198/cayenne-project-3.1.1.jar" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
@@ -130,7 +130,7 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne.unpublished/cayenne-di-unpublished/3.1/86e596660c91269d1f1e2fd9ec47bc8c84bfcef3/cayenne-di-unpublished-3.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne.unpublished/cayenne-di-unpublished/3.1/b10650ac78c8c55351e42be05403502f7857dca/cayenne-di-unpublished-3.1.jar" exported="true">
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne.unpublished/cayenne-di-unpublished/3.1.1/9942b7d256f3597fbe0eca5b5f87d84956d8500c/cayenne-di-unpublished-3.1.1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.cayenne.unpublished/cayenne-di-unpublished/3.1.1/3cfbeb4aae4f3a2bf553521529991fff322ceda/cayenne-di-unpublished-3.1.1.jar" exported="true">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>

@@ -241,7 +241,7 @@ task datamodelDigs(dependsOn: 'checkCayenneTools') << {
 
 dependencies {
    	compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
-    cgen group: 'org.apache.cayenne', name: 'cayenne-tools', version: '3.1'
+    cgen group: 'org.apache.cayenne', name: 'cayenne-tools', version: '3.1.1'
 }
 
 test {
