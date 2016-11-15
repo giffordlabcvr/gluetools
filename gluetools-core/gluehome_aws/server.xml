@@ -148,7 +148,7 @@
       <Host name="hev.glue.cvr.ac.uk"  appBase="webapps_hev"
             unpackWARs="true" autoDeploy="true">
 
-        <Context docBase="btvGlue" path="" reloadable="true"/>
+        <Context docBase="hevGlue" path="" reloadable="true"/>
 
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
                prefix="hev_glue_access_log." suffix=".txt"
