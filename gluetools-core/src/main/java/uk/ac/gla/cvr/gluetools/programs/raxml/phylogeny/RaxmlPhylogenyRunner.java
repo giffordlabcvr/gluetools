@@ -92,11 +92,11 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 			
 			ProcessResult raxmlProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
-			checkExitCode(uuid, raxmlProcessResult);
+			ProcessUtils.checkExitCode(commandWords, raxmlProcessResult);
 
 			return resultObjectFromTempDir(tempDir, runSpecifier);
 		} finally {
-			cleanUpTempDir(dataDirFile, tempDir);
+			ProcessUtils.cleanUpTempDir(dataDirFile, tempDir);
 		}
 	}
 

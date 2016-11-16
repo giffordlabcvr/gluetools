@@ -100,11 +100,11 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			
 			ProcessResult raxmlEpaProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
-			checkExitCode(uuid, raxmlEpaProcessResult);
+			ProcessUtils.checkExitCode(commandWords, raxmlEpaProcessResult);
 
 			return resultObjectFromTempDir(tempDir, runSpecifier);
 		} finally {
-			cleanUpTempDir(dataDirFile, tempDir);
+			ProcessUtils.cleanUpTempDir(dataDirFile, tempDir);
 		}
 	}
 

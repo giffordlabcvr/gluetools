@@ -11,14 +11,11 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public abstract class RaxmlRunner implements Plugin {
 
@@ -73,41 +70,6 @@ public abstract class RaxmlRunner implements Plugin {
 			if(!RaxmlUtils.validRaxmlName(string)) {
 				throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Alignment contains row name \""+string+"\" which is invalid in RAxML");
 			}
-		}
-	}
-
-	protected void cleanUpTempDir(File dataDirFile, File tempDir) {
-		if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
-			boolean allFilesDeleted = true;
-			for(File file : tempDir.listFiles()) {
-				if(dataDirFile != null) {
-					byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
-					File fileToSave = new File(dataDirFile, file.getName());
-					ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
-				}
-				boolean fileDeleteResult = file.delete();
-				if(!fileDeleteResult) {
-					GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML file "+file.getAbsolutePath());
-					allFilesDeleted = false;
-					break;
-				}
-			}
-			if(allFilesDeleted) {
-				boolean dirDeleteResult = tempDir.delete();
-				if(!dirDeleteResult) {
-					GlueLogger.getGlueLogger().warning("Failed to delete temporary RAxML directory "+tempDir.getAbsolutePath());
-				}
-			}
-		}
-	}
-
-	protected void checkExitCode(String uuid, ProcessResult raxmlEpaProcessResult) {
-		if(raxmlEpaProcessResult.getExitCode() != 0) {
-			GlueLogger.getGlueLogger().severe("RAxML process "+uuid+" failure, the RAxML stdout was:");
-			GlueLogger.getGlueLogger().severe(new String(raxmlEpaProcessResult.getOutputBytes()));
-			GlueLogger.getGlueLogger().severe("RAxML process "+uuid+" failure, the RAxML stderr was:");
-			GlueLogger.getGlueLogger().severe(new String(raxmlEpaProcessResult.getErrorBytes()));
-			throw new RaxmlException(Code.RAXML_PROCESS_EXCEPTION, "RAxML process "+uuid+" failed, see log for output/error content");
 		}
 	}
 

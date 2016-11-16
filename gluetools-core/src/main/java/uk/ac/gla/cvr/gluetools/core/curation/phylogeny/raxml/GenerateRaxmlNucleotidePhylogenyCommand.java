@@ -22,9 +22,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
-import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny.RaxmlPhylogenyResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny.RaxmlPhylogenyRunner;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
@@ -67,7 +67,7 @@ public class GenerateRaxmlNucleotidePhylogenyCommand extends GenerateNucleotideP
 
 		Map<String, Map<String,String>> rowNameToMemberPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<Map<String,String>, String> memberPkMapToRowName = new LinkedHashMap<Map<String,String>, String>();
-		Map<String, DNASequence> alignment = RaxmlUtils.remapAlignment(
+		Map<String, DNASequence> alignment = FastaUtils.remapFasta(
 				memberPkMapToAlignmentRow, rowNameToMemberPkMap, memberPkMapToRowName, "M");
 
 		RaxmlPhylogenyResult raxmlPhylogenyResult = raxmlPhylogenyRunner.executeRaxmlPhylogeny(cmdContext, alignment, dataDirFile);

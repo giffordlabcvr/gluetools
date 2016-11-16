@@ -41,9 +41,9 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
-import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaRunner;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="maxLikelihoodPlacer")
 public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
@@ -118,12 +118,12 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		// we rename query and member sequences (a) to avoid clashes and (b) to work around program ID limitations.
 		Map<String, Map<String,String>> rowNameToMemberPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<Map<String,String>, String> memberPkMapToRowName = new LinkedHashMap<Map<String,String>, String>();
-		Map<String, DNASequence> almtFastaContent = RaxmlUtils.remapAlignment(
+		Map<String, DNASequence> almtFastaContent = FastaUtils.remapFasta(
 				memberPkMapToAlignmentRow, rowNameToMemberPkMap, memberPkMapToRowName, "R");
 		
 		Map<String, String> rowNameToQueryMap = new LinkedHashMap<String, String>();
 		Map<String, String> queryToRowNameMap = new LinkedHashMap<String, String>();
-		Map<String, DNASequence> queryFastaContent = RaxmlUtils.remapAlignment(
+		Map<String, DNASequence> queryFastaContent = FastaUtils.remapFasta(
 				querySequenceMap, rowNameToQueryMap, queryToRowNameMap, "Q");
 		
 		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD, almtFastaContent, queryFastaContent, dataDirFile);

@@ -11,5 +11,16 @@ public class JModelTestUtils {
 	public static String 
 		JMODELTESTER_NUMBER_CPUS = "gluetools.core.programs.jmodeltester.cpus";
 
+	public static boolean validPhyMLName(String string) {
+		if(string.length() < 1 || string.length() > 100) {
+			return false;
+		}
+		// disallow whitespace, comma, colon, '(', ')', '[' and ']'
+		if(!string.matches("[^ \t\n\r\f,:\\(\\)\\[\\]]+")) {
+			return false;
+		}
+		return true;
+	}
+
 	
 }

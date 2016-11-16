@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 
 public abstract class OkCrudResult extends OkResult {
@@ -17,7 +16,7 @@ public abstract class OkCrudResult extends OkResult {
 	
 	public OkCrudResult(
 			Operation operation,
-			Class<? extends GlueDataObject> objectClass,
+			Class<?> objectClass,
 			int number) {
 		super(mapBuilder()
 				.put(OPERATION, operation.name())

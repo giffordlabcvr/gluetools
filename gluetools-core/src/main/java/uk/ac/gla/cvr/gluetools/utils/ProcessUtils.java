@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.utils.ProcessUtilsException.Code;
 
 public class ProcessUtils {
 
@@ -183,6 +185,43 @@ public class ProcessUtils {
 			}			
 		}
 		
+	}
+
+	public static void cleanUpTempDir(File dataDirFile, File tempDir) {
+		if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
+			boolean allFilesDeleted = true;
+			for(File file : tempDir.listFiles()) {
+				if(dataDirFile != null) {
+					byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
+					File fileToSave = new File(dataDirFile, file.getName());
+					ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
+				}
+				boolean fileDeleteResult = file.delete();
+				if(!fileDeleteResult) {
+					GlueLogger.getGlueLogger().warning("Failed to delete temporary file "+file.getAbsolutePath());
+					allFilesDeleted = false;
+					break;
+				}
+			}
+			if(allFilesDeleted) {
+				boolean dirDeleteResult = tempDir.delete();
+				if(!dirDeleteResult) {
+					GlueLogger.getGlueLogger().warning("Failed to delete temporary directory "+tempDir.getAbsolutePath());
+				}
+			}
+		}
+	}
+
+	public static void checkExitCode(List<String> commandWords, ProcessResult processResult) {
+		int exitCode = processResult.getExitCode();
+		if(exitCode != 0) {
+			String command = String.join(" ", commandWords);
+			GlueLogger.getGlueLogger().severe("Process failure, the stdout was:");
+			GlueLogger.getGlueLogger().severe(new String(processResult.getOutputBytes()));
+			GlueLogger.getGlueLogger().severe("Process failure, the stderr was:");
+			GlueLogger.getGlueLogger().severe(new String(processResult.getErrorBytes()));
+			throw new ProcessUtilsException(Code.PROCESS_EXIT_CODE_ERROR, command, Integer.toString(exitCode));
+		}
 	}
 
 	

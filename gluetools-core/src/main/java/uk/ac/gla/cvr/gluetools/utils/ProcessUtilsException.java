@@ -10,7 +10,8 @@ public class ProcessUtilsException extends GlueException {
 		UNABLE_TO_START_PROCESS_FOR_COMMAND("command", "errorTxt"),
 		PROCESS_IO_STDIN_ERROR("command", "errorTxt"),
 		PROCESS_IO_STDOUT_ERROR("command", "errorTxt"),
-		PROCESS_IO_STDERR_ERROR("command", "errorTxt");
+		PROCESS_IO_STDERR_ERROR("command", "errorTxt"),
+		PROCESS_EXIT_CODE_ERROR("command", "exitCode");
 
 		private String[] argNames;
 		private Code(String... argNames) {

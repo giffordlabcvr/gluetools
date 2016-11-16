@@ -3,8 +3,10 @@ package uk.ac.gla.cvr.gluetools.utils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
@@ -29,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class FastaUtils {
 	
@@ -154,6 +157,29 @@ public class FastaUtils {
 
 	public static CharSequence subSequence(String nucleotides, int start, int end) {
 		return nucleotides.subSequence(start-1, end);
+	}
+
+	/**
+	 * Given a multi-FASTA, in the form of a map using input keys of type D and a string prefix
+	 * @return a multi-FASTA using simple string keys based on the prefix plus an integer, 
+	 * populating two maps to map the keys between each other.
+	 */
+	public static <D> Map<String, DNASequence> remapFasta(
+			Map<D, DNASequence> inputKeyToFasta,
+			Map<String, D> simpleKeyToInputKey, Map<D, String> inputKeyToSimpleKey, String prefix) {
+		int simpleKeyIndex = 0;
+		Map<String, DNASequence> remappedFasta = new LinkedHashMap<String, DNASequence>();
+		for(Map.Entry<D, DNASequence> entry: inputKeyToFasta.entrySet()) {
+			String simpleKey = prefix+simpleKeyIndex;
+			D inputKey = entry.getKey();
+			GlueLogger.log(Level.FINEST, "Mapped sequence "+inputKey+" as "+simpleKey);
+			simpleKeyToInputKey.put(simpleKey, inputKey);
+			inputKeyToSimpleKey.put(inputKey, simpleKey);
+			DNASequence fasta = entry.getValue();
+			remappedFasta.put(simpleKey, fasta);
+			simpleKeyIndex++;
+		}
+		return remappedFasta;
 	}
 	
 }
