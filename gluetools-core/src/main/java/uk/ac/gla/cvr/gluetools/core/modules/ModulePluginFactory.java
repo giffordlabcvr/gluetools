@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGener
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
@@ -95,6 +96,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(RaxmlPhylogenyGenerator.class);
 		registerPluginClass(ModelTester.class);
 
+		registerPluginClass(PhylogenyImporter.class);
+		
 	}
 	
 }
