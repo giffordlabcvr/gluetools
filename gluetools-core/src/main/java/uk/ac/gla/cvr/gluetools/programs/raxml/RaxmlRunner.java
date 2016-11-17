@@ -11,6 +11,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -30,6 +31,14 @@ public abstract class RaxmlRunner implements Plugin {
 		Plugin.super.configure(pluginConfigContext, configElem);
 		substitutionModel = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SUBSTITUTION_MODEL, false)).orElse(substitutionModel);
 		randomNumberSeed1 = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, RANDOM_NUMBER_SEED_1, false)).orElse(randomNumberSeed1);
+	}
+
+	@Override
+	public void configurePropertyGroup(PropertyGroup propertyGroup) {
+		Plugin.super.configurePropertyGroup(propertyGroup);
+		propertyGroup
+			.addPropertyName(SUBSTITUTION_MODEL)
+			.addPropertyName(RANDOM_NUMBER_SEED_1);
 	}
 
 	protected String getSubstitutionModel() {

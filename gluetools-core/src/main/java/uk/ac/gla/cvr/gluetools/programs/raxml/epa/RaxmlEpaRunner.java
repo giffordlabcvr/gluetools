@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
+import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickPhyloTreeVisitor;
@@ -44,6 +45,14 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 		super.configure(pluginConfigContext, configElem);
 		thoroughInsertionFraction = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, THOROUGH_INSERTION_FRACTION, false)).orElse(thoroughInsertionFraction);
 	}
+	
+	@Override
+	public void configurePropertyGroup(PropertyGroup propertyGroup) {
+		super.configurePropertyGroup(propertyGroup);
+		propertyGroup
+			.addPropertyName(THOROUGH_INSERTION_FRACTION);
+	}
+
 	
 	public RaxmlEpaResult executeRaxmlEpa(CommandContext cmdContext, PhyloTree phyloTree, Map<String, DNASequence> alignment, File dataDirFile) {
 

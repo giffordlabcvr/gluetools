@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleUpdateDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(
@@ -27,10 +27,10 @@ public class ModuleDeletePropertyGroupCommand extends ModulePropertyCommand<Dele
 		Element parentElem = resolveParentElem(modulePluginDoc);
 		List<Element> elements = GlueXmlUtils.findChildElements(parentElem, elemName);
 		if(elements.size() == 0) {
-			return new DeleteResult(ModulePlugin.PropertyGroup.class, 0);
+			return new DeleteResult(PropertyGroup.class, 0);
 		}
 		elements.forEach(e -> parentElem.removeChild(e));
-		return new DeleteResult(ModulePlugin.PropertyGroup.class, 1);
+		return new DeleteResult(PropertyGroup.class, 1);
 	}
 
 	@CompleterClass

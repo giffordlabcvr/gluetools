@@ -10,6 +10,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -27,14 +28,9 @@ public class ModelTester extends ModulePlugin<ModelTester> {
 	public ModelTester() {
 		super();
 		addModulePluginCmdClass(TestModelsCommand.class);
-		getRootPropertyGroup()
-			.addChild(J_MODEL_TEST_RUNNER)
-				.addPropertyName(JModelTestRunner.INCLUDE_PROPORTION_INVARIABLE_SITES)
-				.addPropertyName(JModelTestRunner.INCLUDE_UNEQUAL_BASE_FREQUENCIES)
-				.addPropertyName(JModelTestRunner.NUM_RATE_CATEGORIES)
-				.addPropertyName(JModelTestRunner.NUM_SUBSTITUTION_SCHEMES);
+		PropertyGroup jModelTestPropertyGroup = getRootPropertyGroup().addChild(J_MODEL_TEST_RUNNER);
+		jModelTestRunner.configurePropertyGroup(jModelTestPropertyGroup);
 	}
-
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {

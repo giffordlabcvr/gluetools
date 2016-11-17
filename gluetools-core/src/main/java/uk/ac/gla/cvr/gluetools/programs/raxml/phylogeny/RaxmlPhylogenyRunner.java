@@ -14,6 +14,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickToPhyloTreeParser;
@@ -43,6 +44,15 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 				.orElse(randomNumberSeed2);
 	}
 
+	@Override
+	public void configurePropertyGroup(PropertyGroup propertyGroup) {
+		super.configurePropertyGroup(propertyGroup);
+		propertyGroup
+			.addPropertyName(BOOTSTRAP_REPLICATES)
+			.addPropertyName(RANDOM_NUMBER_SEED_2);
+	}
+
+	
 	public RaxmlPhylogenyResult executeRaxmlPhylogeny(CommandContext cmdContext, Map<String, DNASequence> alignment, File dataDirFile) {
 
 		String raxmlTempDir = getRaxmlTempDir(cmdContext);

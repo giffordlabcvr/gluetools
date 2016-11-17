@@ -14,6 +14,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -48,6 +49,17 @@ public class JModelTestRunner implements Plugin {
 		}
 	}
 
+	@Override
+	public void configurePropertyGroup(PropertyGroup propertyGroup) {
+		Plugin.super.configurePropertyGroup(propertyGroup);
+		propertyGroup
+			.addPropertyName(INCLUDE_PROPORTION_INVARIABLE_SITES)
+			.addPropertyName(INCLUDE_UNEQUAL_BASE_FREQUENCIES)
+			.addPropertyName(NUM_SUBSTITUTION_SCHEMES)
+			.addPropertyName(NUM_RATE_CATEGORIES);
+	}
+
+	
 	protected int getJModelTestCpus(CommandContext cmdContext) {
 		return Integer.parseInt(cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(JModelTestUtils.JMODELTESTER_NUMBER_CPUS, "1"));
 	}
@@ -157,6 +169,7 @@ public class JModelTestRunner implements Plugin {
 			throw new JModelTestException(e, Code.JMODELTEST_FILE_EXCEPTION, "Failed to write alignment file "+alignmentFile.getAbsolutePath()+": "+e.getLocalizedMessage());
 		}
 	}
+
 
 
 }

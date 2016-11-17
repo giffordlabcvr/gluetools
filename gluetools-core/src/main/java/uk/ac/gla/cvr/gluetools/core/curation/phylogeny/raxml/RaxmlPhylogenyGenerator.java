@@ -12,17 +12,19 @@ import uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny.RaxmlPhylogenyRunner;
 @PluginClass(elemName="raxmlPhylogenyGenerator")
 public class RaxmlPhylogenyGenerator extends PhylogenyGenerator<RaxmlPhylogenyGenerator>{
 
+	private static final String RAXML_PHYLOGENY_RUNNER = "raxmlPhylogenyRunner";
 	private RaxmlPhylogenyRunner raxmlPhylogenyRunner = new RaxmlPhylogenyRunner();
 	
 	public RaxmlPhylogenyGenerator() {
 		super();
 		addModulePluginCmdClass(GenerateRaxmlNucleotidePhylogenyCommand.class);
+		raxmlPhylogenyRunner.configurePropertyGroup(getRootPropertyGroup().addChild(RAXML_PHYLOGENY_RUNNER));
 	}
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		Element raxmlPhylogenyRunnerElem = PluginUtils.findConfigElement(configElem, "raxmlPhylogenyRunner");
+		Element raxmlPhylogenyRunnerElem = PluginUtils.findConfigElement(configElem, RAXML_PHYLOGENY_RUNNER);
 		if(raxmlPhylogenyRunnerElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, raxmlPhylogenyRunnerElem, raxmlPhylogenyRunner);
 		}
