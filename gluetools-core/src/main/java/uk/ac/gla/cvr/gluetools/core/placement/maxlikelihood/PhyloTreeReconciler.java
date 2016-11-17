@@ -27,7 +27,7 @@ public class PhyloTreeReconciler implements PhyloTreeVisitor {
 	// User data key mapping JPlace phylo obj to glue alignment phylo obj
 	public static final String GLUE_ALMT_PHYLO_OBJ = "glueAlmtPhyloObj";
 
-	private LinkedList<PhyloObject> glueAlmtPhyloObjStack = new LinkedList<PhyloObject>();
+	private LinkedList<PhyloObject<?>> glueAlmtPhyloObjStack = new LinkedList<PhyloObject<?>>();
 
 	public PhyloTreeReconciler(PhyloTree glueAlmtPhyloTree) {
 		push(glueAlmtPhyloTree);
@@ -97,34 +97,34 @@ public class PhyloTreeReconciler implements PhyloTreeVisitor {
 	}
 
 	
-	private <D extends PhyloObject> void link(D glueAlmtPhyloObj, D jPlacePhyloObj) {
+	private <D extends PhyloObject<?>> void link(D glueAlmtPhyloObj, D jPlacePhyloObj) {
 		glueAlmtPhyloObj.ensureUserData().put(JPLACE_PHYLO_OBJ, jPlacePhyloObj);
 		jPlacePhyloObj.ensureUserData().put(GLUE_ALMT_PHYLO_OBJ, glueAlmtPhyloObj);
 	}
 	
-	private <D extends PhyloObject> D pop(Class<D> theClass) {
+	private <D extends PhyloObject<?>> D pop(Class<D> theClass) {
 		if(glueAlmtPhyloObjStack.isEmpty()) {
 			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but stack was empty");
 		}
-		PhyloObject popped = glueAlmtPhyloObjStack.pop();
+		PhyloObject<?> popped = glueAlmtPhyloObjStack.pop();
 		if(!theClass.isAssignableFrom(popped.getClass())) {
 			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but found "+popped.getClass().getSimpleName());
 		}
 		return theClass.cast(popped);
 	}
 
-	private <D extends PhyloObject> D peek(Class<D> theClass) {
+	private <D extends PhyloObject<?>> D peek(Class<D> theClass) {
 		if(glueAlmtPhyloObjStack.isEmpty()) {
 			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but stack was empty");
 		}
-		PhyloObject peeked = glueAlmtPhyloObjStack.peek();
+		PhyloObject<?> peeked = glueAlmtPhyloObjStack.peek();
 		if(!theClass.isAssignableFrom(peeked.getClass())) {
 			throw new MaxLikelihoodPlacerException(Code.PHYLO_TREE_RECONCILER_ERROR, "Reconciler expected PhyloObject "+theClass.getSimpleName()+" but found "+peeked.getClass().getSimpleName());
 		}
 		return theClass.cast(peeked);
 	}
 	
-	private void push(PhyloObject phyloObj) {
+	private void push(PhyloObject<?> phyloObj) {
 		glueAlmtPhyloObjStack.push(phyloObj);
 	}
 	

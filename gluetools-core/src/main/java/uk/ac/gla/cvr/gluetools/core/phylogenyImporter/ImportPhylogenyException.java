@@ -5,7 +5,8 @@ import uk.ac.gla.cvr.gluetools.core.GlueException;
 public class ImportPhylogenyException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
-		MEMBER_LEAF_MISMATCH("fileName");
+		MEMBER_LEAF_MISMATCH("errorTxt"),
+		PHYLOGENY_INCONSISTENT("errorTxt");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -3,7 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PhyloInternal extends PhyloSubtree {
+public class PhyloInternal extends PhyloSubtree<PhyloInternal> {
 
 	private List<PhyloBranch> branches = new ArrayList<PhyloBranch>();
 	
@@ -62,6 +62,13 @@ public class PhyloInternal extends PhyloSubtree {
 			}
 			currentPhyloInternal.addBranch(branchesToMove.get(branchesToMove.size()-1));
 		}		
+	}
+
+	@Override
+	public PhyloInternal clone() {
+		PhyloInternal phyloInternal = new PhyloInternal();
+		copyPropertiesTo(phyloInternal);
+		return phyloInternal;
 	}
 
 	

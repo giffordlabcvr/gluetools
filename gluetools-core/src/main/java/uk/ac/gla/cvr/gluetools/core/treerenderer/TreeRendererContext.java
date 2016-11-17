@@ -111,7 +111,7 @@ public class TreeRendererContext {
 	}
 
 	protected void setAlignmentPhyloInternalName(CommandContext commandContext,
-			Alignment alignment, PhyloSubtree alignmentPhyloInternal) {
+			Alignment alignment, PhyloSubtree<?> alignmentPhyloInternal) {
 		String alignmentNameTemplateString = getAlignmentNameTemplateString();
 		if(alignmentNameTemplateString != null) {
 			Template template = FreemarkerUtils.templateFromString(alignmentNameTemplateString, commandContext.getGluetoolsEngine().getFreemarkerConfiguration());
@@ -135,8 +135,8 @@ public class TreeRendererContext {
 		}
 	}
 
-	public Map<String, Object> mergeUserData(PhyloObject almtPhyloInternal,
-			PhyloObject singleBranchSubtree) {
+	public Map<String, Object> mergeUserData(PhyloObject<?> almtPhyloInternal,
+			PhyloObject<?> singleBranchSubtree) {
 		return singleBranchSubtree.getUserData();
 	}
 }

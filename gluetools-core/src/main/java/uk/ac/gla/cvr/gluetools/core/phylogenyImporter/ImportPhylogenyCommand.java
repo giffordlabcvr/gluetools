@@ -1,13 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.phylogenyImporter;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.security.auth.callback.ConfirmationCallback;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
@@ -30,7 +31,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickToPhyloTreeParser;
@@ -104,37 +104,95 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		PhyloTree phyloTree = newickToPhyloTreeParser.parseNewick(phylogenyString);
 		
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		if(!alignment.isConstrained()) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Phylogeny can only be imported for constrained alignments.");
+		}
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, false, whereClause);
 
-		Set<Map<String,String>> almtMemberPkMaps = almtMembers.stream().map(m -> m.pkMap()).collect(Collectors.toSet());
-		Set<Map<String,String>> leafNodePkMaps = new LinkedHashSet<Map<String,String>>();
+		// init AlignmentData map using selected alignment members
+		Map<String, AlignmentData> alignmentNameToData = new LinkedHashMap<String, AlignmentData>();
+		almtMembers.forEach(memb -> {
+			String almtName = memb.getAlignment().getName();
+			AlignmentData alignmentData = alignmentNameToData.get(almtName);
+			if(alignmentData == null) {
+				alignmentData = new AlignmentData();
+				alignmentNameToData.put(almtName, alignmentData);
+				alignmentData.alignment = memb.getAlignment();
+				alignmentData.depth = memb.getAlignment().getDepth();
+			}
+			alignmentData.selectedMemberPkMaps.add(memb.pkMap());
+		});
 
+		// add phyloTree leaf nodes into the AlignmentData, checking that they correspond to selected almt members.
 		phyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
 				String leafNodeName = phyloLeaf.getName();
+				Map<String, String> leafNodePkMap = leafNodeNameToPkMap(project, leafNodeName);
+				String alignmentName = leafNodePkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
+				AlignmentData alignmentData = alignmentNameToData.get(alignmentName);
+				if(alignmentData == null) {
+					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment.");
+				}
+				if(!alignmentData.selectedMemberPkMaps.contains(leafNodePkMap)) {
+					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment member.");
+				}
+				alignmentData.phyloPkMapToLeaf.put(leafNodePkMap, phyloLeaf);
+			}
+
+			private Map<String, String> leafNodeNameToPkMap(Project project,
+					String leafNodeName) {
 				Map<String, String> leafNodePkMap = project.targetPathToPkMap(ConfigurableTable.alignment_member.name(), leafNodeName);
-				leafNodePkMaps.add(leafNodePkMap);
+				return leafNodePkMap;
 			}
 		});
-		
-		if(!leafNodePkMaps.equals(almtMemberPkMaps)) {
-			Set<Map<String,String>> inMemberListButNotFile = new LinkedHashSet<Map<String,String>>();
-			inMemberListButNotFile.addAll(almtMemberPkMaps);
-			inMemberListButNotFile.removeAll(leafNodePkMaps);
-			Set<Map<String,String>> inFileButNotMemberList = new LinkedHashSet<Map<String,String>>();
-			inFileButNotMemberList.addAll(leafNodePkMaps);
-			inFileButNotMemberList.removeAll(almtMemberPkMaps);
-			GlueLogger.getGlueLogger().fine(inMemberListButNotFile.size()+" members in selected set but not in file.");
-			GlueLogger.getGlueLogger().fine(inFileButNotMemberList.size()+" leaf nodes in file but not in selected set.");
-			throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, fileName);
+
+		// check that all selected members map to a phylo leaf node.
+		for(AlignmentData almtData : alignmentNameToData.values()) {
+			for(Map<String,String> memberPkMap : almtData.selectedMemberPkMaps) {
+				if(!almtData.phyloPkMapToLeaf.containsKey(memberPkMap)) {
+					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Alignment member "+memberPkMap+" does not match any leaf node.");
+				}
+			}
 		}
+		
+		// sort relevant alignments by decreasing depth.
+		List<AlignmentData> sortedAlmtDataList = new ArrayList<AlignmentData>(alignmentNameToData.values());
+		sortedAlmtDataList.sort(new Comparator<AlignmentData>() {
+			@Override
+			public int compare(AlignmentData o1, AlignmentData o2) {
+				return - Integer.compare(o1.depth, o2.depth);
+			}
+		});
+
+		sortedAlmtDataList.forEach(almtData -> {
+			
+			while(!almtData.selectedMemberPkMaps.isEmpty()) {
+				
+			}
+			
+			
+			almtData.phyloPkMapToLeaf.forEach((pkMap, leaf) -> {
+				
+			});
+			
+			
+			
+		});
+		
 		
 		ImportPhylogenyResult result = new ImportPhylogenyResult();
 		return result;
 	}
 
+	private class AlignmentData {
+		Alignment alignment;
+		int depth;
+		Set<Map<String,String>> selectedMemberPkMaps = new LinkedHashSet<Map<String,String>>();
+		Map<Map<String,String>, PhyloLeaf> phyloPkMapToLeaf = new LinkedHashMap<Map<String,String>, PhyloLeaf>();
+	}
+	
 	
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {

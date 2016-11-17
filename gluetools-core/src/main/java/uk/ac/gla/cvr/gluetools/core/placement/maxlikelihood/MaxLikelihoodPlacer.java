@@ -186,7 +186,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				PhyloBranch jPlacePlacementBranch = labelToJPlaceBranch.get(edgeNum);
 
 				MemberSearchNode nearestMemberNode = findNearestMember(jPlacePlacementBranch, distalLength, pendantLength);
-				PhyloSubtree jPlaceMemberLeaf = nearestMemberNode.phyloSubtree;
+				PhyloSubtree<?> jPlaceMemberLeaf = nearestMemberNode.phyloSubtree;
 				PhyloLeaf glueAlmtMemberLeaf = (PhyloLeaf) jPlaceMemberLeaf.getUserData().get(PhyloTreeReconciler.GLUE_ALMT_PHYLO_OBJ);
 				PlacementResult placementResult = new PlacementResult();
 				placementResult.setSequenceName(seqName);
@@ -240,13 +240,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		BigDecimal branchLength = placementBranch.getLength();
 		// The two nodes attached to the placement branch.
 		PhyloInternal towardsRoot = placementBranch.getParentPhyloInternal();
-		PhyloSubtree awayFromRoot = placementBranch.getSubtree();
+		PhyloSubtree<?> awayFromRoot = placementBranch.getSubtree();
 		BigDecimal towardsRootLength = distalLength.add(pendantLength);
 		nodeQueue.add(new MemberSearchNode(towardsRootLength, towardsRoot));
 		BigDecimal awayFromRootLength = branchLength.subtract(towardsRootLength).add(pendantLength);
 		nodeQueue.add(new MemberSearchNode(awayFromRootLength, awayFromRoot));
 		
-		Set<PhyloSubtree> visited = new LinkedHashSet<PhyloSubtree>();
+		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
 		MemberSearchNode bestNode = null;
 		while(!nodeQueue.isEmpty()) {
 			MemberSearchNode currentNode = nodeQueue.pop();
@@ -279,8 +279,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	
 	private class MemberSearchNode {
 		BigDecimal totalLength;
-		PhyloSubtree phyloSubtree;
-		public MemberSearchNode(BigDecimal totalLength, PhyloSubtree phyloSubtree) {
+		PhyloSubtree<?> phyloSubtree;
+		public MemberSearchNode(BigDecimal totalLength, PhyloSubtree<?> phyloSubtree) {
 			super();
 			this.totalLength = totalLength;
 			this.phyloSubtree = phyloSubtree;
@@ -395,8 +395,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Map<String, Object> mergeUserData(
-				PhyloObject almtPhyloInternal,
-				PhyloObject singleBranchSubtree) {
+				PhyloObject<?> almtPhyloInternal,
+				PhyloObject<?> singleBranchSubtree) {
 			Map<String, Object> subtreeUserData = singleBranchSubtree.getUserData();
 			Map<String, Object> internalUserData = almtPhyloInternal.getUserData();
 			if(subtreeUserData == null) {
@@ -414,7 +414,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		@Override
 		protected void setAlignmentPhyloInternalName(
 				CommandContext commandContext, Alignment alignment,
-				PhyloSubtree alignmentPhyloInternal) {
+				PhyloSubtree<?> alignmentPhyloInternal) {
 			// no names required.
 		}
 

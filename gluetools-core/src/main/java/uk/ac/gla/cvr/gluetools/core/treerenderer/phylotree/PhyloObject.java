@@ -3,7 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class PhyloObject {
+public abstract class PhyloObject<C extends PhyloObject<?>> {
 
 	private Map<String, Object> userData;
 	
@@ -22,5 +22,10 @@ public abstract class PhyloObject {
 		return this.userData;
 	}
 
-
+	public abstract C clone();
+	
+	protected void copyPropertiesTo(C other) {
+		other.setUserData(getUserData());
+	}
+	
 }

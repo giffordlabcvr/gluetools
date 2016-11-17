@@ -107,11 +107,11 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		return true;
 	}
 	
-	private static PhyloSubtree buildAlmtPhyloSubtree(CommandContext cmdContext, 
+	private static PhyloSubtree<?> buildAlmtPhyloSubtree(CommandContext cmdContext, 
 			Alignment alignment, Map<String, List<AlignmentMember>> almtNameToMembers,
 			TreeRendererContext treeRendererContext) {
 		//GlueLogger.getGlueLogger().fine("Building phylo subtree based on alignment "+alignment.getName());
-		PhyloSubtree almtPhyloSubtree;
+		PhyloSubtree<?> almtPhyloSubtree;
 		List<AlignmentMember> members = almtNameToMembers.get(alignment.getName());
 		PhyloInternal almtPhyloInternal = treeRendererContext.phyloInternalForAlignment(cmdContext, alignment);
 		almtPhyloSubtree = almtPhyloInternal;
@@ -134,7 +134,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 			PhyloBranch singleBranch = almtPhyloInternal.getBranches().get(0);
 			// clearly branch lengths will be wrong in this scenario
 			
-			PhyloSubtree singleBranchSubtree = singleBranch.getSubtree();
+			PhyloSubtree<?> singleBranchSubtree = singleBranch.getSubtree();
 			singleBranchSubtree.setUserData(treeRendererContext.mergeUserData(almtPhyloInternal, singleBranchSubtree));
 			return singleBranchSubtree;
 		}
@@ -146,7 +146,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 			Map<String, List<AlignmentMember>> almtNameToMembers,
 			TreeRendererContext treeRendererContext) {
 		//GlueLogger.getGlueLogger().fine("Building phylo branch based on alignment "+alignment.getName());
-		PhyloSubtree childPhyloSubtree = 
+		PhyloSubtree<?> childPhyloSubtree = 
 				buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers, treeRendererContext);
 		PhyloBranch almtPhyloBranch = new PhyloBranch();
 		almtPhyloBranch.setSubtree(childPhyloSubtree);
