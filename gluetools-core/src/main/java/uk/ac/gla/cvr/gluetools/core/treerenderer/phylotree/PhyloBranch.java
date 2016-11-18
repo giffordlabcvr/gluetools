@@ -10,7 +10,16 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 	private BigDecimal length;
 	private String comment;
 	private Integer branchLabel; // jPlace format extension
+	private int childBranchIndex;
 	
+	public int getChildBranchIndex() {
+		return childBranchIndex;
+	}
+
+	public void setChildBranchIndex(int childBranchIndex) {
+		this.childBranchIndex = childBranchIndex;
+	}
+
 	public PhyloSubtree<?> getSubtree() {
 		return subtree;
 	}
@@ -59,45 +68,6 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 	}
 
 	
-	public PhyloInternal reroot(BigDecimal rootPointDistance) {
-		if(rootPointDistance.compareTo(BigDecimal.valueOf(0.0)) < 0 
-				|| rootPointDistance.compareTo(getLength()) > 0) {
-			throw new RuntimeException("Illegal root point distance");
-		}
-		PhyloTree rerootedTree = getTree().clone();
-		PhyloInternal rerootedInternal = new PhyloInternal();
-		rerootedTree.setRoot(rerootedInternal);
-		
-		LinkedList<RerootTask<?>> taskQueue = new LinkedList<RerootTask<?>>();
-		addBranchToTaskQueue(this, taskQueue);
-		while(!taskQueue.isEmpty()) {
-			
-		}
-		
-		return rerootedInternal;
-	}
-
-	private void addBranchToTaskQueue(PhyloBranch originalBranch, LinkedList<RerootTask<?>> taskQueue) {
-		PhyloBranch clonedBranch = originalBranch.clone();
-	}
-	private void addLeafToTaskQueue(PhyloLeaf originalLeaf, LinkedList<RerootTask<?>> taskQueue) {
-		
-	}
-	private void addInternalToTaskQueue(PhyloInternal originalInternal, LinkedList<RerootTask<?>> taskQueue) {
-		
-	}
-	
-	private class RerootTask<D extends PhyloObject<?>> {
-		RerootDirection rerootDirection;
-		D original; 
-		D cloned; 
-	}
-	
-	private enum RerootDirection {
-		FROM_LEFT,
-		FROM_RIGHT,
-		FROM_PARENT;
-	}
 	
 	@Override
 	public PhyloBranch clone() {

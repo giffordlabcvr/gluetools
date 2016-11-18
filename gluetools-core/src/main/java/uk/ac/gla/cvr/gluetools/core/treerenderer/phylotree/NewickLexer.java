@@ -15,7 +15,7 @@ public class NewickLexer {
 		RIGHTPAREN("\\)"),
 		COLON(":"),
 		COMMA(","),
-		NUMBER("[0-9]+(?:\\.[0-9]+)"),
+		NUMBER("[0-9]+(?:\\.[0-9]+)?"),
 		NAME("[^ \t\f\r\n;:,\\(\\)\\[\\]\\{\\}]+"),
 		COMMENT("\\[[^\\[\\]]+\\]") {
 			@Override

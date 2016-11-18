@@ -8,6 +8,7 @@ public class PhyloInternal extends PhyloSubtree<PhyloInternal> {
 	private List<PhyloBranch> branches = new ArrayList<PhyloBranch>();
 	
 	public void addBranch(PhyloBranch branch) {
+		branch.setChildBranchIndex(branches.size());
 		branches.add(branch);
 		if(branch.getParentPhyloInternal() != null) {
 			throw new RuntimeException("PhyloBranch must be removed from existing parent before it can be added to a new parent.");
@@ -24,6 +25,9 @@ public class PhyloInternal extends PhyloSubtree<PhyloInternal> {
 			throw new RuntimeException("Attempt to remove PhyloBranch object which did not have correct parent internal");
 		}
 		branch.setParentPhyloInternal(null);
+		for(int i = 0; i < branches.size(); i++) {
+			branches.get(i).setChildBranchIndex(i);
+		}
 	}
 	
 	public void accept(PhyloTreeVisitor visitor) {
