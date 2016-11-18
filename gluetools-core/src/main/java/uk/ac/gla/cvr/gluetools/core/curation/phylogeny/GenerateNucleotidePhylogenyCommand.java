@@ -28,10 +28,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickPhyloTreeVisitor;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 
 public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGenerator<P>> extends ModulePluginCommand<OkResult, P> {
 

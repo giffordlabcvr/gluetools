@@ -1,9 +1,21 @@
-package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
+package uk.ac.gla.cvr.gluetools.core.treeRerooter;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
-public class TreeRerooter {
+import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+
+@PluginClass(elemName="treeRerooter")
+public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 
 	public PhyloTree rerootTree(PhyloBranch branchWithRootPoint, BigDecimal rootPointDistance) {
 		if(rootPointDistance.compareTo(BigDecimal.valueOf(0.0)) < 0 
@@ -39,11 +51,11 @@ public class TreeRerooter {
 		return rerootedTree;
 	}
 
-	private abstract class RerootDirection {
+	private abstract static class RerootDirection {
 		public abstract <D extends PhyloSubtree<?>> void processTask(RerootTask<D> rerootTask, LinkedList<RerootTask<?>> taskQueue);
 	}
 	@SuppressWarnings("unchecked")
-	private class FromParentRerootDirection extends RerootDirection {
+	private static class FromParentRerootDirection extends RerootDirection {
 		@Override
 		public <D extends PhyloSubtree<?>> void processTask(RerootTask<D> rerootTask, LinkedList<RerootTask<?>> taskQueue) {
 			D clonedSubtree = (D) rerootTask.originalSubtree.clone();
@@ -61,7 +73,7 @@ public class TreeRerooter {
 		
 	}
 	@SuppressWarnings("unchecked")
-	private class FromChildRerootDirection extends RerootDirection {
+	private static class FromChildRerootDirection extends RerootDirection {
 		private int rerootBranchIndex;
 		public FromChildRerootDirection(int rerootBranchIndex) {
 			super();
@@ -121,7 +133,7 @@ public class TreeRerooter {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <D extends PhyloSubtree<?>> void addSubtreeToTaskQueue(D originalSubtree, RerootDirection rerootDirection, 
+	private static <D extends PhyloSubtree<?>> void addSubtreeToTaskQueue(D originalSubtree, RerootDirection rerootDirection, 
 			PhyloBranch clonedBranch, LinkedList<RerootTask<?>> taskQueue) {
 		RerootTask<D> rerootTask = new RerootTask<D>();
 		rerootTask.originalSubtree = originalSubtree;
@@ -130,7 +142,7 @@ public class TreeRerooter {
 		taskQueue.add(rerootTask);
 	}
 	
-	private class RerootTask<D extends PhyloSubtree<?>> {
+	private static class RerootTask<D extends PhyloSubtree<?>> {
 		RerootDirection rerootDirection;
 		D originalSubtree; 
 		PhyloBranch clonedBranch; 
@@ -164,8 +176,8 @@ public class TreeRerooter {
 	}
 	
 	public static void main(String[] args) {
-		NewickToPhyloTreeParser parser = new NewickToPhyloTreeParser();
 		TreeRerooter treeRerooter = new TreeRerooter();
+		NewickToPhyloTreeParser parser = new NewickToPhyloTreeParser();
 		/*
 		 *              +-2-X-2-C
 		 *              |

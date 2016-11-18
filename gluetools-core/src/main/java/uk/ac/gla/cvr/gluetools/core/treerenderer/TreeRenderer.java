@@ -15,14 +15,14 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMembe
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRendererException.Code;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloBranch;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 
 @PluginClass(elemName="treeRenderer")
 public class TreeRenderer extends ModulePlugin<TreeRenderer> {

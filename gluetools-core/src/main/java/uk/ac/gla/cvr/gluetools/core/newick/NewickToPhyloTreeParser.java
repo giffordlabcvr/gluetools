@@ -1,11 +1,15 @@
-package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
+package uk.ac.gla.cvr.gluetools.core.newick;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickLexer.Token;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickLexer.Token;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 
 public class NewickToPhyloTreeParser {
 

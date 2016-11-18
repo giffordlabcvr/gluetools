@@ -12,12 +12,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloObject;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloObject;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import freemarker.template.Template;
 

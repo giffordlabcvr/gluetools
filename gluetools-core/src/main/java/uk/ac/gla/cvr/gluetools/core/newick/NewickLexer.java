@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
+package uk.ac.gla.cvr.gluetools.core.newick;
 
 import java.util.ArrayList;
 import java.util.List;

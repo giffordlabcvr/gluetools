@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
+package uk.ac.gla.cvr.gluetools.core.phylotree;
 
 public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObject<C> {
 

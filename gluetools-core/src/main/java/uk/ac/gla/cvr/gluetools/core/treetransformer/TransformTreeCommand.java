@@ -10,11 +10,11 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickPhyloTreeVisitor;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickToPhyloTreeParser;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 
 @CommandClass(
 		commandWords={"transform-tree", "newick"}, 

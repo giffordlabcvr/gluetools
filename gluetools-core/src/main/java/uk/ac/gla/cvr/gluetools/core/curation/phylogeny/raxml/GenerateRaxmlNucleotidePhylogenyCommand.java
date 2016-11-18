@@ -17,11 +17,11 @@ import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.GenerateNucleotidePhyloge
 import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny.RaxmlPhylogenyResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny.RaxmlPhylogenyRunner;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;

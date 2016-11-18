@@ -11,8 +11,8 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickToPhyloTreeParser;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public class JPlaceResult {

@@ -22,10 +22,10 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloNewickUtils;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloNewickUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 
 @CommandClass(
 		commandWords={"render-tree", "newick"}, 

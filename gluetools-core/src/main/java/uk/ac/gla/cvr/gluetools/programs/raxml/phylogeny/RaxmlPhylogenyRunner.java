@@ -15,10 +15,10 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.NewickToPhyloTreeParser;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlRunner;

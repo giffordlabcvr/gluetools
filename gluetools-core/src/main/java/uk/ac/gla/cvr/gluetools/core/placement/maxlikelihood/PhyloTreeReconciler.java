@@ -3,13 +3,13 @@ package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 import java.util.LinkedList;
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloObject;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacerException.Code;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloBranch;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloInternal;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloLeaf;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloObject;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTreeVisitor;
 
 /**
  * PhyloTreeVisitor which vists the JPlace reference phylo tree, and reconciles it 

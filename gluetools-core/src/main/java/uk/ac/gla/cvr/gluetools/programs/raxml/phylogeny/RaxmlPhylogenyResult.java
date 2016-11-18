@@ -1,6 +1,6 @@
 package uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny;
 
-import uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 
 public class RaxmlPhylogenyResult {
 
