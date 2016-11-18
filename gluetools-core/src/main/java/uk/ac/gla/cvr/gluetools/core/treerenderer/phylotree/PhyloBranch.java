@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer.phylotree;
 
 import java.math.BigDecimal;
-import java.util.LinkedList;
 
 public class PhyloBranch extends PhyloObject<PhyloBranch> {
 
