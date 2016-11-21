@@ -344,11 +344,28 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				// single reference, choose that.
 				targetRef = closestMemberReferences.get(0);
 			} else {
-				// if one of the references is the constraining ref, choose that.
+				// if one isn't a constraining ref of any alignment, choose that.
 				for(ReferenceSequence refSeq: closestMemberReferences) {
-					if(refSeq.getName().equals(tipAlmt.getConstrainingRef().getName())) {
+					if(refSeq.getAlignmentsWhereRefSequence().isEmpty()) {
 						targetRef = refSeq;
 						break;
+					}
+				}
+				// otherwise if one of the references is the constraining ref of the tip alignment, choose that.
+				if(targetRef == null) {
+					for(ReferenceSequence refSeq: closestMemberReferences) {
+						if(refSeq.getName().equals(tipAlmt.getConstrainingRef().getName())) {
+							targetRef = refSeq;
+							break;
+						}
+					}
+				}
+				// otherwise sort by REF name and choose first.
+				if(targetRef == null) {
+					for(ReferenceSequence refSeq: closestMemberReferences) {
+						if(targetRef == null || refSeq.getName().compareTo(targetRef.getName()) < 0) {
+							targetRef = refSeq;
+						}
 					}
 				}
 				if(targetRef == null) {
