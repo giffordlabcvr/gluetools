@@ -71,13 +71,23 @@ public class AllColumnsAlignment<K> {
 		int lastCoveredNewLoc = 0;
 		int lastULoc = 0;
 		List<ColumnInsertion> colInsertions = new ArrayList<ColumnInsertion>();
+		QueryAlignedSegment lastUToNewSeg = null;
 		for(QueryAlignedSegment uToNewSeg: uToNewSegs) {
 			int newStart = lastCoveredNewLoc+1;
 			if(uToNewSeg.getRefStart() > newStart) {
-				ColumnInsertion colInsertion = 
-						new ColumnInsertionBefore(newStart, uToNewSeg.getRefStart()-newStart, uToNewSeg.getQueryStart());
-					colInsertions.add(colInsertion);
+				ColumnInsertion colInsertion;
+				Integer rightNT = uToNewSeg.getQueryStart();
+				if(lastUToNewSeg == null) {
+					colInsertion = 
+							new ColumnInsertionBefore(newStart, uToNewSeg.getRefStart()-newStart, rightNT);
+				} else {
+					Integer leftNT = lastUToNewSeg.getQueryEnd();
+					colInsertion = 
+							new ColumnInsertionAfter(newStart, uToNewSeg.getRefStart()-newStart, leftNT);
+				}
+				colInsertions.add(colInsertion);
 			}
+			lastUToNewSeg = uToNewSeg;
 			lastCoveredNewLoc = uToNewSeg.getRefEnd();
 			lastULoc = uToNewSeg.getQueryEnd();
 		}
