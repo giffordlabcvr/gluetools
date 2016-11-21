@@ -17,6 +17,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 @PluginClass(elemName="treeRerooter")
 public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 
+	public TreeRerooter() {
+		super();
+		addModulePluginCmdClass(RerootTreeCommand.class);
+	}
+
 	public PhyloTree rerootTree(PhyloBranch branchWithRootPoint, BigDecimal rootPointDistance) {
 		if(rootPointDistance.compareTo(BigDecimal.valueOf(0.0)) < 0 
 				|| rootPointDistance.compareTo(branchWithRootPoint.getLength()) > 0) {

@@ -18,6 +18,7 @@ public class PhyloTree extends PhyloObject<PhyloTree> {
 	public void setRoot(PhyloSubtree<?> root) {
 		this.root = root;
 		root.setTree(this);
+		root.setParentPhyloBranch(null);
 	}
 
 	@Override
