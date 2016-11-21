@@ -20,11 +20,6 @@ remotes {
     user = 'ubuntu'
     identity = file('/Users/joshsinger/.ssh/gluehome-aws.pem')
   }
-  gluetest {
-    host = '192.168.56.20'
-    user = 'ubuntu'
-    identity = file('/Users/joshsinger/.ssh/gluetest_id_rsa')
-  }
 }
 
 buildscript {
@@ -60,8 +55,6 @@ task jarAll(type: Jar) {
 
 
 
-
-// config for Glue which tells it where to find its database. 
 task deployGlueConfigOmega {
   ext.omegaDir = new File(projectDir, 'omega')
   ext.glueConfigFile = new File(omegaDir, 'gluetools-config.xml')
@@ -83,11 +76,10 @@ task deployGlueConfigOmega {
   }
 }
 
-// config for Glue which tells it where to find its database. 
-task deployGlueConfigAlpha {
+task deployGlueConfigAlphaSing01j {
   ext.alphaDir = new File(projectDir, 'alpha')
-  ext.glueConfigFile = new File(alphaDir, 'gluetools-config.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigAlpha.touchfile')
+  ext.glueConfigFile = new File(alphaDir, 'gluetools-config-sing01j.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigAlphaSing01j.touchfile')
   inputs.file glueConfigFile
   outputs.file glueConfigTouchfile
   doLast {
@@ -104,6 +96,29 @@ task deployGlueConfigAlpha {
 	  glueConfigTouchfile.createNewFile()
   }
 }
+
+
+task deployGlueConfigAlphaGiff01r {
+  ext.alphaDir = new File(projectDir, 'alpha')
+  ext.glueConfigFile = new File(alphaDir, 'gluetools-config-giff01r.xml')
+  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigAlphaGiff01r.touchfile')
+  inputs.file glueConfigFile
+  outputs.file glueConfigTouchfile
+  doLast {
+	  println "Uploading "+glueConfigFile.name
+	  ssh.run {
+	    session(remotes.alpha) {
+	      execute 'mkdir -p /home2/sing01j/gluetools/conf'
+	      execute 'chmod a+rw /home2/sing01j/gluetools/conf'
+	      put from: glueConfigFile, into: '/home2/sing01j/gluetools/conf/gluetools-config-giff01r.xml'
+	    }
+	  }
+	  glueConfigTouchfile.delete()
+	  buildDir.mkdirs()
+	  glueConfigTouchfile.createNewFile()
+  }
+}
+
 
 
 
