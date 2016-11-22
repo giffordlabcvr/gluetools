@@ -187,7 +187,7 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 						alignmentName, existingMembersPkMaps, recomputedMembersPkMaps, dataDir);
 		
 		pkMapToNewSegments.forEach( (pkMap, qaSegs) -> {
-			if(recomputedMembersPkMaps.contains(pkMap)|| !preserveExistingRows) {
+			if(recomputedMembersPkMaps.contains(pkMap)) {
 				Map<String, Object> resultRow = 
 						AlignmentComputationUtils.applyMemberAlignedSegments(cmdContext, pkMap, qaSegs);
 				resultListOfMaps.add(resultRow);
