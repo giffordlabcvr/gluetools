@@ -9,9 +9,9 @@ import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafFinder;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
 @PluginClass(elemName="treeRerooter")
@@ -153,18 +153,10 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		PhyloBranch clonedBranch; 
 	}
 	
-	private static class LeafHolder { PhyloLeaf leaf; }
 	private static PhyloLeaf findLeaf(PhyloTree tree, String name) {
-		LeafHolder leafHolder = new LeafHolder();
-		tree.accept(new PhyloTreeVisitor() {
-			@Override
-			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				if(phyloLeaf.getName().equals(name)) {
-					leafHolder.leaf = phyloLeaf;
-				}
-			}
-		});
-		return leafHolder.leaf;
+		PhyloLeafFinder phyloLeafFinder = new PhyloLeafFinder(l -> l.getName().equals(name));
+		tree.accept(phyloLeafFinder);
+		return phyloLeafFinder.getPhyloLeaf();
 	}
 
 	private static String treeToString(PhyloTree tree) {
@@ -172,6 +164,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		tree.accept(newickPhyloTreeVisitor);
 		return newickPhyloTreeVisitor.getNewickString();
 	}
+
 	private static void check(String expected, String actual) {
 		if(expected.equals(actual)) {
 			System.out.println("Correct: "+expected);

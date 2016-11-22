@@ -29,18 +29,21 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloObject;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeMidpointFinder;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeMidpointResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"reroot-tree"}, 
-		description = "Reroot a Newick tree using a specific outgroup", 
-		docoptUsages = { "-i <inputFile> -g <leafName> -o <outputFile> [-r]"},
+		description = "Reroot a Newick tree", 
+		docoptUsages = { "-i <inputFile> (-g <outgroup> [-r] | -m) -o <outputFile> "},
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     Input file",
 				"-g <outgroup>, --outgroup <outgroup>        Specify outgroup leaf",
-				"-o <outputFile>, --outputFile <outputFile>  Output file",
 				"-r, --removeOutgroup                        Remove outgroup branch in output",
+				"-m, --midpoint                              Use midpoint rooting",
+				"-o <outputFile>, --outputFile <outputFile>  Output file",
 		},
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
@@ -51,34 +54,55 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 	public static final String INPUT_FILE = "inputFile";
 	public static final String OUTPUT_FILE = "outputFile";
 	public static final String REMOVE_OUTGROUP = "removeOutgroup";
+	public static final String MIDPOINT = "midpoint";
 	
 	private String outgroup;
 	private String inputFile;
 	private String outputFile;
 	private Boolean removeOutgroup;
+	private Boolean midpoint;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.outgroup = PluginUtils.configureStringProperty(configElem, OUTGROUP, true);
 		this.inputFile = PluginUtils.configureStringProperty(configElem, INPUT_FILE, true);
+		this.outgroup = PluginUtils.configureStringProperty(configElem, OUTGROUP, false);
+		this.removeOutgroup = PluginUtils.configureBooleanProperty(configElem, REMOVE_OUTGROUP, false);
+		this.midpoint = PluginUtils.configureBooleanProperty(configElem, MIDPOINT, false);
 		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
-		this.removeOutgroup = PluginUtils.configureBooleanProperty(configElem, REMOVE_OUTGROUP, true);
+		if( (outgroup == null && (midpoint == null || !midpoint)) ||
+				(outgroup != null && (midpoint != null && midpoint))) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <outgroup> or --midpoint must be specified, but not both");
+		}
+		if(outgroup == null && (removeOutgroup != null && removeOutgroup)) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --removeOutgroup option may only be used if <outgroup> is specified");
+		}
 	}
 
 	@Override
 	protected OkResult execute(CommandContext cmdContext, TreeRerooter treeRerooter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		PhyloTree phyloTree = loadTree(consoleCmdContext, inputFile);
-		PhyloLeafFinder phyloLeafFinder = new PhyloLeafFinder(l -> l.getName().equals(outgroup));
-		phyloTree.accept(phyloLeafFinder);
-		PhyloLeaf foundLeaf = phyloLeafFinder.getPhyloLeaf();
-		if(foundLeaf == null) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaf "+outgroup+" not found in file "+inputFile);
+		PhyloBranch rerootBranch = null;
+		BigDecimal rerootDistance = null;
+		if(outgroup != null) {
+			PhyloLeafFinder phyloLeafFinder = new PhyloLeafFinder(l -> l.getName().equals(outgroup));
+			phyloTree.accept(phyloLeafFinder);
+			PhyloLeaf foundLeaf = phyloLeafFinder.getPhyloLeaf();
+			if(foundLeaf == null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaf "+outgroup+" not found in file "+inputFile);
+			}
+			rerootBranch = foundLeaf.getParentPhyloBranch();
+			rerootDistance = rerootBranch.getLength().divide(BigDecimal.valueOf(2.0));
+		} else {
+			// midpoint rooting
+			PhyloTreeMidpointFinder midpointFinder = new PhyloTreeMidpointFinder();
+			PhyloTreeMidpointResult midPointResult = midpointFinder.findMidPoint(phyloTree);
+			rerootBranch = midPointResult.getBranch();
+			rerootDistance = midPointResult.getRootDistance();
 		}
-		PhyloBranch leafBranch = foundLeaf.getParentPhyloBranch();
-		PhyloTree rerootedTree = treeRerooter.rerootTree(leafBranch, leafBranch.getLength().divide(BigDecimal.valueOf(2.0)));
-		if(removeOutgroup) {
+		PhyloTree rerootedTree = treeRerooter.rerootTree(rerootBranch, rerootDistance);
+		if(outgroup != null && removeOutgroup) {
 			PhyloObject<?> root = rerootedTree.getRoot();
 			if(!(root instanceof PhyloInternal)) {
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Single leaf node in rerooted tree: cannot remove outgroup.");

@@ -11,7 +11,7 @@ public class PhyloTree extends PhyloObject<PhyloTree> {
 		visitor.postVisitTree(this);
 	}
 
-	public PhyloObject<?> getRoot() {
+	public PhyloSubtree<?> getRoot() {
 		return root;
 	}
 
