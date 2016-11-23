@@ -30,6 +30,7 @@ public class PhyloInternal extends PhyloSubtree<PhyloInternal> {
 		}
 	}
 	
+	@Override
 	public void accept(PhyloTreeVisitor visitor) {
 		visitor.preVisitInternal(this);
 		int numBranches = branches.size();

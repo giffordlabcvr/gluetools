@@ -1,11 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.phylogenyImporter;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import java.util.List;
 
-public class ImportPhylogenyResult extends CommandResult {
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter.AlignmentPhylogeny;
 
-	protected ImportPhylogenyResult() {
-		super("importPhylogenyResult");
+public class ImportPhylogenyResult extends BaseTableResult<PhylogenyImporter.AlignmentPhylogeny> {
+
+	public ImportPhylogenyResult(List<AlignmentPhylogeny> alignmentPhylogenies) {
+		super("importPhylogenyResult", alignmentPhylogenies, 
+				column("alignment", alPhyl -> alPhyl.getAlignment().getName()), 
+				column("memberLeafNodes", alPhyl -> alPhyl.getMemberLeafNodes()), 
+				column("pointerLeafNodes", alPhyl -> alPhyl.getPointerLeafNodes()), 
+				column("internalNodes", alPhyl -> alPhyl.getInternalNodes()));
 	}
+
 
 }

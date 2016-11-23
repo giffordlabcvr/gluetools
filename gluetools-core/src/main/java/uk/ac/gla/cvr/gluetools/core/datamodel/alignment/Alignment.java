@@ -53,6 +53,13 @@ public class Alignment extends _Alignment implements HasDisplayName {
 	}
 	
 	public List<Alignment> getAncestors() {
+		return getAncestorsUpTo(null);
+	}
+
+	
+	// get a list of ancestors up to and including rootAlmt.
+	// or all of them, if rootAlmt == null;
+	public List<Alignment> getAncestorsUpTo(Alignment rootAlmt) {
 		Alignment current = this;
 		LinkedHashSet<Alignment> ancestors = new LinkedHashSet<Alignment>();
 		while(current != null) {
@@ -61,11 +68,15 @@ public class Alignment extends _Alignment implements HasDisplayName {
 			} else {
 				break; // loop avoidance.
 			}
+			if(rootAlmt != null && current.getName().equals(rootAlmt.getName())) {
+				break;
+			}
 			current = current.getParent();
 		}
 		return new ArrayList<Alignment>(ancestors);
 	}
 
+	
 	public List<ReferenceSequence> getAncestorReferences() {
 		List<ReferenceSequence> ancestorRefs = new ArrayList<ReferenceSequence>();
 		for(Alignment ancAlmt: getAncestors()) {
@@ -228,6 +239,7 @@ public class Alignment extends _Alignment implements HasDisplayName {
 		}
 		return parent.getDepth() + 1;
 	}
+
 	
 }
 

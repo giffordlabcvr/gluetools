@@ -32,7 +32,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter.AlignmentPhylogeny;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -41,18 +46,20 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
 		description = "Import a phylogenetic file from a tree", 
-		docoptUsages={"<alignmentName> [-c] (-w <whereClause> | -a) -i <fileName> -p <fieldName>"},
+		docoptUsages={"<alignmentName> [-c] (-w <whereClause> | -a) -i <fileName> (-f <fieldName> | -p)"},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>  Qualify members",
 		    "-a, --allMembers                               All members",
 			"-i <fileName>, --fileName <fileName>           Phylogeny input file",
-			"-p <fieldName>, --fieldName <fieldName>        Phylogeny field name"},
+			"-f <fieldName>, --fieldName <fieldName>        Phylogeny field name",
+			"-p, --preview                                  Preview only"},
 		metaTags = {CmdMeta.consoleOnly}, 
 		furtherHelp = "Imports a phylogenetic tree from a Newick file, and breaks it up in order to annotate \n"+
 		"the alignment tree, by populating field <fieldName> of alignment objects. \n"+
-		"The alignment members elected by the <alignmentName>, --recursive and <whereClause>/--allMembers options \n"+
-		"must exactly match the leaf nodes of the imported tree."
+		"The alignment members selected by the <alignmentName>, --recursive and <whereClause>/--allMembers options \n"+
+		"must exactly match the leaf nodes of the imported tree. \n"+
+		"The gross structure of the imported tree must match the structure of the alignment tree."
 )
 public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyResult, PhylogenyImporter>{
 
@@ -63,6 +70,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 
 	public static final String FILE_NAME = "fileName";
 	public static final String FIELD_NAME = "fieldName";
+	public static final String PREVIEW = "preview";
 	
 	private String alignmentName;
 	private Boolean recursive;
@@ -71,6 +79,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 
 	private String fileName;
 	private String fieldName;
+	private Boolean preview;
 	
 
 	@Override
@@ -82,118 +91,39 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
 
 		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
-		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
+		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, false);
 
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
+		if((fieldName != null && preview != null && preview) || (fieldName == null && (preview == null || !preview)) ) {
+			usageError2();
+		}
 	}
 
 	private void usageError1() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or --allMembers must be specified, but not both");
+	}
+
+	private void usageError2() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fieldName> or --preview must be specified, but not both");
 	}
 
 	@Override
 	protected ImportPhylogenyResult execute(CommandContext cmdContext, PhylogenyImporter phylogenyImporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		Project project = ((InsideProjectMode) consoleCmdContext.peekCommandMode()).getProject();
 		
 		byte[] phylogenyBytes = consoleCmdContext.loadBytes(fileName);
 		String phylogenyString = new String(phylogenyBytes);
 		NewickToPhyloTreeParser newickToPhyloTreeParser = new NewickToPhyloTreeParser();
 		PhyloTree phyloTree = newickToPhyloTreeParser.parseNewick(phylogenyString);
-		
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		if(!alignment.isConstrained()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Phylogeny can only be imported for constrained alignments.");
-		}
-		List<AlignmentMember> almtMembers = 
-				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, false, whereClause);
-
-		// init AlignmentData map using selected alignment members
-		Map<String, AlignmentData> alignmentNameToData = new LinkedHashMap<String, AlignmentData>();
-		almtMembers.forEach(memb -> {
-			String almtName = memb.getAlignment().getName();
-			AlignmentData alignmentData = alignmentNameToData.get(almtName);
-			if(alignmentData == null) {
-				alignmentData = new AlignmentData();
-				alignmentNameToData.put(almtName, alignmentData);
-				alignmentData.alignment = memb.getAlignment();
-				alignmentData.depth = memb.getAlignment().getDepth();
-			}
-			alignmentData.selectedMemberPkMaps.add(memb.pkMap());
-		});
-
-		// add phyloTree leaf nodes into the AlignmentData, checking that they correspond to selected almt members.
-		phyloTree.accept(new PhyloTreeVisitor() {
-			@Override
-			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				String leafNodeName = phyloLeaf.getName();
-				Map<String, String> leafNodePkMap = leafNodeNameToPkMap(project, leafNodeName);
-				String alignmentName = leafNodePkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
-				AlignmentData alignmentData = alignmentNameToData.get(alignmentName);
-				if(alignmentData == null) {
-					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment.");
-				}
-				if(!alignmentData.selectedMemberPkMaps.contains(leafNodePkMap)) {
-					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment member.");
-				}
-				alignmentData.phyloPkMapToLeaf.put(leafNodePkMap, phyloLeaf);
-			}
-
-			private Map<String, String> leafNodeNameToPkMap(Project project,
-					String leafNodeName) {
-				Map<String, String> leafNodePkMap = project.targetPathToPkMap(ConfigurableTable.alignment_member.name(), leafNodeName);
-				return leafNodePkMap;
-			}
-		});
-
-		// check that all selected members map to a phylo leaf node.
-		for(AlignmentData almtData : alignmentNameToData.values()) {
-			for(Map<String,String> memberPkMap : almtData.selectedMemberPkMaps) {
-				if(!almtData.phyloPkMapToLeaf.containsKey(memberPkMap)) {
-					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Alignment member "+memberPkMap+" does not match any leaf node.");
-				}
-			}
-		}
-		
-		// sort relevant alignments by decreasing depth.
-		List<AlignmentData> sortedAlmtDataList = new ArrayList<AlignmentData>(alignmentNameToData.values());
-		sortedAlmtDataList.sort(new Comparator<AlignmentData>() {
-			@Override
-			public int compare(AlignmentData o1, AlignmentData o2) {
-				return - Integer.compare(o1.depth, o2.depth);
-			}
-		});
-
-		sortedAlmtDataList.forEach(almtData -> {
-			
-			while(!almtData.selectedMemberPkMaps.isEmpty()) {
-				
-			}
-			
-			
-			almtData.phyloPkMapToLeaf.forEach((pkMap, leaf) -> {
-				
-			});
-			
-			
-			
-		});
-		
-		
-		ImportPhylogenyResult result = new ImportPhylogenyResult();
-		return result;
+		List<AlignmentPhylogeny> almtPhylogenies = 
+				phylogenyImporter.previewImportPhylogeny(cmdContext, phyloTree, alignmentName, recursive, whereClause);
+		return new ImportPhylogenyResult(almtPhylogenies);
 	}
 
-	private class AlignmentData {
-		Alignment alignment;
-		int depth;
-		Set<Map<String,String>> selectedMemberPkMaps = new LinkedHashSet<Map<String,String>>();
-		Map<Map<String,String>, PhyloLeaf> phyloPkMapToLeaf = new LinkedHashMap<Map<String,String>, PhyloLeaf>();
-	}
-	
-	
+
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {

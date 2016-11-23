@@ -337,6 +337,15 @@ public class Project extends _Project {
 	
 	public Map<String, String> targetPathToPkMap(String tableName, String targetPath) {
 		ModePathElement[] modePath = getModePathForTable(tableName);
+		return targetPathToPkMap(tableName, modePath, targetPath);
+	}
+
+	public static Map<String, String> targetPathToPkMap(ConfigurableTable configurableTable, String targetPath) {
+		return targetPathToPkMap(configurableTable.name(), configurableTable.getModePath(), targetPath);
+	}
+	
+	private static Map<String, String> targetPathToPkMap(String tableName,
+			ModePathElement[] modePath, String targetPath) {
 		String[] bits = targetPath.split("/");
 		if(bits.length == modePath.length) {
 			Map<String, String> pkMap = new LinkedHashMap<String, String>();
@@ -356,8 +365,9 @@ public class Project extends _Project {
 		}
 		throw new ProjectModeCommandException(Code.INVALID_TARGET_PATH, tableName, targetPath, correctForm(modePath));
 	}
+
 	
-	private String correctForm(ModePathElement[] modePath) {
+	private static String correctForm(ModePathElement[] modePath) {
 		StringBuffer buf = new StringBuffer();
 		for(int i = 0; i < modePath.length; i++) {
 			if(i > 0) {
