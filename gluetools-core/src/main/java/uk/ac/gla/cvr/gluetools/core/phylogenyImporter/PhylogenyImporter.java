@@ -126,20 +126,20 @@ public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
 
 	private PhyloSubtree<?> cloneCladeSubtree(PhyloSubtree<?> cladeSubtree, AlignmentData almtData, AlignmentPhylogeny alignmentPhylogeny) {
 		log(Level.FINEST, "Cloning subtree "+cladeSubtree.toString());
-		if(cladeSubtree instanceof PhyloLeaf) {
-			PhyloLeaf clonedLeaf = (PhyloLeaf) cladeSubtree.clone();
-			alignmentPhylogeny.incrementMemberLeafNodes();
-			return clonedLeaf;
+		Map<String,String> childAlmtPkMap = almtData.subtreeToChildAlmtPkMap.get(cladeSubtree);
+		if(childAlmtPkMap != null) {
+			PhyloLeaf pointerLeaf = new PhyloLeaf();
+			pointerLeaf.setName("alignment/"+childAlmtPkMap.get(Alignment.NAME_PROPERTY));
+			alignmentPhylogeny.incrementPointerLeafNodes();
+			return pointerLeaf;
 		} else {
-			PhyloInternal cladeInternal = (PhyloInternal) cladeSubtree;
-			Map<String,String> childAlmtPkMap = almtData.subtreeToChildAlmtPkMap.get(cladeInternal);
-			if(childAlmtPkMap != null) {
-				PhyloLeaf pointerLeaf = new PhyloLeaf();
-				pointerLeaf.setName("alignment/"+childAlmtPkMap.get(Alignment.NAME_PROPERTY));
-				alignmentPhylogeny.incrementPointerLeafNodes();
-				return pointerLeaf;
+			if(cladeSubtree instanceof PhyloLeaf) {
+				PhyloLeaf clonedLeaf = (PhyloLeaf) cladeSubtree.clone();
+				alignmentPhylogeny.incrementMemberLeafNodes();
+				return clonedLeaf;
 			} else {
-				PhyloInternal clonedInternal = (PhyloInternal) cladeSubtree.clone();
+				PhyloInternal cladeInternal = (PhyloInternal) cladeSubtree;
+				PhyloInternal clonedInternal = cladeInternal.clone();
 				alignmentPhylogeny.incrementInternalNodes();
 				for(PhyloBranch phyloBranch : cladeInternal.getBranches()) {
 					PhyloBranch clonedBranch = phyloBranch.clone();
