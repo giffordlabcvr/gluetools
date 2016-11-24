@@ -51,7 +51,7 @@ public class NewickPhyloTreeVisitor implements PhyloTreeVisitor {
 	@Override
 	public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 		Optional.ofNullable(phyloBranch.getLength()).ifPresent(length -> 
-		buf.append(":").append(length.toPlainString()));
+		buf.append(":").append(length.toString()));
 		Optional.ofNullable(phyloBranch.getComment()).ifPresent(comment -> 
 		buf.append("[").append(comment).append("]"));
 		Optional.ofNullable(phyloBranch.getBranchLabel()).ifPresent(branchLabel -> 

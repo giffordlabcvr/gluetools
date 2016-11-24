@@ -181,8 +181,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			}
 			for(JPlacePlacement placement: placements) {
 				int edgeNum = getInt(placement.getFieldValues(), edgeNumIndex);
-				BigDecimal distalLength = getBigDecimal(placement.getFieldValues(), distalLengthIndex);
-				BigDecimal pendantLength = getBigDecimal(placement.getFieldValues(), pendantLengthIndex);
+				Double distalLength = getDouble(placement.getFieldValues(), distalLengthIndex);
+				Double pendantLength = getDouble(placement.getFieldValues(), pendantLengthIndex);
 				PhyloBranch jPlacePlacementBranch = labelToJPlaceBranch.get(edgeNum);
 
 				MemberSearchNode nearestMemberNode = findNearestMember(jPlacePlacementBranch, distalLength, pendantLength);
@@ -235,15 +235,15 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	}
 
 	private MemberSearchNode findNearestMember(PhyloBranch placementBranch,
-			BigDecimal distalLength, BigDecimal pendantLength) {
+			Double distalLength, Double pendantLength) {
 		LinkedList<MemberSearchNode> nodeQueue = new LinkedList<MemberSearchNode>();
-		BigDecimal branchLength = placementBranch.getLength();
+		Double branchLength = placementBranch.getLength();
 		// The two nodes attached to the placement branch.
 		PhyloInternal towardsRoot = placementBranch.getParentPhyloInternal();
 		PhyloSubtree<?> awayFromRoot = placementBranch.getSubtree();
-		BigDecimal towardsRootLength = distalLength.add(pendantLength);
+		Double towardsRootLength = distalLength + pendantLength;
 		nodeQueue.add(new MemberSearchNode(towardsRootLength, towardsRoot));
-		BigDecimal awayFromRootLength = branchLength.subtract(towardsRootLength).add(pendantLength);
+		Double awayFromRootLength = (branchLength - towardsRootLength) + pendantLength;
 		nodeQueue.add(new MemberSearchNode(awayFromRootLength, awayFromRoot));
 		
 		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
@@ -264,13 +264,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				if(parentPhyloBranch != null) {
 					PhyloInternal parentPhyloInternal = parentPhyloBranch.getParentPhyloInternal();
 					if(parentPhyloInternal != null && !visited.contains(parentPhyloInternal)) {
-						BigDecimal parentBranchLength = parentPhyloBranch.getLength();
-						nodeQueue.add(new MemberSearchNode(currentNode.totalLength.add(parentBranchLength), parentPhyloInternal));
+						Double parentBranchLength = parentPhyloBranch.getLength();
+						nodeQueue.add(new MemberSearchNode(currentNode.totalLength + parentBranchLength, parentPhyloInternal));
 					}
 				}
 				for(PhyloBranch childPhyloBranch: currentPhyloInternal.getBranches()) {
-					BigDecimal childBranchLength = childPhyloBranch.getLength();
-					nodeQueue.add(new MemberSearchNode(currentNode.totalLength.add(childBranchLength), childPhyloBranch.getSubtree()));
+					Double childBranchLength = childPhyloBranch.getLength();
+					nodeQueue.add(new MemberSearchNode(currentNode.totalLength + childBranchLength, childPhyloBranch.getSubtree()));
 				}
 			}
 		}
@@ -278,18 +278,14 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	}
 	
 	private class MemberSearchNode {
-		BigDecimal totalLength;
+		Double totalLength;
 		PhyloSubtree<?> phyloSubtree;
-		public MemberSearchNode(BigDecimal totalLength, PhyloSubtree<?> phyloSubtree) {
+		public MemberSearchNode(Double totalLength, PhyloSubtree<?> phyloSubtree) {
 			super();
 			this.totalLength = totalLength;
 			this.phyloSubtree = phyloSubtree;
 		}
 		
-	}
-
-	private BigDecimal getBigDecimal(List<Object> values, int index) {
-		return getValue(values, BigDecimal.class, index);
 	}
 
 	private Double getDouble(List<Object> values, int index) {

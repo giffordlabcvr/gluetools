@@ -18,7 +18,15 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 
 	public void accept(String objectFieldName, CommandDocumentVisitor visitor) {
 		visitor.preVisitCommandObject(objectFieldName, this);
-		fields.forEach((fieldName, fieldableValueBuilder) -> visitor.visitCommandFieldValue(fieldName, fieldableValueBuilder));
+		fields.forEach((fieldName, commandFieldValue) -> {
+			visitor.preVisitCommandFieldValue(fieldName, commandFieldValue);
+			if(commandFieldValue instanceof CommandObject) {
+				((CommandObject) commandFieldValue).accept(fieldName, visitor);
+			} else if(commandFieldValue instanceof CommandArray) {
+				((CommandArray) commandFieldValue).accept(fieldName, visitor);
+			}
+			visitor.postVisitCommandFieldValue(fieldName, commandFieldValue);
+		});
 		visitor.postVisitCommandObject(objectFieldName, this);
 	}
 	

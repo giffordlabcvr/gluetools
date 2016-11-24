@@ -1,12 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.phylotree;
 
-import java.math.BigDecimal;
 
 public class PhyloBranch extends PhyloObject<PhyloBranch> {
 
 	private PhyloInternal parentPhyloInternal; // phyloInternal for now (later may allow PhlyoTree?)
 	private PhyloSubtree<?> subtree;
-	private BigDecimal length;
+	private Double length;
 	private String comment;
 	private Integer branchLabel; // jPlace format extension
 	private int childBranchIndex;
@@ -36,11 +35,11 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 		subtree.setParentPhyloBranch(this);
 	}
 	
-	public BigDecimal getLength() {
+	public Double getLength() {
 		return length;
 	}
 
-	public void setLength(BigDecimal length) {
+	public void setLength(Double length) {
 		this.length = length;
 	}
 

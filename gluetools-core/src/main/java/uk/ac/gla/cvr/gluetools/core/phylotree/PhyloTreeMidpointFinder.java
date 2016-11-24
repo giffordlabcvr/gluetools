@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.phylotree;
 
-import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,23 +20,23 @@ public class PhyloTreeMidpointFinder {
 		LongestPathFinder longestPathFinder = new LongestPathFinder();
 		longestPathFinder.searchFrom(startNode);
 
-		BigDecimal longestPathLength = longestPathFinder.getLongestPathLength();
-		BigDecimal midpointPathLength = longestPathLength.divide(BigDecimal.valueOf(2.0));
+		Double longestPathLength = longestPathFinder.getLongestPathLength();
+		Double midpointPathLength = longestPathLength / 2.0;
 
 		List<PhyloTreeSearchNode> longestPath = longestPathFinder.getLongestPath();
-		BigDecimal pathLength = BigDecimal.valueOf(0.0);
+		Double pathLength = 0.0;
 		for(PhyloTreeSearchNode searchNode: longestPath) {
 			PhyloBranch arrivalBranch = searchNode.getArrivalBranch();
 			if(arrivalBranch != null) {
-				BigDecimal newPathLength = pathLength.add(arrivalBranch.getLength());
-				if(pathLength.compareTo(midpointPathLength) < 0) {
-					if(newPathLength.compareTo(midpointPathLength) >= 0) {
-						BigDecimal rootDistance = null;
+				Double newPathLength = pathLength + arrivalBranch.getLength();
+				if(pathLength < midpointPathLength) {
+					if(newPathLength >= midpointPathLength) {
+						Double rootDistance = null;
 						if(searchNode.arrivedFromParent()) {
 							// not actually sure this is reachable, given that we started from root.
-							rootDistance = midpointPathLength.subtract(pathLength);
+							rootDistance = midpointPathLength - pathLength;
 						} else if(searchNode.arrivedFromChild() != null) {
-							rootDistance = newPathLength.subtract(midpointPathLength);
+							rootDistance = newPathLength - midpointPathLength;
 						} else {
 							throw new RuntimeException("Expected arrivedFromParent or arrivedFromChild");
 						}
@@ -51,8 +50,8 @@ public class PhyloTreeMidpointFinder {
 	}
 
 	private static class LongestPathFinder {
-		private BigDecimal longestPathLength = null;
-		private BigDecimal currentPathLength = BigDecimal.valueOf(0.0);
+		private Double longestPathLength = null;
+		private Double currentPathLength = 0.0;
 		private LinkedList<PhyloTreeSearchNode> searchStack = new LinkedList<PhyloTreeSearchNode>();
 		private List<PhyloTreeSearchNode> longestPath = null;
 
@@ -60,7 +59,7 @@ public class PhyloTreeMidpointFinder {
 			searchStack.addLast(currentNode);
 			PhyloBranch arrivalBranch = currentNode.getArrivalBranch();
 			if(arrivalBranch != null) {
-				currentPathLength = currentPathLength.add(arrivalBranch.getLength());
+				currentPathLength = currentPathLength + arrivalBranch.getLength();
 			}
 			if(currentNode.getPhyloSubtree() instanceof PhyloLeaf) {
 				if(longestPathLength == null || currentPathLength.compareTo(longestPathLength) > 0) {
@@ -72,11 +71,11 @@ public class PhyloTreeMidpointFinder {
 				searchFrom(nextNode);
 			}
 			if(arrivalBranch != null) {
-				currentPathLength = currentPathLength.subtract(arrivalBranch.getLength());
+				currentPathLength = currentPathLength - arrivalBranch.getLength();
 			}
 			searchStack.removeLast();
 		}
-		public BigDecimal getLongestPathLength() {
+		public Double getLongestPathLength() {
 			return longestPathLength;
 		}
 		public List<PhyloTreeSearchNode> getLongestPath() {
@@ -88,8 +87,8 @@ public class PhyloTreeMidpointFinder {
 	private static class FurthestFromRootFinder implements PhyloTreeVisitor {
 		private PhyloLeaf furthestFromRoot;
 		private LinkedList<PhyloBranch> branchStack = new LinkedList<PhyloBranch>();
-		private BigDecimal furthestDistanceFromRoot = BigDecimal.valueOf(0L);
-		private BigDecimal distanceFromRoot = BigDecimal.valueOf(0L);
+		private Double furthestDistanceFromRoot = 0.0;
+		private Double distanceFromRoot = 0.0;
 		
 		public PhyloLeaf getFurthestFromRoot() {
 			return furthestFromRoot;
@@ -104,12 +103,12 @@ public class PhyloTreeMidpointFinder {
 		@Override
 		public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 			branchStack.push(phyloBranch);
-			distanceFromRoot = distanceFromRoot.add(phyloBranch.getLength());
+			distanceFromRoot = distanceFromRoot + phyloBranch.getLength();
 		}
 		@Override
 		public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 			branchStack.pop();
-			distanceFromRoot = distanceFromRoot.subtract(phyloBranch.getLength());
+			distanceFromRoot = distanceFromRoot + phyloBranch.getLength();
 		}
 	}
 	

@@ -92,27 +92,18 @@ public class JsonObjectCmdDocVisitor implements CommandDocumentVisitor {
 	}
 
 	@Override
-	public void visitCommandFieldValue(String fieldName, CommandFieldValue commandFieldValue) {
+	public void preVisitCommandFieldValue(String fieldName, CommandFieldValue commandFieldValue) {
 		JsonObjectBuilder currentJsonObjectBuilder = currentJsonObjectBuilder();
 		if(commandFieldValue instanceof SimpleCommandValue) {
 			addSimpleValueToObjectBuilder(currentJsonObjectBuilder, fieldName, (SimpleCommandValue) commandFieldValue);
-		} else if(commandFieldValue instanceof CommandObject) {
-			CommandObject commandObject = (CommandObject) commandFieldValue;
-			commandObject.accept(fieldName, this);
-		} else if(commandFieldValue instanceof CommandArray) {
-			CommandArray arrayBuilder = (CommandArray) commandFieldValue;
-			arrayBuilder.accept(fieldName, this);
 		} 
 	}
 	
 	@Override
-	public void visitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
+	public void preVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
 		JsonArrayBuilder currentJsonArrayBuilder = currentJsonArrayBuilder();
 		if(commandArrayItem instanceof SimpleCommandValue) {
 			addSimpleValueToArrayBuilder(currentJsonArrayBuilder, (SimpleCommandValue) commandArrayItem);
-		} else if(commandArrayItem instanceof CommandObject) {
-			CommandObject commandObject = (CommandObject) commandArrayItem;
-			commandObject.accept(arrayFieldName, this);
 		} 
 	}
 

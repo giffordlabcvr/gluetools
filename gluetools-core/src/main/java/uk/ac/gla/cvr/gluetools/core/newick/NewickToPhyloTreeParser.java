@@ -209,7 +209,7 @@ public class NewickToPhyloTreeParser {
 			case NUMBER: 
 				assertTrue(token, colon);
 				assertTrue(token, !number);
-				branch.setLength(new BigDecimal(token.render()));
+				branch.setLength(new BigDecimal(token.render()).doubleValue());
 				number = true;
 				break;
 			case COMMENT: 

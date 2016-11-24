@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.treeRerooter;
 
-import java.math.BigDecimal;
 import java.util.LinkedList;
 
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -22,9 +21,9 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		addModulePluginCmdClass(RerootTreeCommand.class);
 	}
 
-	public PhyloTree rerootTree(PhyloBranch branchWithRootPoint, BigDecimal rootPointDistance) {
-		if(rootPointDistance.compareTo(BigDecimal.valueOf(0.0)) < 0 
-				|| rootPointDistance.compareTo(branchWithRootPoint.getLength()) > 0) {
+	public PhyloTree rerootTree(PhyloBranch branchWithRootPoint, Double rootPointDistance) {
+		if(rootPointDistance < 0.0
+				|| rootPointDistance > branchWithRootPoint.getLength()) {
 			throw new RuntimeException("Illegal root point distance");
 		}
 		PhyloTree rerootedTree = branchWithRootPoint.getTree().clone();
@@ -34,7 +33,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		LinkedList<RerootTask<?>> taskQueue = new LinkedList<RerootTask<?>>();
 		
 		PhyloBranch cloneOfBranchToChild = branchWithRootPoint.clone();
-		cloneOfBranchToChild.setLength(branchWithRootPoint.getLength().subtract(rootPointDistance));
+		cloneOfBranchToChild.setLength(branchWithRootPoint.getLength() - rootPointDistance);
 		rerootedInternal.addBranch(cloneOfBranchToChild);
 
 		PhyloBranch cloneOfBranchToParent = branchWithRootPoint.clone();
@@ -94,7 +93,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 					for(PhyloBranch originalChildBranch: originalInternal.getBranches()) {
 						if(originalChildBranch.getChildBranchIndex() != rerootBranchIndex) {
 							PhyloBranch clonedBranch = rerootTask.clonedBranch;
-							clonedBranch.setLength(clonedBranch.getLength().add(originalChildBranch.getLength()));
+							clonedBranch.setLength(clonedBranch.getLength() + originalChildBranch.getLength());
 							PhyloSubtree<?> originalSubtree = originalChildBranch.getSubtree();
 							addSubtreeToTaskQueue(originalSubtree, 
 									new FromParentRerootDirection(), clonedBranch, taskQueue);
@@ -197,7 +196,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 * (C:2,(D:2,(E:5,G:3):5):2)
 		 */
 		PhyloBranch case1RerootBranch = findLeaf(startTree, "C").getParentPhyloBranch();
-		PhyloTree case1Tree = treeRerooter.rerootTree(case1RerootBranch, BigDecimal.valueOf(2));
+		PhyloTree case1Tree = treeRerooter.rerootTree(case1RerootBranch, 2.0);
 		check("(C:2,(D:2,(E:5,G:3):5):2);", treeToString(case1Tree));
 		/*
 		 * Case 2: Rerooting at point Y should produce
@@ -206,7 +205,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 */
 		PhyloBranch case2RerootBranch = findLeaf(startTree, "C").getParentPhyloBranch()
 					.getParentPhyloInternal().getParentPhyloBranch();
-		PhyloTree case2Tree = treeRerooter.rerootTree(case2RerootBranch, BigDecimal.valueOf(2));
+		PhyloTree case2Tree = treeRerooter.rerootTree(case2RerootBranch, 2.0);
 		check("((C:4,D:2):1,(E:5,G:3):4);", treeToString(case2Tree));
 		/*
 		 * Case 3: Rerooting at point Z should produce
@@ -214,7 +213,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 * (E:4,(G:3,(C:4,D:2):5):1)
 		 */
 		PhyloBranch case3RerootBranch = findLeaf(startTree, "E").getParentPhyloBranch();
-		PhyloTree case3Tree = treeRerooter.rerootTree(case3RerootBranch, BigDecimal.valueOf(1));
+		PhyloTree case3Tree = treeRerooter.rerootTree(case3RerootBranch, 1.0);
 		check("(E:4,(G:3,(C:4,D:2):5):1);", treeToString(case3Tree));
 		/*
 		 * Case where there is a polytomy at the root.
@@ -241,7 +240,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 */
 		PhyloBranch polytomyCase1RerootBranch = findLeaf(polytomyStartTree, "E").getParentPhyloBranch()
 				.getParentPhyloInternal().getParentPhyloBranch();
-		PhyloTree polytomyCase1Tree = treeRerooter.rerootTree(polytomyCase1RerootBranch, BigDecimal.valueOf(1));
+		PhyloTree polytomyCase1Tree = treeRerooter.rerootTree(polytomyCase1RerootBranch, 1.0);
 		check("((E:5,G:3):1,((C:4,D:2):3,F:10):1);", treeToString(polytomyCase1Tree));
 		
 	}

@@ -10,12 +10,16 @@ public interface CommandDocumentVisitor {
 
 	default void postVisitCommandObject(String objFieldName, CommandObject commandObject) {}
 
-	default void visitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {}
+	default void preVisitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {}
+
+	default void postVisitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {}
 
 	default void preVisitCommandArray(String arrayFieldName, CommandArray commandArray) {}
 
 	default void postVisitCommandArray(String arrayFieldName, CommandArray commandArray) {}
 
-	default void visitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {}
+	default void preVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {}
+
+	default void postVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {}
 
 }

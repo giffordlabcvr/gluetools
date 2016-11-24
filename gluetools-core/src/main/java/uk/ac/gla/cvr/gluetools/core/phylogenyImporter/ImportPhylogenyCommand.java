@@ -1,13 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.phylogenyImporter;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -24,22 +19,13 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter.AlignmentPhylogeny;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -120,6 +106,9 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		PhyloTree phyloTree = newickToPhyloTreeParser.parseNewick(phylogenyString);
 		List<AlignmentPhylogeny> almtPhylogenies = 
 				phylogenyImporter.previewImportPhylogeny(cmdContext, phyloTree, alignmentName, recursive, whereClause);
+		if(fieldName != null) {
+			
+		}
 		return new ImportPhylogenyResult(almtPhylogenies);
 	}
 

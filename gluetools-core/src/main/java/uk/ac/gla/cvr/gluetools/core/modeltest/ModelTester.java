@@ -15,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.programs.jmodeltest.JModelTestResult;
 import uk.ac.gla.cvr.gluetools.programs.jmodeltest.JModelTestRunner;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
@@ -51,7 +50,7 @@ public class ModelTester extends ModulePlugin<ModelTester> {
 		Map<String, DNASequence> remappedNtAlignment = FastaUtils.remapFasta(
 				nucleotideAlignment, rowNameToMemberPkMap, memberPkMapToRowName, "M");
 
-		JModelTestResult jModelTestResult = jModelTestRunner.runJModelTest(cmdContext, remappedNtAlignment, dataDirFile);
+		jModelTestRunner.runJModelTest(cmdContext, remappedNtAlignment, dataDirFile);
 
 		TestModelsResult testModelsResult = new TestModelsResult();
 		return testModelsResult;

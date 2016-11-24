@@ -19,11 +19,8 @@ public class ComparisonAminoAcidVariationScanResult extends VariationScanResult 
 	}
 	
 	public static class PLocScanResult {
-		private String queryAminoAcids;
-		
 		public PLocScanResult(String queryAminoAcids) {
 			super();
-			this.queryAminoAcids = queryAminoAcids;
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 public class PlacementResult {
@@ -20,7 +19,7 @@ public class PlacementResult {
 	// May or may not be equal to the alignment of the closest member (it may be an ancestor alignment).
 	private String groupingAlignmentName;
 	
-	private BigDecimal distanceToClosestMember;
+	private Double distanceToClosestMember;
 	
 	private double likeWeightRatio;
 	
@@ -48,11 +47,11 @@ public class PlacementResult {
 		this.groupingAlignmentName = groupingAlignmentName;
 	}
 
-	public BigDecimal getDistanceToClosestMember() {
+	public Double getDistanceToClosestMember() {
 		return distanceToClosestMember;
 	}
 
-	public void setDistanceToClosestMember(BigDecimal distanceToClosestMember) {
+	public void setDistanceToClosestMember(Double distanceToClosestMember) {
 		this.distanceToClosestMember = distanceToClosestMember;
 	}
 

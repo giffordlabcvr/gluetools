@@ -46,28 +46,37 @@ public class JsonGeneratorCmdDocVisitor implements CommandDocumentVisitor {
 	}
 
 	@Override
-	public void visitCommandFieldValue(String fieldName, CommandFieldValue commandFieldValue) {
+	public void preVisitCommandFieldValue(String fieldName, CommandFieldValue commandFieldValue) {
 		if(commandFieldValue instanceof SimpleCommandValue) {
 			writeSimpleValueToObject(fieldName, (SimpleCommandValue) commandFieldValue);
 		} else if(commandFieldValue instanceof CommandObject) {
-			CommandObject commandObject = (CommandObject) commandFieldValue;
 			jsonGenerator.writeStartObject(fieldName);
-			commandObject.accept(fieldName, this);
-			jsonGenerator.writeEnd();
-		} else if(commandFieldValue instanceof CommandArray) {
-			CommandArray arrayBuilder = (CommandArray) commandFieldValue;
-			arrayBuilder.accept(fieldName, this);
 		} 
 	}
+
 	
 	@Override
-	public void visitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
+	public void postVisitCommandFieldValue(String fieldName, CommandFieldValue commandFieldValue) {
+		if(commandFieldValue instanceof SimpleCommandValue) {
+			writeSimpleValueToObject(fieldName, (SimpleCommandValue) commandFieldValue);
+		} else if(commandFieldValue instanceof CommandObject) {
+			jsonGenerator.writeEnd();
+		} 
+	}
+
+	
+	@Override
+	public void preVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
 		if(commandArrayItem instanceof SimpleCommandValue) {
 			writeSimpleValueToArray((SimpleCommandValue) commandArrayItem);
 		} else if(commandArrayItem instanceof CommandObject) {
-			CommandObject commandObject = (CommandObject) commandArrayItem;
 			jsonGenerator.writeStartObject();
-			commandObject.accept(arrayFieldName, this);
+		} 
+	}
+
+	@Override
+	public void postVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
+		if(commandArrayItem instanceof CommandObject) {
 			jsonGenerator.writeEnd();
 		} 
 	}

@@ -4,7 +4,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArrayItem;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocumentVisitor;
@@ -29,42 +28,53 @@ public class CommandDocumentToXmlDocumentVisitor implements CommandDocumentVisit
 		this.currentParentElem = rootElem;
 	}
 
-	@Override
-	public void postVisitCommandObject(String objFieldName, CommandObject objectBuilder) {
-		Node parentNode = this.currentParentElem.getParentNode();
-		if(parentNode instanceof Element) {
-			this.currentParentElem = (Element) parentNode;
-		} else {
-			this.currentParentElem = null;
-		}
-	}
 
 	@Override
-	public void visitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {
+	public void preVisitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {
 		if(commandFieldValue instanceof SimpleCommandValue) {
 			addSimpleValue(objFieldName, false, (SimpleCommandValue) commandFieldValue);
 		} else if(commandFieldValue instanceof CommandObject) {
-			addObjectValue(objFieldName, false, (CommandObject) commandFieldValue);
-		} else if(commandFieldValue instanceof CommandArray) {
-			CommandArray arrayBuilder = (CommandArray) commandFieldValue;
-			arrayBuilder.accept(objFieldName, this);
+			addObjectValue(objFieldName, false);
+		} 
+	}
+
+	@Override
+	public void postVisitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {
+		if(commandFieldValue instanceof CommandObject) {
+			Node parentNode = this.currentParentElem.getParentNode();
+			if(parentNode instanceof Element) {
+				this.currentParentElem = (Element) parentNode;
+			} else {
+				this.currentParentElem = null;
+			}
 		} 
 	}
 	
 	@Override
-	public void visitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
+	public void preVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
 		if(commandArrayItem instanceof SimpleCommandValue) {
 			addSimpleValue(arrayFieldName, true, (SimpleCommandValue) commandArrayItem);
 		} else if(commandArrayItem instanceof CommandObject) {
-			addObjectValue(arrayFieldName, true, (CommandObject) commandArrayItem);
+			addObjectValue(arrayFieldName, true);
 		} 
 	}
 
-	private void addObjectValue(String fieldName, boolean isMemberOfArray, CommandObject commandObject) {
+	@Override
+	public void postVisitCommandArrayItem(String objFieldName, CommandArrayItem commandArrayItem) {
+		if(commandArrayItem instanceof CommandObject) {
+			Node parentNode = this.currentParentElem.getParentNode();
+			if(parentNode instanceof Element) {
+				this.currentParentElem = (Element) parentNode;
+			} else {
+				this.currentParentElem = null;
+			}
+		} 
+	}
+	
+	private void addObjectValue(String fieldName, boolean isMemberOfArray) {
 		Element fieldElem = GlueXmlUtils.appendElement(currentParentElem, fieldName);
 		CommandDocumentXmlUtils.setGlueType(fieldElem, GlueType.Object, isMemberOfArray);
 		this.currentParentElem = fieldElem;
-		commandObject.accept(fieldName, this);
 	}
 
 	private void addSimpleValue(String fieldName, boolean isMemberOfArray, SimpleCommandValue simpleCommandValue) {
