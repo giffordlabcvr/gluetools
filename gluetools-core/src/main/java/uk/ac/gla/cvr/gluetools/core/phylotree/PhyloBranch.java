@@ -5,9 +5,6 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 
 	private PhyloInternal parentPhyloInternal; // phyloInternal for now (later may allow PhlyoTree?)
 	private PhyloSubtree<?> subtree;
-	private Double length;
-	private String comment;
-	private Integer branchLabel; // jPlace format extension
 	private int childBranchIndex;
 	
 	public int getChildBranchIndex() {
@@ -22,12 +19,12 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 		return subtree;
 	}
 
-	public Integer getBranchLabel() {
-		return branchLabel;
+	public String getBranchLabel() {
+		return (String) ensureUserData().get("label");
 	}
 
-	public void setBranchLabel(Integer branchLabel) {
-		this.branchLabel = branchLabel;
+	public void setBranchLabel(String branchLabel) {
+		ensureUserData().put("label", branchLabel);		
 	}
 
 	public void setSubtree(PhyloSubtree<?> subtree) {
@@ -36,19 +33,19 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 	}
 	
 	public Double getLength() {
-		return length;
+		return (Double) ensureUserData().get("length");
 	}
 
 	public void setLength(Double length) {
-		this.length = length;
+		ensureUserData().put("length", length);
 	}
 
 	public String getComment() {
-		return comment;
+		return (String) ensureUserData().get("comment");
 	}
 
 	public void setComment(String comment) {
-		this.comment = comment;
+		ensureUserData().put("comment", comment);		
 	}
 	
 	public PhyloInternal getParentPhyloInternal() {

@@ -18,9 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafFinder;
@@ -35,8 +34,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"reroot-tree"}, 
-		description = "Reroot a Newick tree", 
-		docoptUsages = { "-i <inputFile> (-g <outgroup> [-r] | -m) -o <outputFile> "},
+		description = "Reroot a phylogenetic tree", 
+		docoptUsages = { "-i <inputFile> <inputFormat> (-g <outgroup> [-r] | -m) -o <outputFile> <outputFormat>"},
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     Input file",
 				"-g <outgroup>, --outgroup <outgroup>        Specify outgroup leaf",
@@ -52,6 +51,8 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 	public static final String OUTGROUP = "outgroup";
 	public static final String INPUT_FILE = "inputFile";
 	public static final String OUTPUT_FILE = "outputFile";
+	public static final String INPUT_FORMAT = "inputFormat";
+	public static final String OUTPUT_FORMAT = "outputFormat";
 	public static final String REMOVE_OUTGROUP = "removeOutgroup";
 	public static final String MIDPOINT = "midpoint";
 	
@@ -60,15 +61,19 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 	private String outputFile;
 	private Boolean removeOutgroup;
 	private Boolean midpoint;
+	private PhyloFormat inputFormat;
+	private PhyloFormat outputFormat;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.inputFile = PluginUtils.configureStringProperty(configElem, INPUT_FILE, true);
+		this.inputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, INPUT_FORMAT, true);
 		this.outgroup = PluginUtils.configureStringProperty(configElem, OUTGROUP, false);
 		this.removeOutgroup = PluginUtils.configureBooleanProperty(configElem, REMOVE_OUTGROUP, false);
 		this.midpoint = PluginUtils.configureBooleanProperty(configElem, MIDPOINT, false);
 		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
+		this.outputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, OUTPUT_FORMAT, true);
 		if( (outgroup == null && (midpoint == null || !midpoint)) ||
 				(outgroup != null && (midpoint != null && midpoint))) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <outgroup> or --midpoint must be specified, but not both");
@@ -81,7 +86,7 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 	@Override
 	protected OkResult execute(CommandContext cmdContext, TreeRerooter treeRerooter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		PhyloTree phyloTree = loadTree(consoleCmdContext, inputFile);
+		PhyloTree phyloTree = loadTree(consoleCmdContext, inputFile, inputFormat);
 		PhyloBranch rerootBranch = null;
 		Double rerootDistance = null;
 		if(outgroup != null) {
@@ -132,18 +137,12 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 			PhyloSubtree<?> remainingSubtree = remainingTreeBranch.getSubtree();
 			rerootedTree.setRoot(remainingSubtree);
 		}
-		NewickPhyloTreeVisitor newickPhyloTreeVisitor = new NewickPhyloTreeVisitor();
-		rerootedTree.accept(newickPhyloTreeVisitor);
-		consoleCmdContext.saveBytes(outputFile, newickPhyloTreeVisitor.getNewickString().getBytes());
+		consoleCmdContext.saveBytes(outputFile, outputFormat.generate(rerootedTree));
 		return new OkResult();
 	}
 
-	private static PhyloTree loadTree(ConsoleCommandContext cmdContext,
-			String inputFileName) {
-		byte[] treeBytes = cmdContext.loadBytes(inputFileName);
-		String treeString = new String(treeBytes);
-		PhyloTree phyloTree = new NewickToPhyloTreeParser().parseNewick(treeString);
-		return phyloTree;
+	private static PhyloTree loadTree(ConsoleCommandContext cmdContext, String inputFileName, PhyloFormat phyloFormat) {
+		return phyloFormat.parse(cmdContext.loadBytes(inputFileName));
 	}
 
 
@@ -160,7 +159,8 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 						String prefix) {
 					try {
 						String inputFileName = (String) bindings.get("inputFile");
-						PhyloTree phyloTree = loadTree(cmdContext, inputFileName);
+						PhyloFormat inputFormat = PhyloFormat.valueOf((String) bindings.get("inputFormat"));
+						PhyloTree phyloTree = loadTree(cmdContext, inputFileName, inputFormat);
 						PhyloLeafLister phyloLeafLister = new PhyloLeafLister();
 						phyloTree.accept(phyloLeafLister);
 						return phyloLeafLister.getPhyloLeaves().stream()
@@ -172,6 +172,8 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 				}
 			});
 			registerPathLookup("outputFile", false);
+			registerEnumLookup("inputFormat", PhyloFormat.class);
+			registerEnumLookup("outputFormat", PhyloFormat.class);
 		}
 		
 	}

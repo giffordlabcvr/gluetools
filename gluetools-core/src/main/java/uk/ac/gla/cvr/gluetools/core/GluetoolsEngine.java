@@ -12,7 +12,6 @@ import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.classloader.GlueClassLoader;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -75,11 +74,7 @@ public class GluetoolsEngine implements Plugin {
 		freemarkerConfiguration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "/freemarker");
 		Document configDocument = null;
 		if(configFilePath != null) {
-			try {
-				configDocument = GlueXmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
-			} catch(SAXException saxe) {
-				throw new GluetoolsEngineException(GluetoolsEngineException.Code.CONFIG_INVALID_XML, configFilePath, saxe.getLocalizedMessage());
-			}
+			configDocument = GlueXmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
 		} else {
 			configDocument = GlueXmlUtils.documentWithElement("gluetools").getOwnerDocument();
 		}

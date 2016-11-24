@@ -42,6 +42,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtilsException.Code;
+
 public class GlueXmlUtils {
 
 	public static Document documentFromStream(InputStream is) throws SAXException, IOException  {
@@ -281,17 +283,19 @@ public class GlueXmlUtils {
 		return "*["+String.join("|", elementNames.stream().map(s -> "self::"+s).collect(Collectors.toList()))+"]";
 	}
 
-	public static Document documentFromBytes(byte[] bytes) throws SAXException {
+	public static Document documentFromBytes(byte[] bytes) {
 		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 		try {
 			return documentFromStream(bais);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} catch (SAXException e) {
+			throw new GlueXmlUtilsException(e, Code.XML_PARSE_EXCEPTION, e.getLocalizedMessage());
 		}
 	}
 
 	// WARNING! this could get confused if the XML start pattern was embedded e.g. in a CDATA section.
-	public static List<Document> documentsFromBytes(byte[] bytes) throws SAXException, IOException {
+	public static List<Document> documentsFromBytes(byte[] bytes) {
 		List<Document> documents = new ArrayList<Document>();
 		byte[] xmlStartPattern = "<?xml".getBytes();
 		int startIndex = 0;
@@ -305,7 +309,13 @@ public class GlueXmlUtils {
 				length = nextStartIndex - startIndex;
 			}
 			ByteArrayInputStream bais = new ByteArrayInputStream(bytes, startIndex, length);
-			documents.add(documentFromStream(bais));
+			try {
+				documents.add(documentFromStream(bais));
+			} catch (SAXException e) {
+				throw new GlueXmlUtilsException(e, Code.XML_PARSE_EXCEPTION, e.getLocalizedMessage());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			startIndex = nextStartIndex;
 		} while(nextStartIndex != -1);
 		return documents;

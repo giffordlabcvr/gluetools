@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.newick;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,8 +12,14 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 
 public class NewickToPhyloTreeParser {
 
+	private NewickInterpreter newickInterpreter;
+	
 	public NewickToPhyloTreeParser() {
-		
+		this(new NewickInterpreter() {});
+	}
+	
+	public NewickToPhyloTreeParser(NewickInterpreter newickInterpreter) {
+		this.newickInterpreter = newickInterpreter;
 	}
 
 	public PhyloTree parseNewick(String newickString) {
@@ -153,14 +158,14 @@ public class NewickToPhyloTreeParser {
 			case NAME:
 				assertTrue(token, allBranches);
 				assertTrue(token, !nameSet);
-				internal.setName(token.render());
+				newickInterpreter.parseInternalName(internal, token.render());
 				this.nameSet = true;
 				pop(token, stateStack, InternalState.class);
 				break;
 			case NUMBER:
 				assertTrue(token, allBranches);
 				assertTrue(token, !nameSet);
-				internal.setName(token.render());
+				newickInterpreter.parseInternalName(internal, token.render());
 				this.nameSet = true;
 				pop(token, stateStack, InternalState.class);
 				break;
@@ -209,19 +214,19 @@ public class NewickToPhyloTreeParser {
 			case NUMBER: 
 				assertTrue(token, colon);
 				assertTrue(token, !number);
-				branch.setLength(new BigDecimal(token.render()).doubleValue());
+				newickInterpreter.parseBranchLength(branch, token.render());
 				number = true;
 				break;
 			case COMMENT: 
 				assertTrue(token, number || !colon);
 				assertTrue(token, !comment);
-				branch.setComment(token.render());
+				newickInterpreter.parseBranchComment(branch, token.render());
 				comment = true;
 				break;
 			case BRANCHLABEL: 
 				assertTrue(token, number || !colon);
 				assertTrue(token, !branchLabel);
-				branch.setBranchLabel(Integer.parseInt(token.render()));
+				newickInterpreter.parseBranchLabel(branch, token.render());
 				branchLabel = true;
 				break;
 			case COMMA: 
@@ -243,13 +248,15 @@ public class NewickToPhyloTreeParser {
 	
 	private class LeafState extends State {
 		PhyloLeaf leaf = new PhyloLeaf();
+		private boolean nameSet = false;
 
 		@Override
 		public void consume(LinkedList<State> stateStack, Token token) {
 			switch(token.getType()) {
 			case NAME:
-				assertTrue(token, leaf.getName() == null);
-				leaf.setName(token.render());
+				assertTrue(token, !nameSet);
+				newickInterpreter.parseLeafName(leaf, token.render());
+				nameSet = true;
 				pop(token, stateStack, LeafState.class);
 				break;
 			case SEMICOLON:

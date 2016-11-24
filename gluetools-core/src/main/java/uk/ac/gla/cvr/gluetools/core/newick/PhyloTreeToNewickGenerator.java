@@ -8,9 +8,20 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 
-public class NewickPhyloTreeVisitor implements PhyloTreeVisitor {
+public class PhyloTreeToNewickGenerator implements PhyloTreeVisitor {
 	
+	private NewickGenerator newickGenerator;
 	private StringBuffer buf = new StringBuffer();
+	
+	public PhyloTreeToNewickGenerator() {
+		this(new NewickGenerator() {});
+	}
+
+	public PhyloTreeToNewickGenerator(NewickGenerator newickGenerator) {
+		super();
+		this.newickGenerator = newickGenerator;
+	}
+
 	
 	public String getNewickString() {
 		return buf.toString();
@@ -33,12 +44,12 @@ public class NewickPhyloTreeVisitor implements PhyloTreeVisitor {
 	@Override
 	public void postVisitInternal(PhyloInternal phyloInternal) {
 		buf.append(")");
-		Optional.ofNullable(phyloInternal.getName()).ifPresent(name -> buf.append(name));
+		Optional.ofNullable(newickGenerator.generateInternalName(phyloInternal)).ifPresent(name -> buf.append(name));
 	}
 
 	@Override
 	public void visitLeaf(PhyloLeaf phyloLeaf) {
-		Optional.ofNullable(phyloLeaf.getName()).ifPresent(name -> buf.append(name));
+		Optional.ofNullable(newickGenerator.generateLeafName(phyloLeaf)).ifPresent(name -> buf.append(name));
 	}
 
 	@Override
@@ -50,12 +61,12 @@ public class NewickPhyloTreeVisitor implements PhyloTreeVisitor {
 
 	@Override
 	public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
-		Optional.ofNullable(phyloBranch.getLength()).ifPresent(length -> 
+		Optional.ofNullable(newickGenerator.generateBranchLength(phyloBranch)).ifPresent(length -> 
 		buf.append(":").append(length.toString()));
-		Optional.ofNullable(phyloBranch.getComment()).ifPresent(comment -> 
+		Optional.ofNullable(newickGenerator.generateBranchComment(phyloBranch)).ifPresent(comment -> 
 		buf.append("[").append(comment).append("]"));
-		Optional.ofNullable(phyloBranch.getBranchLabel()).ifPresent(branchLabel -> 
-		buf.append("{").append(Integer.toString(branchLabel)).append("}"));
+		Optional.ofNullable(newickGenerator.generateBranchLabel(phyloBranch)).ifPresent(branchLabel -> 
+		buf.append("{").append(branchLabel).append("}"));
 	}
 
 	

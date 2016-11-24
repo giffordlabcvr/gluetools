@@ -28,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -44,7 +44,8 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	public static final String INCLUDE_ALL_COLUMNS = "includeAllColumns";
 	public static final String MIN_COLUMN_USAGE = "minColUsage";
 
-	public static final String FILE_NAME = "fileName";
+	public static final String OUTPUT_FILE = "outputFile";
+	public static final String OUTPUT_FORMAT = "outputFormat";
 	public static final String FIELD_NAME = "fieldName";
 	
 	private String alignmentName;
@@ -56,7 +57,9 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	private Boolean includeAllColumns;
 	private Integer minColUsage;
 
-	private String fileName;
+	private String outputFile;
+	private PhyloFormat outputFormat;
+	
 	private String fieldName;
 	
 
@@ -72,7 +75,8 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		includeAllColumns = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_ALL_COLUMNS, false)).orElse(false);
 		minColUsage = PluginUtils.configureIntProperty(configElem, MIN_COLUMN_USAGE, false);
 
-		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
+		outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, false);
+		outputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, OUTPUT_FORMAT, false);
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, false);
 
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
@@ -81,11 +85,14 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		if(acRefName != null && featureName == null || acRefName == null && featureName != null) {
 			usageError2();
 		}
-		if(fileName == null && fieldName == null || fileName != null && fieldName != null) {
+		if(outputFile == null && fieldName == null || outputFile != null && fieldName != null) {
 			usageError3();
 		}
 		if(this.minColUsage != null && !this.includeAllColumns) {
 			usageError4();
+		}
+		if(this.outputFormat != null && this.outputFile == null) {
+			usageError5();
 		}
 	}
 
@@ -96,10 +103,13 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <acRefName> and <featureName> must be specified or neither");
 	}
 	private void usageError3() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <fieldName> must be specified, but not both");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <outputFile> or <fieldName> must be specified, but not both");
 	}
 	private void usageError4() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
+	}
+	private void usageError5() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <outputFormat> argument may only be used if <outputFile> is specified");
 	}
 	
 
@@ -117,18 +127,14 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);
 		
-		NewickPhyloTreeVisitor newickPhyloTreeVisitor = new NewickPhyloTreeVisitor();
-		phyloTree.accept(newickPhyloTreeVisitor);
-		String newickString = newickPhyloTreeVisitor.getNewickString();
-		
-		if(fileName != null) {
-			// save newick string to file.
+		if(outputFile != null) {
+			// save bytes to file in specified format.
 			ConsoleCommandContext consoleCmdContext = ((ConsoleCommandContext) cmdContext);
-			consoleCmdContext.saveBytes(fileName, newickString.getBytes());
+			consoleCmdContext.saveBytes(outputFile, outputFormat.generate(phyloTree));
 		} else {
-			// save newick string to field.
+			// save string to field in format based on project setting.
 			PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.alignment.name(), 
-					alignment, fieldName, newickString, false);
+					alignment, fieldName, new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(phyloTree)), false);
 		}
 		
 		return new OkResult();

@@ -5,8 +5,6 @@ public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObjec
 	private PhyloBranch parentPhyloBranch;
 	private PhyloTree tree;
 	
-	private String name;
-	
 	public PhyloBranch getParentPhyloBranch() {
 		return parentPhyloBranch;
 	}
@@ -16,11 +14,11 @@ public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObjec
 	}
 
 	public String getName() {
-		return name;
+		return (String) ensureUserData().get("name");		
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		ensureUserData().put("name", name);		
 	}
 
 	public void setTree(PhyloTree tree) {

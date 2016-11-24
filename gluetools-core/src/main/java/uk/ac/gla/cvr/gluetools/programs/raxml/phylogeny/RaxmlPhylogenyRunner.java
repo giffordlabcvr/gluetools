@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickBootstrapsToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -121,8 +121,7 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 			throw new RaxmlException(Code.RAXML_FILE_EXCEPTION, "Failed to read RAxML output file: "+bestTreeFile.getAbsolutePath());
 		}
 		String bestTreeString = new String(bestTreeBytes);
-		NewickToPhyloTreeParser newickToPhyloTreeParser = new NewickToPhyloTreeParser();
-		PhyloTree phyloTree = newickToPhyloTreeParser.parseNewick(bestTreeString);
+		PhyloTree phyloTree = new NewickBootstrapsToPhyloTreeParser().parseNewick(bestTreeString);
 		// could add info log, bootstrap trees etc. in here I guess.
 		result.setPhyloTree(phyloTree);
 		return result;

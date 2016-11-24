@@ -10,8 +10,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -31,7 +31,7 @@ public class TransformTreeCommand extends ModulePluginCommand<OkResult, TreeTran
 
 	public static String INPUT_FILE = "inputFile";
 	public static String OUTPUT_FILE = "outputFile";
-	
+
 	private String inputFile;
 	private String outputFile;
 	
@@ -48,7 +48,7 @@ public class TransformTreeCommand extends ModulePluginCommand<OkResult, TreeTran
 		NewickToPhyloTreeParser phyloTreeParser = new NewickToPhyloTreeParser();
 		PhyloTree inputTree = phyloTreeParser.parseNewick(new String(consoleCmdContext.loadBytes(inputFile)));
 		PhyloTree outputTree = treeTransformer.transformTree(cmdContext, inputTree);
-		NewickPhyloTreeVisitor newickPhyloTreeVisitor = new NewickPhyloTreeVisitor();
+		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
 		outputTree.accept(newickPhyloTreeVisitor);
 		consoleCmdContext.saveBytes(outputFile, newickPhyloTreeVisitor.getNewickString().getBytes());
 		return new OkResult();

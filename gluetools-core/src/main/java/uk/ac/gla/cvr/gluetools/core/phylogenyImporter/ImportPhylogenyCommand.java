@@ -17,14 +17,15 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter.AlignmentPhylogeny;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -32,12 +33,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
 		description = "Import a phylogenetic file from a tree", 
-		docoptUsages={"<alignmentName> [-c] (-w <whereClause> | -a) -i <fileName> (-f <fieldName> | -p)"},
+		docoptUsages={"<alignmentName> [-c] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>  Qualify members",
 		    "-a, --allMembers                               All members",
-			"-i <fileName>, --fileName <fileName>           Phylogeny input file",
+			"-i <inputFile>, --inputFile <inputFile>        Phylogeny input file",
 			"-f <fieldName>, --fieldName <fieldName>        Phylogeny field name",
 			"-p, --preview                                  Preview only"},
 		metaTags = {CmdMeta.consoleOnly}, 
@@ -54,7 +55,8 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
 
-	public static final String FILE_NAME = "fileName";
+	public static final String INPUT_FILE = "inputFile";
+	public static final String INPUT_FORMAT = "inputFormat";
 	public static final String FIELD_NAME = "fieldName";
 	public static final String PREVIEW = "preview";
 	
@@ -63,7 +65,8 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
 
-	private String fileName;
+	private String inputFile;
+	private PhyloFormat inputFormat;
 	private String fieldName;
 	private Boolean preview;
 	
@@ -76,7 +79,8 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
 
-		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		inputFile = PluginUtils.configureStringProperty(configElem, INPUT_FILE, true);
+		inputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, INPUT_FORMAT, true);
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, false);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, false);
 
@@ -99,15 +103,19 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	@Override
 	protected ImportPhylogenyResult execute(CommandContext cmdContext, PhylogenyImporter phylogenyImporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
 		
-		byte[] phylogenyBytes = consoleCmdContext.loadBytes(fileName);
-		String phylogenyString = new String(phylogenyBytes);
-		NewickToPhyloTreeParser newickToPhyloTreeParser = new NewickToPhyloTreeParser();
-		PhyloTree phyloTree = newickToPhyloTreeParser.parseNewick(phylogenyString);
+		PhyloTree phyloTree = inputFormat.parse(consoleCmdContext.loadBytes(inputFile));
 		List<AlignmentPhylogeny> almtPhylogenies = 
 				phylogenyImporter.previewImportPhylogeny(cmdContext, phyloTree, alignmentName, recursive, whereClause);
 		if(fieldName != null) {
-			
+			for(AlignmentPhylogeny almtPhylogeny: almtPhylogenies) {
+				// save string to field in format based on project setting.
+				PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.alignment.name(), 
+						almtPhylogeny.getAlignment(), fieldName, 
+						new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(almtPhylogeny.getPhyloTree())), false);
+				
+			}
 		}
 		return new ImportPhylogenyResult(almtPhylogenies);
 	}
@@ -118,7 +126,8 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
-			registerPathLookup("fileName", false);
+			registerPathLookup("inputFile", false);
+			registerEnumLookup("inputFormat", PhyloFormat.class);
 			registerVariableInstantiator("fieldName", new VariableInstantiator() {
 				@Override
 				protected List<CompletionSuggestion> instantiate(

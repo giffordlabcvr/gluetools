@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.phylotree;
 import java.util.LinkedList;
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 
 
@@ -21,6 +22,9 @@ public class PhyloTreeMidpointFinder {
 		longestPathFinder.searchFrom(startNode);
 
 		Double longestPathLength = longestPathFinder.getLongestPathLength();
+		
+		GlueLogger.getGlueLogger().finest("Longest path length: "+Double.toString(longestPathLength));
+		
 		Double midpointPathLength = longestPathLength / 2.0;
 
 		List<PhyloTreeSearchNode> longestPath = longestPathFinder.getLongestPath();

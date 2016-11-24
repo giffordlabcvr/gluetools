@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
@@ -120,6 +121,9 @@ public class BlastRunner implements Plugin {
 			resultDocs = GlueXmlUtils.documentsFromBytes(blastProcessResult.getOutputBytes());
 		} catch(Exception e) {
 			GlueLogger.log(Level.FINE, "BLAST stderr:\n"+new String(blastProcessResult.getErrorBytes()));
+			if(e instanceof GlueException) {
+				throw e;
+			}
 			throw new BlastException(BlastException.Code.BLAST_OUTPUT_FORMAT_ERROR, e.getLocalizedMessage());
 		}
 		// use same xPathEngine across results, should save some init time.

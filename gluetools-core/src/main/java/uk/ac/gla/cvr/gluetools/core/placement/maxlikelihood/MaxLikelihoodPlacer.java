@@ -429,9 +429,15 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		@Override
 		public void preVisitBranch(int branchIndex, PhyloBranch jPlacePhyloBranch) {
-			Integer branchLabel = jPlacePhyloBranch.getBranchLabel();
-			if(branchLabel == null) {
-				throw new MaxLikelihoodPlacerException(Code.JPLACE_BRANCH_LABEL_ERROR, "Expected jPlace branch to have an integer label");
+			String branchLabelString = jPlacePhyloBranch.getBranchLabel();
+			if(branchLabelString == null) {
+				throw new MaxLikelihoodPlacerException(Code.JPLACE_BRANCH_LABEL_ERROR, "Expected jPlace branch to have a branch label (within '{' and '}')");
+			}
+			Integer branchLabel = null;
+			try {
+				branchLabel = Integer.parseInt(branchLabelString);
+			} catch(NumberFormatException nfe) {
+				throw new MaxLikelihoodPlacerException(Code.JPLACE_BRANCH_LABEL_ERROR, "Expected jPlace branch to have an integer branch label");
 			}
 			labelToJPlaceBranch.put(branchLabel, jPlacePhyloBranch);
 		}

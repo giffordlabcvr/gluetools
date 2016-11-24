@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
@@ -138,7 +138,7 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 
 
 	private void writePhyloTreeFile(File tempDir, File phyloTreeFile, PhyloTree phyloTree) {
-		NewickPhyloTreeVisitor newickPhyloTreeVisitor = new NewickPhyloTreeVisitor();
+		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
 		phyloTree.accept(newickPhyloTreeVisitor);
 		String newickString = newickPhyloTreeVisitor.getNewickString();
 		try(FileOutputStream fileOutputStream = new FileOutputStream(phyloTreeFile)) {

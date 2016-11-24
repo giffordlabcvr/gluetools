@@ -3,8 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.treeRerooter;
 import java.util.LinkedList;
 
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.core.newick.NewickPhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -159,7 +159,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 	}
 
 	private static String treeToString(PhyloTree tree) {
-		NewickPhyloTreeVisitor newickPhyloTreeVisitor = new NewickPhyloTreeVisitor();
+		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
 		tree.accept(newickPhyloTreeVisitor);
 		return newickPhyloTreeVisitor.getNewickString();
 	}

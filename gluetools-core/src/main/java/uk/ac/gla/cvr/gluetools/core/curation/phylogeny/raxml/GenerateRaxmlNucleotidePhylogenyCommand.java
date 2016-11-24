@@ -28,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
-		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] (-o <fileName> | -p <phylogenyFieldName>)  [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] (-o <outputFile> <outputFormat> | -p <phylogenyFieldName>)  [-d <dataDir>]"},
 		docoptOptions={
 			"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining reference",
 			"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
@@ -37,12 +37,12 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		    "-a, --allMembers                               All members",
 		    "-i, --includeAllColumns                        Include columns for all NTs",
 		    "-m <minColUsage>, --minColUsage <minColUsage>  Minimum included column usage",
-			"-o <fileName>, --fileName <fileName>           Phylogeny output file",
+			"-o <outputFile>, --outputFile <outputFile>     Phylogeny output file",
 			"-p <fieldName>, --fieldName <fieldName>        Phylogeny field name",
 			"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory"},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Generate RAxML phylogeny using a nucleotide alignment", 
-		furtherHelp="If <fileName> is supplied, the Newick string is saved to an output file.\n"+
+		furtherHelp="If <outputFile> is supplied, the Newick string is saved to an output file.\n"+
 			"If <fieldName> is supplied, the Newick string is set as the phylogeny on the relevant field of the alignment table.\n"+
 			"If supplied, <dataDir> must either not exist or be an empty directory.") 
 public class GenerateRaxmlNucleotidePhylogenyCommand extends GenerateNucleotidePhylogenyCommand<RaxmlPhylogenyGenerator> {

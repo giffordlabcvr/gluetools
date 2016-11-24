@@ -1,7 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.utils.VersionUtils;
 import uk.ac.gla.cvr.gluetools.utils.VersionUtilsException;
 import uk.ac.gla.cvr.gluetools.utils.VersionUtilsException.Code;
@@ -30,7 +34,6 @@ public enum ProjectSettingOption {
 			VersionUtils.checkMinVersion(cmdContext, projectMinVersion);
 			super.onSet(cmdContext, oldVersion, projectMinVersion);
 		}
-		
 	},
 	MAX_ENGINE_VERSION("max-engine-version", "Maximum GLUE engine version required to build the project", null, null) {
 		@Override
@@ -47,7 +50,10 @@ public enum ProjectSettingOption {
 		}
 	},
 	EXPORTED_FASTA_EXTENSION("exported-fasta-extension", "The extension format given to exported sequences in FASTA format", FastaSequenceObject.FASTA_DEFAULT_EXTENSION, 
-			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS);
+			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS),
+	ALIGNMENT_PHYLOGENY_FORMAT("alignment-phylogeny-format", "The format used to store phylogenies against Alignment nodes", 
+			PhyloFormat.GLUE_XML.name(), 
+			Arrays.asList(PhyloFormat.values()).stream().map(pf -> pf.name()).collect(Collectors.toList()).toArray(new String[]{}));
 	
 	private final String name;
 	private final String description;

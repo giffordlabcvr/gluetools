@@ -16,8 +16,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @GlueDataClass(
@@ -240,6 +242,10 @@ public class Alignment extends _Alignment implements HasDisplayName {
 		return parent.getDepth() + 1;
 	}
 
+	public static PhyloFormat getPhylogenyPhyloFormat(CommandContext cmdContext) {
+		String phyloFormatSettingValue = cmdContext.getProjectSettingValue(ProjectSettingOption.ALIGNMENT_PHYLOGENY_FORMAT);
+		return PhyloFormat.valueOf(phyloFormatSettingValue);
+	}
 	
 }
 
