@@ -28,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
-		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] (-o <outputFile> <outputFormat> | -p <phylogenyFieldName>)  [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] -o <outputFile> <outputFormat>  [-d <dataDir>]"},
 		docoptOptions={
 			"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining reference",
 			"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
@@ -38,7 +38,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		    "-i, --includeAllColumns                        Include columns for all NTs",
 		    "-m <minColUsage>, --minColUsage <minColUsage>  Minimum included column usage",
 			"-o <outputFile>, --outputFile <outputFile>     Phylogeny output file",
-			"-p <fieldName>, --fieldName <fieldName>        Phylogeny field name",
 			"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory"},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Generate RAxML phylogeny using a nucleotide alignment", 

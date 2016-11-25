@@ -46,7 +46,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 
 	public static final String OUTPUT_FILE = "outputFile";
 	public static final String OUTPUT_FORMAT = "outputFormat";
-	public static final String FIELD_NAME = "fieldName";
 	
 	private String alignmentName;
 	private String acRefName;
@@ -60,9 +59,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	private String outputFile;
 	private PhyloFormat outputFormat;
 	
-	private String fieldName;
-	
-
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
@@ -75,18 +71,14 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		includeAllColumns = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_ALL_COLUMNS, false)).orElse(false);
 		minColUsage = PluginUtils.configureIntProperty(configElem, MIN_COLUMN_USAGE, false);
 
-		outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, false);
-		outputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, OUTPUT_FORMAT, false);
-		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, false);
+		outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
+		outputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, OUTPUT_FORMAT, true);
 
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
 		if(acRefName != null && featureName == null || acRefName == null && featureName != null) {
 			usageError2();
-		}
-		if(outputFile == null && fieldName == null || outputFile != null && fieldName != null) {
-			usageError3();
 		}
 		if(this.minColUsage != null && !this.includeAllColumns) {
 			usageError4();
@@ -102,9 +94,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <acRefName> and <featureName> must be specified or neither");
 	}
-	private void usageError3() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <outputFile> or <fieldName> must be specified, but not both");
-	}
 	private void usageError4() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
 	}
@@ -116,9 +105,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	@Override
 	protected final OkResult execute(CommandContext cmdContext, P modulePlugin) {
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-		if(fieldName != null) {
-			project.checkProperty(ConfigurableTable.alignment.name(), fieldName, FieldType.VARCHAR, true);
-		}
 		
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, true, whereClause);
@@ -126,17 +112,11 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 				null, alignment, almtMembers);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);
-		
-		if(outputFile != null) {
-			// save bytes to file in specified format.
-			ConsoleCommandContext consoleCmdContext = ((ConsoleCommandContext) cmdContext);
-			consoleCmdContext.saveBytes(outputFile, outputFormat.generate(phyloTree));
-		} else {
-			// save string to field in format based on project setting.
-			PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.alignment.name(), 
-					alignment, fieldName, new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(phyloTree)), false);
-		}
-		
+
+		// save bytes to file in specified format.
+		ConsoleCommandContext consoleCmdContext = ((ConsoleCommandContext) cmdContext);
+		consoleCmdContext.saveBytes(outputFile, outputFormat.generate(phyloTree));
+
 		return new OkResult();
 	}
 
@@ -147,17 +127,8 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 
 		public PhylogenyCommandCompleter() {
 			super();
-			registerVariableInstantiator("fieldName", new VariableInstantiator() {
-				@Override
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext,
-						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
-						String prefix) {
-					Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-					List<String> modifiableFieldNames = project.getModifiableFieldNames(ConfigurableTable.alignment.name());
-					return modifiableFieldNames.stream().map(n -> new CompletionSuggestion(n, true)).collect(Collectors.toList());
-				}
-			});
+			registerPathLookup("outputFile", false);
+			registerEnumLookup("outputFormat", PhyloFormat.class);
 		}
 
 	}

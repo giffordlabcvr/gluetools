@@ -15,6 +15,8 @@ import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -177,7 +179,13 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		} else {
 			for(Key key: allColsAlmt.getKeys()) {
 				List<QueryAlignedSegment> qaSegs = allColsAlmt.getSegments(key);
-				minMaxSeg.setRefEnd(Math.max(minMaxSeg.getRefEnd(), ReferenceSegment.maxRefEnd(qaSegs)));
+				Integer prevRefEnd = minMaxSeg.getRefEnd();
+				if(qaSegs.isEmpty()) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "No segments in all columns alignment for key "+key);
+				}
+				Integer qaSegsMaxRefEnd = ReferenceSegment.maxRefEnd(qaSegs);
+				int newRefEnd = Math.max(prevRefEnd, qaSegsMaxRefEnd);
+				minMaxSeg.setRefEnd(newRefEnd);
 			}
 		}
 		// finally copy the query rows of the all-columns alignment into the output map.
