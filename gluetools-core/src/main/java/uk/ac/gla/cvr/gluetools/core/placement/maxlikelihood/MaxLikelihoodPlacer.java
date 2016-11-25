@@ -185,14 +185,14 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				Double pendantLength = getDouble(placement.getFieldValues(), pendantLengthIndex);
 				PhyloBranch jPlacePlacementBranch = labelToJPlaceBranch.get(edgeNum);
 
-				MemberSearchNode nearestMemberNode = findNearestMember(jPlacePlacementBranch, distalLength, pendantLength);
+				MemberSearchNode nearestMemberNode = findNearestMember(jPlacePlacementBranch, new BigDecimal(distalLength), new BigDecimal(pendantLength));
 				PhyloSubtree<?> jPlaceMemberLeaf = nearestMemberNode.phyloSubtree;
 				PhyloLeaf glueAlmtMemberLeaf = (PhyloLeaf) jPlaceMemberLeaf.getUserData().get(PhyloTreeReconciler.GLUE_ALMT_PHYLO_OBJ);
 				PlacementResult placementResult = new PlacementResult();
 				placementResult.setSequenceName(seqName);
 				placementResult.setClosestMemberPkMap(
 						(Map<String, String>) glueAlmtMemberLeaf.getUserData().get(PHYLO_SUBTREE_MEMBER_PK_MAP_KEY));
-				placementResult.setDistanceToClosestMember(nearestMemberNode.totalLength);
+				placementResult.setDistanceToClosestMember(nearestMemberNode.totalLength.doubleValue());
 				
 				PhyloBranch glueAlmtPlacementBranch = (PhyloBranch) jPlacePlacementBranch.getUserData().get(PhyloTreeReconciler.GLUE_ALMT_PHYLO_OBJ);
 				String groupingAlignmentName = findGroupingAlignmentName(glueAlmtPlacementBranch);
@@ -235,15 +235,15 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	}
 
 	private MemberSearchNode findNearestMember(PhyloBranch placementBranch,
-			Double distalLength, Double pendantLength) {
+			BigDecimal distalLength, BigDecimal pendantLength) {
 		LinkedList<MemberSearchNode> nodeQueue = new LinkedList<MemberSearchNode>();
-		Double branchLength = placementBranch.getLength();
+		BigDecimal branchLength = placementBranch.getLength();
 		// The two nodes attached to the placement branch.
 		PhyloInternal towardsRoot = placementBranch.getParentPhyloInternal();
 		PhyloSubtree<?> awayFromRoot = placementBranch.getSubtree();
-		Double towardsRootLength = distalLength + pendantLength;
+		BigDecimal towardsRootLength = distalLength.add(pendantLength);
 		nodeQueue.add(new MemberSearchNode(towardsRootLength, towardsRoot));
-		Double awayFromRootLength = (branchLength - towardsRootLength) + pendantLength;
+		BigDecimal awayFromRootLength = (branchLength.subtract(towardsRootLength)).add(pendantLength);
 		nodeQueue.add(new MemberSearchNode(awayFromRootLength, awayFromRoot));
 		
 		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
@@ -264,13 +264,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				if(parentPhyloBranch != null) {
 					PhyloInternal parentPhyloInternal = parentPhyloBranch.getParentPhyloInternal();
 					if(parentPhyloInternal != null && !visited.contains(parentPhyloInternal)) {
-						Double parentBranchLength = parentPhyloBranch.getLength();
-						nodeQueue.add(new MemberSearchNode(currentNode.totalLength + parentBranchLength, parentPhyloInternal));
+						BigDecimal parentBranchLength = parentPhyloBranch.getLength();
+						nodeQueue.add(new MemberSearchNode(currentNode.totalLength.add(parentBranchLength), parentPhyloInternal));
 					}
 				}
 				for(PhyloBranch childPhyloBranch: currentPhyloInternal.getBranches()) {
-					Double childBranchLength = childPhyloBranch.getLength();
-					nodeQueue.add(new MemberSearchNode(currentNode.totalLength + childBranchLength, childPhyloBranch.getSubtree()));
+					BigDecimal childBranchLength = childPhyloBranch.getLength();
+					nodeQueue.add(new MemberSearchNode(currentNode.totalLength.add(childBranchLength), childPhyloBranch.getSubtree()));
 				}
 			}
 		}
@@ -278,9 +278,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	}
 	
 	private class MemberSearchNode {
-		Double totalLength;
+		BigDecimal totalLength;
 		PhyloSubtree<?> phyloSubtree;
-		public MemberSearchNode(Double totalLength, PhyloSubtree<?> phyloSubtree) {
+		public MemberSearchNode(BigDecimal totalLength, PhyloSubtree<?> phyloSubtree) {
 			super();
 			this.totalLength = totalLength;
 			this.phyloSubtree = phyloSubtree;

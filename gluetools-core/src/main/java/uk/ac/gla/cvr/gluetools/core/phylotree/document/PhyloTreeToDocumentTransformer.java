@@ -26,8 +26,8 @@ public class PhyloTreeToDocumentTransformer implements PhyloTreeVisitor {
 
 	@Override
 	public void preVisitTree(PhyloTree phyloTree) {
-		commandDocument = new CommandDocument("phlyoTree");
-		writeUserData(phyloTree, commandDocument.setObject("userData"));
+		commandDocument = new CommandDocument("phyloTree");
+		writeUserData(phyloTree, commandDocument);
 		commandValueStack.push(commandDocument.setObject("root"));
 	}
 
@@ -68,9 +68,10 @@ public class PhyloTreeToDocumentTransformer implements PhyloTreeVisitor {
 		commandValueStack.pop();
 	}
 
-	private void writeUserData(PhyloObject<?> phyloObject, CommandObject userDataObj) {
+	private void writeUserData(PhyloObject<?> phyloObject, CommandObject parentObj) {
 		Map<String, Object> userData = phyloObject.getUserData();
 		if(userData != null) {
+			CommandObject userDataObj = parentObj.setObject("userData");
 			userData.forEach((k,v) -> {
 				userDataObj.set(k, v);
 			});

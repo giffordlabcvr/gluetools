@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treeRerooter;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -88,7 +89,7 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		PhyloTree phyloTree = loadTree(consoleCmdContext, inputFile, inputFormat);
 		PhyloBranch rerootBranch = null;
-		Double rerootDistance = null;
+		BigDecimal rerootDistance = null;
 		if(outgroup != null) {
 			PhyloLeafFinder phyloLeafFinder = new PhyloLeafFinder(l -> l.getName().equals(outgroup));
 			phyloTree.accept(phyloLeafFinder);
@@ -97,7 +98,7 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaf "+outgroup+" not found in file "+inputFile);
 			}
 			rerootBranch = foundLeaf.getParentPhyloBranch();
-			rerootDistance = rerootBranch.getLength() / 2.0;
+			rerootDistance = rerootBranch.getLength().divide(new BigDecimal(2.0));
 		} else {
 			// midpoint rooting
 			PhyloTreeMidpointFinder midpointFinder = new PhyloTreeMidpointFinder();

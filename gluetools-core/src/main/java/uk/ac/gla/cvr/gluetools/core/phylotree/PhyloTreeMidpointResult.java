@@ -1,12 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.phylotree;
 
+import java.math.BigDecimal;
+
 
 public class PhyloTreeMidpointResult {
 
 	private PhyloBranch branch;
-	private Double rootDistance;
+	private BigDecimal rootDistance;
 	
-	public PhyloTreeMidpointResult(PhyloBranch branch, Double rootDistance) {
+	public PhyloTreeMidpointResult(PhyloBranch branch, BigDecimal rootDistance) {
 		super();
 		this.branch = branch;
 		this.rootDistance = rootDistance;
@@ -15,7 +17,7 @@ public class PhyloTreeMidpointResult {
 	public PhyloBranch getBranch() {
 		return branch;
 	}
-	public Double getRootDistance() {
+	public BigDecimal getRootDistance() {
 		return rootDistance;
 	}
 	

@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.newick;
 
-import java.math.BigDecimal;
-
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -10,8 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 public interface NewickInterpreter extends Plugin {
 
 	/* floating point number associated with branches */
-	public default void parseBranchLength(PhyloBranch phyloBranch, String branchLengthString) {
-		Double branchLength = new BigDecimal(branchLengthString).doubleValue();
+	public default void parseBranchLength(PhyloBranch phyloBranch, String branchLength) {
 		phyloBranch.ensureUserData().put("length", branchLength);
 	}
 

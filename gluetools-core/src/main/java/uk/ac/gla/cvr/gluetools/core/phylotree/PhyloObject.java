@@ -25,7 +25,14 @@ public abstract class PhyloObject<C extends PhyloObject<?>> {
 	public abstract C clone();
 	
 	protected void copyPropertiesTo(C other) {
-		other.setUserData(getUserData());
+		Map<String, Object> userData = getUserData();
+		if(userData != null) {
+			other.setUserData(new LinkedHashMap<String, Object>(userData));
+		}
 	}
 	
+	public String toString() {
+		return this.getClass().getSimpleName()+ensureUserData().toString();
+	}
+
 }

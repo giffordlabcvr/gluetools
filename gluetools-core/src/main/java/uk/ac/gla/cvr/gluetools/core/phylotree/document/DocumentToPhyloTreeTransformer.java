@@ -42,6 +42,7 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 		if(objFieldName.equals("userData")) {
 			currentUserData = currentPhyloObject.ensureUserData();
 		} else if(objFieldName.equals("root")) {
+		} else if(objFieldName.equals("phyloTree")) {
 		} else if(objFieldName.equals("branch")) {
 		} else if(objFieldName.equals("internal")) {
 			PhyloInternal phyloInternal = new PhyloInternal();
@@ -50,6 +51,7 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 			} else if(currentPhyloObject instanceof PhyloBranch) {
 				((PhyloBranch) currentPhyloObject).setSubtree(phyloInternal);
 			}
+			currentPhyloObject = phyloInternal;
 		} else if(objFieldName.equals("leaf")) {
 			PhyloLeaf phyloLeaf = new PhyloLeaf();
 			if(currentPhyloObject instanceof PhyloTree) {
@@ -57,6 +59,7 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 			} else if(currentPhyloObject instanceof PhyloBranch) {
 				((PhyloBranch) currentPhyloObject).setSubtree(phyloLeaf);
 			}
+			currentPhyloObject = phyloLeaf;
 		} else {
 			throw new PhyloDocumentException(Code.UNKNOWN_KEY, objFieldName);
 		}
@@ -67,6 +70,7 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 		if(objFieldName.equals("userData")) {
 			currentUserData = null;
 		} else if(objFieldName.equals("root")) {
+		} else if(objFieldName.equals("phyloTree")) {
 		} else if(objFieldName.equals("branch")) {
 		} else if(objFieldName.equals("internal") || objFieldName.equals("leaf")) {
 			PhyloBranch parentPhyloBranch = ((PhyloSubtree<?>) currentPhyloObject).getParentPhyloBranch();
@@ -84,7 +88,7 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 	public void preVisitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {
 		if(currentUserData != null) {
 			if(commandFieldValue instanceof SimpleCommandValue) {
-				currentUserData.put(objFieldName, ((SimpleCommandValue) commandFieldValue));
+				currentUserData.put(objFieldName, ((SimpleCommandValue) commandFieldValue).getValue());
 			} else {
 				throw new PhyloDocumentException(Code.ILLEGAL_USER_DATA_VALUE, 
 						objFieldName, commandFieldValue.getClass().getSimpleName());

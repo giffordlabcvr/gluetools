@@ -34,10 +34,6 @@ public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObjec
 	
 	public abstract void accept(PhyloTreeVisitor visitor);
 
-	@Override
-	protected void copyPropertiesTo(C other) {
-		super.copyPropertiesTo(other);
-		other.setName(getName());
-	}
 
+	
 }

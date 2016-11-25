@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.phylotree;
 
+import java.math.BigDecimal;
+
 
 public class PhyloBranch extends PhyloObject<PhyloBranch> {
 
@@ -32,12 +34,12 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 		subtree.setParentPhyloBranch(this);
 	}
 	
-	public Double getLength() {
-		return (Double) ensureUserData().get("length");
+	public BigDecimal getLength() {
+		return new BigDecimal((String) ensureUserData().get("length"));
 	}
 
-	public void setLength(Double length) {
-		ensureUserData().put("length", length);
+	public void setLength(BigDecimal length) {
+		ensureUserData().put("length", length.toString());
 	}
 
 	public String getComment() {
@@ -68,9 +70,6 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 	public PhyloBranch clone() {
 		PhyloBranch phyloBranch = new PhyloBranch();
 		copyPropertiesTo(phyloBranch);
-		phyloBranch.setBranchLabel(getBranchLabel());
-		phyloBranch.setComment(getComment());
-		phyloBranch.setLength(getLength());
 		return phyloBranch;
 	}
 

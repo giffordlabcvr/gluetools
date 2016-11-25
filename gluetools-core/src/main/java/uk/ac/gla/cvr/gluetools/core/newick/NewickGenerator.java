@@ -9,11 +9,7 @@ public interface NewickGenerator extends Plugin {
 
 	/* floating point number associated with branches */
 	public default String generateBranchLength(PhyloBranch phyloBranch) {
-		Double branchLength = (Double) phyloBranch.ensureUserData().get("length");
-		if(branchLength != null) {
-			return Double.toString(branchLength);
-		}
-		else return null;
+		return (String) phyloBranch.ensureUserData().get("length");
 	}
 
 	/* main string associated with leaf nodes */

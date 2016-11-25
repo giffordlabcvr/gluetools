@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.phylotree;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,26 +22,24 @@ public class PhyloTreeMidpointFinder {
 		LongestPathFinder longestPathFinder = new LongestPathFinder();
 		longestPathFinder.searchFrom(startNode);
 
-		Double longestPathLength = longestPathFinder.getLongestPathLength();
+		BigDecimal longestPathLength = longestPathFinder.getLongestPathLength();
 		
-		GlueLogger.getGlueLogger().finest("Longest path length: "+Double.toString(longestPathLength));
-		
-		Double midpointPathLength = longestPathLength / 2.0;
+		BigDecimal midpointPathLength = longestPathLength.divide(new BigDecimal(2.0));
 
 		List<PhyloTreeSearchNode> longestPath = longestPathFinder.getLongestPath();
-		Double pathLength = 0.0;
+		BigDecimal pathLength = new BigDecimal(0.0);
 		for(PhyloTreeSearchNode searchNode: longestPath) {
 			PhyloBranch arrivalBranch = searchNode.getArrivalBranch();
 			if(arrivalBranch != null) {
-				Double newPathLength = pathLength + arrivalBranch.getLength();
-				if(pathLength < midpointPathLength) {
-					if(newPathLength >= midpointPathLength) {
-						Double rootDistance = null;
+				BigDecimal newPathLength = pathLength.add(arrivalBranch.getLength());
+				if(pathLength.compareTo(midpointPathLength) < 0) {
+					if(newPathLength.compareTo(midpointPathLength) >= 0) {
+						BigDecimal rootDistance = null;
 						if(searchNode.arrivedFromParent()) {
 							// not actually sure this is reachable, given that we started from root.
-							rootDistance = midpointPathLength - pathLength;
+							rootDistance = midpointPathLength.subtract(pathLength);
 						} else if(searchNode.arrivedFromChild() != null) {
-							rootDistance = newPathLength - midpointPathLength;
+							rootDistance = newPathLength.subtract(midpointPathLength);
 						} else {
 							throw new RuntimeException("Expected arrivedFromParent or arrivedFromChild");
 						}
@@ -54,8 +53,8 @@ public class PhyloTreeMidpointFinder {
 	}
 
 	private static class LongestPathFinder {
-		private Double longestPathLength = null;
-		private Double currentPathLength = 0.0;
+		private BigDecimal longestPathLength = null;
+		private BigDecimal currentPathLength = new BigDecimal(0.0);
 		private LinkedList<PhyloTreeSearchNode> searchStack = new LinkedList<PhyloTreeSearchNode>();
 		private List<PhyloTreeSearchNode> longestPath = null;
 
@@ -63,7 +62,7 @@ public class PhyloTreeMidpointFinder {
 			searchStack.addLast(currentNode);
 			PhyloBranch arrivalBranch = currentNode.getArrivalBranch();
 			if(arrivalBranch != null) {
-				currentPathLength = currentPathLength + arrivalBranch.getLength();
+				currentPathLength = currentPathLength.add(arrivalBranch.getLength());
 			}
 			if(currentNode.getPhyloSubtree() instanceof PhyloLeaf) {
 				if(longestPathLength == null || currentPathLength.compareTo(longestPathLength) > 0) {
@@ -75,11 +74,11 @@ public class PhyloTreeMidpointFinder {
 				searchFrom(nextNode);
 			}
 			if(arrivalBranch != null) {
-				currentPathLength = currentPathLength - arrivalBranch.getLength();
+				currentPathLength = currentPathLength.subtract(arrivalBranch.getLength());
 			}
 			searchStack.removeLast();
 		}
-		public Double getLongestPathLength() {
+		public BigDecimal getLongestPathLength() {
 			return longestPathLength;
 		}
 		public List<PhyloTreeSearchNode> getLongestPath() {
@@ -91,8 +90,8 @@ public class PhyloTreeMidpointFinder {
 	private static class FurthestFromRootFinder implements PhyloTreeVisitor {
 		private PhyloLeaf furthestFromRoot;
 		private LinkedList<PhyloBranch> branchStack = new LinkedList<PhyloBranch>();
-		private Double furthestDistanceFromRoot = 0.0;
-		private Double distanceFromRoot = 0.0;
+		private BigDecimal furthestDistanceFromRoot = new BigDecimal(0.0);
+		private BigDecimal distanceFromRoot = new BigDecimal(0.0);
 		
 		public PhyloLeaf getFurthestFromRoot() {
 			return furthestFromRoot;
@@ -107,19 +106,19 @@ public class PhyloTreeMidpointFinder {
 		@Override
 		public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 			branchStack.push(phyloBranch);
-			distanceFromRoot = distanceFromRoot + phyloBranch.getLength();
+			distanceFromRoot = distanceFromRoot.add(phyloBranch.getLength());
 		}
 		@Override
 		public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 			branchStack.pop();
-			distanceFromRoot = distanceFromRoot + phyloBranch.getLength();
+			distanceFromRoot = distanceFromRoot.subtract(phyloBranch.getLength());
 		}
 	}
 	
-	private static PhyloLeaf findLeaf(PhyloTree tree, String name) {
-		PhyloLeafFinder phyloLeafFinder = new PhyloLeafFinder(l -> l.getName().equals(name));
-		tree.accept(phyloLeafFinder);
-		return phyloLeafFinder.getPhyloLeaf();
+	private static PhyloSubtree<?> findSubtree(PhyloTree tree, String name) {
+		PhyloSubtreeFinder phyloSubtreeFinder = new PhyloSubtreeFinder(l -> name.equals(l.getName()));
+		tree.accept(phyloSubtreeFinder);
+		return phyloSubtreeFinder.getPhyloSubtree();
 	}
 
 	private static void test(String testName, PhyloTree tree, PhyloBranch expectedBranch, double rootDistance) {
@@ -129,8 +128,9 @@ public class PhyloTreeMidpointFinder {
 			System.out.println(testName+": incorrect midpoint branch");
 			return;
 		} 
-		if(result.getRootDistance().doubleValue() != rootDistance) {
-			System.out.println(testName+": incorrect rootDistance");
+		double actualRootDistance = result.getRootDistance().doubleValue();
+		if(actualRootDistance != rootDistance) {
+			System.out.println(testName+": incorrect rootDistance: expected "+rootDistance+", actual "+actualRootDistance);
 			return;
 		} 
 		System.out.println("Correct: "+testName);
@@ -142,20 +142,20 @@ public class PhyloTreeMidpointFinder {
 		 * tree1
 		 *              +---5---C
 		 *              |
-		 *      +---3---+
+		 *      +---3---B
 		 *      |       |
 		 *      |       +---2---D
-		 *      + 
+		 *      A 
 		 *      |       +---5---E
 		 *      |       |
-		 *      +---2---+
+		 *      +---2---F
 		 *              |
 		 *              +---3---G
 		 *      
 		 */      
-		PhyloTree tree1 = parser.parseNewick("((C:5,D:2):3,(E:5,G:3):2);");
+		PhyloTree tree1 = parser.parseNewick("((C:5,D:2)B:3,(E:5,G:3)F:2)A;");
 		PhyloBranch midpointBranch1 = 
-				findLeaf(tree1, "C").getParentPhyloBranch().getParentPhyloInternal().getParentPhyloBranch();
+				findSubtree(tree1, "B").getParentPhyloBranch();
 		test("tree1", tree1, midpointBranch1, 0.5);
 		/*
 		 * tree2
@@ -174,7 +174,7 @@ public class PhyloTreeMidpointFinder {
 		 */      
 		PhyloTree tree2 = parser.parseNewick("((C:5,D:2):3,(E:5,G:3):5);");
 		PhyloBranch midpointBranch2 = 
-				findLeaf(tree2, "E").getParentPhyloBranch().getParentPhyloInternal().getParentPhyloBranch();
+				findSubtree(tree2, "E").getParentPhyloBranch().getParentPhyloInternal().getParentPhyloBranch();
 		test("tree2", tree2, midpointBranch2, 1.0);
 		/*
 		 * tree3
@@ -193,7 +193,7 @@ public class PhyloTreeMidpointFinder {
 		 */      
 		PhyloTree tree3 = parser.parseNewick("((C:5,D:2):3,(E:20,G:3):5);");
 		PhyloBranch midpointBranch3 = 
-				findLeaf(tree3, "E").getParentPhyloBranch();
+				findSubtree(tree3, "E").getParentPhyloBranch();
 		test("tree3", tree3, midpointBranch3, 3.5);
 		/*
 		 * tree4
@@ -212,7 +212,7 @@ public class PhyloTreeMidpointFinder {
 		 */      
 		PhyloTree tree4 = parser.parseNewick("((C:5,D:2):3,(E:20,G:25):5);");
 		PhyloBranch midpointBranch4 = 
-				findLeaf(tree4, "G").getParentPhyloBranch();
+				findSubtree(tree4, "G").getParentPhyloBranch();
 		test("tree4", tree4, midpointBranch4, 2.5);
 	}
 

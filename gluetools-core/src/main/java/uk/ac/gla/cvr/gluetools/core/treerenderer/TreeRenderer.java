@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -153,7 +154,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		if(almtBranchLengthProperty != null) {
 			Double almtBranchLength = (Double) alignment.readProperty(almtBranchLengthProperty);
 			if(almtBranchLength != null) {
-				almtPhyloBranch.setLength(almtBranchLength);
+				almtPhyloBranch.setLength(new BigDecimal(almtBranchLength));
 			}
 		}
 		return almtPhyloBranch;
@@ -170,7 +171,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		if(memberBranchLengthProperty != null) {
 			Double memberBranchLength = (Double) member.readProperty(memberBranchLengthProperty);
 			if(memberBranchLength != null) {
-				memberPhyloBranch.setLength(memberBranchLength);
+				memberPhyloBranch.setLength(new BigDecimal(memberBranchLength));
 			}
 		}
 		return memberPhyloBranch;
