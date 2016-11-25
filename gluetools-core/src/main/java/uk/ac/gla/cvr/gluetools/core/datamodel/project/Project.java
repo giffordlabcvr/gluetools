@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Project;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.Keyword;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.PkPath;
@@ -342,6 +342,27 @@ public class Project extends _Project {
 
 	public static Map<String, String> targetPathToPkMap(ConfigurableTable configurableTable, String targetPath) {
 		return targetPathToPkMap(configurableTable.name(), configurableTable.getModePath(), targetPath);
+	}
+	
+	
+	public static boolean validTargetPath(ModePathElement[] modePath, String targetPath) {
+		String[] bits = targetPath.split("/");
+		if(bits.length == modePath.length) {
+			for(int i = 0; i < modePath.length; i++) {
+				if(modePath[i] instanceof Keyword) {
+					Keyword keyword = (Keyword) modePath[i];
+					if(!bits[i].equals(keyword.getKeyword())) {
+						return false;
+					}
+				} else if(modePath[i] instanceof PkPath) {
+					continue;
+				} else {
+					throw new RuntimeException("Unknown type of ModePathElement "+modePath[i]);
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	private static Map<String, String> targetPathToPkMap(String tableName,

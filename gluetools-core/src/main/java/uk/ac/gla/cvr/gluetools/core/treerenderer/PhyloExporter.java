@@ -12,20 +12,25 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRendererException.Code;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporterException.Code;
 
-@PluginClass(elemName="treeRenderer")
-public class TreeRenderer extends ModulePlugin<TreeRenderer> {
+@PluginClass(elemName="phyloExporter")
+public class PhyloExporter extends ModulePlugin<PhyloExporter> {
 
 	public static final String ALMT_BRANCH_LENGTH_PROPERTY = "almtBranchLengthProperty";
 	public static final String MEMBER_BRANCH_LENGTH_PROPERTY = "memberBranchLengthProperty";
@@ -37,7 +42,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 	public static final String DEFAULT_ALIGNMENT_NAME_TEMPLATE = "alignment/${name}";
 	public static final String DEFAULT_MEMBER_NAME_TEMPLATE = "member/${sequence.source.name}/${sequence.sequenceID}";
 
-	public TreeRenderer() {
+	public PhyloExporter() {
 		super();
 		addSimplePropertyName(ALMT_BRANCH_LENGTH_PROPERTY);
 		addSimplePropertyName(MEMBER_BRANCH_LENGTH_PROPERTY);
@@ -45,7 +50,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		addSimplePropertyName(MEMBER_NAME_TEMPLATE);
 		addSimplePropertyName(FORCE_BIFURCATING);
 		addSimplePropertyName(OMIT_SINGLE_CHILD_INTERNALS);
-		addModulePluginCmdClass(RenderTreeNewickCommand.class);
+		addModulePluginCmdClass(ExportPhylogenyCommand.class);
 	}
 	
 	private TreeRendererContext treeRendererContext = new TreeRendererContext();
@@ -85,7 +90,7 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 				.add(almtMember);
 		});
 		if(emptyAlignment(almtNameToMembers, alignment)) {
-			throw new TreeRendererException(Code.ALIGNMENT_HAS_NO_MEMBERS_OR_CHILDREN, alignment.getName());
+			throw new PhyloExporterException(Code.ALIGNMENT_HAS_NO_MEMBERS_OR_CHILDREN, alignment.getName());
 		}
 		PhyloTree phyloTree = new PhyloTree();
 		phyloTree.setRoot(buildAlmtPhyloSubtree(cmdContext, alignment, almtNameToMembers, treeRendererContext));
@@ -177,5 +182,35 @@ public class TreeRenderer extends ModulePlugin<TreeRenderer> {
 		return memberPhyloBranch;
 	}
 
+	public static PhyloTree exportAlignmentPhyloTree(CommandContext cmdContext, Alignment alignment, String fieldName, Boolean recursive) {
+		String phyloTreeString = (String) alignment.readProperty(fieldName);
+		PhyloFormat phyloFormat = Alignment.getPhylogenyPhyloFormat(cmdContext);
+		PhyloTree localPhyloTree = phyloFormat.parse(phyloTreeString.getBytes());
+		if(recursive) {
+			localPhyloTree.accept(new PhyloTreeVisitor() {
+				@Override
+				public void visitLeaf(PhyloLeaf phyloLeaf) {
+					String leafName = phyloLeaf.getName();
+					if(Project.validTargetPath(ConfigurableTable.alignment.getModePath(), leafName)) {
+						Map<String, String> alignmentPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment, leafName);
+						Alignment childAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, alignmentPkMap);
+						if(!childAlignment.getParent().getName().equals(alignment.getName())) {
+							throw new PhyloExporterException(Code.PHYLOGENY_REFERENCES_NON_CHILD_ALIGNMENT, alignment.getName(), fieldName, childAlignment.getName());
+						}
+						PhyloTree childPhyloTree = exportAlignmentPhyloTree(cmdContext, childAlignment, fieldName, true);
+						PhyloSubtree<?> childRootSubtree = childPhyloTree.getRoot();
+						childPhyloTree.setRoot(null);
+						PhyloBranch parentPhyloBranch = phyloLeaf.getParentPhyloBranch();
+						if(parentPhyloBranch != null) {
+							parentPhyloBranch.setSubtree(childRootSubtree);
+						} else {
+							localPhyloTree.setRoot(childRootSubtree);
+						}
+					}
+				}
+			});
+		}
+		return localPhyloTree;
+	}
 	
 }

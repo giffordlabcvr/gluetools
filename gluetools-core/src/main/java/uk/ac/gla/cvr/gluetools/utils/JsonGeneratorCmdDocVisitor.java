@@ -57,9 +57,7 @@ public class JsonGeneratorCmdDocVisitor implements CommandDocumentVisitor {
 	
 	@Override
 	public void postVisitCommandFieldValue(String fieldName, CommandFieldValue commandFieldValue) {
-		if(commandFieldValue instanceof SimpleCommandValue) {
-			writeSimpleValueToObject(fieldName, (SimpleCommandValue) commandFieldValue);
-		} else if(commandFieldValue instanceof CommandObject) {
+		if(commandFieldValue instanceof CommandObject) {
 			jsonGenerator.writeEnd();
 		} 
 	}

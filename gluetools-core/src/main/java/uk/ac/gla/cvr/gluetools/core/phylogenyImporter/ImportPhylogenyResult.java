@@ -3,9 +3,9 @@ package uk.ac.gla.cvr.gluetools.core.phylogenyImporter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter.AlignmentPhylogeny;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter.AlignmentPhylogeny;
 
-public class ImportPhylogenyResult extends BaseTableResult<PhylogenyImporter.AlignmentPhylogeny> {
+public class ImportPhylogenyResult extends BaseTableResult<PhyloImporter.AlignmentPhylogeny> {
 
 	public ImportPhylogenyResult(List<AlignmentPhylogeny> alignmentPhylogenies) {
 		super("importPhylogenyResult", alignmentPhylogenies, 

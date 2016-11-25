@@ -51,12 +51,9 @@ import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.Field;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
@@ -64,10 +61,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link.Multiplicity;
 import uk.ac.gla.cvr.gluetools.core.datamodel.meta.SchemaVersion;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.PkField;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceLocator;
 import uk.ac.gla.cvr.gluetools.core.resource.GlueResourceMap;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
@@ -88,62 +81,6 @@ public class ModelBuilder {
 
 	private static String CAYENNE_NS = "http://cayenne.apache.org/schema/3.0/modelMap";
 	
-	// tables within a project where fields can be added / deleted.
-	public enum ConfigurableTable { 
-		sequence(Sequence.class, 
-				keyword("sequence"), 
-				pkPath(Sequence.SOURCE_NAME_PATH), 
-				pkPath(Sequence.SEQUENCE_ID_PROPERTY)),
-		variation(Variation.class, 
-				keyword("reference"), 
-				pkPath(Variation.REF_SEQ_NAME_PATH), 
-				keyword("feature-location"), 
-				pkPath(Variation.FEATURE_NAME_PATH), 
-				keyword("variation"), 
-				pkPath(Variation.NAME_PROPERTY)),
-		feature(Feature.class, 
-				keyword("feature"), 
-				pkPath(Feature.NAME_PROPERTY)),
-		alignment(Alignment.class, 
-				keyword("alignment"), 
-				pkPath(Alignment.NAME_PROPERTY)),
-		reference(ReferenceSequence.class, 
-				keyword("reference"), 
-				pkPath(ReferenceSequence.NAME_PROPERTY)),
-		alignment_member(AlignmentMember.class, 
-				keyword("alignment"), 
-				pkPath(AlignmentMember.ALIGNMENT_NAME_PATH), 
-				keyword("member"), 
-				pkPath(AlignmentMember.SOURCE_NAME_PATH),
-				pkPath(AlignmentMember.SEQUENCE_ID_PATH)),
-		var_almt_note(VarAlmtNote.class, 
-				keyword("reference"), 
-				pkPath(VarAlmtNote.REF_SEQ_NAME_PATH), 
-				keyword("feature-location"), 
-				pkPath(VarAlmtNote.FEATURE_NAME_PATH), 
-				keyword("variation"), 
-				pkPath(VarAlmtNote.VARIATION_NAME_PATH),
-				keyword("var-almt-note"), 
-				pkPath(VarAlmtNote.ALIGNMENT_NAME_PATH));
-		
-		private Class<? extends GlueDataObject> dataObjectClass;
-		private ModePathElement[] modePath;
-
-		private ConfigurableTable(Class <? extends GlueDataObject> dataObjectClass, ModePathElement ... modePath) {
-			this.dataObjectClass = dataObjectClass;
-			this.modePath = modePath;
-		}
-
-		public Class<? extends GlueDataObject> getDataObjectClass() {
-			return dataObjectClass;
-		}
-		
-		public ModePathElement[] getModePath() {
-			return modePath;
-		}
-		
-	};
-	
 	public static abstract class ModePathElement {
 
 		public abstract String correctForm();
@@ -162,7 +99,7 @@ public class ModelBuilder {
 			return keyword;
 		}
 	}
-	private static Keyword keyword(String keyword) { return new Keyword(keyword); }
+	static Keyword keyword(String keyword) { return new Keyword(keyword); }
 	public static class PkPath extends ModePathElement {
 		private String pkPath;
 		public PkPath(String pkPath) {
@@ -177,7 +114,7 @@ public class ModelBuilder {
 			return "<"+pkPath+">";
 		}
 	}
-	private static PkPath pkPath(String pkPath) { return new PkPath(pkPath); }
+	static PkPath pkPath(String pkPath) { return new PkPath(pkPath); }
 	
 	
 	public static final String configurableTablesString = "[sequence, variation, feature, alignment, reference, alignment_member, var_almt_note]";

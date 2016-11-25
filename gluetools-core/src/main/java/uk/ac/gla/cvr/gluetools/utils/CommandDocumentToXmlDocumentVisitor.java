@@ -16,7 +16,7 @@ public class CommandDocumentToXmlDocumentVisitor implements CommandDocumentVisit
 
 	private Document document;
 	private Element currentParentElem;
-	
+
 	public CommandDocumentToXmlDocumentVisitor() {
 		this.document = GlueXmlUtils.newDocument();
 	}

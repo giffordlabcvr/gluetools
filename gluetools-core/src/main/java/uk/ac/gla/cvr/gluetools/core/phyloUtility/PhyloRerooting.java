@@ -1,9 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.treeRerooter;
+package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
@@ -11,71 +10,9 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtreeFinder;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="treeRerooter")
-public class TreeRerooter extends ModulePlugin<TreeRerooter> {
+public class PhyloRerooting {
 
-	public TreeRerooter() {
-		super();
-		addModulePluginCmdClass(RerootTreeCommand.class);
-	}
-
-	public PhyloTree rerootTree(PhyloBranch branchWithRootPoint, BigDecimal rootPointDistance) {
-		if(rootPointDistance.compareTo(new BigDecimal(0.0)) < 0
-				|| rootPointDistance.compareTo(branchWithRootPoint.getLength()) > 0) {
-			throw new RuntimeException("Illegal root point distance");
-		}
-		PhyloTree rerootedTree = branchWithRootPoint.getTree().clone();
-		PhyloInternal rerootedInternal = new PhyloInternal();
-		rerootedTree.setRoot(rerootedInternal);
-		
-		LinkedList<RerootTask<?>> taskQueue = new LinkedList<RerootTask<?>>();
-		
-		PhyloBranch cloneOfBranchToChild = branchWithRootPoint.clone();
-		cloneOfBranchToChild.setLength(branchWithRootPoint.getLength().subtract(rootPointDistance));
-		rerootedInternal.addBranch(cloneOfBranchToChild);
-
-		PhyloBranch cloneOfBranchToParent = branchWithRootPoint.clone();
-		cloneOfBranchToParent.setLength(rootPointDistance);
-		rerootedInternal.addBranch(cloneOfBranchToParent);
-		
-		
-		addSubtreeToTaskQueue(branchWithRootPoint.getSubtree(), new FromParentRerootDirection(), 
-				cloneOfBranchToChild, taskQueue);
-		addSubtreeToTaskQueue(branchWithRootPoint.getParentPhyloInternal(), new FromChildRerootDirection(branchWithRootPoint.getChildBranchIndex()), 
-				cloneOfBranchToParent, taskQueue);
-		
-		while(!taskQueue.isEmpty()) {
-			
-			RerootTask<?> rerootTask = taskQueue.pop();
-			rerootTask.rerootDirection.processTask(rerootTask, taskQueue);
-			
-		}
-		return rerootedTree;
-	}
-
-	private abstract static class RerootDirection {
-		public abstract <D extends PhyloSubtree<?>> void processTask(RerootTask<D> rerootTask, LinkedList<RerootTask<?>> taskQueue);
-	}
-	@SuppressWarnings("unchecked")
-	private static class FromParentRerootDirection extends RerootDirection {
-		@Override
-		public <D extends PhyloSubtree<?>> void processTask(RerootTask<D> rerootTask, LinkedList<RerootTask<?>> taskQueue) {
-			D clonedSubtree = (D) rerootTask.originalSubtree.clone();
-			rerootTask.clonedBranch.setSubtree(clonedSubtree);
-			if(clonedSubtree instanceof PhyloInternal) {
-				PhyloInternal originalInternal = (PhyloInternal) rerootTask.originalSubtree;
-				PhyloInternal clonedInternal = (PhyloInternal) clonedSubtree;
-				for(PhyloBranch originalChildBranch : originalInternal.getBranches()) {
-					PhyloBranch clonedChildBranch  = originalChildBranch.clone();
-					clonedInternal.addBranch(clonedChildBranch);
-					addSubtreeToTaskQueue(originalChildBranch.getSubtree(), new FromParentRerootDirection(), clonedChildBranch, taskQueue);
-				}
-			}
-		}
-		
-	}
 	@SuppressWarnings("unchecked")
 	private static class FromChildRerootDirection extends RerootDirection {
 		private int rerootBranchIndex;
@@ -137,6 +74,35 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 	}
 
 	@SuppressWarnings("unchecked")
+	private static class FromParentRerootDirection extends RerootDirection {
+		@Override
+		public <D extends PhyloSubtree<?>> void processTask(RerootTask<D> rerootTask, LinkedList<RerootTask<?>> taskQueue) {
+			D clonedSubtree = (D) rerootTask.originalSubtree.clone();
+			rerootTask.clonedBranch.setSubtree(clonedSubtree);
+			if(clonedSubtree instanceof PhyloInternal) {
+				PhyloInternal originalInternal = (PhyloInternal) rerootTask.originalSubtree;
+				PhyloInternal clonedInternal = (PhyloInternal) clonedSubtree;
+				for(PhyloBranch originalChildBranch : originalInternal.getBranches()) {
+					PhyloBranch clonedChildBranch  = originalChildBranch.clone();
+					clonedInternal.addBranch(clonedChildBranch);
+					addSubtreeToTaskQueue(originalChildBranch.getSubtree(), new FromParentRerootDirection(), clonedChildBranch, taskQueue);
+				}
+			}
+		}
+		
+	}
+
+	private abstract static class RerootDirection {
+		public abstract <D extends PhyloSubtree<?>> void processTask(RerootTask<D> rerootTask, LinkedList<RerootTask<?>> taskQueue);
+	}
+
+	private static class RerootTask<D extends PhyloSubtree<?>> {
+		RerootDirection rerootDirection;
+		D originalSubtree; 
+		PhyloBranch clonedBranch; 
+	}
+
+	@SuppressWarnings("unchecked")
 	private static <D extends PhyloSubtree<?>> void addSubtreeToTaskQueue(D originalSubtree, RerootDirection rerootDirection, 
 			PhyloBranch clonedBranch, LinkedList<RerootTask<?>> taskQueue) {
 		RerootTask<D> rerootTask = new RerootTask<D>();
@@ -144,24 +110,6 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		rerootTask.clonedBranch = clonedBranch;
 		rerootTask.rerootDirection = rerootDirection;
 		taskQueue.add(rerootTask);
-	}
-	
-	private static class RerootTask<D extends PhyloSubtree<?>> {
-		RerootDirection rerootDirection;
-		D originalSubtree; 
-		PhyloBranch clonedBranch; 
-	}
-	
-	private static PhyloSubtree<?> findSubtree(PhyloTree tree, String name) {
-		PhyloSubtreeFinder phyloSubtreeFinder = new PhyloSubtreeFinder(l -> name.equals(l.getName()));
-		tree.accept(phyloSubtreeFinder);
-		return phyloSubtreeFinder.getPhyloSubtree();
-	}
-
-	private static String treeToString(PhyloTree tree) {
-		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
-		tree.accept(newickPhyloTreeVisitor);
-		return newickPhyloTreeVisitor.getNewickString();
 	}
 
 	private static void check(String expected, String actual) {
@@ -171,9 +119,15 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 			System.out.println("Test failure, expected: "+expected+", actual: "+actual);
 		}
 	}
-	
+
+	private static PhyloSubtree<?> findSubtree(PhyloTree tree, String name) {
+		PhyloSubtreeFinder phyloSubtreeFinder = new PhyloSubtreeFinder(l -> name.equals(l.getName()));
+		tree.accept(phyloSubtreeFinder);
+		return phyloSubtreeFinder.getPhyloSubtree();
+	}
+
 	public static void main(String[] args) {
-		TreeRerooter treeRerooter = new TreeRerooter();
+		PhyloUtility treeRerooter = new PhyloUtility();
 		NewickToPhyloTreeParser parser = new NewickToPhyloTreeParser();
 		/*
 		 *              +-2-X-2-C
@@ -196,7 +150,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 * (C:2,(D:2,(E:5,G:3)F:5)B:2);
 		 */
 		PhyloBranch case1RerootBranch = findSubtree(startTree, "C").getParentPhyloBranch();
-		PhyloTree case1Tree = treeRerooter.rerootTree(case1RerootBranch, new BigDecimal(2.0));
+		PhyloTree case1Tree = treeRerooter.rerootPhylogeny(case1RerootBranch, new BigDecimal(2.0));
 		check("(C:2,(D:2,(E:5,G:3)F:5)B:2);", treeToString(case1Tree));
 		/* 
 		 * Case 2: Rerooting at point Y should produce
@@ -205,7 +159,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 */
 		PhyloBranch case2RerootBranch = findSubtree(startTree, "C").getParentPhyloBranch()
 					.getParentPhyloInternal().getParentPhyloBranch();
-		PhyloTree case2Tree = treeRerooter.rerootTree(case2RerootBranch, new BigDecimal(2.0));
+		PhyloTree case2Tree = treeRerooter.rerootPhylogeny(case2RerootBranch, new BigDecimal(2.0));
 		check("((C:4,D:2)B:1,(E:5,G:3)F:4);", treeToString(case2Tree));
 		/*
 		 * Case 3: Rerooting at point Z should produce
@@ -213,7 +167,7 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 * (E:4,(G:3,(C:4,D:2)B:5)F:1);
 		 */
 		PhyloBranch case3RerootBranch = findSubtree(startTree, "E").getParentPhyloBranch();
-		PhyloTree case3Tree = treeRerooter.rerootTree(case3RerootBranch, new BigDecimal(1.0));
+		PhyloTree case3Tree = treeRerooter.rerootPhylogeny(case3RerootBranch, new BigDecimal(1.0));
 		check("(E:4,(G:3,(C:4,D:2)B:5)F:1);", treeToString(case3Tree));
 		/*
 		 * Case where there is a polytomy at the root.
@@ -240,9 +194,49 @@ public class TreeRerooter extends ModulePlugin<TreeRerooter> {
 		 */
 		PhyloBranch polytomyCase1RerootBranch = findSubtree(polytomyStartTree, "E").getParentPhyloBranch()
 				.getParentPhyloInternal().getParentPhyloBranch();
-		PhyloTree polytomyCase1Tree = treeRerooter.rerootTree(polytomyCase1RerootBranch, new BigDecimal(1.0));
+		PhyloTree polytomyCase1Tree = treeRerooter.rerootPhylogeny(polytomyCase1RerootBranch, new BigDecimal(1.0));
 		check("((E:5,G:3):1,((C:4,D:2):3,F:10):1);", treeToString(polytomyCase1Tree));
 		
 	}
+
+	public static PhyloTree rerootPhylogeny(PhyloBranch branchWithRootPoint, BigDecimal rootPointDistance) {
+		if(rootPointDistance.compareTo(new BigDecimal(0.0)) < 0
+				|| rootPointDistance.compareTo(branchWithRootPoint.getLength()) > 0) {
+			throw new RuntimeException("Illegal root point distance");
+		}
+		PhyloTree rerootedTree = branchWithRootPoint.getTree().clone();
+		PhyloInternal rerootedInternal = new PhyloInternal();
+		rerootedTree.setRoot(rerootedInternal);
+		
+		LinkedList<RerootTask<?>> taskQueue = new LinkedList<RerootTask<?>>();
+		
+		PhyloBranch cloneOfBranchToChild = branchWithRootPoint.clone();
+		cloneOfBranchToChild.setLength(branchWithRootPoint.getLength().subtract(rootPointDistance));
+		rerootedInternal.addBranch(cloneOfBranchToChild);
 	
+		PhyloBranch cloneOfBranchToParent = branchWithRootPoint.clone();
+		cloneOfBranchToParent.setLength(rootPointDistance);
+		rerootedInternal.addBranch(cloneOfBranchToParent);
+		
+		
+		addSubtreeToTaskQueue(branchWithRootPoint.getSubtree(), new FromParentRerootDirection(), 
+				cloneOfBranchToChild, taskQueue);
+		addSubtreeToTaskQueue(branchWithRootPoint.getParentPhyloInternal(), new FromChildRerootDirection(branchWithRootPoint.getChildBranchIndex()), 
+				cloneOfBranchToParent, taskQueue);
+		
+		while(!taskQueue.isEmpty()) {
+			
+			RerootTask<?> rerootTask = taskQueue.pop();
+			rerootTask.rerootDirection.processTask(rerootTask, taskQueue);
+			
+		}
+		return rerootedTree;
+	}
+
+	private static String treeToString(PhyloTree tree) {
+		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
+		tree.accept(newickPhyloTreeVisitor);
+		return newickPhyloTreeVisitor.getNewickString();
+	}
+
 }

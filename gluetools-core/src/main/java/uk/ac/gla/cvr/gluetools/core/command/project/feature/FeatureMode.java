@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjec
 import uk.ac.gla.cvr.gluetools.core.command.project.FeatureCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 

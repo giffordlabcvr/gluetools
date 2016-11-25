@@ -22,9 +22,9 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
-import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter.AlignmentPhylogeny;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter.AlignmentPhylogeny;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
-		description = "Import a phylogenetic file from a tree", 
+		description = "Import a phylogeny into the alignment tree", 
 		docoptUsages={"<alignmentName> [-c] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
@@ -42,13 +42,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-f <fieldName>, --fieldName <fieldName>        Phylogeny field name",
 			"-p, --preview                                  Preview only"},
 		metaTags = {CmdMeta.consoleOnly}, 
-		furtherHelp = "Imports a phylogenetic tree from a Newick file, and breaks it up in order to annotate \n"+
+		furtherHelp = "Imports a phylogenetic tree from a file, and breaks it up in order to annotate \n"+
 		"the alignment tree, by populating field <fieldName> of alignment objects. \n"+
 		"The alignment members selected by the <alignmentName>, --recursive and <whereClause>/--allMembers options \n"+
 		"must exactly match the leaf nodes of the imported tree. \n"+
 		"The gross structure of the imported tree must match the structure of the alignment tree."
 )
-public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyResult, PhylogenyImporter>{
+public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyResult, PhyloImporter>{
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String RECURSIVE = "recursive";
@@ -101,7 +101,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	}
 
 	@Override
-	protected ImportPhylogenyResult execute(CommandContext cmdContext, PhylogenyImporter phylogenyImporter) {
+	protected ImportPhylogenyResult execute(CommandContext cmdContext, PhyloImporter phylogenyImporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
 		
@@ -113,9 +113,10 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 				// save string to field in format based on project setting.
 				PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.alignment.name(), 
 						almtPhylogeny.getAlignment(), fieldName, 
-						new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(almtPhylogeny.getPhyloTree())), false);
+						new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(almtPhylogeny.getPhyloTree())), true);
 				
 			}
+			cmdContext.commit();
 		}
 		return new ImportPhylogenyResult(almtPhylogenies);
 	}

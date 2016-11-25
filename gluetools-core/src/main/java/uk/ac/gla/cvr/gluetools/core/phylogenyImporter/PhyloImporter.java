@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -20,10 +19,9 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMembe
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.core.newick.PhyloNewickUtils;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -32,10 +30,10 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="phylogenyImporter")
-public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
+@PluginClass(elemName="phyloImporter")
+public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 
-	public PhylogenyImporter() {
+	public PhyloImporter() {
 		super();
 		addModulePluginCmdClass(ImportPhylogenyCommand.class);
 	}
@@ -113,19 +111,19 @@ public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
 	}
 	
 	private AlignmentPhylogeny createAlignmentPhylogeny(PhyloTree importedTree, AlignmentData almtData) {
-		log(Level.FINE, "Creating phylogeny for alignment "+almtData.alignment.getName());
+		// log(Level.FINE, "Creating phylogeny for alignment "+almtData.alignment.getName());
 		PhyloTree phyloTree = importedTree.clone();
 		AlignmentPhylogeny alignmentPhylogeny = new AlignmentPhylogeny();
 		alignmentPhylogeny.setAlignment(almtData.alignment);
 		alignmentPhylogeny.setPhyloTree(phyloTree);
 		phyloTree.setRoot(cloneCladeSubtree(almtData.cladeSubtree, almtData, alignmentPhylogeny));
-		log(Level.FINE, "Phylogeny for alignment "+almtData.alignment.getName()+":\n"+
-				PhyloNewickUtils.phyloTreeToNewick(phyloTree));
+		// log(Level.FINE, "Phylogeny for alignment "+almtData.alignment.getName()+":\n"+
+		// new String(PhyloFormat.GLUE_JSON.generate(phyloTree));
 		return alignmentPhylogeny;
 	}
 
 	private PhyloSubtree<?> cloneCladeSubtree(PhyloSubtree<?> cladeSubtree, AlignmentData almtData, AlignmentPhylogeny alignmentPhylogeny) {
-		log(Level.FINEST, "Cloning subtree "+cladeSubtree.toString());
+		// log(Level.FINEST, "Cloning subtree "+cladeSubtree.toString());
 		Map<String,String> childAlmtPkMap = almtData.subtreeToChildAlmtPkMap.get(cladeSubtree);
 		if(childAlmtPkMap != null) {
 			PhyloLeaf pointerLeaf = new PhyloLeaf();
@@ -193,7 +191,7 @@ public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
 	}
 	
 	private PhyloSubtree<?> findCladeSubtree(AlignmentData almtData) {
-		log(Level.FINE, "Finding clade subtree for alignment "+almtData.alignment.getName());
+		// log(Level.FINE, "Finding clade subtree for alignment "+almtData.alignment.getName());
 		// initialise the set of required leaf / internal nodes
 		// we will remove items from this set as we ecounter ancestor nodes including them
 		Set<PhyloSubtree<?>> requiredSubtrees = new LinkedHashSet<PhyloSubtree<?>>(almtData.subtreeToChildAlmtPkMap.keySet());
@@ -205,12 +203,12 @@ public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
 		// walk up the tree from the start point until all requiredSubtrees are accounted for.
 		while(!requiredSubtrees.isEmpty()) {
 			if(currentSubtree instanceof PhyloLeaf) {
-				log(Level.FINEST, "Found required leaf "+((PhyloLeaf) currentSubtree).getName());
+				// log(Level.FINEST, "Found required leaf "+((PhyloLeaf) currentSubtree).getName());
 				requiredSubtrees.remove(currentSubtree);
-				log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
+				// log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
 			} else if(requiredSubtrees.remove(currentSubtree)) {
-				log(Level.FINEST, "Found required internal");
-				log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
+				// log(Level.FINEST, "Found required internal");
+				// log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
 			} else if(!processSubtree(previousSubtree, (PhyloInternal) currentSubtree, requiredSubtrees)) {
 				// below currentSubtree we found a leaf which is 
 				// (a) not in the required set (b) not descended from any required internal node.
@@ -233,10 +231,10 @@ public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
 					ImportPhylogenyException.Code.PHYLOGENY_INCONSISTENT, "No subtree contains correct descendents for "+almtData.alignment.getName());
 		}
 		if(currentSubtree instanceof PhyloLeaf) {
-			log(Level.FINE, "Clade subtree for alignment "+almtData.alignment.getName()+" was leaf "+
-					((PhyloLeaf) currentSubtree).getName());
+			// log(Level.FINE, "Clade subtree for alignment "+almtData.alignment.getName()+" was leaf "+
+			// ((PhyloLeaf) currentSubtree).getName());
 		} else {
-			log(Level.FINE, "Clade subtree for alignment "+almtData.alignment.getName()+" was an internal node");
+			// log(Level.FINE, "Clade subtree for alignment "+almtData.alignment.getName()+" was an internal node");
 		}
 		return currentSubtree;
 	}
@@ -250,17 +248,17 @@ public class PhylogenyImporter extends ModulePlugin<PhylogenyImporter> {
 			boolean childSubtreeWasRequired = requiredSubtrees.remove(childSubtree);
 			if(childSubtree instanceof PhyloLeaf) {
 				if(!childSubtreeWasRequired) {
-					log(Level.FINEST, "Found 'foreign' leaf "+((PhyloLeaf) childSubtree).getName());
+					// log(Level.FINEST, "Found 'foreign' leaf "+((PhyloLeaf) childSubtree).getName());
 					return false; // found a leaf which shouldn't be in this clade.
 				}
-				log(Level.FINEST, "Found required leaf "+((PhyloLeaf) childSubtree).getName());
-				log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
+				// log(Level.FINEST, "Found required leaf "+((PhyloLeaf) childSubtree).getName());
+				// log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
 				continue;
 			}
 			PhyloInternal childPhyloInternal = (PhyloInternal) childSubtree;
 			if(childSubtreeWasRequired) {
-				log(Level.FINEST, "Found required internal");
-				log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
+				// log(Level.FINEST, "Found required internal");
+				// log(Level.FINEST, "Remaining subtrees required "+requiredSubtrees.size());
 				continue;
 			}
 			processSubtree(null, childPhyloInternal, requiredSubtrees);

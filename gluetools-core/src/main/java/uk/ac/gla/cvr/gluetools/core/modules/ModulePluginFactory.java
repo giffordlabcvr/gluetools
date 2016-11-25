@@ -22,7 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGener
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
-import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhylogenyImporter;
+import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
@@ -31,8 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.Freemark
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
-import uk.ac.gla.cvr.gluetools.core.treeRerooter.TreeRerooter;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRenderer;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.ComparisonAminoAcidVariationScanner;
@@ -81,7 +81,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 
 		registerPluginClass(WebAnalysisTool.class);
 
-		registerPluginClass(TreeRenderer.class);
+		registerPluginClass(PhyloExporter.class);
 
 		registerPluginClass(MaxLikelihoodPlacer.class);
 		registerPluginClass(MaxLikelihoodGenotyper.class);
@@ -97,8 +97,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(RaxmlPhylogenyGenerator.class);
 		registerPluginClass(ModelTester.class);
 
-		registerPluginClass(PhylogenyImporter.class);
-		registerPluginClass(TreeRerooter.class);
+		registerPluginClass(PhyloImporter.class);
+		registerPluginClass(PhyloUtility.class);
 		
 	}
 	

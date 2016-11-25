@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleUpdateDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.ImportExtractedFieldRule.GlueFieldRequirement;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.model.Extracted;

@@ -16,9 +16,14 @@ public class PhyloTree extends PhyloObject<PhyloTree> {
 	}
 
 	public void setRoot(PhyloSubtree<?> root) {
+		if(this.root != null) {
+			this.root.setTree(null);
+		}
 		this.root = root;
-		root.setTree(this);
-		root.setParentPhyloBranch(null);
+		if(root != null) {
+			root.setTree(this);
+			root.setParentPhyloBranch(null);
+		}
 	}
 
 	@Override

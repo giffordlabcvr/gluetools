@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.treeRerooter;
+package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,7 +17,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
@@ -34,7 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
-		commandWords={"reroot-tree"}, 
+		commandWords={"reroot-phylogeny"}, 
 		description = "Reroot a phylogenetic tree", 
 		docoptUsages = { "-i <inputFile> <inputFormat> (-g <outgroup> [-r] | -m) -o <outputFile> <outputFormat>"},
 		docoptOptions = { 
@@ -47,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeRerooter> {
+public class RerootPhylogenyCommand extends PhyloUtilityCommand<OkResult> {
 
 	public static final String OUTGROUP = "outgroup";
 	public static final String INPUT_FILE = "inputFile";
@@ -85,7 +84,7 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 	}
 
 	@Override
-	protected OkResult execute(CommandContext cmdContext, TreeRerooter treeRerooter) {
+	protected OkResult execute(CommandContext cmdContext, PhyloUtility treeRerooter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		PhyloTree phyloTree = loadTree(consoleCmdContext, inputFile, inputFormat);
 		PhyloBranch rerootBranch = null;
@@ -106,7 +105,7 @@ public class RerootTreeCommand extends ModulePluginCommand<OkResult, TreeReroote
 			rerootBranch = midPointResult.getBranch();
 			rerootDistance = midPointResult.getRootDistance();
 		}
-		PhyloTree rerootedTree = treeRerooter.rerootTree(rerootBranch, rerootDistance);
+		PhyloTree rerootedTree = treeRerooter.rerootPhylogeny(rerootBranch, rerootDistance);
 		if(outgroup != null && removeOutgroup) {
 			PhyloObject<?> root = rerootedTree.getRoot();
 			if(!(root instanceof PhyloInternal)) {

@@ -52,7 +52,7 @@ public enum ProjectSettingOption {
 	EXPORTED_FASTA_EXTENSION("exported-fasta-extension", "The extension format given to exported sequences in FASTA format", FastaSequenceObject.FASTA_DEFAULT_EXTENSION, 
 			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS),
 	ALIGNMENT_PHYLOGENY_FORMAT("alignment-phylogeny-format", "The format used to store phylogenies against Alignment nodes", 
-			PhyloFormat.GLUE_XML.name(), 
+			PhyloFormat.GLUE_JSON.name(), 
 			Arrays.asList(PhyloFormat.values()).stream().map(pf -> pf.name()).collect(Collectors.toList()).toArray(new String[]{}));
 	
 	private final String name;

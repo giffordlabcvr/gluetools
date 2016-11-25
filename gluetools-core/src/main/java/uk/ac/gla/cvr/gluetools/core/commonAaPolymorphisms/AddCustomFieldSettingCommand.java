@@ -14,7 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleUpdateDocumentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;

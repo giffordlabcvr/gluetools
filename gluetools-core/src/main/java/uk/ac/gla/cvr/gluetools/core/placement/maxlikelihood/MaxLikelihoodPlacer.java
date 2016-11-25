@@ -37,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRenderer;
+import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRendererContext;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
@@ -130,7 +130,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 
-		PhyloTree glueAlmtPhyloTree = TreeRenderer.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
+		PhyloTree glueAlmtPhyloTree = PhyloExporter.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
 				new MaxLikelihoodTreeRendererContext(memberPkMapToRowName));
 		
 		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueAlmtPhyloTree, alignmentWithQuery, dataDirFile);

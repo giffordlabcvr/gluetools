@@ -273,11 +273,19 @@ public class NewickToPhyloTreeParser {
 			}
 		}
 	}
+	
+	private static String phyloTreeToNewick(PhyloTree phyloTree) {
+		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
+		phyloTree.accept(newickPhyloTreeVisitor);
+		return newickPhyloTreeVisitor.getNewickString();
+	}
+	
+
 
 	private void test(String input) {
 		System.out.println("Input/output:\n"+input);
 		PhyloTree result = parseNewick(input);
-		System.out.println(PhyloNewickUtils.phyloTreeToNewick(result));
+		System.out.println(phyloTreeToNewick(result));
 		System.out.println("------");
 	}
 

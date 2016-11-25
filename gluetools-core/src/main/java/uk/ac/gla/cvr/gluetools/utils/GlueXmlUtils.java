@@ -108,7 +108,13 @@ public class GlueXmlUtils {
 	}
 
 	
-	public static void prettyPrint(Document document, OutputStream outputStream, int indent) {
+	public static byte[] documentToStream(Document document, int indent) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		documentToStream(document, baos, indent);
+		return baos.toByteArray();
+	}
+
+	public static void documentToStream(Document document, OutputStream outputStream, int indent) {
 	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	    Transformer transformer;
 		try {
@@ -137,7 +143,7 @@ public class GlueXmlUtils {
 	}
 
 	public static void prettyPrint(Document document, OutputStream out) {
-		prettyPrint(document, out, 4);
+		documentToStream(document, out, 4);
 	}
 	
 	public static List<Element> nodeListToElems(NodeList resultNodeList) {

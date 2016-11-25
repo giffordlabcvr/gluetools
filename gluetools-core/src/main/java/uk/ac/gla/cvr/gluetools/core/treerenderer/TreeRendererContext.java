@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
@@ -36,12 +36,12 @@ public class TreeRendererContext {
 	private Boolean forceBifurcating = false;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		this.almtBranchLengthProperty = PluginUtils.configureStringProperty(configElem, TreeRenderer.ALMT_BRANCH_LENGTH_PROPERTY, false);
-		this.memberBranchLengthProperty = PluginUtils.configureStringProperty(configElem, TreeRenderer.ALMT_BRANCH_LENGTH_PROPERTY, false);
-		this.alignmentNameTemplateString = PluginUtils.configureStringProperty(configElem, TreeRenderer.ALMT_NAME_TEMPLATE, false); 
-		this.memberNameTemplateString = PluginUtils.configureStringProperty(configElem, TreeRenderer.MEMBER_NAME_TEMPLATE, false);
-		this.omitSingleChildInternals = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, TreeRenderer.OMIT_SINGLE_CHILD_INTERNALS, false)).orElse(omitSingleChildInternals);
-		this.forceBifurcating = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, TreeRenderer.FORCE_BIFURCATING, false)).orElse(forceBifurcating);
+		this.almtBranchLengthProperty = PluginUtils.configureStringProperty(configElem, PhyloExporter.ALMT_BRANCH_LENGTH_PROPERTY, false);
+		this.memberBranchLengthProperty = PluginUtils.configureStringProperty(configElem, PhyloExporter.ALMT_BRANCH_LENGTH_PROPERTY, false);
+		this.alignmentNameTemplateString = PluginUtils.configureStringProperty(configElem, PhyloExporter.ALMT_NAME_TEMPLATE, false); 
+		this.memberNameTemplateString = PluginUtils.configureStringProperty(configElem, PhyloExporter.MEMBER_NAME_TEMPLATE, false);
+		this.omitSingleChildInternals = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, PhyloExporter.OMIT_SINGLE_CHILD_INTERNALS, false)).orElse(omitSingleChildInternals);
+		this.forceBifurcating = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, PhyloExporter.FORCE_BIFURCATING, false)).orElse(forceBifurcating);
 		// possibly disallow branch length properties if omitSingleChildInternals / forceBifurcating are used.
 	}
 

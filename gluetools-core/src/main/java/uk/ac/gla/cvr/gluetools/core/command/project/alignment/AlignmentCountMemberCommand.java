@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.AbstractCountCTableCommand.A
 import uk.ac.gla.cvr.gluetools.core.command.project.AbstractCountCTableCommand.CountCommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.CountResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
