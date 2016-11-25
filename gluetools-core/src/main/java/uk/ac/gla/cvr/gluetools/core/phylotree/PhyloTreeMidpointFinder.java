@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 
 
