@@ -120,6 +120,7 @@ public class AlignmentAddMemberCommand extends AlignmentModeCommand<CreateResult
 				AlignmentMember.pkMap(alignment.getName(), seq.getSource().getName(), seq.getSequenceID()), true);
 		newMember.setAlignment(alignment);
 		newMember.setSequence(seq);
+		newMember.setReferenceMember(false);
 		return newMember;
 	}
 

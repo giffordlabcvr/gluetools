@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public abstract class CommandUtils {
 
@@ -43,19 +44,28 @@ public abstract class CommandUtils {
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <dataDir> option is only usable in console mode.");
 			}
 			ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
-			dataDirFile = consoleCommandContext.fileStringToFile(dataDirString);
-			if(dataDirFile.exists()) {
-				if(!dataDirFile.isDirectory()) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Not a directory: "+dataDirFile.getAbsolutePath());
+			boolean finalised = false;
+			Integer suffix = 1;
+			String dirStringToUse = dataDirString;
+			while(!finalised) {
+				dataDirFile = consoleCommandContext.fileStringToFile(dirStringToUse);
+				if(dataDirFile.exists() && (!dataDirFile.isDirectory() || dataDirFile.list().length > 0)) {
+					if(suffix == null) {
+						suffix = 1;
+					} else {
+						suffix = suffix + 1;
+					}
+					dirStringToUse = dataDirString+suffix;
+				} else {
+					finalised = true;
 				}
-				if(dataDirFile.list().length > 0) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Not an empty directory: "+dataDirFile.getAbsolutePath());
-				}
-			} else {
-				boolean mkdirsResult = dataDirFile.mkdirs();
-				if(!mkdirsResult) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Failed to create directory: "+dataDirFile.getAbsolutePath());
-				}
+			}
+			if(!dirStringToUse.equals(dataDirString)) {
+				GlueLogger.getGlueLogger().warning("Unable to use data directory "+dataDirString+"; using "+dirStringToUse+" instead");
+			}
+			boolean mkdirsResult = dataDirFile.mkdirs();
+			if(!mkdirsResult) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Failed to create directory: "+dataDirFile.getAbsolutePath());
 			}
 		}
 		return dataDirFile;

@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
  */
 public abstract class _AlignmentMember extends GlueDataObject {
 
+    public static final String REFERENCE_MEMBER_PROPERTY = "referenceMember";
     public static final String ALIGNED_SEGMENTS_PROPERTY = "alignedSegments";
     public static final String ALIGNMENT_PROPERTY = "alignment";
     public static final String SEQUENCE_PROPERTY = "sequence";
@@ -22,6 +23,13 @@ public abstract class _AlignmentMember extends GlueDataObject {
     public static final String ALIGNMENT_NAME_PK_COLUMN = "alignment_name";
     public static final String SEQUENCE_ID_PK_COLUMN = "sequence_id";
     public static final String SOURCE_NAME_PK_COLUMN = "source_name";
+
+    public void setReferenceMember(Boolean referenceMember) {
+        writeProperty(REFERENCE_MEMBER_PROPERTY, referenceMember);
+    }
+    public Boolean getReferenceMember() {
+        return (Boolean)readProperty(REFERENCE_MEMBER_PROPERTY);
+    }
 
     public void addToAlignedSegments(AlignedSegment obj) {
         addToManyTarget(ALIGNED_SEGMENTS_PROPERTY, obj, true);

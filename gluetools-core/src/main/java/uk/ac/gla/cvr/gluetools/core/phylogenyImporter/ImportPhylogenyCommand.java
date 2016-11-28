@@ -33,9 +33,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
 		description = "Import a phylogeny into the alignment tree", 
-		docoptUsages={"<alignmentName> [-c] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
+		docoptUsages={"<alignmentName> [-c] [-n] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
+			"-n, --anyAlignment                             Allow match to any alignment",
 			"-w <whereClause>, --whereClause <whereClause>  Qualify members",
 		    "-a, --allMembers                               All members",
 			"-i <inputFile>, --inputFile <inputFile>        Phylogeny input file",
@@ -44,14 +45,17 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		metaTags = {CmdMeta.consoleOnly}, 
 		furtherHelp = "Imports a phylogenetic tree from a file, and breaks it up in order to annotate \n"+
 		"the alignment tree, by populating field <fieldName> of alignment objects. \n"+
-		"The alignment members selected by the <alignmentName>, --recursive and <whereClause>/--allMembers options \n"+
-		"must exactly match the leaf nodes of the imported tree. \n"+
-		"The gross structure of the imported tree must match the structure of the alignment tree."
+		"The the leaf nodes of the imported tree are matched up with the alignment members selected by the \n"+
+		"<alignmentName>, --recursive and <whereClause>/--allMembers options.\n"+
+		"However, if --anyAlignment is used the alignment mentioned in the name of the incoming leaf\n"+
+		"is ignored, instead the member source / seqID must specify a unique member within the selected\n"+
+		"alignment members. The gross structure of the imported tree must also match the structure of the alignment tree."
 )
 public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyResult, PhyloImporter>{
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String RECURSIVE = "recursive";
+	public static final String ANY_ALIGNMENT = "anyAlignment";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
 
@@ -62,6 +66,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	
 	private String alignmentName;
 	private Boolean recursive;
+	private Boolean anyAlignment;
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
 
@@ -76,6 +81,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		super.configure(pluginConfigContext, configElem);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
+		anyAlignment = PluginUtils.configureBooleanProperty(configElem, ANY_ALIGNMENT, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
 
@@ -107,7 +113,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		
 		PhyloTree phyloTree = inputFormat.parse(consoleCmdContext.loadBytes(inputFile));
 		List<AlignmentPhylogeny> almtPhylogenies = 
-				phylogenyImporter.previewImportPhylogeny(cmdContext, phyloTree, alignmentName, recursive, whereClause);
+				phylogenyImporter.previewImportPhylogeny(cmdContext, phyloTree, alignmentName, recursive, anyAlignment, whereClause);
 		if(fieldName != null) {
 			for(AlignmentPhylogeny almtPhylogeny: almtPhylogenies) {
 				// save string to field in format based on project setting.

@@ -191,10 +191,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 						continue;
 					}
 				} else {
-					currentAlmtMember = GlueDataObject.create(cmdContext, AlignmentMember.class, 
-							AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
-					currentAlmtMember.setAlignment(targetAlignment);
-					currentAlmtMember.setSequence(memberSeq);
+					currentAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlignment, memberSeq);
 				}
 
 				double prevRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);

@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 @GlueDataClass(
 		defaultObjectRendererFtlFile = "defaultRenderers/alignmentMember.ftlx",
 		defaultListedProperties = {AlignmentMember.ALIGNMENT_NAME_PATH, AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH},
-		listableBuiltInProperties = {AlignmentMember.ALIGNMENT_NAME_PATH, AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH}
+		listableBuiltInProperties = {AlignmentMember.ALIGNMENT_NAME_PATH, AlignmentMember.SOURCE_NAME_PATH, AlignmentMember.SEQUENCE_ID_PATH, AlignmentMember.REFERENCE_MEMBER_PROPERTY}
 	)
 public class AlignmentMember extends _AlignmentMember {
 	

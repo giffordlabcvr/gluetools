@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAli
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentAddMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -113,15 +114,8 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 	
 	
 
-	protected AlignmentMember createAlignmentMember(ConsoleCommandContext cmdContext,
-			Alignment alignment, Sequence foundSequence) {
-		AlignmentMember almtMember = 
-				GlueDataObject.create(cmdContext, AlignmentMember.class, 
-				AlignmentMember.pkMap(alignment.getName(), 
-						foundSequence.getSource().getName(), foundSequence.getSequenceID()), updateExistingMembers);
-		almtMember.setAlignment(alignment);
-		almtMember.setSequence(foundSequence);
-		return almtMember;
+	protected AlignmentMember createAlignmentMember(ConsoleCommandContext cmdContext, Alignment alignment, Sequence foundSequence) {
+		return AlignmentAddMemberCommand.addMember(cmdContext, alignment, foundSequence);
 	}
 
 

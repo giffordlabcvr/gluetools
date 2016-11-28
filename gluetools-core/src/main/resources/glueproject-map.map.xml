@@ -23,6 +23,7 @@
 	</db-entity>
 	<db-entity name="alignment_member">
 		<db-attribute name="alignment_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="reference_member" type="BIT" isMandatory="true"/>
 		<db-attribute name="sequence_id" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="source_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
@@ -117,6 +118,7 @@
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
 	<obj-entity name="AlignmentMember" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember" dbEntityName="alignment_member" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
+		<obj-attribute name="referenceMember" type="java.lang.Boolean" db-attribute-path="reference_member"/>
 	</obj-entity>
 	<obj-entity name="Feature" className="uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature" dbEntityName="feature" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>

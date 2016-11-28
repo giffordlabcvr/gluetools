@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
@@ -38,9 +39,14 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 		addModulePluginCmdClass(ImportPhylogenyCommand.class);
 	}
 
+	// anyAlignment -- if true, the alignment mentioned in the name of the incoming leaf 
+	// is ignored, instead the member source / seqID must specify 
+	// a unique member within the selected alignment members. This is useful for importing a phylogeny 
+	// generated from an unconstrained alignment into the constrained alignment tree.
+	// (in this case you would include referenceMember = false in the <whereClause>)
 	
 	public List<AlignmentPhylogeny> previewImportPhylogeny(CommandContext cmdContext, PhyloTree phyloTree,
-			String rootAlmtName, Boolean recursive, Optional<Expression> whereClause) {
+			String rootAlmtName, Boolean recursive, Boolean anyAlignment, Optional<Expression> whereClause) {
 		Alignment rootAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(rootAlmtName));
 		if(!rootAlmt.isConstrained()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Phylogeny can only be imported for constrained alignments.");
@@ -48,6 +54,17 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, rootAlmt, recursive, false, whereClause);
 
+		Map<Map<String,String>, Map<String,String>> sequencePkMapToMemberPkMap = new LinkedHashMap<Map<String,String>, Map<String,String>>();
+		if(anyAlignment) {
+			almtMembers.forEach(memb -> {
+				Map<String, String> sequencePkMap = memb.getSequence().pkMap();
+				if(sequencePkMapToMemberPkMap.containsKey(sequencePkMap)) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Sequence "+sequencePkMap+" is selected as a member of multiple alignments. This prevents --anyAlignment, since incoming leaves will be ambiguous");
+				}
+				sequencePkMapToMemberPkMap.put(sequencePkMap, memb.pkMap());
+			});
+		}
+		
 		// init AlignmentData map:
 		Map<String, AlignmentData> alignmentNameToData = new LinkedHashMap<String, AlignmentData>();
 		almtMembers.forEach(memb -> {
@@ -64,16 +81,27 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
 				String leafNodeName = phyloLeaf.getName();
 				Map<String, String> leafNodePkMap = memberLeafNodeNameToPkMap(leafNodeName);
-				String alignmentName = leafNodePkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
+				Map<String, String> selectedMemberPkMap;
+				if(anyAlignment) {
+					selectedMemberPkMap = sequencePkMapToMemberPkMap.get(
+							Sequence.pkMap(leafNodePkMap.get(AlignmentMember.SOURCE_NAME_PATH), 
+									leafNodePkMap.get(AlignmentMember.SEQUENCE_ID_PATH)));
+					if(selectedMemberPkMap == null) {
+						throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment member, even allowing --anyAlignment.");
+					}
+				} else {
+					selectedMemberPkMap = leafNodePkMap;
+				}
+				String alignmentName = selectedMemberPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
 				AlignmentData alignmentData = alignmentNameToData.get(alignmentName);
 				if(alignmentData == null) {
 					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment.");
 				}
-				if(!alignmentData.memberPkMaps.contains(leafNodePkMap)) {
+				if(!alignmentData.memberPkMaps.contains(selectedMemberPkMap)) {
 					throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment member.");
 				}
 				// register the leaf against the relevant alignment data.
-				alignmentData.memberPkMapToLeaf.put(leafNodePkMap, phyloLeaf);
+				alignmentData.memberPkMapToLeaf.put(selectedMemberPkMap, phyloLeaf);
 			}
 
 		});
