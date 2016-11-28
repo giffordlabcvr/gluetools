@@ -157,6 +157,21 @@ public class Alignment extends _Alignment implements HasDisplayName {
 		return QueryAlignedSegment.translateSegments(seqToMemberSegs, memberToRefSegs);
 	}
 
+	public ReferenceSequence getRelatedRef(CommandContext cmdContext, String referenceName) {
+		if(this.getRefSequence() == null) { // unconstrained
+			ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), false);
+			// check the relatedRef is a member of this alignment.
+			String relatedRefSeqID = relatedRef.getSequence().getSequenceID();
+			String relatedRefSourceName = relatedRef.getSequence().getSource().getName();
+			Map<String,String> memberPkMap = AlignmentMember.pkMap(this.getName(), relatedRefSourceName, relatedRefSeqID);
+			// this will throw if no such member exists.
+			GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+			return relatedRef;
+		} else {
+			return getAncConstrainingRef(cmdContext, referenceName);
+		}
+	}
+	
 	public ReferenceSequence getAncConstrainingRef(CommandContext cmdContext, String referenceName) {
 		ReferenceSequence ancConstrainingRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), false);
 		List<String> ancestorRefNames = getAncestorReferences()
@@ -195,22 +210,55 @@ public class Alignment extends _Alignment implements HasDisplayName {
 		return constrainingRef;
 	}
 
+	public List<QueryAlignedSegment> translateToRelatedRef(CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToAlmtSegs, ReferenceSequence relatedRef) {
+		if(this.getRefSequence() != null) {
+			return translateToAncConstrainingRef(cmdContext, queryToAlmtSegs, relatedRef);
+		} else {
+			// unconstrained
+			AlignmentMember refMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+					AlignmentMember.pkMap(getName(), 
+							relatedRef.getSequence().getSource().getName(), 
+							relatedRef.getSequence().getSequenceID()));
+			
+			
+			List<QueryAlignedSegment> uToRefSegs = refMember.getAlignedSegments().stream()
+				.map(seg -> seg.asQueryAlignedSegment())
+				.map(seg -> seg.invert())
+				.collect(Collectors.toList());
+			return QueryAlignedSegment.translateSegments(queryToAlmtSegs, uToRefSegs);
+		}
+	}
+		
 	public List<QueryAlignedSegment> translateToAncConstrainingRef(CommandContext cmdContext, 
-			List<QueryAlignedSegment> queryToConstrainingRefSags, ReferenceSequence ancConstrainingRef) {
+			List<QueryAlignedSegment> queryToConstrainingRefSegs, ReferenceSequence ancConstrainingRef) {
 		Alignment currentAlignment = this;
 		ReferenceSequence constrainingRef = currentAlignment.getConstrainingRef();
 		// translate segments up the tree until we get to the ancestor constraining reference.
 		while(!constrainingRef.getName().equals(ancConstrainingRef.getName())) {
 			Sequence refSeqSeq = constrainingRef.getSequence();
 			Alignment parentAlmt = currentAlignment.getParent();
-			queryToConstrainingRefSags = parentAlmt.translateToRef(cmdContext, 
-					refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID(), queryToConstrainingRefSags);
+			queryToConstrainingRefSegs = parentAlmt.translateToRef(cmdContext, 
+					refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID(), queryToConstrainingRefSegs);
 			currentAlignment = parentAlmt;
 			constrainingRef = currentAlignment.getConstrainingRef();
 		}
-		return queryToConstrainingRefSags;
+		return queryToConstrainingRefSegs;
 	}
 
+	public List<ReferenceSequence> getRelatedRefs() {
+		if(this.getRefSequence() == null) { // unconstrained
+			List<ReferenceSequence> relatedRefs = new ArrayList<ReferenceSequence>();
+			for(AlignmentMember member: getMembers()) {
+				relatedRefs.addAll(member.getSequence().getReferenceSequences());
+			}
+			return relatedRefs;
+		}
+		else {
+			return getAncConstrainingRefs();
+		}
+	}
+	
 	public List<ReferenceSequence> getAncConstrainingRefs() {
 		List<ReferenceSequence> ancConstrainingRefs = new ArrayList<ReferenceSequence>();
 		for(Alignment almt: getAncestors()) {

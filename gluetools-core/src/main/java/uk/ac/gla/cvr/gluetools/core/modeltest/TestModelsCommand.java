@@ -33,9 +33,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"test", "models"}, 
 		description = "Run JModelTest on a nucleotide alignment to compare substitution models", 
-		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] [-d <dataDir>]"},
 		docoptOptions={
-				"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining reference",
+				"-r <relRefName>, --relRefName <relRefName>     Related reference",
 				"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
 				"-c, --recursive                                Include descendent members",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify members",
@@ -48,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, ModelTester> {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -58,7 +58,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	public static final String DATA_DIR = "dataDir";
 
 	private String alignmentName;
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
@@ -72,7 +72,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
-		acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, false);
+		relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
@@ -84,7 +84,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
-		if(acRefName != null && featureName == null || acRefName == null && featureName != null) {
+		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
 		}
 		if(this.minColUsage != null && !this.includeAllColumns) {
@@ -96,7 +96,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
 	}
 	private void usageError2() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <acRefName> and <featureName> must be specified or neither");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
 	}
 	private void usageError3() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
@@ -107,7 +107,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	protected TestModelsResult execute(CommandContext cmdContext, ModelTester modelTester) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, true, whereClause);
-		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = FastaAlignmentExporter.exportAlignment(cmdContext, acRefName, featureName, includeAllColumns, minColUsage, 
+		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, 
 				null, alignment, almtMembers);
 
 		TestModelsResult testModelsResult = modelTester.testModels(cmdContext, memberNucleotideAlignment, dataDir);
@@ -121,7 +121,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 			super();
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
 			registerEnumLookup("orderStrategy", OrderStrategy.class);
-			registerVariableInstantiator("acRefName", new VariableInstantiator() {
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
 				protected List<CompletionSuggestion> instantiate(
@@ -131,7 +131,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 					String alignmentName = (String) bindings.get("alignmentName");
 					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), true);
 					if(alignment != null) {
-						return(alignment.getAncConstrainingRefs()
+						return(alignment.getRelatedRefs()
 								.stream()
 								.map(ref -> new CompletionSuggestion(ref.getName(), true)))
 								.collect(Collectors.toList());
@@ -146,8 +146,8 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					String acRefName = (String) bindings.get("acRefName");
-					ReferenceSequence acRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(acRefName), true);
+					String relRefName = (String) bindings.get("relRefName");
+					ReferenceSequence acRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), true);
 					if(acRef != null) {
 						return(acRef.getFeatureLocations()
 								.stream()

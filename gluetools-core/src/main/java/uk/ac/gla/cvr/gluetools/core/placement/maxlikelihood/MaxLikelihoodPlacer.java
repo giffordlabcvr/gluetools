@@ -22,6 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMembe
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -48,13 +50,17 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="maxLikelihoodPlacer")
 public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
-	public static final String ROOT_ALIGNMENT_NAME = "rootAlignmentName";
+	public static final String PHYLO_RELATED_REF_NAME = "phyloRelatedRefName";
+	public static final String PHYLO_FEATURE_NAME = "phyloFeatureName";
+	public static final String PHYLO_ALIGNMENT_NAME = "phyloAlignmentName";
 	public static final String PHYLO_MEMBER_WHERE_CLAUSE = "phyloMemberWhereClause";
 	
 	private static final String PHYLO_SUBTREE_ALIGNMENT_NAMES_KEY = "alignments";
 	private static final String PHYLO_SUBTREE_MEMBER_PK_MAP_KEY = "member";
 	
-	private String rootAlignmentName;
+	private String phyloAlignmentName;
+	private String phyloRelatedRefName;
+	private String phyloFeatureName;
 	private Optional<Expression> phyloMemberWhereClause;
 	
 	private MafftRunner mafftRunner = new MafftRunner();
@@ -64,14 +70,18 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		super();
 		addModulePluginCmdClass(PlaceSequenceCommand.class);
 		addModulePluginCmdClass(PlaceFileCommand.class);
-		addSimplePropertyName(ROOT_ALIGNMENT_NAME);
+		addSimplePropertyName(PHYLO_ALIGNMENT_NAME);
+		addSimplePropertyName(PHYLO_RELATED_REF_NAME);
+		addSimplePropertyName(PHYLO_FEATURE_NAME);
 		addSimplePropertyName(PHYLO_MEMBER_WHERE_CLAUSE);
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.rootAlignmentName = PluginUtils.configureStringProperty(configElem, ROOT_ALIGNMENT_NAME, true);
+		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_ALIGNMENT_NAME, true);
+		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_RELATED_REF_NAME, false);
+		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_FEATURE_NAME, false);
 		this.phyloMemberWhereClause = 
 				Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, PHYLO_MEMBER_WHERE_CLAUSE, false));
 		
@@ -88,14 +98,18 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	@Override
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
-		// check rootAlignment exists and is constrained.
-		Alignment rootAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(rootAlignmentName), true);
-		if(rootAlignment == null) {
-			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "No such alignment \""+rootAlignmentName+"\"");
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName), true);
+		if(alignment == null) {
+			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "No such alignment \""+phyloAlignmentName+"\"");
 		}
-		if(!rootAlignment.isConstrained()) {
-			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "Alignment \""+rootAlignmentName+"\" is unconstrained");
+		if((phyloRelatedRefName != null && phyloFeatureName == null) || (phyloRelatedRefName == null && phyloFeatureName != null)) {
+			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "Either both <phyloRelatedRefName> and <phyloFeatureName> should be specifed, or neither");
 		}
+		if(phyloRelatedRefName != null) {
+			alignment.getRelatedRef(cmdContext, phyloRelatedRefName);
+			GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(phyloRelatedRefName, phyloFeatureName));
+		}
+
 	}
 
 	public Map<String, List<PlacementResult>> place(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
@@ -104,16 +118,14 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		boolean includeAllColumns = true;
 		Integer minColUsage = 2;
 		boolean deduplicate = true;
-		String acRefName = null;
-		String featureName = null;
 		OrderStrategy orderStrategy = null;
 		
-		Alignment rootAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(rootAlignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, rootAlignment, recursive, deduplicate, phyloMemberWhereClause);
+		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName));
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, phyloAlignment, recursive, deduplicate, phyloMemberWhereClause);
 		Map<Map<String,String>, DNASequence> memberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						acRefName, featureName, includeAllColumns, minColUsage, orderStrategy, 
-						rootAlignment, almtMembers);
+						phyloRelatedRefName, phyloFeatureName, includeAllColumns, minColUsage, orderStrategy, 
+						phyloAlignment, almtMembers);
 		
 		// we rename query and member sequences (a) to avoid clashes and (b) to work around program ID limitations.
 		Map<String, Map<String,String>> rowNameToMemberPkMap = new LinkedHashMap<String, Map<String,String>>();
@@ -130,7 +142,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 
-		PhyloTree glueAlmtPhyloTree = PhyloExporter.phyloTreeFromAlignment(cmdContext, rootAlignment, almtMembers, 
+		PhyloTree glueAlmtPhyloTree = PhyloExporter.phyloTreeFromAlignment(cmdContext, phyloAlignment, almtMembers, 
 				new MaxLikelihoodTreeRendererContext(memberPkMapToRowName));
 		
 		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueAlmtPhyloTree, alignmentWithQuery, dataDirFile);

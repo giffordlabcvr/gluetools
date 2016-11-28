@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.curation.phylogeny;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -11,23 +10,16 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.configurableobject.PropertyCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -36,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGenerator<P>> extends ModulePluginCommand<OkResult, P> {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -48,7 +40,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	public static final String OUTPUT_FORMAT = "outputFormat";
 	
 	private String alignmentName;
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
@@ -63,7 +55,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
-		acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, false);
+		relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
@@ -77,7 +69,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
-		if(acRefName != null && featureName == null || acRefName == null && featureName != null) {
+		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
 		}
 		if(this.minColUsage != null && !this.includeAllColumns) {
@@ -92,7 +84,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
 	}
 	private void usageError2() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <acRefName> and <featureName> must be specified or neither");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
 	}
 	private void usageError4() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
@@ -104,11 +96,9 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 
 	@Override
 	protected final OkResult execute(CommandContext cmdContext, P modulePlugin) {
-		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-		
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, true, whereClause);
-		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = FastaAlignmentExporter.exportAlignment(cmdContext, acRefName, featureName, includeAllColumns, minColUsage, 
+		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, 
 				null, alignment, almtMembers);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);

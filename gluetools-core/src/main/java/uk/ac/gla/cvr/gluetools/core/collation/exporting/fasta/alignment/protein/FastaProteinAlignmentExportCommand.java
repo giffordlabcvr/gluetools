@@ -16,9 +16,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> -r <acRefName> -f <featureName> [-c] (-w <whereClause> | -a) [-d <orderStrategy>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-c] (-w <whereClause> | -a) [-d <orderStrategy>] (-o <fileName> | -p)"},
 		docoptOptions={
-			"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining reference",
+			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
 			"-c, --recursive                                      Include descendent members",
 			"-o <fileName>, --fileName <fileName>                 FASTA output file",

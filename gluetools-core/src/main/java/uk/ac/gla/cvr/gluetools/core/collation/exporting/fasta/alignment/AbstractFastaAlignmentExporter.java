@@ -4,15 +4,11 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -58,16 +54,6 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 			byte[] bytes = fastaString.getBytes();
 			cmdContext.saveBytes(fileName, bytes);
 			return new OkResult();
-		}
-	}
-
-	protected static void checkAlignmentExportOptions(Alignment alignment, String featureName, Boolean includeAllColumns) {
-		ReferenceSequence refSequence = alignment.getRefSequence();
-		if(refSequence == null && featureName != null) {
-			throw new FastaExporterException(Code.CANNOT_SPECIFY_FEATURE_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
-		}
-		if(refSequence == null && includeAllColumns) {
-			throw new FastaExporterException(Code.CANNOT_SPECIFY_INCLUDE_ALL_COLUMNS_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
 		}
 	}
 

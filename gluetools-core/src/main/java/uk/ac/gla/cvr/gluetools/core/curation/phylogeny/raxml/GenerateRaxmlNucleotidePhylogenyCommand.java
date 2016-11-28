@@ -28,9 +28,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
-		docoptUsages={"<alignmentName> [-r <acRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] -o <outputFile> <outputFormat>  [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] -o <outputFile> <outputFormat>  [-d <dataDir>]"},
 		docoptOptions={
-			"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining reference",
+			"-r <relRefName>, --relRefName <relRefName>     Related reference",
 			"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
 			"-c, --recursive                                Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>  Qualify members",

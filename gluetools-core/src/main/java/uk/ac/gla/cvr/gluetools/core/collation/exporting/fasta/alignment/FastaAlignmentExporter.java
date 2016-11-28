@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -55,14 +56,14 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 	private static String exportAlignment(CommandContext cmdContext,
 			String alignmentName, Optional<Expression> whereClause,
-			String acRefName, String featureName, Boolean recursive,
+			String relRefName, String featureName, Boolean recursive,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
 			Boolean deduplicate, Template idTemplate) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, deduplicate, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
-				cmdContext, acRefName, featureName, includeAllColumns, minColUsage, orderStrategy,
+				cmdContext, relRefName, featureName, includeAllColumns, minColUsage, orderStrategy,
 				alignment, almtMembers);
 
 		Map<Map<String,String>, String> pkMapToFastaId = new LinkedHashMap<Map<String,String>, String>();
@@ -73,11 +74,14 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	}
 
 	public static Map<Map<String, String>, DNASequence> exportAlignment(
-			CommandContext cmdContext, String acRefName, String featureName,
+			CommandContext cmdContext, String relRefName, String featureName,
 			Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy, Alignment alignment,
 			List<AlignmentMember> almtMembers) {
 		
-		checkAlignmentExportOptions(alignment, featureName, includeAllColumns);
+		ReferenceSequence refSequence = alignment.getRefSequence();
+		if(refSequence == null && includeAllColumns) {
+			throw new FastaExporterException(uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException.Code.CANNOT_SPECIFY_INCLUDE_ALL_COLUMNS_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
+		}
 
 		
 		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
@@ -85,19 +89,19 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				new LinkedHashMap<Map<String, String>, List<QueryAlignedSegment>>();
 		Map<Map<String, String>, AbstractSequenceObject> pkMapToSeqObj = 
 				new LinkedHashMap<Map<String, String>, AbstractSequenceObject>();
-		ReferenceSequence acRef = null;
+		ReferenceSequence relatedRef = null;
 
-		if(acRefName != null) {
-			acRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
+		if(relRefName != null) {
+			relatedRef = alignment.getRelatedRef(cmdContext, relRefName);
 		}
 
 		if(includeAllColumns) {
-			createAlignmentIncludeAllColumns(cmdContext, acRef, featureName,
+			createAlignmentIncludeAllColumns(cmdContext, relatedRef, featureName,
 					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
 					pkMapToSeqObj, minColUsage);
 
 		} else {
-			createAlignment(cmdContext, acRef, featureName,
+			createAlignment(cmdContext, relatedRef, featureName,
 					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
 					pkMapToSeqObj);
 		}
@@ -197,14 +201,14 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	}
 	
 	private static void createAlignment(CommandContext cmdContext,
-			ReferenceSequence acRef, String featureName,
+			ReferenceSequence relatedRef, String featureName,
 			Alignment alignment, List<AlignmentMember> almtMembers,
 			ReferenceSegment minMaxSeg,
 			Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToQaSegs,
 			Map<Map<String,String>, AbstractSequenceObject> pkMapToSeqObj) {
-		ReferenceSequence refSequence = alignment.getRefSequence();
-		if(refSequence != null) {
-			minMaxSeg.setRefEnd(refSequence.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
+		ReferenceSequence alignmentRef = alignment.getRefSequence();
+		if(alignmentRef != null) {
+			minMaxSeg.setRefEnd(alignmentRef.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
 		} else {
 			// unconstrained alignment
 			for(AlignmentMember almtMember: almtMembers) {
@@ -214,8 +218,8 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		}
 		FeatureLocation featureLoc;
 		List<ReferenceSegment> featureRefSegs = null;
-		if(acRef != null && featureName != null) {
-			featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRef.getName(), featureName));
+		if(relatedRef != null && featureName != null) {
+			featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), featureName));
 			featureRefSegs = featureLoc.segmentsAsReferenceSegments();
 			if(!featureRefSegs.isEmpty()) {
 				minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureRefSegs));
@@ -226,10 +230,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		for(AlignmentMember almtMember: almtMembers) {
 			Map<String,String> pkMap = almtMember.pkMap();
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
-			if(acRef != null) {
-				// ancestor-constraining reference specified in order to specify feature location
+			if(relatedRef != null) {
+				// related reference specified in order to specify feature location
 				Alignment tipAlmt = almtMember.getAlignment();
-				memberQaSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef);
+				memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
 			} else {
 				// no feature location but still need to translate to ancestor-constraining reference, 
 				// because member is of a descendent alignment.

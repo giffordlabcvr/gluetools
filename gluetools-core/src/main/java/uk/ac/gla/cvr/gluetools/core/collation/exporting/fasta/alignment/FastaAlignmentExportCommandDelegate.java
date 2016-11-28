@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class FastaAlignmentExportCommandDelegate {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String RECURSIVE = "recursive";
 	public static final String PREVIEW = "preview";
@@ -41,7 +41,7 @@ public class FastaAlignmentExportCommandDelegate {
 	private String alignmentName;
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 	private Boolean recursive;
 	private Boolean preview;
@@ -53,14 +53,14 @@ public class FastaAlignmentExportCommandDelegate {
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
 		orderStrategy = PluginUtils.configureEnumProperty(OrderStrategy.class, configElem, ORDER_STRATEGY, false);
-		acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, featureRequired);
+		relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, featureRequired);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, featureRequired);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
-		if(acRefName != null && featureName == null || acRefName == null && featureName != null) {
+		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
 		}
 		if(fileName == null && !preview || fileName != null && preview) {
@@ -73,7 +73,7 @@ public class FastaAlignmentExportCommandDelegate {
 	}
 
 	private void usageError2() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <acRefName> and <featureName> must be specified or neither");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
 	}
 
 	private void usageError3() {
@@ -99,7 +99,7 @@ public class FastaAlignmentExportCommandDelegate {
 	}
 
 	public String getAcRefName() {
-		return acRefName;
+		return relRefName;
 	}
 
 	public String getFeatureName() {
@@ -127,7 +127,7 @@ public class FastaAlignmentExportCommandDelegate {
 			super();
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
 			registerEnumLookup("orderStrategy", OrderStrategy.class);
-			registerVariableInstantiator("acRefName", new VariableInstantiator() {
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
 				protected List<CompletionSuggestion> instantiate(
@@ -137,7 +137,7 @@ public class FastaAlignmentExportCommandDelegate {
 					String alignmentName = (String) bindings.get("alignmentName");
 					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), true);
 					if(alignment != null) {
-						return(alignment.getAncConstrainingRefs()
+						return(alignment.getRelatedRefs()
 								.stream()
 								.map(ref -> new CompletionSuggestion(ref.getName(), true)))
 								.collect(Collectors.toList());
@@ -152,10 +152,10 @@ public class FastaAlignmentExportCommandDelegate {
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					String acRefName = (String) bindings.get("acRefName");
-					ReferenceSequence acRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(acRefName), true);
-					if(acRef != null) {
-						return(acRef.getFeatureLocations()
+					String relRefName = (String) bindings.get("relRefName");
+					ReferenceSequence relRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), true);
+					if(relRef != null) {
+						return(relRef.getFeatureLocations()
 								.stream()
 								.filter(fLoc -> filterFeatureLocation(fLoc))
 								.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true)))
