@@ -134,7 +134,7 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 			AlignmentMember almtMember = null; 
 			List<QueryAlignedSegment> existingSegs = null;
 			if(alignment != null) {
-				almtMember = createAlignmentMember(cmdContext, alignment, foundSequence);
+				almtMember = ensureAlignmentMember(cmdContext, alignment, foundSequence);
 				existingSegs = almtMember.getAlignedSegments().stream()
 						.map(AlignedSegment::asQueryAlignedSegment)
 						.collect(Collectors.toList());

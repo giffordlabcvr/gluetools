@@ -184,14 +184,16 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				String memberSeqID = memberSeq.getSequenceID();
 
 				AlignmentMember currentAlmtMember;
+				currentAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+						AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
 				if(existingMembersOnly) {
-					currentAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-							AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
 					if(currentAlmtMember == null) {
 						continue;
 					}
 				} else {
-					currentAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlignment, memberSeq);
+					if(currentAlmtMember == null) {
+						currentAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlignment, memberSeq);
+					}
 				}
 
 				double prevRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);

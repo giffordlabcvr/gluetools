@@ -114,7 +114,15 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 	
 	
 
-	protected AlignmentMember createAlignmentMember(ConsoleCommandContext cmdContext, Alignment alignment, Sequence foundSequence) {
+	protected AlignmentMember ensureAlignmentMember(ConsoleCommandContext cmdContext, Alignment alignment, Sequence foundSequence) {
+		if(updateExistingMembers) {
+			Map<String, String> pkMap = AlignmentMember.pkMap(alignment.getName(), 
+					foundSequence.getSource().getName(), foundSequence.getSequenceID());
+			AlignmentMember existing = GlueDataObject.lookup(cmdContext, AlignmentMember.class, pkMap, true);
+			if(existing != null) {
+				return existing;
+			}
+		} 
 		return AlignmentAddMemberCommand.addMember(cmdContext, alignment, foundSequence);
 	}
 

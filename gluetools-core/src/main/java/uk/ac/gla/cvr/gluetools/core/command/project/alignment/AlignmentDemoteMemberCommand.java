@@ -89,7 +89,6 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		Alignment thisAlignment = lookupAlignment(cmdContext);
-		Project project = getAlignmentMode(cmdContext).getProject();
 		
 		Alignment childAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(childAlmtName));
 		if(childAlignment.getParent() == null || !childAlignment.getParent().getName().equals(thisAlignment.getName())) {
@@ -97,6 +96,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 		}
 		/*
 		 * code associated with deleted code below.
+		Project project = getAlignmentMode(cmdContext).getProject();
 		ReferenceSequence childRef = childAlignment.getRefSequence();
 		Sequence childRefSeq = childRef.getSequence();
 		AlignmentMember childRefMemberOfParent = 

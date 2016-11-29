@@ -149,7 +149,7 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 				continue;
 			}
 
-			AlignmentMember almtMember = createAlignmentMember(cmdContext, alignment, foundSequence);
+			AlignmentMember almtMember = ensureAlignmentMember(cmdContext, alignment, foundSequence);
 			String memberSourceName = foundSequence.getSource().getName();
 			String memberSequenceID = foundSequence.getSequenceID();
 

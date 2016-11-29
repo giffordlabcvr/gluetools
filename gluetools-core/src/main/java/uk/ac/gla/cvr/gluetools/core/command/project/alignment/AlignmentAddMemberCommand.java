@@ -108,16 +108,20 @@ public class AlignmentAddMemberCommand extends AlignmentModeCommand<CreateResult
 		}
 		int added = 0;
 		for(Sequence seq: sequencesToAdd) {
-			addMember(cmdContext, alignment, seq);
-			added++;
+			Map<String,String> pkMap = AlignmentMember.pkMap(alignment.getName(), seq.getSource().getName(), seq.getSequenceID());
+			AlignmentMember existing = GlueDataObject.lookup(cmdContext, AlignmentMember.class, pkMap, true);
+			if(existing == null) {
+				addMember(cmdContext, alignment, seq);
+				added++;
+			}
 		}
 		cmdContext.commit();
 		return new CreateResult(AlignmentMember.class, added);
 	}
 
 	public static AlignmentMember addMember(CommandContext cmdContext, Alignment alignment, Sequence seq) {
-		AlignmentMember newMember = GlueDataObject.create(cmdContext, AlignmentMember.class, 
-				AlignmentMember.pkMap(alignment.getName(), seq.getSource().getName(), seq.getSequenceID()), true);
+		Map<String,String> pkMap = AlignmentMember.pkMap(alignment.getName(), seq.getSource().getName(), seq.getSequenceID());
+		AlignmentMember newMember = GlueDataObject.create(cmdContext, AlignmentMember.class, pkMap, false);
 		newMember.setAlignment(alignment);
 		newMember.setSequence(seq);
 		newMember.setReferenceMember(false);
