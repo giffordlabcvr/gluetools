@@ -8,28 +8,30 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloObject;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
@@ -39,7 +41,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
-import uk.ac.gla.cvr.gluetools.core.treerenderer.TreeRendererContext;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
@@ -49,18 +50,24 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="maxLikelihoodPlacer")
 public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
-	public static final String PHYLO_RELATED_REF_NAME = "phyloRelatedRefName";
-	public static final String PHYLO_FEATURE_NAME = "phyloFeatureName";
+	// the root alignment which will provide the phylogeny
 	public static final String PHYLO_ALIGNMENT_NAME = "phyloAlignmentName";
-	public static final String PHYLO_MEMBER_WHERE_CLAUSE = "phyloMemberWhereClause";
+	// the field of the alignment table where the phylogeny is stored.
+	public static final String PHYLO_FIELD_NAME = "phyloFieldName";
+	// the alignment object which will provide the alignment
+	public static final String ALIGNMENT_ALIGNMENT_NAME = "alignmentAlignmentName";
+	// the feature loc which will restrict the alginment
+	public static final String ALIGNMENT_RELATED_REF_NAME = "alignmentRelatedRefName";
+	public static final String ALIGNMENT_FEATURE_NAME = "alignmentFeatureName";
 	
 	private static final String PHYLO_SUBTREE_ALIGNMENT_NAMES_KEY = "alignments";
 	private static final String PHYLO_SUBTREE_MEMBER_PK_MAP_KEY = "member";
 	
 	private String phyloAlignmentName;
-	private String phyloRelatedRefName;
-	private String phyloFeatureName;
-	private Optional<Expression> phyloMemberWhereClause;
+	private String phyloFieldName;
+	private String alignmentAlignmentName;
+	private String alignmentRelatedRefName;
+	private String alignmentFeatureName;
 	
 	private MafftRunner mafftRunner = new MafftRunner();
 	private RaxmlEpaRunner raxmlEpaRunner = new RaxmlEpaRunner();
@@ -70,19 +77,20 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		addModulePluginCmdClass(PlaceSequenceCommand.class);
 		addModulePluginCmdClass(PlaceFileCommand.class);
 		addSimplePropertyName(PHYLO_ALIGNMENT_NAME);
-		addSimplePropertyName(PHYLO_RELATED_REF_NAME);
-		addSimplePropertyName(PHYLO_FEATURE_NAME);
-		addSimplePropertyName(PHYLO_MEMBER_WHERE_CLAUSE);
+		addSimplePropertyName(PHYLO_FIELD_NAME);
+		addSimplePropertyName(ALIGNMENT_ALIGNMENT_NAME);
+		addSimplePropertyName(ALIGNMENT_RELATED_REF_NAME);
+		addSimplePropertyName(ALIGNMENT_FEATURE_NAME);
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_ALIGNMENT_NAME, true);
-		this.phyloRelatedRefName = PluginUtils.configureStringProperty(configElem, PHYLO_RELATED_REF_NAME, false);
-		this.phyloFeatureName = PluginUtils.configureStringProperty(configElem, PHYLO_FEATURE_NAME, false);
-		this.phyloMemberWhereClause = 
-				Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, PHYLO_MEMBER_WHERE_CLAUSE, false));
+		this.phyloFieldName = PluginUtils.configureStringProperty(configElem, PHYLO_FIELD_NAME, true);
+		this.alignmentAlignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_ALIGNMENT_NAME, true);
+		this.alignmentRelatedRefName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_RELATED_REF_NAME, false);
+		this.alignmentFeatureName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_FEATURE_NAME, false);
 		
 		Element mafftRunnerElem = PluginUtils.findConfigElement(configElem, "mafftRunner");
 		if(mafftRunnerElem != null) {
@@ -97,40 +105,79 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	@Override
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName), true);
-		if(alignment == null) {
+
+		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName), true);
+		if(phyloAlignment == null) {
 			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "No such alignment \""+phyloAlignmentName+"\"");
 		}
-		if((phyloRelatedRefName != null && phyloFeatureName == null) || (phyloRelatedRefName == null && phyloFeatureName != null)) {
-			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "Either both <phyloRelatedRefName> and <phyloFeatureName> should be specifed, or neither");
+		if(!phyloAlignment.isConstrained()) {
+			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "The phyloAlignment \""+phyloAlignmentName+"\" must be constrained");
 		}
-		if(phyloRelatedRefName != null) {
-			alignment.getRelatedRef(cmdContext, phyloRelatedRefName);
-			GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(phyloRelatedRefName, phyloFeatureName));
+		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
+		project.checkProperty(ConfigurableTable.alignment.name(), phyloFieldName, FieldType.VARCHAR, true);
+
+		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName), true);
+		if(alignmentAlignment == null) {
+			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "No such alignment \""+alignmentAlignment+"\"");
+		}
+		if((alignmentRelatedRefName != null && alignmentFeatureName == null) || (alignmentRelatedRefName == null && alignmentFeatureName != null)) {
+			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "Either both <alignmentRelatedRefName> and <alignmentFeatureName> should be specifed, or neither");
+		}
+		if(alignmentRelatedRefName != null) {
+			phyloAlignment.getRelatedRef(cmdContext, alignmentRelatedRefName);
+			GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(alignmentRelatedRefName, alignmentFeatureName));
 		}
 
 	}
 
 	public Map<String, List<PlacementResult>> place(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
-		// could make some of these things configurable if necessary
-		boolean recursive = true;
-		boolean includeAllColumns = true;
-		Integer minColUsage = 2;
-		boolean deduplicate = true;
-		OrderStrategy orderStrategy = null;
 		
+		// 
 		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, phyloAlignment, recursive, deduplicate, phyloMemberWhereClause);
-		Map<Map<String,String>, DNASequence> memberPkMapToAlignmentRow = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						phyloRelatedRefName, phyloFeatureName, includeAllColumns, minColUsage, orderStrategy, 
-						phyloAlignment, almtMembers);
+		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName));
+		PhyloTree glueAlmtPhyloTree = PhyloExporter.exportAlignmentPhyloTree(cmdContext, phyloAlignment, phyloFieldName, true);
+
+		PhyloLeafLister phyloLeafLister = new PhyloLeafLister();
+		glueAlmtPhyloTree.accept(phyloLeafLister);
 		
+		Map<Map<String,String>, Map<String,String>> almtMembPkMapToPhyloMembPkMap = new LinkedHashMap<Map<String,String>, Map<String,String>>();
+		
+		phyloLeafLister.getPhyloLeaves().stream()
+				.map(phyLeaf -> phyLeaf.getName())
+				.map(name -> Project.targetPathToPkMap(ConfigurableTable.alignment_member, name))
+				.forEach(phyloMembPkMap -> {
+					Map<String,String> almtMembPkMap = new LinkedHashMap<String,String>(phyloMembPkMap);
+					almtMembPkMapToPhyloMembPkMap.put(almtMembPkMap, phyloMembPkMap);
+				});
+		List<AlignmentMember> almtAlmtMembers = almtMembPkMapToPhyloMembPkMap.keySet().stream()
+				.map(memberPkMap -> GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap))
+				.collect(Collectors.toList());
+		List<AlignmentMember> phyloAlmtMembers = almtMembPkMapToPhyloMembPkMap.values().stream()
+				.map(memberPkMap -> GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap))
+				.collect(Collectors.toList());
+
+		
+		// could make some of these things configurable if necessary
+		boolean includeAllColumns = false;
+		Integer minColUsage = null;
+		OrderStrategy orderStrategy = null;
+
+		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
+				FastaAlignmentExporter.exportAlignment(cmdContext, 
+						alignmentRelatedRefName, alignmentFeatureName, includeAllColumns, minColUsage, orderStrategy, 
+						alignmentAlignment, almtAlmtMembers);
+
+		// rename each row to its phylo equivalent.
+		Map<Map<String,String>, DNASequence> phyloMemberPkMapToAlignmentRow = new LinkedHashMap<Map<String,String>, DNASequence>();
+		almtMemberPkMapToAlignmentRow.forEach((almtMemberPkMap, almtRow) -> {
+			phyloMemberPkMapToAlignmentRow.put(almtMembPkMapToPhyloMembPkMap.get(almtMemberPkMap), almtRow);
+		});
+
 		// we rename query and member sequences (a) to avoid clashes and (b) to work around program ID limitations.
 		Map<String, Map<String,String>> rowNameToMemberPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<Map<String,String>, String> memberPkMapToRowName = new LinkedHashMap<Map<String,String>, String>();
 		Map<String, DNASequence> almtFastaContent = FastaUtils.remapFasta(
-				memberPkMapToAlignmentRow, rowNameToMemberPkMap, memberPkMapToRowName, "R");
+				phyloMemberPkMapToAlignmentRow, rowNameToMemberPkMap, memberPkMapToRowName, "R");
 		
 		Map<String, String> rowNameToQueryMap = new LinkedHashMap<String, String>();
 		Map<String, String> queryToRowNameMap = new LinkedHashMap<String, String>();
@@ -143,8 +190,6 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 
-		PhyloTree glueAlmtPhyloTree = PhyloExporter.phyloTreeFromAlignment(cmdContext, phyloAlignment, almtMembers, 
-				new MaxLikelihoodTreeRendererContext(memberPkMapToRowName));
 		
 		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueAlmtPhyloTree, alignmentWithQuery, dataDirFile);
 
@@ -364,77 +409,6 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
 
 	
-	// Renderer of alignment to NewickTree, suitable for downstream consumption.
-	private class MaxLikelihoodTreeRendererContext extends TreeRendererContext {
-
-		private Map<Map<String, String>, String> memberPkMapToRowName;
-
-		public MaxLikelihoodTreeRendererContext(Map<Map<String, String>, String> memberPkMapToRowName) {
-			super();
-			this.memberPkMapToRowName = memberPkMapToRowName;
-			setForceBifurcating(true);
-			setOmitSingleChildInternals(true);
-		}
-
-		@Override
-		public PhyloInternal phyloInternalForAlignment(
-				CommandContext commandContext, Alignment alignment) {
-			PhyloInternal phyloInternal = super.phyloInternalForAlignment(commandContext, alignment);
-			Map<String, Object> userData = phyloInternal.ensureUserData();
-			List<String> alignmentNames = new ArrayList<String>();
-			alignmentNames.add(alignment.getName());
-			userData.put(PHYLO_SUBTREE_ALIGNMENT_NAMES_KEY, alignmentNames);
-			phyloInternal.setUserData(userData);
-			return phyloInternal;
-		}
-
-		@Override
-		public PhyloLeaf phyloLeafForMember(CommandContext commandContext,
-				AlignmentMember alignmentMember) {
-			PhyloLeaf phyloLeaf = super.phyloLeafForMember(commandContext, alignmentMember);
-			Map<String, Object> userData = phyloLeaf.ensureUserData();
-			List<String> alignmentNames = new ArrayList<String>();
-			userData.put(PHYLO_SUBTREE_ALIGNMENT_NAMES_KEY, alignmentNames);
-			userData.put(PHYLO_SUBTREE_MEMBER_PK_MAP_KEY, alignmentMember.pkMap());
-			phyloLeaf.setUserData(userData);
-			return phyloLeaf;
-		}
-
-		// almtPhyloInternal is being optimized away, so we need to save any user data to singleBranchSubtree
-		@SuppressWarnings("unchecked")
-		@Override
-		public Map<String, Object> mergeUserData(
-				PhyloObject<?> almtPhyloInternal,
-				PhyloObject<?> singleBranchSubtree) {
-			Map<String, Object> subtreeUserData = singleBranchSubtree.getUserData();
-			Map<String, Object> internalUserData = almtPhyloInternal.getUserData();
-			if(subtreeUserData == null) {
-				return internalUserData;
-			}
-			if(internalUserData == null) {
-				return subtreeUserData;
-			}
-			List<String> subtreeAlmtNames = (List<String>) subtreeUserData.get(PHYLO_SUBTREE_ALIGNMENT_NAMES_KEY);
-			List<String> internalAlmtNames = (List<String>) internalUserData.get(PHYLO_SUBTREE_ALIGNMENT_NAMES_KEY);
-			subtreeAlmtNames.addAll(internalAlmtNames);
-			return subtreeUserData;
-		}
-
-		@Override
-		protected void setAlignmentPhyloInternalName(
-				CommandContext commandContext, Alignment alignment,
-				PhyloSubtree<?> alignmentPhyloInternal) {
-			// no names required.
-		}
-
-		@Override
-		protected void setMemberPhyloLeafName(CommandContext commandContext,
-				AlignmentMember alignmentMember, PhyloLeaf memberPhyloLeaf) {
-			memberPhyloLeaf.setName(memberPkMapToRowName.get(alignmentMember.pkMap()));
-		}
-
-	}
-
 	// collects branch labels from the JPlace tree and stores them in a map from label to branch object
 	private class PhyloTreeBranchLabelCollector implements PhyloTreeVisitor {
 
