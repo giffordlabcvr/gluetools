@@ -79,8 +79,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_ALIGNMENT_NAME, true);
-		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_RELATED_REF_NAME, false);
-		this.phyloAlignmentName = PluginUtils.configureStringProperty(configElem, PHYLO_FEATURE_NAME, false);
+		this.phyloRelatedRefName = PluginUtils.configureStringProperty(configElem, PHYLO_RELATED_REF_NAME, false);
+		this.phyloFeatureName = PluginUtils.configureStringProperty(configElem, PHYLO_FEATURE_NAME, false);
 		this.phyloMemberWhereClause = 
 				Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, PHYLO_MEMBER_WHERE_CLAUSE, false));
 		

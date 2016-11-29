@@ -19,10 +19,10 @@ import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentDeriveSegmentsException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
@@ -42,29 +42,32 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass( 
 		commandWords={"derive","segments"}, 
-		docoptUsages={"<sourceAlmtName> [-r] [-s] [-e] (-w <whereClause> | -a) [-m <mergeStrategy>]"},
+		docoptUsages={"<sourceAlmtName> [-r] [-l <linkingReference>] [-s] [-e] (-w <whereClause> | -a) [-m <mergeStrategy>]"},
 		docoptOptions={
-				"-r, --recursive                                      Include descendent alignments",
-				"-s, --suppressSkippedWarning                         Skip targets without warning",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify source members",
-			    "-a, --allMembers                                     Select all source members",
-			    "-e, --existingMembersOnly                            Derive only for existing",
-			    "-m <mergeStrategy>, --mergeStrategy <mergeStrategy>  Segment merge strategy"},
+				"-r, --recursive                                               Include descendent alignments",
+				"-l <linkingReference>, --linkingReference <linkingReference>  Reference linking source and target",
+				"-s, --suppressSkippedWarning                                  Skip targets without warning",
+				"-w <whereClause>, --whereClause <whereClause>                 Qualify source members",
+			    "-a, --allMembers                                              Select all source members",
+			    "-e, --existingMembersOnly                                     Derive only for existing",
+			    "-m <mergeStrategy>, --mergeStrategy <mergeStrategy>           Segment merge strategy"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Derive alignment segments from an unconstrained alignment", 
 		furtherHelp=
-		"Available only if the current alignment is constrained. "+
 		"The source alignment named by <sourceAlmtName> must exist and be unconstrained. "+
 		"Segments will be added to members of one or more target alignments. By default the only target alignment is "+
 		"the current alignment. "+
 		"If the --recursive option is used, the current alignment's descendents are also included as target alignments. \n"+
 		"In order for a target alignment to be updated by this command, its reference must be a member of the source alignment, "+
 		"otherwise the target alignment will be skipped, with a warning. The warning can be suppressed using "+
-		"the --suppressSkippedWarning option.\n"+
+		"the --suppressSkippedWarning option (constrained target only).\n"+
 		"The <whereClause> selects members from the source alignment. These members will be "+
 		"added to the current alignment if they do not exist, unless --existingMembersOnly is specified. "+
+		"The command is available for constrained and unconstrained current alignments. "+
+		"However, if the current alignment is unconstrained, an <linkingReference> must be specified, "+
+		"This must be a member of both source and target, and must not be one of the selected source members. "+
 		"New aligned segments will be added to the current alignment's members, derived "+
-		"from the homology between the member and reference sequence in the source alignment. \n"+
+		"from the homology in the source alignment between the selected member and the constraining or linking reference member "+
 		"The <mergeStrategy> option governs how new segments derived from the source alignment "+
 		"are merged with any segments in any existing member of the current alignment.\n"+
 		"Possible values for <mergeStrategy> are:\n"+
@@ -80,6 +83,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 	public static final String SOURCE_ALMT_NAME = "sourceAlmtName";
 	public static final String RECURSIVE = "recursive";
+	public static final String LINKING_REFERENCE = "linkingReference";
 	public static final String SUPPRESS_SKIPPED_WARNING = "suppressSkippedWarning";
 	public static final String MERGE_STRATEGY = "mergeStrategy";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -88,6 +92,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 	
 	private String sourceAlmtName;
+	private String linkingReference;
 	private Boolean recursive;
 	private Boolean suppressSkippedWarning;
 	private Optional<Expression> whereClause;
@@ -108,6 +113,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 		super.configure(pluginConfigContext, configElem);
 		sourceAlmtName = PluginUtils.configureStringProperty(configElem, SOURCE_ALMT_NAME, true);
 		recursive = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, RECURSIVE, false)).orElse(false);
+		linkingReference = PluginUtils.configureStringProperty(configElem, LINKING_REFERENCE, false);
 		suppressSkippedWarning = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_SKIPPED_WARNING, false)).orElse(false);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
@@ -129,12 +135,21 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 	@Override
 	public AlignmentDeriveSegmentsResult execute(CommandContext cmdContext) {
-		
-		Alignment sourceAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(sourceAlmtName));
-		String sourceAlignmentName = sourceAlignment.getName();
-		if(sourceAlignment.getRefSequence() != null) {
-			throw new AlignmentDeriveSegmentsException(Code.SOURCE_ALIGNMENT_IS_CONSTRAINED, sourceAlignmentName);
+		Alignment currentAlignment = lookupAlignment(cmdContext);
+		if(currentAlignment.isConstrained()) {
+			if(this.linkingReference != null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <linkingReference> option may only be used if the current alignment is unconstrained.");
+			}
+		} else {
+			if(this.recursive) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The --recursive option may only be used if the current alignment is constrained.");
+			}
 		}
+		Alignment sourceAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(sourceAlmtName));
+		if(sourceAlignment.isConstrained()) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Source alignment must be unconstrained.");
+		}
+		String sourceAlignmentName = sourceAlignment.getName();
 		SelectQuery selectQuery;
 		Expression sourceAlmtMemberExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, sourceAlignmentName);
 		if(whereClause.isPresent()) {
@@ -142,8 +157,8 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 		} else {
 			selectQuery = new SelectQuery(AlignmentMember.class, sourceAlmtMemberExp);
 		}
-		List<AlignmentMember> sourceAlmtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
-		Alignment currentAlignment = lookupAlignment(cmdContext);
+		List<AlignmentMember> selectedAlmtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
+		
 		
 		ArrayList<Alignment> targetAlignments = new ArrayList<Alignment>();
 		targetAlignments.add(currentAlignment);
@@ -153,13 +168,36 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
 
 		for(Alignment targetAlignment: targetAlignments) {
-			ReferenceSequence refSequence = targetAlignment.getRefSequence();
+			ReferenceSequence refSequence;
+			if(targetAlignment.isConstrained()) {
+				refSequence = targetAlignment.getRefSequence();
+			} else {
+				refSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(this.linkingReference));
+			}
 			Sequence refSeqSeq = refSequence.getSequence();
 			String refSequenceSourceName = refSeqSeq.getSource().getName();
 			String refSequenceSeqID = refSeqSeq.getSequenceID();
-			AlignmentMember refSeqMemberInSourceAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(sourceAlignmentName, refSequenceSourceName, refSequenceSeqID), true);
-			if(refSeqMemberInSourceAlmt == null) {
+			Map<String, String> refMemberPkMap = AlignmentMember.pkMap(sourceAlignmentName, refSequenceSourceName, refSequenceSeqID);
+			AlignmentMember refSeqMemberInSourceAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, refMemberPkMap, true);
+
+			AlignmentMember refSeqMemberInTargetAlmt = null;
+
+			if(!targetAlignment.isConstrained()) {
+				if(refSeqMemberInSourceAlmt == null) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of source alignment.");
+				}
+				List<Map<String,String>> selectedSrcAlmtMemberPkMaps = selectedAlmtMembers.stream().map(memb -> memb.pkMap()).collect(Collectors.toList());
+				if(selectedSrcAlmtMemberPkMaps.contains(refMemberPkMap)) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must not be one of the selected source members.");
+				}
+				refSeqMemberInTargetAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+						AlignmentMember.pkMap(targetAlignment.getName(), refSequenceSourceName, refSequenceSeqID), true);
+				if(refSeqMemberInTargetAlmt == null) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of target alignment.");
+				}
+			}
+			
+			if(targetAlignment.isConstrained() && refSeqMemberInSourceAlmt == null) {
 				if(!suppressSkippedWarning) {
 					GlueLogger.getGlueLogger().warning("Skipping target alignment "+targetAlignment.getName()+
 							": its reference sequence "+refSequence.getName()+
@@ -169,7 +207,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				continue;
 			}
 
-			// by inverting the ref seq member aligned segments, 
+			// by inverting the ref source member aligned segments, 
 			// we get segments that align the unconstrained source alignment's coordinates to the reference sequence.
 			List<QueryAlignedSegment> srcAlmtToRefQaSegs = 
 					refSeqMemberInSourceAlmt.getAlignedSegments().stream()
@@ -177,7 +215,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 					.collect(Collectors.toList());
 
 
-			for(AlignmentMember sourceAlmtMember: sourceAlmtMembers) {
+			for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
 				Map<String, Object> resultRow = new LinkedHashMap<String, Object>();
 				Sequence memberSeq = sourceAlmtMember.getSequence();
 				String memberSourceName = memberSeq.getSource().getName();
@@ -196,7 +234,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 					}
 				}
 
-				double prevRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);
+				Double prevRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);
 
 				List<AlignedSegment> existingSegs = new ArrayList<AlignedSegment>(currentAlmtMember.getAlignedSegments());
 
@@ -209,28 +247,39 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 						.map(AlignedSegment::asQueryAlignedSegment)
 						.collect(Collectors.toList());
 
-				List<QueryAlignedSegment> newQaSegs = 
+				List<QueryAlignedSegment> memberToRefSegs = 
 						QueryAlignedSegment.translateSegments(memberToSrcAlmtQaSegs, srcAlmtToRefQaSegs);
 
+				List<QueryAlignedSegment> memberToTargetAlmtSegs = null;
+				if(targetAlignment.isConstrained()) {
+					memberToTargetAlmtSegs = memberToRefSegs;
+				} else {
+					List<QueryAlignedSegment> refToTargetAlmtSegs = refSeqMemberInTargetAlmt.getAlignedSegments().stream()
+					.map(AlignedSegment::asQueryAlignedSegment)
+					.collect(Collectors.toList());
+					memberToTargetAlmtSegs = QueryAlignedSegment.translateSegments(memberToRefSegs, refToTargetAlmtSegs);
+
+				}
+				
 				List<QueryAlignedSegment> qaSegsToAdd = null;
 
 				// sort required so that subtract works correctly.
 				existingQaSegs = IReferenceSegment.sortByRefStart(existingQaSegs, ArrayList<QueryAlignedSegment>::new);
-				newQaSegs = IReferenceSegment.sortByRefStart(newQaSegs, ArrayList<QueryAlignedSegment>::new);
+				memberToTargetAlmtSegs = IReferenceSegment.sortByRefStart(memberToTargetAlmtSegs, ArrayList<QueryAlignedSegment>::new);
 				
 				switch(segmentMergeStrategy) {
 				case OVERWRITE:
-					qaSegsToAdd = newQaSegs;
+					qaSegsToAdd = memberToTargetAlmtSegs;
 					break;
 				case MERGE_PREFER_EXISTING:
 					qaSegsToAdd = new ArrayList<QueryAlignedSegment>();
 					qaSegsToAdd.addAll(existingQaSegs);
-					qaSegsToAdd.addAll(ReferenceSegment.subtract(newQaSegs, existingQaSegs));
+					qaSegsToAdd.addAll(ReferenceSegment.subtract(memberToTargetAlmtSegs, existingQaSegs));
 					break;
 				case MERGE_PREFER_NEW:
 					qaSegsToAdd = new ArrayList<QueryAlignedSegment>();
-					qaSegsToAdd.addAll(ReferenceSegment.subtract(existingQaSegs, newQaSegs));
-					qaSegsToAdd.addAll(newQaSegs);
+					qaSegsToAdd.addAll(ReferenceSegment.subtract(existingQaSegs, memberToTargetAlmtSegs));
+					qaSegsToAdd.addAll(memberToTargetAlmtSegs);
 					break;
 				}
 
@@ -249,7 +298,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				}
 				cmdContext.commit();
 
-				double newRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);
+				Double newRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);
 
 				resultRow.put(AlignmentDeriveSegmentsResult.TARGET_ALIGNMENT_NAME, targetAlignment.getName());
 				resultRow.put(AlignmentMember.SOURCE_NAME_PATH, memberSourceName);
@@ -290,6 +339,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
+			registerDataObjectNameLookup("linkingReference", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("sourceAlmtName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override

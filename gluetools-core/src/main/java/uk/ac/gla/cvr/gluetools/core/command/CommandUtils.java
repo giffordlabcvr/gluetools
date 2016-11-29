@@ -63,9 +63,11 @@ public abstract class CommandUtils {
 			if(!dirStringToUse.equals(dataDirString)) {
 				GlueLogger.getGlueLogger().warning("Unable to use data directory "+dataDirString+"; using "+dirStringToUse+" instead");
 			}
-			boolean mkdirsResult = dataDirFile.mkdirs();
-			if(!mkdirsResult) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Failed to create directory: "+dataDirFile.getAbsolutePath());
+			if(!dataDirFile.exists()) {
+				boolean mkdirsResult = dataDirFile.mkdirs();
+				if(!mkdirsResult) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Failed to create directory: "+dataDirFile.getAbsolutePath());
+				}
 			}
 		}
 		return dataDirFile;
