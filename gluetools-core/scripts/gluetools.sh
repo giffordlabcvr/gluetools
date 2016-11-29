@@ -1,21 +1,17 @@
 #!/bin/bash
 
-options=':l'
-localConfig='false'
-while getopts $options option
-do
-    case $option in
-        l  )    localConfig='true';;
-        \? )    if (( (err & ERROPTS) != ERROPTS ))
-                then
-                    error $NOEXIT $ERROPTS "Unknown option."
-                fi;;
-        *  )    echo "Missing option argument."
-		exit 1;;
-    esac
-done
+localConfig="false"
+remargs=()
 
-shift $(($OPTIND - 1))
+for d in "$@"
+do
+if [ "${d}" == "-l" ]
+then
+    localConfig="true"
+else
+    remargs=("${remargs[@]}" "${d}") # push element 'd'
+fi
+done
 
 export GLUETOOLS_VERSION=`(cd ${GLUETOOLS_HOME}/.. ; ./getCurrentVersion.sh)`
 export GLUETOOLS_CONFIG_XML=${GLUETOOLS_HOME}/gluetools-config.xml
@@ -31,4 +27,4 @@ else
 fi
 fi
 (cd ${GLUETOOLS_HOME} ; gradle --quiet jarAll)
-java -agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n -jar ${GLUETOOLS_HOME}/build/libs/gluetools-core-all-${GLUETOOLS_VERSION}.jar -c ${GLUETOOLS_CONFIG_XML} "$@"
+java -agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n -jar ${GLUETOOLS_HOME}/build/libs/gluetools-core-all-${GLUETOOLS_VERSION}.jar -c ${GLUETOOLS_CONFIG_XML} "${remargs[@]}"
