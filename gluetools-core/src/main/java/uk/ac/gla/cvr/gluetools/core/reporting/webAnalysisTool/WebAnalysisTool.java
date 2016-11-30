@@ -26,14 +26,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult.SummaryCode;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -327,7 +323,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis) {
 		
 		fastaIdToSequence.forEach((fastaId, sequence) -> {
-			
+			/*
 			GenotypeResult genotypeResult = fastaIdToGenotypeResult.get(fastaId);
 			if(genotypeResult.getSummaryCode() == SummaryCode.NEGATIVE) {
 				throw new WebAnalysisException(Code.GENOTYPING_FAILED, fastaId);
@@ -424,6 +420,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			queryAnalysis.tipAlignmentName = tipAlmt.getName();
 			queryAnalysis.typingAnalysis = typingAnalysis;
 			fastaIdToQueryAnalysis.put(fastaId, queryAnalysis);
+			*/
 		});
 	}
 

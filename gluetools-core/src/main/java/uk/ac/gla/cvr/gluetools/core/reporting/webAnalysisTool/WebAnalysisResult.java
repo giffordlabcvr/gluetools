@@ -2,22 +2,23 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 
-@PojoResultClass
+@PojoDocumentClass
 public class WebAnalysisResult {
 
-	@PojoResultField(resultName = "featureAnalysis")
+	
+	@PojoDocumentListField(fieldName = "featureAnalysis", itemClass = FeatureAnalysis.class)
 	public List<FeatureAnalysis> featureAnalysisList;
 
-	@PojoResultField(resultName = "referenceAnalysis")
+	@PojoDocumentListField(fieldName = "referenceAnalysis", itemClass = ReferenceAnalysis.class)
 	public List<ReferenceAnalysis> referenceAnalysisList;
 
-	@PojoResultField(resultName = "queryAnalysis")
+	@PojoDocumentListField(fieldName = "queryAnalysis", itemClass = QueryAnalysis.class)
 	public List<QueryAnalysis> queryAnalysisList;
 
-	@PojoResultField(resultName = "variationCategoryResult")
+	@PojoDocumentListField(fieldName = "variationCategoryResult", itemClass = VariationCategoryResult.class)
 	public List<VariationCategoryResult> variationCategoryResultList;
 	
 	

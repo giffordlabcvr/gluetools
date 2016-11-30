@@ -1,22 +1,22 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 
 public abstract class NtSegment {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String nts;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer startUIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer endUIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer startSeqIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer endSeqIndex;
 
 	

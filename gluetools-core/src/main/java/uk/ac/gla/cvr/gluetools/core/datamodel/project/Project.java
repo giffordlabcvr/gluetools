@@ -317,6 +317,10 @@ public class Project extends _Project {
 
 	public String pkMapToTargetPath(String tableName, Map<String, String> pkMap) {
 		ModePathElement[] modePath = getModePathForTable(tableName);
+		return pkMapToTargetPath(modePath, pkMap);
+	}
+
+	public static String pkMapToTargetPath(ModePathElement[] modePath, Map<String, String> pkMap) {
 		StringBuffer buf = new StringBuffer();
 		for(int i = 0; i < modePath.length; i++) {
 			if(i > 0) {

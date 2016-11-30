@@ -9,9 +9,11 @@ import org.w3c.dom.Document;
 
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickBootstrapsToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickBootstrapsGenerator;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickJPlaceGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.document.DocumentToPhyloTreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.phylotree.document.PhyloTreeToDocumentTransformer;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
@@ -89,6 +91,20 @@ public enum PhyloFormat {
 			PhyloTreeToNewickBootstrapsGenerator phyloTreeToNewickBootstrapsGenerator = new PhyloTreeToNewickBootstrapsGenerator();
 			phyloTree.accept(phyloTreeToNewickBootstrapsGenerator);
 			return phyloTreeToNewickBootstrapsGenerator.getNewickString().getBytes();
+		}
+	},
+	NEWICK_JPLACE {
+		@Override
+		public PhyloTree parse(byte[] bytes) {
+			NewickJPlaceToPhyloTreeParser newickJPlaceToPhyloTreeParser = new NewickJPlaceToPhyloTreeParser();
+			return newickJPlaceToPhyloTreeParser.parseNewick(new String(bytes));
+		}
+
+		@Override
+		public byte[] generate(PhyloTree phyloTree) {
+			PhyloTreeToNewickJPlaceGenerator phyloTreeToNewickJPlaceGenerator = new PhyloTreeToNewickJPlaceGenerator();
+			phyloTree.accept(phyloTreeToNewickJPlaceGenerator);
+			return phyloTreeToNewickJPlaceGenerator.getNewickString().getBytes();
 		}
 	};
 	

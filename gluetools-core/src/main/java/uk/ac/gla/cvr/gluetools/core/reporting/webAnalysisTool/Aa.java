@@ -1,16 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 
 public abstract class Aa {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String aa;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer startUIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer endUIndex;
 
 }

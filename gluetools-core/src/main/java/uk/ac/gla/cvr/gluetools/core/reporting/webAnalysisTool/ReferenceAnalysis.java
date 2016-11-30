@@ -3,31 +3,32 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 import java.util.List;
 import java.util.Optional;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 
-@PojoResultClass
+@PojoDocumentClass
 public class ReferenceAnalysis {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String refName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String sourceName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String sequenceID;
 	
-	@PojoResultField
+	@PojoDocumentField
 	public String parentRefName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String containingAlmtName;
 
-	@PojoResultField
+	@PojoDocumentListField(itemClass = SequenceFeatureAnalysis.class)
 	public List<SequenceFeatureAnalysis<ReferenceAa, ReferenceNtSegment>> sequenceFeatureAnalysis;
 	
 	private ReferenceSequence refSeq;

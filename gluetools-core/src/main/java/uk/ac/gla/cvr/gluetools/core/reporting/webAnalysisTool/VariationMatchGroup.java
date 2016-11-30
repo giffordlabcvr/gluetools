@@ -3,22 +3,23 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 
-@PojoResultClass
+@PojoDocumentClass
 public class VariationMatchGroup {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String referenceName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String featureName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String variationCategory;
 
-	@PojoResultField
+	@PojoDocumentListField(itemClass = VariationMatch.class)
 	public List<VariationMatch> variationMatch = new ArrayList<VariationMatch>();
 	
 	public static class Key {

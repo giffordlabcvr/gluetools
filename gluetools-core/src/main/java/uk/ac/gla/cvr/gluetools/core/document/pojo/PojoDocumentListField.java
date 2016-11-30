@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.result;
+package uk.ac.gla.cvr.gluetools.core.document.pojo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface PojoResultClass {
-	String resultName() default "";
+@Target(ElementType.FIELD)
+public @interface PojoDocumentListField {
+	String fieldName() default "";
+	Class<?> itemClass();
 }

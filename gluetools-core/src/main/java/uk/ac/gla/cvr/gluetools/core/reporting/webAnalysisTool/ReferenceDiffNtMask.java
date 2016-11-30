@@ -1,12 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 
-@PojoResultClass
+@PojoDocumentClass
 public class ReferenceDiffNtMask {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String refName;
 
 	public char[] maskChars;
@@ -16,7 +16,7 @@ public class ReferenceDiffNtMask {
 	 * "X" = NT difference from reference.
 	 * "I" = nothing to compare with (insertion relative to reference)
 	 */
-	@PojoResultField
+	@PojoDocumentField
 	public String mask;
 
 }

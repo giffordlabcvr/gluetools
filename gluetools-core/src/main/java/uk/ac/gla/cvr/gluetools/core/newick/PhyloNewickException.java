@@ -9,7 +9,8 @@ public class PhyloNewickException extends GlueException {
 		ILLEGAL_NEWICK_NODE_NAME("nodeName"),
 		SYNTAX_ERROR("characterPosition"), 
 		UNEXPECTED_NEWICK_TOKEN("token", "characterPosition"),
-		PARSE_ERROR("tokenType", "tokenValue", "position");
+		PARSE_ERROR("tokenType", "tokenValue", "position"),
+		FORMAT_ERROR("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

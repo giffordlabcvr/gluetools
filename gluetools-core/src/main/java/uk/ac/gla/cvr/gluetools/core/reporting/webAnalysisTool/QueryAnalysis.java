@@ -3,36 +3,37 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 import java.util.List;
 import java.util.Optional;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-@PojoResultClass
+@PojoDocumentClass
 public class QueryAnalysis {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String fastaId;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String targetRefName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String tipAlignmentName;
 	
-	@PojoResultField
+	@PojoDocumentListField(itemClass = String.class)
 	public List<String> ancestorRefName;
 
-	@PojoResultField
+	@PojoDocumentListField(itemClass = String.class)
 	public List<String> ancestorAlmtName;
 
-	@PojoResultField
+	@PojoDocumentListField(itemClass = ResultVariationCategory.class)
 	public List<ResultVariationCategory> resultVariationCategory;
 	
-	@PojoResultField
+	@PojoDocumentListField(itemClass = QuerySequenceFeatureAnalysis.class)
 	public List<QuerySequenceFeatureAnalysis> sequenceFeatureAnalysis;
 
-	@PojoResultField
+	@PojoDocumentField
 	public TypingAnalysis typingAnalysis;
 	
 	private AbstractSequenceObject sequenceObj;

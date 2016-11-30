@@ -11,7 +11,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
@@ -102,9 +102,8 @@ public class JPlaceResult {
 			jPlaceResult.getPQueries().add(JPlacePQuery.parse(((JsonObject) placementGroupJsonObject)));
 		}
 		
-		NewickToPhyloTreeParser treeParser = new NewickToPhyloTreeParser();
 		String treeString = jsonObject.getString("tree");
-		jPlaceResult.setTree(treeParser.parseNewick(treeString));
+		jPlaceResult.setTree(PhyloFormat.NEWICK_JPLACE.parse(treeString.getBytes()));
 		
 		return jPlaceResult;
 	}

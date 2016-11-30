@@ -73,15 +73,15 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 
 	
 	public CommandObject setObject(String name) {
-		CommandObject objectBuilder = new CommandObject();
-		fields.put(name, objectBuilder);
-		return objectBuilder;
+		CommandObject cmdObject = new CommandObject();
+		fields.put(name, cmdObject);
+		return cmdObject;
 	}
 
 	public CommandArray setArray(String name) {
-		CommandArray arrayBuilder = new CommandArray();
-		fields.put(name, arrayBuilder);
-		return arrayBuilder;
+		CommandArray cmdArray = new CommandArray();
+		fields.put(name, cmdArray);
+		return cmdArray;
 	}
 
 	

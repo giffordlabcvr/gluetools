@@ -42,6 +42,7 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 	// anyAlignment -- if true, the alignment mentioned in the name of the incoming leaf 
 	// is ignored, instead the member source / seqID must specify 
 	// a unique member within the selected alignment members. This is useful for importing a phylogeny 
+	// the leaf name is re-written to specify this unique member.
 	// generated from an unconstrained alignment into the constrained alignment tree.
 	// (in this case you would include referenceMember = false in the <whereClause>)
 	
@@ -89,6 +90,7 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 					if(selectedMemberPkMap == null) {
 						throw new ImportPhylogenyException(ImportPhylogenyException.Code.MEMBER_LEAF_MISMATCH, "Leaf node "+leafNodeName+" does not match any selected alignment member, even allowing --anyAlignment.");
 					}
+					phyloLeaf.setName(memberPkMapToLeafNodeName(selectedMemberPkMap));
 				} else {
 					selectedMemberPkMap = leafNodePkMap;
 				}
@@ -317,6 +319,10 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 	
 	private Map<String, String> memberLeafNodeNameToPkMap(String leafNodeName) {
 		return Project.targetPathToPkMap(ConfigurableTable.alignment_member, leafNodeName);
+	}
+
+	private String memberPkMapToLeafNodeName(Map<String, String> pkMap) {
+		return Project.pkMapToTargetPath(ConfigurableTable.alignment_member.getModePath(), pkMap);
 	}
 
 	private class AlignmentData {

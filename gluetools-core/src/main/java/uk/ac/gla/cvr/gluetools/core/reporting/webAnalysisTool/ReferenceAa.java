@@ -1,8 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 
-@PojoResultClass
+@PojoDocumentClass
 public class ReferenceAa extends Aa {
 
 }

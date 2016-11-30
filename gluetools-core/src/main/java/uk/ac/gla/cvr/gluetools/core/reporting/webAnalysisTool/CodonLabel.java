@@ -1,18 +1,18 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 
-@PojoResultClass
+@PojoDocumentClass
 public class CodonLabel {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String label;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer startUIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer endUIndex;
 	
 }

@@ -1,36 +1,36 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 
-@PojoResultClass
+@PojoDocumentClass
 public class TypingAnalysis {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String typeAlignmentName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String typeAlignmentDisplayName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String summaryCode;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String closestMemberAlignmentName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String closestMemberAlignmentDisplayName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String closestMemberSourceName;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String closestMemberSequenceID;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Double likeWeightRatio;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Double distanceToClosestMember;
 
 	

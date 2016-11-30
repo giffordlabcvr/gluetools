@@ -2,28 +2,30 @@ package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.PojoResultField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
+import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
+import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSinglePlacement;
 
-@PojoResultClass
+@PojoDocumentClass
 public class FeatureAnalysis {
 
-	@PojoResultField
+	@PojoDocumentField
 	public String featureName;
 	
-	@PojoResultField
+	@PojoDocumentListField(itemClass = CodonLabel.class)
 	public List<CodonLabel> codonLabel;
 	
-	@PojoResultField
+	@PojoDocumentField
 	public Integer startUIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Integer endUIndex;
 
-	@PojoResultField
+	@PojoDocumentField
 	public Boolean includesSequenceContent;
 
-	@PojoResultField
+	@PojoDocumentField
 	public String deriveSequenceAnalysisFrom;
 	
 }
