@@ -29,9 +29,11 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloObject;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeReconciler;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
@@ -368,31 +370,70 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				try {
 					branchLabel = (Integer) phyloBranch.ensureUserData().get(NewickJPlaceToPhyloTreeParser.J_PLACE_BRANCH_LABEL);
 				} catch(Exception e) {
-					
+					throw new MaxLikelihoodPlacerException(MaxLikelihoodPlacerException.Code.JPLACE_STRUCTURE_ERROR, 
+							e, "Labelled phylo tree is missing integer branch labels: "+e.getLocalizedMessage());
 				}
+				edgeIndexToPhyloBranch.put(branchLabel, (PhyloBranch) labelledToGluePhyloObj.get(phyloBranch));
 			}
-			
 		});
-		
-		
 		return edgeIndexToPhyloBranch;
 	}
 
 
-	// adds a single new branch to the glueProjectPhyloTree based on a specific placement.
-	public void addPlacementToPhylogeny(
+	// adds a single new leaf to the glueProjectPhyloTree based on a specific placement.
+	public PhyloLeaf addPlacementToPhylogeny(
 			PhyloTree glueProjectPhyloTree,
-			Map<Integer, PhyloBranch> edgeIndexMap,
+			Map<Integer, PhyloBranch> edgeIndexToPhyloBranch,
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement) {
+		PhyloBranch insertionBranch = edgeIndexToPhyloBranch.get(placement.edgeIndex);
+		PhyloSubtree<?> subtree = insertionBranch.getSubtree();
+
+		// new phylo objects
+		PhyloInternal newPhyloInternal = new PhyloInternal();
+		PhyloBranch phyloBranchToLeaf = new PhyloBranch();
+		PhyloBranch phyloBranchToSubtree = new PhyloBranch();
+		PhyloLeaf placementLeaf = new PhyloLeaf();
+
+		// change topology
+		subtree.setParentPhyloBranch(null);
+		insertionBranch.setSubtree(newPhyloInternal);
+		phyloBranchToSubtree.setSubtree(subtree);
+		phyloBranchToLeaf.setSubtree(placementLeaf);
+		newPhyloInternal.addBranch(phyloBranchToSubtree);
+		newPhyloInternal.addBranch(phyloBranchToLeaf);
+
+		// branch lengths
+		BigDecimal originalInsertionBranchLength = insertionBranch.getLength();
+		BigDecimal distalLength = new BigDecimal(placement.distalLength);
+		insertionBranch.setLength(distalLength);
+		phyloBranchToSubtree.setLength(originalInsertionBranchLength.subtract(distalLength));
+		phyloBranchToLeaf.setLength(new BigDecimal(placement.pendantLength));
+		
+		return placementLeaf;
 	}
 
-	// resets the glueProjectPhyloTree to the way it was before the placement was added.
-	public void removePlacementFromPhylogeny(
-			PhyloTree glueProjectPhyloTree,
-			Map<Integer, PhyloBranch> edgeIndexMap,
-			MaxLikelihoodSingleQueryResult queryResult,
-			MaxLikelihoodSinglePlacement placement) {
+	// resets the glueProjectPhyloTree to the way it was before the placement leaf was added.
+	public void removePlacementFromPhylogeny(PhyloLeaf placementLeaf) {
+		PhyloBranch phyloBranchToSubtree = null;
+		PhyloBranch phyloBranchToLeaf = placementLeaf.getParentPhyloBranch();
+		PhyloInternal newPhyloInternal = phyloBranchToLeaf.getParentPhyloInternal();
+		for(PhyloBranch phyloBranch : newPhyloInternal.getBranches()) {
+			if(phyloBranch != phyloBranchToLeaf) {
+				phyloBranchToSubtree = phyloBranch;
+				break;
+			}
+		}
+		PhyloSubtree<?> subtree = phyloBranchToSubtree.getSubtree();
+		PhyloBranch insertionBranch = newPhyloInternal.getParentPhyloBranch();
+
+		// restore branch length
+		insertionBranch.setLength(insertionBranch.getLength().add(phyloBranchToSubtree.getLength()));
+
+		// restore topology
+		subtree.setParentPhyloBranch(null);
+		insertionBranch.setSubtree(subtree);
+		
 	}
 
 	

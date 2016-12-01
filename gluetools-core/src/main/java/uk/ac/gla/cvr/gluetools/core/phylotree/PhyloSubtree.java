@@ -9,7 +9,7 @@ public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObjec
 		return parentPhyloBranch;
 	}
 
-	void setParentPhyloBranch(PhyloBranch parentPhyloBranch) {
+	public void setParentPhyloBranch(PhyloBranch parentPhyloBranch) {
 		this.parentPhyloBranch = parentPhyloBranch;
 	}
 
