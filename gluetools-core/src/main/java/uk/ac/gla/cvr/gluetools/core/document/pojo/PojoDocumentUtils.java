@@ -46,6 +46,8 @@ public class PojoDocumentUtils {
 					if(!valueClass.equals(fieldType)) {
 						throw new PojoDocumentException(Code.DOCUMENT_TO_POJO_FAILED, "Object field of incorrect type "+valueClass.getSimpleName()+", expected "+fieldType);
 					}
+				} else if(cmdFieldValue == null) {
+					pojoFieldValue = null;
 				} else {
 					pojoFieldValue = commandObjectToPojo((CommandObject) cmdFieldValue, fieldType);
 				}

@@ -26,9 +26,12 @@ import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloObject;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeReconciler;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
@@ -70,6 +73,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		super();
 		addModulePluginCmdClass(PlaceSequenceCommand.class);
 		addModulePluginCmdClass(PlaceFileCommand.class);
+		addModulePluginCmdClass(ListQueryCommand.class);
+		addModulePluginCmdClass(ListPlacementCommand.class);
+		addModulePluginCmdClass(ExportPlacementPhylogenyCommand.class);
 		addSimplePropertyName(PHYLO_ALIGNMENT_NAME);
 		addSimplePropertyName(PHYLO_FIELD_NAME);
 		addSimplePropertyName(ALIGNMENT_ALIGNMENT_NAME);
@@ -126,9 +132,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
 	public MaxLikelihoodPlacerResult place(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
 		
-		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName));
 		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName));
-		PhyloTree glueAlmtPhyloTree = PhyloExporter.exportAlignmentPhyloTree(cmdContext, phyloAlignment, phyloFieldName, true);
+		PhyloTree glueProjectPhyloTree = constructGlueProjectPhyloTree(cmdContext);
 
 		// phylo tree leaves reference constrained alignment members
 		// however, the alignment passed to MAFFT/EPA may be a different, unconstrained alignment.
@@ -136,7 +141,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Map<Map<String,String>, Map<String,String>> almtMembPkMapToPhyloMembPkMap = new LinkedHashMap<Map<String,String>, Map<String,String>>();
 
 		PhyloLeafLister phyloLeafLister = new PhyloLeafLister();
-		glueAlmtPhyloTree.accept(phyloLeafLister);
+		glueProjectPhyloTree.accept(phyloLeafLister);
 		
 		phyloLeafLister.getPhyloLeaves().stream()
 				.map(phyLeaf -> phyLeaf.getName())
@@ -193,7 +198,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 
 		// rename leaves in the glue alignment tree so that they match the alignment rows when it is passed to Raxml EPA
-		glueAlmtPhyloTree.accept(new PhyloTreeVisitor() {
+		glueProjectPhyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
 				String leafName = phyloLeaf.getName();
@@ -201,13 +206,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				phyloLeaf.setName(memberPkMapToRowName.get(phyloMemberPkMap));
 			}
 		});
-		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueAlmtPhyloTree, alignmentWithQuery, dataDirFile);
+		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueProjectPhyloTree, alignmentWithQuery, dataDirFile);
 		JPlaceResult jPlaceResult = raxmlEpaResult.getjPlaceResult();
 
 		PhyloTree jPlacePhyloTree = jPlaceResult.getTree();
 		// reconcile the RAxML jPlace phylo tree with the GLUE alignment phylo tree
 		// (just as a data check)
-		PhyloTreeReconciler phyloTreeReconciler = new PhyloTreeReconciler(glueAlmtPhyloTree);
+		PhyloTreeReconciler phyloTreeReconciler = new PhyloTreeReconciler(glueProjectPhyloTree);
 		jPlacePhyloTree.accept(phyloTreeReconciler);
 
 		// rename jPlace result tree leaves back to their reference sequence phylo member names
@@ -228,7 +233,11 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		return maxLikelihoodPlacerResult;
 	}
 
-	
+	public PhyloTree constructGlueProjectPhyloTree(CommandContext cmdContext) {
+		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName));
+		PhyloTree glueAlmtPhyloTree = PhyloExporter.exportAlignmentPhyloTree(cmdContext, phyloAlignment, phyloFieldName, true);
+		return glueAlmtPhyloTree;
+	}
 
 	private List<MaxLikelihoodSingleQueryResult> getSingleQueryResults(JPlaceResult jPlaceResult, Map<String, String> rowNameToQueryMap) {
 		List<MaxLikelihoodSingleQueryResult> singleQueryResults = new ArrayList<MaxLikelihoodSingleQueryResult>();
@@ -251,14 +260,17 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			MaxLikelihoodSingleQueryResult singleQueryResult = new MaxLikelihoodSingleQueryResult();
 			singleQueryResult.queryName = queryName;
 			
+			int placementIndex = 1;
 			for(JPlacePlacement jPlacePlacement: jPlacePlacements) {
 				MaxLikelihoodSinglePlacement singlePlacement = new MaxLikelihoodSinglePlacement();
+				singlePlacement.placementIndex = placementIndex;
 				singlePlacement.edgeIndex = getInt(jPlacePlacement.getFieldValues(), edgeNumIndex);
 				singlePlacement.logLikelihood = getDouble(jPlacePlacement.getFieldValues(), logLikelihoodIndex);
 				singlePlacement.distalLength = getDouble(jPlacePlacement.getFieldValues(), distalLengthIndex);
 				singlePlacement.pendantLength = getDouble(jPlacePlacement.getFieldValues(), pendantLengthIndex);
 				singlePlacement.likeWeightRatio = getDouble(jPlacePlacement.getFieldValues(), likeWeightRatioIndex);
 				singleQueryResult.singlePlacement.add(singlePlacement);
+				placementIndex++;
 			}
 			singleQueryResults.add(singleQueryResult);
 		}
@@ -325,6 +337,62 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		});
 		
 		return seqNameToPlacements;
+	}
+	
+	public Map<Integer, PhyloBranch> generateEdgeIndexToPhyloBranch(MaxLikelihoodPlacerResult placerResult, PhyloTree glueProjectPhyloTree) {
+		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = new LinkedHashMap<Integer, PhyloBranch>();
+		
+		String labelledPhyloTreeString = placerResult.labelledPhyloTree;
+		PhyloFormat labelledPhyloTreeFormat;
+		try {
+			labelledPhyloTreeFormat = PhyloFormat.valueOf(placerResult.labelledPhyloTreeFormat);
+		} catch(Exception e) {
+			throw new MaxLikelihoodPlacerException(MaxLikelihoodPlacerException.Code.JPLACE_STRUCTURE_ERROR, 
+					e, "Failed to parse labelled phylo tree format: "+e.getLocalizedMessage());
+		}
+		PhyloTree labelledPhyloTree;
+		try {
+			labelledPhyloTree = labelledPhyloTreeFormat.parse(labelledPhyloTreeString.getBytes());
+		} catch(Exception e) {
+			throw new MaxLikelihoodPlacerException(MaxLikelihoodPlacerException.Code.JPLACE_STRUCTURE_ERROR, 
+					e, "Failed to parse labelled phylo tree: "+e.getLocalizedMessage());
+		}
+		// reconcile labelled phylo tree with GLUE project tree.
+		PhyloTreeReconciler phyloTreeReconciler = new PhyloTreeReconciler(glueProjectPhyloTree);
+		labelledPhyloTree.accept(phyloTreeReconciler);
+		Map<PhyloObject<?>, PhyloObject<?>> labelledToGluePhyloObj = phyloTreeReconciler.getVisitedToSupplied();
+		labelledPhyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+				Integer branchLabel;
+				try {
+					branchLabel = (Integer) phyloBranch.ensureUserData().get(NewickJPlaceToPhyloTreeParser.J_PLACE_BRANCH_LABEL);
+				} catch(Exception e) {
+					
+				}
+			}
+			
+		});
+		
+		
+		return edgeIndexToPhyloBranch;
+	}
+
+
+	// adds a single new branch to the glueProjectPhyloTree based on a specific placement.
+	public void addPlacementToPhylogeny(
+			PhyloTree glueProjectPhyloTree,
+			Map<Integer, PhyloBranch> edgeIndexMap,
+			MaxLikelihoodSingleQueryResult queryResult,
+			MaxLikelihoodSinglePlacement placement) {
+	}
+
+	// resets the glueProjectPhyloTree to the way it was before the placement was added.
+	public void removePlacementFromPhylogeny(
+			PhyloTree glueProjectPhyloTree,
+			Map<Integer, PhyloBranch> edgeIndexMap,
+			MaxLikelihoodSingleQueryResult queryResult,
+			MaxLikelihoodSinglePlacement placement) {
 	}
 
 	

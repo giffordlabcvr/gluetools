@@ -7,6 +7,9 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 public class MaxLikelihoodSinglePlacement {
 
 	@PojoDocumentField
+	public Integer placementIndex;
+
+	@PojoDocumentField
 	public Integer edgeIndex;
 
 	@PojoDocumentField
