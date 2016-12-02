@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
 @CommandClass(
-		commandWords={"export", "placement", "phylogeny"}, 
+		commandWords={"list", "placement"}, 
 		description = "Summarise the placements for a single query in a result file", 
 		docoptUsages = { "-i <inputFile> -q <queryName>" },
 		docoptOptions = { 
