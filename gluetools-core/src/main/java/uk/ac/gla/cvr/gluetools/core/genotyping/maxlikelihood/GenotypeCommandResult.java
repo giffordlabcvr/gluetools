@@ -8,7 +8,7 @@ public class GenotypeCommandResult extends BaseTableResult<GenotypeResult> {
 
 	public GenotypeCommandResult(List<GenotypeResult> genotypeResults) {
 		super("genotypeCommandResult", genotypeResults,
-				column("sequenceName", gResult -> gResult.getSequenceName()));
+				column("sequenceName", gResult -> gResult.getQueryName()));
 	}
 
 }

@@ -4,13 +4,13 @@ package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 public class GenotypeResult {
 
-	private String sequenceName;
+	private String queryName;
 	
-	public String getSequenceName() {
-		return sequenceName;
+	public String getQueryName() {
+		return queryName;
 	}
-	public void setSequenceName(String sequenceName) {
-		this.sequenceName = sequenceName;
+	public void setQueryName(String queryName) {
+		this.queryName = queryName;
 	}
 	
 }

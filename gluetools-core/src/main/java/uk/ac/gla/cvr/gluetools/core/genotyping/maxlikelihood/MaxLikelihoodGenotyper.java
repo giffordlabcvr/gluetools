@@ -1,6 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -12,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
@@ -21,6 +24,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 	public static final String MAX_LIKELIHOOD_PLACER_MODULE_NAME = "maxLikelihoodPlacerModuleName";
 	
 	private String maxLikelihoodPlacerModuleName;
+	private List<CladeCategory> cladeCategories;
 	
 	public MaxLikelihoodGenotyper() {
 		super();
@@ -33,6 +37,8 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.maxLikelihoodPlacerModuleName = PluginUtils.configureStringProperty(configElem, MAX_LIKELIHOOD_PLACER_MODULE_NAME, true);
+		List<Element> categoryElems = PluginUtils.findConfigElements(configElem, "cladeCategory");
+		this.cladeCategories = PluginFactory.createPlugins(pluginConfigContext, CladeCategory.class, categoryElems);
 	}
 
 	
