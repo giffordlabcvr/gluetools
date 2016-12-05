@@ -402,7 +402,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
 
 	// adds a single new leaf to the glueProjectPhyloTree based on a specific placement.
-	public PhyloLeaf addPlacementToPhylogeny(
+	public static PhyloLeaf addPlacementToPhylogeny(
 			PhyloTree glueProjectPhyloTree,
 			Map<Integer, PhyloBranch> edgeIndexToPhyloBranch,
 			MaxLikelihoodSingleQueryResult queryResult,
@@ -435,7 +435,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	}
 
 	// resets the glueProjectPhyloTree to the way it was before the placement leaf was added.
-	public void removePlacementFromPhylogeny(PhyloLeaf placementLeaf) {
+	public static void removePlacementFromPhylogeny(PhyloLeaf placementLeaf) {
 		PhyloBranch phyloBranchToSubtree = null;
 		PhyloBranch phyloBranchToLeaf = placementLeaf.getParentPhyloBranch();
 		PhyloInternal newPhyloInternal = phyloBranchToLeaf.getParentPhyloInternal();

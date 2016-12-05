@@ -41,6 +41,9 @@ public class GenotypeCommandResult extends BaseTableResult<QueryGenotypingResult
 						.append(String.format("%."+PERCENT_SCORE_PRECISION+"f", queryCladeResults.get(i).percentScore.doubleValue()))
 						.append("%");
 				}
+				if(buf.length() == 0) {
+					return "-";
+				}
 				return buf.toString();
 			}));
 			

@@ -61,7 +61,7 @@ public class ExportPlacementPhylogenyCommand extends AbstractPlacementCommand<Ok
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
 				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
 		
-		PhyloLeaf placementLeaf = maxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
+		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
 		if(leafName == null) {
 			placementLeaf.setName(queryResult.queryName);
 		} else {

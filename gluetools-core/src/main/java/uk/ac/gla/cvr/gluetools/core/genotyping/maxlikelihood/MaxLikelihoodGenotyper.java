@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		super();
 		addModulePluginCmdClass(GenotypeFileCommand.class);
 		addModulePluginCmdClass(GenotypeSequenceCommand.class);
+		addModulePluginCmdClass(GenotypePlacerResultCommand.class);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_MODULE_NAME);
 	}
 
@@ -71,9 +73,16 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		PhyloTree glueProjectPhyloTree = maxLikelihoodPlacer.constructGlueProjectPhyloTree(cmdContext);
 		PlacerResultInternal placerResult = maxLikelihoodPlacer.place(cmdContext, glueProjectPhyloTree, querySequenceMap, dataDirFile);
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = placerResult.getEdgeIndexToPhyloBranch();
+		Collection<MaxLikelihoodSingleQueryResult> singleQueryResults = placerResult.getQueryResults().values();
+		return genotype(cmdContext, glueProjectPhyloTree, edgeIndexToPhyloBranch, singleQueryResults);
+	}
 
+	public List<QueryGenotypingResult> genotype(CommandContext cmdContext,
+			PhyloTree glueProjectPhyloTree,
+			Map<Integer, PhyloBranch> edgeIndexToPhyloBranch,
+			Collection<MaxLikelihoodSingleQueryResult> singleQueryResults) {
 		List<QueryGenotypingResult> queryGenotypingResults = new ArrayList<QueryGenotypingResult>();
-		for(MaxLikelihoodSingleQueryResult queryResult: placerResult.getQueryResults().values()) {
+		for(MaxLikelihoodSingleQueryResult queryResult: singleQueryResults) {
 			QueryGenotypingResult queryGenotypingResult = new QueryGenotypingResult();
 			queryGenotypingResults.add(queryGenotypingResult);
 			queryGenotypingResult.queryName = queryResult.queryName;
@@ -94,7 +103,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 				Double allNeighboursScaledDistanceTotal = 0.0;
 				
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
-					PhyloLeaf placementLeaf = maxLikelihoodPlacer
+					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
 							.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
 					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(distanceCutoff));
 					for(PlacementNeighbour neighbour: neighbours) {
@@ -119,7 +128,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 							}
 						}
 					}
-					maxLikelihoodPlacer.removePlacementFromPhylogeny(placementLeaf);
+					MaxLikelihoodPlacer.removePlacementFromPhylogeny(placementLeaf);
 				}
 				for(Map.Entry<String, Double> entry: almtNameToScaledDistanceTotal.entrySet()) {
 					String almtName = entry.getKey();
@@ -139,7 +148,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		return queryGenotypingResults;
 	}
 	
-	private MaxLikelihoodPlacer resolvePlacer(CommandContext cmdContext) {
+	public MaxLikelihoodPlacer resolvePlacer(CommandContext cmdContext) {
 		MaxLikelihoodPlacer maxLikelihoodPlacer = 
 				Module.resolveModulePlugin(cmdContext, MaxLikelihoodPlacer.class, maxLikelihoodPlacerModuleName);
 		return maxLikelihoodPlacer;

@@ -5,7 +5,6 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSinglePlacement;
 
 @PojoDocumentClass
 public class FeatureAnalysis {
