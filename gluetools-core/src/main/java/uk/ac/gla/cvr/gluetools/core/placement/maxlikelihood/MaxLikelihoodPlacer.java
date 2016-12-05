@@ -203,23 +203,21 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 
-		// rename leaves in the glue alignment tree so that they match the alignment rows when it is passed to Raxml EPA
+		// add special EPA names to leaves 
+		// in the glue alignment tree so that they match the alignment rows when it is passed to Raxml EPA
 		glueProjectPhyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
 				String leafName = phyloLeaf.getName();
 				Map<String,String> phyloMemberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, leafName);
-				phyloLeaf.setName(memberPkMapToRowName.get(phyloMemberPkMap));
+				String epaLeafName = memberPkMapToRowName.get(phyloMemberPkMap);
+				phyloLeaf.ensureUserData().put(RaxmlEpaRunner.EPA_LEAF_NAME_USER_DATA_KEY, epaLeafName);
 			}
 		});
 		RaxmlEpaResult raxmlEpaResult = raxmlEpaRunner.executeRaxmlEpa(cmdContext, glueProjectPhyloTree, alignmentWithQuery, dataDirFile);
 		JPlaceResult jPlaceResult = raxmlEpaResult.getjPlaceResult();
 
 		PhyloTree jPlacePhyloTree = jPlaceResult.getTree();
-		// reconcile the RAxML jPlace phylo tree with the GLUE alignment phylo tree
-		// (just as a data check)
-		PhyloTreeReconciler phyloTreeReconciler = new PhyloTreeReconciler(glueProjectPhyloTree);
-		jPlacePhyloTree.accept(phyloTreeReconciler);
 
 		// rename jPlace result tree leaves back to their reference sequence phylo member names
 		jPlacePhyloTree.accept(new PhyloTreeVisitor() {

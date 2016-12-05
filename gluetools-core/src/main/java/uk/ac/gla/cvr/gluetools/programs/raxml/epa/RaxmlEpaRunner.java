@@ -19,6 +19,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -36,6 +37,9 @@ import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class RaxmlEpaRunner extends RaxmlRunner {
 
+	// phylo leaf user data key to use for leaf name when exporting tree to EPA
+	public static final String EPA_LEAF_NAME_USER_DATA_KEY = "epaLeafName";
+	
 	public static final String THOROUGH_INSERTION_FRACTION = "thoroughInsertionFraction";
 	
 	private Double thoroughInsertionFraction = 0.1;
@@ -138,7 +142,13 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 
 
 	private void writePhyloTreeFile(File tempDir, File phyloTreeFile, PhyloTree phyloTree) {
-		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
+		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator(new NewickGenerator() {
+			@Override
+			public String generateLeafName(PhyloLeaf phyloLeaf) {
+				return (String) phyloLeaf.ensureUserData().get(EPA_LEAF_NAME_USER_DATA_KEY);
+			}
+			
+		});
 		phyloTree.accept(newickPhyloTreeVisitor);
 		String newickString = newickPhyloTreeVisitor.getNewickString();
 		try(FileOutputStream fileOutputStream = new FileOutputStream(phyloTreeFile)) {
@@ -155,12 +165,16 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 		phyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				String name = phyloLeaf.getName();
-				if(name == null) {
-					throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Phylo tree contains leaf node without any name");
+				Object value = phyloLeaf.ensureUserData().get(EPA_LEAF_NAME_USER_DATA_KEY);
+				if(value == null) {
+					throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Phylo tree leaf node has no String value for user data key "+EPA_LEAF_NAME_USER_DATA_KEY);
 				}
-				if(!RaxmlUtils.validRaxmlName(name)) {
-					throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Phylo tree contains leaf name \""+name+"\" which is invalid in RAxML");
+				if(!(value instanceof String)) {
+					throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Phylo tree leaf node value for user data key "+EPA_LEAF_NAME_USER_DATA_KEY+" is not a String");
+				}
+				String epaLeafName = (String) value;
+				if(!RaxmlUtils.validRaxmlName(epaLeafName)) {
+					throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Phylo tree contains leaf with EPA name \""+epaLeafName+"\" which is invalid in RAxML");
 				}
 			}
 			@Override
