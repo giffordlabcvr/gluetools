@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentUtils;
+import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer.PlacerResultInternal;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -38,8 +39,8 @@ public abstract class AbstractPlaceCommand<R extends CommandResult> extends Modu
 	protected void runPlacer(ConsoleCommandContext consoleCmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer,
 			Map<String, DNASequence> querySequenceMap) {
 		File dataDirFile = CommandUtils.ensureDataDir(consoleCmdContext, dataDir);
-		MaxLikelihoodPlacerResult placerResult = maxLikelihoodPlacer.place(consoleCmdContext, querySequenceMap, dataDirFile);
-		CommandDocument placerResultCmdDocument = PojoDocumentUtils.pojoToCommandDocument(placerResult);
+		PlacerResultInternal placerResultInternal = maxLikelihoodPlacer.place(consoleCmdContext, querySequenceMap, dataDirFile);
+		CommandDocument placerResultCmdDocument = PojoDocumentUtils.pojoToCommandDocument(placerResultInternal.toPojoResult());
 		Document placerResultXmlDoc = CommandDocumentXmlUtils.commandDocumentToXmlDocument(placerResultCmdDocument);
 		byte[] placerResultXmlBytes = GlueXmlUtils.prettyPrint(placerResultXmlDoc);
 		consoleCmdContext.saveBytes(outputFile, placerResultXmlBytes);

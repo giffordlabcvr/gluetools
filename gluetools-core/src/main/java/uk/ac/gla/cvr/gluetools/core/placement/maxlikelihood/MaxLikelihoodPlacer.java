@@ -133,10 +133,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
 	}
 
-	public MaxLikelihoodPlacerResult place(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
-		
-		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName));
+	public PlacerResultInternal place(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
 		PhyloTree glueProjectPhyloTree = constructGlueProjectPhyloTree(cmdContext);
+		return place(cmdContext, glueProjectPhyloTree, querySequenceMap, dataDirFile);
+	}		
+	
+	public PlacerResultInternal place(CommandContext cmdContext, PhyloTree glueProjectPhyloTree, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
+		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName));
 
 		// phylo tree leaves reference constrained alignment members
 		// however, the alignment passed to MAFFT/EPA may be a different, unconstrained alignment.
@@ -223,27 +226,61 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
 				Map<String, String> memberPkMap = rowNameToMemberPkMap.get(phyloLeaf.getName());
+				if(memberPkMap == null) {
+					throw new MaxLikelihoodPlacerException(MaxLikelihoodPlacerException.Code.JPLACE_STRUCTURE_ERROR, 
+							"JPlace leaf contains unknown row name "+phyloLeaf.getName());
+				}
 				phyloLeaf.setName(Project.pkMapToTargetPath(ConfigurableTable.alignment_member.getModePath(), memberPkMap));
 			}
 		});
 		
-		MaxLikelihoodPlacerResult maxLikelihoodPlacerResult = new MaxLikelihoodPlacerResult();
-		PhyloFormat resultPhyloFormat = PhyloFormat.NEWICK_JPLACE;
-		maxLikelihoodPlacerResult.labelledPhyloTreeFormat = resultPhyloFormat.name();
-		maxLikelihoodPlacerResult.labelledPhyloTree = new String(resultPhyloFormat.generate(jPlacePhyloTree));
-		maxLikelihoodPlacerResult.singleQueryResult = getSingleQueryResults(jPlaceResult, rowNameToQueryMap);
-		
-		return maxLikelihoodPlacerResult;
+		return new PlacerResultInternal(jPlacePhyloTree, glueProjectPhyloTree, getSingleQueryResults(jPlaceResult, rowNameToQueryMap));
 	}
 
+	public static class PlacerResultInternal {
+		private PhyloTree labelledPhyloTree;
+		private Map<String, MaxLikelihoodSingleQueryResult> queryResults;
+		private Map<Integer, PhyloBranch> edgeIndexToPhyloBranch;
+		
+		private PlacerResultInternal(PhyloTree labelledPhyloTree, 
+				PhyloTree glueProjectPhyloTree, Map<String, MaxLikelihoodSingleQueryResult> queryResults) {
+			super();
+			this.labelledPhyloTree = labelledPhyloTree;
+			this.edgeIndexToPhyloBranch = generateEdgeIndexToPhyloBranch(labelledPhyloTree, glueProjectPhyloTree);
+			this.queryResults = queryResults;
+		}
+
+		public PhyloTree getLabelledPhyloTree() {
+			return labelledPhyloTree;
+		}
+
+		public Map<String, MaxLikelihoodSingleQueryResult> getQueryResults() {
+			return queryResults;
+		}
+
+		public Map<Integer, PhyloBranch> getEdgeIndexToPhyloBranch() {
+			return edgeIndexToPhyloBranch;
+		}
+
+		public MaxLikelihoodPlacerResult toPojoResult() {
+			MaxLikelihoodPlacerResult maxLikelihoodPlacerResult = new MaxLikelihoodPlacerResult();
+			PhyloFormat resultPhyloFormat = PhyloFormat.NEWICK_JPLACE;
+			maxLikelihoodPlacerResult.labelledPhyloTreeFormat = resultPhyloFormat.name();
+			maxLikelihoodPlacerResult.labelledPhyloTree = new String(resultPhyloFormat.generate(labelledPhyloTree));
+			maxLikelihoodPlacerResult.singleQueryResult = new ArrayList<MaxLikelihoodSingleQueryResult>(queryResults.values());
+			return maxLikelihoodPlacerResult;
+		}
+		
+	}
+	
 	public PhyloTree constructGlueProjectPhyloTree(CommandContext cmdContext) {
 		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName));
 		PhyloTree glueAlmtPhyloTree = PhyloExporter.exportAlignmentPhyloTree(cmdContext, phyloAlignment, phyloFieldName, true);
 		return glueAlmtPhyloTree;
 	}
 
-	private List<MaxLikelihoodSingleQueryResult> getSingleQueryResults(JPlaceResult jPlaceResult, Map<String, String> rowNameToQueryMap) {
-		List<MaxLikelihoodSingleQueryResult> singleQueryResults = new ArrayList<MaxLikelihoodSingleQueryResult>();
+	private Map<String, MaxLikelihoodSingleQueryResult> getSingleQueryResults(JPlaceResult jPlaceResult, Map<String, String> rowNameToQueryMap) {
+		Map<String, MaxLikelihoodSingleQueryResult> singleQueryResults = new LinkedHashMap<String, MaxLikelihoodSingleQueryResult>();
 		
 		Map<String, List<JPlacePlacement>> queryNameToJPlacePlacements = extractJPlacePlacements(jPlaceResult, rowNameToQueryMap);
 		List<String> fields = jPlaceResult.getFields();
@@ -275,7 +312,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				singleQueryResult.singlePlacement.add(singlePlacement);
 				placementIndex++;
 			}
-			singleQueryResults.add(singleQueryResult);
+			singleQueryResults.put(queryName, singleQueryResult);
 		}
 		return singleQueryResults;
 		
@@ -342,24 +379,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		return seqNameToPlacements;
 	}
 	
-	public Map<Integer, PhyloBranch> generateEdgeIndexToPhyloBranch(MaxLikelihoodPlacerResult placerResult, PhyloTree glueProjectPhyloTree) {
+	public static Map<Integer, PhyloBranch> generateEdgeIndexToPhyloBranch(PhyloTree labelledPhyloTree, PhyloTree glueProjectPhyloTree) {
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = new LinkedHashMap<Integer, PhyloBranch>();
 		
-		String labelledPhyloTreeString = placerResult.labelledPhyloTree;
-		PhyloFormat labelledPhyloTreeFormat;
-		try {
-			labelledPhyloTreeFormat = PhyloFormat.valueOf(placerResult.labelledPhyloTreeFormat);
-		} catch(Exception e) {
-			throw new MaxLikelihoodPlacerException(MaxLikelihoodPlacerException.Code.JPLACE_STRUCTURE_ERROR, 
-					e, "Failed to parse labelled phylo tree format: "+e.getLocalizedMessage());
-		}
-		PhyloTree labelledPhyloTree;
-		try {
-			labelledPhyloTree = labelledPhyloTreeFormat.parse(labelledPhyloTreeString.getBytes());
-		} catch(Exception e) {
-			throw new MaxLikelihoodPlacerException(MaxLikelihoodPlacerException.Code.JPLACE_STRUCTURE_ERROR, 
-					e, "Failed to parse labelled phylo tree: "+e.getLocalizedMessage());
-		}
 		// reconcile labelled phylo tree with GLUE project tree.
 		PhyloTreeReconciler phyloTreeReconciler = new PhyloTreeReconciler(glueProjectPhyloTree);
 		labelledPhyloTree.accept(phyloTreeReconciler);

@@ -45,7 +45,8 @@ public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbour
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement) {
 		PhyloTree glueProjectPhyloTree = maxLikelihoodPlacer.constructGlueProjectPhyloTree(cmdContext);
-		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = maxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult, glueProjectPhyloTree);
+		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
+				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
 		PhyloLeaf placementLeaf = maxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
 		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf)
 				.stream()

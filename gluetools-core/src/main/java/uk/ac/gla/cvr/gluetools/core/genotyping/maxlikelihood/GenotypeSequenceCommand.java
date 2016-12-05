@@ -71,8 +71,8 @@ public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
 					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		Map<String, GenotypeResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
-		return generateCommandResults(genotypeResults);
+		List<QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
+		return new GenotypeCommandResult(maxLikelihoodGenotyper.getCladeCategories(), genotypeResults);
 	}
 
 	@CompleterClass

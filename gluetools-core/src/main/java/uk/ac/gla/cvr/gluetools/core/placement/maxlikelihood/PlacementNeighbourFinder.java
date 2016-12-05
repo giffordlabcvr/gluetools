@@ -16,8 +16,11 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeSearchNode;
 // best first search from a leaf, returning neighbour leaves in order of decreasing distance.
 public class PlacementNeighbourFinder {
 
-	
 	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf) {
+		return findNeighbours(startLeaf, null);
+	}
+	
+	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf, BigDecimal distanceCutoff) {
 		PriorityQueue<NeighborSearchNode> searchQueue = new PriorityQueue<NeighborSearchNode>(new Comparator<NeighborSearchNode>() {
 			@Override
 			public int compare(NeighborSearchNode o1, NeighborSearchNode o2) {
@@ -44,6 +47,7 @@ public class PlacementNeighbourFinder {
 					phyloTreeNeighbours.stream().map(phyTreeNode -> 
 						new NeighborSearchNode(phyTreeNode, 
 								currentNode.distanceFromStart.add(phyTreeNode.getArrivalBranch().getLength())))
+						.filter(nsn -> distanceCutoff == null || nsn.distanceFromStart.compareTo(distanceCutoff) <= 0)
 						.collect(Collectors.toList());
 			searchQueue.addAll(newSearchNodes);
 		}

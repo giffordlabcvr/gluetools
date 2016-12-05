@@ -29,7 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypeResult;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -102,7 +102,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> fastaIdToSequence = FastaUtils.parseFasta(fastaBytes);
 		
-		Map<String, GenotypeResult> fastaIdToGenotypeResult = maxLikelihoodGenotyper.genotype(cmdContext, fastaIdToSequence, null);
+		// List<QueryGenotypingResult> fastaIdToGenotypeResult = maxLikelihoodGenotyper.genotype(cmdContext, fastaIdToSequence, null);
+		Map<String, QueryGenotypingResult> fastaIdToGenotypeResult = null;
 		
 		initRefAndQueryAnalyses(cmdContext, fastaIdToSequence, fastaIdToGenotypeResult,
 				refNameToAnalysis, fastaIdToQueryAnalysis);
@@ -318,7 +319,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 	private void initRefAndQueryAnalyses(
 			CommandContext cmdContext, 
 			Map<String, DNASequence> fastaIdToSequence,
-			Map<String, GenotypeResult> fastaIdToGenotypeResult,
+			Map<String, QueryGenotypingResult> fastaIdToGenotypeResult,
 			Map<String, ReferenceAnalysis> refNameToAnalysis,
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis) {
 		

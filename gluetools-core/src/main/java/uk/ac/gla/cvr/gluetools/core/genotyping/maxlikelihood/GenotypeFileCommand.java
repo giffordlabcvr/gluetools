@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -50,8 +51,8 @@ public class GenotypeFileCommand extends AbstractGenotypeCommand {
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		Map<String, GenotypeResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
-		return generateCommandResults(genotypeResults);
+		List<QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
+		return new GenotypeCommandResult(maxLikelihoodGenotyper.getCladeCategories(), genotypeResults);
 	}
 
 	@CompleterClass

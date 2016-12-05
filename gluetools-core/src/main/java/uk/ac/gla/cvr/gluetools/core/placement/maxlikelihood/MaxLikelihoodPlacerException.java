@@ -8,7 +8,8 @@ public enum Code implements GlueErrorCode {
 		
 		CONFIG_ERROR("errorTxt"),
 		JPLACE_BRANCH_LABEL_ERROR("errorTxt"),
-		JPLACE_STRUCTURE_ERROR("errorTxt");
+		JPLACE_STRUCTURE_ERROR("errorTxt"),
+		POJO_RESULT_FORMAT_ERROR("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
