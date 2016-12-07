@@ -721,5 +721,14 @@ public class Console implements CommandResultRenderingContext
 		GlueHistory glueHistory = (GlueHistory) reader.getHistory();
 		glueHistory.setMaxSize(maxHistory);
 	}
+
+	@Override
+	public int getTableTruncationLimit() {
+		try {
+			return Integer.parseInt(commandContext.getOptionValue(ConsoleOption.TABLE_TRUNCATION_LIMIT));
+		} catch(Exception e) {
+			return Integer.parseInt(ConsoleOption.TABLE_TRUNCATION_LIMIT.getDefaultValue());
+		}
+	}
 	
 }

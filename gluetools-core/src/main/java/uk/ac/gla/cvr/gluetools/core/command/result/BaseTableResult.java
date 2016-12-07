@@ -220,11 +220,15 @@ public class BaseTableResult<D> extends CommandResult {
 					Map<String, String> headerToValue = renderedRows.get(rowNumber-1);
 					Row row = new Row();
 					headers.forEach(header -> {
+						String cellValue = headerToValue.get(header);
 						if(columnsWhichAllowSpaces.contains(header)) {
-							row.addCellValue(" "+headerToValue.get(header));
-						} else {
-							row.addCellValue(headerToValue.get(header));
+							cellValue = " "+cellValue;
+						} 
+						int tableTruncationLimit = renderCtx.getTableTruncationLimit();
+						if(cellValue.length() > tableTruncationLimit) {
+							cellValue = cellValue.substring(0, tableTruncationLimit-3)+"...";
 						}
+						row.addCellValue(cellValue);
 					});
 					textTable.addRows(row);
 					if(myStringWriter.numLines <= maxLines) {

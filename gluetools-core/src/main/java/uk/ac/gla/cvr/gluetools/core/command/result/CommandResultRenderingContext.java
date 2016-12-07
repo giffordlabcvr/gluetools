@@ -21,4 +21,6 @@ public interface CommandResultRenderingContext extends RenderContext {
 	
 	public boolean interactiveTables();
 	
+	public int getTableTruncationLimit();
+	
 }
