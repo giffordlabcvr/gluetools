@@ -22,7 +22,11 @@ public class GenotypeCommandResult extends BaseTableResult<QueryGenotypingResult
 		columnsList.add(column("queryName", gResult -> gResult.queryName));
 		for(CladeCategory cladeCategory: cladeCategories) {
 			String categoryName = cladeCategory.getName();
-			columnsList.add(column(categoryName, gResult -> {
+			columnsList.add(column(categoryName+"FinalClade", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).finalClade));
+			columnsList.add(column(categoryName+"ClosestMemberAlignmentName", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestMemberAlignmentName));
+			columnsList.add(column(categoryName+"ClosestMemberSourceName", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestMemberSourceName));
+			columnsList.add(column(categoryName+"ClosestMemberSequenceID", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestMemberSequenceID));
+			columnsList.add(column(categoryName+"CladeBalance", gResult -> {
 				Optional<QueryCladeCategoryResult> cladeCatResult = 
 						gResult.queryCladeCategoryResult.stream()
 						.filter(qccr -> qccr.categoryName.equals(categoryName))

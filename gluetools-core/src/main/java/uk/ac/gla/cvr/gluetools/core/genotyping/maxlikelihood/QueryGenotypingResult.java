@@ -16,5 +16,8 @@ public class QueryGenotypingResult {
 	@PojoDocumentListField(itemClass = QueryCladeCategoryResult.class)
 	public List<QueryCladeCategoryResult> queryCladeCategoryResult = new ArrayList<QueryCladeCategoryResult>();
 	
+	public QueryCladeCategoryResult getCladeCategoryResult(String categoryName) {
+		return queryCladeCategoryResult.stream().filter(qccr -> qccr.categoryName.equals(categoryName)).findFirst().orElse(null);
+	}
 	
 }

@@ -17,10 +17,10 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeSearchNode;
 public class PlacementNeighbourFinder {
 
 	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf) {
-		return findNeighbours(startLeaf, null);
+		return findNeighbours(startLeaf, null, null);
 	}
 	
-	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf, BigDecimal distanceCutoff) {
+	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf, BigDecimal distanceCutoff, Integer maxNeighbours) {
 		PriorityQueue<NeighborSearchNode> searchQueue = new PriorityQueue<NeighborSearchNode>(new Comparator<NeighborSearchNode>() {
 			@Override
 			public int compare(NeighborSearchNode o1, NeighborSearchNode o2) {
@@ -40,6 +40,9 @@ public class PlacementNeighbourFinder {
 			
 			if(currentNode != startNode && currentPhyloTreeSearchNode.getPhyloSubtree() instanceof PhyloLeaf) {
 				placementNeighbours.add(new PlacementNeighbour((PhyloLeaf) currentPhyloTreeSearchNode.getPhyloSubtree(), currentNode.distanceFromStart));
+				if(maxNeighbours != null && maxNeighbours.equals(placementNeighbours.size())) {
+					break;
+				}
 			}
 
 			List<PhyloTreeSearchNode> phyloTreeNeighbours = currentNode.phyloTreeSearchNode.neighbours();

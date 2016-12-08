@@ -26,11 +26,16 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.CladeCategory;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryCladeCategoryResult;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -323,17 +328,30 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			Map<String, ReferenceAnalysis> refNameToAnalysis,
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis) {
 		
+		MaxLikelihoodGenotyper maxLikelihoodGenotyper = resolveMaxLikelihoodGenotyper(cmdContext);
+		List<CladeCategory> cladeCategories = maxLikelihoodGenotyper.getCladeCategories();
+		
 		fastaIdToSequence.forEach((fastaId, sequence) -> {
-			/*
-			GenotypeResult genotypeResult = fastaIdToGenotypeResult.get(fastaId);
-			if(genotypeResult.getSummaryCode() == SummaryCode.NEGATIVE) {
+			QueryGenotypingResult queryGenotypeResult = fastaIdToGenotypeResult.get(fastaId);
+			// the final clade of the latest clade category provides the analysis starting point reference.
+			AlignmentMember closestMember = null;
+			for(int i = cladeCategories.size() - 1; i >= 0; i--) {
+				CladeCategory cladeCategory = cladeCategories.get(i);
+				QueryCladeCategoryResult cladeCategoryResult = queryGenotypeResult.getCladeCategoryResult(cladeCategory.getName());
+				if(cladeCategoryResult.finalClade != null && cladeCategoryResult.closestMemberAlignmentName != null) {
+					closestMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, AlignmentMember.pkMap(cladeCategoryResult.closestMemberAlignmentName,
+							cladeCategoryResult.closestMemberSourceName,
+							cladeCategoryResult.closestMemberSequenceID));
+					break;
+				}
+			}
+			
+			if(closestMember == null) {
 				throw new WebAnalysisException(Code.GENOTYPING_FAILED, fastaId);
 			}
-			Map<String, String> closestMemberPkMap = genotypeResult.getPlacementResult().getClosestMemberPkMap();
-			AlignmentMember tipAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, closestMemberPkMap);
 			
-			List<ReferenceSequence> closestMemberReferences = tipAlmtMember.getSequence().getReferenceSequences();
-			Alignment tipAlmt = tipAlmtMember.getAlignment();
+			List<ReferenceSequence> closestMemberReferences = closestMember.getSequence().getReferenceSequences();
+			Alignment tipAlmt = closestMember.getAlignment();
 			ReferenceSequence targetRef = null;
 			if(closestMemberReferences.isEmpty()) {
 				targetRef = tipAlmt.getConstrainingRef();
@@ -367,7 +385,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				}
 				if(targetRef == null) {
 					throw new WebAnalysisException(Code.CANNOT_DETERMINE_REFERENCE_FROM_CLOSEST_MEMBER, 
-							tipAlmt.getName(), tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID());
+							tipAlmt.getName(), closestMember.getSequence().getSource().getName(), closestMember.getSequence().getSequenceID());
 				}
 			}
 
@@ -399,29 +417,16 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				ancestorAlmtNames.add(tipAlmt.getName());
 				if(!refNameToAnalysis.containsKey(targetRefName)) {
 					refNameToAnalysis.put(targetRefName, 
-						new ReferenceAnalysis(targetRef, tipAlmt, tipAlmtMember));
+						new ReferenceAnalysis(targetRef, tipAlmt, closestMember));
 				}
 			}
-			TypingAnalysis typingAnalysis = new TypingAnalysis();
-			typingAnalysis.closestMemberAlignmentName = tipAlmt.getName();
-			typingAnalysis.closestMemberAlignmentDisplayName = tipAlmt.getDisplayName();
-			typingAnalysis.closestMemberSourceName = tipAlmtMember.getSequence().getSource().getName();
-			typingAnalysis.closestMemberSequenceID = tipAlmtMember.getSequence().getSequenceID();
-			typingAnalysis.distanceToClosestMember = genotypeResult.getPlacementResult().getDistanceToClosestMember().doubleValue();
-			typingAnalysis.likeWeightRatio = genotypeResult.getPlacementResult().getLikeWeightRatio();
-			typingAnalysis.summaryCode = genotypeResult.getSummaryCode().name();
-			String typeAlignmentName = genotypeResult.getTypeAlignmentName();
-			typingAnalysis.typeAlignmentName = typeAlignmentName;
-			Alignment typeAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(typeAlignmentName));
-			typingAnalysis.typeAlignmentDisplayName = typeAlignment.getDisplayName();
 			
 			QueryAnalysis queryAnalysis = new QueryAnalysis(fastaId, new FastaSequenceObject(fastaId, sequence.getSequenceAsString()), targetRefName);
 			queryAnalysis.ancestorRefName = ancestorRefNames;
 			queryAnalysis.ancestorAlmtName = ancestorAlmtNames;
 			queryAnalysis.tipAlignmentName = tipAlmt.getName();
-			queryAnalysis.typingAnalysis = typingAnalysis;
+			queryAnalysis.queryCladeCategoryResult = queryGenotypeResult.queryCladeCategoryResult;
 			fastaIdToQueryAnalysis.put(fastaId, queryAnalysis);
-			*/
 		});
 	}
 

@@ -82,6 +82,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 			Map<Integer, PhyloBranch> edgeIndexToPhyloBranch,
 			Collection<MaxLikelihoodSingleQueryResult> singleQueryResults) {
 		List<QueryGenotypingResult> queryGenotypingResults = new ArrayList<QueryGenotypingResult>();
+		Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
 		for(MaxLikelihoodSingleQueryResult queryResult: singleQueryResults) {
 			QueryGenotypingResult queryGenotypingResult = new QueryGenotypingResult();
 			queryGenotypingResults.add(queryGenotypingResult);
@@ -105,7 +106,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
 					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
 							.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(distanceCutoff));
+					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(distanceCutoff), null);
 					for(PlacementNeighbour neighbour: neighbours) {
 						BigDecimal distance = neighbour.getDistance();
 						Double scaledDistance = Math.pow(distance.doubleValue(), distanceScalingExponent) * placement.likeWeightRatio;
@@ -117,6 +118,10 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 						for(Alignment neighbourAncestor: neighbourAncestors) {
 							String neighbourAncestorName = neighbourAncestor.getName();
 							if(cladeCategoryAlmtNameToAlmt.containsKey(neighbourAncestorName)) {
+								PlacementNeighbour cladeClosestNeighbour = cladeToClosestNeighbour.get(neighbourAncestorName);
+								if(cladeClosestNeighbour == null || neighbour.getDistance().compareTo(cladeClosestNeighbour.getDistance()) < 0) {
+									cladeToClosestNeighbour.put(neighbourAncestorName, neighbour);
+								}
 								allNeighboursScaledDistanceTotal = allNeighboursScaledDistanceTotal + scaledDistance;
 								Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourAncestorName);
 								if(currentTotal == null) {
@@ -142,6 +147,19 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 					queryCladeResult.cladeRenderedName = cladeCategoryAlmtNameToAlmt.get(almtName).getRenderedName();
 					queryCladeResult.percentScore = 
 							(scaledDistanceTotal / allNeighboursScaledDistanceTotal ) * 100.0;
+					if(queryCladeResult.percentScore >= cladeCategory.getFinalCladeCutoff()) {
+						queryCladeCategoryResult.finalClade = almtName;
+						queryCladeCategoryResult.finalCladeRenderedName = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName)).getRenderedName();
+						PlacementNeighbour closestNeighbourWithinFinalClade = cladeToClosestNeighbour.get(almtName);
+						if(closestNeighbourWithinFinalClade != null) {
+							Map<String,String> closestMemberPkMap = 
+									Project.targetPathToPkMap(ConfigurableTable.alignment_member, 
+											closestNeighbourWithinFinalClade.getPhyloLeaf().getName());
+							queryCladeCategoryResult.closestMemberAlignmentName = closestMemberPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
+							queryCladeCategoryResult.closestMemberSourceName = closestMemberPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
+							queryCladeCategoryResult.closestMemberSequenceID = closestMemberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
+						}
+					}
 				}
 			}
 		}

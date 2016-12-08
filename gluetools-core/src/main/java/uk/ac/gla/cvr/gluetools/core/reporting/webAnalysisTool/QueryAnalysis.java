@@ -7,6 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryCladeCategoryResult;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 @PojoDocumentClass
@@ -34,7 +36,7 @@ public class QueryAnalysis {
 	public List<QuerySequenceFeatureAnalysis> sequenceFeatureAnalysis;
 
 	@PojoDocumentField
-	public TypingAnalysis typingAnalysis;
+	public List<QueryCladeCategoryResult> queryCladeCategoryResult;
 	
 	private AbstractSequenceObject sequenceObj;
 
