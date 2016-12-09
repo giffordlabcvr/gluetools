@@ -338,7 +338,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				CladeCategory cladeCategory = cladeCategories.get(i);
 				QueryCladeCategoryResult cladeCategoryResult = queryGenotypeResult.getCladeCategoryResult(cladeCategory.getName());
 				if(cladeCategoryResult.finalClade != null && cladeCategoryResult.closestMemberAlignmentName != null) {
-					closestMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, AlignmentMember.pkMap(cladeCategoryResult.closestMemberAlignmentName,
+					closestMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+							AlignmentMember.pkMap(cladeCategoryResult.closestMemberAlignmentName,
 							cladeCategoryResult.closestMemberSourceName,
 							cladeCategoryResult.closestMemberSequenceID));
 					break;

@@ -149,29 +149,29 @@ public class PojoDocumentUtils {
 				PojoDocumentListField pojoDocumentListFieldAnno = field.getAnnotation(PojoDocumentListField.class);
 				if(pojoDocumentListFieldAnno != null) {
 					checkModifiers(field, pojo.getClass());
-				}
-				String fieldName = pojoDocumentListFieldAnno.fieldName();
-				if(fieldName.length() == 0) {
-					fieldName = field.getName();
-				}
-				Class<?> fieldType = field.getType();
-				Object readResult;
-				try {
-					readResult = field.get(pojo);
-				} catch (Exception e) {
-					throw new PojoDocumentException(e, Code.POJO_PROPERTY_READ_ERROR, e.getLocalizedMessage());
-				}
-				if(fieldType.equals(List.class)) {
-					List<?> theList = (List<?>) readResult;
-					if(theList != null && !theList.isEmpty()) {
-						CommandArray commandArray = commandObject.setArray(fieldName);
-						for(Object elem: theList) {
-							addToArray(commandArray, elem);
-						}
+					String fieldName = pojoDocumentListFieldAnno.fieldName();
+					if(fieldName.length() == 0) {
+						fieldName = field.getName();
 					}
-				} else {
-					throw new PojoDocumentException(Code.POJO_ANNOTATION_ERROR, "Field "+fieldName+" with incorrect type "+fieldType.getSimpleName()+" annotated with "+PojoDocumentListField.class.getSimpleName());
-				}
+					Class<?> fieldType = field.getType();
+					Object readResult;
+					try {
+						readResult = field.get(pojo);
+					} catch (Exception e) {
+						throw new PojoDocumentException(e, Code.POJO_PROPERTY_READ_ERROR, e.getLocalizedMessage());
+					}
+					if(fieldType.equals(List.class)) {
+						List<?> theList = (List<?>) readResult;
+						if(theList != null && !theList.isEmpty()) {
+							CommandArray commandArray = commandObject.setArray(fieldName);
+							for(Object elem: theList) {
+								addToArray(commandArray, elem);
+							}
+						}
+					} else {
+						throw new PojoDocumentException(Code.POJO_ANNOTATION_ERROR, "Field "+fieldName+" with incorrect type "+fieldType.getSimpleName()+" annotated with "+PojoDocumentListField.class.getSimpleName());
+					}
+				} 
 			}
 		}
 	}

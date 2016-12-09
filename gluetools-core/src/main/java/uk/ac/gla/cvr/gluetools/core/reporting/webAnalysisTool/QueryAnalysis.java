@@ -35,7 +35,7 @@ public class QueryAnalysis {
 	@PojoDocumentListField(itemClass = QuerySequenceFeatureAnalysis.class)
 	public List<QuerySequenceFeatureAnalysis> sequenceFeatureAnalysis;
 
-	@PojoDocumentField
+	@PojoDocumentListField(itemClass = QueryCladeCategoryResult.class)
 	public List<QueryCladeCategoryResult> queryCladeCategoryResult;
 	
 	private AbstractSequenceObject sequenceObj;

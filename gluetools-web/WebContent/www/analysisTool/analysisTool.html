@@ -133,23 +133,41 @@
 							</tr>
 						</tbody>
 					</table>
-					<table class="table table-bordered table-striped table-nonfluid">
-						<thead>
-							<col width="300px"></col>
-							<col width="300px"></col>
-						</thead>
-						<tbody>
-							<tr><td><b>Query sequence clade</b></td><td>
-								<a href="#/project/alignment/{{selectedQueryAnalysis.typingAnalysis.typeAlignmentName}}" target="_blank">
-									{{selectedQueryAnalysis.typingAnalysis.typeAlignmentDisplayName}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
-							<tr><td><b>Closest reference sequence</b></td><td>
-								<a href="#/project/sequence/{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}" target="_blank">
-									{{selectedQueryAnalysis.typingAnalysis.closestMemberSourceName}}/{{selectedQueryAnalysis.typingAnalysis.closestMemberSequenceID}}  <i class="glyphicon glyphicon-link"/></a></td></tr>
-							<tr><td><b>Distance to closest reference sequence</b></td><td>{{toFixed(selectedQueryAnalysis.typingAnalysis.distanceToClosestMember,4)}}</td></tr>
-							<tr><td><b>Likelihood / weight ratio</b></td><td>{{selectedQueryAnalysis.typingAnalysis.likeWeightRatio}}</td></tr>
-						<tbody>
-					</table>
-					
+					<div ng-repeat="categoryResult in selectedQueryAnalysis.queryCladeCategoryResult">
+						<h4>{{categoryResult.categoryDisplayName}}</h4>
+						<table class="table table-bordered table-striped table-nonfluid">
+							<thead>
+								<col width="200px"></col>
+								<col width="200px"></col>
+								<col width="200px"></col>
+							</thead>
+							<tbody>
+								<tr>
+									<td><b>Ancestor clade</b></td>
+									<td ng-show="categoryResult.finalClade != null" colspan="2"><a href="#/project/alignment/{{categoryResult.finalClade}}" target="_blank">
+										{{categoryResult.finalCladeRenderedName}}</a></td>
+									<td ng-show="categoryResult.finalClade == null" colspan="2">Unknown</td>
+								</tr>
+								<tr>
+									<td><b>Closest reference sequence</b></td>
+									<td ng-show="categoryResult.closestMemberSequenceID != null" colspan="2">
+										<a href="#/project/sequence/{{categoryResult.closestMemberSourceName}}/{{categoryResult.closestMemberSequenceID}}" target="_blank">
+										{{categoryResult.closestMemberSourceName}}/{{categoryResult.closestMemberSequenceID}}</a>
+									</td>
+									<td ng-show="categoryResult.closestMemberSequenceID == null" colspan="2">Unknown</td>
+								</tr>
+								<tr ng-repeat="cladeResult in categoryResult.queryCladeResult">
+									<td ng-show="$first" rowspan="{{categoryResult.queryCladeResult.length}}">
+										<b>Clade weightings</b>
+									</td>
+									<td><a href="#/project/alignment/{{cladeResult.cladeName}}" target="_blank">
+										{{cladeResult.cladeRenderedName}}</a>
+									</td>
+									<td>{{toFixed(cladeResult.percentScore,2)}} %</a></td>
+								</tr>
+							<tbody>
+						</table>
+					</div>
 				</div>
 
 				<div ng-show="analysisView == 'variationSummary'">
