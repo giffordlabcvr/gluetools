@@ -26,10 +26,11 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"genotype", "sequence"}, 
 		description = "Genotype one or more stored sequences", 
-		docoptUsages = { "(-w <whereClause> | -a) [-d <dataDir>]" },
+		docoptUsages = { "(-w <whereClause> | -a) [-l <detailLevel>] [-d <dataDir>]" },
 		docoptOptions = { 
 				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be genotyped",
 				"-a, --allSequences                             Genotype all sequences in the project",
+				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",
 				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory",
 		},
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
@@ -71,8 +72,8 @@ public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
 					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
 		});
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		List<QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
-		return new GenotypeCommandResult(maxLikelihoodGenotyper.getCladeCategories(), genotypeResults);
+		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
+		return formResult(maxLikelihoodGenotyper, genotypeResults);
 	}
 
 	@CompleterClass
@@ -80,6 +81,7 @@ public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
 		public Completer() {
 			super();
 			registerPathLookup("dataDir", true);
+			registerEnumLookup("detailLevel", DetailLevel.class);
 		}
 	}
 	

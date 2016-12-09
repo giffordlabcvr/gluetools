@@ -107,8 +107,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> fastaIdToSequence = FastaUtils.parseFasta(fastaBytes);
 		
-		// List<QueryGenotypingResult> fastaIdToGenotypeResult = maxLikelihoodGenotyper.genotype(cmdContext, fastaIdToSequence, null);
-		Map<String, QueryGenotypingResult> fastaIdToGenotypeResult = null;
+		Map<String, QueryGenotypingResult> fastaIdToGenotypeResult = maxLikelihoodGenotyper.genotype(cmdContext, fastaIdToSequence, null);
 		
 		initRefAndQueryAnalyses(cmdContext, fastaIdToSequence, fastaIdToGenotypeResult,
 				refNameToAnalysis, fastaIdToQueryAnalysis);

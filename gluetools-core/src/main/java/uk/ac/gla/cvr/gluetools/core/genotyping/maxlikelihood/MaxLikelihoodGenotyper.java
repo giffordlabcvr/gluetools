@@ -68,7 +68,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		maxLikelihoodPlacer.validate(cmdContext);
 	}
 
-	public List<QueryGenotypingResult> genotype(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
+	public Map<String, QueryGenotypingResult> genotype(CommandContext cmdContext, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
 		MaxLikelihoodPlacer maxLikelihoodPlacer = resolvePlacer(cmdContext);
 		PhyloTree glueProjectPhyloTree = maxLikelihoodPlacer.constructGlueProjectPhyloTree(cmdContext);
 		PlacerResultInternal placerResult = maxLikelihoodPlacer.place(cmdContext, glueProjectPhyloTree, querySequenceMap, dataDirFile);
@@ -77,15 +77,15 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		return genotype(cmdContext, glueProjectPhyloTree, edgeIndexToPhyloBranch, singleQueryResults);
 	}
 
-	public List<QueryGenotypingResult> genotype(CommandContext cmdContext,
+	public Map<String, QueryGenotypingResult> genotype(CommandContext cmdContext,
 			PhyloTree glueProjectPhyloTree,
 			Map<Integer, PhyloBranch> edgeIndexToPhyloBranch,
 			Collection<MaxLikelihoodSingleQueryResult> singleQueryResults) {
-		List<QueryGenotypingResult> queryGenotypingResults = new ArrayList<QueryGenotypingResult>();
+		Map<String, QueryGenotypingResult> queryGenotypingResults = new LinkedHashMap<String, QueryGenotypingResult>();
 		Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
 		for(MaxLikelihoodSingleQueryResult queryResult: singleQueryResults) {
 			QueryGenotypingResult queryGenotypingResult = new QueryGenotypingResult();
-			queryGenotypingResults.add(queryGenotypingResult);
+			queryGenotypingResults.put(queryResult.queryName, queryGenotypingResult);
 			queryGenotypingResult.queryName = queryResult.queryName;
 			for(CladeCategory cladeCategory: cladeCategories) {
 				QueryCladeCategoryResult queryCladeCategoryResult = new QueryCladeCategoryResult();

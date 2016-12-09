@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
-import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -26,9 +25,10 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @CommandClass(
 		commandWords={"genotype", "placer-result"}, 
 		description = "Generate genotyping results from a placer result file", 
-		docoptUsages = { "-f <fileName>" },
+		docoptUsages = { "-f <fileName> [-l <detailLevel>]" },
 		docoptOptions = { 
-				"-f <fileName>, --fileName <fileName>  Placer result file path",
+				"-f <fileName>, --fileName <fileName>           Placer result file path",
+				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",
 		},
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
@@ -57,8 +57,8 @@ public class GenotypePlacerResultCommand extends AbstractGenotypeCommand {
 		PhyloTree glueProjectPhyloTree = placer.constructGlueProjectPhyloTree(cmdContext);
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
 				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
-		List<QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, glueProjectPhyloTree, edgeIndexToPhyloBranch, placerResult.singleQueryResult);
-		return new GenotypeCommandResult(maxLikelihoodGenotyper.getCladeCategories(), genotypeResults);
+		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, glueProjectPhyloTree, edgeIndexToPhyloBranch, placerResult.singleQueryResult);
+		return formResult(maxLikelihoodGenotyper, genotypeResults);
 	}
 
 	@CompleterClass
@@ -66,6 +66,7 @@ public class GenotypePlacerResultCommand extends AbstractGenotypeCommand {
 		public Completer() {
 			super();
 			registerPathLookup("fileName", false);
+			registerEnumLookup("detailLevel", DetailLevel.class);
 		}
 	}
 

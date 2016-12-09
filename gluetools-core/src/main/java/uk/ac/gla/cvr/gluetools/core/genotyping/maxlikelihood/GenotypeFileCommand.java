@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -21,10 +20,11 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"genotype", "file"}, 
 		description = "Genotype sequences in a file", 
-		docoptUsages = { "-f <fileName> [-d <dataDir>]" },
+		docoptUsages = { "-f <fileName> [-l <detailLevel>] [-d <dataDir>]" },
 		docoptOptions = { 
-				"-f <fileName>, --fileName <fileName>  FASTA file path",
-				"-d <dataDir>, --dataDir <dataDir>     Save algorithmic data in this directory",
+				"-f <fileName>, --fileName <fileName>           FASTA file path",
+				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",
+				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory",
 		},
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {CmdMeta.consoleOnly}	
@@ -51,8 +51,8 @@ public class GenotypeFileCommand extends AbstractGenotypeCommand {
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		List<QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
-		return new GenotypeCommandResult(maxLikelihoodGenotyper.getCladeCategories(), genotypeResults);
+		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
+		return formResult(maxLikelihoodGenotyper, genotypeResults);
 	}
 
 	@CompleterClass
@@ -61,6 +61,7 @@ public class GenotypeFileCommand extends AbstractGenotypeCommand {
 			super();
 			registerPathLookup("fileName", false);
 			registerPathLookup("dataDir", true);
+			registerEnumLookup("detailLevel", DetailLevel.class);
 		}
 	}
 
