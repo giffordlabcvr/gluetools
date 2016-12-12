@@ -19,16 +19,13 @@ import freemarker.template.TemplateModel;
 public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExporter<T>> extends ModulePlugin<T> {
 
 	public static final String ID_TEMPLATE = "idTemplate";
-	public static final String DEDUPLICATE = "deduplicate";
 	private Template idTemplate;
-	private Boolean deduplicate;
 
 	public static final String DEFAULT_ID_TEMPLATE = "${alignment.name}.${sequence.source.name}.${sequence.sequenceID}";
 
 	public AbstractFastaAlignmentExporter() {
 		super();
 		addSimplePropertyName(ID_TEMPLATE);
-		addSimplePropertyName(DEDUPLICATE);
 	}
 
 	@Override
@@ -38,7 +35,6 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
 				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));
-		deduplicate = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DEDUPLICATE, false)).orElse(false);
 	}
 
 	protected static String generateFastaId(Template idTemplate, AlignmentMember almtMember) {
@@ -55,10 +51,6 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 			cmdContext.saveBytes(fileName, bytes);
 			return new OkResult();
 		}
-	}
-
-	protected Boolean getDeduplicate() {
-		return deduplicate;
 	}
 
 	protected Template getIdTemplate() {

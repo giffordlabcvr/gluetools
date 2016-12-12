@@ -106,7 +106,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	@Override
 	protected TestModelsResult execute(CommandContext cmdContext, ModelTester modelTester) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, true, whereClause);
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, 
 				null, alignment, almtMembers);
 

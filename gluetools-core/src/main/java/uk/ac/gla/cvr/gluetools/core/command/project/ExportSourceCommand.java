@@ -163,6 +163,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			}
 			if( (exported+skipped) % batchSize == 0) {
 				GlueLogger.getGlueLogger().fine("Sequences exported: "+exported+ ", skipped: "+skipped);
+				cmdContext.newObjectContext(); // ensure processed sequence objects are GC'd
 			}
 		}
 		GlueLogger.getGlueLogger().fine("Sequences exported: "+exported+ ", skipped: "+skipped);

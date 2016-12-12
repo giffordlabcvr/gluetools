@@ -53,7 +53,7 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Phylogeny can only be imported for constrained alignments.");
 		}
 		List<AlignmentMember> almtMembers = 
-				AlignmentListMemberCommand.listMembers(cmdContext, rootAlmt, recursive, false, whereClause);
+				AlignmentListMemberCommand.listMembers(cmdContext, rootAlmt, recursive, whereClause);
 
 		Map<Map<String,String>, Map<String,String>> sequencePkMapToMemberPkMap = new LinkedHashMap<Map<String,String>, Map<String,String>>();
 		if(anyAlignment) {

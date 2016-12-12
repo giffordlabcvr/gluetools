@@ -58,9 +58,8 @@ public class FigTreeAnnotationExporter extends ModulePlugin<FigTreeAnnotationExp
 	public List<List<String>> getAnnotationRows(CommandContext cmdContext,
 			Alignment alignment, Optional<Expression> whereClause, boolean recursive) {
 		// could make this configurable
-		boolean deduplicate = true;
 		List<AlignmentMember> allMembers = 
-				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, deduplicate, whereClause);
+				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		List<List<String>> allRows = new ArrayList<List<String>>();
 		for(AlignmentMember member: allMembers) {
 			TemplateModel memberTemplateModel = FreemarkerUtils.templateModelForGlueDataObject(member);

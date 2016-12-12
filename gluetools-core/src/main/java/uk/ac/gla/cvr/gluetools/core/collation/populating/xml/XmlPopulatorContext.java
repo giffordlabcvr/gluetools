@@ -1,43 +1,39 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator.FieldUpdate;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 public class XmlPopulatorContext {
 
-	private CommandContext cmdContext;
-	private Set<String> allowedFields = null;
-	private Map<String, Object> fieldUpdates = new LinkedHashMap<String, Object>();
+	private Sequence sequence;
+	private Map<String, FieldUpdate> fieldUpdates = new LinkedHashMap<String, FieldUpdate>();
+	private Map<String, FieldType> fieldTypes;
 	
-	public XmlPopulatorContext(CommandContext cmdContext, List<String> fieldNames) {
+	public XmlPopulatorContext(Sequence sequence, Map<String, FieldType> fieldTypes) {
 		super();
-		this.cmdContext = cmdContext;
-		if(fieldNames != null) {
-			allowedFields = new LinkedHashSet<String>(fieldNames);
-		}
+		this.sequence = sequence;
+		this.fieldTypes = fieldTypes;
 	}
 
-	public CommandContext getCmdContext() {
-		return cmdContext;
-	}
-	
 	public boolean isAllowedField(String fieldName) {
-		if(allowedFields == null) {
-			return true;
-		} else {
-			return allowedFields.contains(fieldName);
-		}
+		return fieldTypes.containsKey(fieldName);
 	}
 
-	public Map<String, Object> getFieldUpdates() {
+	public Map<String, FieldUpdate> getFieldUpdates() {
 		return fieldUpdates;
 	}
 	
+	public FieldType getFieldType(String fieldName) {
+		return fieldTypes.get(fieldName);
+	}
+
+	public Sequence getSequence() {
+		return sequence;
+	}
 	
 	
 }

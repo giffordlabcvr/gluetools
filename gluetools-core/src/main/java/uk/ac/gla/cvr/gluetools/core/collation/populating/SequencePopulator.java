@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommand
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
@@ -19,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 public abstract class SequencePopulator<P extends ModulePlugin<P>> extends ModulePlugin<P> {
 
 	
-	public static FieldUpdateResult populateField(CommandContext cmdContext, FieldPopulator fieldPopulator, String inputText) {
+	public static FieldUpdate populateField(CommandContext cmdContext, FieldPopulator fieldPopulator, String inputText) {
 		String fieldPopulatorResult = runFieldPopulator(fieldPopulator, inputText);
 		if(fieldPopulatorResult != null) {
 			return runSetFieldCommand(cmdContext, fieldPopulator, fieldPopulatorResult, true);
@@ -39,7 +40,46 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		return null;
 	}
 
-	public static FieldUpdateResult runSetFieldCommand(CommandContext cmdContext,
+	public static FieldUpdate generateFieldUpdate(FieldType fieldType, Sequence sequence, FieldPopulator fieldPopulator, String fieldValue) {
+		String fieldName = fieldPopulator.getFieldName();
+		boolean overwriteExistingNonNull = fieldPopulator.overwriteExistingNonNull();
+		boolean overwriteWithNewNull = fieldPopulator.overwriteWithNewNull();
+		
+		Object oldValue = sequence.readProperty(fieldName);
+		if(!overwriteExistingNonNull) {
+			if(oldValue != null) {
+				return new FieldUpdate(false, fieldName, fieldValue);
+			}
+		}
+		if(!overwriteWithNewNull && fieldValue == null) {
+			return new FieldUpdate(false, fieldName, fieldValue);
+		}
+		String oldValueString = null;
+		if(oldValue != null) {
+			oldValueString = fieldType.getFieldTranslator().objectValueToString(oldValue);
+		}
+		if(equals(oldValueString, fieldValue)) {
+			return new FieldUpdate(false, fieldName, fieldValue);
+		} else {
+			return new FieldUpdate(true, fieldName, fieldValue);
+		}
+	}
+
+	private static boolean equals(String string1, String string2) {
+		if(string1 == null && string2 == null) {
+			return true;
+		}
+		if(string1 != null && string2 == null) {
+			return false;
+		}
+		if(string2 != null && string1 == null) {
+			return false;
+		}
+		return(string1.equals(string2));
+	}
+	
+	
+	public static FieldUpdate runSetFieldCommand(CommandContext cmdContext,
 			FieldPopulator fieldPopulator, String fieldValue, boolean noCommit) {
 		String fieldName = fieldPopulator.getFieldName();
 		boolean overwriteExistingNonNull = fieldPopulator.overwriteExistingNonNull();
@@ -53,11 +93,11 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 					Sequence.pkMap(sequenceMode.getSourceName(), sequenceMode.getSequenceID()));
 			Object oldValue = sequence.readProperty(fieldName);
 			if(oldValue != null) {
-				return new FieldUpdateResult(false, fieldName, fieldValue);
+				return new FieldUpdate(false, fieldName, fieldValue);
 			}
 		}
 		if(!overwriteWithNewNull && fieldValue == null) {
-			return new FieldUpdateResult(false, fieldName, fieldValue);
+			return new FieldUpdate(false, fieldName, fieldValue);
 		}
 		UpdateResult updateResult;
 		if(fieldValue == null) {
@@ -73,17 +113,17 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 					.execute();
 		}
 		if(updateResult.getNumber() == 1) {
-			return new FieldUpdateResult(true, fieldName, fieldValue);
+			return new FieldUpdate(true, fieldName, fieldValue);
 		}
-		return new FieldUpdateResult(false, fieldName, fieldValue);
+		return new FieldUpdate(false, fieldName, fieldValue);
 	}
 	
-	public static class FieldUpdateResult {
+	public static class FieldUpdate {
 		private boolean updated;
 		private String fieldValue;
 		private String fieldName;
 
-		public FieldUpdateResult(boolean updated, String fieldName, String fieldValue) {
+		public FieldUpdate(boolean updated, String fieldName, String fieldValue) {
 			super();
 			this.updated = updated;
 			this.fieldName = fieldName;

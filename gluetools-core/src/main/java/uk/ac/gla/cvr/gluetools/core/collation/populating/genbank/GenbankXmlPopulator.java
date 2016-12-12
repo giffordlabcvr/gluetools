@@ -1,13 +1,14 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.genbank;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -17,19 +18,18 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.PropertyCommandDelegate;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
-import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -62,73 +62,108 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
-	private void populate(CommandContext cmdContext, String sourceName, String sequenceID, String format, 
-			List<Map<String, Object>> rowData, List<String> fieldNames) {
-		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(cmdContext, fieldNames);
-		try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
+	private Map<String, FieldUpdate> populate(Sequence sequence, Map<String, FieldType> fieldTypes) {
+		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(sequence, fieldTypes);
+		String format = sequence.getFormat();
+		if(format.equals(SequenceFormat.GENBANK_XML.name())) {
+			Document sequenceDataDoc;
+			try {
+				sequenceDataDoc = GlueXmlUtils.documentFromBytes(sequence.getOriginalData());
+			} catch (Exception e) {
+				throw new RuntimeException("Bad GENBANK XML format: "+e.getMessage(), e);
+			}
 			rules.forEach(rule -> {
-				if(format.equals(SequenceFormat.GENBANK_XML.name())) {
-					OriginalDataResult originalDataResult = 
-							cmdContext.cmdBuilder(ShowOriginalDataCommand.class).execute();
-					Document sequenceDataDoc;
-					try {
-						sequenceDataDoc = GlueXmlUtils.documentFromBytes(originalDataResult.getBase64Bytes());
-					} catch (Exception e) {
-						throw new RuntimeException("Bad GENBANK XML format: "+e.getMessage(), e);
-					}
-					rule.execute(xmlPopulatorContext, sequenceDataDoc);
-				}
+				rule.execute(xmlPopulatorContext, sequenceDataDoc);
 			});
 		}
-		xmlPopulatorContext.getFieldUpdates().forEach((fieldName, value) -> {
-			Map<String, Object> row = new LinkedHashMap<String, Object>();
-			row.put(Sequence.SOURCE_NAME_PATH, sourceName);
-			row.put(Sequence.SEQUENCE_ID_PROPERTY, sequenceID);
-			row.put("fieldName", fieldName);
-			row.put("value", value);
-			rowData.add(row);
-		});
+		return xmlPopulatorContext.getFieldUpdates();
 		
 	}
 	
 	private PopulateResult populate(CommandContext cmdContext, int batchSize, 
 			Optional<Expression> whereClause, boolean updateDB, List<String> fieldNames) {
+		SelectQuery selectQuery;
+		if(whereClause.isPresent()) {
+			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
+		} else {
+			selectQuery = new SelectQuery(Sequence.class);
+		}
+		
+		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
+		if(fieldNames == null) {
+			fieldNames = project.getModifiableFieldNames(ConfigurableTable.sequence.name());
+		}
+		Map<String, FieldType> fieldTypes = new LinkedHashMap<String, FieldType>();
+		for(String fieldName: fieldNames) {
+			fieldTypes.put(fieldName, 
+				project.getModifiableFieldType(ConfigurableTable.sequence.name(), fieldName));
+		}
+		
 		log("Finding sequences to process");
-		CommandBuilder<ListResult, ListSequenceCommand> cmdBuilder = cmdContext.cmdBuilder(ListSequenceCommand.class);
-		whereClause.ifPresent(wc ->
-			cmdBuilder.set(ListSequenceCommand.WHERE_CLAUSE, wc.toString())
-		);
-		cmdBuilder.setArray(ListSequenceCommand.FIELD_NAME)
-			.addString(Sequence.SOURCE_NAME_PATH)
-			.addString(Sequence.SEQUENCE_ID_PROPERTY)
-			.addString(Sequence.FORMAT_PROPERTY);
-		ListResult listResult = cmdBuilder.execute();
-		List<Map<String,Object>> sequenceMaps = listResult.asListOfMaps();
-		List<Map<String,Object>> rowData = new LinkedList<Map<String, Object>>();
-		log("Found "+sequenceMaps.size()+" sequences to process");
-		int sequencesProcessed = 0;
-		for(Map<String,Object> sequenceMap: sequenceMaps) {
-			String sourceName = (String) sequenceMap.get(Sequence.SOURCE_NAME_PATH);
-			String sequenceID = (String) sequenceMap.get(Sequence.SEQUENCE_ID_PROPERTY);
-			String format = (String) sequenceMap.get(Sequence.FORMAT_PROPERTY);
-			populate(cmdContext, sourceName, sequenceID, format, rowData, fieldNames);
-			sequencesProcessed++;
-			if(sequencesProcessed % batchSize == 0) {
-				log("Processed "+sequencesProcessed+" sequences");
-				if(updateDB) {
-					cmdContext.commit();
-				} 
-				cmdContext.newObjectContext();
+		int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
+		log("Found "+numberToProcess+" sequences to process");
+		List<Sequence> currentSequenceBatch;
+
+		selectQuery.setFetchLimit(batchSize);
+		selectQuery.setPageSize(batchSize);
+		int offset = 0;
+		Map<Map<String,String>, Map<String, FieldUpdate>> pkMapToUpdates = new LinkedHashMap<Map<String,String>, Map<String, FieldUpdate>>();
+		while(offset < numberToProcess) {
+			selectQuery.setFetchOffset(offset);
+			int lastBatchIndex = Math.min(offset+batchSize+1, numberToProcess);
+			log("Retrieving sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
+			currentSequenceBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
+			log("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
+			for(Sequence sequence: currentSequenceBatch) {
+				pkMapToUpdates.put(sequence.pkMap(), populate(sequence, fieldTypes));
 			}
+			if(updateDB) {
+				/* DB udpate here */
+				currentSequenceBatch.forEach(seq -> {
+					Map<String, FieldUpdate> updates = pkMapToUpdates.get(seq.pkMap());
+					updates.forEach( (fieldName, update) -> {
+						String valueString = update.getFieldValue();
+						if(valueString == null) {
+							PropertyCommandDelegate.executeUnsetField(cmdContext, project, ConfigurableTable.sequence.name(), seq, fieldName, true);
+						} else {
+							Object fieldValue = fieldTypes.get(fieldName).getFieldTranslator().valueFromString(valueString);
+							PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.sequence.name(), seq, fieldName, fieldValue, true);
+						}
+					} );
+				});
+				cmdContext.commit();
+			} 
+			cmdContext.newObjectContext();
+			offset = offset+batchSize;
 		}
-		log("Processed "+sequencesProcessed+" sequences");
-		if(updateDB) {
-			cmdContext.commit();
-		}
+		log("Processed "+numberToProcess+" sequences");
 		cmdContext.newObjectContext();
+		
+		List<Map<String, Object>> rowData = new ArrayList<Map<String,Object>>();
+		pkMapToUpdates.forEach((pkMap, updates) -> {
+			String sourceName = (String) pkMap.get(Sequence.SOURCE_NAME_PATH);
+			String sequenceID = (String) pkMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+			updates.forEach((fieldName, fieldUpdate) -> {
+				Map<String, Object> row = new LinkedHashMap<String, Object>();
+				rowData.add(row);
+				row.put(Sequence.SOURCE_NAME_PATH, sourceName);
+				row.put(Sequence.SEQUENCE_ID_PROPERTY, sequenceID);
+				row.put("fieldName", fieldName);
+				row.put("value", fieldUpdate.getFieldValue());
+			});
+		});
 		return new PopulateResult(rowData);
 	}
 	
+
+	@Override
+	public void validate(CommandContext cmdContext) {
+		super.validate(cmdContext);
+		for(XmlPopulatorRule rule: rules) {
+			rule.validate(cmdContext);
+		}
+	}
+
 
 	private static class PopulateResult extends TableResult {
 

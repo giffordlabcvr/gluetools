@@ -139,9 +139,15 @@ public class PropertyCommandDelegate {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
 		String tableName = configurableObjectMode.getTableName();
+		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
+		return executeUnsetField(cmdContext, project,
+				tableName, configurableObject, fieldName, noCommit);
+	}
+
+	public static UpdateResult executeUnsetField(CommandContext cmdContext, Project project,
+			String tableName, GlueDataObject configurableObject, String fieldName, Boolean noCommit) {
 		Class<? extends GlueDataObject> dataObjectClass = project.getDataObjectClass(tableName);
 		project.checkModifiableFieldNames(tableName, Collections.singletonList(fieldName));
-		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object oldValue = configurableObject.readProperty(fieldName);
 		if(oldValue == null) {
 			return new UpdateResult(dataObjectClass, 0);

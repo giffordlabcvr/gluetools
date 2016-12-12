@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -9,7 +10,12 @@ import org.w3c.dom.Node;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator.FieldUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -46,6 +52,9 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 			if(!xmlPopulatorContext.isAllowedField(fieldName)) {
 				return;
 			}
+			if(xmlPopulatorContext.getFieldUpdates().containsKey(fieldName)) {
+				return; // we already have an update for this field.
+			}
 			String selectedText;
 			try {
 				selectedText = GlueXmlUtils.getNodeText(node);
@@ -53,9 +62,13 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 				throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 			}
 			if(selectedText != null) {
-				SequencePopulator.FieldUpdateResult fieldUpdateResult = SequencePopulator.populateField(xmlPopulatorContext.getCmdContext(), this, selectedText);
-				if(fieldUpdateResult != null && fieldUpdateResult.updated()) {
-					xmlPopulatorContext.getFieldUpdates().put(fieldUpdateResult.getFieldName(), fieldUpdateResult.getFieldValue());
+				String fieldPopulatorResult = SequencePopulator.runFieldPopulator(this, selectedText);
+				if(fieldPopulatorResult != null) {
+					FieldUpdate fieldUpdateResult = SequencePopulator
+							.generateFieldUpdate(xmlPopulatorContext.getFieldType(fieldName), xmlPopulatorContext.getSequence(), this, fieldPopulatorResult);
+					if(fieldUpdateResult != null && fieldUpdateResult.updated()) {
+						xmlPopulatorContext.getFieldUpdates().put(fieldUpdateResult.getFieldName(), fieldUpdateResult);
+					}
 				}
 			}
 		}
@@ -89,5 +102,14 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 		public boolean overwriteWithNewNull() {
 			return overwriteWithNewNull;
 		}
+
+		@Override
+		public void validate(CommandContext cmdContext) {
+			Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
+			project.checkModifiableFieldNames(ConfigurableTable.sequence.name(), Arrays.asList(fieldName));
+			
+		}
+		
+		
 	
 }

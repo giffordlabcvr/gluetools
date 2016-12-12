@@ -56,7 +56,7 @@ public class SequenceMode extends CommandMode<SequenceCommand> implements Config
 		return lookupSequence(cmdContext);
 	}
 
-	protected Sequence lookupSequence(CommandContext cmdContext) {
+	public Sequence lookupSequence(CommandContext cmdContext) {
 		return GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(getSourceName(), getSequenceID()));
 	}
 

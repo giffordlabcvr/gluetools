@@ -158,7 +158,7 @@ public class CommonAaPolymorphismGenerator extends ModulePlugin<CommonAaPolymorp
 			Map<AaPolymorphismKey, AaPolymorphism> generated,
 			List<ReferenceSequence> prioritizedAncestorReferences,
 			Map<String, Map<String, String>> refToLabeledAas) {
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, true, true, whereClause);
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, true, whereClause);
 		if(almtMembers.size() < minSampleSize) {
 			return;
 		}

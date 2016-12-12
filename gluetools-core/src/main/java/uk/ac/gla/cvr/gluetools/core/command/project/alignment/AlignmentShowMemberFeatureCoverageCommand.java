@@ -1,39 +1,30 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import gnu.trove.map.TCharIntMap;
-import gnu.trove.map.hash.TCharIntHashMap;
-import gnu.trove.procedure.TCharIntProcedure;
-
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-
+import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass(
-		commandWords={"amino-acid", "frequency"}, 
-		description = "Compute amino acid frequencies for a given feature location", 
+		commandWords={"show", "member", "feature-coverage"}, 
+		description = "Show coverage of a given feature location by specific members", 
 		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName>" },
 		docoptOptions = { 
 		"-c, --recursive                                Include descendent members",
@@ -46,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference.",
 				metaTags = {}	
 )
-public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<AlignmentAminoAcidFrequencyResult> {
+public class AlignmentShowMemberFeatureCoverageCommand extends AlignmentModeCommand<AlignmentShowMemberFeatureCoverageResult> {
 
 	
 	public static final String RECURSIVE = "recursive";
@@ -71,76 +62,45 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	}
 	
 	@Override
-	public AlignmentAminoAcidFrequencyResult execute(CommandContext cmdContext) {
+	public AlignmentShowMemberFeatureCoverageResult execute(CommandContext cmdContext) {
 		Alignment alignment = lookupAlignment(cmdContext);
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
 		FeatureLocation scannedFeatureLoc = 
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
-		List<LabeledAminoAcidFrequency> resultRowData = alignmentAminoAcidFrequencies(
+		List<MemberFeatureCoverage> resultRowData = alignmentFeatureCoverage(
 				cmdContext, alignment, ancConstrainingRef, scannedFeatureLoc, almtMembers);
-		return new AlignmentAminoAcidFrequencyResult(resultRowData);
+		return new AlignmentShowMemberFeatureCoverageResult(resultRowData);
 	}
 
-	public static List<LabeledAminoAcidFrequency> alignmentAminoAcidFrequencies(
+	public static List<MemberFeatureCoverage> alignmentFeatureCoverage(
 			CommandContext cmdContext, Alignment alignment, 
 			ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc,
 			List<AlignmentMember> almtMembers) {
-		Feature feature = scannedFeatureLoc.getFeature();
-		feature.checkCodesAminoAcids();
 
-		Map<String, RefCodonInfo> codonToRefCodonInfo = new LinkedHashMap<String,RefCodonInfo>();
-		List<LabeledCodon> labeledCodons = scannedFeatureLoc.getLabeledCodons(cmdContext);
-		for(LabeledCodon labeledCodon: labeledCodons) {
-			codonToRefCodonInfo.put(labeledCodon.getCodonLabel(), new RefCodonInfo(labeledCodon));
-		}
+		List<MemberFeatureCoverage> membFeatCvrgList = new ArrayList<MemberFeatureCoverage>();
+			
+		Integer featureLength = IReferenceSegment.totalReferenceLength(scannedFeatureLoc.segmentsAsReferenceSegments());
 		
 		for(AlignmentMember almtMember: almtMembers) {
-			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
-					MemberAminoAcidCommand.memberAminoAcids(cmdContext, almtMember, 
-							ancConstrainingRef, scannedFeatureLoc);
-			for(LabeledQueryAminoAcid labeledQueryAminoAcid: labeledQueryAminoAcids) {
-				String codonLabel = labeledQueryAminoAcid.getLabeledAminoAcid().getLabeledCodon().getCodonLabel();
-				String aa = labeledQueryAminoAcid.getLabeledAminoAcid().getAminoAcid();
-				codonToRefCodonInfo.get(codonLabel).addAaMamber(aa.charAt(0));
-			}
-		}
+			
+			Alignment tipAlmt = almtMember.getAlignment();
+			
+			List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
+			List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
 
-		List<LabeledAminoAcidFrequency> resultRowData = new ArrayList<LabeledAminoAcidFrequency>();
-		codonToRefCodonInfo.forEach((codonLabel, refCodonInfo) -> {
-				refCodonInfo.aaToMemberCount.forEachEntry(new TCharIntProcedure() {
-					@Override
-					public boolean execute(char aa, int numMembers) {
-						LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(refCodonInfo.labeledCodon, new String(new char[]{aa}));
-						double pctMembers = 100.0 * numMembers / (double) refCodonInfo.membersAtCodon;
-						LabeledAminoAcidFrequency labeledAminoAcidFrequency = 
-								new LabeledAminoAcidFrequency(labeledAminoAcid, numMembers, refCodonInfo.membersAtCodon, pctMembers);
-						resultRowData.add(labeledAminoAcidFrequency);
-						return true;
-					}
-				});
-		});
-		return resultRowData;
+			// trim down to the feature area.
+			List<ReferenceSegment> featureLocRefSegs = scannedFeatureLoc.segmentsAsReferenceSegments();
+			
+			List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
+					ReferenceSegment.cloneLeftSegMerger());
+
+			Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength);
+			membFeatCvrgList.add(new MemberFeatureCoverage(almtMember, refNtCvrgPct));
+		}
+		return membFeatCvrgList;
 	}
 
-	
-	private static class RefCodonInfo {
-		LabeledCodon labeledCodon;
-		TCharIntMap aaToMemberCount = new TCharIntHashMap();
-		int membersAtCodon = 0;
-
-		public RefCodonInfo(LabeledCodon labeledCodon) {
-			super();
-			this.labeledCodon = labeledCodon;
-		}
-
-		public void addAaMamber(char aaChar) {
-			aaToMemberCount.adjustOrPutValue(aaChar, 1, 1);
-			membersAtCodon++;
-		}
-	}
-
-	
 	@CompleterClass
 	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {}
 

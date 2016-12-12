@@ -89,5 +89,13 @@ public interface IReferenceSegment {
 		setRefEnd(getRefEnd()+offset);
 	}
 
+
+	public static <S extends IReferenceSegment> Integer totalReferenceLength(List<S> segments) {
+		int l = 0;
+		for(S seg: segments) {
+			l += seg.getCurrentLength();
+		}
+		return l;
+	}
 	
 }

@@ -44,7 +44,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			Boolean recursive, Boolean preview, OrderStrategy orderStrategy) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = 
-				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, getDeduplicate(), whereClause);
+				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
 		int minRefNt = 1;
 		int maxRefNt = 1;

@@ -50,7 +50,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			Boolean recursive, Boolean preview, Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy) {
 		String fastaAlmtString = exportAlignment(cmdContext, alignmentName,
 				whereClause, acRefName, featureName, recursive, orderStrategy,
-				includeAllColumns, minColUsage, getDeduplicate(), getIdTemplate());
+				includeAllColumns, minColUsage, getIdTemplate());
 		return formResult(cmdContext, fastaAlmtString, fileName, preview);
 	}
 
@@ -58,9 +58,9 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			String alignmentName, Optional<Expression> whereClause,
 			String relRefName, String featureName, Boolean recursive,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
-			Boolean deduplicate, Template idTemplate) {
+			Template idTemplate) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, deduplicate, whereClause);
+		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
 				cmdContext, relRefName, featureName, includeAllColumns, minColUsage, orderStrategy,

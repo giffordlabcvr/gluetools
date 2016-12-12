@@ -1,14 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
@@ -28,7 +23,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.AlignmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -89,63 +83,42 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 		}
 	}
 
-	// deduplicate: since sequences can be members of multiple alignments, in the recursive case the same sequence may appear
-	// as the member of multiple descendents.
-	// deduplicate will remove duplicate sequences, in favour of those closest in the hierarchy to the supplied alignment, 
-	// breaking ties by sorting on alignment name.
-	
 	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
-			Alignment alignment, Boolean recursive, Boolean deduplicate, Optional<Expression> whereClause) {
+			Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
+		return listMembers(cmdContext, alignment, recursive, whereClause, null, null, null);
+	}
+
+	
+	public static int countMembers(CommandContext cmdContext,
+			Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
 		checkListMemberOptions(alignment, recursive);
 		
 		Expression matchExpression = getMatchExpression(alignment, recursive, whereClause);
 
-		Map<String, Integer> alignmentNameToDecOrder = new LinkedHashMap<String, Integer>();
-		alignmentNameToDecOrder.put(alignment.getName(), 0);
-		
-		if(recursive) {
-			int decOrder = 1;
-			List<Alignment> descendents = alignment.getDescendents();
-			for(Alignment descAlignment: descendents) {
-				String descName = descAlignment.getName();
-				alignmentNameToDecOrder.put(descName, decOrder);
-				decOrder++;
-			}
-		}
-		
 		SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, matchExpression);
-		List<AlignmentMember> result = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
-		if(recursive && deduplicate) {
-			List<AlignmentMember> membersSorted = new ArrayList<AlignmentMember>(result);
-			// sort members so that those in higher up alignments are considered first during deduplication.
-			Collections.sort(membersSorted, new Comparator<AlignmentMember>() {
-				@Override
-				public int compare(AlignmentMember o1, AlignmentMember o2) {
-					String o1AlmtName = o1.getAlignment().getName();
-					String o2AlmtName = o2.getAlignment().getName();
-					int comp = Integer.compare(alignmentNameToDecOrder.get(o1AlmtName), alignmentNameToDecOrder.get(o2AlmtName));
-					if(comp != 0) { return comp; }
-					comp = o1AlmtName.compareTo(o2AlmtName);
-					if(comp != 0) { return comp; }
-					comp = o1.getSequence().getSource().getName().compareTo(o2.getSequence().getSource().getName());
-					if(comp != 0) { return comp; }
-					comp = o1.getSequence().getSequenceID().compareTo(o2.getSequence().getSequenceID());
-					if(comp != 0) { return comp; }
-					return 0;
-				}
-			});
-			Set<Sequence> sequences = new LinkedHashSet<Sequence>();
-			List<AlignmentMember> deduplicatedMembers = new ArrayList<AlignmentMember>();
-			for(AlignmentMember member: membersSorted) {
-				if(sequences.contains(member.getSequence())) {
-					continue;
-				}
-				sequences.add(member.getSequence());
-				deduplicatedMembers.add(member);
-			}
-			result = deduplicatedMembers;
+
+		return GlueDataObject.count(cmdContext, selectQuery);
+	}
+
+	
+	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
+			Alignment alignment, Boolean recursive, Optional<Expression> whereClause,
+			Integer offset, Integer fetchLimit, Integer pageSize) {
+		checkListMemberOptions(alignment, recursive);
+		
+		Expression matchExpression = getMatchExpression(alignment, recursive, whereClause);
+
+		SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, matchExpression);
+		if(offset != null) {
+			selectQuery.setFetchOffset(offset);
 		}
-		return result;
+		if(fetchLimit != null) {
+			selectQuery.setFetchLimit(fetchLimit);
+		}
+		if(pageSize != null) {
+			selectQuery.setPageSize(pageSize);
+		}
+		return GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
 	}
 
 
