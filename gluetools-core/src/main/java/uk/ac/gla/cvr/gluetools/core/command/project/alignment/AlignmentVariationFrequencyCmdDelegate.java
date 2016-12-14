@@ -59,101 +59,155 @@ public class AlignmentVariationFrequencyCmdDelegate {
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 	}
 	
-	public List<VariationScanMemberCount> execute(Alignment alignment, CommandContext cmdContext) {
-		List<VariationScanMemberCount> variationScanMemberCounts = new ArrayList<VariationScanMemberCount>();
+	// returns alignment name to list of VariationScanMemberCount
+	public Map<String, List<VariationScanMemberCount>> execute(String namedAlignmentName, boolean alignmentRecursive, CommandContext cmdContext) {
 
-		GlueLogger.getGlueLogger().log(Level.FINEST, "Searching for alignment members");
-		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, alignment, recursive, whereClause);
-		GlueLogger.getGlueLogger().log(Level.FINEST, "Found "+totalMembers+" alignment members");
+		int totalMembers = countTotalMembers(cmdContext, namedAlignmentName);
+
+		Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo = 
+				new LinkedHashMap<String, Map<Map<String,String>,VariationInfo>>();
 
 		int offset = 0;
 		while(offset < totalMembers) {
-
+			Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(namedAlignmentName));
 			int lastBatchIndex = Math.min(offset+BATCH_SIZE+1, totalMembers);
 			GlueLogger.getGlueLogger().log(Level.FINEST, "Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 			List<AlignmentMember> memberBatch = AlignmentListMemberCommand
-					.listMembers(cmdContext, alignment, recursive, whereClause, offset, BATCH_SIZE, BATCH_SIZE);
+					.listMembers(cmdContext, namedAlignment, recursive, whereClause, offset, BATCH_SIZE, BATCH_SIZE);
 			GlueLogger.getGlueLogger().log(Level.FINEST, "Processing members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 
-			Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-
-			List<ReferenceSequence> refsToScan;
-			if(multiReference) {
-				refsToScan = alignment.getAncestorPathReferences(cmdContext, acRefName);
-			} else {
-				refsToScan = Arrays.asList(alignment.getAncConstrainingRef(cmdContext, acRefName));
-			}
-
-			List<Feature> featuresToScan = new ArrayList<Feature>();
-			featuresToScan.add(namedFeature);
-			if(descendentFeatures) {
-				featuresToScan.addAll(namedFeature.getDescendents());
-			}
-
-			for(ReferenceSequence refToScan : refsToScan) {
-
-				for(Feature featureToScan: featuresToScan) {
-
-					FeatureLocation featureLoc = 
-							GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-									FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
-					if(featureLoc == null) {
-						continue; // reference did not have that feature.
-					}
-
-					List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, vWhereClause.orElse(null));
-
-					Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
-					for(Variation variation: variationsToScan) {
-						variationNameToInfo.put(variation.getName(), new VariationInfo(variation));
-					}
-
-					for(AlignmentMember almtMember: memberBatch) {
-						List<VariationScanResult> variationScanResults = MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, false);
-						for(VariationScanResult variationScanResult: variationScanResults) {
-							VariationInfo variationInfo = variationNameToInfo.get(variationScanResult.getVariation().getName());
-							if(variationScanResult.isPresent()) {
-								variationInfo.membersConfirmedPresent++;
-							} else {
-								variationInfo.membersConfirmedAbsent++;
-							}
-						}
-					}
-
-					variationScanMemberCounts.addAll(
-							variationNameToInfo.values().stream()
-							.map(vInfo -> {
-								int membersWherePresent = vInfo.membersConfirmedPresent;
-								int membersWhereAbsent = vInfo.membersConfirmedAbsent;
-								double pctWherePresent = 100.0 * membersWherePresent / (membersWherePresent + membersWhereAbsent);
-								double pctWhereAbsent = 100.0 * membersWhereAbsent / (membersWherePresent + membersWhereAbsent);
-								return new VariationScanMemberCount(vInfo.variation, 
-										membersWherePresent, pctWherePresent, 
-										membersWhereAbsent, pctWhereAbsent);
-							})
-							.collect(Collectors.toList()));
-
-
-				}
-			}
+			processBatch(cmdContext, namedAlignment, alignmentRecursive, almtNameToVarPkMapToInfo, memberBatch);
 			offset = offset+BATCH_SIZE;
 			cmdContext.commit();
 			cmdContext.newObjectContext();
 		}
 		GlueLogger.getGlueLogger().log(Level.FINEST, "Processed "+totalMembers+" members");
 
-		VariationScanMemberCount.sortVariationScanMemberCounts(variationScanMemberCounts);
-		return variationScanMemberCounts;
+		Map<String, List<VariationScanMemberCount>> almtNameToScanCountList = 
+				new LinkedHashMap<String, List<VariationScanMemberCount>>();
+		almtNameToVarPkMapToInfo.forEach((almtName, varPkMapToInfo) -> {
+			List<VariationScanMemberCount> scanCountList = 
+					varPkMapToInfo.values().stream()
+					.map(vInfo -> {
+						int membersWherePresent = vInfo.membersConfirmedPresent;
+						int membersWhereAbsent = vInfo.membersConfirmedAbsent;
+						double pctWherePresent = 100.0 * membersWherePresent / (membersWherePresent + membersWhereAbsent);
+						double pctWhereAbsent = 100.0 * membersWhereAbsent / (membersWherePresent + membersWhereAbsent);
+						return new VariationScanMemberCount(vInfo.variationPkMap,
+								vInfo.minLocStart,
+								membersWherePresent, pctWherePresent, 
+								membersWhereAbsent, pctWhereAbsent);
+					})
+					.collect(Collectors.toList());
+
+			VariationScanMemberCount.sortVariationScanMemberCounts(scanCountList);
+			almtNameToScanCountList.put(almtName, scanCountList);
+		});
+		return almtNameToScanCountList;
+	}
+
+	private int countTotalMembers(CommandContext cmdContext,
+			String namedAlignmentName) {
+		Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(namedAlignmentName));
+		GlueLogger.getGlueLogger().log(Level.FINEST, "Searching for alignment members");
+		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, namedAlignment, recursive, whereClause);
+		GlueLogger.getGlueLogger().log(Level.FINEST, "Found "+totalMembers+" alignment members");
+		return totalMembers;
+	}
+
+	private void processBatch(
+			CommandContext cmdContext,
+			Alignment namedAlignment,
+			boolean alignmentRecursive,
+			Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo,
+			List<AlignmentMember> memberBatch) {
+		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+
+		List<ReferenceSequence> refsToScan;
+		if(multiReference) {
+			refsToScan = namedAlignment.getAncestorPathReferences(cmdContext, acRefName);
+		} else {
+			refsToScan = Arrays.asList(namedAlignment.getAncConstrainingRef(cmdContext, acRefName));
+		}
+
+		List<Feature> featuresToScan = new ArrayList<Feature>();
+		featuresToScan.add(namedFeature);
+		if(descendentFeatures) {
+			featuresToScan.addAll(namedFeature.getDescendents());
+		}
+
+		for(ReferenceSequence refToScan : refsToScan) {
+			GlueLogger.getGlueLogger().log(Level.FINEST, "Scanning for variations defined on Reference"+refToScan.pkMap());
+
+			for(Feature featureToScan: featuresToScan) {
+
+				FeatureLocation featureLoc = 
+						GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+								FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
+				if(featureLoc == null) {
+					continue; // reference did not have that feature.
+				}
+
+				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, vWhereClause.orElse(null));
+				if(variationsToScan.isEmpty()) {
+					continue;
+				}
+				GlueLogger.getGlueLogger().log(Level.FINEST, "Scanning for "+variationsToScan.size()+" variations defined on FeatureLoc"+featureLoc.pkMap());
+
+				
+				for(AlignmentMember almtMember: memberBatch) {
+					List<VariationScanResult> variationScanResults = MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, false);
+					for(VariationScanResult variationScanResult: variationScanResults) {
+						registerScanResult(almtNameToVarPkMapToInfo, namedAlignment, alignmentRecursive, almtMember, variationScanResult);
+					}
+				}
+
+			}
+		}
 	}
 
 	
+	private void registerScanResult(Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo,
+			Alignment namedAlignment, boolean alignmentRecursive,
+			AlignmentMember almtMember, VariationScanResult variationScanResult) {
+		
+		List<Alignment> alignmentsToRecord;
+		if(alignmentRecursive) {
+			alignmentsToRecord = almtMember.getAlignment().getAncestorsUpTo(namedAlignment);
+		} else {
+			alignmentsToRecord = Arrays.asList(namedAlignment);
+		}
+		for(Alignment almtToRecord: alignmentsToRecord) {
+			Map<Map<String,String>, VariationInfo> varPkMapToInfo = almtNameToVarPkMapToInfo.get(almtToRecord.getName());
+			if(varPkMapToInfo == null) {
+				varPkMapToInfo	= new LinkedHashMap<Map<String,String>, VariationInfo>();
+				almtNameToVarPkMapToInfo.put(almtToRecord.getName(), varPkMapToInfo);
+			}
+			Variation variation = variationScanResult.getVariation();
+			Map<String,String> varPkMap = variation.pkMap();
+			VariationInfo variationInfo = varPkMapToInfo.get(varPkMap);
+			if(variationInfo == null) {
+				variationInfo = new VariationInfo(varPkMap, variation.minLocStart());
+				varPkMapToInfo.put(varPkMap, variationInfo);
+			}
+			if(variationScanResult.isPresent()) {
+				variationInfo.membersConfirmedPresent++;
+			} else {
+				variationInfo.membersConfirmedAbsent++;
+			}
+		}
+	}
+
+
 	private class VariationInfo {
-		Variation variation;
+		Map<String,String> variationPkMap;
+		int minLocStart;
 		int membersConfirmedPresent = 0;
 		int membersConfirmedAbsent = 0;
-		public VariationInfo(Variation variation) {
+		public VariationInfo(Map<String,String> variationPkMap, int minLocStart) {
 			super();
-			this.variation = variation;
+			this.variationPkMap = variationPkMap;
+			this.minLocStart = minLocStart;
 		}
 	}
 

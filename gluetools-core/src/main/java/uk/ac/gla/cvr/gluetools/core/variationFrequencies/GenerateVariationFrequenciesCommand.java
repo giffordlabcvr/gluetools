@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.variationFrequencies;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.GenerateVariationFrequenciesCommand.GenerateVariationFrequenciesResult;
+import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator.AlignmentVariationReport;
 
 @CommandClass(
 		commandWords={"generate", "frequencies"}, 
@@ -45,6 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.GenerateVariationFreque
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of the named alignment. "+
+		"If --alignmentRecursive is used, variation-alignment notes will be generated for both this and descendent alignments. "+
 		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
 		"path between the named alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
 		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference. "+
@@ -87,17 +88,12 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 	@Override
 	protected GenerateVariationFrequenciesResult execute(CommandContext cmdContext,
 			VariationFrequenciesGenerator variationFrequenciesGenerator) {
-		List<Alignment> alignments = new LinkedList<Alignment>();
-		Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName));
-		alignments.add(namedAlignment);
-		if(alignmentRecursive) {
-			alignments.addAll(namedAlignment.getDescendents());
-		}
-		List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports = new ArrayList<VariationFrequenciesGenerator.AlignmentVariationReport>();
-		for(Alignment alignment: alignments) {
-			List<VariationScanMemberCount> scanCounts = delegate.execute(alignment, cmdContext);
-			variationFrequenciesGenerator.previewAlmtVarNotes(cmdContext, alignment, scanCounts, almtVarReports);
-		}
+		Map<String, List<VariationScanMemberCount>> almtNameToScanCountList = delegate.execute(almtName, alignmentRecursive, cmdContext);
+		List<AlignmentVariationReport> almtVarReports = new ArrayList<AlignmentVariationReport>();
+		almtNameToScanCountList.forEach((almtName, scanCountList) -> {
+			Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName));
+			almtVarReports.addAll(variationFrequenciesGenerator.previewAlmtVarNotes(cmdContext, alignment, scanCountList));
+		});
 		variationFrequenciesGenerator.log("Generated "+almtVarReports.size()+" alignment-variation frequencies");
 		if(!previewOnly) {
 			variationFrequenciesGenerator.generateVarAlmtNotes(cmdContext, almtVarReports);

@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 
 public class AlignmentVariationFrequencyResult extends BaseTableResult<VariationScanMemberCount> {
@@ -20,9 +21,9 @@ public class AlignmentVariationFrequencyResult extends BaseTableResult<Variation
 	public AlignmentVariationFrequencyResult(List<VariationScanMemberCount> rowData) {
 		super("samVariationsScanResult", 
 				rowData,
-				column(REF_SEQ_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getReferenceSequence().getName()), 
-				column(FEATURE_NAME, vsmc -> vsmc.getVariation().getFeatureLoc().getFeature().getName()), 
-				column(VARIATION_NAME, vsmc -> vsmc.getVariation().getName()), 
+				column(REF_SEQ_NAME, vsmc -> vsmc.getVariationPkMap().get(Variation.REF_SEQ_NAME_PATH)), 
+				column(FEATURE_NAME, vsmc -> vsmc.getVariationPkMap().get(Variation.FEATURE_NAME_PATH)), 
+				column(VARIATION_NAME, vsmc -> vsmc.getVariationPkMap().get(Variation.NAME_PROPERTY)), 
 				column(MEMBERS_PRESENT, vsmc -> vsmc.getMembersWherePresent()), 
 				column(PCT_PRESENT, vsmc -> vsmc.getPctWherePresent()), 
 				column(MEMBERS_ABSENT, vsmc -> vsmc.getMembersWhereAbsent()),

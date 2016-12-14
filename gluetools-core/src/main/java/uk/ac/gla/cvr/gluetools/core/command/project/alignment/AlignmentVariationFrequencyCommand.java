@@ -1,12 +1,16 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 
 @CommandClass(
 		commandWords={"variation", "frequency"}, 
@@ -51,8 +55,13 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 	
 	@Override
 	public AlignmentVariationFrequencyResult execute(CommandContext cmdContext) {
-		Alignment alignment = lookupAlignment(cmdContext);
-		return new AlignmentVariationFrequencyResult(delegate.execute(alignment, cmdContext));
+		String alignmentName = getAlignmentName();
+		Map<String, List<VariationScanMemberCount>> almtNameToScanCountList = delegate.execute(alignmentName, false, cmdContext);
+		List<VariationScanMemberCount> scanCountList = almtNameToScanCountList.get(alignmentName);
+		if(scanCountList == null) {
+			scanCountList = new ArrayList<VariationScanMemberCount>();
+		}
+		return new AlignmentVariationFrequencyResult(scanCountList);
 	}
 
 	

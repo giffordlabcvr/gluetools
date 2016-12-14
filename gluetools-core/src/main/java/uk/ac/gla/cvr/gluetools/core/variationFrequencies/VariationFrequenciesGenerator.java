@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.variationFrequencies;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,10 +75,9 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 		this.minSampleSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_SAMPLE_SIZE, 1, true, null, true, false)).orElse(30);
 	}
 
-	public void previewAlmtVarNotes(
-			CommandContext cmdContext, Alignment alignment,
-			List<VariationScanMemberCount> scanCounts, 
-			List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports) {
+	public List<AlignmentVariationReport> previewAlmtVarNotes(
+			CommandContext cmdContext, Alignment alignment, List<VariationScanMemberCount> scanCounts) {
+		List<AlignmentVariationReport> almtVarReports = new ArrayList<AlignmentVariationReport>();
 		for(VariationScanMemberCount memberCount: scanCounts) {
 			double frequency = memberCount.getPctWherePresent();
 			if( (minFrequencyPct == null || frequency >= minFrequencyPct)  ) {
@@ -86,7 +86,7 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 					VariationFrequenciesGenerator.AlignmentVariationReport almtVarReport = 
 							new VariationFrequenciesGenerator.AlignmentVariationReport();
 					almtVarReport.alignment = alignment;
-					almtVarReport.variation = memberCount.getVariation();
+					almtVarReport.variation = GlueDataObject.lookup(cmdContext, Variation.class, memberCount.getVariationPkMap());
 					almtVarReport.frequency = frequency;
 					almtVarReport.totalPresent = memberCount.getMembersWherePresent();
 					almtVarReport.totalAbsent = memberCount.getMembersWhereAbsent();
@@ -98,6 +98,7 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 				}
 			}
 		}
+		return almtVarReports;
 	}
 
 	public void generateVarAlmtNotes(CommandContext cmdContext, List<VariationFrequenciesGenerator.AlignmentVariationReport> almtVarReports) {
