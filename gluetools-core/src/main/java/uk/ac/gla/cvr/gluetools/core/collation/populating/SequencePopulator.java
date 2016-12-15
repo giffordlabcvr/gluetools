@@ -1,12 +1,17 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectSetFieldCommand;
 import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectUnsetFieldCommand;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.PropertyCommandDelegate;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
@@ -144,6 +149,32 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		
 		
 		
+	}
+
+	protected void applyUpdateToDB(CommandContext cmdContext, Map<String, FieldType> fieldTypes, Sequence seq,
+			FieldUpdate update) {
+				Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
+				String valueString = update.getFieldValue();
+				String fieldName = update.getFieldName();
+				if(valueString == null) {
+					PropertyCommandDelegate.executeUnsetField(cmdContext, project, ConfigurableTable.sequence.name(), seq, fieldName, true);
+				} else {
+					Object fieldValue = fieldTypes.get(fieldName).getFieldTranslator().valueFromString(valueString);
+					PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.sequence.name(), seq, fieldName, fieldValue, true);
+				}
+			}
+
+	protected Map<String, FieldType> getFieldTypes(CommandContext cmdContext, List<String> fieldNames) {
+		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
+		if(fieldNames == null) {
+			fieldNames = project.getModifiableFieldNames(ConfigurableTable.sequence.name());
+		}
+		Map<String, FieldType> fieldTypes = new LinkedHashMap<String, FieldType>();
+		for(String fieldName: fieldNames) {
+			fieldTypes.put(fieldName, 
+				project.getModifiableFieldType(ConfigurableTable.sequence.name(), fieldName));
+		}
+		return fieldTypes;
 	}
 	
 }

@@ -7,9 +7,7 @@ import java.util.regex.Pattern;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -63,11 +61,6 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, FieldPopula
 
 	public Optional<Integer> getNumber() {
 		return number;
-	}
-
-	public void processCellText(TextFilePopulatorContext populatorContext, String cellText) {
-		ConsoleCommandContext cmdContext = populatorContext.cmdContext;
-		SequencePopulator.populateField(cmdContext, this, cellText);
 	}
 
 	public RegexExtractorFormatter getMainExtractor() {

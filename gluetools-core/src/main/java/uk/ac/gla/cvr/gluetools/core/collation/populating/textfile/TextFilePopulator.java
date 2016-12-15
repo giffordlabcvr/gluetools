@@ -21,17 +21,16 @@ import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -92,11 +91,13 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	}
 
 	
-	private OkResult populate(ConsoleCommandContext cmdContext, String fileName, int batchSize) {
+	private List<Map<String,String>> populate(ConsoleCommandContext cmdContext, String fileName, int batchSize, Optional<Expression> whereClause, Boolean preview) {
 		byte[] fileBytes = cmdContext.loadBytes(fileName);
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
 		populatorContext.cmdContext = cmdContext;
+		populatorContext.whereClause = whereClause;
+		populatorContext.updateDB = !preview;
 		if(!numberColumns.isEmpty()) {
 			populatorContext.positionToColumn = new LinkedHashMap<Integer, List<BaseTextFilePopulatorColumn>>();
 			populatorContext.columnToPosition = new LinkedHashMap<BaseTextFilePopulatorColumn, Integer>();
@@ -114,17 +115,22 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		LinesProcessedHolder holder = new LinesProcessedHolder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, Charset.forName("UTF-8")));
 		reader.lines().forEach(line -> {
-			processLine(populatorContext, line);
+			List<Map<String,String>> lineResults = processLine(populatorContext, line);
+			populatorContext.results.addAll(lineResults);
 			holder.linesProcessed++;
 			if(holder.linesProcessed % batchSize == 0) {
 				log("Processed "+holder.linesProcessed+" lines");
-				cmdContext.commit();
+				if(!preview) {
+					cmdContext.commit();
+				}
 				cmdContext.newObjectContext();
 			}
 		});
 		log("Processed "+holder.linesProcessed+" lines");
-		cmdContext.commit();
-		return CommandResult.OK;
+		if(!preview) {
+			cmdContext.commit();
+		}
+		return populatorContext.results;
 	}
 
 	private class LinesProcessedHolder {
@@ -141,15 +147,16 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	}
 	
 
-	private void processLine(TextFilePopulatorContext populatorContext, String line) {
+	private List<Map<String,String>> processLine(TextFilePopulatorContext populatorContext, String line) {
+		List<Map<String,String>> lineResults = new ArrayList<Map<String,String>>();
 		if(line.trim().isEmpty()) {
-			return;
+			return lineResults;
 		}
 		String[] cellValues = line.split(columnDelimiterRegex.pattern());
 		if(!headerColumns.isEmpty()) {
 			if(populatorContext.positionToColumn == null) {
 				consumeHeaderLine(populatorContext, cellValues);
-				return;
+				return lineResults;
 			}
 		}
 		ConsoleCommandContext cmdContext = populatorContext.cmdContext;
@@ -166,25 +173,45 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		Expression identifyingExp = idExpressions.subList(1, idExpressions.size()).
 				stream().reduce(idExpressions.get(0), Expression::andExp);
 		
+		if(populatorContext.whereClause.isPresent()) {
+			identifyingExp = identifyingExp.andExp(populatorContext.whereClause.get());
+		}
+		
 		List<Map<String, Object>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
+		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, null);
 		for(Map<String, Object> seqMap: sequenceMaps) {
 			String sourceName = (String) seqMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = (String) seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
-			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, sequenceID)) {
-				for(int i = 0; i < cellValues.length; i++) {
-					String cellText = cellValues[i];
-					List<BaseTextFilePopulatorColumn> columns = populatorContext.positionToColumn.get(i);
-					if(columns != null) {
-						for(BaseTextFilePopulatorColumn populatorColumn : columns) {
-							if(!populatorColumn.getIdentifier().orElse(false)) {
-								populatorColumn.processCellText(populatorContext, cellText);
+			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID));
+			for(int i = 0; i < cellValues.length; i++) {
+				String cellText = cellValues[i];
+				List<BaseTextFilePopulatorColumn> columns = populatorContext.positionToColumn.get(i);
+				if(columns != null) {
+					for(BaseTextFilePopulatorColumn populatorColumn : columns) {
+						if(!populatorColumn.getIdentifier().orElse(false)) {
+							
+							String fieldPopulatorResult = SequencePopulator.runFieldPopulator(populatorColumn, cellText);
+
+							FieldUpdate update = SequencePopulator
+									.generateFieldUpdate(fieldTypes.get(populatorColumn.getFieldName()), sequence, populatorColumn, fieldPopulatorResult);
+
+							if(update != null && update.updated()) {
+								Map<String,String> updateMap = new LinkedHashMap<String,String>();
+								updateMap.put(TextFilePopulatorResult.SOURCE_NAME, sourceName);
+								updateMap.put(TextFilePopulatorResult.SEQUENCE_ID, sequenceID);
+								updateMap.put(TextFilePopulatorResult.FIELD_NAME, update.getFieldName());
+								updateMap.put(TextFilePopulatorResult.FIELD_VALUE, update.getFieldValue());
+								lineResults.add(updateMap);
+								if(populatorContext.updateDB) {
+									super.applyUpdateToDB(cmdContext, fieldTypes, sequence, update);
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-
+		return lineResults;
 	}
 
 
@@ -222,10 +249,12 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"[-b <batchSize>] -f <fileName>"},
+			docoptUsages={"[-b <batchSize>] [-w <whereClause>] [-p] -f <fileName>"},
 			docoptOptions={
-				"-b <batchSize>, --batchSize <batchSize>  Commit batch size [default: 250]",
-				"-f <fileName>, --fileName <fileName>  Text file with field values"
+					"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
+					"-p, --preview                                  Preview only, no DB updates",
+					"-w <whereClause>, --whereClause <whereClause>  Qualify updated sequences",
+					"-f <fileName>, --fileName <fileName>           Text file with field values"
 			},
 			description="Populate sequence field values based on a text file", 
 			metaTags = { CmdMeta.consoleOnly , CmdMeta.updatesDatabase},
@@ -233,21 +262,28 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			"The <batchSize> argument allows you to control how often updates are committed to the database "+
 					"during the import. The default is every 250 text file lines. A larger <batchSize> means fewer database "+
 					"accesses, but requires more Java heap memory.") 
-	public static class PopulateCommand extends ModulePluginCommand<OkResult, TextFilePopulator> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModulePluginCommand<TextFilePopulatorResult, TextFilePopulator> implements ProvidedProjectModeCommand {
+
+		public static final String WHERE_CLAUSE = "whereClause";
 
 		private Integer batchSize;
+		private Boolean preview;
 		private String fileName;
+		private Optional<Expression> whereClause;
+		
 		
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
 			batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "batchSize", false)).orElse(250);
+			whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 			fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
+			preview = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "preview", false)).orElse(false);
 		}
 		
 		@Override
-		protected OkResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
-			return populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize);
+		protected TextFilePopulatorResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
+			return new TextFilePopulatorResult(populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize, whereClause, preview));
 		}
 		
 		@CompleterClass

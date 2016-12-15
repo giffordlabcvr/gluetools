@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.query.SelectQuery;
@@ -80,6 +81,8 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 			PhyloTree glueProjectPhyloTree,
 			Map<Integer, PhyloBranch> edgeIndexToPhyloBranch,
 			Collection<MaxLikelihoodSingleQueryResult> singleQueryResults) {
+		log(Level.FINEST, "Genotyping "+singleQueryResults.size()+" placer results");
+		int resultsComplete = 0;
 		Map<String, QueryGenotypingResult> queryGenotypingResults = new LinkedHashMap<String, QueryGenotypingResult>();
 		Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
 		for(MaxLikelihoodSingleQueryResult queryResult: singleQueryResults) {
@@ -160,6 +163,10 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 						}
 					}
 				}
+			}
+			resultsComplete++;
+			if(resultsComplete % 500 == 0) {
+				log(Level.FINEST, "Genotyped "+resultsComplete+" of "+singleQueryResults.size()	+" placer results");
 			}
 		}
 		return queryGenotypingResults;

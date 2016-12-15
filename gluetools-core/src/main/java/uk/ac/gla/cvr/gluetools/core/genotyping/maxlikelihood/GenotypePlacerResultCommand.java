@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,6 +49,7 @@ public class GenotypePlacerResultCommand extends AbstractGenotypeCommand {
 	@Override
 	protected GenotypeCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
+		maxLikelihoodGenotyper.log(Level.FINEST, "Reading placer result file "+fileName);
 		byte[] placerResultBytes = consoleCommandContext.loadBytes(fileName);
 		Document placerResultDocument = GlueXmlUtils.documentFromBytes(placerResultBytes);
 		CommandDocument placerResultCmdDoc = CommandDocumentXmlUtils.xmlDocumentToCommandDocument(placerResultDocument);

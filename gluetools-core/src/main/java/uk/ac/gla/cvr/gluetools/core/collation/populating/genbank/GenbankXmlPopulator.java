@@ -21,15 +21,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.configurableobject.PropertyCommandDelegate;
-import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -89,15 +86,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			selectQuery = new SelectQuery(Sequence.class);
 		}
 		
-		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-		if(fieldNames == null) {
-			fieldNames = project.getModifiableFieldNames(ConfigurableTable.sequence.name());
-		}
-		Map<String, FieldType> fieldTypes = new LinkedHashMap<String, FieldType>();
-		for(String fieldName: fieldNames) {
-			fieldTypes.put(fieldName, 
-				project.getModifiableFieldType(ConfigurableTable.sequence.name(), fieldName));
-		}
+		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, fieldNames);
 		
 		log("Finding sequences to process");
 		int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
@@ -121,14 +110,8 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 				/* DB udpate here */
 				currentSequenceBatch.forEach(seq -> {
 					Map<String, FieldUpdate> updates = pkMapToUpdates.get(seq.pkMap());
-					updates.forEach( (fieldName, update) -> {
-						String valueString = update.getFieldValue();
-						if(valueString == null) {
-							PropertyCommandDelegate.executeUnsetField(cmdContext, project, ConfigurableTable.sequence.name(), seq, fieldName, true);
-						} else {
-							Object fieldValue = fieldTypes.get(fieldName).getFieldTranslator().valueFromString(valueString);
-							PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.sequence.name(), seq, fieldName, fieldValue, true);
-						}
+					updates.values().forEach( update -> {
+						applyUpdateToDB(cmdContext, fieldTypes, seq, update);
 					} );
 				});
 				cmdContext.commit();
@@ -154,7 +137,6 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		});
 		return new PopulateResult(rowData);
 	}
-	
 
 	@Override
 	public void validate(CommandContext cmdContext) {

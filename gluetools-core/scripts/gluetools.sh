@@ -1,5 +1,6 @@
 #!/bin/bash
 
+remoteDebug="true"
 localConfig="false"
 remargs=()
 
@@ -8,6 +9,9 @@ do
 if [ "${d}" == "-l" ]
 then
     localConfig="true"
+elif [ "${d}" == "-d" ]
+then
+    remoteDebug="false"
 else
     remargs=("${remargs[@]}" "${d}") # push element 'd'
 fi
@@ -26,5 +30,13 @@ else
     exit 1 
 fi
 fi
+
+export GLUE_DEBUG_OPTS=""
+if [ $remoteDebug == "true" ]
+then
+    echo "Remote debug switched on: use -d to suppress this."
+    export GLUE_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
+fi
+
 (cd ${GLUETOOLS_HOME} ; gradle --quiet jarAll)
-java -agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n -jar ${GLUETOOLS_HOME}/build/libs/gluetools-core-all-${GLUETOOLS_VERSION}.jar -c ${GLUETOOLS_CONFIG_XML} "${remargs[@]}"
+java ${GLUE_DEBUG_OPTS} -jar ${GLUETOOLS_HOME}/build/libs/gluetools-core-all-${GLUETOOLS_VERSION}.jar -c ${GLUETOOLS_CONFIG_XML} "${remargs[@]}"
