@@ -1,8 +1,8 @@
 Usage: 
   gluetools [-c <c-file>] -v
   gluetools [-c <c-file>] -h
-  gluetools [-c <c-file>] [-p <c-opt>]... [-mEO] [-i <word>...]
-  gluetools [-c <c-file>] [-p <c-opt>]... [-nmEO] -f <b-file>
+  gluetools [-c <c-file>] [-p <c-opt>]... [-mECO] [-i <word>...]
+  gluetools [-c <c-file>] [-p <c-opt>]... [-nmECO] -f <b-file>
 
 Options:
   -h, --help                            Display usage and options, then exit
@@ -12,8 +12,9 @@ Options:
   -i, --inline-cmd                      Run inline command <word>... then exit 
   -c <c-file>, --config-file <c-file>   Configure gluetools from a file
   -p <c-opt>, --console-option <c-opt>  Inline console option as name:value
-  -E, --no-echo                         Suppress batch/inline command echo
-  -O, --no-output                       Suppress batch/inline command output
+  -E, --no-cmd-echo                     Suppress batch/inline command echo
+  -C, --no-comment-echo                 Suppress batch/inline comment echo
+  -O, --no-output                       Suppress batch/inline result output
   -m, --migrate-schema                  Migrate database schema if necessary
               
   

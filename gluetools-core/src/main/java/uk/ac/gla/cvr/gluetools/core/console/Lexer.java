@@ -15,7 +15,7 @@ public class Lexer {
 		SINGLELINECOMMENT("#.*") {
 			@Override
 			protected String render(String data) {
-				return "";
+				return data;
 			}
 		},
 		DOUBLEQUOTED("\"(?:[^\"\\\\]|\\\\.)*\"") {
@@ -90,6 +90,13 @@ public class Lexer {
 				filter(t -> t.getType() != TokenType.WHITESPACE && t.getType() != TokenType.SINGLELINECOMMENT).
 				collect(Collectors.toList());
 		return meaningfulTokens;
+	}
+
+	public static List<Token> commentTokens(List<Token> tokens) {
+		List<Token> commentTokens = tokens.stream().
+				filter(t -> t.getType() == TokenType.SINGLELINECOMMENT).
+				collect(Collectors.toList());
+		return commentTokens;
 	}
 
 	

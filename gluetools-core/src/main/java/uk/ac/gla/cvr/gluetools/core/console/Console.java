@@ -76,7 +76,8 @@ public class Console implements CommandResultRenderingContext
 	private boolean nonInteractive = true;
 	private boolean migrateSchema;
 	private boolean version;
-	private boolean noEcho = false;
+	private boolean noCmdEcho = false;
+	private boolean noCommentEcho = false;
 	private boolean noOutput = false;
 	private String batchFilePath;
 	private List<String> inlineCmdWords;
@@ -97,7 +98,7 @@ public class Console implements CommandResultRenderingContext
 			throw new RuntimeException(ioe);
 		}
 		try {
-			handleLine(line, false, true);
+			handleLine(line, false, false, true);
 		} catch(GlueException ge) {
 			commandContext.newObjectContext(); // due to error, the current object context may lack integrity.
 			handleGlueException(ge);
@@ -122,27 +123,51 @@ public class Console implements CommandResultRenderingContext
 	}
 
 	@SuppressWarnings("unchecked")
-	private void handleLine(Object line, boolean outputCommandToConsole, boolean outputResultToConsole) {
-		List<String> tokenStrings;
-		String cmdEcho;
+	private void handleLine(Object line, boolean outputCommandToConsole, boolean outputCommentToConsole, boolean outputResultToConsole) {
+		ArrayList<Token> tokens = null;
 		if(line instanceof String) {
-			ArrayList<Token> tokens = null;
 			tokens = Lexer.lex((String) line);
-			cmdEcho = GLUE_PROMPT+String.join(" ", ((String) line).trim());
-			List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
-			tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
-		} else if(line instanceof List) {
-			tokenStrings = (List<String>) line;
-			cmdEcho = GLUE_PROMPT+String.join(" ", (List<String>) line);  // should really quotify the line.
+		} else if(line instanceof List) { // inline command
+			tokens = new ArrayList<Token>();
+			List<String> cmdWordStrings = (List<String>) line;
+			for(String cmdWordString : cmdWordStrings) {
+				tokens.addAll(Lexer.lex(Lexer.quotifyIfNecessary(cmdWordString)));
+			}
 		} else {
 			throw new RuntimeException("Unrecognized line type");
 		}
-		if(!tokenStrings.isEmpty()) {
+		List<Token> commentTokens = Lexer.commentTokens(tokens);
+		List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
+		List<String> commandTokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
+		String cmdEcho = echoString(meaningfulTokens, true);
+		String commentEcho = echoString(commentTokens, false);
+		if(!commentTokens.isEmpty()) {
+			if(outputCommentToConsole) {
+				output(commentEcho);
+			}
+		}
+		if(!commandTokenStrings.isEmpty()) {
 			if(outputCommandToConsole) {
 				output(cmdEcho);
 			}
-			executeTokenStrings(tokenStrings, outputResultToConsole);
+			executeTokenStrings(commandTokenStrings, outputResultToConsole);
 		}
+	}
+	
+	private String echoString(List<Token> tokens, boolean quotifyIfNecessary) {
+		StringBuffer buf = new StringBuffer();
+		buf.append(GLUE_PROMPT);
+		int i = 0;
+		for(Token token: tokens) {
+			if(i > 0) { buf.append(" "); }
+			String renderedString = token.render();
+			if(quotifyIfNecessary) {
+				renderedString = Lexer.quotifyIfNecessary(renderedString);
+			}
+			buf.append(renderedString);
+			i++;
+		}
+		return buf.toString();
 	}
 
 	private void renderCommandResult(CommandResult commandResult) {
@@ -321,10 +346,10 @@ public class Console implements CommandResultRenderingContext
 					@Override
 					public Void get() {
 						if(console.batchFilePath != null) {
-							console.runBatchFile(console.batchFilePath, console.noEcho, console.noOutput);
+							console.runBatchFile(console.batchFilePath, console.noCmdEcho, console.noCommentEcho, console.noOutput);
 						}
 						if(console.inlineCmdWords != null) {
-							console.runInlineCommand(console.inlineCmdWords, console.noEcho, console.noOutput);
+							console.runInlineCommand(console.inlineCmdWords, console.noCmdEcho, console.noCommentEcho, console.noOutput);
 						}
 						if((console.inlineCmdWords == null || console.inlineCmdWords.isEmpty()) && !console.nonInteractive) {
 							console.interactiveSession();
@@ -376,9 +401,13 @@ public class Console implements CommandResultRenderingContext
 				console.inlineConsoleOptions.put(consoleOption, nameValuePair.substring(indexOfColon+1, nameValuePair.length()));
 			}
 		}
-		Object noEchoOption = docoptResult.get("--no-echo");
-		if(noEchoOption != null) {
-			console.noEcho = Boolean.parseBoolean(noEchoOption.toString());
+		Object noCmdEchoOption = docoptResult.get("--no-cmd-echo");
+		if(noCmdEchoOption != null) {
+			console.noCmdEcho = Boolean.parseBoolean(noCmdEchoOption.toString());
+		}
+		Object noCommentEchoOption = docoptResult.get("--no-comment-echo");
+		if(noCommentEchoOption != null) {
+			console.noCommentEcho = Boolean.parseBoolean(noCommentEchoOption.toString());
 		}
 		Object noOutputOption = docoptResult.get("--no-output");
 		if(noOutputOption != null) {
@@ -510,7 +539,7 @@ public class Console implements CommandResultRenderingContext
 		File glueRCFile = new File(userHomeFile, ".gluerc");
 		if(glueRCFile.isFile() && glueRCFile.canRead()) {
 			GlueLogger.getGlueLogger().finest("Running .gluerc from "+userHome);
-			runBatchFile(glueRCFile.getAbsolutePath(), true, true);
+			runBatchFile(glueRCFile.getAbsolutePath(), true, true, true);
 		}
 	}
 
@@ -519,7 +548,7 @@ public class Console implements CommandResultRenderingContext
 		GluetoolsEngine.shutdown();
 	}
 
-	private void runBatchFile(String batchFilePath, boolean noEcho, boolean noOutput) {
+	private void runBatchFile(String batchFilePath, boolean noCmdEcho, boolean noCommentEcho, boolean noOutput) {
 		String batchContent = null;
 		try {
 			batchContent = new String(commandContext.loadBytes(batchFilePath));
@@ -528,24 +557,23 @@ public class Console implements CommandResultRenderingContext
 			System.exit(1);
 		}
 		try {
-			String[] lines = batchContent.split("\n");
-			runBatchCommands(batchFilePath, Arrays.stream(lines).collect(Collectors.toList()), noEcho, noOutput);
+			commandContext.runBatchCommands(batchFilePath, batchContent, noCmdEcho, noCommentEcho, noOutput);
 		} catch(GlueException ge) {
 			handleGlueException(ge);
 			System.exit(1);
 		}
 	}
 	
-	private void runInlineCommand(List<String> inlineCmdWords, boolean noEcho, boolean noOutput) {
+	private void runInlineCommand(List<String> inlineCmdWords, boolean noCmdEcho, boolean noCommentEcho, boolean noOutput) {
 		try {
-			runBatchCommands("inline-command", Collections.singletonList(inlineCmdWords), noEcho, noOutput);
+			runBatchCommands("inline-command", Collections.singletonList(inlineCmdWords), Arrays.asList(1), noCmdEcho, noCommentEcho, noOutput);
 		} catch(GlueException ge) {
 			handleGlueException(ge);
 			System.exit(1);
 		}
 	}
 
-	public void runBatchCommands(String batchFilePath, List<Object> batchLines, boolean noEcho, boolean noOutput) {
+	public void runBatchCommands(String batchFilePath, List<Object> batchLines, List<Integer> linesPerCommand, boolean noCmdEcho, boolean noCommentEcho, boolean noOutput) {
 		String initialModePath = commandContext.getModePath();
 		boolean requireModeWrappable = commandContext.isRequireModeWrappable();
 		try {
@@ -553,16 +581,17 @@ public class Console implements CommandResultRenderingContext
 			BatchContext batchContext = new BatchContext(batchFilePath, 1);
 			batchContext.batchLineNumber = 1;
 			batchContextStack.push(batchContext);
-			for(Object batchLine: batchLines) {
+			for(int i = 0; i < batchLines.size(); i++) {
+				Object batchLine = batchLines.get(i);
 				try {
-					handleLine(batchLine, !noEcho, !noOutput);
+					handleLine(batchLine, !noCmdEcho, !noCommentEcho, !noOutput);
 				} catch(GlueException ge) {
 					if(ge.getUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK) == null) {
 						ge.putUserData(GLUE_CONSOLE_BATCH_CONTEXT_STACK, new LinkedList<BatchContext>(batchContextStack));
 					}
 					throw ge;
 				} 
-				batchContext.batchLineNumber++;
+				batchContext.batchLineNumber += linesPerCommand.get(i);
 			}
 		} finally {
 			commandContext.setRequireModeWrappable(requireModeWrappable);

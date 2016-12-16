@@ -16,9 +16,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 	commandWords={"run", "file"},
-	docoptUsages={"[-E] [-O] <filePath>"},
-	docoptOptions={"-E, --no-echo    Suppress batch command echo",
-	   "-O, --no-output  Suppress batch command output"},
+	docoptUsages={"[-E] [-C] [-O] <filePath>"},
+	docoptOptions={
+			"-E, --no-cmd-echo      Suppress batch command echo",
+			"-C, --no-comment-echo  Suppress batch comment echo",
+	   		"-O, --no-output        Suppress batch result output"},
 	description="Run batch commands from a file",
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase }
 ) 
@@ -26,7 +28,8 @@ public class RunFileCommand extends Command<OkResult> {
 
 	
 	private String filePath;
-	private boolean noEcho;
+	private boolean noCmdEcho;
+	private boolean noCommentEcho;
 	private boolean noOutput;
 	
 	@Override
@@ -34,7 +37,8 @@ public class RunFileCommand extends Command<OkResult> {
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.filePath = PluginUtils.configureStringProperty(configElem, "filePath", true);
-		this.noEcho = PluginUtils.configureBooleanProperty(configElem, "no-echo", true);
+		this.noCmdEcho = PluginUtils.configureBooleanProperty(configElem, "no-cmd-echo", true);
+		this.noCommentEcho = PluginUtils.configureBooleanProperty(configElem, "no-comment-echo", true);
 		this.noOutput = PluginUtils.configureBooleanProperty(configElem, "no-output", true);
 	}
 
@@ -44,7 +48,7 @@ public class RunFileCommand extends Command<OkResult> {
 	public OkResult execute(CommandContext cmdContext) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		String batchContent = new String(consoleCmdContext.loadBytes(filePath));
-		consoleCmdContext.runBatchCommands(filePath, batchContent, noEcho, noOutput);
+		consoleCmdContext.runBatchCommands(filePath, batchContent, noCmdEcho, noCommentEcho, noOutput);
 		return CommandResult.OK;
 	}
 

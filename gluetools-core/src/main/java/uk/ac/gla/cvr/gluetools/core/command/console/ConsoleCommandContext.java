@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -28,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 
 public class ConsoleCommandContext extends CommandContext {
 
@@ -252,11 +254,39 @@ public class ConsoleCommandContext extends CommandContext {
 
 	}
 
-	public void runBatchCommands(String batchFilePath, String batchContent, boolean noEcho, boolean noOutput) {
+	public void runBatchCommands(String batchFilePath, String batchContent, boolean noCmdEcho, boolean noCommentEcho, boolean noOutput) {
+		long startTime = System.currentTimeMillis();
 		GlueLogger.getGlueLogger().finest("Started running GLUE batch "+batchFilePath);
 		String[] lines = batchContent.split("\n");
-		console.runBatchCommands(batchFilePath, Arrays.stream(lines).collect(Collectors.toList()), noEcho, noOutput);
-		GlueLogger.getGlueLogger().finest("Finished running GLUE batch "+batchFilePath);
+		// in batch files, allow backslash to signify line continuation
+		List<Object> linesList = Arrays.stream(lines).collect(Collectors.toList());
+		List<Object> commandLinesList = new ArrayList<Object>();
+		List<Integer> linesPerCommand = new ArrayList<Integer>();
+		StringBuffer currentCmdBuf = null;
+		int currentCmdLines = 0;
+		for(Object obj: linesList) {
+			String line = (String) obj;
+			currentCmdLines++;
+			if(currentCmdBuf == null) {
+				currentCmdBuf = new StringBuffer();
+			}
+			if(line.endsWith("\\")) {
+				currentCmdBuf.append(line.substring(0, line.length()-1));
+			} else {
+				currentCmdBuf.append(line);
+				commandLinesList.add(currentCmdBuf.toString());
+				linesPerCommand.add(currentCmdLines);
+				currentCmdLines = 0;
+				currentCmdBuf = null;
+			}
+		}
+		if(currentCmdBuf != null) {
+			commandLinesList.add(currentCmdBuf.toString());
+			linesPerCommand.add(currentCmdLines);
+		}
+		console.runBatchCommands(batchFilePath, commandLinesList, linesPerCommand, noCmdEcho, noCommentEcho, noOutput);
+		long milliseconds = System.currentTimeMillis()-startTime;
+		GlueLogger.getGlueLogger().finest("Completed GLUE batch "+batchFilePath+", time taken: "+DateUtils.formatDuration(milliseconds));
 	}
 
 	public void addOptionLine(ConsoleOption consoleOption) {
