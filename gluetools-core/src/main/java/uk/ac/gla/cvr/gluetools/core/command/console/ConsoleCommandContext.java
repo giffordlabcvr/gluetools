@@ -255,8 +255,6 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 
 	public void runBatchCommands(String batchFilePath, String batchContent, boolean noCmdEcho, boolean noCommentEcho, boolean noOutput) {
-		long startTime = System.currentTimeMillis();
-		GlueLogger.getGlueLogger().finest("Started running GLUE batch "+batchFilePath);
 		String[] lines = batchContent.split("\n");
 		// in batch files, allow backslash to signify line continuation
 		List<Object> linesList = Arrays.stream(lines).collect(Collectors.toList());
@@ -285,8 +283,6 @@ public class ConsoleCommandContext extends CommandContext {
 			linesPerCommand.add(currentCmdLines);
 		}
 		console.runBatchCommands(batchFilePath, commandLinesList, linesPerCommand, noCmdEcho, noCommentEcho, noOutput);
-		long milliseconds = System.currentTimeMillis()-startTime;
-		GlueLogger.getGlueLogger().finest("Completed GLUE batch "+batchFilePath+", time taken: "+DateUtils.formatDuration(milliseconds));
 	}
 
 	public void addOptionLine(ConsoleOption consoleOption) {

@@ -10,8 +10,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 
 
 @CommandClass(
@@ -47,8 +49,12 @@ public class RunFileCommand extends Command<OkResult> {
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+		long startTime = System.currentTimeMillis();
+		GlueLogger.getGlueLogger().finest("Started running GLUE batch "+filePath);
 		String batchContent = new String(consoleCmdContext.loadBytes(filePath));
 		consoleCmdContext.runBatchCommands(filePath, batchContent, noCmdEcho, noCommentEcho, noOutput);
+		long milliseconds = System.currentTimeMillis()-startTime;
+		GlueLogger.getGlueLogger().finest("Completed GLUE batch "+filePath+", time taken: "+DateUtils.formatDuration(milliseconds));
 		return CommandResult.OK;
 	}
 
