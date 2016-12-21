@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.CayenneDataObject;
+import org.apache.cayenne.CayenneException;
 import org.apache.cayenne.CayenneRuntimeException;
 import org.apache.cayenne.DeleteDenyException;
 import org.apache.cayenne.exp.Expression;
@@ -115,14 +116,32 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			}).collect(Collectors.toList());
 			//System.out.println("Time spent casting results to GlueDataObject class: "+(System.currentTimeMillis() - start2));
 			return classMappedResults;
-		} catch(CayenneRuntimeException cre) {
-			Throwable cause = cre.getCause();
+		} catch(Exception e) {
 			Expression qualifier = query.getQualifier();
-			if(qualifier != null && cause != null && cause instanceof ExpressionException) {
-				throw new DataModelException(Code.EXPRESSION_ERROR, qualifier.toString(), cause.getMessage());
-			} else {
-				throw cre;
+			Throwable prevCause = null;
+			Throwable cause = e;
+			if(qualifier != null) {
+				while(cause != null && cause != prevCause) {
+					String causeMessage = cause.getMessage();
+					if(cause instanceof ExpressionException) {
+						throw new DataModelException(Code.EXPRESSION_ERROR, qualifier.toString(), causeMessage);
+					}
+					if(cause instanceof CayenneException) {
+						if(causeMessage != null) {
+							int detailStart = causeMessage.indexOf("Can't resolve path component:");
+							if(detailStart >= 0) {
+								int detailEnd = causeMessage.indexOf("].", detailStart);
+								if(detailEnd >= 0) {
+									throw new DataModelException(Code.QUERY_ERROR, qualifier.toString(), causeMessage.substring(detailStart, detailEnd+1));
+								}
+							}
+						}
+					}
+					prevCause = cause;
+					cause = cause.getCause();
+				}
 			}
+			throw e;
 		}
 	}
 
