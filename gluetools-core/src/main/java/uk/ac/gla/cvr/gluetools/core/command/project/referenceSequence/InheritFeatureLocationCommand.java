@@ -31,14 +31,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @CommandClass(
 		commandWords={"inherit", "feature-location"}, 
-		docoptUsages={"[-r] [-s] <alignmentName> <featureName>"},
-		docoptOptions={"-r, --recursive  Add locations for the feature's descendents",
-					   "-s, --spanGaps   New locations should span any gaps in the alignment"},
+		docoptUsages={"[-r] [-s] [-t] <alignmentName> <featureName>"},
+		docoptOptions={"-r, --recursive    Add locations for the feature's descendents",
+   				       "-s, --spanGaps     New locations should span any gaps in the alignment",
+				       "-t, --truncateCdn  For coding features, truncate to codon-aligned"},
 		description="Inherit a feature location from parent reference", 
 		furtherHelp="This command adds feature locations to the reference sequence, based on the feature locations "+
 		"of a given alignment's reference sequence. A location for the named feature and each of its ancestors will be added, as long as "+
@@ -52,11 +55,13 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	public static final String FEATURE_NAME = "featureName";
 	public static final String RECURSIVE = "recursive";
 	public static final String SPAN_GAPS = "spanGaps";
+	public static final String TRUNCATE_CODON = "truncateCdn";
 
 	private String alignmentName;
 	private String featureName;
 	private boolean recursive;
 	private boolean spanGaps;
+	private boolean truncateCdn;
 	
 	// result column headers;
 	private static final String ADDED_FEATURE_NAME = "addedFeatureName"; 
@@ -68,6 +73,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		super.configure(pluginConfigContext, configElem);
 		this.spanGaps = PluginUtils.configureBooleanProperty(configElem, SPAN_GAPS, true);
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
+		this.truncateCdn = PluginUtils.configureBooleanProperty(configElem, TRUNCATE_CODON, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 	}
@@ -133,26 +139,30 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 				intersection = Collections.singletonList(spanningSegment);
 			}
 			
-			int numAddedSegments = 0;
-			
 			if(intersection.size() == 0) {
 				return; // no segments // nothing added.
 			}
+
+			List<QueryAlignedSegment> newFeatureQaSegs = intersection;
+
+			if(truncateCdn && currentFeature.codesAminoAcids()) {
+				// assumes parent feature loc is codon aligned
+				Integer parentCodon1Start = ReferenceSegment.minRefStart(parentFeatureLocSegs);
+				Integer thisCodon1Start = newFeatureQaSegs.get(0).getReferenceToQueryOffset() + parentCodon1Start;
+				newFeatureQaSegs = TranslationUtils.truncateToCodonAligned(thisCodon1Start, newFeatureQaSegs);
+			}
+
 			
 			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class,  featureLocPkMap, false);
 			currentFeatureLoc.setFeature(currentFeature);
 			currentFeatureLoc.setReferenceSequence(thisRefSeq);
 			cmdContext.commit();
 
-			// add segments to the new feature location based on the query start/end points of the intersection result.
-			for(QueryAlignedSegment intersectSeg: intersection) {
-				FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
-						FeatureSegment.pkMap(thisRefSeq.getName(), featureName, 
-								intersectSeg.getQueryStart(), intersectSeg.getQueryEnd()), false);
-				featureSegment.setFeatureLocation(currentFeatureLoc);
-				cmdContext.commit();
-				numAddedSegments++;
-			}
+			
+			int numAddedSegments = commitFeatureLocSegments(cmdContext,
+					thisRefSeq, featureName, currentFeatureLoc,
+					newFeatureQaSegs);
+
 
 
 			
@@ -165,6 +175,24 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			addFeatureLocs(cmdContext, thisRefSeq, parentRefSeq, almtMember, childTreeResult, resultRowData);
 		}		
 		
+	}
+
+
+	private int commitFeatureLocSegments(CommandContext cmdContext,
+			ReferenceSequence thisRefSeq, String featureName,
+			FeatureLocation currentFeatureLoc,
+			List<QueryAlignedSegment> newFeatureQaSegs) {
+		int numAddedSegments = 0;
+		// add segments to the new feature location based on the query start/end points of the intersection result.
+		for(QueryAlignedSegment newFeatureQaSeg: newFeatureQaSegs) {
+			FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
+					FeatureSegment.pkMap(thisRefSeq.getName(), featureName, 
+							newFeatureQaSeg.getQueryStart(), newFeatureQaSeg.getQueryEnd()), false);
+			featureSegment.setFeatureLocation(currentFeatureLoc);
+			cmdContext.commit();
+			numAddedSegments++;
+		}
+		return numAddedSegments;
 	}
 
 	@CompleterClass
