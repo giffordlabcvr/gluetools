@@ -3,7 +3,7 @@
 <#macro elem tag expr type="String" context="">
 <#if (expr?eval) ??>
 <#assign result = expr?eval>
-<#if result?is_number>
+<#if result?is_number || result?is_boolean>
 	<${tag} glueType="${type}">${result?c}</${tag}>
 <#else>
 	<${tag} glueType="${type}">${result}</${tag}>
