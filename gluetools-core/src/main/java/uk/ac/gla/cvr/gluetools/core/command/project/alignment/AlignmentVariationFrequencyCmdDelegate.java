@@ -70,7 +70,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 		int offset = 0;
 		while(offset < totalMembers) {
 			Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(namedAlignmentName));
-			int lastBatchIndex = Math.min(offset+BATCH_SIZE+1, totalMembers);
+			int lastBatchIndex = Math.min(offset+BATCH_SIZE, totalMembers);
 			GlueLogger.getGlueLogger().log(Level.FINEST, "Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 			List<AlignmentMember> memberBatch = AlignmentListMemberCommand
 					.listMembers(cmdContext, namedAlignment, recursive, whereClause, offset, BATCH_SIZE, BATCH_SIZE);

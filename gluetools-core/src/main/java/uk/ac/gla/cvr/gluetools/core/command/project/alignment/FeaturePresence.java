@@ -23,7 +23,18 @@ public class FeaturePresence {
 		return membersWherePresent;
 	}
 
+	public Double getPercentWherePresent() {
+		if(totalMembers.equals(0)) {
+			return null;
+		}
+		return ( membersWherePresent * 100.0) / new Double(totalMembers);
+	}
+
 	public Integer getTotalMembers() {
 		return totalMembers;
+	}
+	
+	public void incrementMembersWherePresent() {
+		this.membersWherePresent++;
 	}
 }

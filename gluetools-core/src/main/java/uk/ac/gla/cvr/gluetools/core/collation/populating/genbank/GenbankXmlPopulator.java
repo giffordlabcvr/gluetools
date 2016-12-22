@@ -99,7 +99,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		Map<Map<String,String>, Map<String, FieldUpdate>> pkMapToUpdates = new LinkedHashMap<Map<String,String>, Map<String, FieldUpdate>>();
 		while(offset < numberToProcess) {
 			selectQuery.setFetchOffset(offset);
-			int lastBatchIndex = Math.min(offset+batchSize+1, numberToProcess);
+			int lastBatchIndex = Math.min(offset+batchSize, numberToProcess);
 			log("Retrieving sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
 			currentSequenceBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 			log("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);

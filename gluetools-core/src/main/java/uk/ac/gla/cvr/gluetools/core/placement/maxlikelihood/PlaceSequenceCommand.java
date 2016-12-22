@@ -92,7 +92,7 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand<OkResult> {
 		while(offset < numSequences) {
 			selectQuery.setFetchOffset(offset);
 			int firstBatchIndex = offset+1;
-			int lastBatchIndex = Math.min(offset+batchSize+1, numSequences);
+			int lastBatchIndex = Math.min(offset+batchSize, numSequences);
 			GlueLogger.getGlueLogger().log(Level.FINEST, "Retrieving sequences "+firstBatchIndex+" to "+lastBatchIndex+" of "+numSequences);
 			List<Sequence> currentBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 			GlueLogger.getGlueLogger().log(Level.FINEST, "Processing sequences "+firstBatchIndex+" to "+lastBatchIndex+" of "+numSequences);

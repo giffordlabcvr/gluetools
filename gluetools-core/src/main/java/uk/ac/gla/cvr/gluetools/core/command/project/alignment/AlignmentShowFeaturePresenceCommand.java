@@ -1,19 +1,24 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
@@ -46,6 +51,8 @@ public class AlignmentShowFeaturePresenceCommand extends AlignmentModeCommand<Al
 	public static final String AC_REF_NAME = "acRefName";
 	public static final String PRESENCE_PCT = "presencePct";
 	
+	private static final int BATCH_SIZE = 500;
+	
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
 
@@ -65,53 +72,62 @@ public class AlignmentShowFeaturePresenceCommand extends AlignmentModeCommand<Al
 	@Override
 	public AlignmentShowFeaturePresenceResult execute(CommandContext cmdContext) {
 		Alignment alignment = lookupAlignment(cmdContext);
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
+		GlueLogger.getGlueLogger().finest("Searching for members to process");
+		SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, AlignmentListMemberCommand.getMatchExpression(alignment, recursive, whereClause));
+		int totalMembers = GlueDataObject.count(cmdContext, selectQuery);
+		GlueLogger.getGlueLogger().finest("Found "+totalMembers+" members to process");
 		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
 		List<FeatureLocation> featureLocations = ancConstrainingRef.getFeatureLocations();
 		
-		List<FeaturePresence> featPresenceList = new ArrayList<FeaturePresence>();
-		
-		int totalMembers = almtMembers.size();
+		Map<Map<String,String>,FeaturePresence> fLocPkMapToMembFeatCvg = new LinkedHashMap<Map<String,String>,FeaturePresence>();
+
 		for(FeatureLocation scannedFeatureLoc: featureLocations) {
-			List<MemberFeatureCoverage> membFeatCoverages = alignmentFeatureCoverage(
-					cmdContext, alignment, ancConstrainingRef, scannedFeatureLoc, almtMembers);
-			int membersWherePresent = 0;
-			for(MemberFeatureCoverage membFeatCvrg : membFeatCoverages) {
-				if(membFeatCvrg.getFeatureReferenceNtCoverage() >= presencePct) {
-					membersWherePresent ++;
+			fLocPkMapToMembFeatCvg.put(scannedFeatureLoc.pkMap(), new FeaturePresence(scannedFeatureLoc, 0, totalMembers));
+		}
+		
+		int offset = 0;
+		selectQuery.setFetchLimit(BATCH_SIZE);
+		selectQuery.setPageSize(BATCH_SIZE);
+		while(offset < totalMembers) {
+			selectQuery.setFetchOffset(offset);
+			
+			int lastBatchIndex = Math.min(offset+BATCH_SIZE, totalMembers);
+			GlueLogger.getGlueLogger().finest("Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
+			List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
+			GlueLogger.getGlueLogger().finest("Processing members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
+			for(AlignmentMember almtMember: almtMembers) {
+				for(FeatureLocation scannedFeatureLoc: featureLocations) {
+					MemberFeatureCoverage membFeatCoverage = alignmentFeatureCoverage(
+							cmdContext, alignment, ancConstrainingRef, scannedFeatureLoc, almtMember);
+					if(membFeatCoverage.getFeatureReferenceNtCoverage() >= presencePct) {
+						fLocPkMapToMembFeatCvg.get(scannedFeatureLoc.pkMap()).incrementMembersWherePresent();
+					}
 				}
 			}
-			featPresenceList.add(new FeaturePresence(scannedFeatureLoc, membersWherePresent, totalMembers));
+			offset += BATCH_SIZE;
 		}
-		return new AlignmentShowFeaturePresenceResult(featPresenceList);
+		return new AlignmentShowFeaturePresenceResult(new ArrayList<FeaturePresence>(fLocPkMapToMembFeatCvg.values()));
 	}
 
-	public static List<MemberFeatureCoverage> alignmentFeatureCoverage(
+	public static MemberFeatureCoverage alignmentFeatureCoverage(
 			CommandContext cmdContext, Alignment alignment, 
 			ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc,
-			List<AlignmentMember> almtMembers) {
-
-		List<MemberFeatureCoverage> membFeatCvrgList = new ArrayList<MemberFeatureCoverage>();
-			
+			AlignmentMember almtMember) {
 		Integer featureLength = IReferenceSegment.totalReferenceLength(scannedFeatureLoc.segmentsAsReferenceSegments());
-		
-		for(AlignmentMember almtMember: almtMembers) {
-			
-			Alignment tipAlmt = almtMember.getAlignment();
-			
-			List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
-			List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
 
-			// trim down to the feature area.
-			List<ReferenceSegment> featureLocRefSegs = scannedFeatureLoc.segmentsAsReferenceSegments();
-			
-			List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
-					ReferenceSegment.cloneLeftSegMerger());
+		Alignment tipAlmt = almtMember.getAlignment();
 
-			Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength);
-			membFeatCvrgList.add(new MemberFeatureCoverage(almtMember, refNtCvrgPct));
-		}
-		return membFeatCvrgList;
+		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
+		List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
+
+		// trim down to the feature area.
+		List<ReferenceSegment> featureLocRefSegs = scannedFeatureLoc.segmentsAsReferenceSegments();
+
+		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
+				ReferenceSegment.cloneLeftSegMerger());
+
+		Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength);
+		return new MemberFeatureCoverage(almtMember, refNtCvrgPct);
 	}
 
 	@CompleterClass
