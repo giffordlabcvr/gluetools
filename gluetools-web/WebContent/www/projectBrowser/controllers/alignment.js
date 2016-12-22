@@ -28,7 +28,8 @@ projectBrowser.controller('alignmentCtrl',
 				glueWS.runGlueCommand("alignment/"+$scope.almtName, {
 			    	"count": { 
 			    		"member": {
-			    			whereClause: $scope.memberWhereClause
+			    	        "recursive":"true",
+			    			"whereClause": $scope.memberWhereClause
 			    		}, 
 			    	} 
 				})
@@ -44,6 +45,7 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.updatePage = function(pContext) {
 				console.log("updatePage", pContext);
 				var cmdParams = {
+		    	        "recursive":"true",
 			            "fieldName":$scope.memberFields,
 					    "whereClause": $scope.memberWhereClause
 				};
@@ -60,5 +62,6 @@ projectBrowser.controller('alignmentCtrl',
 			}
 			
 			$scope.pagingContext = pagingContext.createPagingContext($scope.updatePage);
+
 			
 }]);
