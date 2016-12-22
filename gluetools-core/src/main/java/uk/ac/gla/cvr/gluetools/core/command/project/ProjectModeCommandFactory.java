@@ -68,6 +68,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ListAlmtMemberCommand.class);
 		registerCommandClass(CountAlmtMemberCommand.class);
 		registerCommandClass(ListVarAlmtNoteCommand.class);
+		registerCommandClass(CountVarAlmtNoteCommand.class);
 		
 		registerCommandClass(ProjectSetSettingCommand.class);
 		registerCommandClass(ProjectUnsetSettingCommand.class);
