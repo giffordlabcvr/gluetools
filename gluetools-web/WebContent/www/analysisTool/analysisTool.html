@@ -1,11 +1,10 @@
 
 
 <!-- 1. nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
-<div ng-app="analysisTool">
-
+<div>
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
-		<h2>Sequence typing and interpretation</h2>
-		<p>Submit your sequence files in FASTA nucleotide format for automated analysis of the sequence type and interpretation of the nucleotide content.</p>
+		<h2>Automated genotyping and interpretation</h2>
+		<p>Submit your sequence files in FASTA nucleotide format for automated analysis of the genotype / subtype and interpretation of the nucleotide content.</p>
 		<div>
 			<div>
 	
@@ -20,7 +19,7 @@
 						<tr>
 							<th>File</th>
 							<th ng-show="uploader.isHTML5">Size</th>
-							<th colspan="2">Variation categories</th>
+							<th colspan="2">Interpretation tasks</th>
 							<th>Status</th>
 							<th>Actions</th>
 						</tr>
@@ -105,7 +104,7 @@
 				<h3>Analysis Results</h3>
 				<div class="btn-group">
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
-						ng-model="analysisView" btn-radio="'typingSummary'">Typing summary</label>
+						ng-model="analysisView" btn-radio="'typingSummary'">Genotyping summary</label>
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
 						ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" 
