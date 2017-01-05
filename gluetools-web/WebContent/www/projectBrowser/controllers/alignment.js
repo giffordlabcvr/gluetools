@@ -7,30 +7,18 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.renderResult = null;
 			$scope.memberWhereClause = null;
 			$scope.memberFields = null;
-			
-			$scope.init = function(almtName, almtRendererModuleName, memberWhereClause, memberFields) {
-				var renderCmdParams = {};
-				$scope.memberFields = memberFields;
-				$scope.almtName = almtName;
-				$scope.memberWhereClause = memberWhereClause;
-				if(almtRendererModuleName) {
-					renderCmdParams.rendererModuleName = almtRendererModuleName;
-				}
-				glueWS.runGlueCommand("alignment/"+almtName, {
-				    "render-object":renderCmdParams
-				})
-				.success(function(data, status, headers, config) {
-					$scope.renderResult = data;
-					console.info('$scope.renderResult', $scope.renderResult);
-				})
-				.error(glueWS.raiseErrorDialog(dialogs, "rendering alignment"));
+
+			$scope.updateCount = function(pContext) {
+				
+				var cmdParams = {
+		    	        "recursive":"true",
+		    			"whereClause": $scope.memberWhereClause
+		    	};
+				pContext.extendCountCmdParams(cmdParams);
 				
 				glueWS.runGlueCommand("alignment/"+$scope.almtName, {
 			    	"count": { 
-			    		"member": {
-			    	        "recursive":"true",
-			    			"whereClause": $scope.memberWhereClause
-			    		}, 
+			    		"member": cmdParams, 
 			    	} 
 				})
 			    .success(function(data, status, headers, config) {
@@ -40,7 +28,6 @@ projectBrowser.controller('alignmentCtrl',
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "counting alignment members"));
 			}
-			
 			
 			$scope.updatePage = function(pContext) {
 				console.log("updatePage", pContext);
@@ -60,8 +47,27 @@ projectBrowser.controller('alignmentCtrl',
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "listing alignment members"));
 			}
-			
-			$scope.pagingContext = pagingContext.createPagingContext($scope.updatePage);
+
+			$scope.init = function(almtName, almtRendererModuleName, memberWhereClause, memberFields) {
+				var renderCmdParams = {};
+				$scope.memberFields = memberFields;
+				$scope.almtName = almtName;
+				$scope.memberWhereClause = memberWhereClause;
+				if(almtRendererModuleName) {
+					renderCmdParams.rendererModuleName = almtRendererModuleName;
+				}
+				glueWS.runGlueCommand("alignment/"+almtName, {
+				    "render-object":renderCmdParams
+				})
+				.success(function(data, status, headers, config) {
+					$scope.renderResult = data;
+					console.info('$scope.renderResult', $scope.renderResult);
+					$scope.pagingContext.countChanged();
+				})
+				.error(glueWS.raiseErrorDialog(dialogs, "rendering alignment"));
+			}
+
+			$scope.pagingContext = pagingContext.createPagingContext($scope.updateCount, $scope.updatePage);
 
 			
 }]);
