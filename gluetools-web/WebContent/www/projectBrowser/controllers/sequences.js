@@ -9,14 +9,13 @@ projectBrowser.controller('sequencesCtrl',
 
 			addUtilsToScope($scope);
 			
-			$scope.init = function(whereClause, fieldNames)  {
-				$scope.whereClause = whereClause;
-				$scope.fieldNames = fieldNames;
-
+			$scope.updateCount = function(pContext) {
 				var cmdParams = {};
 				if($scope.whereClause) {
 					cmdParams.whereClause = $scope.whereClause;
 				}
+				$scope.pagingContext.extendCountCmdParams(cmdParams);
+
 				glueWS.runGlueCommand("", {
 			    	"count": { "sequence": cmdParams	 } 
 				})
@@ -27,7 +26,7 @@ projectBrowser.controller('sequencesCtrl',
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "counting sequences"));
 			}
-			
+				
 			$scope.updatePage = function(pContext) {
 				console.log("updatePage", pContext);
 				var cmdParams = {
@@ -47,6 +46,12 @@ projectBrowser.controller('sequencesCtrl',
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "listing sequences"));
 			}
-			
-			$scope.pagingContext = pagingContext.createPagingContext($scope.updatePage);
+
+			$scope.init = function(whereClause, fieldNames)  {
+				$scope.whereClause = whereClause;
+				$scope.fieldNames = fieldNames;
+				$scope.pagingContext = pagingContext.createPagingContext($scope.updateCount, $scope.updatePage);
+				$scope.pagingContext.countChanged();
+			}
+
 }]);

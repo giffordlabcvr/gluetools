@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import freemarker.core.ParseException;
 import freemarker.template.Template;
 
@@ -148,7 +149,7 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 		}
 		Expression whereClauseExp = null;
 		try {
-			whereClauseExp = Expression.fromString(whereClauseString);
+			whereClauseExp = CayenneUtils.expressionFromString(whereClauseString);
 		} catch(ExpressionException ee) {
 			throw new FastaAlignmentImporterException(Code.INVALID_WHERE_CLAUSE, fastaID, whereClauseString);
 		}

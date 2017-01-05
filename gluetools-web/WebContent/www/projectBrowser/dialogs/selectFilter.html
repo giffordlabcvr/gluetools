@@ -1,0 +1,62 @@
+<div class="modal-header">
+	<h2 class="modal-title">Filters</h2>
+	<p>Configure which data filters will be used select table rows. </p>
+	<h4>Notes</h4>
+	<ul>
+	<li>Table rows will be selected only if they pass all filters. </li>
+	<li>For the "is like" operator, the % character acts as a wildcard. </li>
+	</ul>
+</div>
+<div class="modal-body">
+	<div ng-show="data.newFilterElems.length == 0 || data.newFilterElems == null"><p>No filters configured</p></div>
+	<div ng-show="data.newFilterElems.length > 0">
+		<div class="row" style="margin-bottom: 10px" ng-repeat="filterElem in data.newFilterElems track by $index" ng-controller="filterElemCtrl">
+			<div class="btn-group col-md-3" id="property-group" dropdown is-open="property_isopen">
+			     <button id="property-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
+				{{filterElemProperty.displayName}} <span class="caret table-dropdown-caret"></span>
+			     </button>
+			     <ul class="dropdown-menu" style="margin-left: 15px" role="menu" aria-labelledby="property-button">
+			       <li ng-repeat="availableFilterProperty in data.filterProperties" 
+			       		ng-click="setFilterElemProperty(availableFilterProperty)" role="menuitem"><a >
+			       	{{availableFilterProperty.displayName}}</a></li>
+			     </ul>
+			</div>
+			<div class="btn-group col-md-3" id="operator-group" dropdown is-open="operator_isopen">
+			     <button id="operator-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
+			       <span>{{filterElemOperator.displayName}}</span> <span class="caret table-dropdown-caret"></span>
+			     </button>
+			     <ul class="dropdown-menu" style="margin-left: 15px" role="menu" aria-labelledby="operator-button">
+			       <li ng-repeat="availableOperator in availableOperatorsForFilterHints(filterElemProperty.filterHints)" 
+			       		ng-click="setFilterElemOperator(availableOperator)" role="menuitem"><a >
+			       	{{availableOperator.displayName}}</a></li>
+			     </ul>
+			</div>
+			<div class="col-md-4">
+				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
+					<input ng-switch-when="Integer"  
+						class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
+					<div ng-switch-when="Date" class="input-group">
+			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+			              <span class="input-group-btn">
+			                <button type="button" class="btn btn-default" ng-click="openDatePicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+			              </span>
+					</div>
+					<input ng-switch-default  
+						class="table-textbox" placeholder="Enter value" type="text" ng-model="filterElem.predicate.operand" />
+				</div>
+			</div>
+			<div class="col-md-2">
+				<button type="button" class="btn btn-primary btn-xs"
+					ng-click="removeFilterElem(filterElem)"/>
+					<span class="glyphicon glyphicon-trash"></span> Remove filter
+				</button>
+			</div>
+		</div>
+	</div>
+	<button type="button" class="btn btn-primary btn-sm" ng-click="addFilterElem()"><span class="glyphicon glyphicon-plus"></span> Add filter</button>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="accept()">OK</button>
+	<button type="button" class="btn btn-primary" ng-show="data.defaultFilterElems" ng-click="resetToDefault()">Reset to default</button>
+	<button type="button" class="btn btn-cancel" ng-click="dismiss()">Cancel</button>
+</div>

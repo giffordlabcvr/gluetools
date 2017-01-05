@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class DateUtils {
 
+	public static final String GLUE_DATE_REGEX = "\\d{2}-[A-Za-z]{3}-\\d{4}";
 	private static final DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
 	
 	public static String render(Date value) {
@@ -15,7 +16,7 @@ public class DateUtils {
 	}
 	
 	public static boolean isDateString(String string) {
-		return string.matches("^\\d{2}-[A-Za-z]{3}-\\d{4}$");
+		return string.matches("^"+GLUE_DATE_REGEX+"$");
 	}
 	
 	public static Date parse(String string) {

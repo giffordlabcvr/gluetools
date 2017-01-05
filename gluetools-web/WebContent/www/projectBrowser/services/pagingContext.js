@@ -1,6 +1,6 @@
-projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', function(dialogs, glueWebToolConfig) {
+projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filterUtils', function(dialogs, glueWebToolConfig, filterUtils) {
 	
-	this.createPagingContext = function(updatePage) {
+	this.createPagingContext = function(updateCount, updatePage) {
 		var pagingContext = {};
 		pagingContext.firstItemIndex = null;
 		pagingContext.lastItemIndex = null;
@@ -9,6 +9,7 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 		pagingContext.sortOrder = [];
 		pagingContext.defaultSortOrder = null;
 		pagingContext.updatePage = updatePage;
+		pagingContext.updateCount = updateCount;
 		pagingContext.availableItemsPerPage = [10,50,100,500];
 
 		pagingContext.setItemsPerPage = function(newItemsPerPage) {
@@ -18,6 +19,10 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 
 		pagingContext.setTotalItems = function(totalItems) {
 			pagingContext.totalItems = totalItems;
+		}
+
+		pagingContext.countChanged = function() {
+			pagingContext.updateCount(pagingContext);
 		}
 		
 		pagingContext.firstPage = function() {
@@ -59,6 +64,24 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 			return pagingContext.sortableProperties;
 		}
 
+		/*
+		 * Example:
+		 * pagingContext.setFilterProperties([
+		 * 		{ property: "id", displayName: "Sequence ID", filterHints: {type: "String", inputType="text"} },
+		 * 		{ property: "gb_length", displayName: "Sequence Length", filterHints: {type: "Integer", inputType="number"} },
+		 * 		{ property: "gb_create_date", displayName: "Creation Date", filterHints: {type: "Date", inputType="date"} }
+		 * ])
+		 */
+		pagingContext.setFilterProperties = function(filterProperties) {
+			pagingContext.filterProperties = filterProperties;
+		}
+
+		pagingContext.getFilterProperties = function() {
+			return pagingContext.filterProperties;
+		}
+
+		
+		
 		/* Example:
 		 * pagingContxt.setSortOrder([
 		 * 		{ property: "id", displayName: "Sequence ID", order: "+" },
@@ -82,6 +105,32 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 		pagingContext.getDefaultSortOrder = function() {
 			return pagingContext.defaultSortOrder;
 		}
+
+		
+		/* Example:
+		 * pagingContxt.setFilterElems([
+		 * 		{ property: "id", type: "String", predicate: { operator: "like", operand: "KJ%"} },
+		 * 		{ property: "gb_length", type: "Integer", predicate: { operator: "gte", operand: "1000"} }
+		 * ]);
+		 * 
+		 */
+		pagingContext.setFilterElems = function(filterElems) {
+			pagingContext.filterElems = filterElems;
+		} 
+
+		pagingContext.setDefaultFilterElems = function(defaultFilterElems) {
+			pagingContext.defaultFilterElems = defaultFilterElems;
+			pagingContext.filterElems = defaultFilterElems;
+		} 
+
+		pagingContext.getFilterElems = function() {
+			return pagingContext.filterElems;
+		}
+
+		pagingContext.getDefaultFilterElems = function() {
+			return pagingContext.defaultFilterElems;
+		}
+		
 		
 		pagingContext.sortOrderDialog = function() {
 			var newSortOrder = _(pagingContext.sortOrder).clone();
@@ -99,6 +148,26 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 			});
 		}
 
+		
+		pagingContext.filterDialog = function() {
+			var newFilterElems = _(pagingContext.filterElems).clone();
+			var dlg = dialogs.create(
+					glueWebToolConfig.getProjectBrowserURL()+'/dialogs/selectFilter.html','selectFilterCtrl',
+					{ newFilterElems: newFilterElems,
+					  defaultFilterElems: pagingContext.defaultFilterElems,
+				      filterProperties: pagingContext.filterProperties }, {});
+			dlg.result.then(function(data){
+				var updatedWhereClause = pagingContext.getGlueWhereClauseAux(data.newFilterElems);
+				if(pagingContext.getGlueWhereClauseAux(pagingContext.filterElems) != updatedWhereClause) {
+					pagingContext.filterElems = data.newFilterElems;
+					console.log("pagingContext.filterElems updated", pagingContext.filterElems);
+					console.log("updatedWhereClause", updatedWhereClause);
+					pagingContext.countChanged();
+				}
+			});
+		}
+
+		
 		pagingContext.extendListCmdParams = function(cmdParams) {
 			cmdParams.pageSize = pagingContext.itemsPerPage;
 			cmdParams.fetchLimit = pagingContext.itemsPerPage;
@@ -107,8 +176,24 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 			if(glueSortOrder != null) {
 				cmdParams.sortProperties = glueSortOrder;
 			}
+			pagingContext.extendCmdParamsWhereClause(cmdParams);
+		}
+
+		pagingContext.extendCountCmdParams = function(cmdParams) {
+			pagingContext.extendCmdParamsWhereClause(cmdParams);
 		}
 		
+		pagingContext.extendCmdParamsWhereClause = function(cmdParams) {
+			var glueWhereClause = pagingContext.getGlueWhereClause();
+			if(glueWhereClause != null) {
+				if(cmdParams.whereClause != null) {
+					cmdParams.whereClause = cmdParams.whereClause + " and " + glueWhereClause;
+				} else {
+					cmdParams.whereClause = glueWhereClause;
+				}
+			}
+		}
+
 		pagingContext.getGlueSortOrder = function() {
 			return pagingContext.getGlueSortOrderAux(pagingContext.sortOrder);
 		}
@@ -126,7 +211,35 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', functio
 			}
 			return glueSortOrder;
 		}
+
 		
+		pagingContext.getGlueWhereClause = function() {
+			return pagingContext.getGlueWhereClauseAux(pagingContext.filterElems);
+		}
+		
+		pagingContext.getGlueWhereClauseAux = function(filterElems) {
+			if(filterElems == null || filterElems.length == 0) {
+				return null;
+			}
+			var typeToFilterOperators = filterUtils.filterOperatorsForType();
+			var whereClause = "";
+			for(var i = 0; i < filterElems.length; i++) {
+				if(i > 0) {
+					whereClause = whereClause + " and"
+				}
+				var filterElem = filterElems[i];
+				var type = filterElem.type;
+				var filterOperator = _.find(typeToFilterOperators[type], function(fo) {return fo.operator == filterElem.predicate.operator});
+				whereClause = whereClause + " "+ filterElem.property + " " + filterOperator.cayenneOperator;
+				if(filterOperator.hasOperand) {
+					whereClause = whereClause + " " + filterUtils.transformOperand(type, filterElem.predicate.operand);
+				}
+				
+			}
+
+			return whereClause;
+		}
+
 		return pagingContext;
-	}
+	};
 }]);

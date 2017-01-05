@@ -39,6 +39,22 @@ a {
    width: auto !important;
 }
 
+.table-textbox {
+   height: 39px !important;
+   padding-left: 10px;
+   width: 100% !important;   
+}
+
+.table-dropdown {
+   width: 100% !important;
+   text-align: left !important;
+}
+
+.table-dropdown-caret {
+	float:right; 
+	margin:7px 0;
+}
+
 /* change yeti tooltip colours */
 
 .tooltip.top .tooltip-inner {
@@ -55,5 +71,14 @@ a {
 
 .paging-buttons {
   padding-left: 15px;
+}
+
+/* hide chrome native datepicker */
+input::-webkit-calendar-picker-indicator{
+    display: none;
+}
+A
+input[type="date"]::-webkit-input-placeholder{ 
+    visibility: hidden !important;
 }
 

@@ -22,6 +22,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
+import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.core.ParseException;
@@ -112,7 +113,7 @@ public class PluginUtils {
 		if(expressionString != null) {
 			expressionString = expressionString.replaceAll("\\t\\r\\n", "");
 			try {
-				expression = Expression.fromString(expressionString);
+				expression = CayenneUtils.expressionFromString(expressionString);
 			} catch(ExpressionException ee) {
 				throw new PluginConfigException(PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
 						ee.getLocalizedMessage(), expressionString);
