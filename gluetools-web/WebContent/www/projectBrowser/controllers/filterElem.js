@@ -25,19 +25,35 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 		    $scope.dateOptions.isopen = true;
 	};
 	
+	$scope.addOperand = function() {
+		$scope.filterElem.predicate.operand.push($scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints));
+	}
+
+	$scope.removeOperand = function(index) {
+		$scope.filterElem.predicate.operand.splice(index, 1);
+	}
+
 	$scope.setFilterElemOperator = function(availableOperator) {
 		$scope.filterElemOperator = availableOperator;
 		if($scope.filterElem.predicate == null) {
 			$scope.filterElem.predicate = {};
 		}
 		$scope.filterElem.predicate.operator = availableOperator.operator;
-		console.log("$scope.filterElem.predicate",$scope.filterElem.predicate);
-		if(availableOperator.hasOperand && $scope.filterElem.predicate.operand == null) {
-			$scope.filterElem.predicate.operand = $scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints);
+		if(availableOperator.hasOperand) {
+			if(availableOperator.multiOperand) {
+				if($scope.filterElem.predicate.operand == null || !_.isArray($scope.filterElem.predicate.operand)) {
+					$scope.filterElem.predicate.operand = [$scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints)];
+				}
+			} else {
+				if($scope.filterElem.predicate.operand == null || _.isArray($scope.filterElem.predicate.operand)) {
+					$scope.filterElem.predicate.operand = $scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints);
+				}
+			}
 		}
 		if(!availableOperator.hasOperand) {
 			$scope.filterElem.predicate.operand = null;
 		}
+		console.log("$scope.filterElem.predicate",$scope.filterElem.predicate);
 	}
 
 	console.log("$scope.filterElem",$scope.filterElem);

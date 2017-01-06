@@ -45,6 +45,10 @@ a {
    width: 100% !important;   
 }
 
+.table-button {
+   height: 39px !important;
+}
+
 .table-dropdown {
    width: 100% !important;
    text-align: left !important;

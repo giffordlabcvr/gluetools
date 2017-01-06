@@ -4,7 +4,7 @@
 	<h4>Notes</h4>
 	<ul>
 	<li>Table rows will be selected only if they pass all filters. </li>
-	<li>For the "is like" / "is not like" operators, the % character acts as a wildcard. </li>
+	<li>For the "is like" and "is not like" operators, the % character acts as a wildcard. </li>
 	</ul>
 </div>
 <div class="modal-body">
@@ -33,22 +33,46 @@
 			</div>
 			<div class="col-md-3">
 				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
-					<input ng-switch-when="Integer"  
-						class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
+					<div ng-switch-when="Integer">
+						<input ng-if="!filterElemOperator.multiOperand"  
+							class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
+						<div ng-if="filterElemOperator.multiOperand">
+							<div class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">
+								<input  
+									class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand[$index]" />
+								<span class="input-group-btn">
+				                	<button type="button" ng-disabled="filterElem.predicate.operand.length == 1" class="btn btn-primary btn-sm table-button" ng-click="removeOperand($index)"><i class="glyphicon glyphicon-trash"></i></button>
+								</span>
+							</div>
+				            <button type="button" class="btn btn-primary btn-xs" ng-click="addOperand()"><i class="glyphicon glyphicon-plus"></i> Add value</button>
+						</div>					
+					</div>
 					<input ng-switch-when="Double"  
 						class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
 					<div ng-switch-when="Date" class="input-group">
 			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
 			              <span class="input-group-btn">
-			                <button type="button" class="btn btn-default" ng-click="openDatePicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+			                <button type="button" class="btn btn-primary" ng-click="openDatePicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
 			              </span>
 					</div>
-					<input ng-switch-default  
-						class="table-textbox" placeholder="Enter value" type="text" ng-model="filterElem.predicate.operand" />
+					<div ng-switch-default>
+						<input ng-if="!filterElemOperator.multiOperand"  
+							class="table-textbox" placeholder="Enter value" type="text" ng-model="filterElem.predicate.operand" />
+						<div ng-if="filterElemOperator.multiOperand">
+							<div class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">
+								<input  
+									class="table-textbox" placeholder="Enter value" type="text" ng-model="filterElem.predicate.operand[$index]" />
+								<span class="input-group-btn">
+				                	<button type="button" ng-disabled="filterElem.predicate.operand.length == 1" class="btn btn-primary btn-sm table-button" ng-click="removeOperand($index)"><i class="glyphicon glyphicon-trash"></i></button>
+								</span>
+							</div>
+				            <button type="button" class="btn btn-primary btn-xs" ng-click="addOperand()"><i class="glyphicon glyphicon-plus"></i> Add value</button>
+						</div>					
+					</div>
 				</div>
 			</div>
 			<div class="col-md-2">
-				<button type="button" class="btn btn-primary btn-xs"
+				<button type="button" class="btn btn-primary btn-sm table-button"
 					ng-click="removeFilterElem(filterElem)"/>
 					<span class="glyphicon glyphicon-trash"></span> Remove filter
 				</button>
