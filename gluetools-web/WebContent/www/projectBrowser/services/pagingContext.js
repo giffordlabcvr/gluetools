@@ -10,7 +10,7 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 		pagingContext.defaultSortOrder = null;
 		pagingContext.updatePage = updatePage;
 		pagingContext.updateCount = updateCount;
-		pagingContext.availableItemsPerPage = [10,50,100,500];
+		pagingContext.availableItemsPerPage = [10,25,50,100,250,500];
 
 		pagingContext.setItemsPerPage = function(newItemsPerPage) {
 			pagingContext.itemsPerPage = newItemsPerPage;
