@@ -256,7 +256,7 @@ public class Console implements CommandResultRenderingContext
 		} catch(PluginConfigException pce) {
 			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
 					pce.getErrorArgs().length >= 3) {
-				throw new CommandException(CommandException.Code.ARGUMENT_FORMAT_ERROR,
+				throw new CommandException(pce, CommandException.Code.ARGUMENT_FORMAT_ERROR,
 						pce.getErrorArgs()[0].toString(),
 						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
 			} else {

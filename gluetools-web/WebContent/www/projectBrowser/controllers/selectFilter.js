@@ -9,7 +9,7 @@ projectBrowser.controller('selectFilterCtrl',
 		$scope.data.newFilterElems.push(filterElem);
 	}
 	
-	$scope.availableOperatorsForType = filterUtils.filterOperatorsForType();
+	$scope.availableOperatorsForType = filterUtils.getFilterOperatorsForType();
 	
 	$scope.defaultOperandForType = filterUtils.defaultOperandForType();
 

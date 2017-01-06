@@ -115,10 +115,10 @@ public class PluginUtils {
 			try {
 				expression = CayenneUtils.expressionFromString(expressionString);
 			} catch(ExpressionException ee) {
-				throw new PluginConfigException(PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
+				throw new PluginConfigException(ee, PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
 						ee.getLocalizedMessage(), expressionString);
 			} catch(Exception e) {
-				throw new PluginConfigException(PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
+				throw new PluginConfigException(e, PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
 						e.getLocalizedMessage(), expressionString);
 			}
 		}

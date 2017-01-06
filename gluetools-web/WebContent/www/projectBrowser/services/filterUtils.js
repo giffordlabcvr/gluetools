@@ -1,11 +1,15 @@
 projectBrowser.service("filterUtils", ['$filter', function($filter) {
 	
-	this.filterOperatorsForType = function() {
-		return { 
+	this.filterOperatorsForType = { 
 			"String": [
-			           {operator:"equals", displayName:"exactly matches", hasOperand:true, cayenneOperator:"="}, 
+			           {operator:"contains", displayName:"contains", hasOperand:true, cayenneOperator:"like",
+			        	   preTransformOperand: function(op) { return "%"+op+"%"} }, 
+			           {operator:"notcontains", displayName:"does not contain", hasOperand:true, cayenneOperator:"like", negate:true, 
+			        	   preTransformOperand: function(op) { return "%"+op+"%"}}, 
+			           {operator:"equals", displayName:"matches", hasOperand:true, cayenneOperator:"="}, 
 			           {operator:"notequals", displayName:"does not match", hasOperand:true, cayenneOperator:"!="}, 
 			           {operator:"like", displayName:"is like", hasOperand:true, cayenneOperator:"like"}, 
+			           {operator:"notlike", displayName:"is not like", hasOperand:true, cayenneOperator:"like", negate:true}, 
 			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
 			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
 			],
@@ -40,6 +44,9 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
 			]
 		};
+	
+	this.getFilterOperatorsForType = function() {
+		return this.filterOperatorsForType;
 	};
 
 	this.defaultOperandForType = function() {
@@ -68,5 +75,20 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		}
 	};
 
-	
+	this.filterElemToCayennePredicate = function(filterElem) {
+		var type = filterElem.type;
+		var filterOperator = _.find(this.filterOperatorsForType[type], function(fo) {return fo.operator == filterElem.predicate.operator});
+		var cayennePredicate = filterElem.property + " " + filterOperator.cayenneOperator;
+		if(filterOperator.hasOperand) {
+			var op = filterElem.predicate.operand;
+			if(filterOperator.preTransformOperand != null) {
+				op = filterOperator.preTransformOperand(op);
+			}
+			cayennePredicate = cayennePredicate + " " + this.transformOperand(type, op);
+		}
+		if(filterOperator.negate == true) {
+			cayennePredicate = "not("+cayennePredicate+")";
+		}
+		return cayennePredicate;
+	}
 }]);

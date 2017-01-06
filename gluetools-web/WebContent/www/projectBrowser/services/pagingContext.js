@@ -221,20 +221,13 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 			if(filterElems == null || filterElems.length == 0) {
 				return null;
 			}
-			var typeToFilterOperators = filterUtils.filterOperatorsForType();
 			var whereClause = "";
 			for(var i = 0; i < filterElems.length; i++) {
 				if(i > 0) {
 					whereClause = whereClause + " and"
 				}
 				var filterElem = filterElems[i];
-				var type = filterElem.type;
-				var filterOperator = _.find(typeToFilterOperators[type], function(fo) {return fo.operator == filterElem.predicate.operator});
-				whereClause = whereClause + " "+ filterElem.property + " " + filterOperator.cayenneOperator;
-				if(filterOperator.hasOperand) {
-					whereClause = whereClause + " " + filterUtils.transformOperand(type, filterElem.predicate.operand);
-				}
-				
+				whereClause = whereClause + " "+ filterUtils.filterElemToCayennePredicate(filterElem);
 			}
 
 			return whereClause;
