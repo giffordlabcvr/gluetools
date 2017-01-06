@@ -11,7 +11,7 @@
 	<div ng-show="data.newFilterElems.length == 0 || data.newFilterElems == null"><p>No filters configured</p></div>
 	<div ng-show="data.newFilterElems.length > 0">
 		<div class="row" style="margin-bottom: 10px" ng-repeat="filterElem in data.newFilterElems track by $index" ng-controller="filterElemCtrl">
-			<div class="btn-group col-md-3" id="property-group" dropdown is-open="property_isopen">
+			<div class="btn-group col-md-4" id="property-group" dropdown is-open="property_isopen">
 			     <button id="property-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
 				{{filterElemProperty.displayName}} <span class="caret table-dropdown-caret"></span>
 			     </button>
@@ -31,9 +31,11 @@
 			       	{{availableOperator.displayName}}</a></li>
 			     </ul>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-3">
 				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
 					<input ng-switch-when="Integer"  
+						class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
+					<input ng-switch-when="Double"  
 						class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
 					<div ng-switch-when="Date" class="input-group">
 			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />

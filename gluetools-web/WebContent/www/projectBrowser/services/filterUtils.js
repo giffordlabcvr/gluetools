@@ -18,7 +18,17 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 				           {operator:"lte", displayName:"<=", hasOperand:true, cayenneOperator:"<="}, 
 				           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
 				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
-				],
+			],
+			"Double" : [
+				           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
+				           {operator:"notequals", displayName:"does not equal", hasOperand:true, cayenneOperator:"!="}, 
+				           {operator:"gt", displayName:">", hasOperand:true, cayenneOperator:">"}, 
+				           {operator:"gte", displayName:">=", hasOperand:true, cayenneOperator:">="}, 
+				           {operator:"lt", displayName:"<", hasOperand:true, cayenneOperator:"<"}, 
+				           {operator:"lte", displayName:"<=", hasOperand:true, cayenneOperator:"<="}, 
+				           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
+				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+			],
 			"Date" : [
 				           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
 				           {operator:"notequals", displayName:"does not equal", hasOperand:true, cayenneOperator:"!="}, 
@@ -36,6 +46,7 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		return {
 			"String": "",
 			"Integer" : 0,
+			"Double" : 0.0,
 			"Date" : "01-Jan-1970"
 		};
 	};
@@ -46,6 +57,9 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 			return "#gluedate("+$filter('date')(operand, "dd-MMM-yyyy")+")";
 			break;
 		case "Integer":
+			return ""+operand;
+			break;
+		case "Double":
 			return ""+operand;
 			break;
 		default:
