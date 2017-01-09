@@ -2,30 +2,18 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 	
 	this.filterOperatorsForType = { 
 			"String": [
-			           {operator:"contains", displayName:"contains", hasOperand:true, cayenneOperator:"like",
+			           {operator:"like", displayName:"is like", multiDisplayName:"is like one of", hasOperand:true, multiOperand:true, cayenneOperator:"like",
 			        	   preTransformOperand: function(op) { return "%"+op+"%"} }, 
-			           {operator:"notcontains", displayName:"does not contain", hasOperand:true, cayenneOperator:"like", negate:true, 
+			           {operator:"notlike", displayName:"is not like", multiDisplayName:"is not like any of", hasOperand:true, multiOperand:true, cayenneOperator:"like", negate:true, 
 			        	   preTransformOperand: function(op) { return "%"+op+"%"}}, 
-			           {operator:"containsoneof", displayName:"contains one of", hasOperand:true, multiOperand:true, cayenneOperator:"like",
-			        	   preTransformOperand: function(op) { return "%"+op+"%"} }, 
-			           {operator:"containsoneof", displayName:"contains none of", hasOperand:true, multiOperand:true, cayenneOperator:"like", negate:true,
-			        	   preTransformOperand: function(op) { return "%"+op+"%"} }, 
-			           {operator:"equals", displayName:"matches", hasOperand:true, cayenneOperator:"="}, 
-			           {operator:"notequals", displayName:"does not match", hasOperand:true, cayenneOperator:"!="}, 
-			           {operator:"equalsoneof", displayName:"matches one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
-			           {operator:"equalsnoneof", displayName:"matches none of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
-			           {operator:"like", displayName:"is like", hasOperand:true, cayenneOperator:"like"}, 
-			           {operator:"notlike", displayName:"is unlike", hasOperand:true, cayenneOperator:"like", negate:true}, 
-			           {operator:"likeoneof", displayName:"is like one of", hasOperand:true, multiOperand:true, cayenneOperator:"like"}, 
-			           {operator:"likenoneof", displayName:"is unlike any of", hasOperand:true, multiOperand:true, cayenneOperator:"like", negate:true}, 
+			           {operator:"matches", displayName:"matches", multiDisplayName:"matches one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
+			           {operator:"notmatches", displayName:"does not match", multiDisplayName:"does not match any of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
 			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
 			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
 			],
 			"Integer" : [
-				           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
-				           {operator:"notequals", displayName:"does not equal", hasOperand:true, cayenneOperator:"!="}, 
-				           {operator:"equalsoneof", displayName:"equals one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
-				           {operator:"equalsnoneof", displayName:"equals none of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
+				           {operator:"equals", displayName:"equals", multiDisplayName:"equals one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
+				           {operator:"notequals", displayName:"does not equal", multiDisplayName:"does not equal any of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
 				           {operator:"gt", displayName:">", hasOperand:true, cayenneOperator:">"}, 
 				           {operator:"gte", displayName:">=", hasOperand:true, cayenneOperator:">="}, 
 				           {operator:"lt", displayName:"<", hasOperand:true, cayenneOperator:"<"}, 
@@ -91,26 +79,18 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		var cayennePredicate = "";
 		var propertyOperator = filterElem.property + " " + filterOperator.cayenneOperator;
 		if(filterOperator.hasOperand) {
-			if(filterOperator.multiOperand) {
-				cayennePredicate = cayennePredicate + "(";
-				for(var i = 0; i < filterElem.predicate.operand.length; i++) {
-					if(i > 0) {
-						cayennePredicate = cayennePredicate + " or ";
-					}
-					var op = filterElem.predicate.operand[i];
-					if(filterOperator.preTransformOperand != null) {
-						op = filterOperator.preTransformOperand(op);
-					}
-					cayennePredicate = cayennePredicate + "(" + propertyOperator + " " + this.transformOperand(type, op) + ")";
+			cayennePredicate = cayennePredicate + "(";
+			for(var i = 0; i < filterElem.predicate.operand.length; i++) {
+				if(i > 0) {
+					cayennePredicate = cayennePredicate + " or ";
 				}
-				cayennePredicate = cayennePredicate + ")";
-			} else {
-				var op = filterElem.predicate.operand;
+				var op = filterElem.predicate.operand[i];
 				if(filterOperator.preTransformOperand != null) {
 					op = filterOperator.preTransformOperand(op);
 				}
-				cayennePredicate = cayennePredicate + propertyOperator + " " + this.transformOperand(type, op);
+				cayennePredicate = cayennePredicate + "(" + propertyOperator + " " + this.transformOperand(type, op) + ")";
 			}
+			cayennePredicate = cayennePredicate + ")";
 		} else {
 			cayennePredicate = cayennePredicate + propertyOperator;
 		}

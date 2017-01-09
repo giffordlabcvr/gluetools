@@ -5,15 +5,14 @@
 	<ul>
 	<li>Table rows will be selected only if they pass all filters. </li>
 	<li>The "match" operators require an exact string match, ignoring case. </li>
-	<li>The "contain" operators require a substring match, ignoring case. </li>
-	<li>For the "is like" and "is not like" operators, the % character may be used as a wildcard. </li>
+	<li>For the "is like" operators, the % character may be used as a wildcard. </li>
 	</ul>
 </div>
 <div class="modal-body">
 	<div ng-show="data.newFilterElems.length == 0 || data.newFilterElems == null"><p>No filters configured</p></div>
 	<div ng-show="data.newFilterElems.length > 0">
 		<div class="row" style="margin-bottom: 10px" ng-repeat="filterElem in data.newFilterElems track by $index" ng-controller="filterElemCtrl">
-			<div class="btn-group col-md-4" id="property-group" dropdown is-open="property_isopen">
+			<div class="btn-group col-md-4" style="padding-right:0px" id="property-group" dropdown is-open="property_isopen">
 			     <button id="property-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
 				{{filterElemProperty.displayName}} <span class="caret table-dropdown-caret"></span>
 			     </button>
@@ -23,34 +22,19 @@
 			       	{{availableFilterProperty.displayName}}</a></li>
 			     </ul>
 			</div>
-			<div class="btn-group col-md-3" id="operator-group" dropdown is-open="operator_isopen">
+			<div class="btn-group col-md-3" style="padding-right:0px" id="operator-group" dropdown is-open="operator_isopen">
 			     <button id="operator-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
-			       <span>{{filterElemOperator.displayName}}</span> <span class="caret table-dropdown-caret"></span>
+			       <span>{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !filterElemOperator.multiOperand ? filterElemOperator.displayName : filterElemOperator.multiDisplayName}}</a></li>
+</span> <span class="caret table-dropdown-caret"></span>
 			     </button>
 			     <ul class="dropdown-menu" style="margin-left: 15px" role="menu" aria-labelledby="operator-button">
 			       <li ng-repeat="availableOperator in availableOperatorsForFilterHints(filterElemProperty.filterHints)" 
 			       		ng-click="setFilterElemOperator(availableOperator)" role="menuitem"><a >
-			       	{{availableOperator.displayName}}</a></li>
+			       	{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !availableOperator.multiOperand ? availableOperator.displayName : availableOperator.multiDisplayName}}</a></li>
 			     </ul>
 			</div>
-			<div class="col-md-3">
+			<div class="col-md-3" style="padding-right:0px">
 				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
-					<div ng-switch-when="Integer">
-						<input ng-if="!filterElemOperator.multiOperand"  
-							class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
-						<div ng-if="filterElemOperator.multiOperand">
-							<div class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">
-								<input  
-									class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand[$index]" />
-								<span class="input-group-btn">
-				                	<button type="button" ng-disabled="filterElem.predicate.operand.length == 1" class="btn btn-primary btn-sm table-button" ng-click="removeOperand($index)"><i class="glyphicon glyphicon-trash"></i></button>
-								</span>
-							</div>
-				            <button type="button" class="btn btn-primary btn-xs" ng-click="addOperand()"><i class="glyphicon glyphicon-plus"></i> Add value</button>
-						</div>					
-					</div>
-					<input ng-switch-when="Double"  
-						class="table-textbox" placeholder="Enter value" type="number" ng-model="filterElem.predicate.operand" />
 					<div ng-switch-when="Date" class="input-group">
 			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
 			              <span class="input-group-btn">
@@ -58,22 +42,21 @@
 			              </span>
 					</div>
 					<div ng-switch-default>
-						<input ng-if="!filterElemOperator.multiOperand"  
-							class="table-textbox" placeholder="Enter value" type="text" ng-model="filterElem.predicate.operand" />
-						<div ng-if="filterElemOperator.multiOperand">
-							<div class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">
-								<input  
-									class="table-textbox" placeholder="Enter value" type="text" ng-model="filterElem.predicate.operand[$index]" />
-								<span class="input-group-btn">
-				                	<button type="button" ng-disabled="filterElem.predicate.operand.length == 1" class="btn btn-primary btn-sm table-button" ng-click="removeOperand($index)"><i class="glyphicon glyphicon-trash"></i></button>
-								</span>
-							</div>
-				            <button type="button" class="btn btn-primary btn-xs" ng-click="addOperand()"><i class="glyphicon glyphicon-plus"></i> Add value</button>
-						</div>					
+						<div ng-if="filterElem.predicate.operand.length > 1" class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">
+							<input  
+								class="table-textbox" placeholder="Enter value" type="inputTypeForProperty()" ng-model="filterElem.predicate.operand[$index]" />
+							<span class="input-group-btn">
+			                	<button type="button" class="btn btn-primary btn-sm table-button" ng-click="removeOperand($index)"><i class="glyphicon glyphicon-trash"></i></button>
+							</span>
+						</div>
+						<div ng-if="filterElem.predicate.operand.length == 1" style="padding-bottom:5px">
+							<input class="table-textbox" placeholder="Enter value" type="inputTypeForProperty()" ng-model="filterElem.predicate.operand[0]" />
+			            </div>
+			            <button ng-if="filterElemOperator.multiOperand" type="button" class="btn btn-primary btn-xs" ng-click="addOperand()"><i class="glyphicon glyphicon-plus"></i> Add alternative value</button>
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2">
+			<div class="col-md-2" style="padding-right:0px">
 				<button type="button" class="btn btn-primary btn-sm table-button"
 					ng-click="removeFilterElem(filterElem)"/>
 					<span class="glyphicon glyphicon-trash"></span> Remove filter

@@ -25,6 +25,17 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 		    $scope.dateOptions.isopen = true;
 	};
 	
+	$scope.inputTypeForProperty = function() {
+		switch($scope.filterElemProperty.filterHints.type) {
+		case "Double":
+			return "number";
+		case "Integer":
+			return "number";
+		default:
+			return "text"
+		}
+	}
+	
 	$scope.addOperand = function() {
 		$scope.filterElem.predicate.operand.push($scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints));
 	}
@@ -40,17 +51,15 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 		}
 		$scope.filterElem.predicate.operator = availableOperator.operator;
 		if(availableOperator.hasOperand) {
-			if(availableOperator.multiOperand) {
-				if($scope.filterElem.predicate.operand == null || !_.isArray($scope.filterElem.predicate.operand)) {
-					$scope.filterElem.predicate.operand = [$scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints)];
-				}
+			if($scope.filterElem.predicate.operand == null) {
+				$scope.filterElem.predicate.operand = [];
+				$scope.addOperand();
 			} else {
-				if($scope.filterElem.predicate.operand == null || _.isArray($scope.filterElem.predicate.operand)) {
-					$scope.filterElem.predicate.operand = $scope.defaultOperandForFilterHints($scope.filterElemProperty.filterHints);
+				if(!availableOperator.multiOperand) {
+					$scope.filterElem.predicate.operand = [$scope.filterElem.predicate.operand[0]];
 				}
 			}
-		}
-		if(!availableOperator.hasOperand) {
+		} else {
 			$scope.filterElem.predicate.operand = null;
 		}
 		console.log("$scope.filterElem.predicate",$scope.filterElem.predicate);
