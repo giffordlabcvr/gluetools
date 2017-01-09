@@ -36,7 +36,7 @@
 			<div class="col-md-3" style="padding-right:0px">
 				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
 					<div ng-switch-when="Date" class="input-group">
-			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand[0]" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
 			              <span class="input-group-btn">
 			                <button type="button" class="btn btn-primary" ng-click="openDatePicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
 			              </span>
