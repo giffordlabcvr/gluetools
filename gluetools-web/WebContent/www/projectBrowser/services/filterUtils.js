@@ -2,9 +2,9 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 	
 	this.filterOperatorsForType = { 
 			"String": [
-			           {operator:"like", displayName:"is like", multiDisplayName:"is like one of", hasOperand:true, multiOperand:true, cayenneOperator:"like",
+			           {operator:"contains", displayName:"contains", multiDisplayName:"contains one of", hasOperand:true, multiOperand:true, cayenneOperator:"like",
 			        	   preTransformOperand: function(op) { return "%"+op+"%"} }, 
-			           {operator:"notlike", displayName:"is not like", multiDisplayName:"is not like any of", hasOperand:true, multiOperand:true, cayenneOperator:"like", negate:true, 
+			           {operator:"notcontain", displayName:"does not contain", multiDisplayName:"does not contain any of", hasOperand:true, multiOperand:true, cayenneOperator:"like", negate:true, 
 			        	   preTransformOperand: function(op) { return "%"+op+"%"}}, 
 			           {operator:"matches", displayName:"matches", multiDisplayName:"matches one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
 			           {operator:"notmatches", displayName:"does not match", multiDisplayName:"does not match any of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
