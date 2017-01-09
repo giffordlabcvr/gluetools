@@ -6,6 +6,7 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 	$scope.setFilterElemProperty = function(filterProperty) {
 		$scope.filterElemProperty = filterProperty;
 		$scope.filterElem.property = $scope.filterElemProperty.property;
+		$scope.filterElem.altProperties = $scope.filterElemProperty.altProperties;
 		$scope.filterElem.type = $scope.filterElemProperty.filterHints.type;
 		var availableOperators = $scope.availableOperatorsForFilterHints($scope.filterElemProperty.filterHints);
 		$scope.filterElem.predicate = null;

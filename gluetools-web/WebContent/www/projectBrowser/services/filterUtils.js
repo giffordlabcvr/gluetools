@@ -77,25 +77,36 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		var type = filterElem.type;
 		var filterOperator = _.find(this.filterOperatorsForType[type], function(fo) {return fo.operator == filterElem.predicate.operator});
 		var cayennePredicate = "";
-		var propertyOperator = filterElem.property + " " + filterOperator.cayenneOperator;
-		if(filterOperator.hasOperand) {
-			cayennePredicate = cayennePredicate + "(";
-			for(var i = 0; i < filterElem.predicate.operand.length; i++) {
-				if(i > 0) {
-					cayennePredicate = cayennePredicate + " or ";
-				}
-				var op = filterElem.predicate.operand[i];
-				if(filterOperator.preTransformOperand != null) {
-					op = filterOperator.preTransformOperand(op);
-				}
-				cayennePredicate = cayennePredicate + "(" + propertyOperator + " " + this.transformOperand(type, op) + ")";
-			}
-			cayennePredicate = cayennePredicate + ")";
-		} else {
-			cayennePredicate = cayennePredicate + propertyOperator;
+		var properties = [filterElem.property];
+		if(filterElem.altProperties) {
+			properties = properties.concat(filterElem.altProperties);
 		}
+		cayennePredicate = cayennePredicate + "(";
+		for(var j = 0; j < properties.length; j++) {
+			if(j > 0) {
+				cayennePredicate = cayennePredicate + " or ";
+			}
+			var propertyOperator = properties[j] + " " + filterOperator.cayenneOperator;
+			if(filterOperator.hasOperand) {
+				cayennePredicate = cayennePredicate + "(";
+				for(var i = 0; i < filterElem.predicate.operand.length; i++) {
+					if(i > 0) {
+						cayennePredicate = cayennePredicate + " or ";
+					}
+					var op = filterElem.predicate.operand[i];
+					if(filterOperator.preTransformOperand != null) {
+						op = filterOperator.preTransformOperand(op);
+					}
+					cayennePredicate = cayennePredicate + "(" + propertyOperator + " " + this.transformOperand(type, op) + ")";
+				}
+				cayennePredicate = cayennePredicate + ")";
+			} else {
+				cayennePredicate = cayennePredicate + propertyOperator;
+			}
+		}
+		cayennePredicate = cayennePredicate + ")";
 		if(filterOperator.negate == true) {
-			cayennePredicate = "not("+cayennePredicate+")";
+			cayennePredicate = "not "+cayennePredicate;
 		}
 		return cayennePredicate;
 	}
