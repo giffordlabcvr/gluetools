@@ -20,11 +20,14 @@ public class DateUtils {
 	}
 	
 	public static Date parse(String string) {
+		if(!isDateString(string)) {
+			throw new DateUtilsException(DateUtilsException.Code.DATE_PARSE_ERROR, string, "Incorrect format");
+		}
 		try {
 			Date dateValue = dateFormat.parse(string);
 			return dateValue;
 		} catch (ParseException pe) {
-			throw new DateUtilsException(pe, DateUtilsException.Code.DATE_PARSE_ERROR, pe.getLocalizedMessage());
+			throw new DateUtilsException(pe, DateUtilsException.Code.DATE_PARSE_ERROR, string, pe.getLocalizedMessage());
 		}
 	}
 

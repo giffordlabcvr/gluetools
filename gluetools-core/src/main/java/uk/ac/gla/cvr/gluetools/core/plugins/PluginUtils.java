@@ -117,9 +117,6 @@ public class PluginUtils {
 			} catch(ExpressionException ee) {
 				throw new PluginConfigException(ee, PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
 						ee.getLocalizedMessage(), expressionString);
-			} catch(Exception e) {
-				throw new PluginConfigException(e, PluginConfigException.Code.PROPERTY_FORMAT_ERROR, propertyName, 
-						e.getLocalizedMessage(), expressionString);
 			}
 		}
 		return expression;

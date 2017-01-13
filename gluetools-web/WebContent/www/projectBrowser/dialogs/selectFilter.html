@@ -24,22 +24,29 @@
 			</div>
 			<div class="btn-group col-md-3" style="padding-right:0px" id="operator-group" dropdown is-open="operator_isopen">
 			     <button id="operator-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
-			       <span>{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !filterElemOperator.multiOperand ? filterElemOperator.displayName : filterElemOperator.multiDisplayName}}</a></li>
+			       <span>{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !filterElemOperator.multiOperand ? filterElemOperator.displayName : filterElemOperator.multiDisplayName}}</a>
 </span> <span class="caret table-dropdown-caret"></span>
 			     </button>
 			     <ul class="dropdown-menu" style="margin-left: 15px" role="menu" aria-labelledby="operator-button">
 			       <li ng-repeat="availableOperator in availableOperatorsForFilterHints(filterElemProperty.filterHints)" 
 			       		ng-click="setFilterElemOperator(availableOperator)" role="menuitem"><a >
-			       	{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !availableOperator.multiOperand ? availableOperator.displayName : availableOperator.multiDisplayName}}</a></li>
+			       	{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !availableOperator.multiOperand ? availableOperator.displayName : availableOperator.multiDisplayName}}</a>
 			     </ul>
 			</div>
 			<div class="col-md-3" style="padding-right:0px">
 				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
-					<div ng-switch-when="Date" class="input-group">
-			              <input type="text" class="form-control" datepicker-popup="dd-MMM-yyyy" show-button-bar="false" ng-model="filterElem.predicate.operand[0]" is-open="dateOptions.isopen" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
-			              <span class="input-group-btn">
-			                <button type="button" class="btn btn-primary" ng-click="openDatePicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-			              </span>
+					<div ng-switch-when="Date">
+			            <input type="number" placeholder="dd" class="table-day" ng-change="updateDateOperand" ng-model="date.day"/>
+						<div class="btn-group" id="month-group" style="margin-left: 5px" dropdown is-open="month_isopen">
+						     <button id="month-button" type="button" class="btn btn-default table-month" dropdown-toggle>
+						       <span>{{date.month}}</a></span> <span class="caret table-dropdown-caret"></span>
+						     </button>
+						     <ul class="dropdown-menu table-month-elem" role="menu" aria-labelledby="month-button">
+						       <li ng-repeat="month in months" 
+						       		ng-click="setDateMonth(month)" class="table-month-elem" role="menuitem"><a>{{month}}</a></li>
+						     </ul>
+						</div>
+			            <input type="number" placeholder="yyyy" class="table-year" ng-change="updateDateOperand" ng-model="date.year"/>
 					</div>
 					<div ng-switch-default>
 						<div ng-if="filterElem.predicate.operand.length > 1" class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">

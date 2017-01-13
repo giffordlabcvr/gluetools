@@ -54,7 +54,7 @@ public class CayenneUtils {
 
 	public static Expression expressionFromString(String expressionString) {
 		Map<String,Object> paramsMap = new LinkedHashMap<String,Object>();
-		Pattern glueDatePattern = Pattern.compile("#gluedate\\("+DateUtils.GLUE_DATE_REGEX+"\\)");
+		Pattern glueDatePattern = Pattern.compile("#gluedate\\([^\\)]*\\)");
 		StringBuffer finalExprBuf = new StringBuffer();
 		Matcher matcher = glueDatePattern.matcher(expressionString);
 		int appendStart = 0;

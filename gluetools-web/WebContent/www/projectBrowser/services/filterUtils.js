@@ -32,14 +32,20 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
 			],
 			"Date" : [
-				           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
-				           {operator:"notequals", displayName:"does not equal", hasOperand:true, cayenneOperator:"!="}, 
-				           {operator:"after", displayName:"after", hasOperand:true, cayenneOperator:">"}, 
-				           {operator:"onorafter", displayName:"on or after", hasOperand:true, cayenneOperator:">="}, 
-				           {operator:"before", displayName:"before", hasOperand:true, cayenneOperator:"<"}, 
-				           {operator:"onorbefore", displayName:"on or before", hasOperand:true, cayenneOperator:"<="}, 
-				           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
-				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+			           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
+			           {operator:"notequals", displayName:"does not equal", hasOperand:true, cayenneOperator:"!="}, 
+			           {operator:"after", displayName:"after", hasOperand:true, cayenneOperator:">"}, 
+			           {operator:"onorafter", displayName:"on or after", hasOperand:true, cayenneOperator:">="}, 
+			           {operator:"before", displayName:"before", hasOperand:true, cayenneOperator:"<"}, 
+			           {operator:"onorbefore", displayName:"on or before", hasOperand:true, cayenneOperator:"<="}, 
+			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
+			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+				],
+			"Boolean" : [
+			           {operator:"true", displayName:"is true", hasOperand:false, cayenneOperator:" = true"}, 
+			           {operator:"false", displayName:"is false", hasOperand:false, cayenneOperator:" = false"}, 
+			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
+			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
 			]
 		};
 	
@@ -59,7 +65,7 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 	this.transformOperand = function(type, operand) {
 		switch(type) {
 		case "Date":
-			return "#gluedate("+$filter('date')(operand, "dd-MMM-yyyy")+")";
+			return "#gluedate("+operand+")";
 			break;
 		case "Integer":
 			return ""+operand;

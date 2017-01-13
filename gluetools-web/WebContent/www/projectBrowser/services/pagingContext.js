@@ -67,9 +67,9 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 		/*
 		 * Example:
 		 * pagingContext.setFilterProperties([
-		 * 		{ property: "id", displayName: "Sequence ID", filterHints: {type: "String", inputType="text"} },
-		 * 		{ property: "gb_length", displayName: "Sequence Length", filterHints: {type: "Integer", inputType="number"} },
-		 * 		{ property: "gb_create_date", displayName: "Creation Date", filterHints: {type: "Date", inputType="date"} }
+		 * 		{ property: "id", displayName: "Sequence ID", filterHints: {type: "String"} },
+		 * 		{ property: "gb_length", displayName: "Sequence Length", filterHints: {type: "Integer"} },
+		 * 		{ property: "gb_create_date", displayName: "NCBI Entry Creation Date", filterHints: {type: "Date"} }
 		 * ])
 		 */
 		pagingContext.setFilterProperties = function(filterProperties) {

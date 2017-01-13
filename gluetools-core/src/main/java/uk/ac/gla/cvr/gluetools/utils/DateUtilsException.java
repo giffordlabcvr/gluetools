@@ -7,7 +7,7 @@ public class DateUtilsException extends GlueException {
 	
 	public enum Code implements GlueErrorCode {
 
-		DATE_PARSE_ERROR("errorTxt");
+		DATE_PARSE_ERROR("badDate", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -2,7 +2,20 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 	
 	$scope.operator_isopen = false;
 	$scope.property_isopen = false;
-
+	$scope.month_isopen = false;
+	$scope.months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+	
+	$scope.readDate = function() {
+		if($scope.filterElemProperty.filterHints.type == "Date" && $scope.filterElemOperator.hasOperand) {
+			$scope.date = {
+					day:parseInt($scope.filterElem.predicate.operand[0].substring(0,2)),
+					month:$scope.filterElem.predicate.operand[0].substring(3,6),
+					year:parseInt($scope.filterElem.predicate.operand[0].substring(7,11))
+			};
+			console.log("$scope.date",$scope.date);
+		}
+	}
+	
 	$scope.setFilterElemProperty = function(filterProperty) {
 		$scope.filterElemProperty = filterProperty;
 		$scope.filterElem.property = $scope.filterElemProperty.property;
@@ -11,20 +24,12 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 		var availableOperators = $scope.availableOperatorsForFilterHints($scope.filterElemProperty.filterHints);
 		$scope.filterElem.predicate = null;
 		$scope.setFilterElemOperator(availableOperators[0]);
+		$scope.readDate();
 	}
 
-	$scope.dateOptions = {
-		    formatYear: 'yy',
-		    startingDay: 1,
-		    isopen:false
-	};
-	
-	$scope.openDatePicker = function($event) {
-		    $event.preventDefault();
-		    $event.stopPropagation();
-
-		    $scope.dateOptions.isopen = true;
-	};
+	$scope.setDateMonth = function(dateMonth) {
+		$scope.date.month = dateMonth;
+	}
 	
 	$scope.inputTypeForProperty = function() {
 		switch($scope.filterElemProperty.filterHints.type) {
@@ -60,10 +65,10 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 					$scope.filterElem.predicate.operand = [$scope.filterElem.predicate.operand[0]];
 				}
 			}
+			console.log("$scope.filterElem.predicate",$scope.filterElem.predicate);
 		} else {
 			$scope.filterElem.predicate.operand = null;
 		}
-		console.log("$scope.filterElem.predicate",$scope.filterElem.predicate);
 	}
 
 	console.log("$scope.filterElem",$scope.filterElem);
@@ -75,13 +80,41 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 		var availableOperators = $scope.availableOperatorsForFilterHints($scope.filterElemProperty.filterHints);
 		$scope.filterElemOperator = _.find(availableOperators, 
 				function(aop) { return aop.operator == $scope.filterElem.predicate.operator; });
+		$scope.readDate();
 	}
 
+	
 	console.log("$scope.filterElemProperty",$scope.filterElemProperty);
 
 	console.log("$scope.filterElemOperator",$scope.filterElemOperator);
 
 
+	
+	
+	$scope.$watch("date.day", function(newval,oldval) {
+		$scope.updateDateOperand();
+	});
+	$scope.$watch("date.month", function(newval,oldval) {
+		$scope.updateDateOperand();
+	});
+	$scope.$watch("date.year", function(newval,oldval) {
+		$scope.updateDateOperand();
+	});
+	
+	$scope.updateDateOperand = function() {
+		if($scope.date == null) {
+			return;
+		}
+		var day = ""+$scope.date.day;
+		while(day.length < 2) {
+			day = "0"+day;
+		}
+		var year = ""+$scope.date.year;
+		while(year.length < 4) {
+			year = "0"+year;
+		}
+		$scope.filterElem.predicate.operand[0] = day+"-"+$scope.date.month+"-"+year;
+	}
 	
 	
 });

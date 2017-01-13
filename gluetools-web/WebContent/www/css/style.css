@@ -49,6 +49,33 @@ a {
    height: 39px !important;
 }
 
+.table-day {
+   height: 39px !important;
+   padding-left: 8px;
+   vertical-align: top !important;
+   width: 45px !important;   
+}
+
+.table-month {
+   height: 39px !important;
+   padding-left: 5px;
+   vertical-align: top !important;
+   width: 70px !important;   
+}
+
+.table-month-elem {
+   width: 70px !important;   
+   min-width: 0px !important;   
+}
+
+.table-year {
+   height: 39px !important;
+   padding-left: 10px;
+   margin-left: 8px;
+   vertical-align: top !important;
+   width: 70px !important;   
+}
+
 .table-dropdown {
    width: 100% !important;
    text-align: left !important;
@@ -77,7 +104,7 @@ a {
   padding-left: 15px;
 }
 
-/* hide chrome native datepicker */
+/* hide chrome native datepicker 
 input::-webkit-calendar-picker-indicator{
     display: none;
 }
@@ -85,4 +112,4 @@ A
 input[type="date"]::-webkit-input-placeholder{ 
     visibility: hidden !important;
 }
-
+*/
