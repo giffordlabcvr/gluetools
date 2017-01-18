@@ -48,6 +48,8 @@ public class ComputeOverlappingCommand extends ModulePluginCommand<ComputeOverla
 		List<Variation> rasList = GlueDataObject.query(cmdContext, Variation.class, rasQuery);
 
 		Expression epitopeExp = ExpressionFactory.matchExp("is_epitope", Boolean.TRUE)
+				.andExp(ExpressionFactory.notLikeExp("epitope_full_hla", "%undetermined%"))
+				.andExp(ExpressionFactory.noMatchExp("epitope_full_hla", null))
 				.andExp(ExpressionFactory.matchExp("featureLoc.referenceSequence.name", "H77_AF009606"));
 		SelectQuery epitopeQuery = new SelectQuery(Variation.class, epitopeExp); 
 		List<Variation> epitopeList = GlueDataObject.query(cmdContext, Variation.class, epitopeQuery);
@@ -133,7 +135,8 @@ public class ComputeOverlappingCommand extends ModulePluginCommand<ComputeOverla
 					column("rasPpCodon", ov -> ov.rasPpCodon),
 					column("epitopeID", ov -> ov.epitope.getName()), 
 					column("epitopeStartCodon", ov -> ov.epitope.readProperty("epitope_start_codon")), 
-					column("epitopeEndCodon", ov -> ov.epitope.readProperty("epitope_end_codon")));
+					column("epitopeEndCodon", ov -> ov.epitope.readProperty("epitope_end_codon")),
+					column("epitopeHLA", ov -> ov.epitope.readProperty("epitope_full_hla")));
 		}
 		
 	}
