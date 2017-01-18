@@ -33,6 +33,7 @@ public class ConsoleCompleter implements Completer {
 		int cursorOffset = 0;
 		boolean backslashAtEnd = false;
 		boolean quoteWasAdded = false;
+		boolean addSpaceForCompleted = true;
 		try {
 			tokens = Lexer.lex(buffer);
 		} catch(ConsoleException ce) {
@@ -82,33 +83,68 @@ public class ConsoleCompleter implements Completer {
 			lookupBasisTokens = new LinkedList<Token>();
 			prefix = "";
 		} else {
-			// if the cursor is not after the last meaningful token, return no matches.
+			// cursor is not after the last meaningful token
 			Token lastMeaningfulToken = meaningfulTokens.get(meaningfulTokens.size()-1);
 			finalTokenType = lastMeaningfulToken.getType();
 			int endOfLMT = lastMeaningfulToken.getPosition() + lastMeaningfulToken.getData().length();
 			if(cursor + cursorOffset < endOfLMT) {
-				return -1;
-			}
-			// cursor is just after the end of the last meaningful token
-			if(cursor + cursorOffset == endOfLMT) {
-				suggestionPos = lastMeaningfulToken.getPosition();
-				lookupBasisTokens = meaningfulTokens.subList(0, meaningfulTokens.size()-1);
-				prefix = lastMeaningfulToken.getType().render(lastMeaningfulToken.getData());
+				lookupBasisTokens = new LinkedList<Token>();
+				Token incompleteToken = null;
+				Token lastCompleteToken = null;
+				int effectiveCursor = cursor+cursorOffset;
+				for(Token token: meaningfulTokens) {
+					if(effectiveCursor < token.getPosition()) {
+						break;
+					}
+					if(effectiveCursor > token.getPosition() && 
+							effectiveCursor < (token.getPosition()+token.getData().length())) {
+						incompleteToken = token;
+					} else {
+						if(effectiveCursor >= (token.getPosition()+token.getData().length())) {
+							lookupBasisTokens.add(token);
+							lastCompleteToken = token;
+						}
+					}
+				}
+				if(incompleteToken == null && lastCompleteToken != null) {
+					int endOfLCT = lastCompleteToken.getPosition() + lastCompleteToken.getData().length();
+					if(effectiveCursor == endOfLCT) {
+						// cursor is just after the end of the last complete token
+						suggestionPos = lastCompleteToken.getPosition();
+						lookupBasisTokens.remove(lastCompleteToken);
+						prefix = lastCompleteToken.getType().render(lastCompleteToken.getData());
+						addSpaceForCompleted = false;
+					} else {
+						// spaces between last complete token and cursor.
+						suggestionPos = cursor;
+						prefix = "";
+					}
+				} else {
+					return -1;
+				}
+			
 			} else {
-				// spaces between last meaningful token and cursor.
-				suggestionPos = cursor;
-				lookupBasisTokens = meaningfulTokens;
-				prefix = "";
+				// cursor is just after the end of the last meaningful token
+				if(cursor + cursorOffset == endOfLMT) {
+					suggestionPos = lastMeaningfulToken.getPosition();
+					lookupBasisTokens = meaningfulTokens.subList(0, meaningfulTokens.size()-1);
+					prefix = lastMeaningfulToken.getType().render(lastMeaningfulToken.getData());
+				} else {
+					// spaces between last meaningful token and cursor.
+					suggestionPos = cursor;
+					lookupBasisTokens = meaningfulTokens;
+					prefix = "";
+				}
 			}
 		}
 		List<String> lookupBasis = lookupBasisTokens.stream().map(Token::render).collect(Collectors.toList());
 		
-		return completeAux(candidates, suggestionPos, prefix, lookupBasis, false, finalTokenType, backslashAtEnd, quoteWasAdded);
+		return completeAux(candidates, suggestionPos, prefix, lookupBasis, false, finalTokenType, backslashAtEnd, quoteWasAdded, addSpaceForCompleted);
 	}
 
 	private int completeAux(List<CharSequence> candidates, int suggestionPos,
 			String prefix, List<String> lookupBasis, boolean requireModeWrappable, TokenType finalTokenType, 
-			boolean backslashAtEnd, boolean quoteWasAdded) {
+			boolean backslashAtEnd, boolean quoteWasAdded, boolean addSpaceForCompleted) {
 		// System.out.println("completeAux: position "+suggestionPos+", prefix "+prefix+", lookupBasis "+lookupBasis);
 		CommandMode<?> cmdMode = cmdContext.peekCommandMode();
 		CommandFactory commandFactory = cmdMode.getCommandFactory();
@@ -136,7 +172,7 @@ public class ConsoleCompleter implements Completer {
 			try {
 				enterModeCommand.execute(cmdContext);
 				enterModeSucceded = true;
-				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true, finalTokenType, backslashAtEnd, quoteWasAdded);
+				return completeAux(candidates, suggestionPos, prefix, innerCmdWords, true, finalTokenType, backslashAtEnd, quoteWasAdded, addSpaceForCompleted);
 			} catch(DataModelException dme) {
 				if(dme.getCode() == DataModelException.Code.OBJECT_NOT_FOUND) {
 					// enter mode command failed because we were unable to look up the object.
@@ -161,7 +197,7 @@ public class ConsoleCompleter implements Completer {
 					String suggestedWord = s.getSuggestedWord();
 					boolean completed = s.isCompleted();
 					suggestedWord = escapeSuggestion(finalTokenType, suggestedWord, quoteWasAdded, completed);
-					if(completed) {
+					if(completed && addSpaceForCompleted) {
 						return suggestedWord+" ";
 					} else {
 						return suggestedWord;
