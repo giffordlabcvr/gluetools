@@ -50,7 +50,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			Boolean recursive, Boolean preview, Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy) {
 		String fastaAlmtString = exportAlignment(cmdContext, alignmentName,
 				whereClause, acRefName, featureName, recursive, orderStrategy,
-				includeAllColumns, minColUsage, getIdTemplate());
+				includeAllColumns, minColUsage, getExcludeEmptyRows(), getIdTemplate());
 		return formResult(cmdContext, fastaAlmtString, fileName, preview);
 	}
 
@@ -58,12 +58,12 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			String alignmentName, Optional<Expression> whereClause,
 			String relRefName, String featureName, Boolean recursive,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
-			Template idTemplate) {
+			Boolean excludeEmptyRows, Template idTemplate) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
-				cmdContext, relRefName, featureName, includeAllColumns, minColUsage, orderStrategy,
+				cmdContext, relRefName, featureName, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy,
 				alignment, almtMembers);
 
 		Map<Map<String,String>, String> pkMapToFastaId = new LinkedHashMap<Map<String,String>, String>();
@@ -75,7 +75,8 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 	public static Map<Map<String, String>, DNASequence> exportAlignment(
 			CommandContext cmdContext, String relRefName, String featureName,
-			Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy, Alignment alignment,
+			Boolean includeAllColumns, Integer minColUsage,
+			Boolean excludeEmptyRows, OrderStrategy orderStrategy, Alignment alignment,
 			List<AlignmentMember> almtMembers) {
 		
 		ReferenceSequence refSequence = alignment.getRefSequence();
@@ -107,6 +108,18 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		}
 		Map<Map<String, String>, DNASequence> memAlmtMap = createMemberAlignmentMap(cmdContext, minMaxSeg, pkMapToQaSegs, pkMapToSeqObj);
 		memAlmtMap = orderAlmt(memAlmtMap, orderStrategy);
+		if(excludeEmptyRows) {
+			List<Map<String,String>> keysToRemove = new ArrayList<Map<String,String>>();
+			memAlmtMap.forEach((k,v) -> {
+				if(v.getSequenceAsString().matches("^-*$")) {
+					keysToRemove.add(k);
+				}
+			});
+			for(Map<String,String> k: keysToRemove) {
+				memAlmtMap.remove(k);
+			}
+		}
+		
 		return memAlmtMap;
 	}
 

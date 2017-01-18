@@ -28,8 +28,6 @@ import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 
 public class ConsoleCommandContext extends CommandContext {
 

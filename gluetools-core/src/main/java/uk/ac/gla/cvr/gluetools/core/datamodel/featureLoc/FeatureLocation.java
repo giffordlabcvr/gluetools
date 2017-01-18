@@ -110,6 +110,15 @@ public class FeatureLocation extends _FeatureLocation {
 		return labelToLabeledCodon;
 	}
 	
+	public LabeledCodon getLabeledCodon(CommandContext cmdContext, String label) {
+		LabeledCodon labeledCodon = getLabelToLabeledCodon(cmdContext).get(label);
+		if(labeledCodon == null) {
+			throw new FeatureLocationException(Code.FEATURE_LOCATION_INVALID_CODON_LABEL, 
+					getReferenceSequence().getName(), getFeature().getName(), label);
+		}
+		return labeledCodon;
+	}
+	
 	public LabeledCodon getFirstLabeledCodon(CommandContext cmdContext) {
 		return getLabeledCodons(cmdContext).get(0);
 	}

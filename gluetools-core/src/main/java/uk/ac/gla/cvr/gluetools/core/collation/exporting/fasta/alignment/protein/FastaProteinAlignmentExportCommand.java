@@ -16,10 +16,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-c] (-w <whereClause> | -a) [-d <orderStrategy>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-d <orderStrategy>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
+			"-l, --labelledCodon                                  Region between codon labels",
 			"-c, --recursive                                      Include descendent members",
 			"-o <fileName>, --fileName <fileName>                 FASTA output file",
 			"-p, --preview                                        Preview output", 
@@ -42,7 +43,8 @@ public class FastaProteinAlignmentExportCommand extends ModulePluginCommand<Comm
 	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter exporterPlugin) {
 		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
 				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
-				delegate.getFeatureName(), delegate.getRecursive(), delegate.getPreview(), delegate.getOrderStrategy());
+				delegate.getFeatureName(), delegate.getLcStart(), delegate.getLcEnd(), 
+				delegate.getRecursive(), delegate.getPreview(), delegate.getOrderStrategy());
 	}
 	
 	@CompleterClass

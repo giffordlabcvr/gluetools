@@ -26,6 +26,9 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
+	public static final String LABELLED_CODON = "labelledCodon";
+	public static final String LC_START = "lcStart";
+	public static final String LC_END = "lcEnd";
 	public static final String RECURSIVE = "recursive";
 	public static final String PREVIEW = "preview";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -43,8 +46,11 @@ public class FastaAlignmentExportCommandDelegate {
 	private Boolean allMembers;
 	private String relRefName;
 	private String featureName;
+	private String lcStart;
+	private String lcEnd;
 	private Boolean recursive;
 	private Boolean preview;
+	private Boolean labelledCodon;
 	private OrderStrategy orderStrategy;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
@@ -55,6 +61,9 @@ public class FastaAlignmentExportCommandDelegate {
 		orderStrategy = PluginUtils.configureEnumProperty(OrderStrategy.class, configElem, ORDER_STRATEGY, false);
 		relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, featureRequired);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, featureRequired);
+		labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
+		lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
+		lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
@@ -65,6 +74,9 @@ public class FastaAlignmentExportCommandDelegate {
 		}
 		if(fileName == null && !preview || fileName != null && preview) {
 			usageError3();
+		}
+		if((lcStart == null && lcEnd != null) || (lcStart != null && lcEnd == null)) {
+			usageError4();
 		}
 	}
 
@@ -80,7 +92,10 @@ public class FastaAlignmentExportCommandDelegate {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
 	}
 
-	
+	private void usageError4() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <lcStart> and <lcEnd> must be specified or neither");
+	}
+
 	
 	public String getFileName() {
 		return fileName;
@@ -114,10 +129,24 @@ public class FastaAlignmentExportCommandDelegate {
 		return preview;
 	}
 
+	public String getLcStart() {
+		return lcStart;
+	}
 
+	public String getLcEnd() {
+		return lcEnd;
+	}
 
 	public OrderStrategy getOrderStrategy() {
 		return orderStrategy;
+	}
+
+	public Boolean getLabelledCodon() {
+		return labelledCodon;
+	}
+
+	public void setLabelledCodon(Boolean labelledCodon) {
+		this.labelledCodon = labelledCodon;
 	}
 
 

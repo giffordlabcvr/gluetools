@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,8 +12,11 @@ import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractFastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -41,6 +45,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 
 	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
 			String alignmentName, Optional<Expression> whereClause, String acRefName, String featureName, 
+			String lcStart, String lcEnd,
 			Boolean recursive, Boolean preview, OrderStrategy orderStrategy) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = 
@@ -58,6 +63,19 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 		int codon1Start = featureLoc.getCodon1Start(cmdContext);
 		
 		featureRefSegs = featureLoc.segmentsAsReferenceSegments();
+		
+		if(lcStart != null && lcEnd != null) {
+			LabeledCodon startLabeledCodon = featureLoc.getLabeledCodon(cmdContext, lcStart);
+			LabeledCodon endLabeledCodon = featureLoc.getLabeledCodon(cmdContext, lcEnd);
+			if(endLabeledCodon.getNtStart() < startLabeledCodon.getNtStart()) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Codon with label \""+lcEnd+"\" occurs before codon with label \""+lcStart+"\"");
+			}
+			int lcRegionNtStart = startLabeledCodon.getNtStart();
+			int lcRegionNtEnd = endLabeledCodon.getNtStart()+2;
+			featureRefSegs = ReferenceSegment
+					.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(lcRegionNtStart, lcRegionNtEnd)), ReferenceSegment.cloneLeftSegMerger());
+		}
+		
 		if(!featureRefSegs.isEmpty()) {
 			minRefNt = ReferenceSegment.minRefStart(featureRefSegs);
 			maxRefNt = ReferenceSegment.maxRefEnd(featureRefSegs);
@@ -102,8 +120,12 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			memberPkMapToFastaId.put(almtMember.pkMap(), fastaId);
 		}
 		StringBuffer stringBuffer = new StringBuffer();
+		boolean excludeEmptyRows = getExcludeEmptyRows();
 		memberPkMapToAlmtRow.forEach((pkMap, almtRow) -> {
 			String fastaId = memberPkMapToFastaId.get(pkMap);
+			if(excludeEmptyRows && almtRow.matches("^-*$")) {
+				return;
+			}
 			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, almtRow));
 		});
 		String fastaString = stringBuffer.toString();

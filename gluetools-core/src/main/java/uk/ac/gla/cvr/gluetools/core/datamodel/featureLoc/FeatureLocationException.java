@@ -9,6 +9,7 @@ public class FeatureLocationException extends GlueException {
 		NEXT_ANCESTOR_FEATURE_LOCATION_UNDEFINED("refSeqName", "featureName", "nextAncestorFeatureName"),
 		FEATURE_LOCATION_NOT_CONTAINED_WITHIN_NEXT_ANCESTOR("refSeqName", "featureName", "nextAncestorFeatureName"), 
 		FEATURE_LOCATION_HAS_NO_SEGMENTS("refSeqName", "featureName"), 
+		FEATURE_LOCATION_INVALID_CODON_LABEL("refSeqName", "featureName", "invalidCodonLabel"), 
 		FEATURE_LOCATION_SEGMENT_NOT_CODON_ALIGNED("refSeqName", "featureName", "segRefStart", "segRefEnd", "codon1Start"),
 		FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING("featureName"),
 		FEATURE_LOCATION_MUST_HAVE_SEGMENTS_TO_ESTABLISH_READING_FRAME("referenceName", "featureName");

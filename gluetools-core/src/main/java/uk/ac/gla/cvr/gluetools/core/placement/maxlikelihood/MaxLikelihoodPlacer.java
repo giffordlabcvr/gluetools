@@ -172,10 +172,11 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		boolean includeAllColumns = false;
 		Integer minColUsage = null;
 		OrderStrategy orderStrategy = null;
+		boolean excludeEmptyRows = false;
 
 		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						alignmentRelatedRefName, alignmentFeatureName, includeAllColumns, minColUsage, orderStrategy, 
+						alignmentRelatedRefName, alignmentFeatureName, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy, 
 						alignmentAlignment, almtAlmtMembers);
 
 		// rename each row to its phylo member equivalent.

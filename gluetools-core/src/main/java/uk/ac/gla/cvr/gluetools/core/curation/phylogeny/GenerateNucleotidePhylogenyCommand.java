@@ -98,7 +98,8 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	protected final OkResult execute(CommandContext cmdContext, P modulePlugin) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
-		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, 
+		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
+				FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, false,
 				null, alignment, almtMembers);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);
