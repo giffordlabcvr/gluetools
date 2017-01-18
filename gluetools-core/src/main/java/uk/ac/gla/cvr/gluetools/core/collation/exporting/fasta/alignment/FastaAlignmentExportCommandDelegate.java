@@ -51,6 +51,11 @@ public class FastaAlignmentExportCommandDelegate {
 	private Boolean recursive;
 	private Boolean preview;
 	private Boolean labelledCodon;
+	private Boolean ntRegion;
+	private Integer ntStart;
+	private Integer ntEnd;
+	
+	
 	private OrderStrategy orderStrategy;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
