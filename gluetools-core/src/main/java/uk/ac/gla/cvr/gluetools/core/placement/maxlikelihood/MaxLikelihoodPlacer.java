@@ -177,6 +177,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
 						alignmentRelatedRefName, alignmentFeatureName, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy, 
+						null, null, null, null, 
 						alignmentAlignment, almtAlmtMembers);
 
 		// rename each row to its phylo member equivalent.

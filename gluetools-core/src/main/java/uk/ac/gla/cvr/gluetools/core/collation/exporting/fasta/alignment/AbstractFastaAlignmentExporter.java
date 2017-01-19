@@ -19,17 +19,14 @@ import freemarker.template.TemplateModel;
 public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExporter<T>> extends ModulePlugin<T> {
 
 	public static final String ID_TEMPLATE = "idTemplate";
-	public static final String EXCLUDE_EMPTY_ROWS = "excludeEmptyRows";
 
 	private Template idTemplate;
-	private Boolean excludeEmptyRows;
 
 	public static final String DEFAULT_ID_TEMPLATE = "${alignment.name}.${sequence.source.name}.${sequence.sequenceID}";
 
 	public AbstractFastaAlignmentExporter() {
 		super();
 		addSimplePropertyName(ID_TEMPLATE);
-		addSimplePropertyName(EXCLUDE_EMPTY_ROWS);
 	}
 
 	@Override
@@ -39,7 +36,6 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
 				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));
-		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
 	}
 
 	protected static String generateFastaId(Template idTemplate, AlignmentMember almtMember) {
@@ -61,10 +57,4 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 	protected Template getIdTemplate() {
 		return idTemplate;
 	}
-
-	protected Boolean getExcludeEmptyRows() {
-		return excludeEmptyRows;
-	}
-	
-	
 }

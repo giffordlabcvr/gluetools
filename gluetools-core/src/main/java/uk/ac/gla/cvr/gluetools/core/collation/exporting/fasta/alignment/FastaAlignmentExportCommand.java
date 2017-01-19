@@ -19,21 +19,26 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-d <orderStrategy>] [-i [-m <minColUsage>]] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-i [-m <minColUsage>]] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
+			"-l, --labelledCodon                                   Region between codon labels",
+			"-n, --ntRegion                                        Specific nucleotide region",
 			"-c, --recursive                                       Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>         Qualify exported members",
 		    "-a, --allMembers                                      Export all members",
+		    "-e, --excludeEmptyRows                                Exclude empty rows",
+		    "-d <orderStrategy>, --orderStrategy <orderStrategy>   Specify row ordering strategy",
 		    "-i, --includeAllColumns                               Include columns for all NTs",
 		    "-m <minColUsage>, --minColUsage <minColUsage>         Minimum included column usage",
-		    "-d <orderStrategy>, --orderStrategy <orderStrategy>   Specify row ordering strategy",
 			"-o <fileName>, --fileName <fileName>                  FASTA output file",
 			"-p, --preview                                         Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Export nucleotide alignment to a FASTA file", 
-		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
+		furtherHelp="The file is saved to a location relative to the current load/save directory.\n"
+				+ "The --labeledCodon option may be used only for coding features.\n" 
+				+ "If --ntRegion is used, the coordinates are relative to the named reference sequence.") 
 public class FastaAlignmentExportCommand extends ModulePluginCommand<CommandResult, FastaAlignmentExporter> implements ProvidedProjectModeCommand {
 
 	public static final String INCLUDE_ALL_COLUMNS = "includeAllColumns";
@@ -59,7 +64,8 @@ public class FastaAlignmentExportCommand extends ModulePluginCommand<CommandResu
 		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
 				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
 				delegate.getFeatureName(), delegate.getRecursive(), delegate.getPreview(), includeAllColumns, 
-				minColUsage, delegate.getOrderStrategy());
+				minColUsage, delegate.getOrderStrategy(), delegate.getExcludeEmptyRows(),
+				delegate.getLcStart(), delegate.getLcEnd(), delegate.getNtStart(), delegate.getNtEnd());
 	}
 	
 	@CompleterClass

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -47,10 +48,12 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
 			String alignmentName, Optional<Expression> whereClause, String acRefName, String featureName, 
-			Boolean recursive, Boolean preview, Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy) {
+			Boolean recursive, Boolean preview, Boolean includeAllColumns, Integer minColUsage, OrderStrategy orderStrategy, Boolean excludeEmptyRows,
+			String lcStart, String lcEnd, Integer ntStart, Integer ntEnd) {
 		String fastaAlmtString = exportAlignment(cmdContext, alignmentName,
 				whereClause, acRefName, featureName, recursive, orderStrategy,
-				includeAllColumns, minColUsage, getExcludeEmptyRows(), getIdTemplate());
+				includeAllColumns, minColUsage, excludeEmptyRows, lcStart, lcEnd, ntStart, ntEnd, 
+				getIdTemplate());
 		return formResult(cmdContext, fastaAlmtString, fileName, preview);
 	}
 
@@ -58,12 +61,15 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			String alignmentName, Optional<Expression> whereClause,
 			String relRefName, String featureName, Boolean recursive,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
-			Boolean excludeEmptyRows, Template idTemplate) {
+			Boolean excludeEmptyRows,
+			String lcStart, String lcEnd, Integer ntStart, Integer ntEnd, 
+			Template idTemplate) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
 				cmdContext, relRefName, featureName, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy,
+				lcStart, lcEnd, ntStart, ntEnd, 
 				alignment, almtMembers);
 
 		Map<Map<String,String>, String> pkMapToFastaId = new LinkedHashMap<Map<String,String>, String>();
@@ -76,7 +82,9 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	public static Map<Map<String, String>, DNASequence> exportAlignment(
 			CommandContext cmdContext, String relRefName, String featureName,
 			Boolean includeAllColumns, Integer minColUsage,
-			Boolean excludeEmptyRows, OrderStrategy orderStrategy, Alignment alignment,
+			Boolean excludeEmptyRows, OrderStrategy orderStrategy,
+			String lcStart, String lcEnd, Integer ntStart, Integer ntEnd, 
+			Alignment alignment,
 			List<AlignmentMember> almtMembers) {
 		
 		ReferenceSequence refSequence = alignment.getRefSequence();
@@ -98,11 +106,13 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 		if(includeAllColumns) {
 			createAlignmentIncludeAllColumns(cmdContext, relatedRef, featureName,
+					lcStart, lcEnd, ntStart, ntEnd, 
 					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
 					pkMapToSeqObj, minColUsage);
 
 		} else {
 			createAlignment(cmdContext, relatedRef, featureName,
+					lcStart, lcEnd, ntStart, ntEnd, 
 					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
 					pkMapToSeqObj);
 		}
@@ -125,7 +135,8 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 
 	private static void createAlignmentIncludeAllColumns(CommandContext cmdContext,
-			ReferenceSequence acRef, String featureName,
+			ReferenceSequence relatedRef, String featureName,
+			String lcStart, String lcEnd, Integer ntStart, Integer ntEnd, 
 			Alignment alignment, List<AlignmentMember> almtMembers,
 			ReferenceSegment minMaxSeg,
 			Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs,
@@ -180,18 +191,19 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			allColsAlmt.removeUnderusedColumns(minColUsage, k -> k instanceof QueryKey);
 		}
 		// set the min/max region.
-		if(acRef != null && featureName != null && !almtMembers.isEmpty()) {
+		if(relatedRef != null && featureName != null && !almtMembers.isEmpty()) {
 			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class,
-					FeatureLocation.pkMap(acRef.getName(), featureName));
-			List<ReferenceSegment> featureLocAcRefSegs = featureLoc.segmentsAsReferenceSegments();
-			List<QueryAlignedSegment> acRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(acRef.getName()));
-			List<QueryAlignedSegment> uToAcRefSegs = acRefToUSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
-			List<QueryAlignedSegment> featureUToAcRefSegs = 
-					ReferenceSegment.intersection(featureLocAcRefSegs, uToAcRefSegs, ReferenceSegment.cloneRightSegMerger());
-			List<QueryAlignedSegment> featureAcRefToUSegs = 
-					featureUToAcRefSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
-			minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureAcRefToUSegs));
-			minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureAcRefToUSegs));
+					FeatureLocation.pkMap(relatedRef.getName(), featureName));
+			List<ReferenceSegment> featureLocRelRefSegs = featureLoc.segmentsAsReferenceSegments();
+			featureLocRelRefSegs = narrowFeatureRefSegs(cmdContext, featureLoc, featureLocRelRefSegs, lcStart, lcEnd, ntStart, ntEnd);
+			List<QueryAlignedSegment> relRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(relatedRef.getName()));
+			List<QueryAlignedSegment> uToRelRefSegs = relRefToUSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
+			List<QueryAlignedSegment> featureUToRelRefSegs = 
+					ReferenceSegment.intersection(featureLocRelRefSegs, uToRelRefSegs, ReferenceSegment.cloneRightSegMerger());
+			List<QueryAlignedSegment> featureRelRefToUSegs = 
+					featureUToRelRefSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
+			minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureRelRefToUSegs));
+			minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureRelRefToUSegs));
 
 		} else {
 			for(Key key: allColsAlmt.getKeys()) {
@@ -215,6 +227,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	
 	private static void createAlignment(CommandContext cmdContext,
 			ReferenceSequence relatedRef, String featureName,
+			String lcStart, String lcEnd, Integer ntStart, Integer ntEnd, 
 			Alignment alignment, List<AlignmentMember> almtMembers,
 			ReferenceSegment minMaxSeg,
 			Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToQaSegs,
@@ -234,6 +247,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		if(relatedRef != null && featureName != null) {
 			featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), featureName));
 			featureRefSegs = featureLoc.segmentsAsReferenceSegments();
+			featureRefSegs = narrowFeatureRefSegs(cmdContext, featureLoc, featureRefSegs, lcStart, lcEnd, ntStart, ntEnd);
 			if(!featureRefSegs.isEmpty()) {
 				minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureRefSegs));
 				minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureRefSegs));
@@ -263,6 +277,35 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		}
 	}
 	
+	public static List<ReferenceSegment> narrowFeatureRefSegs(
+			CommandContext cmdContext, FeatureLocation featureLoc,
+			List<ReferenceSegment> featureRefSegs, String lcStart,
+			String lcEnd, Integer ntStart, Integer ntEnd) {
+		if(lcStart == null && lcEnd == null && ntStart == null && ntEnd == null) {
+			return featureRefSegs;
+		}
+		if((lcStart != null || lcEnd != null) && (ntStart != null || ntEnd != null)) {
+			throw new RuntimeException("Cannot specify both labelledCodon and ntRegion");
+		}
+		if(lcStart != null && lcEnd != null) {
+			featureLoc.getFeature().checkCodesAminoAcids();
+			LabeledCodon startLabeledCodon = featureLoc.getLabeledCodon(cmdContext, lcStart);
+			LabeledCodon endLabeledCodon = featureLoc.getLabeledCodon(cmdContext, lcEnd);
+			if(endLabeledCodon.getNtStart() < startLabeledCodon.getNtStart()) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Codon with label \""+lcEnd+"\" occurs before codon with label \""+lcStart+"\"");
+			}
+			int lcRegionNtStart = startLabeledCodon.getNtStart();
+			int lcRegionNtEnd = endLabeledCodon.getNtStart()+2;
+			return ReferenceSegment
+					.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(lcRegionNtStart, lcRegionNtEnd)), ReferenceSegment.cloneLeftSegMerger());
+		}
+		if(ntStart != null && ntEnd != null) {
+			return ReferenceSegment
+					.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(ntStart, ntEnd)), ReferenceSegment.cloneLeftSegMerger());
+		}
+		throw new RuntimeException("Badly specified labelledCodon / ntRegion");
+	}
+
 	private static Map<Map<String,String>, DNASequence> createMemberAlignmentMap(CommandContext cmdContext,
 			ReferenceSegment minMaxSeg,
 			Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToQaSegs,

@@ -29,12 +29,17 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String LABELLED_CODON = "labelledCodon";
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
+	public static final String NT_REGION = "ntRegion";
+	public static final String NT_START = "ntStart";
+	public static final String NT_END = "ntEnd";
 	public static final String RECURSIVE = "recursive";
 	public static final String PREVIEW = "preview";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
 	public static final String FILE_NAME = "fileName";
 	public static final String ORDER_STRATEGY = "orderStrategy";
+	public static final String EXCLUDE_EMPTY_ROWS = "excludeEmptyRows";
+
 	
 	public enum OrderStrategy {
 		increasing_start_segment
@@ -54,8 +59,7 @@ public class FastaAlignmentExportCommandDelegate {
 	private Boolean ntRegion;
 	private Integer ntStart;
 	private Integer ntEnd;
-	
-	
+	private Boolean excludeEmptyRows;
 	private OrderStrategy orderStrategy;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
@@ -69,8 +73,12 @@ public class FastaAlignmentExportCommandDelegate {
 		labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
 		lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
+		ntRegion = PluginUtils.configureBooleanProperty(configElem, NT_REGION, true);
+		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
+		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
@@ -80,8 +88,14 @@ public class FastaAlignmentExportCommandDelegate {
 		if(fileName == null && !preview || fileName != null && preview) {
 			usageError3();
 		}
-		if((lcStart == null && lcEnd != null) || (lcStart != null && lcEnd == null)) {
+		if(labelledCodon && (lcStart == null || lcEnd == null)) {
 			usageError4();
+		}
+		if(ntRegion && labelledCodon) {
+			usageError5();
+		}
+		if(ntRegion && (ntStart == null || ntEnd == null)) {
+			usageError6();
 		}
 	}
 
@@ -98,10 +112,15 @@ public class FastaAlignmentExportCommandDelegate {
 	}
 
 	private void usageError4() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <lcStart> and <lcEnd> must be specified or neither");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --labelledCodon is used, both <lcStart> and <lcEnd> must be specified");
+	}
+	private void usageError5() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --ntRegion or --labelledCodon may be specified, but not both");
+	}
+	private void usageError6() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --ntRegion is used, both <ntStart> and <ntEnd> must be specified");
 	}
 
-	
 	public String getFileName() {
 		return fileName;
 	}
@@ -150,11 +169,21 @@ public class FastaAlignmentExportCommandDelegate {
 		return labelledCodon;
 	}
 
-	public void setLabelledCodon(Boolean labelledCodon) {
-		this.labelledCodon = labelledCodon;
+	public Boolean getExcludeEmptyRows() {
+		return excludeEmptyRows;
+	}
+	
+	public Boolean getNtRegion() {
+		return ntRegion;
 	}
 
+	public Integer getNtStart() {
+		return ntStart;
+	}
 
+	public Integer getNtEnd() {
+		return ntEnd;
+	}
 
 	public static class ExportCompleter extends AdvancedCmdCompleter {
 		public ExportCompleter() {

@@ -16,17 +16,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-d <orderStrategy>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
 			"-l, --labelledCodon                                  Region between codon labels",
 			"-c, --recursive                                      Include descendent members",
-			"-o <fileName>, --fileName <fileName>                 FASTA output file",
-			"-p, --preview                                        Preview output", 
 			"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
 		    "-a, --allMembers                                     Export all members",
-		    "-d <orderStrategy>, --orderStrategy <orderStrategy>  Specify row ordering strategy"},
+		    "-e, --excludeEmptyRows                               Exclude empty rows",
+			"-d <orderStrategy>, --orderStrategy <orderStrategy>  Specify row ordering strategy",
+			"-o <fileName>, --fileName <fileName>                 FASTA output file",
+			"-p, --preview                                        Preview output", 
+		},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Export protein alignment to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
@@ -44,7 +46,8 @@ public class FastaProteinAlignmentExportCommand extends ModulePluginCommand<Comm
 		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
 				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
 				delegate.getFeatureName(), delegate.getLcStart(), delegate.getLcEnd(), 
-				delegate.getRecursive(), delegate.getPreview(), delegate.getOrderStrategy());
+				delegate.getRecursive(), delegate.getPreview(), delegate.getOrderStrategy(), 
+				delegate.getExcludeEmptyRows());
 	}
 	
 	@CompleterClass

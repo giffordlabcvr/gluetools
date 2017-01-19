@@ -100,7 +100,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, false,
-				null, alignment, almtMembers);
+				null, null, null, null, null, alignment, almtMembers);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);
 
