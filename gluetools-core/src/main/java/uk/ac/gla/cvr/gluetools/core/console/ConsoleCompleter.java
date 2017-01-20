@@ -119,6 +119,9 @@ public class ConsoleCompleter implements Completer {
 						suggestionPos = cursor;
 						prefix = "";
 					}
+				} else if(incompleteToken != null) {
+					suggestionPos = incompleteToken.getPosition();
+					prefix = incompleteToken.getData().substring(0, effectiveCursor-incompleteToken.getPosition());
 				} else {
 					return -1;
 				}
