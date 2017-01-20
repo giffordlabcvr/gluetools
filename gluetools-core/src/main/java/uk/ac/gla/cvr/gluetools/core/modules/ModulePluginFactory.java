@@ -4,6 +4,8 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.NucleotideConsensusGenerator;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.protein.AminoAcidConsensusGenerator;
 import uk.ac.gla.cvr.gluetools.core.collation.freemarker.FreemarkerTextToGlueTransformer;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BlastFastaAlignmentImporter;
@@ -68,6 +70,9 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		
 		registerPluginClass(FastaAlignmentExporter.class);
 		registerPluginClass(FastaProteinAlignmentExporter.class);
+		registerPluginClass(NucleotideConsensusGenerator.class);
+		registerPluginClass(AminoAcidConsensusGenerator.class);
+		
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
 		registerPluginClass(SamReporter.class);
@@ -100,6 +105,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 
 		registerPluginClass(PhyloImporter.class);
 		registerPluginClass(PhyloUtility.class);
+
 		
 		// custom project modules
 		registerPluginClass(EpitopeRasOverlap.class);

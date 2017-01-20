@@ -73,7 +73,7 @@ public class FastaAlignmentExportCommandDelegate {
 		labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
 		lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
-		ntRegion = PluginUtils.configureBooleanProperty(configElem, NT_REGION, true);
+		ntRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_REGION, false)).orElse(false);
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);

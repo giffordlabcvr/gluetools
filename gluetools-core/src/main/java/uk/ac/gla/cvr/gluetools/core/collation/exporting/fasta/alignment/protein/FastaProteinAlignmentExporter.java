@@ -48,6 +48,33 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
+		Map<Map<String,String>, String> memberPkMapToAlmtRow = exportAlignment(cmdContext,
+				acRefName, featureName, lcStart, lcEnd, orderStrategy,
+				excludeEmptyRows, alignment, almtMembers);
+		
+		Map<String,String> fastaIdToAlmtRow = new LinkedHashMap<String, String>();
+		
+		for(AlignmentMember almtMember: almtMembers) {
+			String almtRow = memberPkMapToAlmtRow.get(almtMember.pkMap());
+			if(almtRow != null) {
+				String fastaId = generateFastaId(getIdTemplate(), almtMember);
+				fastaIdToAlmtRow.put(fastaId, almtRow);
+			}
+		}
+		
+		StringBuffer stringBuffer = new StringBuffer();
+		fastaIdToAlmtRow.forEach((fastaId, almtRow) -> {
+			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, almtRow));
+		});
+		String fastaString = stringBuffer.toString();
+		return formResult(cmdContext, fastaString, fileName, preview);
+	}
+
+	public static Map<Map<String,String>, String> exportAlignment(
+			ConsoleCommandContext cmdContext, String acRefName,
+			String featureName, String lcStart, String lcEnd,
+			OrderStrategy orderStrategy, Boolean excludeEmptyRows,
+			Alignment alignment, List<AlignmentMember> almtMembers) {
 		int minRefNt = 1;
 		int maxRefNt = 1;
 		ReferenceSequence acRef = null;
@@ -97,25 +124,14 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 				alignmentRow.append("-");
 				ntIndex += 3;
 			}
-			memberPkMapToAlmtRow.put(almtMember.pkMap(), alignmentRow.toString());
+			String almtRow = alignmentRow.toString();
+			if(excludeEmptyRows && almtRow.matches("^-*$")) {
+				continue;
+			}
+			memberPkMapToAlmtRow.put(almtMember.pkMap(), almtRow);
 		}
 		memberPkMapToAlmtRow = orderAlmt(memberPkMapToAlmtRow, orderStrategy);
-		
-		Map<Map<String,String>, String> memberPkMapToFastaId = new LinkedHashMap<Map<String,String>, String>();
-		for(AlignmentMember almtMember: almtMembers) {
-			String fastaId = generateFastaId(getIdTemplate(), almtMember);
-			memberPkMapToFastaId.put(almtMember.pkMap(), fastaId);
-		}
-		StringBuffer stringBuffer = new StringBuffer();
-		memberPkMapToAlmtRow.forEach((pkMap, almtRow) -> {
-			String fastaId = memberPkMapToFastaId.get(pkMap);
-			if(excludeEmptyRows && almtRow.matches("^-*$")) {
-				return;
-			}
-			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, almtRow));
-		});
-		String fastaString = stringBuffer.toString();
-		return formResult(cmdContext, fastaString, fileName, preview);
+		return memberPkMapToAlmtRow;
 	}
 	
 	
