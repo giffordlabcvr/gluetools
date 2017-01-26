@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -60,7 +61,6 @@ public class MafftRunner implements Plugin {
 		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(mafftTempDir, uuid);
-		try {
 			boolean mkdirsResult = tempDir.mkdirs();
 			if((!mkdirsResult) || !(tempDir.exists() && tempDir.isDirectory())) {
 				throw new MafftException(Code.MAFFT_FILE_EXCEPTION, "Failed to create MAFFT temporary directory: "+tempDir.getAbsolutePath());
@@ -68,7 +68,49 @@ public class MafftRunner implements Plugin {
 			File alignmentFile = new File(tempDir, "alignment.fasta");
 			writeFastaFile(tempDir, alignmentFile, alignment);
 
-			File queryFile = new File(tempDir, "query.fasta");
+			MafftResult mafftResult = new MafftResult();
+			LinkedHashMap<String, DNASequence> alignmentWithQuery = new LinkedHashMap<String, DNASequence>(alignment);
+			mafftResult.setAlignmentWithQuery(alignmentWithQuery);
+			
+			try {
+			query.forEach( (fastaID, sequence) -> {
+				DNASequence alignmentRow = alignmentRowForQuery(task, tempDir, mafftExecutable, uuid, alignmentFile, fastaID, sequence);
+				alignmentWithQuery.put(fastaID, alignmentRow);
+			});
+			
+			} finally {
+				boolean allFilesDeleted = true;
+				if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
+					for(File file : tempDir.listFiles()) {
+						if(dataDirFile != null) {
+							byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
+							File fileToSave = new File(dataDirFile, file.getName());
+							ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
+						}
+						boolean fileDeleteResult = file.delete();
+						if(!fileDeleteResult) {
+							GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT file "+file.getAbsolutePath());
+							allFilesDeleted = false;
+							break;
+						}
+					}
+					if(allFilesDeleted) {
+						boolean dirDeleteResult = tempDir.delete();
+						if(!dirDeleteResult) {
+							GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT directory "+tempDir.getAbsolutePath());
+						}
+					}
+				}
+			}
+			
+			return mafftResult;
+	}
+
+	private DNASequence alignmentRowForQuery(Task task, File tempDir, String mafftExecutable,
+			String uuid, File alignmentFile, String fastaID, DNASequence sequence) {
+			File queryFile = new File(tempDir, fastaID+"_query.fasta");
+			Map<String, DNASequence> query = new LinkedHashMap<String, DNASequence>();
+			query.put(fastaID, sequence);
 			writeFastaFile(tempDir, queryFile, query);
 
 			List<String> commandWords = new ArrayList<String>();
@@ -76,7 +118,7 @@ public class MafftRunner implements Plugin {
 
 			// threads / number of CPUs
 			commandWords.add("--thread");
-			commandWords.add(Integer.toString(mafftCpus));
+			commandWords.add(Integer.toString(1));
 
 			if(this.gapOpeningPenalty != null) {
 				commandWords.add("--op");
@@ -115,53 +157,23 @@ public class MafftRunner implements Plugin {
 
 			// alignment file
 			commandWords.add(alignmentFile.getAbsolutePath());
-			
+
 			ProcessResult mafftProcessResult = ProcessUtils.runProcess(null, null, commandWords); 
 
 			byte[] errorBytes = mafftProcessResult.getErrorBytes();
 			if(mafftProcessResult.getExitCode() != 0 || 
 					(errorBytes != null && 
-					 errorBytes.length > 0 && 
-					 (new String(errorBytes)).contains("ERROR"))) {
-				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stdout was:");
+					errorBytes.length > 0 && 
+					(new String(errorBytes)).contains("ERROR"))) {
+				GlueLogger.getGlueLogger().severe("MAFFT task "+uuid+", query "+fastaID+" failure, the MAFFT stdout was:");
 				GlueLogger.getGlueLogger().severe(new String(mafftProcessResult.getOutputBytes()));
-				GlueLogger.getGlueLogger().severe("MAFFT process "+uuid+" failure, the MAFFT stderr was:");
+				GlueLogger.getGlueLogger().severe("MAFFT task "+uuid+", query "+fastaID+" failure, the MAFFT stderr was:");
 				GlueLogger.getGlueLogger().severe(new String(errorBytes));
-				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT process "+uuid+" failed, see log for output/error content");
+				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT task "+uuid+", query "+fastaID+" failed, see log for output/error content");
 			}
 
-			return resultObjectFromProcessResult(mafftProcessResult);
-		} finally {
-			boolean allFilesDeleted = true;
-			if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
-				for(File file : tempDir.listFiles()) {
-					if(dataDirFile != null) {
-						byte[] fileBytes = ConsoleCommandContext.loadBytesFromFile(file);
-						File fileToSave = new File(dataDirFile, file.getName());
-						ConsoleCommandContext.saveBytesToFile(fileToSave, fileBytes);
-					}
-					boolean fileDeleteResult = file.delete();
-					if(!fileDeleteResult) {
-						GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT file "+file.getAbsolutePath());
-						allFilesDeleted = false;
-						break;
-					}
-				}
-				if(allFilesDeleted) {
-					boolean dirDeleteResult = tempDir.delete();
-					if(!dirDeleteResult) {
-						GlueLogger.getGlueLogger().warning("Failed to delete temporary MAFFT directory "+tempDir.getAbsolutePath());
-					}
-				}
-			}
-		}
-	}
-
-	private MafftResult resultObjectFromProcessResult(ProcessResult processResult) {
-		MafftResult mafftResult = new MafftResult();
-		Map<String, DNASequence> alignmentWithQuery = FastaUtils.parseFasta(processResult.getOutputBytes());
-		mafftResult.setAlignmentWithQuery(alignmentWithQuery);
-		return mafftResult;
+			Map<String, DNASequence> alignmentWithQuery = FastaUtils.parseFasta(mafftProcessResult.getOutputBytes());
+			return alignmentWithQuery.get(fastaID);
 	}
 
 	private void writeFastaFile(File tempDir, File file, Map<String, DNASequence> alignment) {
