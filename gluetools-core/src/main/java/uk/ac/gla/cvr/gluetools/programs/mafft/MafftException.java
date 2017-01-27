@@ -9,7 +9,8 @@ public class MafftException extends GlueException {
 		MAFFT_CONFIG_EXCEPTION("errorTxt"), 
 		MAFFT_DATA_EXCEPTION("errorTxt"), 
 		MAFFT_FILE_EXCEPTION("errorTxt"),
-		MAFFT_PROCESS_EXCEPTION("errorTxt");
+		MAFFT_PROCESS_EXCEPTION("errorTxt"),
+		MAFFT_EXECUTION_EXCEPTION("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

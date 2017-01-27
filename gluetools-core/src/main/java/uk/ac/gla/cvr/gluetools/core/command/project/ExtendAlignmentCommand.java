@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,18 +36,15 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 @CommandClass(
 		commandWords={"extend", "alignment"}, 
 		description = "Extend alignment to recompute certain members", 
-		docoptUsages = {"<alignmentName> <alignerModuleName> [-p] -w <whereClause> [-b <batchSize>] [-d <dataDir>]"}, 
+		docoptUsages = {"<alignmentName> <alignerModuleName> -w <whereClause> [-b <batchSize>] [-d <dataDir>]"}, 
 		docoptOptions = {
-				"-p, --preserveExistingRows                     Existing alignment rows should not change",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned",
 				"-b <batchSize>, --batchSize <batchSize>        Re-alignment batch size",
 				"-d <dataDir>, --dataDir <dataDir>              Directory to save temporary data in"},
 		metaTags={CmdMeta.updatesDatabase},
 		furtherHelp = "(Re-)computes the aligned segments of certain members of the specified unconstrained alignment, "+
 		"using a given aligner module. The specified member rows are (re-)computed using the existing unconstrained "+
-		"alignment as part of the input. The existing alignment may be updated as a result, in order to introduce gaps "+
-		"to accommodate the recomputed segments, but is otherwise unaltered. If <preserveExistingRows> is used, "+
-		"such gaps will not be added.\n"+
+		"alignment as part of the input. The existing alignment will not be updated as a result, no gaps will be added.\n"+
 		"Alignment members are aligned in batches, according to <batchSize>. Default <batchSize> is 50."+
 		" Example: exted alignment AL1 mafftAligner -w \"sequence.genotype = 4\""
 )
@@ -56,7 +52,6 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
-	public static final String PRESERVE_EXISTING_ROWS = "preserveExistingRows";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String DATA_DIR = "dataDir";
@@ -64,7 +59,6 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 	private String alignmentName;
 	private String alignerModuleName;
 	private String dataDirString;
-	private Boolean preserveExistingRows;
 	private Expression whereClause;
 	private int batchSize;
 	
@@ -73,7 +67,6 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 		super.configure(pluginConfigContext, configElem);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, true);
-		preserveExistingRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, PRESERVE_EXISTING_ROWS, false)).orElse(false);
 		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, true);
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(50);
 		dataDirString = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
@@ -134,12 +127,6 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 		});
 		
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
-		Map<Map<String,String>, Integer> existingMembersStartSegments = new LinkedHashMap<Map<String,String>, Integer>();
-		if(!preserveExistingRows) {
-			existingMembers.forEach(member -> {
-				existingMembersStartSegments.put(member.pkMap(), member.getAlignedSegments().size());
-			});
-		}
 		
 		int membersAligned = 0;
 		while(membersAligned < recomputedMembersPkMaps.size()) {
@@ -151,17 +138,6 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 			cmdContext.newObjectContext();
 		}
 
-		if(!preserveExistingRows) {
-			existingMembersPkMaps.forEach(memberPkMap -> {
-				Integer startSegments = existingMembersStartSegments.get(memberPkMap);
-				Integer endSegments = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap).getAlignedSegments().size();
-				Map<String, Object> existingMemberResultRow = new LinkedHashMap<String, Object>();
-				existingMemberResultRow.putAll(memberPkMap);
-				existingMemberResultRow.put(ExtendAlignmentResult.REMOVED_SEGMENTS, startSegments);
-				existingMemberResultRow.put(ExtendAlignmentResult.ADDED_SEGMENTS, endSegments);
-				resultListOfMaps.add(existingMemberResultRow);
-			});
-		}
 		return resultListOfMaps;
 	}
 
@@ -183,7 +159,7 @@ public class ExtendAlignmentCommand extends ProjectModeCommand<ExtendAlignmentCo
 		}
 		
 		Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToNewSegments = 
-				alignerModule.extendUnconstrained(cmdContext, preserveExistingRows, 
+				alignerModule.extendUnconstrained(cmdContext,  
 						alignmentName, existingMembersPkMaps, recomputedMembersPkMaps, dataDir);
 		
 		pkMapToNewSegments.forEach( (pkMap, qaSegs) -> {

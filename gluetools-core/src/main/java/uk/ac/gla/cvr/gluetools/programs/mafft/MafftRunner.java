@@ -8,6 +8,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.IOUtils;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -57,27 +60,38 @@ public class MafftRunner implements Plugin {
 		String mafftExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_EXECUTABLE_PROPERTY);
 		if(mafftExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT executable not defined"); }
 
-		int mafftCpus = Integer.parseInt(cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_NUMBER_CPUS, "1"));
-		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(mafftTempDir, uuid);
 			boolean mkdirsResult = tempDir.mkdirs();
 			if((!mkdirsResult) || !(tempDir.exists() && tempDir.isDirectory())) {
 				throw new MafftException(Code.MAFFT_FILE_EXCEPTION, "Failed to create MAFFT temporary directory: "+tempDir.getAbsolutePath());
 			}
-			File alignmentFile = new File(tempDir, "alignment.fasta");
+			File alignmentFile = new File(tempDir, "reference_alignment.fasta");
 			writeFastaFile(tempDir, alignmentFile, alignment);
 
 			MafftResult mafftResult = new MafftResult();
-			LinkedHashMap<String, DNASequence> alignmentWithQuery = new LinkedHashMap<String, DNASequence>(alignment);
+			Map<String, DNASequence> alignmentWithQuery = new LinkedHashMap<String, DNASequence>(alignment);
 			mafftResult.setAlignmentWithQuery(alignmentWithQuery);
 			
 			try {
-			query.forEach( (fastaID, sequence) -> {
-				DNASequence alignmentRow = alignmentRowForQuery(task, tempDir, mafftExecutable, uuid, alignmentFile, fastaID, sequence);
-				alignmentWithQuery.put(fastaID, alignmentRow);
-			});
-			
+				
+				Map<String, MafftCallable> fastaIDToCallable = new LinkedHashMap<String, MafftCallable>();
+				
+				query.forEach( (fastaID, sequence) -> {
+					fastaIDToCallable.put(fastaID, new MafftCallable(task, tempDir, mafftExecutable, uuid, alignmentFile, fastaID, sequence));
+				});
+				
+				ExecutorService mafftExecutorService = cmdContext.getGluetoolsEngine().getMafftExecutorService();
+				List<Future<Void>> futures = mafftExecutorService.invokeAll(fastaIDToCallable.values());
+				for(Future<Void> future: futures) { // pick up any exceptions.
+					future.get(); 
+				}
+				fastaIDToCallable.forEach( (fastaID, callable) -> {
+					alignmentWithQuery.put(fastaID, callable.getAlignmentRow());
+				});
+
+			} catch(Exception e) {
+				throw new MafftException(e, Code.MAFFT_EXECUTION_EXCEPTION, e.getLocalizedMessage());
 			} finally {
 				boolean allFilesDeleted = true;
 				if(tempDir != null && tempDir.exists() && tempDir.isDirectory()) {
@@ -106,11 +120,46 @@ public class MafftRunner implements Plugin {
 			return mafftResult;
 	}
 
-	private DNASequence alignmentRowForQuery(Task task, File tempDir, String mafftExecutable,
-			String uuid, File alignmentFile, String fastaID, DNASequence sequence) {
+	private void writeFastaFile(File tempDir, File file, Map<String, DNASequence> alignment) {
+		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
+		try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+			IOUtils.write(fastaBytes, fileOutputStream);
+		} catch (IOException e) {
+			throw new MafftException(e, Code.MAFFT_FILE_EXCEPTION, "Failed to write "+file.getAbsolutePath()+": "+e.getLocalizedMessage());
+		}
+	}
+	
+	private class MafftCallable implements Callable<Void> {
+
+		private Task task;
+		private File tempDir;
+		private String mafftExecutable;
+		private String uuid;
+		private File alignmentFile;
+		private String fastaID;
+		private DNASequence querySequence;
+		
+		private DNASequence alignmentRow;
+		
+		public MafftCallable(Task task, File tempDir, String mafftExecutable,
+				String uuid, File alignmentFile, String fastaID,
+				DNASequence querySequence) {
+			super();
+			this.task = task;
+			this.tempDir = tempDir;
+			this.mafftExecutable = mafftExecutable;
+			this.uuid = uuid;
+			this.alignmentFile = alignmentFile;
+			this.fastaID = fastaID;
+			this.querySequence = querySequence;
+		}
+
+		// returns single alignment row for query.
+		@Override
+		public Void call() throws Exception {
 			File queryFile = new File(tempDir, fastaID+"_query.fasta");
 			Map<String, DNASequence> query = new LinkedHashMap<String, DNASequence>();
-			query.put(fastaID, sequence);
+			query.put(fastaID, querySequence);
 			writeFastaFile(tempDir, queryFile, query);
 
 			List<String> commandWords = new ArrayList<String>();
@@ -120,17 +169,17 @@ public class MafftRunner implements Plugin {
 			commandWords.add("--thread");
 			commandWords.add(Integer.toString(1));
 
-			if(this.gapOpeningPenalty != null) {
+			if(MafftRunner.this.gapOpeningPenalty != null) {
 				commandWords.add("--op");
 				commandWords.add(Double.toString(gapOpeningPenalty));
 			}
 
-			if(this.extensionPenalty != null) {
+			if(MafftRunner.this.extensionPenalty != null) {
 				commandWords.add("--ep");
 				commandWords.add(Double.toString(extensionPenalty));
 			}
 
-			if(this.maxIterate != null) {
+			if(MafftRunner.this.maxIterate != null) {
 				commandWords.add("--maxiterate");
 				commandWords.add(Integer.toString(maxIterate));
 			}
@@ -173,16 +222,12 @@ public class MafftRunner implements Plugin {
 			}
 
 			Map<String, DNASequence> alignmentWithQuery = FastaUtils.parseFasta(mafftProcessResult.getOutputBytes());
-			return alignmentWithQuery.get(fastaID);
-	}
+			this.alignmentRow = alignmentWithQuery.get(fastaID);
+			return null;
+		}
 
-	private void writeFastaFile(File tempDir, File file, Map<String, DNASequence> alignment) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
-		try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-			IOUtils.write(fastaBytes, fileOutputStream);
-		} catch (IOException e) {
-			throw new MafftException(e, Code.MAFFT_FILE_EXCEPTION, "Failed to write "+file.getAbsolutePath()+": "+e.getLocalizedMessage());
+		public DNASequence getAlignmentRow() {
+			return alignmentRow;
 		}
 	}
-	
 }

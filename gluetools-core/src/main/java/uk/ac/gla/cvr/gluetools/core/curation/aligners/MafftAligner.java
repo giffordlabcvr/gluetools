@@ -78,7 +78,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 
 	@Override
 	public Map<Map<String, String>, List<QueryAlignedSegment>> extendUnconstrained(
-			CommandContext cmdContext, Boolean preserveExistingRows,
+			CommandContext cmdContext, 
 			String alignmentName,
 			List<Map<String, String>> existingMembersPkMaps,
 			List<Map<String, String>> recomputedMembersPkMaps, 
@@ -116,11 +116,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 			recomputedIdx++;
 		};
 		MafftRunner.Task task;
-		if(preserveExistingRows) {
-			task = Task.ADD_KEEPLENGTH;
-		} else {
-			task = Task.ADD;
-		}
+		task = Task.ADD_KEEPLENGTH;
 		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, task, existingTempIdToSequence, recomputedTempIdToSequence, dataDir);
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 		Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToSegs = new LinkedHashMap<Map<String,String>, List<QueryAlignedSegment>>();

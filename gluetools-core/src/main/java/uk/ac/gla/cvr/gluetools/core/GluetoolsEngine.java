@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import org.apache.cayenne.ObjectContext;
@@ -28,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.programs.mafft.MafftUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
 
@@ -61,6 +64,7 @@ public class GluetoolsEngine implements Plugin {
 	private Properties gluecoreProperties;
 	private Map<String, byte[]> classNameToBytes = new LinkedHashMap<String, byte[]>();
 	private GlueClassLoader glueClassLoader = new GlueClassLoader(GluetoolsEngine.class.getClassLoader(), this);
+	private ExecutorService mafftExecutorService;
 
 	
 	private GluetoolsEngine(String configFilePath) {
@@ -181,6 +185,9 @@ public class GluetoolsEngine implements Plugin {
 	
 	private void dispose() {
 		rootServerRuntime.shutdown();
+		if(mafftExecutorService != null) {
+			mafftExecutorService.shutdown();
+		}
 	}
 
 	public Properties getGluecoreProperties() {
@@ -220,5 +227,15 @@ public class GluetoolsEngine implements Plugin {
 			Thread.currentThread().setContextClassLoader(prevContextClassLoader);
 		}
 	}
+	
+	// used to parellize mafft.
+	public synchronized ExecutorService getMafftExecutorService() {
+		if(mafftExecutorService == null) {
+			int mafftCpus = Integer.parseInt(getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_NUMBER_CPUS, "1"));
+			mafftExecutorService = Executors.newFixedThreadPool(mafftCpus);
+		}
+		return mafftExecutorService;
+	}
+	
 	
 }

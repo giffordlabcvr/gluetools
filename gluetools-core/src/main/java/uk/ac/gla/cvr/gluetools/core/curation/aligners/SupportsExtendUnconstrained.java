@@ -15,7 +15,7 @@ public interface SupportsExtendUnconstrained<R extends AlignerResult> {
 	}
 
 	public Map<Map<String, String>, List<QueryAlignedSegment>> extendUnconstrained(CommandContext cmdContext,
-			Boolean preserveExistingRows, String alignmentName,
+			String alignmentName,
 			List<Map<String, String>> existingMembersPkMaps,
 			List<Map<String, String>> recomputedMembersPkMaps, File dataDir);
 
