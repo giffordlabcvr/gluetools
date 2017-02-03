@@ -43,14 +43,14 @@ public class ComputeOverlappingCommand extends ModulePluginCommand<ComputeOverla
 	@Override
 	protected Result execute(CommandContext cmdContext, EpitopeRasOverlap modulePlugin) {
 		Expression rasExp = ExpressionFactory.matchExp("is_resistance_associated_variant", Boolean.TRUE)
-				.andExp(ExpressionFactory.matchExp("featureLoc.referenceSequence.name", "H77_AF009606"));
+				.andExp(ExpressionFactory.matchExp("featureLoc.referenceSequence.name", "REF_MASTER_NC_004102"));
 		SelectQuery rasQuery = new SelectQuery(Variation.class, rasExp); 
 		List<Variation> rasList = GlueDataObject.query(cmdContext, Variation.class, rasQuery);
 
 		Expression epitopeExp = ExpressionFactory.matchExp("is_epitope", Boolean.TRUE)
 				.andExp(ExpressionFactory.notLikeExp("epitope_full_hla", "%undetermined%"))
 				.andExp(ExpressionFactory.noMatchExp("epitope_full_hla", null))
-				.andExp(ExpressionFactory.matchExp("featureLoc.referenceSequence.name", "H77_AF009606"));
+				.andExp(ExpressionFactory.matchExp("featureLoc.referenceSequence.name", "REF_MASTER_NC_004102"));
 		SelectQuery epitopeQuery = new SelectQuery(Variation.class, epitopeExp); 
 		List<Variation> epitopeList = GlueDataObject.query(cmdContext, Variation.class, epitopeQuery);
 
@@ -78,7 +78,7 @@ public class ComputeOverlappingCommand extends ModulePluginCommand<ComputeOverla
 		
 		List<Overlap> overlaps = new ArrayList<Overlap>();
 
-		FeatureLocation precursorPolyprotein = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap("H77_AF009606", "precursor_polyprotein"));
+		FeatureLocation precursorPolyprotein = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap("REF_MASTER_NC_004102", "precursor_polyprotein"));
 		int codon1Start = precursorPolyprotein.getCodon1Start(cmdContext);
 		
 		for(Variation ras: rasList) {
