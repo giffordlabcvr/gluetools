@@ -199,7 +199,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Map<String, DNASequence> queryFastaContent = FastaUtils.remapFasta(
 				querySequenceMap, rowNameToQueryMap, queryToRowNameMap, "Q");
 		
-		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD_KEEPLENGTH, almtFastaContent, queryFastaContent, dataDirFile);
+		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD_KEEPLENGTH, true, almtFastaContent, queryFastaContent, dataDirFile);
 		
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 

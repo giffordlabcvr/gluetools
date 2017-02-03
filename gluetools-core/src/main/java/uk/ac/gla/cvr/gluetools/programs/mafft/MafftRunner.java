@@ -52,8 +52,16 @@ public class MafftRunner implements Plugin {
 		maxIterate = PluginUtils.configureIntProperty(configElem, MAX_ITERATE, false);
 	}
 	
-	public MafftResult executeMafft(CommandContext cmdContext, Task task, Map<String, DNASequence> alignment, Map<String, DNASequence> query, File dataDirFile) {
+	// independentQueries = true can be used to add each query in a separate mafft task
+	// only works if Task is ADD_KEEPLENGTH
+	
+	public MafftResult executeMafft(CommandContext cmdContext, Task task, boolean independentQueries,
+			Map<String, DNASequence> alignment, Map<String, DNASequence> query, File dataDirFile) {
 
+		if(independentQueries && !task.equals(Task.ADD_KEEPLENGTH)) {
+			throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT runner independentQueries option can only be used with ADD_KEEPLENGTH task");
+		}
+		
 		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
 		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined"); }
 
@@ -70,25 +78,31 @@ public class MafftRunner implements Plugin {
 			writeFastaFile(tempDir, alignmentFile, alignment);
 
 			MafftResult mafftResult = new MafftResult();
-			Map<String, DNASequence> alignmentWithQuery = new LinkedHashMap<String, DNASequence>(alignment);
-			mafftResult.setAlignmentWithQuery(alignmentWithQuery);
 			
 			try {
-				
-				Map<String, MafftCallable> fastaIDToCallable = new LinkedHashMap<String, MafftCallable>();
-				
-				query.forEach( (fastaID, sequence) -> {
-					fastaIDToCallable.put(fastaID, new MafftCallable(task, tempDir, mafftExecutable, uuid, alignmentFile, fastaID, sequence));
-				});
-				
-				ExecutorService mafftExecutorService = cmdContext.getGluetoolsEngine().getMafftExecutorService();
-				List<Future<Void>> futures = mafftExecutorService.invokeAll(fastaIDToCallable.values());
-				for(Future<Void> future: futures) { // pick up any exceptions.
-					future.get(); 
+				if(independentQueries) {
+
+					Map<String, MafftSingleSequenceCallable> fastaIDToCallable = new LinkedHashMap<String, MafftSingleSequenceCallable>();
+
+					query.forEach( (fastaID, sequence) -> {
+						fastaIDToCallable.put(fastaID, new MafftSingleSequenceCallable(task, tempDir, mafftExecutable, uuid, alignmentFile, fastaID, sequence));
+					});
+
+					ExecutorService mafftExecutorService = cmdContext.getGluetoolsEngine().getMafftExecutorService();
+					List<Future<Void>> futures = mafftExecutorService.invokeAll(fastaIDToCallable.values());
+					for(Future<Void> future: futures) { // pick up any exceptions.
+						future.get(); 
+					}
+					Map<String, DNASequence> alignmentWithQuery = new LinkedHashMap<String, DNASequence>(alignment);
+					fastaIDToCallable.forEach( (fastaID, callable) -> {
+						alignmentWithQuery.put(fastaID, callable.getAlignmentRow());
+					});
+					mafftResult.setAlignmentWithQuery(alignmentWithQuery);
+				} else {
+					MafftMultiSequenceCallable callable = new MafftMultiSequenceCallable(task, tempDir, mafftExecutable, uuid, alignmentFile, query);
+					callable.call();
+					mafftResult.setAlignmentWithQuery(callable.getAlignmentWithQuery());
 				}
-				fastaIDToCallable.forEach( (fastaID, callable) -> {
-					alignmentWithQuery.put(fastaID, callable.getAlignmentRow());
-				});
 
 			} catch(Exception e) {
 				throw new MafftException(e, Code.MAFFT_EXECUTION_EXCEPTION, e.getLocalizedMessage());
@@ -129,39 +143,33 @@ public class MafftRunner implements Plugin {
 		}
 	}
 	
-	private class MafftCallable implements Callable<Void> {
+	private abstract class MafftCallable {
 
 		private Task task;
 		private File tempDir;
 		private String mafftExecutable;
 		private String uuid;
 		private File alignmentFile;
-		private String fastaID;
-		private DNASequence querySequence;
-		
-		private DNASequence alignmentRow;
 		
 		public MafftCallable(Task task, File tempDir, String mafftExecutable,
-				String uuid, File alignmentFile, String fastaID,
-				DNASequence querySequence) {
+				String uuid, File alignmentFile) {
 			super();
 			this.task = task;
 			this.tempDir = tempDir;
 			this.mafftExecutable = mafftExecutable;
 			this.uuid = uuid;
 			this.alignmentFile = alignmentFile;
-			this.fastaID = fastaID;
-			this.querySequence = querySequence;
 		}
-
-		// returns single alignment row for query.
-		@Override
-		public Void call() throws Exception {
-			File queryFile = new File(tempDir, fastaID+"_query.fasta");
-			Map<String, DNASequence> query = new LinkedHashMap<String, DNASequence>();
-			query.put(fastaID, querySequence);
-			writeFastaFile(tempDir, queryFile, query);
-
+		
+		protected File getTempDir() {
+			return this.tempDir;
+		}
+		
+		protected String getUuid() {
+			return uuid;
+		}
+		
+		public Map<String, DNASequence> runMafft(File queryFile) {
 			List<String> commandWords = new ArrayList<String>();
 			commandWords.add(mafftExecutable);
 
@@ -214,20 +222,80 @@ public class MafftRunner implements Plugin {
 					(errorBytes != null && 
 					errorBytes.length > 0 && 
 					(new String(errorBytes)).contains("ERROR"))) {
-				GlueLogger.getGlueLogger().severe("MAFFT task "+uuid+", query "+fastaID+" failure, the MAFFT stdout was:");
+				GlueLogger.getGlueLogger().severe("MAFFT task "+getUuid()+", query failure, the MAFFT stdout was:");
 				GlueLogger.getGlueLogger().severe(new String(mafftProcessResult.getOutputBytes()));
-				GlueLogger.getGlueLogger().severe("MAFFT task "+uuid+", query "+fastaID+" failure, the MAFFT stderr was:");
+				GlueLogger.getGlueLogger().severe("MAFFT task "+getUuid()+", query  failure, the MAFFT stderr was:");
 				GlueLogger.getGlueLogger().severe(new String(errorBytes));
-				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT task "+uuid+", query "+fastaID+" failed, see log for output/error content");
+				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "MAFFT task "+getUuid()+", query failed, see log for output/error content");
 			}
 
 			Map<String, DNASequence> alignmentWithQuery = FastaUtils.parseFasta(mafftProcessResult.getOutputBytes());
+			return alignmentWithQuery;
+		}
+
+	}
+	
+	private class MafftSingleSequenceCallable extends MafftCallable implements Callable<Void> {
+
+		private String fastaID;
+		private DNASequence querySequence;
+		private DNASequence alignmentRow;
+		
+		public MafftSingleSequenceCallable(Task task, File tempDir, String mafftExecutable,
+				String uuid, File alignmentFile, String fastaID,
+				DNASequence querySequence) {
+			super(task, tempDir, mafftExecutable, uuid, alignmentFile);
+			this.fastaID = fastaID;
+			this.querySequence = querySequence;
+		}
+
+		// returns single alignment row for query.
+		@Override
+		public Void call() throws Exception {
+			File queryFile = new File(getTempDir(), fastaID+"_query.fasta");
+			Map<String, DNASequence> query = new LinkedHashMap<String, DNASequence>();
+			query.put(fastaID, querySequence);
+			writeFastaFile(getTempDir(), queryFile, query);
+
+			Map<String, DNASequence> alignmentWithQuery = runMafft(queryFile);
 			this.alignmentRow = alignmentWithQuery.get(fastaID);
 			return null;
 		}
+
 
 		public DNASequence getAlignmentRow() {
 			return alignmentRow;
 		}
 	}
+	
+	
+	private class MafftMultiSequenceCallable extends MafftCallable implements Callable<Void> {
+
+		private Map<String, DNASequence> querySequences;
+		private Map<String, DNASequence> alignmentWithQuery;
+		
+		public MafftMultiSequenceCallable(Task task, File tempDir, String mafftExecutable,
+				String uuid, File alignmentFile, Map<String, DNASequence> querySequences) {
+			super(task, tempDir, mafftExecutable, uuid, alignmentFile);
+			this.querySequences = querySequences;
+		}
+
+		// returns single alignment row for query.
+		@Override
+		public Void call() throws Exception {
+			File queryFile = new File(getTempDir(), getUuid()+"_query.fasta");
+			writeFastaFile(getTempDir(), queryFile, querySequences);
+
+			this.alignmentWithQuery = runMafft(queryFile);
+			return null;
+		}
+
+
+		public Map<String, DNASequence> getAlignmentWithQuery() {
+			return this.alignmentWithQuery;
+		}
+	}
+
+	
+	
 }

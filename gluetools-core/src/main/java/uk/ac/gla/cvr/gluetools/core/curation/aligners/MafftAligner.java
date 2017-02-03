@@ -115,9 +115,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 			recomputedTempIdToSequence.put(tempId, sequence);
 			recomputedIdx++;
 		};
-		MafftRunner.Task task;
-		task = Task.ADD_KEEPLENGTH;
-		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, task, existingTempIdToSequence, recomputedTempIdToSequence, dataDir);
+		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, Task.ADD_KEEPLENGTH, false, existingTempIdToSequence, recomputedTempIdToSequence, dataDir);
 		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
 		Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToSegs = new LinkedHashMap<Map<String,String>, List<QueryAlignedSegment>>();
 		alignmentWithQuery.forEach((tempID, dnaSequence) -> {
