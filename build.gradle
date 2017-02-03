@@ -28,8 +28,6 @@ project('gluetoolsApp') {
 task deployAll(dependsOn: [
 	':gluetools-core:deployJarOmega', 
 	':gluetools-core:deployJarAlpha', 
-	':gluetools-core:deployGlueDbToOmega', 
-	':gluetools-core:deployGlueDbToAlpha', 
 	':gluetools-web:install', 
 	':gluetools-ws:install', 
 	':gluetoolsApp:deployGluetoolsAppGlueHomeAWS']) {
