@@ -58,7 +58,7 @@ public enum IsoCountry {
 	CO("COL", "Colombia", "CO", "170"),
 	KM("COM", "Comoros", "KM", "174"),
 	CG("COG", "Congo (Brazzaville)", "CG", "178"),
-	CD("COD", "Democratic Republic of the Congo", "CD", "180"),
+	CD("COD", "Democratic Republic of the Congo", "Democratic Republic of the Congo", "CD", "180", "Congo", "DRC"),
 	CK("COK", "Cook Islands", "CK", "184"),
 	CR("CRI", "Costa Rica", "CR", "188"),
 	CI("CIV", "Côte d'Ivoire", "Côte d'Ivoire", "CI", "384", "C[ôo]te d'Ivoire"),
@@ -124,7 +124,7 @@ public enum IsoCountry {
 	KE("KEN", "Kenya", "KE", "404"),
 	KI("KIR", "Kiribati", "KI", "296"),
 	KP("PRK", "North Korea", "Democratic People's Republic of Korea", "KP", "408", "Democratic People's Republic of Korea", "North Korea", "DPRK", "DPR Korea"),
-	KR("KOR", "South Korea", "Republic of Korea", "KR", "410", "Republic of Korea", "South Korea"),
+	KR("KOR", "South Korea", "Republic of Korea", "KR", "410", "Republic of Korea", "Korea, Republic of", "South Korea"),
 	KW("KWT", "Kuwait", "KW", "414"),
 	KG("KGZ", "Kyrgyzstan", "KG", "417"),
 	LA("LAO", "Lao", "People's Democratic Republic of Lao", "LA", "418", "Lao", "Laos"),
@@ -267,9 +267,10 @@ public enum IsoCountry {
 		if(patternStrings.length == 0) {
 			throw new RuntimeException("No patterns for ISO country \""+shortName+"\"");
 		}
-		this.patterns = new Pattern[patternStrings.length];
+		this.patterns = new Pattern[(patternStrings.length)*2];
 		for(int i = 0; i < patternStrings.length; i++) {
 			patterns[i] = Pattern.compile(patternStrings[i]);
+			patterns[i+patternStrings.length] = Pattern.compile(patternStrings[i].toUpperCase());
 		}
 		this.shortName = shortName;
 		this.officialName = officialName;
