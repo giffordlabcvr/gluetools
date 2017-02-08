@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
@@ -106,6 +107,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(PhyloImporter.class);
 		registerPluginClass(PhyloUtility.class);
 
+		registerPluginClass(AlignmentColumnSelector.class);
 		
 		// custom project modules
 		registerPluginClass(EpitopeRasOverlap.class);
