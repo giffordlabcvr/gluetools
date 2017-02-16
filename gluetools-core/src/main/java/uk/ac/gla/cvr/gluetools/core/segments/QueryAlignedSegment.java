@@ -241,13 +241,13 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return new QueryAlignedSegment(getRefStart(), getRefEnd(), queryStart, queryEnd);
 	}
 
-	public static BiFunction<QueryAlignedSegment, QueryAlignedSegment, QueryAlignedSegment> mergeAbuttingFunction() {
+	public static BiFunction<QueryAlignedSegment, QueryAlignedSegment, QueryAlignedSegment> mergeAbuttingFunctionQueryAlignedSegment() {
 		return (seg1, seg2) -> {
 			return new QueryAlignedSegment(seg1.getRefStart(), seg2.getRefEnd(), seg1.getQueryStart(), seg2.getQueryEnd());
 		};
 	}
 
-	public static <S extends QueryAlignedSegment> BiPredicate<S, S> abutsPredicate() {
+	public static <S extends QueryAlignedSegment> BiPredicate<S, S> abutsPredicateQueryAlignedSegment() {
 		return (seg1, seg2) -> {
 			return seg2.getRefStart() == seg1.getRefEnd()+1 && seg2.getQueryStart() == seg1.getQueryEnd()+1;
 		};

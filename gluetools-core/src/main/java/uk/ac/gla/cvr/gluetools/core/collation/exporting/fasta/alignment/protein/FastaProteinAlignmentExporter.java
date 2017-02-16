@@ -14,6 +14,7 @@ import org.apache.cayenne.exp.Expression;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractFastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -41,15 +42,14 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 	}
 
 	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
-			String alignmentName, Optional<Expression> whereClause, String acRefName, String featureName, 
-			String lcStart, String lcEnd,
+			String alignmentName, Optional<Expression> whereClause, SimpleAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean recursive, Boolean preview, OrderStrategy orderStrategy, Boolean excludeEmptyRows) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
 		Map<Map<String,String>, String> memberPkMapToAlmtRow = exportAlignment(cmdContext,
-				acRefName, featureName, lcStart, lcEnd, orderStrategy,
+				alignmentColumnsSelector, orderStrategy,
 				excludeEmptyRows, alignment, almtMembers);
 		
 		Map<String,String> fastaIdToAlmtRow = new LinkedHashMap<String, String>();
@@ -71,25 +71,23 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 	}
 
 	public static Map<Map<String,String>, String> exportAlignment(
-			ConsoleCommandContext cmdContext, String acRefName,
-			String featureName, String lcStart, String lcEnd,
+			ConsoleCommandContext cmdContext, SimpleAlignmentColumnsSelector alignmentColumnsSelector,
 			OrderStrategy orderStrategy, Boolean excludeEmptyRows,
 			Alignment alignment, List<AlignmentMember> almtMembers) {
 		int minRefNt = 1;
 		int maxRefNt = 1;
-		ReferenceSequence acRef = null;
+		ReferenceSequence relatedRef = null;
 		FeatureLocation featureLoc;
-		List<ReferenceSegment> featureRefSegs = null;
-		acRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
-		featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName));
+		String relatedRefName = alignmentColumnsSelector.getRelatedRefName();
+		String featureName = alignmentColumnsSelector.getFeatureName();
+		relatedRef = alignment.getAncConstrainingRef(cmdContext, relatedRefName);
+		featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRefName, featureName));
 		featureLoc.getFeature().checkCodesAminoAcids();
 		
 		int codon1Start = featureLoc.getCodon1Start(cmdContext);
 		
-		featureRefSegs = featureLoc.segmentsAsReferenceSegments();
+		List<ReferenceSegment> featureRefSegs = alignmentColumnsSelector.selectAlignmentColumns(cmdContext);
 		
-		featureRefSegs = FastaAlignmentExporter.narrowFeatureRefSegs(cmdContext, featureLoc, featureRefSegs, lcStart, lcEnd, null, null);
-
 		if(!featureRefSegs.isEmpty()) {
 			minRefNt = ReferenceSegment.minRefStart(featureRefSegs);
 			maxRefNt = ReferenceSegment.maxRefEnd(featureRefSegs);
@@ -102,7 +100,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 		for(AlignmentMember almtMember: almtMembers) {
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
 			Alignment tipAlmt = almtMember.getAlignment();
-			memberQaSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef);
+			memberQaSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberQaSegs, relatedRef);
 			memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 			memberQaSegs = TranslationUtils.truncateToCodonAligned(codon1Start, memberQaSegs);
 			

@@ -11,6 +11,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -26,28 +28,32 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 
 @CommandClass(
 		commandWords={"test", "models"}, 
 		description = "Run JModelTest on a nucleotide alignment to compare substitution models", 
-		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] [-d <dataDir>]"},
 		docoptOptions={
-				"-r <relRefName>, --relRefName <relRefName>     Related reference",
-				"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
-				"-c, --recursive                                Include descendent members",
-				"-w <whereClause>, --whereClause <whereClause>  Qualify members",
-				"-a, --allMembers                               All members",
-				"-i, --includeAllColumns                        Include columns for all NTs",
-				"-m <minColUsage>, --minColUsage <minColUsage>  Minimum included column usage",
-				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory"},
+				"-s <selectorName>, --selectorName <selectorName>  Column selector module name",
+				"-r <relRefName>, --relRefName <relRefName>        Related reference",
+				"-f <featureName>, --featureName <featureName>     Restrict to a given feature",
+				"-c, --recursive                                   Include descendent members",
+				"-w <whereClause>, --whereClause <whereClause>     Qualify members",
+				"-a, --allMembers                                  All members",
+				"-i, --includeAllColumns                           Include columns for all NTs",
+				"-m <minColUsage>, --minColUsage <minColUsage>     Minimum included column usage",
+				"-d <dataDir>, --dataDir <dataDir>                 Save algorithmic data in this directory"},
 		metaTags = { CmdMeta.consoleOnly },
 		furtherHelp="If supplied, <dataDir> must either not exist or be an empty directory.")
 public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, ModelTester> {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";
+	public static final String SELECTOR_NAME = "selectorName";
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String RECURSIVE = "recursive";
@@ -58,6 +64,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	public static final String DATA_DIR = "dataDir";
 
 	private String alignmentName;
+	private String selectorName;
 	private String relRefName;
 	private String featureName;
 	private Boolean recursive;
@@ -80,9 +87,14 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		includeAllColumns = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_ALL_COLUMNS, false)).orElse(false);
 		minColUsage = PluginUtils.configureIntProperty(configElem, MIN_COLUMN_USAGE, false);
 		dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
+		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
+
 
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
+		}
+		if(selectorName != null && ( relRefName != null || featureName != null )) {
+			usageError1a();
 		}
 		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
@@ -94,6 +106,9 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 
 	private void usageError1() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
+	}
+	private void usageError1a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then <relRefName> and <featureName> may not be used");
 	}
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
@@ -107,9 +122,19 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	protected TestModelsResult execute(CommandContext cmdContext, ModelTester modelTester) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
+		
+		IAlignmentColumnsSelector alignmentColumnsSelector;
+		if(selectorName != null) {
+			alignmentColumnsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null) {
+			alignmentColumnsSelector = new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, null, null);
+		} else {
+			alignmentColumnsSelector = null;
+		}
+		
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, includeAllColumns, minColUsage, 
-				false, null, null, null, null, null, alignment, almtMembers);
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, includeAllColumns, minColUsage, 
+				false, null, alignment, almtMembers);
 
 		TestModelsResult testModelsResult = modelTester.testModels(cmdContext, memberNucleotideAlignment, dataDir);
 		return testModelsResult;

@@ -19,8 +19,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-i [-m <minColUsage>]] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-i [-m <minColUsage>]] (-o <fileName> | -p)"},
 		docoptOptions={
+			"-s <selectorName>, --selectorName <selectorName>      Column selector module",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
 			"-l, --labelledCodon                                   Region between codon labels",
@@ -62,10 +63,9 @@ public class FastaAlignmentExportCommand extends ModulePluginCommand<CommandResu
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaAlignmentExporter exporterPlugin) {
 		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
-				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
-				delegate.getFeatureName(), delegate.getRecursive(), delegate.getPreview(), includeAllColumns, 
-				minColUsage, delegate.getOrderStrategy(), delegate.getExcludeEmptyRows(),
-				delegate.getLcStart(), delegate.getLcEnd(), delegate.getNtStart(), delegate.getNtEnd());
+				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), 
+				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), delegate.getPreview(), includeAllColumns, 
+				minColUsage, delegate.getOrderStrategy(), delegate.getExcludeEmptyRows());
 	}
 	
 	@CompleterClass

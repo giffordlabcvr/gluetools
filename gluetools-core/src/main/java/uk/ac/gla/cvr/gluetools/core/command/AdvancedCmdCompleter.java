@@ -14,7 +14,9 @@ import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.ListModuleCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptFSM.Node;
 import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult;
@@ -134,6 +136,19 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		registerVariableInstantiator(variableName, new StaticStringListInstantiator(staticStringList));
 	}
 	
+	protected void registerModuleNameLookup(String variableName, String moduleType) {
+		registerVariableInstantiator(variableName, new VariableInstantiator() {
+			@Override
+			protected List<CompletionSuggestion> instantiate(
+					ConsoleCommandContext cmdContext,
+					@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+					String prefix) {
+				List<Module> modules = ListModuleCommand.listModules(cmdContext, moduleType);
+				return modules.stream().map(m -> new CompletionSuggestion(m.getName(), true)).collect(Collectors.toList());
+			}
+		});
+	}
+	
 	protected void registerDataObjectNameLookup(String variableName, Class<? extends GlueDataObject> theClass, String nameProperty) {
 		registerVariableInstantiator(variableName, new SimpleDataObjectNameInstantiator(theClass, nameProperty));
 	}
@@ -146,6 +161,8 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		registerVariableInstantiator(variableName, new SimplePathInstantiator(directoriesOnly));
 	}
 
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public final List<CompletionSuggestion> completionSuggestions(ConsoleCommandContext cmdContext,

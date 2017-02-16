@@ -16,8 +16,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"generate", "fasta", "nt-consensus"}, 
-		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-i <consensusID>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-i <consensusID>] (-o <fileName> | -p)"},
 		docoptOptions={
+			"-s <selectorName>, --selectorName <selectorName>        Column selector module name",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
 			"-l, --labelledCodon                                   Region between codon labels",
@@ -49,9 +50,9 @@ public class GenerateFastaNtConsensusCommand extends ModulePluginCommand<Command
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, NucleotideConsensusGenerator generatorPlugin) {
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
-				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
-				delegate.getFeatureName(), delegate.getRecursive(), delegate.getPreview(), 
-				delegate.getLcStart(), delegate.getLcEnd(), delegate.getNtStart(), delegate.getNtEnd(), consensusID);
+				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), 
+				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), delegate.getPreview(), 
+				consensusID);
 	}
 	
 	@CompleterClass

@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -44,8 +45,8 @@ public class FastaProteinAlignmentExportCommand extends ModulePluginCommand<Comm
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter exporterPlugin) {
 		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
-				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), delegate.getAcRefName(),
-				delegate.getFeatureName(), delegate.getLcStart(), delegate.getLcEnd(), 
+				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), 
+				(SimpleAlignmentColumnsSelector) delegate.getAlignmentColumnsSelector(cmdContext), 
 				delegate.getRecursive(), delegate.getPreview(), delegate.getOrderStrategy(), 
 				delegate.getExcludeEmptyRows());
 	}

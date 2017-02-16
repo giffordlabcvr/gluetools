@@ -10,6 +10,7 @@ import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -31,17 +32,14 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 
 	public CommandResult doGenerate(ConsoleCommandContext cmdContext,
 			String fileName, String alignmentName,
-			Optional<Expression> whereClause, String relRefName,
-			String featureName, Boolean recursive, Boolean preview,
-			String lcStart, String lcEnd,
-			Integer ntStart, Integer ntEnd, 
+			Optional<Expression> whereClause, IAlignmentColumnsSelector alignmentColumnsSelector,
+			Boolean recursive, Boolean preview,
 			String consensusID) {
 
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		Map<Map<String, String>, DNASequence> memberPkMapToAlmtRow = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, false, null, true, null, 
-						lcStart, lcEnd, ntStart, ntEnd, 
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, false, null, true, null, 
 						alignment, almtMembers);
 		
 		if(memberPkMapToAlmtRow.isEmpty()) {

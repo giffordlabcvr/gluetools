@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.segments;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -502,7 +503,26 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		result.add(currentMerged);
 		return result;
 	}
+	public static <SA extends IReferenceSegment> void sortByRefStart(List<SA> segments) {
+		segments.sort(new Comparator<SA>() {
+			@Override
+			public int compare(SA seg1, SA seg2) {
+				return seg1.getRefStart().compareTo(seg2.getRefStart());
+			}
+		});
+	}
 	
-	
+	public static BiFunction<ReferenceSegment, ReferenceSegment, ReferenceSegment> mergeAbuttingFunctionReferenceSegment() {
+		return (seg1, seg2) -> {
+			return new ReferenceSegment(seg1.getRefStart(), seg2.getRefEnd());
+		};
+	}
+
+	public static <S extends ReferenceSegment> BiPredicate<S, S> abutsPredicateReferenceSegment() {
+		return (seg1, seg2) -> {
+			return seg2.getRefStart() == seg1.getRefEnd()+1;
+		};
+	}
+
 	
 }

@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import org.apache.cayenne.exp.Expression;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.AbstractConsensusGenerator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -31,15 +32,13 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 
 	public CommandResult doGenerate(ConsoleCommandContext cmdContext,
 			String fileName, String alignmentName,
-			Optional<Expression> whereClause, String relRefName,
-			String featureName, Boolean recursive, Boolean preview,
-			String lcStart, String lcEnd,
+			Optional<Expression> whereClause, SimpleAlignmentColumnsSelector alignmentColumnsSelector, 
+			Boolean recursive, Boolean preview,
 			String consensusID) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		Map<Map<String, String>, String> memberPkMapToAlmtRow = 
-				FastaProteinAlignmentExporter.exportAlignment(cmdContext, relRefName, featureName, 
-						lcStart, lcEnd, null, false, alignment, almtMembers);
+				FastaProteinAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, null, false, alignment, almtMembers);
 		
 		if(memberPkMapToAlmtRow.isEmpty()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No alignment members selected");

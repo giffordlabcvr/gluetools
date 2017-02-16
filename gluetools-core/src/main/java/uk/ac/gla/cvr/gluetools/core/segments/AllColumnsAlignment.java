@@ -220,8 +220,8 @@ public class AllColumnsAlignment<K> {
 	public void rationalise() {
 		keyToSegments.forEach((key, segs) -> {
 			List<QueryAlignedSegment> merged = 
-					QueryAlignedSegment.mergeAbutting(segs, QueryAlignedSegment.mergeAbuttingFunction(), 
-							QueryAlignedSegment.abutsPredicate());
+					QueryAlignedSegment.mergeAbutting(segs, QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+							QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 			segs.clear();
 			segs.addAll(merged);
 		});

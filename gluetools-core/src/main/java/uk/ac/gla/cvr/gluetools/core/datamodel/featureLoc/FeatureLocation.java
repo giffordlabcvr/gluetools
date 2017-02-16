@@ -258,7 +258,7 @@ public class FeatureLocation extends _FeatureLocation {
 		List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegsMerged = 
 				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, 
 						NtQueryAlignedSegment.ntMergeAbuttingFunction(), 
-						QueryAlignedSegment.abutsPredicate());
+						QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 		
 		for(NtQueryAlignedSegment ntQaSeg: queryToFeatureLocRefNtSegsMerged) {
 			variationScanResults.addAll(variationScanSegment(cmdContext, translator, codon1Start, ntQaSeg, variationsToScan, excludeAbsent));

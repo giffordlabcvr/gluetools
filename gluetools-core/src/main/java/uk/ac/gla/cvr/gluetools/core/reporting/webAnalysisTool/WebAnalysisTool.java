@@ -792,8 +792,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		List<QueryAlignedSegment> queryToTargetRefSegsUnmerged = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
 		List<QueryAlignedSegment> queryToTargetRefSegs = 
 				QueryAlignedSegment.mergeAbutting(queryToTargetRefSegsUnmerged, 
-						QueryAlignedSegment.mergeAbuttingFunction(), 
-						QueryAlignedSegment.abutsPredicate());
+						QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+						QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 		return queryToTargetRefSegs;
 	}
 

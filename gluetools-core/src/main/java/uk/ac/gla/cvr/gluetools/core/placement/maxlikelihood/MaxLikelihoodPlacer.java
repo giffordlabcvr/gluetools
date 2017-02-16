@@ -13,6 +13,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -21,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
@@ -42,6 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftRunner;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
@@ -61,12 +65,15 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	// the feature loc which will restrict the alignment
 	public static final String ALIGNMENT_RELATED_REF_NAME = "alignmentRelatedRefName";
 	public static final String ALIGNMENT_FEATURE_NAME = "alignmentFeatureName";
+	public static final String SELECTOR_NAME = "selectorName";
 	
 	private String phyloAlignmentName;
 	private String phyloFieldName;
 	private String alignmentAlignmentName;
 	private String alignmentRelatedRefName;
 	private String alignmentFeatureName;
+	private String selectorName;
+	
 	
 	private MafftRunner mafftRunner = new MafftRunner();
 	private RaxmlEpaRunner raxmlEpaRunner = new RaxmlEpaRunner();
@@ -94,6 +101,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		this.alignmentAlignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_ALIGNMENT_NAME, true);
 		this.alignmentRelatedRefName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_RELATED_REF_NAME, false);
 		this.alignmentFeatureName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_FEATURE_NAME, false);
+		this.selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
 		
 		Element mafftRunnerElem = PluginUtils.findConfigElement(configElem, "mafftRunner");
 		if(mafftRunnerElem != null) {
@@ -103,6 +111,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		if(raxmlEpaRunnerElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, raxmlEpaRunnerElem, raxmlEpaRunner);
 		}
+		
 	}
 
 	@Override
@@ -122,6 +131,10 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName), true);
 		if(alignmentAlignment == null) {
 			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "No such alignment \""+alignmentAlignment+"\"");
+		}
+		
+		if(selectorName != null && (this.alignmentRelatedRefName != null || this.alignmentFeatureName != null)) {
+			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "If <selectorName> is specified then neither <alignmentRelatedRefName> nor <alignmentFeatureName> may be used");
 		}
 		if((alignmentRelatedRefName != null && alignmentFeatureName == null) || (alignmentRelatedRefName == null && alignmentFeatureName != null)) {
 			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "Either both <alignmentRelatedRefName> and <alignmentFeatureName> should be specifed, or neither");
@@ -174,10 +187,18 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		OrderStrategy orderStrategy = null;
 		boolean excludeEmptyRows = false;
 
+		IAlignmentColumnsSelector alignmentColumnsSelector;
+		if(selectorName != null) {
+			alignmentColumnsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(alignmentRelatedRefName != null && alignmentFeatureName != null) {
+			alignmentColumnsSelector = new SimpleAlignmentColumnsSelector(alignmentRelatedRefName, alignmentFeatureName, null, null, null, null);
+		} else {
+			alignmentColumnsSelector = null;
+		}
+		
 		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						alignmentRelatedRefName, alignmentFeatureName, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy, 
-						null, null, null, null, 
+						alignmentColumnsSelector, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy, 
 						alignmentAlignment, almtAlmtMembers);
 
 		// rename each row to its phylo member equivalent.

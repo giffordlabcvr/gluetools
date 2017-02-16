@@ -10,6 +10,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
@@ -17,9 +18,11 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 
 public class FastaAlignmentExportCommandDelegate {
 
@@ -39,6 +42,7 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String FILE_NAME = "fileName";
 	public static final String ORDER_STRATEGY = "orderStrategy";
 	public static final String EXCLUDE_EMPTY_ROWS = "excludeEmptyRows";
+	public static final String SELECTOR_NAME = "selectorName";
 
 	
 	public enum OrderStrategy {
@@ -61,6 +65,7 @@ public class FastaAlignmentExportCommandDelegate {
 	private Integer ntEnd;
 	private Boolean excludeEmptyRows;
 	private OrderStrategy orderStrategy;
+	private String selectorName;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
 		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
@@ -79,14 +84,21 @@ public class FastaAlignmentExportCommandDelegate {
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
 		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
+		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
+		}
+		if(selectorName != null && ( relRefName != null || featureName != null )) {
+			usageError1a();
 		}
 		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
 		}
 		if(fileName == null && !preview || fileName != null && preview) {
 			usageError3();
+		}
+		if(selectorName != null && ( ntRegion || labelledCodon )) {
+			usageError3a();
 		}
 		if(labelledCodon && (lcStart == null || lcEnd == null)) {
 			usageError4();
@@ -97,12 +109,17 @@ public class FastaAlignmentExportCommandDelegate {
 		if(ntRegion && (ntStart == null || ntEnd == null)) {
 			usageError6();
 		}
+		
 	}
 
 	private void usageError1() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
 	}
 
+	private void usageError1a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then <relRefName> and <featureName> may not be used");
+	}
+	
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
 	}
@@ -111,13 +128,17 @@ public class FastaAlignmentExportCommandDelegate {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
 	}
 
+	private void usageError3a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorModuleName> is used then nither --ntRegion or --labelledCodon may be specified");
+	}
+
 	private void usageError4() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --labelledCodon is used, both <lcStart> and <lcEnd> must be specified");
 	}
-	private void usageError5() {
+ 	private void usageError5() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --ntRegion or --labelledCodon may be specified, but not both");
 	}
-	private void usageError6() {
+ 	private void usageError6() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --ntRegion is used, both <ntStart> and <ntEnd> must be specified");
 	}
 
@@ -188,6 +209,7 @@ public class FastaAlignmentExportCommandDelegate {
 	public static class ExportCompleter extends AdvancedCmdCompleter {
 		public ExportCompleter() {
 			super();
+			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
 			registerEnumLookup("orderStrategy", OrderStrategy.class);
 			registerVariableInstantiator("relRefName", new VariableInstantiator() {
@@ -235,5 +257,15 @@ public class FastaAlignmentExportCommandDelegate {
 		}
 	}
 
+	public IAlignmentColumnsSelector getAlignmentColumnsSelector(CommandContext cmdContext) {
+		if(selectorName != null) {
+			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null) {
+			return new SimpleAlignmentColumnsSelector(relRefName, featureName, ntStart, ntEnd, lcStart, lcEnd);
+		} else {
+			return null;
+		}
+	}
+	
 	
 }

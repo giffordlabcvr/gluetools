@@ -28,17 +28,18 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
-		docoptUsages={"<alignmentName> [-r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] -o <outputFile> <outputFormat>  [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] -o <outputFile> <outputFormat>  [-d <dataDir>]"},
 		docoptOptions={
-			"-r <relRefName>, --relRefName <relRefName>     Related reference",
-			"-f <featureName>, --featureName <featureName>  Restrict to a given feature",
-			"-c, --recursive                                Include descendent members",
-			"-w <whereClause>, --whereClause <whereClause>  Qualify members",
-		    "-a, --allMembers                               All members",
-		    "-i, --includeAllColumns                        Include columns for all NTs",
-		    "-m <minColUsage>, --minColUsage <minColUsage>  Minimum included column usage",
-			"-o <outputFile>, --outputFile <outputFile>     Phylogeny output file",
-			"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory"},
+				"-s <selectorName>, --selectorName <selectorName>  Column selector module name",
+			"-r <relRefName>, --relRefName <relRefName>            Related reference",
+			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
+			"-c, --recursive                                       Include descendent members",
+			"-w <whereClause>, --whereClause <whereClause>         Qualify members",
+		    "-a, --allMembers                                      All members",
+		    "-i, --includeAllColumns                               Include columns for all NTs",
+		    "-m <minColUsage>, --minColUsage <minColUsage>         Minimum included column usage",
+			"-o <outputFile>, --outputFile <outputFile>            Phylogeny output file",
+			"-d <dataDir>, --dataDir <dataDir>                     Save algorithmic data in this directory"},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Generate RAxML phylogeny using a nucleotide alignment", 
 		furtherHelp="If <outputFile> is supplied, the Newick string is saved to an output file.\n"+
