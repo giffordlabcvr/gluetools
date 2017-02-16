@@ -29,8 +29,8 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		this.relRefName = PluginUtils.configureStringProperty(configElem, "relRefName", true);
 		RegionSelectorFactory regionSelectorFactory = PluginFactory.get(RegionSelectorFactory.creator);
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(regionSelectorFactory.getElementNames());
-		List<Element> ruleElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
-		this.regionSelectors = regionSelectorFactory.createFromElements(pluginConfigContext, ruleElems);
+		List<Element> regionSelectorElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
+		this.regionSelectors = regionSelectorFactory.createFromElements(pluginConfigContext, regionSelectorElems);
 		if(this.regionSelectors.size() < 1) {
 			throw new PluginConfigException(PluginConfigException.Code.TOO_FEW_CONFIG_ELEMENTS, alternateElemsXPath, regionSelectors.size(), 1);
 		}

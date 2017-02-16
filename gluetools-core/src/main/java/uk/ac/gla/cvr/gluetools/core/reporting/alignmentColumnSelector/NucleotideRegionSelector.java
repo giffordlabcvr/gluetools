@@ -29,7 +29,7 @@ public class NucleotideRegionSelector extends RegionSelector {
 	}
 
 	@Override
-	public List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName) {
+	protected List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
 		return selectAlignmentColumns(cmdContext, relRefName, featureName, startNt, endNt);
 	}
 
