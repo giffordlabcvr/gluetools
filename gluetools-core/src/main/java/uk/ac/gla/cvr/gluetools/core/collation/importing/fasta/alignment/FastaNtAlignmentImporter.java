@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -128,6 +129,9 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 			
 			String memberSourceName = foundSequence.getSource().getName();
 			String memberSequenceID = foundSequence.getSequenceID();
+
+			this.log(Level.FINEST, "Fasta ID "+fastaID+" was mapped to sequence "+memberSourceName+"/"+memberSequenceID);
+
 			
 			List<ReferenceSegment> foundSequenceNavigationRegion = getNavigationRegion(cmdContext, navAlignment, navDirectionToFLoc, foundSequence);
 			
@@ -149,6 +153,8 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 			queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, alignmentRowAsString, foundSequenceNavigationRegion);
 			if(queryAlignedSegs == null) {
 				// null return value means skip this alignment row. A warning should log the reason.
+				this.log(Level.FINEST, "Alignment row skipped for fasta ID "+fastaID);
+				
 				continue;
 			}
 
