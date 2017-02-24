@@ -7,6 +7,7 @@ public class MaxLikelihoodPlacerException extends GlueException {
 public enum Code implements GlueErrorCode {
 		
 		CONFIG_ERROR("errorTxt"),
+		INPUT_ERROR("errorTxt"),
 		JPLACE_BRANCH_LABEL_ERROR("errorTxt"),
 		JPLACE_STRUCTURE_ERROR("errorTxt"),
 		POJO_RESULT_FORMAT_ERROR("errorTxt");

@@ -152,6 +152,10 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	}		
 	
 	public PlacerResultInternal place(CommandContext cmdContext, PhyloTree glueProjectPhyloTree, Map<String, DNASequence> querySequenceMap, File dataDirFile) {
+		if(querySequenceMap.isEmpty()) {
+			throw new MaxLikelihoodPlacerException(Code.INPUT_ERROR, "No sequences found");
+		}
+		
 		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName));
 
 		// phylo tree leaves reference constrained alignment members
