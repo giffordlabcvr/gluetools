@@ -453,7 +453,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		BigDecimal originalInsertionBranchLength = insertionBranch.getLength();
 		BigDecimal distalLength = new BigDecimal(placement.distalLength);
 		insertionBranch.setLength(distalLength);
-		phyloBranchToSubtree.setLength(originalInsertionBranchLength.subtract(distalLength));
+		BigDecimal phyloBranchToSubtreeLength = originalInsertionBranchLength.subtract(distalLength);
+		if(phyloBranchToSubtreeLength.compareTo(BigDecimal.ZERO) < 0) {
+			// Sometimes EPA returns distal lengths which are longer than the insertion branch length.
+			// This seems to happen if you query with one of the reference sequences.
+			phyloBranchToSubtreeLength = new BigDecimal(0.0);
+		}
+		phyloBranchToSubtree.setLength(phyloBranchToSubtreeLength);
 		phyloBranchToLeaf.setLength(new BigDecimal(placement.pendantLength));
 		
 		return placementLeaf;
