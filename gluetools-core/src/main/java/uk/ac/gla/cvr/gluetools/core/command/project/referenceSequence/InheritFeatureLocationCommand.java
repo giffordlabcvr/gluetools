@@ -123,6 +123,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			List<QueryAlignedSegment> refParentAlignedSegments = 
 					almtMember.getAlignedSegments().stream().map(aSeg -> aSeg.asQueryAlignedSegment()).collect(Collectors.toList());
 
+			ReferenceSegment.sortByRefStart(refParentAlignedSegments);
 			
 			// this generates aligned segments just for this feature.
 			List<QueryAlignedSegment> intersection = 
