@@ -149,7 +149,7 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 			List<QueryAlignedSegment> queryAlignedSegs = null; 
 
 			DNASequence alignmentRowDnaSequence = entry.getValue();
-			String alignmentRowAsString = alignmentRowDnaSequence.getSequenceAsString();
+			String alignmentRowAsString = alignmentRowDnaSequence.getSequenceAsString().toUpperCase();
 			queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, alignmentRowAsString, foundSequenceNavigationRegion);
 			if(queryAlignedSegs == null) {
 				// null return value means skip this alignment row. A warning should log the reason.

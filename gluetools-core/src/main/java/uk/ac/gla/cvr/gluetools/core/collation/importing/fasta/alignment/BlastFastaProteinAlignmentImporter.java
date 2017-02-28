@@ -97,7 +97,7 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 			}
 
 			
-			String alignmentAAsRow = entry.getValue().toString();
+			String alignmentAAsRow = entry.getValue().toString().toUpperCase();
 			// The alignment row is in protein coordinates and has '-' gaps. TBLASTN will ignore these. 
 			// The unconstrained alignment will have an implicit NT coordinate system.
 
