@@ -112,7 +112,8 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
 		String samRefName;
-		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
+		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
+				samReporter.getSamReaderValidationStringency())) {
 			samRefName = SamUtils.findReference(samReader, getFileName(), getSuppliedSamRefName()).getSequenceName();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -191,14 +192,15 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 				Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
 
 
-				try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
+				try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
+						samReporter.getSamReaderValidationStringency())) {
 
 					SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
 
 					final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
 
 
-					samReader.forEach(samRecord -> {
+					SamUtils.iterateOverSamReader(samReader, samRecord -> {
 						if(!samRecordFilter.recordPasses(samRecord)) {
 							return;
 						}

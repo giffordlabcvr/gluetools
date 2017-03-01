@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.ValidationStringency;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,15 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	public static final String READ_LOG_INTERVAL = "readLogInterval";
 	public static final String SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME = "samRefTextToReferenceQueryModuleName";
+	public static final String SAM_READER_VALIDATION_STRINGENCY = "samReaderValidationStringency";
 
 	private String alignerModuleName;
 	// optional -- Module of type textToQueryTransformer.
 	// Transforms SAM reference name to a where clause identifying the target reference.
 	private String samRefTextToReferenceQueryModuleName;
 	private Integer readLogInterval;
+	// STRICT (default), LENIENT, or SILENT
+	private ValidationStringency samReaderValidationStringency;
 	
 	public SamReporter() {
 		super();
@@ -40,6 +44,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 		addSimplePropertyName(READ_LOG_INTERVAL);
 		addSimplePropertyName(SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
+		addSimplePropertyName(SAM_READER_VALIDATION_STRINGENCY);
 		
 	}
 
@@ -51,10 +56,15 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.readLogInterval = Optional.ofNullable(
 				PluginUtils.configureIntProperty(configElem, READ_LOG_INTERVAL, false)).orElse(20000);
 		this.samRefTextToReferenceQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME, false);
+		this.samReaderValidationStringency = PluginUtils.configureEnumProperty(ValidationStringency.class, configElem, SAM_READER_VALIDATION_STRINGENCY, null);
 	}
 
 	public String getAlignerModuleName() {
 		return alignerModuleName;
+	}
+
+	public ValidationStringency getSamReaderValidationStringency() {
+		return samReaderValidationStringency;
 	}
 
 	public String targetRefNameFromSamRefName(CommandContext cmdContext, String samRefName, String definedTargetRefName) {

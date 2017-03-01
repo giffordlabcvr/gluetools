@@ -1,12 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
-import java.util.Arrays;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AminoAcidRegionSelector;

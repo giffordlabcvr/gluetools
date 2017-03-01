@@ -1,7 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.newick;
 
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloNewickException.Code;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 
 public class NewickJPlaceToPhyloTreeParser extends NewickToPhyloTreeParser {
 

@@ -60,7 +60,8 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		if(autoAlign) {
 			// auto-align consensus to target ref
 			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
-			Map<String, DNASequence> samConsensus = SamUtils.getSamConsensus(consoleCmdContext, samRefName, fileName, "samConsensus");
+			Map<String, DNASequence> samConsensus = SamUtils.getSamConsensus(consoleCmdContext, samRefName, fileName, "samConsensus",
+					samReporter.getSamReaderValidationStringency());
 			AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), samConsensus);
 			// extract segments from aligner result
 			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");

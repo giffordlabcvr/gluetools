@@ -69,7 +69,8 @@ public class SamNucleotideCommand extends SamReporterCommand<SamNucleotideResult
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
 		String samRefName;
-		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
+		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
+				samReporter.getSamReaderValidationStringency())) {
 			samRefName = SamUtils.findReference(samReader, getFileName(), getSuppliedSamRefName()).getSequenceName();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -109,10 +110,11 @@ public class SamNucleotideCommand extends SamReporterCommand<SamNucleotideResult
 
         final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
     	
-        try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName())) {
+        try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
+				samReporter.getSamReaderValidationStringency())) {
     		SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
 
-        	samReader.forEach(samRecord -> {
+        	SamUtils.iterateOverSamReader(samReader, samRecord -> {
         		if(!samRecordFilter.recordPasses(samRecord)) {
         			return;
         		}

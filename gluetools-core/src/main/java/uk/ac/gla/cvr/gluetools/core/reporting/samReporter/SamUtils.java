@@ -1,20 +1,24 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMFormatException;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
@@ -118,15 +122,20 @@ public class SamUtils {
 		return samReference;
 	}
 
-	public static SamReader newSamReader(ConsoleCommandContext consoleCmdContext, String fileName) {
+	public static SamReader newSamReader(ConsoleCommandContext consoleCmdContext, String fileName, ValidationStringency validationStringency) {
 		InputStream samInputStream = 
 				ConsoleCommandContext.inputStreamFromFile(consoleCmdContext.fileStringToFile(fileName));
-		return SamReaderFactory.makeDefault().open(SamInputResource.of(samInputStream));
+		SamReaderFactory samReaderFactory = SamReaderFactory.makeDefault();
+		if(validationStringency != null) {
+			samReaderFactory.validationStringency(validationStringency);
+		}
+		return samReaderFactory.open(SamInputResource.of(samInputStream));
 	}
 
-	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String samRefName, String fileName, String fastaID) {
+	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String samRefName, String fileName, String fastaID,
+			ValidationStringency validationStringency) {
 		Map<String, DNASequence> samConsensusFastaMap;
-		try(SamReader samReader = newSamReader(cmdContext, fileName)) {
+		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 
 			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
 
@@ -159,6 +168,12 @@ public class SamUtils {
 		
 	}
 
-	
+	public static void iterateOverSamReader(SamReader samReader, Consumer<SAMRecord> recordConsumer) {
+		try {
+			samReader.forEach(recordConsumer);
+		} catch(SAMFormatException sfe) {
+			throw new SamUtilsException(sfe, Code.SAM_FORMAT_ERROR, sfe.getMessage());
+		}
+	}
 	
 }

@@ -12,6 +12,7 @@ public class SamUtilsException extends GlueException {
 		SAM_BAM_FILE_HAS_ZERO_REFERENCES("fileName"),
 		SAM_BAM_FILE_HAS_MULTIPLE_REFERENCES("fileName"),
 		SAM_BAM_FILE_MISSING_REFERENCE("fileName", "samRefName"),
+		SAM_FORMAT_ERROR("errorTxt"),
 		;
 
 		private String[] argNames;
