@@ -87,7 +87,7 @@ public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult>
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 				ReferenceSequence.pkMap(getTargetRefName(consoleCmdContext, samReporter, samRefName)));
 
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
+		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 

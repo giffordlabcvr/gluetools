@@ -122,7 +122,7 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 				ReferenceSequence.pkMap(getTargetRefName(consoleCmdContext, samReporter, samRefName)));
 		
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
+		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 
 		List<ReferenceSequence> refsToScan;

@@ -93,8 +93,8 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		return samReporter.targetRefNameFromSamRefName(cmdContext, samRefName, targetRefName);
 	}
 
-	protected String getTipAlmtName() {
-		return tipAlmtName;
+	protected String getTipAlmtName(CommandContext cmdContext, SamReporter samReporter, String samRefName) {
+		return samReporter.tipAlignmentNameFromSamRefName(cmdContext, samRefName, tipAlmtName);
 	}
 
 

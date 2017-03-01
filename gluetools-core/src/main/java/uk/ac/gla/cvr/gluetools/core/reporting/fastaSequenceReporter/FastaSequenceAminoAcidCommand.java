@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
@@ -171,6 +172,13 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 									.map(a -> new CompletionSuggestion(a.getName(), true))
 									.collect(Collectors.toList());
 						}
+					} else {
+						List<Alignment> almts = GlueDataObject
+								.query(cmdContext, Alignment.class, new SelectQuery(Alignment.class));
+						return almts.stream()
+								.filter(a -> a.isConstrained())
+								.map(a -> new CompletionSuggestion(a.getName(), true))
+								.collect(Collectors.toList());
 					}
 					return null;
 				}

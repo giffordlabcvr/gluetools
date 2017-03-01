@@ -26,12 +26,16 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	public static final String READ_LOG_INTERVAL = "readLogInterval";
 	public static final String SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME = "samRefTextToReferenceQueryModuleName";
+	public static final String SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME = "samRefTextToTipAlignmentQueryModuleName";
 	public static final String SAM_READER_VALIDATION_STRINGENCY = "samReaderValidationStringency";
 
 	private String alignerModuleName;
 	// optional -- Module of type textToQueryTransformer.
 	// Transforms SAM reference name to a where clause identifying the target reference.
 	private String samRefTextToReferenceQueryModuleName;
+	// optional -- Module of type textToQueryTransformer.
+	// Transforms SAM reference name to a where clause identifying the tip alignment.
+	private String samRefTextToTipAlmtQueryModuleName;
 	private Integer readLogInterval;
 	// STRICT (default), LENIENT, or SILENT
 	private ValidationStringency samReaderValidationStringency;
@@ -44,6 +48,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 		addSimplePropertyName(READ_LOG_INTERVAL);
 		addSimplePropertyName(SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
+		addSimplePropertyName(SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME);
 		addSimplePropertyName(SAM_READER_VALIDATION_STRINGENCY);
 		
 	}
@@ -56,6 +61,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.readLogInterval = Optional.ofNullable(
 				PluginUtils.configureIntProperty(configElem, READ_LOG_INTERVAL, false)).orElse(20000);
 		this.samRefTextToReferenceQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME, false);
+		this.samRefTextToTipAlmtQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME, false);
 		this.samReaderValidationStringency = PluginUtils.configureEnumProperty(ValidationStringency.class, configElem, SAM_READER_VALIDATION_STRINGENCY, null);
 	}
 
@@ -87,6 +93,31 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		}
 		return referenceSeqNames.get(0);
 	}
+
+	public String tipAlignmentNameFromSamRefName(CommandContext cmdContext, String samRefName, String definedTipAlignmentName) {
+		if(definedTipAlignmentName != null) {
+			return definedTipAlignmentName;
+		}
+		if(samRefTextToTipAlmtQueryModuleName == null) {
+			throw new SamReporterCommandException(Code.NO_TIP_ALIGNMENT_DEFINED);
+		}
+		TextToQueryTransformer samRefTextToTipAlmtQueryTransformer = 
+				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, samRefTextToTipAlmtQueryModuleName,
+						TextToQueryTransformer.DataClassEnum.Alignment);
+		List<String> tipAlmtNames = samRefTextToTipAlmtQueryTransformer.textToQuery(cmdContext, samRefName).
+				getColumnValues(ReferenceSequence.NAME_PROPERTY);
+		if(tipAlmtNames.size() == 0) {
+			throw new SamReporterCommandException(Code.TIP_ALIGNMENT_NOT_FOUND, samRefName);
+		}
+		if(tipAlmtNames.size() > 1) {
+			throw new SamReporterCommandException(Code.TIP_ALIGNMENT_AMBIGUOUS, samRefName, tipAlmtNames.toString());
+		}
+		return tipAlmtNames.get(0);
+	}
+	
+	
+	
+	
 	
 	public class RecordsCounter {
 		int numRecords = 0;

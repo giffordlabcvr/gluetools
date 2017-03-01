@@ -9,7 +9,10 @@ public class SamReporterCommandException extends GlueException {
 
 		NO_TARGET_REFERENCE_DEFINED(),
 		TARGET_REFERENCE_NOT_FOUND("samReferenceName"),
-		TARGET_REFERENCE_AMBIGUOUS("samReferenceName", "targetRefNames");
+		TARGET_REFERENCE_AMBIGUOUS("samReferenceName", "targetRefNames"),
+		NO_TIP_ALIGNMENT_DEFINED(),
+		TIP_ALIGNMENT_NOT_FOUND("samReferenceName"),
+		TIP_ALIGNMENT_AMBIGUOUS("samReferenceName", "tipAlmtNames");
 
 		private String[] argNames;
 		private Code(String... argNames) {
