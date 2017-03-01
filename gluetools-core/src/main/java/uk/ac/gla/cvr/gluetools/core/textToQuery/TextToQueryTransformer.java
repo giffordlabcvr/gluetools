@@ -27,13 +27,15 @@ import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 @PluginClass(elemName="textToQueryTransformer")
 public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer> {
 
-	public static final String EXTRACTOR_FORMATTER = "extractorFormatter";
+	public static final String VALUE_CONVERTER = "valueConverter";
 	public static final String DATA_CLASS = "dataClass";
 	public static final String DESCRIPTION = "description";
 	
 	private DataClassEnum dataClassEnum;
 	private String description;
-	private RegexExtractorFormatter extractorFormatter;
+	private RegexExtractorFormatter mainExtractor;
+	private List<RegexExtractorFormatter> valueConverters;
+	
 
 	public enum DataClassEnum {
 		ReferenceSequence(ReferenceSequence.class),
@@ -79,14 +81,15 @@ public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer>
 		super.configure(pluginConfigContext, configElem);
 		dataClassEnum = PluginUtils.configureEnumProperty(DataClassEnum.class, configElem, DATA_CLASS, true);
 		description = PluginUtils.configureStringProperty(configElem, DESCRIPTION, false);
-		Element extractorFormatterElem = PluginUtils.findConfigElement(configElem, EXTRACTOR_FORMATTER, true);
-		extractorFormatter = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, extractorFormatterElem);
+		this.valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
+				PluginUtils.findConfigElements(configElem, "valueConverter"));
+		this.mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
 	}
 
 
 	@SuppressWarnings("unchecked")
 	public ListResult textToQuery(CommandContext cmdContext, String text) {
-		String expressionString = extractorFormatter.matchAndConvert(text);
+		String expressionString = RegexExtractorFormatter.extractAndConvert(text, mainExtractor, valueConverters);
 		if(expressionString == null) {
 			throw new TextToQueryException(TextToQueryException.Code.EXTRACTOR_FORMATTER_FAILED, description, text);
 		}
