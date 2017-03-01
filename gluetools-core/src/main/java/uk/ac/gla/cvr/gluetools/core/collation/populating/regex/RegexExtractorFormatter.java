@@ -1,25 +1,25 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.regex;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModel;
 
@@ -36,6 +36,8 @@ public class RegexExtractorFormatter implements Plugin {
 	private List<Pattern> matchPatterns = new ArrayList<Pattern>();
 	private Template outputTemplate;
 	private String outputString;
+	// alternative to outputTemplate / outputString which can be used to thrown an error.
+	private Template errorTemplate;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
@@ -45,8 +47,10 @@ public class RegexExtractorFormatter implements Plugin {
 				.collect(Collectors.toList());
 		outputTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "outputTemplate", false);
 		outputString = PluginUtils.configureStringProperty(configElem, "outputString", false);
-		if(outputTemplate != null && outputString != null) {
-			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Either outputTemplate or outputString may be defined but not both");
+		errorTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, "errorTemplate", false);
+		int numDefined = (outputTemplate != null ? 1 : 0) + (outputString != null ? 1 : 0) + (errorTemplate != null ? 1 : 0);
+		if(numDefined > 1) {
+			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "No more than one of outputTemplate, outputString or errorTemplate may be defined");
 		}
 	}
 	
@@ -66,7 +70,7 @@ public class RegexExtractorFormatter implements Plugin {
 			if(workingMatcher == null) {
 				return null;
 			}
-			if(outputTemplate == null) {
+			if(outputTemplate == null && errorTemplate == null) {
 				if(outputString != null) {
 					return outputString;
 				}
@@ -92,7 +96,7 @@ public class RegexExtractorFormatter implements Plugin {
 				public boolean isEmpty() { return false; }
 			};
 		} else {
-			if(outputTemplate == null) {
+			if(outputTemplate == null && errorTemplate == null) {
 				if(outputString != null) {
 					return outputString;
 				}
@@ -107,15 +111,18 @@ public class RegexExtractorFormatter implements Plugin {
 				public boolean isEmpty() { return false; }
 			};
 		}
-		StringWriter result = new StringWriter();
-		try {
-			outputTemplate.process(variableResolver, result);
-		} catch (TemplateException e) {
-			throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if(outputTemplate != null) {
+			return FreemarkerUtils.processTemplate(outputTemplate, variableResolver);
+		} else {
+			// errorTemplate != null;
+			String errorMsg = "Error condition in regexExtractorFormatter";
+			try {
+				errorMsg = FreemarkerUtils.processTemplate(errorTemplate, variableResolver);
+			} catch(Exception e) {
+				GlueLogger.log(Level.WARNING, "Unable to generate error message for regexExtractorFormatter error template");
+			}
+			throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, errorMsg);
 		}
-		return result.toString();
 	}
 
 	
