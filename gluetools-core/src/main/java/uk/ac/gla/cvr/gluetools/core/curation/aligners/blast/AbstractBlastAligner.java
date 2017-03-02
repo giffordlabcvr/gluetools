@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.curation.aligners.blast;
 
 import java.util.Optional;
+import java.util.logging.Level;
 
 import org.w3c.dom.Element;
 
@@ -68,6 +69,8 @@ public abstract class AbstractBlastAligner<R extends Aligner.AlignerResult, P ex
 						(blastHsp.getHitTo() < blastHsp.getHitFrom())) ) {
 				return false;
 			}
+			log(Level.FINEST, "Allowed HSP on query ["+blastHsp.getQueryFrom()+", "+blastHsp.getQueryTo()+"] with score: "+
+					blastHsp.getScore()+", bit score: "+blastHsp.getBitScore());
 			return true;
 		}
 		
