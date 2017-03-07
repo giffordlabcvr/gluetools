@@ -22,7 +22,12 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	addUtilsToScope($scope);
 
 	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
+	$scope.analysisModuleName = glueWebToolConfig.getAnalysisModuleName()
 
+	if($scope.analysisModuleName == null) {
+		$scope.analysisModuleName = "webAnalysisTool";
+	}
+	
 	$scope.variationsPerRow = 8;
 	$scope.range = function(n) {
 		return new Array(n);
@@ -44,6 +49,10 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	$scope.analysisView = 'typingSummary';
 	$scope.enableVariationSummary = true;
 
+	$scope.nonZeroCladeWeighting = function(cladeWeighting) {
+		return cladeWeighting.percentScore >= 0.01;
+	}
+	
 	$scope.updateSelectedRefSeqFeatAnalysis = function(){
 		if($scope.selectedReferenceAnalysis != null && $scope.selectedFeatureAnalysis != null) {
 			var contentFeatureName;
@@ -357,7 +366,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	glueWS.addProjectUrlListener( {
 		reportProjectURL: function(projectURL) {
 
-			var moduleModePath = "module/webAnalysisTool";
+			var moduleModePath = "module/"+$scope.analysisModuleName;
 			
 			glueWS.runGlueCommand(moduleModePath, {
 		    	"list": { "variation-category": {} } 

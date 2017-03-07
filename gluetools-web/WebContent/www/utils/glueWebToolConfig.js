@@ -6,6 +6,7 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 	var projectBrowserURL;
 	var glueWSURL;
 	var rendererDialogs;
+	var analysisModuleName;
 	return {
 		setAnalysisToolURL: function(newURL) {
 			analysisToolURL = newURL;
@@ -34,6 +35,13 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 		},
 		getRendererDialogs: function() {
 			return rendererDialogs;
+		},
+		setAnalysisModuleName: function(newAnalysisModuleName) {
+			analysisModuleName = newAnalysisModuleName;
+			console.log("analysisModuleName set to: "+analysisModuleName);
+		},
+		getAnalysisModuleName: function() {
+			return analysisModuleName;
 		}
 	};
 });

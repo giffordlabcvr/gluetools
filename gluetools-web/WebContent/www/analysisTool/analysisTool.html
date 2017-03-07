@@ -30,19 +30,23 @@
 							<td ng-show="uploader.isHTML5" nowrap>{{
 								item.file.size/1024/1024|number:2 }} MB</td>
 							<td nowrap>
-								<div ng-show="item.variationCategorySelection.length == 0">None selected</div>
-								<div style="display:table;">
-									<div style="display:table-row;" ng-repeat="vCat in item.variationCategorySelection" >
-										<svg width="40px" height="22px" style="display:table-cell; padding-right:5px">
-											<rect ng-attr-class="vcat_{{vCat.name}}" y="15%" width="100%" height="70%"></rect>
-											<rect class="varBox" y="15%" width="100%" height="70%"></rect>
-										</svg>
-										<div style="display:table-cell; vertical-align: middle;">{{vCat.displayName}}</div>
+								<div ng-show="variationCategories.length == 0">None available</div>
+								<div ng-show="variationCategories.length > 0">
+									<div ng-show="item.variationCategorySelection.length == 0">None selected</div>
+									<div style="display:table;">
+										<div style="display:table-row;" ng-repeat="vCat in item.variationCategorySelection" >
+											<svg width="40px" height="22px" style="display:table-cell; padding-right:5px">
+												<rect ng-attr-class="vcat_{{vCat.name}}" y="15%" width="100%" height="70%"></rect>
+												<rect class="varBox" y="15%" width="100%" height="70%"></rect>
+											</svg>
+											<div style="display:table-cell; vertical-align: middle;">{{vCat.displayName}}</div>
+										</div>
 									</div>
 								</div>
 							</td>
 							<td>
 								<button type="button" class="btn btn-primary btn-xs"
+									ng-show="variationCategories.length > 0"
 									ng-click="selectVariationCategories(item)" 
 									ng-disabled="item.isReady || item.isUploading || item.isSuccess">
 									<span class="glyphicon glyphicon-list"></span> Select
@@ -105,8 +109,10 @@
 				<div class="btn-group">
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
 						ng-model="analysisView" btn-radio="'typingSummary'">Genotyping summary</label>
-					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
-						ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
+					<div ng-show="variationCategories.length > 0">
+						<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
+							ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
+					</div>
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" 
 						ng-model="analysisView" btn-radio="'genomeDetail'">Genome detail</label>
 				</div>
@@ -142,7 +148,7 @@
 							</thead>
 							<tbody>
 								<tr>
-									<td><b>Ancestor clade</b></td>
+									<td><b>Assigned clade</b></td>
 									<td ng-show="categoryResult.finalClade != null" colspan="2"><a href="#/project/alignment/{{categoryResult.finalClade}}" target="_blank">
 										{{categoryResult.finalCladeRenderedName}}</a></td>
 									<td ng-show="categoryResult.finalClade == null" colspan="2">Unknown</td>
@@ -155,7 +161,7 @@
 									</td>
 									<td ng-show="categoryResult.closestMemberSequenceID == null" colspan="2">Unknown</td>
 								</tr>
-								<tr ng-repeat="cladeResult in categoryResult.queryCladeResult">
+								<tr ng-repeat="cladeResult in categoryResult.queryCladeResult | filter: nonZeroCladeWeighting ">
 									<td ng-show="$first" rowspan="{{categoryResult.queryCladeResult.length}}">
 										<b>Clade weightings</b>
 									</td>

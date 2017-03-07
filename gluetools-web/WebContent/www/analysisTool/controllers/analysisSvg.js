@@ -20,6 +20,9 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 			numVarTracks: 0,
 			
 			findSegs: function(segs, startUIndex, endUIndex) {
+				if(segs == null) {
+					return [];
+				}
 				var lIndex = binarySearch(segs, 
 						function(seg) { return seg.endUIndex >= startUIndex; }
 				);
