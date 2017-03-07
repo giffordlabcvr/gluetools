@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.cayenne.exp.Expression;
 
@@ -16,5 +17,6 @@ public class TextFilePopulatorContext {
 	ConsoleCommandContext cmdContext;
 	List<Map<String,String>> results = new ArrayList<Map<String,String>>();
 	Boolean updateDB;
+	Set<String> fieldNames = null;
 	
 }

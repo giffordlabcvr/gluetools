@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.ModifiableFieldNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
@@ -91,13 +93,16 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	}
 
 	
-	private List<Map<String,String>> populate(ConsoleCommandContext cmdContext, String fileName, int batchSize, Optional<Expression> whereClause, Boolean preview) {
+	private List<Map<String,String>> populate(ConsoleCommandContext cmdContext, String fileName, int batchSize, Optional<Expression> whereClause, Boolean preview, List<String> fieldNames) {
 		byte[] fileBytes = cmdContext.loadBytes(fileName);
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
 		populatorContext.cmdContext = cmdContext;
 		populatorContext.whereClause = whereClause;
 		populatorContext.updateDB = !preview;
+		if(fieldNames != null) {
+			populatorContext.fieldNames = new LinkedHashSet<String>(fieldNames);
+		}
 		if(!numberColumns.isEmpty()) {
 			populatorContext.positionToColumn = new LinkedHashMap<Integer, List<BaseTextFilePopulatorColumn>>();
 			populatorContext.columnToPosition = new LinkedHashMap<BaseTextFilePopulatorColumn, Integer>();
@@ -189,7 +194,9 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 				if(columns != null) {
 					for(BaseTextFilePopulatorColumn populatorColumn : columns) {
 						if(!populatorColumn.getIdentifier().orElse(false)) {
-							
+							if(populatorContext.fieldNames != null && !populatorContext.fieldNames.contains(populatorColumn.getFieldName())) {
+								continue;
+							}
 							String fieldPopulatorResult = SequencePopulator.runFieldPopulator(populatorColumn, cellText);
 
 							FieldUpdate update = SequencePopulator
@@ -249,7 +256,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"[-b <batchSize>] [-w <whereClause>] [-p] -f <fileName>"},
+			docoptUsages={"[-b <batchSize>] [-w <whereClause>] [-p] -f <fileName> [<fieldName> ...]"},
 			docoptOptions={
 					"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
 					"-p, --preview                                  Preview only, no DB updates",
@@ -261,14 +268,19 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			furtherHelp="The file is loaded from a location relative to the current load/save directory."+
 			"The <batchSize> argument allows you to control how often updates are committed to the database "+
 					"during the import. The default is every 250 text file lines. A larger <batchSize> means fewer database "+
-					"accesses, but requires more Java heap memory.") 
+					"accesses, but requires more Java heap memory."+
+					"If <fieldName> arguments are supplied, the populator will not update any field unless it appears in the <fieldName> list. "+
+					"If no <fieldName> arguments are supplied, the populator may update any field.") 
 	public static class PopulateCommand extends ModulePluginCommand<TextFilePopulatorResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 
 		public static final String WHERE_CLAUSE = "whereClause";
+		public static final String FIELD_NAME = "fieldName";
+
 
 		private Integer batchSize;
 		private Boolean preview;
 		private String fileName;
+		private List<String> fieldNames;
 		private Optional<Expression> whereClause;
 		
 		
@@ -279,11 +291,15 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 			fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
 			preview = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "preview", false)).orElse(false);
+			fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
+			if(fieldNames.isEmpty()) {
+				fieldNames = null; // default fields
+			}
 		}
 		
 		@Override
 		protected TextFilePopulatorResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
-			return new TextFilePopulatorResult(populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize, whereClause, preview));
+			return new TextFilePopulatorResult(populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize, whereClause, preview, fieldNames));
 		}
 		
 		@CompleterClass
@@ -291,6 +307,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			public Completer() {
 				super();
 				registerPathLookup("fileName", false);
+				registerVariableInstantiator("fieldName", new ModifiableFieldNameInstantiator(ConfigurableTable.sequence.name()));
 			}
 		}
 
