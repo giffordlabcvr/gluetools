@@ -18,6 +18,7 @@ function addUtilsToScope($scope) {
 	$scope.toFixed = function(v,p) { return toFixed(v,p); }
 	$scope.renderDisplayName = renderDisplayName;
 	$scope.handleNull = handleNull;
+	$scope.collectionYearRange = collectionYearRange;
 }
 
 
@@ -34,6 +35,24 @@ function handleNull(text) {
 		return "-";
 	}
 	return text;
+}; 
+
+function collectionYearRange(earliest, latest) {
+	if(earliest == null && latest == null) {
+		return "-";
+	}
+	if(earliest != null && latest != null) {
+		if(earliest == latest) {
+			return earliest;
+		} else {
+			return earliest + " to " + latest;
+		}
+		
+	}
+	if(earliest == null) {
+		return latest + " or earlier";
+	}
+	return earliest + " or later";
 }; 
 
 
