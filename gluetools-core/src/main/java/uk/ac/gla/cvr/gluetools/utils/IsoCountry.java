@@ -261,16 +261,15 @@ public enum IsoCountry {
 	private String numeric;
 
 	private IsoCountry(String alpha3, String name, String alpha2, String numeric) {
-		this(alpha3, name, name, alpha2, numeric, Pattern.quote(name));
+		this(alpha3, name, name, alpha2, numeric, Pattern.quote(name.toUpperCase()));
 	}		
 	private IsoCountry(String alpha3, String shortName, String officialName, String alpha2, String numeric, String ... patternStrings) {
 		if(patternStrings.length == 0) {
 			throw new RuntimeException("No patterns for ISO country \""+shortName+"\"");
 		}
-		this.patterns = new Pattern[(patternStrings.length)*2];
+		this.patterns = new Pattern[(patternStrings.length)];
 		for(int i = 0; i < patternStrings.length; i++) {
-			patterns[i] = Pattern.compile(patternStrings[i]);
-			patterns[i+patternStrings.length] = Pattern.compile(patternStrings[i].toUpperCase());
+			patterns[i] = Pattern.compile(patternStrings[i], Pattern.CASE_INSENSITIVE);
 		}
 		this.shortName = shortName;
 		this.officialName = officialName;
