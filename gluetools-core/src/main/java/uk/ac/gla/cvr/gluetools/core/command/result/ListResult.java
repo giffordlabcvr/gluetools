@@ -41,7 +41,7 @@ public class ListResult extends TableResult {
 
 	
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		List<String> columnHeaders = super.getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps();
 		String objectType = getCommandDocument().getString(OBJECT_TYPE);

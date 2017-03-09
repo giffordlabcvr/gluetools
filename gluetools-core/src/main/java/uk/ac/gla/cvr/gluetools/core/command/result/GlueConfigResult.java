@@ -16,7 +16,7 @@ public class GlueConfigResult extends OkResult {
 	}
 
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		if(outputToConsole) {
 			renderCtx.output(glueConfig);
 		} else {

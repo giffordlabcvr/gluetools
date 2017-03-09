@@ -55,7 +55,7 @@ public class BaseTableResult<D> extends CommandResult {
 
 	
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		List<String> columnHeaders = getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps(columnHeaders);
 		ArrayList<TablePage> tablePages = renderToTablePages(columnHeaders, listOfMaps, renderCtx);
@@ -182,7 +182,7 @@ public class BaseTableResult<D> extends CommandResult {
 	}
 
 	public static ArrayList<TablePage> renderToTablePages(List<String> headers, List<Map<String, Object>> listOfMaps, 
-			CommandResultRenderingContext renderCtx) {
+			InteractiveCommandResultRenderingContext renderCtx) {
 		int numFound = listOfMaps.size();
 		ArrayList<TablePage> tablePages = new ArrayList<TablePage>();
 
@@ -251,7 +251,7 @@ public class BaseTableResult<D> extends CommandResult {
 	}
 
 	private static Map<String, Integer> establishWidths(List<String> headers,
-			CommandResultRenderingContext renderCtx,
+			InteractiveCommandResultRenderingContext renderCtx,
 			List<Map<String, String>> renderedRows,
 			Set<String> columnsWhichAllowSpaces) {
 		Map<String, Integer> widths = establishPreferredWidths(headers, renderedRows);
@@ -341,7 +341,7 @@ public class BaseTableResult<D> extends CommandResult {
 		}
 	}
 
-	public void interactiveTableRender(CommandResultRenderingContext renderCtx, String objectType,
+	public void interactiveTableRender(InteractiveCommandResultRenderingContext renderCtx, String objectType,
 			ArrayList<TablePage> tablePages) {
 		int pageNumber = 0;
 		boolean finished = false;

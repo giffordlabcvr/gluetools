@@ -1,9 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
@@ -63,7 +66,7 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 // TODO history should be stored in the DB.
 // TODO in batch mode, exceptions should go to stderr.
 @SuppressWarnings("rawtypes")
-public class Console implements CommandResultRenderingContext
+public class Console implements InteractiveCommandResultRenderingContext
 {
 	private static final String GLUE_PROMPT = "GLUE> ";
 	private static final String GLUE_CONSOLE_BATCH_CONTEXT_STACK = "glue.console.batchContextStack";
@@ -225,12 +228,60 @@ public class Console implements CommandResultRenderingContext
 				}
 			}
 		} else {
+			String nextCmdOutputFile = commandContext.getOptionValue(ConsoleOption.NEXT_CMD_OUTPUT_FILE);
+			if(nextCmdOutputFile != null) {
+				// unset here in case next command fails.
+				commandContext.unsetOptionValue(ConsoleOption.NEXT_CMD_OUTPUT_FILE);
+			}
 			CommandResult commandResult = command.execute(commandContext);
 			if(outputResultToConsole) {
 				renderCommandResult(commandResult);
 			}
+			if(nextCmdOutputFile != null && commandResult != null) {
+				ConsoleOutputFormat cmdOutputFileFormat = ConsoleOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_OUTPUT_FILE_FORMAT).toUpperCase());
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat);
+				commandResult.renderToConsole(fileRenderingContext);
+				try {
+					byte[] byteArray = baos.toByteArray();
+					commandContext.saveBytes(nextCmdOutputFile, byteArray);
+					GlueLogger.getGlueLogger().finest("Wrote "+byteArray.length+" bytes of command output to file "+nextCmdOutputFile);
+				} catch(Exception e) {
+					GlueLogger.getGlueLogger().warning("Unable to save command results to file: "+e.getMessage());
+				}
+			}
 			return commandClass;
 		}
+	}
+	
+	private class OutputStreamCommandResultRenderingContext implements CommandResultRenderingContext {
+		private PrintWriter printWriter;
+		private ConsoleOutputFormat consoleOutputFormat;
+		public OutputStreamCommandResultRenderingContext(OutputStream outputStream, ConsoleOutputFormat consoleOutputFormat) {
+			this.printWriter = new PrintWriter(outputStream);
+			this.consoleOutputFormat = consoleOutputFormat;
+		}
+		
+		@Override
+		public void output(String message) {
+			output(message, true);
+		}
+
+		@Override
+		public void output(String message, boolean newLine) {
+			if(newLine) {
+				printWriter.println(message);
+			} else {
+				printWriter.print(message);
+			}
+			printWriter.flush();
+		}
+
+		@Override
+		public ConsoleOutputFormat getConsoleOutputFormat() {
+			return this.consoleOutputFormat;
+		}
+		
 	}
 
 	public static Command buildCommand(

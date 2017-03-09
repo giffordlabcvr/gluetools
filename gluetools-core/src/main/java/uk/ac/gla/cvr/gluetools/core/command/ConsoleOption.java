@@ -1,8 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.command;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionException;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
@@ -62,6 +67,17 @@ public enum ConsoleOption {
 			GlueLogger.getGlueLogger().setLevel(Level.parse(newValue));
 		}
 		
+	},
+	CMD_OUTPUT_FILE_FORMAT("cmd-output-file-format", "Configures the format for command results saved to files", "xml", new String[]{"xml", "json", "tab", "csv"}),
+	NEXT_CMD_OUTPUT_FILE("next-cmd-output-file", "The next command's result will be saved to this file, then this option will be unset", null, null) {
+		@Override
+		public List<CompletionSuggestion> instantiateValue(
+				ConsoleCommandContext cmdContext,
+				@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			return AdvancedCmdCompleter.completePath(cmdContext, prefix, false);
+		}
+		
 	};
 	
 	private final String name;
@@ -94,6 +110,17 @@ public enum ConsoleOption {
 	
 	public void onSet(Console console, String newValue) {
 		
+	}
+
+	public List<CompletionSuggestion> instantiateValue(
+			ConsoleCommandContext cmdContext,
+			@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+			String prefix) {
+		String[] allowedValues = getAllowedValues();
+		if(allowedValues != null) {
+			return Arrays.asList(allowedValues).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+		} 
+		return null;
 	}
 	
 }

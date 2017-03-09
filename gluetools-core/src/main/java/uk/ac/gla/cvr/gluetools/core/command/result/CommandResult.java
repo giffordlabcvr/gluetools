@@ -46,7 +46,11 @@ public abstract class CommandResult {
 			renderToConsoleAsCsv(renderCtx);
 			break;
 		default:
-			renderToConsoleAsText(renderCtx);
+			if(renderCtx instanceof InteractiveCommandResultRenderingContext) {
+				renderToConsoleAsText((InteractiveCommandResultRenderingContext) renderCtx);
+			} else {
+				renderToConsoleAsXml(renderCtx);
+			}
 			break;
 		}
 	}
@@ -63,18 +67,18 @@ public abstract class CommandResult {
 	}
 
 	// default implementation
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		renderToConsoleAsXml(renderCtx);
 	}
 
 	// default implementation
 	protected void renderToConsoleAsTab(CommandResultRenderingContext renderCtx) {
-		renderToConsoleAsText(renderCtx);
+		renderToConsoleAsXml(renderCtx);
 	}
 
 	// default implementation
 	protected void renderToConsoleAsCsv(CommandResultRenderingContext renderCtx) {
-		renderToConsoleAsText(renderCtx);
+		renderToConsoleAsXml(renderCtx);
 	}
 
 	

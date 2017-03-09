@@ -16,7 +16,7 @@ public class CountResult extends MapResult {
 	}
 	
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		String objectType = getCommandDocument().getString(OBJECT_TYPE);
 		int count = getCommandDocument().getInteger(COUNT);
 		renderCtx.output(objectType+"s found: "+count);

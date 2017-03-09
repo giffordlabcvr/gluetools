@@ -25,7 +25,7 @@ public abstract class OkCrudResult extends OkResult {
 	}
 
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		super.renderToConsoleAsText(renderCtx);
 		CommandDocument commandDocument = getCommandDocument();
 		int number = commandDocument.getInteger(NUMBER);

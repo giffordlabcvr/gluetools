@@ -22,7 +22,7 @@ public class MapResult extends CommandResult {
 	}
 
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		CommandDocument commandDocument = getCommandDocument();
 		renderCtx.output(commandDocument.getRootName());
 		for(String fieldName: commandDocument.getFieldNames()) {

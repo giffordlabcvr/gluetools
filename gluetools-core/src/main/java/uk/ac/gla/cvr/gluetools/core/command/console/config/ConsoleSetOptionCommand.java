@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.command.console.config;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -64,10 +63,7 @@ public class ConsoleSetOptionCommand extends ConsoleOptionCommand<OkResult> {
 						Map<String, Object> bindings, String prefix) {
 					try {
 						ConsoleOption consoleOption = ConsoleOptionCommand.lookupOptionByName((String) bindings.get("optionName"));
-						String[] allowedValues = consoleOption.getAllowedValues();
-						if(allowedValues != null) {
-							return Arrays.asList(allowedValues).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
-						}
+						return consoleOption.instantiateValue(cmdContext, cmdClass, bindings, prefix);
 					} catch(ConsoleOptionException coe) {
 						// bad option name.
 					}

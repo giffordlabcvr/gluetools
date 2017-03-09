@@ -14,7 +14,7 @@ public class OkResult extends MapResult {
 	}
 
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		renderCtx.output("OK");
 	}
 

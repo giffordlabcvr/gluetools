@@ -2,7 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.console;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 
 public class ConsoleCommandResult extends MapResult {
@@ -19,7 +19,7 @@ public class ConsoleCommandResult extends MapResult {
 	}
 	
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		String text = getCommandDocument().getString("resultText");
 		if(wrap) {
 			int terminalWidth = renderCtx.getTerminalWidth();

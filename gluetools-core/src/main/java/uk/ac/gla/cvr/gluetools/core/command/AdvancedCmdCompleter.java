@@ -239,7 +239,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 				.collect(Collectors.toList());
 	}
 
-	private static List<CompletionSuggestion> completePath(ConsoleCommandContext cmdContext, String prefix, boolean directoriesOnly) {
+	public static List<CompletionSuggestion> completePath(ConsoleCommandContext cmdContext, String prefix, boolean directoriesOnly) {
 		// parent path might be
 		// the configured load-save-path if prefix does not have any path.
 		// an absolute path specified by the pathFromPrefix

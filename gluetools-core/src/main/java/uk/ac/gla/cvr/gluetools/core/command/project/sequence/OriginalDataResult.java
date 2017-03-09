@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 import java.util.Base64;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
@@ -16,7 +17,7 @@ public class OriginalDataResult extends MapResult {
 	}
 
 	@Override
-	protected void renderToConsoleAsText(CommandResultRenderingContext renderCtx) {
+	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		StringBuffer buf = new StringBuffer();
 		String formatName = getFormatString();
 		buf.append("Format: ");
