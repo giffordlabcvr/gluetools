@@ -41,7 +41,7 @@ public class DefaultObjectRenderer implements IObjectRenderer {
 	
 	@Override
 	public DocumentResult render(CommandContext cmdContext, GlueDataObject renderableObject) {
-		TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(renderableObject);
+		TemplateModel templateModel = FreemarkerUtils.templateModelForObject(renderableObject);
 		return IObjectRenderer.documentResultFromBytes(FreemarkerUtils.processTemplate(template, templateModel).getBytes());
 	}
 	

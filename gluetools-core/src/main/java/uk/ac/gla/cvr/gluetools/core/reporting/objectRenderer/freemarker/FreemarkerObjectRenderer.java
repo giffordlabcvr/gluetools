@@ -37,7 +37,7 @@ public class FreemarkerObjectRenderer extends ObjectRenderer<FreemarkerObjectRen
 					getModuleName()+":"+templateFileName, new String(templateBytes),  
 						cmdContext.getGluetoolsEngine().getFreemarkerConfiguration());
 		}
-		TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(renderableObject);
+		TemplateModel templateModel = FreemarkerUtils.templateModelForObject(renderableObject);
 		return FreemarkerUtils.processTemplate(template, templateModel).getBytes();
 	}
 

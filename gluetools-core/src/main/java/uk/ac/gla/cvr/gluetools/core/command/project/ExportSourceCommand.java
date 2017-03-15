@@ -140,7 +140,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			SequenceFormat seqFormat = sequence.getSequenceFormat();
 			String fileName = sequenceID;
 			if(idTemplate != null) {
-				fileName = FreemarkerUtils.processTemplate(idTemplate, FreemarkerUtils.templateModelForGlueDataObject(sequence));
+				fileName = FreemarkerUtils.processTemplate(idTemplate, FreemarkerUtils.templateModelForObject(sequence));
 			}
 			File filePath = new File(sourceDirFile, fileName+"."+seqFormat.getGeneratedFileExtension(cmdContext));
 			if(incremental && consoleCmdContext.isFile(filePath.toString())) {

@@ -66,7 +66,7 @@ public class TreeTransformer extends ModulePlugin<TreeTransformer> {
 					throw new TreeTransformerException(TreeTransformerException.Code.MULTIPLE_SEQUENCES_MATCH_QUERY, sequenceIdentifingClause);
 				}
 				Sequence sequence = sequences.get(0);
-				TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(sequence);
+				TemplateModel templateModel = FreemarkerUtils.templateModelForObject(sequence);
 				String newName = FreemarkerUtils.processTemplate(outputLeafTemplate, templateModel);
 				phyloLeaf.setName(newName);
 			}

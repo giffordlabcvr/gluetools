@@ -62,7 +62,7 @@ public class FigTreeAnnotationExporter extends ModulePlugin<FigTreeAnnotationExp
 				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		List<List<String>> allRows = new ArrayList<List<String>>();
 		for(AlignmentMember member: allMembers) {
-			TemplateModel memberTemplateModel = FreemarkerUtils.templateModelForGlueDataObject(member);
+			TemplateModel memberTemplateModel = FreemarkerUtils.templateModelForObject(member);
 			List<String> rowValues = new ArrayList<String>();
 			rowValues.add(FreemarkerUtils.processTemplate(memberNameTemplate, memberTemplateModel));
 			List<FigTreeAnnotation> figTreeAnnotationsToUse = null;

@@ -35,7 +35,7 @@ public class AbstractFastaExporter<T extends AbstractFastaExporter<T>> extends M
 	}
 
 	protected String generateFastaId(Sequence sequence) {
-		TemplateModel templateModel = FreemarkerUtils.templateModelForGlueDataObject(sequence);
+		TemplateModel templateModel = FreemarkerUtils.templateModelForObject(sequence);
 		return FreemarkerUtils.processTemplate(idTemplate, templateModel);
 	}
 

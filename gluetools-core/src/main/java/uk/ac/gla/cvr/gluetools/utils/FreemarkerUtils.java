@@ -5,7 +5,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.UUID;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtilsException.Code;
 import freemarker.core.Environment;
 import freemarker.core.ParseException;
@@ -51,7 +50,8 @@ public class FreemarkerUtils {
 	}
 
 	// pretty sure this can be replaced by Configuration.getObjectWrapper().wrap(renderableObject)?
-	public static TemplateModel templateModelForGlueDataObject(GlueDataObject renderableObject) {
+	// renderableObject can definitely be a GlueDataObject or a Collection
+	public static TemplateModel templateModelForObject(Object renderableObject) {
 		DefaultObjectWrapperBuilder objectWrapperBuilder = new DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_21);
 		DefaultObjectWrapper objectWrapper = objectWrapperBuilder.build();
 
