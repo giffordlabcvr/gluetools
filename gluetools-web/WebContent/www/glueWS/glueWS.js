@@ -1,26 +1,23 @@
-var glueWS = angular.module('glueWS', ['glueWebToolConfig']);
+var glueWS = angular.module('glueWS', ['glueWebToolConfig',
+                           		    'angulartics',
+                        		    'angulartics.google.analytics']);
 
 
-glueWS.factory('glueWS', function ($http, glueWebToolConfig) {
+glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics) {
 	var projectURL;
 	var urlListenerCallbacks = [];
-	/*$http.get('../main/js/hcvApp/glueProjectURL.json').success(function(data) {
-        projectURL = data.glueProjectURL;
-        console.log("Project URL: "+projectURL);
-        for(var i = 0; i < urlListenerCallbacks.length; i++) {
-            console.log("callback: "+i);
-        	urlListenerCallbacks[i].reportProjectURL(projectURL);
-        }
-        urlListenerCallbacks = [];
-    })
-    .error(function(data,status,error,config){
-        console.log("Unable to load GLUE project URL: "+data);
-    });*/
 	return {
 		setProjectURL: function(newURL) {
 			projectURL = newURL;
 		},
 		runGlueCommand: function(modePath, command) {
+			// logging all glue requests might be overkill? 
+			// we could have a boolean used by the client indicating whether
+			// to log it.
+    		/* $analytics.eventTrack("commandRequest", 
+    				{  category: 'glue', 
+    					label: 'modePath:'+modePath+
+    							',command:'+JSON.stringify(command) }); */
 			return $http.post(projectURL+"/"+modePath, command);
 		},
 		addProjectUrlListener: function(urlListenerCallback) {
@@ -45,6 +42,10 @@ glueWS.factory('glueWS', function ($http, glueWebToolConfig) {
 					  if(pairs.length > 0) {
 						  var exceptionName = pairs[0][0];
 						  var exceptionObj = pairs[0][1];
+				    		$analytics.eventTrack("commandError", 
+				    				{  category: 'glue', 
+				    					label: 'exceptionName:'+exceptionName+
+				    							',exceptionObj:'+JSON.stringify(exceptionObj) });
 						  if(exceptionObj && _.isObject(exceptionObj)) {
 							  var objMessage = exceptionObj.message;
 							  if(objMessage) {

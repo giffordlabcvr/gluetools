@@ -11,16 +11,19 @@ console.log("userAgent.browser.version", userAgent.browser.version);
 
 
 var analysisTool = angular.module('analysisTool', 
-		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'glueWebToolConfig']);
+		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main', 'glueWebToolConfig',
+		    'angulartics',
+		    'angulartics.google.analytics']);
 
 console.log("after analysisTool module definition");
 
 
-analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig',
-    function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig) {
+analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig', '$analytics',
+    function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig, $analytics) {
 
 	addUtilsToScope($scope);
 
+	$scope.analytics = $analytics;
 	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
 	$scope.analysisModuleName = glueWebToolConfig.getAnalysisModuleName()
 
@@ -403,11 +406,40 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
     	item.formData = [{command: JSON.stringify(commandObject)}];
         console.info('formData', JSON.stringify(item.formData));
         console.info('onBeforeUploadItem', item);
+		$scope.analytics.eventTrack("submitSequence", 
+				{   category: 'analysisTool', 
+					label: 'fileName:'+item.file.name+',fileSize:'+item.file.size+',vCatNames:'+vCatNames.join('&') });
+
+
     };
     uploader.onSuccessItem = function(fileItem, response, status, headers) {
         console.info('onSuccessItem', fileItem, response, status, headers);
-        fileItem.webAnalysisResult = response.webAnalysisResult;
-        
+		$scope.analytics.eventTrack("sequenceResult", 
+				{  category: 'analysisTool', 
+					label: 'fileName:'+fileItem.file.name+',fileSize:'+fileItem.file.size });
+		fileItem.webAnalysisResult = response.webAnalysisResult;
+        for(var i = 0 ; i < fileItem.webAnalysisResult.queryAnalysis.length; i++) {
+        	var queryAnalysis = fileItem.webAnalysisResult.queryAnalysis[i];
+        	var fastaId = queryAnalysis.fastaId;
+        	var assignment = '';
+        	for(var j = 0 ; j < queryAnalysis.queryCladeCategoryResult.length; j++) {
+        		var queryCladeCategoryResult = queryAnalysis.queryCladeCategoryResult[j]; 
+        		var categoryName = queryCladeCategoryResult.categoryName;
+        		var finalClade = queryCladeCategoryResult.finalClade;
+        		if(finalClade == null) {
+        			finalClade = 'unknown';
+        		}
+        		if(j > 0) {
+        			assignment += ','
+        		}
+        		assignment += categoryName+':'+finalClade;
+        	}
+    		$scope.analytics.eventTrack("cladeAssignment", 
+    				{  category: 'analysisTool', 
+    					label: 'fileName:'+fileItem.file.name+
+    							',fastaId:'+fastaId+
+    							','+assignment});
+        }
     };
     uploader.onErrorItem = function(fileItem, response, status, headers) {
         console.info('onErrorItem', fileItem, response, status, headers);
