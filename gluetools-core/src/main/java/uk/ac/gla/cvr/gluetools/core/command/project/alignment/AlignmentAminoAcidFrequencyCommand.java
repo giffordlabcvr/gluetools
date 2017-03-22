@@ -102,7 +102,10 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			for(LabeledQueryAminoAcid labeledQueryAminoAcid: labeledQueryAminoAcids) {
 				String codonLabel = labeledQueryAminoAcid.getLabeledAminoAcid().getLabeledCodon().getCodonLabel();
 				String aa = labeledQueryAminoAcid.getLabeledAminoAcid().getAminoAcid();
-				codonToRefCodonInfo.get(codonLabel).addAaMamber(aa.charAt(0));
+				char aaChar = aa.charAt(0);
+				if(aaChar != 'X') { // an X doesn't count as a member covering the codon.
+					codonToRefCodonInfo.get(codonLabel).addAaMamber(aaChar);
+				}
 			}
 		}
 
