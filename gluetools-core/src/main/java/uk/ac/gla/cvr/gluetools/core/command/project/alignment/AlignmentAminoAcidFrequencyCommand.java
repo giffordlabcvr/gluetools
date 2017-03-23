@@ -24,9 +24,9 @@ import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAmino
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -73,41 +73,58 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	@Override
 	public AlignmentAminoAcidFrequencyResult execute(CommandContext cmdContext) {
 		Alignment alignment = lookupAlignment(cmdContext);
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
-		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
-		FeatureLocation scannedFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+		alignment.getConstrainingRef(); // check constrained
+		// check it is a coding feature.
+		GlueDataObject
+			.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false)
+			.getFeature().checkCodesAminoAcids();
 		List<LabeledAminoAcidFrequency> resultRowData = alignmentAminoAcidFrequencies(
-				cmdContext, alignment, ancConstrainingRef, scannedFeatureLoc, almtMembers);
+				cmdContext, getAlignmentName(), acRefName, featureName, whereClause, recursive);
 		return new AlignmentAminoAcidFrequencyResult(resultRowData);
 	}
 
 	public static List<LabeledAminoAcidFrequency> alignmentAminoAcidFrequencies(
-			CommandContext cmdContext, Alignment alignment, 
-			ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc,
-			List<AlignmentMember> almtMembers) {
-		Feature feature = scannedFeatureLoc.getFeature();
-		feature.checkCodesAminoAcids();
-
-		Map<String, RefCodonInfo> codonToRefCodonInfo = new LinkedHashMap<String,RefCodonInfo>();
-		List<LabeledCodon> labeledCodons = scannedFeatureLoc.getLabeledCodons(cmdContext);
-		for(LabeledCodon labeledCodon: labeledCodons) {
-			codonToRefCodonInfo.put(labeledCodon.getCodonLabel(), new RefCodonInfo(labeledCodon));
-		}
+			CommandContext cmdContext, String almtName, String acRefName, String featureName, 
+			Optional<Expression> whereClause, Boolean recursive) {
 		
-		for(AlignmentMember almtMember: almtMembers) {
-			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
-					MemberAminoAcidCommand.memberAminoAcids(cmdContext, almtMember, 
-							ancConstrainingRef, scannedFeatureLoc);
-			for(LabeledQueryAminoAcid labeledQueryAminoAcid: labeledQueryAminoAcids) {
-				String codonLabel = labeledQueryAminoAcid.getLabeledAminoAcid().getLabeledCodon().getCodonLabel();
-				String aa = labeledQueryAminoAcid.getLabeledAminoAcid().getAminoAcid();
-				char aaChar = aa.charAt(0);
-				if(aaChar != 'X') { // an X doesn't count as a member covering the codon.
-					codonToRefCodonInfo.get(codonLabel).addAaMamber(aaChar);
+		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, almtName, recursive, whereClause);
+		GlueLogger.getGlueLogger().finest("Computing amino acid frequencies for "+totalMembers+" alignment members");
+		
+		Map<String, RefCodonInfo> codonToRefCodonInfo = initCodonToRefInfoMap(cmdContext, acRefName, featureName);
+		
+		int batchSize = 500;
+		int offset = 0;
+		
+		while(offset < totalMembers) {
+			int lastBatchIndex = Math.min(offset+batchSize, totalMembers);
+
+			Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
+			ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
+			FeatureLocation scannedFeatureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+
+			GlueLogger.getGlueLogger().finest("Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
+			List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause, offset, batchSize, batchSize);
+			GlueLogger.getGlueLogger().finest("Computing amino acid frequencies for members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
+
+			for(AlignmentMember almtMember: almtMembers) {
+				List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
+						MemberAminoAcidCommand.memberAminoAcids(cmdContext, almtMember, 
+								ancConstrainingRef, scannedFeatureLoc);
+				for(LabeledQueryAminoAcid labeledQueryAminoAcid: labeledQueryAminoAcids) {
+					String codonLabel = labeledQueryAminoAcid.getLabeledAminoAcid().getLabeledCodon().getCodonLabel();
+					String aa = labeledQueryAminoAcid.getLabeledAminoAcid().getAminoAcid();
+					char aaChar = aa.charAt(0);
+					if(aaChar != 'X') { // an X doesn't count as a member covering the codon.
+						codonToRefCodonInfo.get(codonLabel).addAaMamber(aaChar);
+					}
 				}
 			}
+			cmdContext.newObjectContext();
+			offset = offset+batchSize;
 		}
+		GlueLogger.getGlueLogger().finest("Computed amino acid frequencies for "+totalMembers+" members");
+		cmdContext.newObjectContext();
 
 		List<LabeledAminoAcidFrequency> resultRowData = new ArrayList<LabeledAminoAcidFrequency>();
 		codonToRefCodonInfo.forEach((codonLabel, refCodonInfo) -> {
@@ -125,6 +142,19 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		});
 		return resultRowData;
 	}
+
+	private static Map<String, RefCodonInfo> initCodonToRefInfoMap(
+			CommandContext cmdContext, String acRefName, String featureName) {
+		Map<String, RefCodonInfo> codonToRefCodonInfo = new LinkedHashMap<String,RefCodonInfo>();
+		FeatureLocation scannedFeatureLoc = 
+				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+		List<LabeledCodon> labeledCodons = scannedFeatureLoc.getLabeledCodons(cmdContext);
+		for(LabeledCodon labeledCodon: labeledCodons) {
+			codonToRefCodonInfo.put(labeledCodon.getCodonLabel(), new RefCodonInfo(labeledCodon));
+		}
+		return codonToRefCodonInfo;
+	}
+
 
 	
 	private static class RefCodonInfo {

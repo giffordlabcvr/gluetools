@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.curation.sequenceMergers;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"merge", "almt-rows"}, 

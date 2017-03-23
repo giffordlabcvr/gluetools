@@ -2,7 +2,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
 import java.util.Base64;
 
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;

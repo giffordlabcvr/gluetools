@@ -10,7 +10,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
 @CommandClass(
@@ -32,9 +31,9 @@ public class GenerateVariationUncommonAasCommand extends AbstractAnalyseAasComma
 	protected CreateResult execute(CommandContext cmdContext, CommonAaAnalyser commonAaAnalyser) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(getAlignmentName()));
 		alignment.getAncConstrainingRef(cmdContext, getAcRefName());
-		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, getAcRefName());
 
-		List<CommonAminoAcids> commonAas = commonAaAnalyser.commonAas(cmdContext, alignment, ancConstrainingRef, getFeatureName(), getWhereClause(), getRecursive());
+		List<CommonAminoAcids> commonAas = 
+				commonAaAnalyser.commonAas(cmdContext, getAlignmentName(), getAcRefName(), getFeatureName(), getWhereClause(), getRecursive());
 		
 		List<Map<String,String>> variationPkMaps = commonAaAnalyser.generateVariationUncommonAas(cmdContext, commonAas);
 		

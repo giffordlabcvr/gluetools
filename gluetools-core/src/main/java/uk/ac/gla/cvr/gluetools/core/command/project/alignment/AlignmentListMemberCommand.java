@@ -98,6 +98,13 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 		return GlueDataObject.count(cmdContext, selectQuery);
 	}
 
+	public static int countMembers(CommandContext cmdContext, String almtName,
+			Boolean recursive, Optional<Expression> whereClause) {
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
+		return countMembers(cmdContext, alignment, recursive, whereClause);
+	}
+
+	
 	
 	public static List<AlignmentMember> listMembers(CommandContext cmdContext,
 			Alignment alignment, Boolean recursive, Optional<Expression> whereClause,

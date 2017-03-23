@@ -23,10 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationCreatePatternLocCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
@@ -78,23 +75,15 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 	}
 
 	public List<CommonAminoAcids> commonAas(CommandContext cmdContext,
-			Alignment alignment, ReferenceSequence acRef, String featureName,
+			String alignmentName, String acRefName, String featureName,
 			Optional<Expression> whereClause, Boolean recursive) {
-
-		String acRefName = acRef.getName();
-		
-		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-
-		FeatureLocation scannedFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, feature.getName()), true);
-
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, true, whereClause);
-		if(almtMembers.size() < minSampleSize) {
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		int memberCount = AlignmentListMemberCommand.countMembers(cmdContext, alignment, true, whereClause);
+		if(memberCount < minSampleSize) {
 			return Collections.emptyList();
 		}
 		List<LabeledAminoAcidFrequency> almtAaFreqs = 
-				AlignmentAminoAcidFrequencyCommand.alignmentAminoAcidFrequencies(cmdContext, alignment, acRef, 
-						scannedFeatureLoc, almtMembers);
+				AlignmentAminoAcidFrequencyCommand.alignmentAminoAcidFrequencies(cmdContext, alignmentName, acRefName, featureName, whereClause, recursive);
 
 		Map<String, CommonAminoAcids> codonLabelToCommonAas = new LinkedHashMap<String, CommonAminoAcids>();
 		almtAaFreqs.forEach(almtAaFreq -> {
@@ -120,6 +109,8 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 		
 		List<CommonAminoAcids> result = new ArrayList<CommonAminoAcids>(codonLabelToCommonAas.values());
 		
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName), false);
+
 		final CodonLabeler codonLabeler = feature.getCodonLabelerModule(cmdContext);
 		Collections.sort(result, new Comparator<CommonAminoAcids>(){
 			@Override

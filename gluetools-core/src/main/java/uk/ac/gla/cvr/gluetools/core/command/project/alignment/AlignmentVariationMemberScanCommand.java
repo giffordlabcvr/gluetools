@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
@@ -76,34 +77,51 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 	
 	@Override
 	public AlignmentVariationMemberScanResult execute(CommandContext cmdContext) {
-		Alignment alignment = lookupAlignment(cmdContext);
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
-		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
-		FeatureLocation scannedFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
-		Variation variation = 
-				GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(acRefName, featureName, variationName), false);
 		List<MemberVariationScanResult> resultRowData = alignmentMemberVariationScan(
-				cmdContext, alignment, ancConstrainingRef, scannedFeatureLoc, variation, almtMembers, excludeAbsent);
+				cmdContext, getAlignmentName(), acRefName, featureName, variationName, whereClause, recursive, excludeAbsent);
 		return new AlignmentVariationMemberScanResult(resultRowData);
 	}
 
 	public static List<MemberVariationScanResult> alignmentMemberVariationScan(
-			CommandContext cmdContext, Alignment alignment, 
-			ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc, Variation variation,
-			List<AlignmentMember> almtMembers, boolean excludeAbsent) {
-
+			CommandContext cmdContext, String alignmentName, 
+			String acRefName, String featureName, String variationName,
+			Optional<Expression> whereClause, boolean recursive,
+			boolean excludeAbsent) {
+		
+		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, alignmentName, recursive, whereClause);
+		
+		int batchSize = 500;
+		int offset = 0;
+		
 		List<MemberVariationScanResult> membVsrList = new ArrayList<MemberVariationScanResult>();
-			
-		for(AlignmentMember almtMember: almtMembers) {
-			
-			List<VariationScanResult> scanResults = 
-					MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
-							scannedFeatureLoc, Arrays.asList(variation), excludeAbsent);
-			if(scanResults.size() > 0) {
-				membVsrList.add(new MemberVariationScanResult(almtMember, scanResults.get(0)));
+
+		while(offset < totalMembers) {
+			int lastBatchIndex = Math.min(offset+batchSize, totalMembers);
+
+			Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), false);
+			ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
+			FeatureLocation scannedFeatureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+			Variation variation = 
+					GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(acRefName, featureName, variationName), false);
+
+			GlueLogger.getGlueLogger().finest("Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
+			List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause, offset, batchSize, batchSize);
+			GlueLogger.getGlueLogger().finest("Scanning variation for members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
+
+			for(AlignmentMember almtMember: almtMembers) {
+				List<VariationScanResult> scanResults = 
+						MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
+								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent);
+				if(scanResults.size() > 0) {
+					membVsrList.add(new MemberVariationScanResult(almtMember, scanResults.get(0)));
+				}
 			}
+			cmdContext.newObjectContext();
+			offset = offset+batchSize;
 		}
+		GlueLogger.getGlueLogger().finest("Scanned variation for "+totalMembers+" members");
+		cmdContext.newObjectContext();
 		return membVsrList;
 	}
 
