@@ -17,9 +17,9 @@ public class MemberVariationScanResult extends BaseTableResult<VariationScanResu
 	public MemberVariationScanResult(List<VariationScanResult> rowData) {
 		super("memberVariationScanResult", 
 				rowData, 
-				column(REF_SEQ_NAME, vsr -> vsr.getVariation().getFeatureLoc().getReferenceSequence().getName()),
-				column(FEATURE_NAME, vsr -> vsr.getVariation().getFeatureLoc().getFeature().getName()),
-				column(VARIATION_NAME, vsr -> vsr.getVariation().getName()),
+				column(REF_SEQ_NAME, vsr -> vsr.getVariationReferenceName()),
+				column(FEATURE_NAME, vsr -> vsr.getVariationFeatureName()),
+				column(VARIATION_NAME, vsr -> vsr.getVariationName()),
 				column(PRESENT, vsr -> vsr.isPresent()));
 	}
 

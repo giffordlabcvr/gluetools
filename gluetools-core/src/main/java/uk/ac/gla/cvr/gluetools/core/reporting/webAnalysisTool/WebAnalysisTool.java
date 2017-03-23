@@ -218,9 +218,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							}
 							
 							variationScanResults.forEach(vsr -> {
-								FeatureLocation vsrFeatureLoc = vsr.getVariation().getFeatureLoc();
-								String groupRefName = vsrFeatureLoc.getReferenceSequence().getName();
-								String groupFeatureName = vsrFeatureLoc.getFeature().getName();
+								String groupRefName = vsr.getVariationReferenceName();
+								String groupFeatureName = vsr.getVariationFeatureName();
 								VariationMatchGroup.Key key = 
 										new VariationMatchGroup.Key(groupRefName, groupFeatureName, vCatName);
 								Map<VariationMatchGroup.Key, VariationMatchGroup> variationMatchKeyToGroupMap;
@@ -239,8 +238,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									variationMatchKeyToGroupMap.put(key, variationMatchGroup);
 								}
 								VariationMatch variationMatch = new VariationMatch();
-								variationMatch.variationName = vsr.getVariation().getName();
-								variationMatch.variationRenderedName = vsr.getVariation().getRenderedName();
+								variationMatch.variationName = vsr.getVariationName();
+								variationMatch.variationRenderedName = vsr.getVariationRenderedName();
 								variationMatchGroup.variationMatch.add(variationMatch);
 								if(vsr.isPresent()) {
 									List<QueryAlignedSegment> vsrQaSegs = vsr.getQueryMatchLocations()

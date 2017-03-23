@@ -232,11 +232,11 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 						}
 
 						for(VariationScanResult variationScanResult: variationScanResults) {
-							Variation variation = variationScanResult.getVariation();
-							VariationInfo variationInfo = variationNameToInfo.get(variation.getName());
+							String variationName = variationScanResult.getVariationName();
+							VariationInfo variationInfo = variationNameToInfo.get(variationName);
 							if(variationInfo == null) {
-								variationInfo = new VariationInfo(variation);
-								variationNameToInfo.put(variation.getName(), variationInfo);
+								variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getMinLocStart(), variationScanResult.getMaxLocEnd());
+								variationNameToInfo.put(variationName, variationInfo);
 							}
 							if(variationScanResult.isPresent()) {
 								variationInfo.readsConfirmedPresent++;
@@ -263,7 +263,8 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 							int readsWhereAbsent = vInfo.readsConfirmedAbsent;
 							double pctWherePresent = 100.0 * readsWherePresent / (readsWherePresent + readsWhereAbsent);
 							double pctWhereAbsent = 100.0 * readsWhereAbsent / (readsWherePresent + readsWhereAbsent);
-							return new VariationScanReadCount(vInfo.variation, 
+							return new VariationScanReadCount(vInfo.variationPkMap,
+									vInfo.minLocStart, vInfo.maxLocEnd,
 									readsWherePresent, pctWherePresent, 
 									readsWhereAbsent, pctWhereAbsent);
 						})
@@ -292,12 +293,15 @@ public class SamVariationScanCommand extends SamReporterCommand<SamVariationScan
 	}
 
 	private class VariationInfo {
-		Variation variation;
+		Map<String, String> variationPkMap;
+		int minLocStart, maxLocEnd;
 		int readsConfirmedPresent = 0;
 		int readsConfirmedAbsent = 0;
-		public VariationInfo(Variation variation) {
+		public VariationInfo(Map<String,String> variationPkMap, int minLocStart, int maxLocEnd) {
 			super();
-			this.variation = variation;
+			this.variationPkMap = variationPkMap;
+			this.minLocStart = minLocStart;
+			this.maxLocEnd = maxLocEnd;
 		}
 	}
 	

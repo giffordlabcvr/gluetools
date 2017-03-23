@@ -19,9 +19,9 @@ public class SamVariationScanResult extends BaseTableResult<VariationScanReadCou
 	public SamVariationScanResult(List<VariationScanReadCount> rowData) {
 		super("samVariationsScanResult", 
 				rowData,
-				column(REF_SEQ_NAME, vsrc -> vsrc.getVariation().getFeatureLoc().getReferenceSequence().getName()), 
-				column(FEATURE_NAME, vsrc -> vsrc.getVariation().getFeatureLoc().getFeature().getName()), 
-				column(VARIATION_NAME, vsrc -> vsrc.getVariation().getName()), 
+				column(REF_SEQ_NAME, vsrc -> vsrc.getVariationReferenceName()), 
+				column(FEATURE_NAME, vsrc -> vsrc.getVariationFeatureName()), 
+				column(VARIATION_NAME, vsrc -> vsrc.getVariationName()), 
 				column(READS_PRESENT, vsrc -> vsrc.getReadsWherePresent()), 
 				column(PCT_PRESENT, vsrc -> vsrc.getPctWherePresent()), 
 				column(READS_ABSENT, vsrc -> vsrc.getReadsWhereAbsent()),
