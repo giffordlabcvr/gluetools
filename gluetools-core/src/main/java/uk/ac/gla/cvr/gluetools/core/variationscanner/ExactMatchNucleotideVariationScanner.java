@@ -21,14 +21,15 @@ public class ExactMatchNucleotideVariationScanner extends BaseNucleotideVariatio
 	public VariationScanResult scanNucleotides(Variation variation, NtQueryAlignedSegment ntQaSeg) {
 		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 
-		for(PatternLocation pLoc : variation.getPatternLocs()) {
+		for(int plocIdx = 0; plocIdx < variation.getPatternLocs().size(); plocIdx++) {
+			PatternLocation pLoc = variation.getPatternLocs().get(plocIdx);
 			PLocScanResult pLocScanResult;
 
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
 			if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
 				// query segment does not cover pattern loc
-				pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+				pLocScanResult = new NucleotidePLocScanResult(plocIdx, Collections.emptyList(),
 						Collections.emptyList()); // no match in this pattern loc
 			} else {
 				ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
@@ -36,7 +37,7 @@ public class ExactMatchNucleotideVariationScanner extends BaseNucleotideVariatio
 						ReferenceSegment.cloneLeftSegMerger());
 				if(intersection.isEmpty()) {
 					// query segment does not cover pattern loc
-					pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+					pLocScanResult = new NucleotidePLocScanResult(plocIdx, Collections.emptyList(),
 							Collections.emptyList()); // no match in this pattern loc
 				} else {
 					NtQueryAlignedSegment intersectionSeg = intersection.get(0);
@@ -45,10 +46,10 @@ public class ExactMatchNucleotideVariationScanner extends BaseNucleotideVariatio
 					if(StringUtils.charSequencesEqual(pLoc.getPattern(), nucleotides)) {
 						int ntStart = zeroIndexNtStart;
 						int ntEnd = zeroIndexNtStart+nucleotides.length()-1;
-						pLocScanResult = new AminoAcidPLocScanResult(Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
+						pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
 								Arrays.asList(nucleotides.toString())); // single match in this pattern loc
 					} else {
-						pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+						pLocScanResult = new NucleotidePLocScanResult(plocIdx, Collections.emptyList(),
 								Collections.emptyList()); // no match in this pattern loc
 					}
 				}

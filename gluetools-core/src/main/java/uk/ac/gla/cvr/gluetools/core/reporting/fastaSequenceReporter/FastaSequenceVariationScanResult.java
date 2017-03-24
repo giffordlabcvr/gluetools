@@ -3,29 +3,25 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
-public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanResult> {
+public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanResultRow> {
 
 	public static final String 
 		REF_SEQ_NAME = "referenceName",
 		FEATURE_NAME = "featureName",
-		VARIATION_NAME = "variationName",
-		PRESENT = "present",
-		QUERY_NT_START = "queryNtStart",
-		QUERY_NT_END = "queryNtEnd";
+		VARIATION_NAME = "variationName";
 
-
-	public FastaSequenceVariationScanResult(List<VariationScanResult> rowData) {
+	public FastaSequenceVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult> rowData) {
 		super("fastaSequenceVariationScanResult", 
-				rowData, 
-				column(REF_SEQ_NAME, vsr -> vsr.getVariationReferenceName()),
-				column(FEATURE_NAME, vsr -> vsr.getVariationFeatureName()),
-				column(VARIATION_NAME, vsr -> vsr.getVariationName()),
-				column(PRESENT, vsr -> vsr.isPresent()),
-				column(QUERY_NT_START, vsr -> ReferenceSegment.minRefStart(vsr.getQueryMatchLocations())), 
-				column(QUERY_NT_END, vsr -> ReferenceSegment.maxRefEnd(vsr.getQueryMatchLocations())));
+				renderHints.scanResultsToResultRows(rowData), 
+				renderHints.generateResultColumns(
+					column(REF_SEQ_NAME, vsr -> vsr.getVariationReferenceName()),
+					column(FEATURE_NAME, vsr -> vsr.getVariationFeatureName()),
+					column(VARIATION_NAME, vsr -> vsr.getVariationName())
+				));
 	}
 
 }

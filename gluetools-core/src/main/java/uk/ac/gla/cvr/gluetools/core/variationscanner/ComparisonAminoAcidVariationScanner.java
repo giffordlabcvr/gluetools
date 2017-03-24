@@ -24,7 +24,8 @@ public class ComparisonAminoAcidVariationScanner extends BaseAminoAcidVariationS
 		
 		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 		
-		for(PatternLocation pLoc : variation.getPatternLocs()) {
+		for(int plocIdx = 0; plocIdx < variation.getPatternLocs().size(); plocIdx++) {
+			PatternLocation pLoc = variation.getPatternLocs().get(plocIdx);
 			PLocScanResult pLocScanResult;
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
@@ -35,7 +36,7 @@ public class ComparisonAminoAcidVariationScanner extends BaseAminoAcidVariationS
 			
 			if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
 				// pattern location is outside query translation.
-				pLocScanResult = new AminoAcidPLocScanResult(Collections.emptyList(),
+				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Collections.emptyList(),
 						Collections.emptyList()); // no match in this pattern loc
 			} else {
 				int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
@@ -46,7 +47,7 @@ public class ComparisonAminoAcidVariationScanner extends BaseAminoAcidVariationS
 				int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
 				int ntStart = scanQueryNtStart;
 				int ntEnd = scanQueryNtStart+(queryAminoAcids.length() * 3)-1;
-				pLocScanResult = new AminoAcidPLocScanResult(Arrays.asList(new ReferenceSegment(ntStart, ntEnd)), 
+				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Arrays.asList(new ReferenceSegment(ntStart, ntEnd)), 
 						Arrays.asList(queryAminoAcids.toString())); // single match
 			}
 			pLocScanResults.add(pLocScanResult);

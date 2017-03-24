@@ -31,20 +31,21 @@ public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScan
 	public VariationScanResult scanNucleotides(Variation variation, NtQueryAlignedSegment ntQaSeg) {
 		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 
-		for(PatternLocation pLoc : variation.getPatternLocs()) {
+		for(int plocIdx = 0; plocIdx < variation.getPatternLocs().size(); plocIdx++) {
+			PatternLocation pLoc = variation.getPatternLocs().get(plocIdx);
 			PLocScanResult pLocScanResult;
 
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
 			if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
-				pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+				pLocScanResult = new NucleotidePLocScanResult(plocIdx, Collections.emptyList(),
 						Collections.emptyList()); // no match in this pattern loc
 			} else {
 				ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
 				List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
 						ReferenceSegment.cloneLeftSegMerger());
 				if(intersection.isEmpty()) {
-					pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+					pLocScanResult = new NucleotidePLocScanResult(plocIdx, Collections.emptyList(),
 							Collections.emptyList()); // no match in this pattern loc
 				} else {
 					// set up caching of Pattern in PatternLoc.
@@ -68,7 +69,7 @@ public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScan
 						queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
 						ntMatchValues.add(matcher.group());
 					} 
-					pLocScanResult = new AminoAcidPLocScanResult(queryLocs, ntMatchValues);
+					pLocScanResult = new AminoAcidPLocScanResult(plocIdx, queryLocs, ntMatchValues);
 				}
 			}
 			pLocScanResults.add(pLocScanResult);

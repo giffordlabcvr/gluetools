@@ -32,7 +32,8 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 
 		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 		
-		for(PatternLocation pLoc : variation.getPatternLocs()) {
+		for(int plocIdx = 0; plocIdx < variation.getPatternLocs().size(); plocIdx++) {
+			PatternLocation pLoc = variation.getPatternLocs().get(plocIdx);
 			PLocScanResult pLocScanResult;
 
 			Integer refStart = pLoc.getRefStart();
@@ -41,7 +42,7 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 			Integer aaTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
 			Integer aaTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 			if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
-				pLocScanResult = new AminoAcidPLocScanResult(Collections.emptyList(),
+				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Collections.emptyList(),
 						Collections.emptyList()); // no match in this pattern loc
 			} else {
 				int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
@@ -67,7 +68,7 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 					queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
 					aaMatchValues.add(matcher.group());
 				}
-				pLocScanResult = new AminoAcidPLocScanResult(queryLocs, aaMatchValues);
+				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, queryLocs, aaMatchValues);
 			}
 			pLocScanResults.add(pLocScanResult);
 		}

@@ -32,12 +32,14 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e]" },
+		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n]]]"+
+		""},
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
@@ -48,6 +50,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
 				"-e, --excludeAbsent                                  Exclude absent variations",
+				"-l, --showPatternLocsSeparately                      Add row per pattern location",
+				"-v, --showMatchValuesSeparately                      Add row per match value",
+				"-n, --showMatchNtLocations                           Add match start/end columns"
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
@@ -80,6 +85,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 	private Boolean multiReference;
 	private Boolean descendentFeatures;
 	private Boolean excludeAbsent;
+	private VariationScanRenderHints variationScanRenderHints = new VariationScanRenderHints();
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -89,6 +95,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
+		this.variationScanRenderHints.configure(pluginConfigContext, configElem);
 	}
 
 	@Override
@@ -128,7 +135,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceReporterComm
 				ancConstrRef.getName(), queryToTipAlmtRefSegs, 
 				multiReference, descendentFeatures, excludeAbsent, whereClause);
 		
-		return new FastaSequenceVariationScanResult(variationScanResults);
+		return new FastaSequenceVariationScanResult(variationScanRenderHints, variationScanResults);
 	}
 
 	public static List<VariationScanResult> variationScan(CommandContext cmdContext,

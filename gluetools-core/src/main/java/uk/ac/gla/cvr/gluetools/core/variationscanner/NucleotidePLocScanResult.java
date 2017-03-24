@@ -9,15 +9,16 @@ public class NucleotidePLocScanResult extends PLocScanResult {
 	// list of matched NT values within this pattern loc;
 	private List<String> ntMatchValues;
 	
-	public NucleotidePLocScanResult(List<ReferenceSegment> queryLocs, List<String> ntMatchValues) {
-		super(queryLocs);
+	public NucleotidePLocScanResult(int index, List<ReferenceSegment> queryLocs, List<String> ntMatchValues) {
+		super(index, queryLocs);
 		this.ntMatchValues = ntMatchValues;
 		if(ntMatchValues.size() != queryLocs.size()) {
 			throw new RuntimeException("ntMatchValues.size() != queryLocs.size()");
 		}
 	}
 
-	public List<String> getNtMatchValues() {
+	@Override
+	public List<String> getMatchedValues() {
 		return ntMatchValues;
 	}
 	

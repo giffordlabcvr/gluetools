@@ -16,9 +16,9 @@ public class AminoAcidPLocScanResult extends PLocScanResult {
 	 private List<String> aaEndCodons;
 	*/
 	
-	public AminoAcidPLocScanResult(List<ReferenceSegment> queryLocs, List<String> aaMatchValues/*,
+	public AminoAcidPLocScanResult(int index, List<ReferenceSegment> queryLocs, List<String> aaMatchValues/*,
 			List<String> aaStartCodons, List<String> aaEndCodons*/) {
-		super(queryLocs);
+		super(index, queryLocs);
 		this.aaMatchValues = aaMatchValues;
 		/*
 		this.aaStartCodons = aaStartCodons;
@@ -37,7 +37,8 @@ public class AminoAcidPLocScanResult extends PLocScanResult {
 		*/
 	}
 
-	public List<String> getAaMatchValues() {
+	@Override
+	public List<String> getMatchedValues() {
 		return aaMatchValues;
 	}
 

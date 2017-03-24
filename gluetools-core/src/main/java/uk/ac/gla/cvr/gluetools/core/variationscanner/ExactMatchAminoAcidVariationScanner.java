@@ -22,7 +22,8 @@ public class ExactMatchAminoAcidVariationScanner extends BaseAminoAcidVariationS
 
 		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 		
-		for(PatternLocation pLoc : variation.getPatternLocs()) {
+		for(int plocIdx = 0; plocIdx < variation.getPatternLocs().size(); plocIdx++) {
+			PatternLocation pLoc = variation.getPatternLocs().get(plocIdx);
 			PLocScanResult pLocScanResult;
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
@@ -31,7 +32,7 @@ public class ExactMatchAminoAcidVariationScanner extends BaseAminoAcidVariationS
 			Integer aaTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 			if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
 				// pattern location is outside query translation.
-				pLocScanResult = new AminoAcidPLocScanResult(Collections.emptyList(),
+				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Collections.emptyList(),
 						Collections.emptyList()); // no match in this pattern loc
 			} else {
 				int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
@@ -43,10 +44,10 @@ public class ExactMatchAminoAcidVariationScanner extends BaseAminoAcidVariationS
 				if(StringUtils.charSequencesEqual(pLoc.getPattern(), aminoAcids)) {
 					int ntStart = scanQueryNtStart;
 					int ntEnd = scanQueryNtStart+(aminoAcids.length() * 3)-1;
-					pLocScanResult = new AminoAcidPLocScanResult(Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
+					pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
 							Arrays.asList(aminoAcids.toString())); // single match in this pattern loc
 				} else {
-					pLocScanResult = new AminoAcidPLocScanResult(Collections.emptyList(),
+					pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Collections.emptyList(),
 							Collections.emptyList()); // no match in this pattern loc
 				}
 			}
