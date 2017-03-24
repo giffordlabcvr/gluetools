@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,44 +29,51 @@ public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScan
 
 	@Override
 	public VariationScanResult scanNucleotides(Variation variation, NtQueryAlignedSegment ntQaSeg) {
-		List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
-		
-		boolean result = true;
+		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 
 		for(PatternLocation pLoc : variation.getPatternLocs()) {
+			PLocScanResult pLocScanResult;
+
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
 			if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
-				return null;
-			}
-			ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
-			List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
-					ReferenceSegment.cloneLeftSegMerger());
-			if(intersection.isEmpty()) {
-				return null;
-			}
-
-			Pattern regexPattern = (Pattern) pLoc.getScannerData("NT_REGEX_PATTERN");
-			if(regexPattern == null) {
-				regexPattern = parseRegex(pLoc);
-				pLoc.setScannerData("NT_REGEX_PATTERN", regexPattern);
-			}
-			
-			NtQueryAlignedSegment intersectionSeg = intersection.get(0);
-			CharSequence nucleotides = intersectionSeg.getNucleotides();
-			Integer zeroIndexNtStart = intersectionSeg.getQueryStart();
-
-			Matcher matcher = regexPattern.matcher(nucleotides);
-			if(result && matcher.find()) {
-				int ntStart = zeroIndexNtStart + matcher.start();
-				int ntEnd = zeroIndexNtStart + matcher.end() - 1;
-				queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
+				pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+						Collections.emptyList()); // no match in this pattern loc
 			} else {
-				result = false;
-				queryLocs.clear();
+				ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
+				List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
+						ReferenceSegment.cloneLeftSegMerger());
+				if(intersection.isEmpty()) {
+					pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+							Collections.emptyList()); // no match in this pattern loc
+				} else {
+					// set up caching of Pattern in PatternLoc.
+					Pattern regexPattern = (Pattern) pLoc.getScannerData("NT_REGEX_PATTERN");
+					if(regexPattern == null) {
+						regexPattern = parseRegex(pLoc);
+						pLoc.setScannerData("NT_REGEX_PATTERN", regexPattern);
+					}
+					
+					NtQueryAlignedSegment intersectionSeg = intersection.get(0);
+					CharSequence nucleotides = intersectionSeg.getNucleotides();
+					Integer zeroIndexNtStart = intersectionSeg.getQueryStart();
+		
+					List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
+					List<String> ntMatchValues = new ArrayList<String>();
+					
+					Matcher matcher = regexPattern.matcher(nucleotides);
+					while(matcher.find()) {
+						int ntStart = zeroIndexNtStart + matcher.start();
+						int ntEnd = zeroIndexNtStart + matcher.end() - 1;
+						queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
+						ntMatchValues.add(matcher.group());
+					} 
+					pLocScanResult = new AminoAcidPLocScanResult(queryLocs, ntMatchValues);
+				}
 			}
+			pLocScanResults.add(pLocScanResult);
 		}
-		return new VariationScanResult(variation, result, queryLocs);
+		return new VariationScanResult(variation, pLocScanResults);
 	}
 
 	private Pattern parseRegex(PatternLocation pLoc) {

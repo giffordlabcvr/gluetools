@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -16,15 +17,32 @@ public class VariationScanResult {
 	private boolean present;
 	private String variationRenderedName;
 	
-	private List<ReferenceSegment> queryMatchLocations = new ArrayList<ReferenceSegment>();
+	private List<PLocScanResult> pLocScanResults;
+	private List<ReferenceSegment> queryMatchLocations;
 	
-	public VariationScanResult(Variation variation, boolean present, List<ReferenceSegment> queryMatchLocations) {
+	public VariationScanResult(Variation variation, List<PLocScanResult> pLocScanResults) {
 		super();
 		this.variationPkMap = variation.pkMap();
 		this.minLocStart = variation.minLocStart();
 		this.maxLocEnd = variation.maxLocEnd();
-		this.present = present;
-		this.queryMatchLocations = queryMatchLocations;
+		this.present = true;
+		for(PLocScanResult pLocScanResult: pLocScanResults) {
+			if(pLocScanResult.getQueryLocs().size() == 0) {
+				this.present = false;
+				break;
+			}
+		}
+		this.pLocScanResults = pLocScanResults;
+		
+		// if variation is present, 
+		// queryMatchLocations is a set of segments on the query relating to a single match (the first)
+		// in each pattern location.
+		if(present) {
+			this.queryMatchLocations = pLocScanResults.stream().map(plsr -> plsr.getQueryLocs().get(0)).collect(Collectors.toList());
+		} else {
+			this.queryMatchLocations = new ArrayList<ReferenceSegment>();
+		}
+		
 		this.variationRenderedName = variation.getRenderedName();
 	}
 
@@ -60,6 +78,11 @@ public class VariationScanResult {
 		return present;
 	}
 
+
+	public List<PLocScanResult> getPLocScanResults() {
+		return pLocScanResults;
+	}
+	
 	public List<ReferenceSegment> getQueryMatchLocations() {
 		return queryMatchLocations;
 	}
@@ -112,7 +135,5 @@ public class VariationScanResult {
 		};
 		Collections.sort(variationScanResults, comparator);
 	}
-	
-	
 	
 }

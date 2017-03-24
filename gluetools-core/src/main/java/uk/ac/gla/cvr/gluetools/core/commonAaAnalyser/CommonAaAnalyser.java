@@ -166,7 +166,6 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 					.set(CreateVariationCommand.VARIATION_NAME, variationName)
 					.set(CreateVariationCommand.NO_COMMIT, Boolean.TRUE)
 					.set(CreateVariationCommand.TRANSLATION_TYPE, TranslationFormat.AMINO_ACID.name())
-					.set(CreateVariationCommand.DESCRIPTION, generateUncommonAaVariationDescription(commonAas))
 					.build().execute(cmdContext);
 					variationPkMaps.add(Variation.pkMap(refName, featureName, variationName));
 					try(ModeCloser varationMode = cmdContext.pushCommandMode("variation", variationName)) {
@@ -206,12 +205,8 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 		return variationPkMaps;
 	}
 
-	private String generateUncommonAaVariationDescription(CommonAminoAcids commonAas) {
-		return "Uncommon AA substitution at codon "+commonAas.getCodonLabel()+" in "+commonAas.getFeatureName();
-	}
-
 	private String generateUncommonAaVariationDisplayName(CommonAminoAcids commonAas) {
-		return "Uncommon AA "+commonAas.getFeatureName()+":"+commonAas.getCodonLabel();
+		return "Atypical "+commonAas.getFeatureName()+":"+commonAas.getCodonLabel();
 	}
 
 	private String generateUncommonAaVariationRegex(CommonAminoAcids commonAas) {

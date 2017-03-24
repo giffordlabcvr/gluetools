@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,41 +30,48 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 	@Override
 	public VariationScanResult scanAminoAcids(Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation) {
 
-		boolean result = true;
-
-		List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
+		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 		
 		for(PatternLocation pLoc : variation.getPatternLocs()) {
+			PLocScanResult pLocScanResult;
+
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
 			int varLengthNt = refEnd - refStart + 1;
 			Integer aaTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
 			Integer aaTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 			if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
-				return null;
-			}
-			int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
-			int startAA = segToVariationStartOffset / 3;
-			int endAA = startAA + ( (varLengthNt / 3) - 1);
-			CharSequence aminoAcids = fullAminoAcidTranslation.subSequence(startAA, endAA+1);
-			int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
-			
-			Pattern regexPattern = (Pattern) pLoc.getScannerData("AA_REGEX_PATTERN");
-			if(regexPattern == null) {
-				regexPattern = parseRegex(pLoc);
-				pLoc.setScannerData("AA_REGEX_PATTERN", regexPattern);
-			}
-			Matcher matcher = regexPattern.matcher(aminoAcids);
-			if(result && matcher.find()) {
-				int ntStart = scanQueryNtStart + ( matcher.start() * 3 );
-				int ntEnd = scanQueryNtStart + ( matcher.end() * 3 ) - 1;
-				queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
+				pLocScanResult = new AminoAcidPLocScanResult(Collections.emptyList(),
+						Collections.emptyList()); // no match in this pattern loc
 			} else {
-				result = false;
-				queryLocs.clear();
+				int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
+				int startAA = segToVariationStartOffset / 3;
+				int endAA = startAA + ( (varLengthNt / 3) - 1);
+				CharSequence aminoAcids = fullAminoAcidTranslation.subSequence(startAA, endAA+1);
+				int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
+
+				// set up caching of Pattern in PatternLoc.
+				Pattern regexPattern = (Pattern) pLoc.getScannerData("AA_REGEX_PATTERN");
+				if(regexPattern == null) {
+					regexPattern = parseRegex(pLoc);
+					pLoc.setScannerData("AA_REGEX_PATTERN", regexPattern);
+				}
+				
+				List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
+				List<String> aaMatchValues = new ArrayList<String>();
+				Matcher matcher = regexPattern.matcher(aminoAcids);
+				
+				while(matcher.find()) {
+					int ntStart = scanQueryNtStart + ( matcher.start() * 3 );
+					int ntEnd = scanQueryNtStart + ( matcher.end() * 3 ) - 1;
+					queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
+					aaMatchValues.add(matcher.group());
+				}
+				pLocScanResult = new AminoAcidPLocScanResult(queryLocs, aaMatchValues);
 			}
+			pLocScanResults.add(pLocScanResult);
 		}
-		return new VariationScanResult(variation, result, queryLocs);
+		return new VariationScanResult(variation, pLocScanResults);
 	}
 
 	

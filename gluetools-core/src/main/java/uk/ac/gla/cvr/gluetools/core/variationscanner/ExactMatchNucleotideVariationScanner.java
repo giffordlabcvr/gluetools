@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
@@ -18,35 +19,43 @@ public class ExactMatchNucleotideVariationScanner extends BaseNucleotideVariatio
 	
 	@Override
 	public VariationScanResult scanNucleotides(Variation variation, NtQueryAlignedSegment ntQaSeg) {
-		List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
-		
-		boolean result = true;
-		
+		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
+
 		for(PatternLocation pLoc : variation.getPatternLocs()) {
+			PLocScanResult pLocScanResult;
+
 			Integer refStart = pLoc.getRefStart();
 			Integer refEnd = pLoc.getRefEnd();
 			if(!( refStart >= ntQaSeg.getRefStart() && refEnd <= ntQaSeg.getRefEnd() )) {
-				return null;
-			}
-			ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
-			List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
-					ReferenceSegment.cloneLeftSegMerger());
-			if(intersection.isEmpty()) {
-				return null;
-			}
-			NtQueryAlignedSegment intersectionSeg = intersection.get(0);
-			CharSequence nucleotides = intersectionSeg.getNucleotides();
-			Integer zeroIndexNtStart = intersectionSeg.getQueryStart();
-			if(result && StringUtils.charSequencesEqual(pLoc.getPattern(), nucleotides)) {
-				int ntStart = zeroIndexNtStart;
-				int ntEnd = zeroIndexNtStart+nucleotides.length()-1;
-				queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
+				// query segment does not cover pattern loc
+				pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+						Collections.emptyList()); // no match in this pattern loc
 			} else {
-				result = false;
-				queryLocs.clear();
+				ReferenceSegment variationRegionSeg = new ReferenceSegment(refStart, refEnd);
+				List<NtQueryAlignedSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), Arrays.asList(variationRegionSeg), 
+						ReferenceSegment.cloneLeftSegMerger());
+				if(intersection.isEmpty()) {
+					// query segment does not cover pattern loc
+					pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+							Collections.emptyList()); // no match in this pattern loc
+				} else {
+					NtQueryAlignedSegment intersectionSeg = intersection.get(0);
+					CharSequence nucleotides = intersectionSeg.getNucleotides();
+					Integer zeroIndexNtStart = intersectionSeg.getQueryStart();
+					if(StringUtils.charSequencesEqual(pLoc.getPattern(), nucleotides)) {
+						int ntStart = zeroIndexNtStart;
+						int ntEnd = zeroIndexNtStart+nucleotides.length()-1;
+						pLocScanResult = new AminoAcidPLocScanResult(Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
+								Arrays.asList(nucleotides.toString())); // single match in this pattern loc
+					} else {
+						pLocScanResult = new NucleotidePLocScanResult(Collections.emptyList(),
+								Collections.emptyList()); // no match in this pattern loc
+					}
+				}
 			}
+			pLocScanResults.add(pLocScanResult);
 		}
-		return new VariationScanResult(variation, result, queryLocs);
+		return new VariationScanResult(variation, pLocScanResults);
 	}
 
 	public static ExactMatchNucleotideVariationScanner getDefaultInstance() {
