@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import gnu.trove.map.TIntObjectMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
@@ -28,7 +32,7 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 
 	
 	@Override
-	public VariationScanResult scanAminoAcids(Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation) {
+	public VariationScanResult scanAminoAcids(CommandContext cmdContext, Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation) {
 
 		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
 		
@@ -43,7 +47,7 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 			Integer aaTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
 			if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
 				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Collections.emptyList(),
-						Collections.emptyList()); // no match in this pattern loc
+						Collections.emptyList(), Collections.emptyList(), Collections.emptyList()); // no match in this pattern loc
 			} else {
 				int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
 				int startAA = segToVariationStartOffset / 3;
@@ -60,15 +64,27 @@ public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanne
 				
 				List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
 				List<String> aaMatchValues = new ArrayList<String>();
+				List<String> startCodonLabels = new ArrayList<String>();
+				List<String> endCodonLabels = new ArrayList<String>();
 				Matcher matcher = regexPattern.matcher(aminoAcids);
 				
+				TIntObjectMap<LabeledCodon> refNtToLabeledCodon = variation.getFeatureLoc().getRefNtToLabeledCodon(cmdContext);
+
 				while(matcher.find()) {
-					int ntStart = scanQueryNtStart + ( matcher.start() * 3 );
-					int ntEnd = scanQueryNtStart + ( matcher.end() * 3 ) - 1;
-					queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
+					int queryNtStart = scanQueryNtStart + ( matcher.start() * 3 );
+					int queryNtEnd = scanQueryNtStart + ( matcher.end() * 3 ) - 1;
+					int refNtStart = queryNtStart + ntQaSegCdnAligned.getQueryToReferenceOffset();
+					int refNtEnd = queryNtEnd + ntQaSegCdnAligned.getQueryToReferenceOffset();
+					String lcStart = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
+					String lcEnd = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
+
+					queryLocs.add(new ReferenceSegment(queryNtStart, queryNtEnd));
 					aaMatchValues.add(matcher.group());
+					startCodonLabels.add(lcStart);
+					endCodonLabels.add(lcEnd);
 				}
-				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, queryLocs, aaMatchValues);
+				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, queryLocs, 
+						aaMatchValues, startCodonLabels, endCodonLabels);
 			}
 			pLocScanResults.add(pLocScanResult);
 		}

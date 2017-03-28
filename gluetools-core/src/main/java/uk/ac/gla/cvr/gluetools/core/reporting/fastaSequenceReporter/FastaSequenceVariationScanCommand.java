@@ -38,7 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n]]]"+
+		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
 		""},
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
@@ -52,7 +52,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 				"-e, --excludeAbsent                                  Exclude absent variations",
 				"-l, --showPatternLocsSeparately                      Add row per pattern location",
 				"-v, --showMatchValuesSeparately                      Add row per match value",
-				"-n, --showMatchNtLocations                           Add match start/end columns"
+				"-n, --showMatchNtLocations                           Add match NT start/end columns",
+				"-o, --showMatchLcLocations                           Add codon start/end columns"
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+

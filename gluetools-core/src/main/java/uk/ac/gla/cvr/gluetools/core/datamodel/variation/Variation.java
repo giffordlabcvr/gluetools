@@ -145,7 +145,7 @@ public class Variation extends _Variation implements HasDisplayName {
 					this.getFeatureLoc().getReferenceSequence().getName(), this.getFeatureLoc().getFeature().getName(), this.getName(), 
 					BaseAminoAcidVariationScanner.class.getSimpleName());
 		}
-		return aminoAcidScanner.scanAminoAcids(this, ntQaSegCdnAligned, fullAminoAcidTranslation);
+		return aminoAcidScanner.scanAminoAcids(cmdContext, this, ntQaSegCdnAligned, fullAminoAcidTranslation);
 	}
 
 	

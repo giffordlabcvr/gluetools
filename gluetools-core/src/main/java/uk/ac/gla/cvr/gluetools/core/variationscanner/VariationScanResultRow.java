@@ -7,19 +7,23 @@ public class VariationScanResultRow {
 	private PLocScanResult plsr;
 	private ReferenceSegment matchedValueSegment;
 	private String matchedValue;
+	private String lcStart;
+	private String lcEnd;
 	
 
 	public VariationScanResultRow(VariationScanResult vsr,
-			PLocScanResult plsr, String matchedValue, ReferenceSegment matchedValueSegment) {
+			PLocScanResult plsr, String matchedValue, ReferenceSegment matchedValueSegment, String lcStart, String lcEnd) {
 		super();
 		this.vsr = vsr;
 		this.plsr = plsr;
 		this.matchedValue = matchedValue;
 		this.matchedValueSegment = matchedValueSegment;
+		this.lcStart = lcStart;
+		this.lcEnd = lcEnd;
 	}
 
 	public VariationScanResultRow(VariationScanResult vsr, PLocScanResult plsr) {
-		this(vsr, plsr, null, null);
+		this(vsr, plsr, null, null, null, null);
 	}
 
 	public VariationScanResultRow(VariationScanResult vsr) {
@@ -40,6 +44,14 @@ public class VariationScanResultRow {
 
 	public String getMatchedValue() {
 		return matchedValue;
+	}
+
+	public String getLcStart() {
+		return lcStart;
+	}
+
+	public String getLcEnd() {
+		return lcEnd;
 	}
 	
 	

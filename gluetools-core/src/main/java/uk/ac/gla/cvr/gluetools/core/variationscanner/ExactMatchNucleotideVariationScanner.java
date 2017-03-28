@@ -46,7 +46,7 @@ public class ExactMatchNucleotideVariationScanner extends BaseNucleotideVariatio
 					if(StringUtils.charSequencesEqual(pLoc.getPattern(), nucleotides)) {
 						int ntStart = zeroIndexNtStart;
 						int ntEnd = zeroIndexNtStart+nucleotides.length()-1;
-						pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
+						pLocScanResult = new NucleotidePLocScanResult(plocIdx, Arrays.asList(new ReferenceSegment(ntStart, ntEnd)),
 								Arrays.asList(nucleotides.toString())); // single match in this pattern loc
 					} else {
 						pLocScanResult = new NucleotidePLocScanResult(plocIdx, Collections.emptyList(),

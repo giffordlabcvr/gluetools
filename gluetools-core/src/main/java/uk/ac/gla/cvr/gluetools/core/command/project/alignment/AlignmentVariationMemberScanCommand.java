@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 @CommandClass(
 		commandWords={"variation", "member", "scan"}, 
 		description = "Scan members for a specific variation", 
-		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> -v <variationName> [-e] [-l [-s [-n]]]" },
+		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> -v <variationName> [-e] [-l [-s [-n] [-o]]]" },
 		docoptOptions = { 
 		"-c, --recursive                                      Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>        Qualify members",
@@ -42,7 +42,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 		"-e, --excludeAbsent                                  Exclude members where absent",
 		"-l, --showPatternLocsSeparately                      Add row per pattern location",
 		"-s, --showMatchValuesSeparately                      Add row per match value",
-		"-n, --showMatchNtLocations                           Add match start/end columns"
+		"-n, --showMatchNtLocations                           Add match NT start/end columns",
+		"-o, --showMatchLcLocations                           Add codon start/end columns"
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
@@ -120,8 +121,8 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 				List<VariationScanResultRow> scanResultRows = 
 						variationScanRenderHints.scanResultsToResultRows(MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
 								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent));
-				if(scanResultRows.size() > 0) {
-					membVsrList.add(new MemberVariationScanResult(almtMember, scanResultRows.get(0)));
+				for(VariationScanResultRow vsrr : scanResultRows) {
+					membVsrList.add(new MemberVariationScanResult(almtMember, vsrr));
 				}
 			}
 			cmdContext.newObjectContext();

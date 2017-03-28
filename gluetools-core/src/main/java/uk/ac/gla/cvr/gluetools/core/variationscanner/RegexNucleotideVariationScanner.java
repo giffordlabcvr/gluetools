@@ -69,7 +69,7 @@ public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScan
 						queryLocs.add(new ReferenceSegment(ntStart, ntEnd));
 						ntMatchValues.add(matcher.group());
 					} 
-					pLocScanResult = new AminoAcidPLocScanResult(plocIdx, queryLocs, ntMatchValues);
+					pLocScanResult = new NucleotidePLocScanResult(plocIdx, queryLocs, ntMatchValues);
 				}
 			}
 			pLocScanResults.add(pLocScanResult);

@@ -31,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-l [-v [-n]]]" },
+		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]" },
 		docoptOptions = { 
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 		"-m, --multiReference                           Scan across references",
@@ -41,7 +41,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		"-e, --excludeAbsent                            Exclude absent variations",
 		"-l, --showPatternLocsSeparately                Add row per pattern location",
 		"-v, --showMatchValuesSeparately                Add row per match value",
-		"-n, --showMatchNtLocations                     Add match start/end columns",
+		"-n, --showMatchNtLocations                     Add match NT start/end columns",
+		"-o, --showMatchLcLocations                     Add codon start/end columns",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
