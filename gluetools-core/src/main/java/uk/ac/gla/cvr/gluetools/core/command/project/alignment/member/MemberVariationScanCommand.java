@@ -25,12 +25,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e]" },
+		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-l [-v [-n]]]" },
 		docoptOptions = { 
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 		"-m, --multiReference                           Scan across references",
@@ -38,6 +39,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		"-d, --descendentFeatures                       Include descendent features",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify variations",
 		"-e, --excludeAbsent                            Exclude absent variations",
+		"-l, --showPatternLocsSeparately                Add row per pattern location",
+		"-v, --showMatchValuesSeparately                Add row per match value",
+		"-n, --showMatchNtLocations                     Add match start/end columns",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
@@ -59,14 +63,13 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
 	public static final String EXCLUDE_ABSENT = "excludeAbsent";
 
-
-
 	private String acRefName;
 	private String featureName;
 	private Boolean descendentFeatures;
 	private Expression whereClause;
 	private Boolean multiReference;
 	private Boolean excludeAbsent;
+	private VariationScanRenderHints variationScanRenderHints = new VariationScanRenderHints();
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -78,6 +81,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
+		this.variationScanRenderHints.configure(pluginConfigContext, configElem);
 	}
 
 	@Override
@@ -118,7 +122,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 			}
 		}
 		VariationScanResult.sortVariationScanResults(scanResults);
-		return new MemberVariationScanResult(scanResults);
+		return new MemberVariationScanResult(variationScanRenderHints, scanResults);
 	}
 
 	public static List<VariationScanResult> memberVariationScan(CommandContext cmdContext,

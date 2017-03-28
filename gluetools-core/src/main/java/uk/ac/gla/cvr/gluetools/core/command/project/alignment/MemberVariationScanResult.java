@@ -4,24 +4,25 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
 public class MemberVariationScanResult {
 
 	private Map<String,String> memberPkMap;
-	private VariationScanResult variationScanResult;
+	private VariationScanResultRow variationScanResultRow;
 	
-	public MemberVariationScanResult(AlignmentMember alignmentMember, VariationScanResult variationScanResult) {
+	public MemberVariationScanResult(AlignmentMember alignmentMember, VariationScanResultRow variationScanResultRow) {
 		super();
 		this.memberPkMap = alignmentMember.pkMap();
-		this.variationScanResult = variationScanResult;
+		this.variationScanResultRow = variationScanResultRow;
 	}
 
 	public Map<String,String> getMemberPkMap() {
 		return memberPkMap;
 	}
 
-	public VariationScanResult getVariationScanResult() {
-		return variationScanResult;
+	public VariationScanResultRow getVariationScanResultRow() {
+		return variationScanResultRow;
 	}
 	
 }

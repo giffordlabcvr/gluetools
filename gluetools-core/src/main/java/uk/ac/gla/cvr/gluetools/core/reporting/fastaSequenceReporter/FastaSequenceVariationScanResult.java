@@ -18,9 +18,9 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 		super("fastaSequenceVariationScanResult", 
 				renderHints.scanResultsToResultRows(rowData), 
 				renderHints.generateResultColumns(
-					column(REF_SEQ_NAME, vsr -> vsr.getVariationReferenceName()),
-					column(FEATURE_NAME, vsr -> vsr.getVariationFeatureName()),
-					column(VARIATION_NAME, vsr -> vsr.getVariationName())
+					column(REF_SEQ_NAME, vsrr -> vsrr.getVariationReferenceName()),
+					column(FEATURE_NAME, vsrr -> vsrr.getVariationFeatureName()),
+					column(VARIATION_NAME, vsrr -> vsrr.getVariationName())
 				));
 	}
 

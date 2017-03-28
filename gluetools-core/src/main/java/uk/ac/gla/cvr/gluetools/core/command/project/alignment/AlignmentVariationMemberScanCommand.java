@@ -26,12 +26,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
 @CommandClass(
 		commandWords={"variation", "member", "scan"}, 
 		description = "Scan members for a specific variation", 
-		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> -v <variationName> [-e]" },
+		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> -v <variationName> [-e] [-l [-s [-n]]]" },
 		docoptOptions = { 
 		"-c, --recursive                                      Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>        Qualify members",
@@ -39,6 +40,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		"-f <featureName>, --featureName <featureName>        Feature name",
 		"-v <variationName>, --variationName <variationName>  Variation name",
 		"-e, --excludeAbsent                                  Exclude members where absent",
+		"-l, --showPatternLocsSeparately                      Add row per pattern location",
+		"-s, --showMatchValuesSeparately                      Add row per match value",
+		"-n, --showMatchNtLocations                           Add match start/end columns"
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
@@ -62,6 +66,8 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 	private String featureName;
 	private String variationName;
 	private Boolean excludeAbsent;
+	private VariationScanRenderHints variationScanRenderHints = new VariationScanRenderHints();
+
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -73,17 +79,18 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
+		this.variationScanRenderHints.configure(pluginConfigContext, configElem);
 	}
 	
 	@Override
 	public AlignmentVariationMemberScanResult execute(CommandContext cmdContext) {
 		List<MemberVariationScanResult> resultRowData = alignmentMemberVariationScan(
-				cmdContext, getAlignmentName(), acRefName, featureName, variationName, whereClause, recursive, excludeAbsent);
-		return new AlignmentVariationMemberScanResult(resultRowData);
+				cmdContext, variationScanRenderHints, getAlignmentName(), acRefName, featureName, variationName, whereClause, recursive, excludeAbsent);
+		return new AlignmentVariationMemberScanResult(variationScanRenderHints, resultRowData);
 	}
 
 	public static List<MemberVariationScanResult> alignmentMemberVariationScan(
-			CommandContext cmdContext, String alignmentName, 
+			CommandContext cmdContext, VariationScanRenderHints variationScanRenderHints, String alignmentName, 
 			String acRefName, String featureName, String variationName,
 			Optional<Expression> whereClause, boolean recursive,
 			boolean excludeAbsent) {
@@ -110,11 +117,11 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 			GlueLogger.getGlueLogger().finest("Scanning variation for members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 
 			for(AlignmentMember almtMember: almtMembers) {
-				List<VariationScanResult> scanResults = 
-						MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
-								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent);
-				if(scanResults.size() > 0) {
-					membVsrList.add(new MemberVariationScanResult(almtMember, scanResults.get(0)));
+				List<VariationScanResultRow> scanResultRows = 
+						variationScanRenderHints.scanResultsToResultRows(MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
+								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent));
+				if(scanResultRows.size() > 0) {
+					membVsrList.add(new MemberVariationScanResult(almtMember, scanResultRows.get(0)));
 				}
 			}
 			cmdContext.newObjectContext();

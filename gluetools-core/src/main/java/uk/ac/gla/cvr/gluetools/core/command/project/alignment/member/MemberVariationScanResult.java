@@ -3,9 +3,11 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
-public class MemberVariationScanResult extends BaseTableResult<VariationScanResult> {
+public class MemberVariationScanResult extends BaseTableResult<VariationScanResultRow> {
 
 	public static final String 
 		REF_SEQ_NAME = "referenceName",
@@ -14,13 +16,14 @@ public class MemberVariationScanResult extends BaseTableResult<VariationScanResu
 		PRESENT = "present";
 
 
-	public MemberVariationScanResult(List<VariationScanResult> rowData) {
+	public MemberVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult> rowData) {
 		super("memberVariationScanResult", 
-				rowData, 
-				column(REF_SEQ_NAME, vsr -> vsr.getVariationReferenceName()),
-				column(FEATURE_NAME, vsr -> vsr.getVariationFeatureName()),
-				column(VARIATION_NAME, vsr -> vsr.getVariationName()),
-				column(PRESENT, vsr -> vsr.isPresent()));
+				renderHints.scanResultsToResultRows(rowData), 
+				renderHints.generateResultColumns(
+					column(REF_SEQ_NAME, vsrr -> vsrr.getVariationReferenceName()),
+					column(FEATURE_NAME, vsrr -> vsrr.getVariationFeatureName()),
+					column(VARIATION_NAME, vsrr -> vsrr.getVariationName())
+				));
 	}
 
 }
