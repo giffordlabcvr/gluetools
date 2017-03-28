@@ -169,7 +169,8 @@ analysisTool.controller('analysisSvg', ['$scope', 'glueWS', 'dialogs', 'glueWebT
 								propLocations: propLocations,
 								text: varMatch.variationRenderedName,
 								highlightHeight: highlightHeight,
-								pLocConnector: pLocConnector
+								pLocConnector: pLocConnector,
+								pLocMatches: varMatch.pLocMatches
 							};
 							varProps.push(varProp);
 							if(varMatch.track >= params.numVarTracks) {

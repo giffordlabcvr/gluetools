@@ -285,7 +285,8 @@ analysisTool.directive('querySequence', function(glueWebToolConfig, dialogs, glu
 				    				variationRendererDialog.dialogController, 
 				    				{ renderedVariation: data,
 				    				  variationCategory: varVCat, 
-				    				  ancestorAlmtNames: _.uniq($scope.selectedQueryAnalysis.ancestorAlmtName)
+				    				  ancestorAlmtNames: _.uniq($scope.selectedQueryAnalysis.ancestorAlmtName),
+				    				  pLocMatches: varProp.pLocMatches
 				    				}, {});
 				    		dlg.result.then(function() {
 				    			// completion handler

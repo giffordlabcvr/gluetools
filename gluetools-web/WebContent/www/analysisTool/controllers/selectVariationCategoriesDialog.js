@@ -1,8 +1,8 @@
 analysisTool.controller('selectVariationCategoriesCtrl',function($scope,$modalInstance,data){
 	$scope.data = data;
 	
-	$scope.sortByDisplayName = function(vCatList) {
-		return _.sortBy(vCatList, "displayName");
+	$scope.sortByName = function(vCatList) {
+		return _.sortBy(vCatList, "name");
 	}
 
 	$scope.data.available = [];
@@ -13,19 +13,18 @@ analysisTool.controller('selectVariationCategoriesCtrl',function($scope,$modalIn
 		}
 	});
 	
-	$scope.data.included = $scope.sortByDisplayName($scope.data.included);
-	$scope.data.available = $scope.sortByDisplayName($scope.data.available);
+	$scope.data.included = $scope.sortByName($scope.data.included);
+	$scope.data.available = $scope.sortByName($scope.data.available);
 
 	$scope.addToIncluded = function(vCat) {
 		$scope.data.available = _.without($scope.data.available, vCat);
 		$scope.data.included.push(vCat);
-		$scope.data.included = $scope.sortByDisplayName($scope.data.included);
 	}
 
 	$scope.removeFromIncluded = function(vCat) {
 		$scope.data.included = _.without($scope.data.included, vCat);
 		$scope.data.available.push(vCat);
-		$scope.data.available = $scope.sortByDisplayName($scope.data.available);
+		$scope.data.available = $scope.sortByName($scope.data.available);
 	}
 
 	$scope.accept = function(){

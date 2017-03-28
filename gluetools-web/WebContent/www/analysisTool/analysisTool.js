@@ -98,7 +98,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	
 	
 
-	$scope.displayVariation = function(vCatName, referenceName, featureName, variationName) {
+	$scope.displayVariation = function(vCatName, referenceName, featureName, variationName, pLocMatches) {
 		var varVCat = _.find(
 				$scope.variationCategories, 
 				function(vCat) {
@@ -124,7 +124,8 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 	    				variationRendererDialog.dialogController, 
 	    				{ renderedVariation: data,
 	    				  variationCategory: varVCat, 
-	    				  ancestorAlmtNames: _.uniq($scope.selectedQueryAnalysis.ancestorAlmtName)
+	    				  ancestorAlmtNames: _.uniq($scope.selectedQueryAnalysis.ancestorAlmtName),
+	    				  pLocMatches: pLocMatches
 	    				}, {});
 	    		dlg.result.then(function() {
 	    			// completion handler
@@ -261,7 +262,8 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 								}
 								currentResultVariationMatch.variation.push({
 									name: variationMatch.variationName,
-									renderedName: variationMatch.variationRenderedName
+									renderedName: variationMatch.variationRenderedName,
+									pLocMatches: variationMatch.pLocMatches
 								});
 								number++;
 								if(currentResultVariationMatch.variation.length == $scope.variationsPerRow) {

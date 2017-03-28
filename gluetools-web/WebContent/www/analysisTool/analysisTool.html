@@ -225,7 +225,7 @@
 									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}">{{resultVariationMatch.definingReferenceName}}</td>
 									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}"><a ng-click="switchToFeatureDetail(resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName)">{{resultVariationMatch.definingFeatureName}} <i class="glyphicon glyphicon-link"></i></a></td>
 									<td ng-repeat="variation in resultVariationMatch.variation">
-										<a ng-click="displayVariation(selectedVariationCategoryResult.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
+										<a ng-click="displayVariation(selectedVariationCategoryResult.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name, variation.pLocMatches)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
 									</td>
 								</tr>
 							</tbody>
@@ -256,7 +256,7 @@
 									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}">{{resultVariationMatch.definingReferenceName}}</td>
 									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}"><a ng-click="switchToFeatureDetail(resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName)">{{resultVariationMatch.definingFeatureName}} <i class="glyphicon glyphicon-link"></i></a></td>
 									<td ng-repeat="variation in resultVariationMatch.variation">
-										<a ng-click="displayVariation(selectedVariationCategoryResult.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
+										<a ng-click="displayVariation(selectedVariationCategoryResult.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name, variation.pLocMatches)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
 									</td>
 								</tr>
 							</tbody>

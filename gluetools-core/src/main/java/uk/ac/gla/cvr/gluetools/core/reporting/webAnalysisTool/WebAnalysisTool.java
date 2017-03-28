@@ -51,6 +51,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPLocScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.PLocScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -274,6 +276,23 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									}
 									trackSegTree.add(varSeg);
 									variationMatch.track = varSeg.track;
+									for(PLocScanResult pLocScanResult: vsr.getPLocScanResults()) {
+										int pLocIndex = pLocScanResult.getIndex();
+										for(int i = 0; i < pLocScanResult.getQueryLocs().size(); i++) {
+											PLocMatch pLocMatch = new PLocMatch();
+											pLocMatch.pLocIndex = pLocIndex;
+											pLocMatch.ntStart = pLocScanResult.getQueryLocs().get(i).getRefStart();
+											pLocMatch.ntEnd = pLocScanResult.getQueryLocs().get(i).getRefEnd();
+											pLocMatch.matchedValue = pLocScanResult.getMatchedValues().get(i);
+											if(pLocScanResult instanceof AminoAcidPLocScanResult) {
+												pLocMatch.lcStart = ((AminoAcidPLocScanResult) pLocScanResult).getAaStartCodons().get(i);
+												pLocMatch.lcEnd = ((AminoAcidPLocScanResult) pLocScanResult).getAaEndCodons().get(i);
+											}
+											variationMatch.pLocMatches.add(pLocMatch); 
+										}
+										
+									}
+									
 								}
 							});
 							

@@ -32,4 +32,9 @@ public class VariationMatch {
 	@PojoDocumentField
 	public Integer track;
 
+	// one PLocMatch per match per pLoc
+	@PojoDocumentListField(itemClass = PLocMatch.class)
+	public List<PLocMatch> pLocMatches = new ArrayList<PLocMatch>();
+
+	
 }
