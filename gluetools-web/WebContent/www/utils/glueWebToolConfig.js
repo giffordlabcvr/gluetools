@@ -3,11 +3,19 @@ var glueWebToolConfig = angular.module('glueWebToolConfig', []);
 
 glueWebToolConfig.factory('glueWebToolConfig', function () {
 	var analysisToolURL;
+	var analysisToolExampleSequenceURL;
 	var projectBrowserURL;
 	var glueWSURL;
 	var rendererDialogs;
 	var analysisModuleName;
 	return {
+		setAnalysisToolExampleSequenceURL: function(newExampleSequenceURL) {
+			analysisToolExampleSequenceURL = newExampleSequenceURL;
+			console.log("analysis tool ExampleSequence URL set to: "+newExampleSequenceURL);
+		},
+		getAnalysisToolExampleSequenceURL: function() {
+			return analysisToolExampleSequenceURL;
+		},
 		setAnalysisToolURL: function(newURL) {
 			analysisToolURL = newURL;
 			console.log("analysis tool URL set to: "+newURL);

@@ -25,6 +25,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 
 	$scope.analytics = $analytics;
 	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
+	$scope.analysisToolExampleSequenceURL = glueWebToolConfig.getAnalysisToolExampleSequenceURL();
 	$scope.analysisModuleName = glueWebToolConfig.getAnalysisModuleName()
 
 	if($scope.analysisModuleName == null) {
