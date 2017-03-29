@@ -3,6 +3,7 @@ projectBrowser.directive('pagingButtons', function(glueWebToolConfig) {
 		    restrict: 'E',
 		    controller: function($scope) {
 		    },
+		    transclude: true,
 		    replace: true,
 		    scope: {
 		      pagingContext: '='

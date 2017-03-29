@@ -1,14 +1,39 @@
 var glueWS = angular.module('glueWS', ['glueWebToolConfig',
                            		    'angulartics',
-                        		    'angulartics.google.analytics']);
+                        		    'angulartics.google.analytics',
+                        		    'dialogs.main']);
 
 
-glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics) {
+glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs) {
 	var projectURL;
 	var urlListenerCallbacks = [];
 	return {
 		setProjectURL: function(newURL) {
 			projectURL = newURL;
+		},
+		runGlueCommandLong: function(modePath, command, pleaseWaitMessage) {
+			var dlg = null;
+			dlg = dialogs.create(
+					glueWebToolConfig.getProjectBrowserURL()+'/dialogs/glueWait.html','glueWaitCtrl',
+					{ message: pleaseWaitMessage }, {});
+			var postObj = this.runGlueCommand(modePath, command);
+			return {
+				dlg: dlg,
+				success: function(successCallback) {
+					postObj.success(function(data, status, headers, config) {
+						dlg.close();
+						successCallback(data, status, headers, config);
+					});
+					return this;
+				},
+				error: function(errorCallback) {
+					postObj.error(function(data, status, headers, config) {
+						dlg.close();
+						errorCallback(data, status, headers, config);
+					});
+					return this;
+				}
+			};
 		},
 		runGlueCommand: function(modePath, command) {
 			// logging all glue requests might be overkill? 

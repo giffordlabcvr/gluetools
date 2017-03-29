@@ -22,7 +22,7 @@
 			ng-click="pagingContext.sortOrderDialog()">Sort criteria ({{pagingContext.getSortOrder().length}})</button>
 		<button type="button" ng-show="pagingContext.getFilterProperties()" class="btn btn-default" 
 			ng-click="pagingContext.filterDialog()">Filters ({{pagingContext.getFilterElems().length}})</button>
-
+		<ng-transclude/>
 
 	</div>
 </div>
