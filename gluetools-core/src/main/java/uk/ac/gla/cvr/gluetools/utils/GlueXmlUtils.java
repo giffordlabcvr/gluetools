@@ -279,6 +279,17 @@ public class GlueXmlUtils {
 		}
 	}
 
+	
+	public static XPathExpression createXPathExpression(XPath xPathEngine, String xPathString) {
+		XPathExpression searchResultExpression;
+		try {
+			searchResultExpression = xPathEngine.compile(xPathString);
+		} catch (XPathExpressionException e) {
+			throw new RuntimeException(e);
+		}
+		return searchResultExpression;
+	}
+	
 	public static XPath createXPathEngine() {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		return xpath;

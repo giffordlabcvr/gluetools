@@ -20,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.GenbankXmlSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -38,6 +39,10 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 	}
 
 	public byte[] doExport(CommandContext cmdContext, Expression whereClause) {
+		
+		long startTime = System.currentTimeMillis();
+		GenbankXmlSequenceObject.msInXPath = 0;
+		GenbankXmlSequenceObject.msInDocParsing = 0;
 		
 		SelectQuery selectQuery = null;
 		if(whereClause != null) {
@@ -64,6 +69,11 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 			});
 			offset += batchSize;
 		}
+		GlueLogger.getGlueLogger().info("Time for doExport was "+(System.currentTimeMillis() - startTime)+"ms");
+		GlueLogger.getGlueLogger().info("Time in genbank sequence xpath was "+GenbankXmlSequenceObject.msInXPath+"ms");
+		GlueLogger.getGlueLogger().info("Time in genbank document parsing was "+GenbankXmlSequenceObject.msInDocParsing+"ms");
+
+		
 		return stringBuffer.toString().getBytes();
 	}
 

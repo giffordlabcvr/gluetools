@@ -77,29 +77,15 @@ projectBrowser.controller('sequencesCtrl',
 				}
 				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
 
-				/*
-				var dlg = dialogs.create(
-						glueWebToolConfig.getProjectBrowserURL()+'/dialogs/glueWait.html','glueWaitCtrl',
-						{ message: "FASTA sequence download in progress" }, {});
-
-				console.log("dlg", dlg);
-				*/
 				glueWS.runGlueCommandLong("module/"+moduleName, {
 			    	"web-export": cmdParams	
 				},
-				"Download of FASTA sequences in progress")
+				"FASTA sequence download in progress")
 			    .success(function(data, status, headers, config) {
-			    	console.info('web export raw result', data);
 			    	var blob = $scope.b64ToBlob(data.fastaExportResult.base64, "text/plain", 512);
-/*			    	dlg.close();*/
 				    FileSaver.saveAs(blob, "sequences.fasta");
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequences"));
-/*			    .error(function(data, status, headers, config) {
-			    	dlg.close();
-			    	var fn = glueWS.raiseErrorDialog(dialogs, "downloading sequences");
-			    	fn(data, status, headers, config);
-			    }); */
 			}
 
 }]);

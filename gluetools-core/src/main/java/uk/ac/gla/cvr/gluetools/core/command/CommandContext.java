@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.xml.xpath.XPath;
+
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
@@ -29,11 +31,13 @@ public class CommandContext {
 	private String description;
 	private Map<CacheKey, GlueDataObject> uncommittedCache = new LinkedHashMap<CommandContext.CacheKey, GlueDataObject>();
 	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
+	private XPath xpathEngine;
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
 		this.gluetoolsEngine = gluetoolsEngine;
 		this.description = description;
+		this.xpathEngine = GlueXmlUtils.createXPathEngine();
 	}
 
 	
@@ -90,6 +94,11 @@ public class CommandContext {
 		}
 	}
 	
+	public XPath getXpathEngine() {
+		return xpathEngine;
+	}
+
+
 	public CommandMode<?> popCommandMode() {
 		CommandMode<?> commandMode = commandModeStack.remove(0);
 		if(commandMode instanceof DbContextChangingMode) {

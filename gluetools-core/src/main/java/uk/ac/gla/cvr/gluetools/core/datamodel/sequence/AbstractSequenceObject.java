@@ -27,7 +27,7 @@ public abstract class AbstractSequenceObject {
 
 	public final String getNucleotides(CommandContext cmdContext) {
 		if(processedNucleotides == null) {
-			processedNucleotides = getNucleotides().toUpperCase();
+			processedNucleotides = getNucleotidesInternal(cmdContext).toUpperCase();
 			if(cmdContext.getProjectSettingValue(ProjectSettingOption.IGNORE_NT_SEQUENCE_HYPHENS).equals("true")) {
 				processedNucleotides = processedNucleotides.replaceAll("-", "");
 			}
@@ -35,7 +35,7 @@ public abstract class AbstractSequenceObject {
 		return processedNucleotides;
 	}
 	
-	protected abstract String getNucleotides();
+	protected abstract String getNucleotidesInternal(CommandContext cmdContext);
 	
 	public abstract byte[] toOriginalData();
 

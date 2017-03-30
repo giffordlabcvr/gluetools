@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
@@ -33,7 +34,7 @@ public class FastaSequenceObject extends AbstractSequenceObject {
 	}
 
 	@Override
-	protected String getNucleotides() {
+	protected String getNucleotidesInternal(CommandContext cmdContext) {
 		return nucleotides;
 	}
 
