@@ -6,16 +6,19 @@ projectBrowser.controller('sequencesCtrl',
 			$scope.pagingContext = null;
 			$scope.whereClause = null;
 			$scope.fieldNames = null;
+			$scope.loadingSpinner = false;
 
 			addUtilsToScope($scope);
 			
 			$scope.updateCount = function(pContext) {
+				$scope.listSequenceResult = null;
+				$scope.loadingSpinner = true;
+
 				var cmdParams = {};
 				if($scope.whereClause) {
 					cmdParams.whereClause = $scope.whereClause;
 				}
 				$scope.pagingContext.extendCountCmdParams(cmdParams);
-
 				glueWS.runGlueCommand("", {
 			    	"count": { "sequence": cmdParams	 } 
 				})
@@ -24,7 +27,11 @@ projectBrowser.controller('sequencesCtrl',
 					$scope.pagingContext.setTotalItems(data.countResult.count);
 					$scope.pagingContext.firstPage();
 			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "counting sequences"));
+			    .error(function(data, status, headers, config) {
+					$scope.loadingSpinner = false;
+			    	var fn = glueWS.raiseErrorDialog(dialogs, "counting sequences");
+			    	fn(data, status, headers, config);
+			    });
 			}
 				
 			$scope.updatePage = function(pContext) {
@@ -43,8 +50,13 @@ projectBrowser.controller('sequencesCtrl',
 					  console.info('list sequence raw result', data);
 					  $scope.listSequenceResult = tableResultAsObjectList(data);
 					  console.info('list sequence result as object list', $scope.listSequenceResult);
+					  $scope.loadingSpinner = false;
 			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "listing sequences"));
+			    .error(function(data, status, headers, config) {
+					$scope.loadingSpinner = false;
+			    	var fn = glueWS.raiseErrorDialog(dialogs, "listing sequences");
+			    	fn(data, status, headers, config);
+			    });
 			}
 
 			$scope.init = function(whereClause, fieldNames)  {

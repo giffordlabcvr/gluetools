@@ -7,14 +7,19 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.renderResult = null;
 			$scope.memberWhereClause = null;
 			$scope.memberFields = null;
+			$scope.loadingSpinner = false;
+
 
 			$scope.updateCount = function(pContext) {
+				$scope.memberList = null;
+				$scope.loadingSpinner = true;
 				
 				var cmdParams = {
 		    	        "recursive":"true",
 		    			"whereClause": $scope.memberWhereClause
 		    	};
 				pContext.extendCountCmdParams(cmdParams);
+
 				
 				glueWS.runGlueCommand("alignment/"+$scope.almtName, {
 			    	"count": { 
@@ -26,7 +31,11 @@ projectBrowser.controller('alignmentCtrl',
 					$scope.pagingContext.setTotalItems(data.countResult.count);
 					$scope.pagingContext.firstPage();
 			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "counting alignment members"));
+			    .error(function(data, status, headers, config) {
+					$scope.loadingSpinner = false;
+			    	var fn = glueWS.raiseErrorDialog(dialogs, "counting alignment members");
+			    	fn(data, status, headers, config);
+			    });
 			}
 			
 			$scope.updatePage = function(pContext) {
@@ -41,11 +50,16 @@ projectBrowser.controller('alignmentCtrl',
 			    	"list": { "member": cmdParams } 
 				})
 			    .success(function(data, status, headers, config) {
+					  $scope.loadingSpinner = false;
 					  console.info('list almt-member raw result', data);
 					  $scope.memberList = tableResultAsObjectList(data);
 					  console.info('list almt-member result as object list', $scope.memberList);
 			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "listing alignment members"));
+			    .error(function(data, status, headers, config) {
+					$scope.loadingSpinner = false;
+			    	var fn = glueWS.raiseErrorDialog(dialogs, "listing alignment members");
+			    	fn(data, status, headers, config);
+			    });
 			}
 
 			$scope.init = function(almtName, almtRendererModuleName, memberWhereClause, memberFields) {
