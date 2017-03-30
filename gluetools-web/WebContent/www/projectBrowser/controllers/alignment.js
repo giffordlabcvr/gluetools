@@ -8,7 +8,30 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.memberWhereClause = null;
 			$scope.memberFields = null;
 			$scope.loadingSpinner = false;
+			
+			$scope.downloadAlignment = function(referenceName, fastaAlignmentExporter, fastaProteinAlignmentExporter) {
+				console.log("Download sequence alignment, referenceName: "+referenceName);
+				glueWS.runGlueCommand("reference/"+referenceName, {
+				    "show":{
+				        "feature":{
+				            "tree":{}
+				        }
+				    }
+				})
+				.success(function(data, status, headers, config) {
+					console.info('featureTree', data.referenceFeatureTreeResult);
+					var dlg = dialogs.create(
+							glueWebToolConfig.getProjectBrowserURL()+'/dialogs/configureAlignment.html','configureAlignmentCtrl',
+							{ featureTree:data.referenceFeatureTreeResult }, {});
+					dlg.result.then(function(data){
+						console.info('data', data);
+					});
+				})
+				.error(glueWS.raiseErrorDialog(dialogs, "retrieving reference feature tree"));
 
+				
+				
+			}
 
 			$scope.updateCount = function(pContext) {
 				$scope.memberList = null;
@@ -82,6 +105,5 @@ projectBrowser.controller('alignmentCtrl',
 			}
 
 			$scope.pagingContext = pagingContext.createPagingContext($scope.updateCount, $scope.updatePage);
-
 			
 }]);

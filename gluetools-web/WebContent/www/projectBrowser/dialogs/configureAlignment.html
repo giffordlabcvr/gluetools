@@ -1,0 +1,41 @@
+<div class="modal-header">
+	<h2 class="modal-title">Configure alignment</h2>
+</div>
+<div class="modal-body">
+	<h4>Select genome region</h4>
+	<div>
+		<genome-feature-tree feature-tree="data.featureTree" selected-node="selectedNode"/>		
+	</div>
+
+	<h4>Alignment type</h4>
+	<div class="btn-group">
+		<p>
+		<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
+			ng-model="result.alignmentType" btn-radio="'nucleotide'">Nucleotide</label>
+		<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" 
+			ng-model="result.alignmentType" btn-radio="'aminoAcid'">Amino acid</label>
+		</p>
+	</div>
+	<h4>Subregion</h4>
+	
+	<div class="btn-group">
+		<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
+			ng-model="result.regionPart" btn-radio="'wholeRegion'">Entire region</label>
+		<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" 
+			ng-model="result.regionPart" btn-radio="'subRegion'">Subregion</label>
+		<span ng-show="result.regionPart == 'subRegion' && result.alignmentType == 'aminoAcid'">
+				<input style="height:27px;width:200px;margin-left:10px" placeholder="Start codon" type="text" ng-model="result.lcStart" /> to 
+				<input style="height:27px;width:200px;" placeholder="End codon" type="text" ng-model="result.lcEnd" />
+		</span>
+		<span ng-show="result.regionPart == 'subRegion' && result.alignmentType == 'nucleotide'">
+				<input style="height:27px;width:200px;margin-left:10px" placeholder="Start nucleotide" type="text" ng-model="result.refStart" /> to 
+				<input style="height:27px;width:200px;" placeholder="End nucleotide" type="text" ng-model="result.refEnd" />
+		</span>
+	</div>
+
+
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="accept()">OK</button>
+	<button type="button" class="btn btn-cancel" ng-click="dismiss()">Cancel</button>
+</div>

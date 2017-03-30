@@ -37,7 +37,8 @@ projectBrowser.directive('genomeFeatureTree', function(glueWebToolConfig) {
 		    },
 		    replace: true,
 		    scope: {
-		      featureTree: '='
+			      featureTree: '=',
+			      selectedNode: '='
 		    },
 		    templateUrl: glueWebToolConfig.getProjectBrowserURL()+'/views/genomeFeatureTree.html'
 		  };
