@@ -1,0 +1,46 @@
+<div class="row">
+	<div class="col-md-4">
+		<treecontrol class="tree-light"
+		   tree-model="featureTree"
+		   expanded-nodes="expandedNodes"
+		   selected-node="selectedNode"
+		   options="treeOptions">
+		   {{node.featureRenderedName}} 
+		</treecontrol>
+	</div>
+	<div class="col-md-4">
+		<p>{{selectedNode.featureDescription}}
+		<span ng-show="selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') >= 0"><br/><small>Amino-acid coding region</small></span>
+		</p>
+		<span ng-show="selectedNode.referenceSegment.length == 0">No nucleotide coordinates defined</span>
+		<div ng-show="selectedNode.referenceSegment.length > 0">
+			<table class="table table-nonfluid table-striped table-bordered">
+				<thead>
+					<th>Start nucleotide</th>
+					<th>End nucleotide</th>
+				</thead>
+				<tbody>
+					<tr ng-repeat="refSeg in selectedNode.referenceSegment track by $index">
+						<td>{{refSeg.refStart}}</td>
+						<td>{{refSeg.refEnd}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div ng-show="selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') >= 0">
+			<span ng-show="selectedNode.featureMetatag.indexOf('OWN_CODON_NUMBERING') >= 0"><small>Region has its own codon-numbering scheme</small></span>
+			<span ng-show="selectedNode.codonNumberingAncestorFeatureName != null"><small>Codon-numbering is based on {{selectedNode.codonNumberingAncestorFeatureName}} scheme</small></span>
+			<table class="table table-nonfluid table-striped table-bordered">
+				<thead>
+					<th>First codon</th>
+					<th>Last codon</th>
+				</thead>
+				<tbody>
+					<td>{{selectedNode.firstCodon}}</td>
+					<td>{{selectedNode.lastCodon}}</td>
+				</tbody>
+			</table>
+		
+		</div>
+	</div>
+</div>

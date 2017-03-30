@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -116,6 +117,15 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		if(feature.codesAminoAcids()) {
 			Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
 			commandObject.setInt("codon1Start", codon1Start);
+			LabeledCodon firstLabeledCodon = featureLocation.getFirstLabeledCodon(cmdContext);
+			LabeledCodon lastLabeledCodon = featureLocation.getLastLabeledCodon(cmdContext);
+			commandObject.setString("firstCodon", firstLabeledCodon.getCodonLabel());
+			commandObject.setString("lastCodon", lastLabeledCodon.getCodonLabel());
+			if(!feature.hasOwnCodonNumbering()) {
+				Feature codonNumberingAncestorFeature = featureLocation.getCodonNumberingAncestorLocation(cmdContext).getFeature();
+				commandObject.setString("codonNumberingAncestorFeatureName", codonNumberingAncestorFeature.getName());
+				commandObject.setString("codonNumberingAncestorFeatureRenderedName", codonNumberingAncestorFeature.getRenderedName());
+			}
 		}
 		List<FeatureSegment> featureLocSegments = featureLocation.getSegments();
 		featureTreeResult.referenceSegments.addAll(featureLocSegments.stream()
