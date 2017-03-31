@@ -43,7 +43,7 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		return FreemarkerUtils.processTemplate(idTemplate, templateModel);
 	}
 	
-	protected CommandResult formResult(ConsoleCommandContext cmdContext,
+	public CommandResult formResult(ConsoleCommandContext cmdContext,
 			String fastaString, String fileName, Boolean preview) {
 		if(preview) {
 			return new SimpleConsoleCommandResult(fastaString, false);

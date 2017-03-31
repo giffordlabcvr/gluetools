@@ -71,11 +71,13 @@ projectBrowser.controller('sequencesCtrl',
 				var cmdParams = {};
 				if($scope.whereClause) {
 					cmdParams.whereClause = $scope.whereClause;
+				}
+				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+				if(cmdParams.whereClause != null) {
 					cmdParams.allSequences = false;
 				} else {
 					cmdParams.allSequences = true;
 				}
-				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
 
 				glueWS.runGlueCommandLong("module/"+moduleName, {
 			    	"web-export": cmdParams	

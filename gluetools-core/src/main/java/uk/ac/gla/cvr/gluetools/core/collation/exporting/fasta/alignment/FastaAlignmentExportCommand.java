@@ -11,8 +11,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -40,7 +38,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		furtherHelp="The file is saved to a location relative to the current load/save directory.\n"
 				+ "The --labeledCodon option may be used only for coding features.\n" 
 				+ "If --ntRegion is used, the coordinates are relative to the named reference sequence.") 
-public class FastaAlignmentExportCommand extends ModulePluginCommand<CommandResult, FastaAlignmentExporter> implements ProvidedProjectModeCommand {
+public class FastaAlignmentExportCommand extends BaseFastaAlignmentExportCommand<CommandResult> {
+
+	public static final String PREVIEW = "preview";
+	public static final String FILE_NAME = "fileName";
 
 	public static final String INCLUDE_ALL_COLUMNS = "includeAllColumns";
 	public static final String MIN_COLUMN_USAGE = "minColUsage";
@@ -49,23 +50,29 @@ public class FastaAlignmentExportCommand extends ModulePluginCommand<CommandResu
 	
 	private Boolean includeAllColumns;
 	private Integer minColUsage;
-	
+	private Boolean preview;
+	private String fileName;
+
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		delegate.configure(pluginConfigContext, configElem, false);
 		this.includeAllColumns = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_ALL_COLUMNS, false)).orElse(false);
 		this.minColUsage = PluginUtils.configureIntProperty(configElem, MIN_COLUMN_USAGE, false);
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		if(fileName == null && !preview || fileName != null && preview) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
+		}
 		if(this.minColUsage != null && !this.includeAllColumns) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
 		}
+
 	}
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaAlignmentExporter exporterPlugin) {
-		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
-				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), 
-				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), delegate.getPreview(), includeAllColumns, 
-				minColUsage, delegate.getOrderStrategy(), delegate.getExcludeEmptyRows());
+		String fastaAlmtString = formAlmtString(cmdContext, exporterPlugin);
+		return exporterPlugin.formResult((ConsoleCommandContext) cmdContext, fastaAlmtString, fileName, preview);
 	}
 	
 	@CompleterClass

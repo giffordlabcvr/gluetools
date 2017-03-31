@@ -18,13 +18,10 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAli
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -42,21 +39,11 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	public FastaAlignmentExporter() {
 		super();
 		addModulePluginCmdClass(FastaAlignmentExportCommand.class);
+		addModulePluginCmdClass(FastaAlignmentWebExportCommand.class);
 		
 	}
 
-	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
-			String alignmentName, Optional<Expression> whereClause, IAlignmentColumnsSelector alignmentColumnsSelector,
-			Boolean recursive, Boolean preview, Boolean includeAllColumns, Integer minColUsage, 
-			OrderStrategy orderStrategy, Boolean excludeEmptyRows) {
-		String fastaAlmtString = exportAlignment(cmdContext, alignmentName,
-				whereClause, alignmentColumnsSelector, recursive, orderStrategy,
-				includeAllColumns, minColUsage, excludeEmptyRows,  
-				getIdTemplate());
-		return formResult(cmdContext, fastaAlmtString, fileName, preview);
-	}
-
-	private static String exportAlignment(CommandContext cmdContext,
+	public static String exportAlignment(CommandContext cmdContext,
 			String alignmentName, Optional<Expression> whereClause,
 			IAlignmentColumnsSelector alignmentColumnsSelector, Boolean recursive,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
@@ -233,7 +220,6 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				if(maxRefEnd != null) { minMaxSeg.setRefEnd(Math.max(maxRefEnd, minMaxSeg.getRefEnd())); }
 			}
 		}
-		FeatureLocation featureLoc;
 		List<ReferenceSegment> featureRefSegs = null;
 		if(alignmentColumnsSelector != null) {
 			featureRefSegs = alignmentColumnsSelector.selectAlignmentColumns(cmdContext);

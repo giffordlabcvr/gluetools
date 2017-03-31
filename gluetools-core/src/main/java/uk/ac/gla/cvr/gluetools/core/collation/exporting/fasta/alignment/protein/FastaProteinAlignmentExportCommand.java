@@ -3,17 +3,17 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
@@ -33,23 +33,32 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		metaTags = { CmdMeta.consoleOnly },
 		description="Export protein alignment to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-public class FastaProteinAlignmentExportCommand extends ModulePluginCommand<CommandResult, FastaProteinAlignmentExporter> implements ProvidedProjectModeCommand {
+public class FastaProteinAlignmentExportCommand extends BaseFastaProteinAlignmentExportCommand<CommandResult> {
+
+	public static final String PREVIEW = "preview";
+	public static final String FILE_NAME = "fileName";
 
 	private FastaAlignmentExportCommandDelegate delegate = new FastaAlignmentExportCommandDelegate();
-	
+	private Boolean preview;
+	private String fileName;
+
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		delegate.configure(pluginConfigContext, configElem, true);
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		if(fileName == null && !preview || fileName != null && preview) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
+		}
 	}
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter exporterPlugin) {
-		return exporterPlugin.doExport((ConsoleCommandContext) cmdContext, 
-				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), 
-				(SimpleAlignmentColumnsSelector) delegate.getAlignmentColumnsSelector(cmdContext), 
-				delegate.getRecursive(), delegate.getPreview(), delegate.getOrderStrategy(), 
-				delegate.getExcludeEmptyRows());
+		String fastaString = formAlmtString(cmdContext, exporterPlugin);
+		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+		return exporterPlugin.formResult(consoleCmdContext, fastaString, fileName, preview);
 	}
+
 	
 	@CompleterClass
 	public static class Completer extends FastaAlignmentExportCommandDelegate.ExportCompleter {

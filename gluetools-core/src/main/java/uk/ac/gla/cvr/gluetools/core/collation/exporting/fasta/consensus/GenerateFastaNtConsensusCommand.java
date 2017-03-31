@@ -6,7 +6,9 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAli
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -37,21 +39,31 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class GenerateFastaNtConsensusCommand extends ModulePluginCommand<CommandResult, NucleotideConsensusGenerator> implements ProvidedProjectModeCommand {
 
 	public static final String CONSENSUS_ID = "consensusID";
+	public static final String PREVIEW = "preview";
+	public static final String FILE_NAME = "fileName";
+
 	private FastaAlignmentExportCommandDelegate delegate = new FastaAlignmentExportCommandDelegate();
 
 	private String consensusID;
-	
+	private Boolean preview;
+	private String fileName;
+
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		delegate.configure(pluginConfigContext, configElem, false);
 		this.consensusID = PluginUtils.configureStringProperty(configElem, CONSENSUS_ID, "consensusSequence");
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		if(fileName == null && !preview || fileName != null && preview) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
+		}
 	}
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, NucleotideConsensusGenerator generatorPlugin) {
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
-				delegate.getFileName(), delegate.getAlignmentName(), delegate.getWhereClause(), 
-				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), delegate.getPreview(), 
+				fileName, delegate.getAlignmentName(), delegate.getWhereClause(), 
+				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview, 
 				consensusID);
 	}
 	

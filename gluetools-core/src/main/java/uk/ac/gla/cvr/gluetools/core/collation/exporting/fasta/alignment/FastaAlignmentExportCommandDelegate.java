@@ -36,10 +36,8 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String NT_START = "ntStart";
 	public static final String NT_END = "ntEnd";
 	public static final String RECURSIVE = "recursive";
-	public static final String PREVIEW = "preview";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
-	public static final String FILE_NAME = "fileName";
 	public static final String ORDER_STRATEGY = "orderStrategy";
 	public static final String EXCLUDE_EMPTY_ROWS = "excludeEmptyRows";
 	public static final String SELECTOR_NAME = "selectorName";
@@ -49,7 +47,6 @@ public class FastaAlignmentExportCommandDelegate {
 		increasing_start_segment
 	}
 	
-	private String fileName;
 	private String alignmentName;
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
@@ -58,7 +55,6 @@ public class FastaAlignmentExportCommandDelegate {
 	private String lcStart;
 	private String lcEnd;
 	private Boolean recursive;
-	private Boolean preview;
 	private Boolean labelledCodon;
 	private Boolean ntRegion;
 	private Integer ntStart;
@@ -68,7 +64,6 @@ public class FastaAlignmentExportCommandDelegate {
 	private String selectorName;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
-		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
@@ -82,7 +77,6 @@ public class FastaAlignmentExportCommandDelegate {
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
-		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
 		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
 		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
@@ -93,9 +87,6 @@ public class FastaAlignmentExportCommandDelegate {
 		}
 		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
-		}
-		if(fileName == null && !preview || fileName != null && preview) {
-			usageError3();
 		}
 		if(selectorName != null && ( ntRegion || labelledCodon )) {
 			usageError3a();
@@ -124,10 +115,6 @@ public class FastaAlignmentExportCommandDelegate {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
 	}
 
-	private void usageError3() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
-	}
-
 	private void usageError3a() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorModuleName> is used then nither --ntRegion or --labelledCodon may be specified");
 	}
@@ -140,10 +127,6 @@ public class FastaAlignmentExportCommandDelegate {
 	}
  	private void usageError6() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --ntRegion is used, both <ntStart> and <ntEnd> must be specified");
-	}
-
-	public String getFileName() {
-		return fileName;
 	}
 
 	public String getAlignmentName() {
@@ -168,10 +151,6 @@ public class FastaAlignmentExportCommandDelegate {
 
 	public Boolean getRecursive() {
 		return recursive;
-	}
-
-	public Boolean getPreview() {
-		return preview;
 	}
 
 	public String getLcStart() {

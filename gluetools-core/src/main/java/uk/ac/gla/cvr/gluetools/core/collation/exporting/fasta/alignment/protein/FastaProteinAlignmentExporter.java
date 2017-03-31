@@ -14,6 +14,7 @@ import org.apache.cayenne.exp.Expression;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractFastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -38,11 +39,23 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 	public FastaProteinAlignmentExporter() {
 		super();
 		addModulePluginCmdClass(FastaProteinAlignmentExportCommand.class);
+		addModulePluginCmdClass(FastaProteinAlignmentWebExportCommand.class);
 	}
 
 	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
 			String alignmentName, Optional<Expression> whereClause, SimpleAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean recursive, Boolean preview, OrderStrategy orderStrategy, Boolean excludeEmptyRows) {
+		String fastaString = exportAlignment(cmdContext, alignmentName,
+				whereClause, alignmentColumnsSelector, recursive,
+				orderStrategy, excludeEmptyRows);
+		return formResult(cmdContext, fastaString, fileName, preview);
+	}
+
+	public String exportAlignment(CommandContext cmdContext,
+			String alignmentName, Optional<Expression> whereClause,
+			SimpleAlignmentColumnsSelector alignmentColumnsSelector,
+			Boolean recursive, OrderStrategy orderStrategy,
+			Boolean excludeEmptyRows) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
@@ -66,11 +79,11 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, almtRow));
 		});
 		String fastaString = stringBuffer.toString();
-		return formResult(cmdContext, fastaString, fileName, preview);
+		return fastaString;
 	}
 
 	public static Map<Map<String,String>, String> exportAlignment(
-			ConsoleCommandContext cmdContext, SimpleAlignmentColumnsSelector alignmentColumnsSelector,
+			CommandContext cmdContext, SimpleAlignmentColumnsSelector alignmentColumnsSelector,
 			OrderStrategy orderStrategy, Boolean excludeEmptyRows,
 			Alignment alignment, List<AlignmentMember> almtMembers) {
 		int minRefNt = 1;
