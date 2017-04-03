@@ -38,6 +38,9 @@ public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> ex
 
 		List<LabeledAminoAcid> labeledAminoAcids = new ArrayList<LabeledAminoAcid>();
 
+		featureLocRefSegs = ReferenceSegment.mergeAbutting(featureLocRefSegs, 
+				ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
+		
 		for(ReferenceSegment featureLocRefSeg: featureLocRefSegs) {
 			CharSequence nts = refSeqObj.subSequence(cmdContext, 
 					featureLocRefSeg.getRefStart(), featureLocRefSeg.getRefEnd());

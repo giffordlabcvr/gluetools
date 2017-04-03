@@ -103,6 +103,12 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 			return Collections.emptyList();
 		}
 		
+		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
+		queryToRefSegsCodonAligned = QueryAlignedSegment.mergeAbutting(queryToRefSegsCodonAligned, 
+				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
+
+		
 		List<TranslatedQueryAlignedSegment> translatedQaSegs = new ArrayList<TranslatedQueryAlignedSegment>();
 		
 		for(QueryAlignedSegment queryToRefSeg: queryToRefSegsCodonAligned) {

@@ -114,6 +114,13 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			Alignment tipAlmt = almtMember.getAlignment();
 			memberQaSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberQaSegs, relatedRef);
 			memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			
+			// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
+			memberQaSegs = QueryAlignedSegment.mergeAbutting(memberQaSegs, 
+					QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+					QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
+
+			
 			memberQaSegs = TranslationUtils.truncateToCodonAligned(codon1Start, memberQaSegs);
 			
 			AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();

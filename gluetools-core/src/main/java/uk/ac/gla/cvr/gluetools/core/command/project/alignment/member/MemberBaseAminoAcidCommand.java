@@ -59,8 +59,14 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
 				ReferenceSegment.cloneLeftSegMerger());
 		
+		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
+		List<QueryAlignedSegment> memberToFeatureLocRefSegsMerged = QueryAlignedSegment.mergeAbutting(memberToFeatureLocRefSegs, 
+				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
+
+		
 		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-		List<QueryAlignedSegment> memberToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegs);
+		List<QueryAlignedSegment> memberToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegsMerged);
 
 		final Translator translator = new CommandContextTranslator(cmdContext);
 
@@ -75,6 +81,7 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
 
+		
 		for(QueryAlignedSegment memberToAncConstrRefSeg: memberToAncConstrRefSegsCodonAligned) {
 			CharSequence nts = memberSeqObj.subSequence(cmdContext, 
 					memberToAncConstrRefSeg.getQueryStart(), memberToAncConstrRefSeg.getQueryEnd());
