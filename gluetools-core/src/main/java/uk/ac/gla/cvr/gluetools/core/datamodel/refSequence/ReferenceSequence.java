@@ -64,14 +64,14 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 	}
 
 
-	public ReferenceFeatureTreeResult getFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive) {
-		ReferenceFeatureTreeResult featureTree = new ReferenceFeatureTreeResult(getName());
-		buildTree(cmdContext, limitingFeature, recursive, featureTree);
+	public ReferenceFeatureTreeResult getFeatureTree(CommandContext cmdContext, Feature limitingFeature, boolean recursive, boolean includeLabeledCodons) {
+		ReferenceFeatureTreeResult featureTree = new ReferenceFeatureTreeResult(getName(), getRenderedName());
+		buildTree(cmdContext, limitingFeature, recursive, includeLabeledCodons, featureTree);
 		return featureTree;
 	}
 
 	public void buildTree(CommandContext cmdContext,
-			Feature limitingFeature, boolean recursive, ReferenceFeatureTreeResult featureTree) {
+			Feature limitingFeature, boolean recursive, boolean includeLabeledCodons, ReferenceFeatureTreeResult featureTree) {
 		List<FeatureLocation> featureLocations = new ArrayList<FeatureLocation>(getFeatureLocations());
 		Collections.sort(featureLocations, new FeatureLocationComparator());
 		for(FeatureLocation featureLocation: featureLocations) {
@@ -80,7 +80,7 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 					feature.getName().equals(limitingFeature.getName()) ||
 					(recursive && feature.isDescendentOf(limitingFeature)) || 
 					limitingFeature.isDescendentOf(feature) ) {
-				featureTree.addFeatureLocation(cmdContext, featureLocation);
+				featureTree.addFeatureLocation(cmdContext, featureLocation, includeLabeledCodons);
 			}
  		}
 	}

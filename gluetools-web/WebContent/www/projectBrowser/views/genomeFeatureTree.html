@@ -14,6 +14,7 @@
 		</p>
 		<span ng-show="selectedNode.referenceSegment.length == 0">No nucleotide coordinates defined</span>
 		<div ng-show="selectedNode.referenceSegment.length > 0">
+			Nucleotide coordinates are based on {{featureTree.renderedReferenceName}} 
 			<table class="table table-nonfluid table-striped table-bordered">
 				<thead>
 					<th>First nucleotide</th>

@@ -41,7 +41,7 @@ public class ReferenceShowFeatureTreeCommand extends ReferenceSequenceModeComman
 			limitingFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		}
 		boolean recursive = true;
-		return refSeq.getFeatureTree(cmdContext, limitingFeature, recursive);
+		return refSeq.getFeatureTree(cmdContext, limitingFeature, recursive, true);
 	}
 
 	@CompleterClass

@@ -94,7 +94,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		if(parentRefSeq == null) {
 			throw new InheritFeatureLocationException(Code.PARENT_ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
 		}
-		ReferenceFeatureTreeResult parentRefFeatureTree = parentRefSeq.getFeatureTree(cmdContext, feature, recursive);
+		ReferenceFeatureTreeResult parentRefFeatureTree = parentRefSeq.getFeatureTree(cmdContext, feature, recursive, false);
 		
 		
 		List<Map<String, Object>> resultRowData = new ArrayList<Map<String, Object>>();

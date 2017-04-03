@@ -30,19 +30,21 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	
 	private List<ReferenceSegment> referenceSegments = new ArrayList<ReferenceSegment>();
 	private String referenceName;
+	private String referenceRenderedName;
 	
 	private ReferenceFeatureTreeResult parentTreeResult;
 	
 	private Map<String, ReferenceFeatureTreeResult> featureNameToTreeResult = 
 			new LinkedHashMap<String, ReferenceFeatureTreeResult>();
 
-	protected ReferenceFeatureTreeResult(String referenceName) {
+	protected ReferenceFeatureTreeResult(String referenceName, String referenceRenderedName) {
 		super("referenceFeatureTreeResult");
 		this.referenceName = referenceName;
+		this.referenceRenderedName = referenceRenderedName;
 	}
 
-	protected ReferenceFeatureTreeResult(String referenceName, ReferenceFeatureTreeResult parentTreeResult, CommandObject commandObject) {
-		this(referenceName);
+	protected ReferenceFeatureTreeResult(String referenceName, String referenceRenderedName, ReferenceFeatureTreeResult parentTreeResult, CommandObject commandObject) {
+		this(referenceName, referenceRenderedName);
 		this.parentTreeResult = parentTreeResult;
 		this.commandObject = commandObject;
 	}
@@ -97,12 +99,13 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	protected ReferenceFeatureTreeResult createChildFeatureTreeResult(
 			ReferenceFeatureTreeResult parentFeatureTreeResult,
 			CommandObject childCommandObject) {
-		return new ReferenceFeatureTreeResult(referenceName, parentFeatureTreeResult, childCommandObject);
+		return new ReferenceFeatureTreeResult(referenceName, referenceRenderedName, parentFeatureTreeResult, childCommandObject);
 	}
 
 	private void featureToCommandObject(Feature feature, CommandObject commandObject) {
 		Set<FeatureMetatag.Type> metatagTypes = feature.getMetatagTypes();
 		commandObject.set("referenceName", referenceName);
+		commandObject.set("referenceRenderedName", referenceRenderedName);
 		commandObject.set("featureName", feature.getName());
 		commandObject.set("featureRenderedName", feature.getRenderedName());
 		commandObject.set("featureDescription", feature.getDescription());
@@ -110,11 +113,11 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		metatagTypes.forEach(t -> metatagArray.addString(t.name()));
 	}
 
-	public ReferenceFeatureTreeResult addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation) {
+	public ReferenceFeatureTreeResult addFeatureLocation(CommandContext cmdContext, FeatureLocation featureLocation, boolean includeLabeledCodons) {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
 		CommandObject commandObject = featureTreeResult.getCommandObject();
-		if(feature.codesAminoAcids()) {
+		if(feature.codesAminoAcids() && includeLabeledCodons) {
 			Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
 			commandObject.setInt("codon1Start", codon1Start);
 			LabeledCodon firstLabeledCodon = featureLocation.getFirstLabeledCodon(cmdContext);

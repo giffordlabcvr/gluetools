@@ -37,11 +37,11 @@
 			</div>
 			<p style="margin-top:10px">
 				<span ng-show="(result.specifySubregionBy == 'codons' || result.alignmentType == 'aminoAcid')  && selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') >= 0">
-						<input style="height:27px;width:200px;" placeholder="Start codon" type="text" ng-model="result.lcStart" /> to 
+						Codon <input style="height:27px;width:200px;" placeholder="Start codon" type="text" ng-model="result.lcStart" /> to 
 						<input style="height:27px;width:200px;" placeholder="End codon" type="text" ng-model="result.lcEnd" />
 				</span>
 				<span ng-show="(result.specifySubregionBy == 'nucleotides' && result.alignmentType == 'nucleotide') || selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') < 0">
-						<input style="height:27px;width:200px;" placeholder="Start nucleotide" type="text" ng-model="result.refStart" /> to 
+						Nucleotide <input style="height:27px;width:200px;" placeholder="Start nucleotide" type="text" ng-model="result.refStart" /> to 
 						<input style="height:27px;width:200px;" placeholder="End nucleotide" type="text" ng-model="result.refEnd" />
 				</span>
 			</p>
