@@ -8,85 +8,81 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.memberWhereClause = null;
 			$scope.memberFields = null;
 			$scope.loadingSpinner = false;
+			$scope.featureTree = null;
+			$scope.referenceName = null;
+			$scope.selectedNode = null;
+			$scope.configuredResult = null;
 			
-			$scope.downloadAlignment = function(referenceName, fastaAlignmentExporter, fastaProteinAlignmentExporter) {
-				console.log("Download sequence alignment, referenceName: "+referenceName);
-				glueWS.runGlueCommand("reference/"+referenceName, {
-				    "show":{
-				        "feature":{
-				            "tree":{}
-				        }
-				    }
-				})
-				.success(function(data, status, headers, config) {
-					console.info('featureTree', data.referenceFeatureTreeResult);
-					var dlg = dialogs.create(
-							glueWebToolConfig.getProjectBrowserURL()+'/dialogs/configureAlignment.html','configureAlignmentCtrl',
-							{ featureTree:data.referenceFeatureTreeResult }, {});
-					dlg.result.then(function(result){
-						console.info('result', result);
-						
-						var cmdParams = {
-								recursive:true,
-								excludeEmptyRows:true,
-								orderStrategy:'increasing_start_segment',
-								labelledCodon:false
-						};
-						var moduleName;
-						var fileExtension;
-						if(result.alignmentType == 'nucleotide') {
-							moduleName = fastaAlignmentExporter;
-							cmdParams.includeAllColumns = false;
-							fileExtension = 'fna';
-						} else {
-							moduleName = fastaProteinAlignmentExporter;
-							fileExtension = 'faa';
-						}
-						console.log("Downloading alignment, using module '"+moduleName+"'");
-						cmdParams.alignmentName = $scope.almtName;
-						cmdParams.relRefName = referenceName;
-						cmdParams.featureName = result.featureName;
+			$scope.downloadAlignment = function(fastaAlignmentExporter, fastaProteinAlignmentExporter) {
+				var dlg = dialogs.create(
+						glueWebToolConfig.getProjectBrowserURL()+'/dialogs/configureAlignment.html','configureAlignmentCtrl',
+						{ featureTree:$scope.featureTree, 
+						  initialResult:_($scope.configuredResult).clone(), 
+						  initialSelectedNode: $scope.selectedNode }, {});
+				dlg.result.then(function(data){
+					console.info('data', data);
+					$scope.configuredResult = data.result;
+					$scope.selectedNode = data.selectedNode;
+					
+					var cmdParams = {
+							recursive:true,
+							excludeEmptyRows:true,
+							orderStrategy:'increasing_start_segment',
+							labelledCodon:false
+					};
+					var moduleName;
+					var fileExtension;
+					if($scope.configuredResult.alignmentType == 'nucleotide') {
+						moduleName = fastaAlignmentExporter;
+						cmdParams.includeAllColumns = false;
+						fileExtension = 'fna';
+					} else {
+						moduleName = fastaProteinAlignmentExporter;
+						fileExtension = 'faa';
+					}
+					console.log("Downloading alignment, using module '"+moduleName+"'");
+					cmdParams.alignmentName = $scope.almtName;
+					cmdParams.relRefName = $scope.referenceName;
+					cmdParams.featureName = $scope.selectedNode.featureName;
 
-						if(result.regionPart == 'subRegion') {
-							if(result.specifySubregionBy == 'nucleotides') {
-								cmdParams.ntRegion = true;
-								cmdParams.ntStart = result.refStart;
-								cmdParams.ntEnd = result.refEnd;
-							}
-							if(result.specifySubregionBy == 'codons') {
-								cmdParams.labelledCodon = true;
-								cmdParams.lcStart = result.lcStart;
-								cmdParams.lcEnd = result.lcEnd;
-							}
+					if($scope.configuredResult.regionPart == 'subRegion') {
+						if($scope.configuredResult.specifySubregionBy == 'nucleotides') {
+							cmdParams.ntRegion = true;
+							cmdParams.ntStart = $scope.configuredResult.refStart;
+							cmdParams.ntEnd = $scope.configuredResult.refEnd;
 						}
-						if($scope.whereClause) {
-							cmdParams.whereClause = $scope.whereClause;
+						if($scope.configuredResult.specifySubregionBy == 'codons') {
+							cmdParams.labelledCodon = true;
+							cmdParams.lcStart = $scope.configuredResult.lcStart;
+							cmdParams.lcEnd = $scope.configuredResult.lcEnd;
 						}
-						$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
-						if(cmdParams.whereClause != null) {
-							cmdParams.allMembers = false;
-						} else {
-							cmdParams.allMembers = true;
-						}
+					}
+					if($scope.whereClause) {
+						cmdParams.whereClause = $scope.whereClause;
+					}
+					$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+					if(cmdParams.whereClause != null) {
+						cmdParams.allMembers = false;
+					} else {
+						cmdParams.allMembers = true;
+					}
 
-						glueWS.runGlueCommandLong("module/"+moduleName, {
-					    	"web-export": cmdParams	
-						},
-						"Alignment download in progress")
-					    .success(function(data, status, headers, config) {
-					    	var base64Data;
-							if(result.alignmentType == 'nucleotide') {
-								base64Data = data.fastaAlignmentWebExportResult.base64;
-							} else {
-								base64Data = data.fastaProteinAlignmentWebExportResult.base64;
-							}
-					    	var blob = $scope.b64ToBlob(base64Data, "text/plain", 512);
-						    FileSaver.saveAs(blob, "alignment."+fileExtension);
-					    })
-					    .error(glueWS.raiseErrorDialog(dialogs, "downloading alignment"));
-					});
-				})
-				.error(glueWS.raiseErrorDialog(dialogs, "retrieving reference feature tree"));
+					glueWS.runGlueCommandLong("module/"+moduleName, {
+				    	"web-export": cmdParams	
+					},
+					"Alignment download in progress")
+				    .success(function(data, status, headers, config) {
+				    	var base64Data;
+						if($scope.configuredResult.alignmentType == 'nucleotide') {
+							base64Data = data.fastaAlignmentWebExportResult.base64;
+						} else {
+							base64Data = data.fastaProteinAlignmentWebExportResult.base64;
+						}
+				    	var blob = $scope.b64ToBlob(base64Data, "text/plain", 512);
+					    FileSaver.saveAs(blob, "alignment."+fileExtension);
+				    })
+				    .error(glueWS.raiseErrorDialog(dialogs, "downloading alignment"));
+				});
 			}
 
 			$scope.updateCount = function(pContext) {
@@ -146,6 +142,7 @@ projectBrowser.controller('alignmentCtrl',
 				$scope.memberFields = memberFields;
 				$scope.almtName = almtName;
 				$scope.memberWhereClause = memberWhereClause;
+				$scope.pagingContext = pagingContext.createPagingContext($scope.updateCount, $scope.updatePage);
 				if(almtRendererModuleName) {
 					renderCmdParams.rendererModuleName = almtRendererModuleName;
 				}
@@ -155,11 +152,25 @@ projectBrowser.controller('alignmentCtrl',
 				.success(function(data, status, headers, config) {
 					$scope.renderResult = data;
 					console.info('$scope.renderResult', $scope.renderResult);
-					$scope.pagingContext.countChanged();
+					$scope.referenceName = $scope.renderResult.alignment.constrainingReference.name;
+					console.log("$scope.referenceName: "+$scope.referenceName);
+
+					glueWS.runGlueCommand("reference/"+$scope.referenceName, {
+					    "show":{
+					        "feature":{
+					            "tree":{}
+					        }
+					    }
+					})
+					.success(function(data, status, headers, config) {
+						console.info('featureTree', data.referenceFeatureTreeResult);
+						$scope.featureTree = data.referenceFeatureTreeResult;
+						$scope.pagingContext.countChanged();
+					})
+					.error(glueWS.raiseErrorDialog(dialogs, "retrieving feature tree"));
+					
 				})
 				.error(glueWS.raiseErrorDialog(dialogs, "rendering alignment"));
-			}
-
-			$scope.pagingContext = pagingContext.createPagingContext($scope.updateCount, $scope.updatePage);
+			};
 			
 }]);

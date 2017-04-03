@@ -20,8 +20,6 @@ projectBrowser.directive('genomeFeatureTree', function(glueWebToolConfig) {
 		    		
 	    		$scope.expandedNodes = []; 
 	    		
-	    		$scope.selectedNode = null;
-	    		
 	    		$scope.expandAll = function(node) {
 	    			$scope.expandedNodes.push(node);
 	    			_.each(node.features, function(n) {$scope.expandAll(n)} );
@@ -29,9 +27,11 @@ projectBrowser.directive('genomeFeatureTree', function(glueWebToolConfig) {
 	    		$scope.$watch('featureTree', function() {
 	    			if($scope.featureTree != null) {
 	    				$scope.expandAll($scope.featureTree);
-	    				if($scope.featureTree.features.length > 0) {
-	    					$scope.selectedNode = $scope.featureTree.features[0];
-	    				}
+	    	    		if($scope.selectedNode == null) {
+		    				if($scope.featureTree.features.length > 0) {
+		    					$scope.selectedNode = $scope.featureTree.features[0];
+		    				}
+	    	    		}
 	    			}
 	    	    });
 		    },

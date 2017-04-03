@@ -2,38 +2,51 @@ projectBrowser.controller('configureAlignmentCtrl',
 		[ '$scope', '$modalInstance', 'data',
 	function($scope, $modalInstance, data){
 	$scope.data = data;
-	$scope.selectedNode = null
-	$scope.result = {
-		alignmentType:'nucleotide',
-		regionPart:'wholeRegion',
-		specifySubregionBy:'nucleotides',
-		refStart:null,
-		refEnd:null,
-		lcStart:null,
-		lcEnd:null,
-		featureName:null,
-	};
+	$scope.inited = false;
+	if(data.initialSelectedNode != null) {
+		$scope.selectedNode = data.initialSelectedNode;
+	} else {
+		$scope.selectedNode = null;
+	}
+	
+	$scope.defaultResult = function() {
+		return {
+			alignmentType:'nucleotide',
+			regionPart:'wholeRegion',
+			specifySubregionBy:'nucleotides',
+			refStart:null,
+			refEnd:null,
+			lcStart:null,
+			lcEnd:null
+		};
+	}
 
-	$scope.$watch('selectedNode', function() {
-		if($scope.selectedNode != null) {
-			$scope.result.alignmentType = 'nucleotide';
-			$scope.result.regionPart = 'wholeRegion';
-			$scope.result.specifySubregionBy = 'nucleotides';
-			$scope.result.featureName = $scope.selectedNode.featureName;
-		}
-	});
+	console.log("data.initialResult", data.initialResult);
+	if(data.initialResult != null) {
+		$scope.result = data.initialResult;
+	} else {
+		$scope.result = $scope.defaultResult();
+	}
+	
+	$scope.inited = true;
 
-	$scope.$watch('result.alignmentType', function() {
-		if($scope.result.alignmentType == 'aminoAcid') {
+	$scope.accept = function(){
+		// correct config parts.
+		if($scope.selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') < 0) {
+			$scope.result.alignmentType == 'nucleotide';
+	 	}
+		if($scope.result.regionPart == 'subRegion' && $scope.result.alignmentType == 'aminoAcid') {
 			$scope.result.specifySubregionBy = 'codons';
 		}
-		if($scope.result.alignmentType == 'nucleotide') {
-			$scope.result.specifySubregionBy = 'nucleotides';
-		}
-	});
-	
-	$scope.accept = function(){
-		$modalInstance.close($scope.result);
+		$modalInstance.close({
+			result:$scope.result,
+			selectedNode:$scope.selectedNode
+		});
+	}; 
+
+	$scope.resetToDefault = function(){
+		$scope.selectedNode = $scope.data.featureTree.features[0];
+		$scope.result = $scope.defaultResult();
 	}; 
 
 	$scope.dismiss = function(){
