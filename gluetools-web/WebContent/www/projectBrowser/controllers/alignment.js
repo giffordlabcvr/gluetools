@@ -57,8 +57,8 @@ projectBrowser.controller('alignmentCtrl',
 							cmdParams.lcEnd = $scope.configuredResult.lcEnd;
 						}
 					}
-					if($scope.whereClause) {
-						cmdParams.whereClause = $scope.whereClause;
+					if($scope.memberWhereClause) {
+						cmdParams.whereClause = $scope.memberWhereClause;
 					}
 					$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
 					if(cmdParams.whereClause != null) {

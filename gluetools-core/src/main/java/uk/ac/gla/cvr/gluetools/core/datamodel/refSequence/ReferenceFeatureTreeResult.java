@@ -8,9 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
@@ -128,6 +131,18 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 				Feature codonNumberingAncestorFeature = featureLocation.getCodonNumberingAncestorLocation(cmdContext).getFeature();
 				commandObject.setString("codonNumberingAncestorFeatureName", codonNumberingAncestorFeature.getName());
 				commandObject.setString("codonNumberingAncestorFeatureRenderedName", codonNumberingAncestorFeature.getRenderedName());
+			}
+			CodonLabeler codonLabelerModule = feature.getCodonLabelerModule(cmdContext);
+			if(codonLabelerModule == null) {
+				commandObject.setString("codonLabelingStrategy", "direct");
+			} else if(codonLabelerModule instanceof Kuiken2006CodonLabeler){
+				commandObject.setString("codonLabelingStrategy", "kuiken2006");
+				String rootReferenceName = ((Kuiken2006CodonLabeler) codonLabelerModule).getRootReferenceName();
+				commandObject.setString("codonLabelingKuiken2006RootReferenceName", rootReferenceName);
+				ReferenceSequence rootReference = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(rootReferenceName));
+				commandObject.setString("codonLabelingKuiken2006RootReferenceRenderedName", rootReference.getRenderedName());
+			} else {
+				commandObject.setString("codonLabelingStrategy", "unknown");
 			}
 		}
 		List<FeatureSegment> featureLocSegments = featureLocation.getSegments();

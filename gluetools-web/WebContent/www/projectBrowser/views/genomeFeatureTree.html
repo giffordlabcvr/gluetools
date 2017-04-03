@@ -12,9 +12,10 @@
 		<p>{{selectedNode.featureDescription}}
 		<span ng-show="selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') >= 0"><br/><small>Amino-acid coding region</small></span>
 		</p>
-		<span ng-show="selectedNode.referenceSegment.length == 0">No nucleotide coordinates defined</span>
+		Nucleotide coordinates
+		<span ng-show="selectedNode.referenceSegment.length == 0"><small>No nucleotide coordinates defined</small></span>
 		<div ng-show="selectedNode.referenceSegment.length > 0">
-			Nucleotide coordinates are based on {{featureTree.renderedReferenceName}} 
+			<small>Based directly on {{selectedNode.referenceRenderedName}}</small>
 			<table class="table table-nonfluid table-striped table-bordered">
 				<thead>
 					<th>First nucleotide</th>
@@ -29,19 +30,23 @@
 			</table>
 		</div>
 		<div ng-show="selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') >= 0">
-			<span ng-show="selectedNode.featureMetatag.indexOf('OWN_CODON_NUMBERING') >= 0"><small>Region has its own codon-numbering scheme</small></span>
-			<span ng-show="selectedNode.codonNumberingAncestorFeatureName != null"><small>Codon-numbering is based on {{selectedNode.codonNumberingAncestorFeatureName}} scheme</small></span>
-			<table class="table table-nonfluid table-striped table-bordered">
-				<thead>
-					<th>First codon</th>
-					<th>Last codon</th>
-				</thead>
-				<tbody>
-					<td>{{selectedNode.firstCodon}}</td>
-					<td>{{selectedNode.lastCodon}}</td>
-				</tbody>
-			</table>
-		
+			Codon numbering
+			<div>
+				<span ng-show="selectedNode.codonLabelingStrategy == 'direct' && selectedNode.featureMetatag.indexOf('OWN_CODON_NUMBERING') >= 0"><small>Based directly on {{selectedNode.referenceRenderedName}}</small><br/></span>
+				<span ng-show="selectedNode.codonLabelingStrategy == 'kuiken2006' && selectedNode.featureMetatag.indexOf('OWN_CODON_NUMBERING') >= 0"><small>Based on homology with {{selectedNode.codonLabelingKuiken2006RootReferenceRenderedName}}, with insertions numbered 100a, 100b, etc.</small><br/></span>
+				<span ng-show="selectedNode.featureMetatag.indexOf('OWN_CODON_NUMBERING') >= 0"><small>Codons are numbered from 1 at the start of the region</small></span>
+				<span ng-show="selectedNode.codonNumberingAncestorFeatureName != null"><small>Codons are numbered according to position within {{selectedNode.codonNumberingAncestorFeatureName}}</small></span>
+				<table class="table table-nonfluid table-striped table-bordered">
+					<thead>
+						<th>First codon</th>
+						<th>Last codon</th>
+					</thead>
+					<tbody>
+						<td>{{selectedNode.firstCodon}}</td>
+						<td>{{selectedNode.lastCodon}}</td>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>

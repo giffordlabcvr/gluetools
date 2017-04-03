@@ -197,4 +197,11 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		}
 		return alpha1.compareTo(alpha2);
 	}
+
+	public String getRootReferenceName() {
+		return rootReferenceName;
+	}
+
+	
+	
 }
