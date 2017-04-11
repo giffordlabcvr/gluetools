@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +42,9 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandDescriptor;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
@@ -175,7 +175,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 
 	private void renderCommandResult(CommandResult commandResult) {
 		if(commandResult == null) { return; }
-		commandResult.renderToConsole(this);
+		commandResult.renderResult(this);
 	}
 
 	private Class<? extends Command> executeTokenStrings(List<String> tokenStrings, boolean outputResultToConsole) {
@@ -238,10 +238,10 @@ public class Console implements InteractiveCommandResultRenderingContext
 				renderCommandResult(commandResult);
 			}
 			if(nextCmdOutputFile != null && commandResult != null) {
-				ConsoleOutputFormat cmdOutputFileFormat = ConsoleOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_OUTPUT_FILE_FORMAT).toUpperCase());
+				ResultOutputFormat cmdOutputFileFormat = ResultOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_OUTPUT_FILE_FORMAT).toUpperCase());
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat);
-				commandResult.renderToConsole(fileRenderingContext);
+				commandResult.renderResult(fileRenderingContext);
 				try {
 					byte[] byteArray = baos.toByteArray();
 					commandContext.saveBytes(nextCmdOutputFile, byteArray);
@@ -254,36 +254,6 @@ public class Console implements InteractiveCommandResultRenderingContext
 		}
 	}
 	
-	private class OutputStreamCommandResultRenderingContext implements CommandResultRenderingContext {
-		private PrintWriter printWriter;
-		private ConsoleOutputFormat consoleOutputFormat;
-		public OutputStreamCommandResultRenderingContext(OutputStream outputStream, ConsoleOutputFormat consoleOutputFormat) {
-			this.printWriter = new PrintWriter(outputStream);
-			this.consoleOutputFormat = consoleOutputFormat;
-		}
-		
-		@Override
-		public void output(String message) {
-			output(message, true);
-		}
-
-		@Override
-		public void output(String message, boolean newLine) {
-			if(newLine) {
-				printWriter.println(message);
-			} else {
-				printWriter.print(message);
-			}
-			printWriter.flush();
-		}
-
-		@Override
-		public ConsoleOutputFormat getConsoleOutputFormat() {
-			return this.consoleOutputFormat;
-		}
-		
-	}
-
 	public static Command buildCommand(
 			ConsoleCommandContext commandContext,
 			Class<? extends Command> commandClass,
@@ -743,8 +713,8 @@ public class Console implements InteractiveCommandResultRenderingContext
 	}
 
 	@Override
-	public ConsoleOutputFormat getConsoleOutputFormat() {
-		return ConsoleOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_RESULT_FORMAT).toUpperCase());
+	public ResultOutputFormat getResultOutputFormat() {
+		return ResultOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_RESULT_FORMAT).toUpperCase());
 	}
 
 

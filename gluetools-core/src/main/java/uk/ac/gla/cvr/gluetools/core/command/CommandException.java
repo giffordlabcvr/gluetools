@@ -14,7 +14,9 @@ public class CommandException extends GlueException {
 		NOT_EXECUTABLE_IN_CONTEXT("commandWords", "contextDescription"), 
 		ARGUMENT_FORMAT_ERROR("argName", "errorText", "argValue"), 
 		COMMAND_BINARY_INPUT_IO_ERROR("commandWords", "errorText"), 
-		UNKNOWN_MODE_PATH("commandModePath");
+		UNKNOWN_MODE_PATH("commandModePath"),
+		COMMAND_RESULT_NOT_A_TABLE("cmdClass", "resultClass"),
+		INVALID_RESULT_FORMAT("invalidFormat");
 
 		private String[] argNames;
 		private Code(String... argNames) {

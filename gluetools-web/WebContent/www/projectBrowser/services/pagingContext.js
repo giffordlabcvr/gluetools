@@ -172,15 +172,19 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 			cmdParams.pageSize = pagingContext.itemsPerPage;
 			cmdParams.fetchLimit = pagingContext.itemsPerPage;
 			cmdParams.fetchOffset = pagingContext.firstItemIndex - 1;
-			var glueSortOrder = pagingContext.getGlueSortOrder();
-			if(glueSortOrder != null) {
-				cmdParams.sortProperties = glueSortOrder;
-			}
+			pagingContext.extendCmdParamsSortOrder(cmdParams);
 			pagingContext.extendCmdParamsWhereClause(cmdParams);
 		}
 
 		pagingContext.extendCountCmdParams = function(cmdParams) {
 			pagingContext.extendCmdParamsWhereClause(cmdParams);
+		}
+
+		pagingContext.extendCmdParamsSortOrder = function(cmdParams) {
+			var glueSortOrder = pagingContext.getGlueSortOrder();
+			if(glueSortOrder != null) {
+				cmdParams.sortProperties = glueSortOrder;
+			}
 		}
 		
 		pagingContext.extendCmdParamsWhereClause = function(cmdParams) {

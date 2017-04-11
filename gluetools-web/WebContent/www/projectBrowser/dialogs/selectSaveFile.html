@@ -1,0 +1,12 @@
+<div class="modal-header">
+	<h4 class="modal-title">Save {{data.fileDesc}}</h4>
+</div>
+<div class="modal-body">
+	<h4>Enter the file name</h4>
+	<input type="text" class="form-control" ng-model="data.fileName">
+	
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="accept()">OK</button>
+	<button type="button" class="btn btn-cancel" ng-click="dismiss()">Cancel</button>
+</div>

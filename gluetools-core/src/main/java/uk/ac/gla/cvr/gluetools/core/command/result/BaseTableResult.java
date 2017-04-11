@@ -308,11 +308,11 @@ public class BaseTableResult<D> extends CommandResult {
 	}
 
 	@Override
-	protected void renderToConsoleAsTab(CommandResultRenderingContext renderCtx) {
+	protected void renderResultAsTab(CommandResultRenderingContext renderCtx) {
 		renderDelimitedTable(renderCtx, "\t");
 	}
 	@Override
-	protected void renderToConsoleAsCsv(CommandResultRenderingContext renderCtx) {
+	protected void renderResultAsCsv(CommandResultRenderingContext renderCtx) {
 		renderDelimitedTable(renderCtx, ",");
 	}
 

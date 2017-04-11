@@ -1,6 +1,6 @@
 projectBrowser.controller('alignmentCtrl', 
-		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 'pagingContext', 'FileSaver',
-		    function($scope, glueWebToolConfig, glueWS, dialogs, pagingContext, FileSaver) {
+		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 'pagingContext', 'FileSaver', 'saveFile',
+		    function($scope, glueWebToolConfig, glueWS, dialogs, pagingContext, FileSaver, saveFile) {
 
 			addUtilsToScope($scope);
 			$scope.memberList = null;
@@ -79,7 +79,8 @@ projectBrowser.controller('alignmentCtrl',
 							base64Data = data.fastaProteinAlignmentWebExportResult.base64;
 						}
 				    	var blob = $scope.b64ToBlob(base64Data, "text/plain", 512);
-					    FileSaver.saveAs(blob, "alignment."+fileExtension);
+				    	
+				    	saveFile.saveFile(blob, "FASTA alignment file", $scope.almtName+"_"+$scope.selectedNode.featureName+"_alignment."+fileExtension);
 				    })
 				    .error(glueWS.raiseErrorDialog(dialogs, "downloading alignment"));
 				});
@@ -172,5 +173,41 @@ projectBrowser.controller('alignmentCtrl',
 				})
 				.error(glueWS.raiseErrorDialog(dialogs, "rendering alignment"));
 			};
+			
+			
+			$scope.downloadMemberMetadata = function() {
+				console.log("Downloading clade member metadata");
+				var cmdParams = {
+		            "fieldName": $scope.memberFields,
+		            "recursive": true
+			    };
+				if($scope.whereClause) {
+					cmdParams.whereClause = $scope.whereClause;
+				}
+				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+				$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
+
+				var glueHeaders = {
+						"glue-binary-table-result" : true,
+						"glue-binary-table-result-format" : "TAB"
+				};
+				
+				glueWS.runGlueCommandLong("alignment/"+$scope.almtName, {
+			    	"list": {
+			    		"member" : cmdParams
+			    	},
+				},
+				"Clade member metadata download in progress",
+		    	glueHeaders)
+			    .success(function(data, status, headers, config) {
+			    	var blob = $scope.b64ToBlob(data.binaryTableResult.base64, "text/plain", 512);
+			    	saveFile.saveFile(blob, "clade member metadata file", $scope.almtName+"_metadata.txt");
+			    })
+			    .error(glueWS.raiseErrorDialog(dialogs, "downloading clade member metadata"));
+			}
+			
+			
+			
+			
 			
 }]);

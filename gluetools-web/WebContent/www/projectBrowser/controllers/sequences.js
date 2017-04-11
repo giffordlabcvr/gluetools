@@ -1,6 +1,6 @@
 projectBrowser.controller('sequencesCtrl', 
-		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', 'glueWebToolConfig', 'pagingContext', 'FileSaver',
-    function($scope, $route, $routeParams, glueWS, dialogs, glueWebToolConfig, pagingContext, FileSaver) {
+		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', 'glueWebToolConfig', 'pagingContext', 'FileSaver', 'saveFile',
+    function($scope, $route, $routeParams, glueWS, dialogs, glueWebToolConfig, pagingContext, FileSaver, saveFile) {
 
 			$scope.listSequenceResult = null;
 			$scope.pagingContext = null;
@@ -85,9 +85,40 @@ projectBrowser.controller('sequencesCtrl',
 				"FASTA sequence download in progress")
 			    .success(function(data, status, headers, config) {
 			    	var blob = $scope.b64ToBlob(data.fastaExportResult.base64, "text/plain", 512);
-				    FileSaver.saveAs(blob, "sequences.fasta");
+				    saveFile.saveFile(blob, "FASTA sequence file", "sequences.fasta");
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequences"));
+			}
+			
+			
+			$scope.downloadSequenceMetadata = function() {
+				console.log("Downloading sequence metadata");
+				var cmdParams = {
+		            "fieldName": $scope.fieldNames
+			    };
+				if($scope.whereClause) {
+					cmdParams.whereClause = $scope.whereClause;
+				}
+				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+				$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
+
+				var glueHeaders = {
+						"glue-binary-table-result" : true,
+						"glue-binary-table-result-format" : "TAB"
+				};
+				
+				glueWS.runGlueCommandLong("", {
+			    	"list": {
+			    		"sequence" : cmdParams
+			    	},
+				},
+				"Sequence metadata download in progress",
+		    	glueHeaders)
+			    .success(function(data, status, headers, config) {
+			    	var blob = $scope.b64ToBlob(data.binaryTableResult.base64, "text/plain", 512);
+				    saveFile.saveFile(blob, "sequence metadata file", "sequence_metadata.txt");
+			    })
+			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequence metadata"));
 			}
 
 }]);

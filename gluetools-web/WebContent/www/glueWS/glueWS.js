@@ -11,12 +11,12 @@ glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs
 		setProjectURL: function(newURL) {
 			projectURL = newURL;
 		},
-		runGlueCommandLong: function(modePath, command, pleaseWaitMessage) {
+		runGlueCommandLong: function(modePath, command, pleaseWaitMessage, glueHeaders) {
 			var dlg = null;
 			dlg = dialogs.create(
 					glueWebToolConfig.getProjectBrowserURL()+'/dialogs/glueWait.html','glueWaitCtrl',
 					{ message: pleaseWaitMessage }, {});
-			var postObj = this.runGlueCommand(modePath, command);
+			var postObj = this.runGlueCommand(modePath, command, glueHeaders);
 			return {
 				dlg: dlg,
 				success: function(successCallback) {
@@ -35,7 +35,9 @@ glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs
 				}
 			};
 		},
-		runGlueCommand: function(modePath, command) {
+		runGlueCommand: function(modePath, command, glueHeaders) {
+			glueHeaders = glueHeaders || {};
+			console.log("glueHeaders", glueHeaders);
 			// logging all glue requests might be overkill? 
 			// we could have a boolean used by the client indicating whether
 			// to log it.
@@ -43,7 +45,7 @@ glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs
     				{  category: 'glue', 
     					label: 'modePath:'+modePath+
     							',command:'+JSON.stringify(command) }); */
-			return $http.post(projectURL+"/"+modePath, command);
+			return $http.post(projectURL+"/"+modePath, command, {headers: glueHeaders});
 		},
 		addProjectUrlListener: function(urlListenerCallback) {
 			if(projectURL) {

@@ -4,7 +4,6 @@ import javax.json.JsonObject;
 
 import org.w3c.dom.Document;
 
-import uk.ac.gla.cvr.gluetools.core.console.ConsoleOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -30,55 +29,55 @@ public abstract class CommandResult {
 		return commandDocument;
 	}
 	
-	public final void renderToConsole(CommandResultRenderingContext renderCtx) {
-		ConsoleOutputFormat consoleOutputFormat = renderCtx.getConsoleOutputFormat();
+	public final void renderResult(CommandResultRenderingContext renderCtx) {
+		ResultOutputFormat consoleOutputFormat = renderCtx.getResultOutputFormat();
 		switch(consoleOutputFormat) {
 		case JSON:
-			renderToConsoleAsJson(renderCtx);
+			renderResultAsJson(renderCtx);
 			break;
 		case XML:
-			renderToConsoleAsXml(renderCtx);
+			renderResultAsXml(renderCtx);
 			break;
 		case TAB:
-			renderToConsoleAsTab(renderCtx);
+			renderResultAsTab(renderCtx);
 			break;
 		case CSV:
-			renderToConsoleAsCsv(renderCtx);
+			renderResultAsCsv(renderCtx);
 			break;
 		default:
 			if(renderCtx instanceof InteractiveCommandResultRenderingContext) {
 				renderToConsoleAsText((InteractiveCommandResultRenderingContext) renderCtx);
 			} else {
-				renderToConsoleAsXml(renderCtx);
+				renderResultAsXml(renderCtx);
 			}
 			break;
 		}
 	}
 
-	protected final void renderToConsoleAsXml(CommandResultRenderingContext renderCtx) {
+	protected final void renderResultAsXml(CommandResultRenderingContext renderCtx) {
 		Document xmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(getCommandDocument());
 		byte[] docBytes = GlueXmlUtils.prettyPrint(xmlDocument);
 		renderCtx.output(new String(docBytes));
 	}
 
-	protected final void renderToConsoleAsJson(CommandResultRenderingContext renderCtx) {
+	protected final void renderResultAsJson(CommandResultRenderingContext renderCtx) {
 		JsonObject jsonObject = CommandDocumentJsonUtils.commandDocumentToJsonObject(getCommandDocument());
 		renderCtx.output(JsonUtils.prettyPrint(jsonObject));
 	}
 
 	// default implementation
 	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
-		renderToConsoleAsXml(renderCtx);
+		renderResultAsXml(renderCtx);
 	}
 
 	// default implementation
-	protected void renderToConsoleAsTab(CommandResultRenderingContext renderCtx) {
-		renderToConsoleAsXml(renderCtx);
+	protected void renderResultAsTab(CommandResultRenderingContext renderCtx) {
+		renderResultAsXml(renderCtx);
 	}
 
 	// default implementation
-	protected void renderToConsoleAsCsv(CommandResultRenderingContext renderCtx) {
-		renderToConsoleAsXml(renderCtx);
+	protected void renderResultAsCsv(CommandResultRenderingContext renderCtx) {
+		renderResultAsXml(renderCtx);
 	}
 
 	
