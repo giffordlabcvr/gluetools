@@ -1,12 +1,13 @@
 projectBrowser.controller('sequencesCtrl', 
-		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', 'glueWebToolConfig', 'pagingContext', 'FileSaver', 'saveFile',
-    function($scope, $route, $routeParams, glueWS, dialogs, glueWebToolConfig, pagingContext, FileSaver, saveFile) {
+		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', 'glueWebToolConfig', 'pagingContext', 'FileSaver', 'saveFile', '$analytics',
+    function($scope, $route, $routeParams, glueWS, dialogs, glueWebToolConfig, pagingContext, FileSaver, saveFile, $analytics) {
 
 			$scope.listSequenceResult = null;
 			$scope.pagingContext = null;
 			$scope.whereClause = null;
 			$scope.fieldNames = null;
 			$scope.loadingSpinner = false;
+			$scope.analytics = $analytics;
 
 			addUtilsToScope($scope);
 			
@@ -79,6 +80,10 @@ projectBrowser.controller('sequencesCtrl',
 					cmdParams.allSequences = true;
 				}
 
+				$scope.analytics.eventTrack("sequenceMetadataDownload", 
+						{   category: 'dataDownload', 
+							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+
 				glueWS.runGlueCommandLong("module/"+moduleName, {
 			    	"web-export": cmdParams	
 				},
@@ -107,6 +112,10 @@ projectBrowser.controller('sequencesCtrl',
 						"glue-binary-table-result-format" : "TAB"
 				};
 				
+				$scope.analytics.eventTrack("sequenceFastaDownload", 
+						{   category: 'dataDownload', 
+							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+
 				glueWS.runGlueCommandLong("", {
 			    	"list": {
 			    		"sequence" : cmdParams

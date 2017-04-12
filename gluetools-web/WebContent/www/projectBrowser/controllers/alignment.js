@@ -1,6 +1,6 @@
 projectBrowser.controller('alignmentCtrl', 
-		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 'pagingContext', 'FileSaver', 'saveFile',
-		    function($scope, glueWebToolConfig, glueWS, dialogs, pagingContext, FileSaver, saveFile) {
+		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 'pagingContext', 'FileSaver', 'saveFile', '$analytics',
+		    function($scope, glueWebToolConfig, glueWS, dialogs, pagingContext, FileSaver, saveFile, $analytics) {
 
 			addUtilsToScope($scope);
 			$scope.memberList = null;
@@ -12,7 +12,8 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.referenceName = null;
 			$scope.selectedNode = null;
 			$scope.configuredResult = null;
-			
+			$scope.analytics = $analytics;
+
 			$scope.downloadAlignment = function(fastaAlignmentExporter, fastaProteinAlignmentExporter) {
 				var dlg = dialogs.create(
 						glueWebToolConfig.getProjectBrowserURL()+'/dialogs/configureAlignment.html','configureAlignmentCtrl',
@@ -67,6 +68,10 @@ projectBrowser.controller('alignmentCtrl',
 						cmdParams.allMembers = true;
 					}
 
+					$scope.analytics.eventTrack("alignmentDownload", 
+							{   category: 'dataDownload', 
+								label: 'type:'+$scope.configuredResult.alignmentType+',feature:'+$scope.selectedNode.featureName+',alignment:'+$scope.almtName });
+					
 					glueWS.runGlueCommandLong("module/"+moduleName, {
 				    	"web-export": cmdParams	
 					},
@@ -192,6 +197,9 @@ projectBrowser.controller('alignmentCtrl',
 						"glue-binary-table-result-format" : "TAB"
 				};
 				
+				$scope.analytics.eventTrack("memberMetadataDownload", 
+						{   category: 'dataDownload', 
+							label: 'alignment:'+$scope.almtName+',totalItems:'+$scope.pagingContext.getTotalItems() });
 				glueWS.runGlueCommandLong("alignment/"+$scope.almtName, {
 			    	"list": {
 			    		"member" : cmdParams

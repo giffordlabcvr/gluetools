@@ -1,7 +1,9 @@
 'use strict';
 
 var projectBrowser = angular.module('projectBrowser', 
-		['glueWS', 'ui.bootstrap','dialogs.main','ngFileSaver','angularSpinner','glueWebToolConfig']);
+		['glueWS', 'ui.bootstrap','dialogs.main','ngFileSaver','angularSpinner','glueWebToolConfig',
+		    'angulartics',
+		    'angulartics.google.analytics']);
 
 projectBrowser.factory("projectBrowserStandardRoutes", function() {
 	return {

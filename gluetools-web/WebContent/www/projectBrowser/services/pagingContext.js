@@ -21,6 +21,10 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 			pagingContext.totalItems = totalItems;
 		}
 
+		pagingContext.getTotalItems = function() {
+			return pagingContext.totalItems;
+		}
+
 		pagingContext.countChanged = function() {
 			pagingContext.updateCount(pagingContext);
 		}
