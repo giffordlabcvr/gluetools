@@ -48,6 +48,11 @@
 		</div>
 	</div>	
 
+	<h4>About GLUE "constrained" alignments</h4>
+	The downloaded alignment will be constrained to {{data.featureTree.features[0].referenceRenderedName}}. 
+	This means that the columns of the alignment will be limited to those nucleotides which exist in this reference sequence. 
+	Insertions in a clade member sequence relative to the reference sequence are not included.   
+
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-primary" ng-click="accept()" ng-disabled="selectedNode.featureMetatag.indexOf('INFORMATIONAL') >= 0">OK</button>

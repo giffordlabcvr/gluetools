@@ -15,6 +15,7 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.analytics = $analytics;
 
 			$scope.downloadAlignment = function(fastaAlignmentExporter, fastaProteinAlignmentExporter) {
+				console.info('$scope.featureTree', $scope.featureTree);
 				var dlg = dialogs.create(
 						glueWebToolConfig.getProjectBrowserURL()+'/dialogs/configureAlignment.html','configureAlignmentCtrl',
 						{ featureTree:$scope.featureTree, 
@@ -85,7 +86,9 @@ projectBrowser.controller('alignmentCtrl',
 						}
 				    	var blob = $scope.b64ToBlob(base64Data, "text/plain", 512);
 				    	
-				    	saveFile.saveFile(blob, "FASTA alignment file", $scope.almtName+"_"+$scope.selectedNode.featureName+"_alignment."+fileExtension);
+				    	saveFile.saveFile(blob, "FASTA alignment file", 
+				    			$scope.almtName+"_"+$scope.selectedNode.featureName+"_"+
+				    			$scope.configuredResult.alignmentType+"_alignment.fasta");
 				    })
 				    .error(glueWS.raiseErrorDialog(dialogs, "downloading alignment"));
 				});

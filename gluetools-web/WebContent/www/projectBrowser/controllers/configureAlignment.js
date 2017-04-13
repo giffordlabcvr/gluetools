@@ -33,7 +33,7 @@ projectBrowser.controller('configureAlignmentCtrl',
 	$scope.accept = function(){
 		// correct config parts.
 		if($scope.selectedNode.featureMetatag.indexOf('CODES_AMINO_ACIDS') < 0) {
-			$scope.result.alignmentType == 'nucleotide';
+			$scope.result.alignmentType = 'nucleotide';
 	 	}
 		if($scope.result.regionPart == 'subRegion' && $scope.result.alignmentType == 'aminoAcid') {
 			$scope.result.specifySubregionBy = 'codons';
