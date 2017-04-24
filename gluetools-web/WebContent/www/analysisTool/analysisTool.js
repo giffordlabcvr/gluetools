@@ -32,7 +32,6 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.analysisModuleName = "webAnalysisTool";
 	}
 	
-	$scope.variationsPerRow = 8;
 	$scope.range = function(n) {
 		return new Array(n);
 	}
@@ -45,9 +44,6 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.selectedReferenceAnalysis = null;
 		$scope.selectedRefFeatAnalysis = null;
 		$scope.selectedQueryFeatAnalysis = null;
-		$scope.selectedVariationCategoryResult = null;
-		$scope.resultVariationMatchesPresent = null;
-		$scope.resultVariationMatchesAbsent = null;
 	}
 	
 	$scope.analysisView = 'typingSummary';
@@ -87,17 +83,15 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		console.log("updated ref name: ", $scope.selectedRefName);
 	}
 
-	$scope.updateSelectedVariationCategoryResult = function(){
-		if($scope.selectedVariationCategoryResult == null &&
-				$scope.selectedQueryAnalysis != null && $scope.fileItemUnderAnalysis && 
-				$scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult &&
-				$scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult.length > 0) {
-			$scope.selectedVariationCategoryResult = $scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult[0];
-		} 
-		console.log("updated selected variationCategoryResult: ", $scope.selectedVariationCategoryResult);
+	$scope.getInterpretationView = function(resultVariationCategory) {
+		if(resultVariationCategory == null) {
+			return null;
+		}
+		var vCatName = resultVariationCategory.name;
+		var interpretationView = _.find(glueWebToolConfig.getInterpretationViews(), 
+				function(view) { return view.vCatName == vCatName; });
+		return interpretationView;
 	}
-	
-	
 
 	$scope.displayVariation = function(vCatName, referenceName, featureName, variationName, pLocMatches) {
 		var varVCat = _.find(
@@ -162,9 +156,6 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
 		$scope.updateSelectedQueryFeatAnalysis();
 		$scope.updateSelectedRefName();
-		$scope.updateSelectedVariationCategoryResult();
-		$scope.updateResultVariationMatchesPresent();
-		$scope.updateResultVariationMatchesAbsent();
 	}
 
 	$scope.selectedFeatureAnalysisChanged = function(){
@@ -200,43 +191,18 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.analysisView = 'genomeDetail';
 	}
 	
-	$scope.selectedVariationCategoryResultChanged = function() {
-		$scope.updateResultVariationMatchesPresent();
-		$scope.updateResultVariationMatchesAbsent();
-	}
-
-	$scope.updateResultVariationMatchesAbsent = function() {
-		if($scope.selectedVariationCategoryResult != null &&
-				$scope.selectedVariationCategoryResult.reportAbsence) {
-			$scope.resultVariationMatchesAbsent = $scope.updateResultVariationMatches(false);
-		} else {
-			$scope.resultVariationMatchesAbsent = null;
-		}
-		console.log("updated resultVariationMatchesAbsent", $scope.resultVariationMatchesAbsent);
-	}
-
-	$scope.updateResultVariationMatchesPresent = function() {
-		$scope.resultVariationMatchesPresent = $scope.updateResultVariationMatches(true);
-		console.log("updated resultVariationMatchesPresent", $scope.resultVariationMatchesPresent);
-	}
-	
-	$scope.updateResultVariationMatches = function(present) {
-		if($scope.selectedVariationCategoryResult != null && $scope.selectedQueryAnalysis != null) {
+	$scope.getResultVariationMatches = function(resultVariationCategory) {
+		if(resultVariationCategory != null && $scope.selectedQueryAnalysis != null) {
 			var number = 0;
 			var resultVariationMatches = [];
 			if($scope.selectedQueryAnalysis.sequenceFeatureAnalysis) {
 				for(var i = 0; i < $scope.selectedQueryAnalysis.sequenceFeatureAnalysis.length; i++) {
 					var sequenceFeatureAnalysis = $scope.selectedQueryAnalysis.sequenceFeatureAnalysis[i];
-					var variationMatchGroupList;
-					if(present) {
-						variationMatchGroupList = sequenceFeatureAnalysis.variationMatchGroupPresent;
-					} else {
-						variationMatchGroupList = sequenceFeatureAnalysis.variationMatchGroupAbsent;
-					}
+					var variationMatchGroupList = sequenceFeatureAnalysis.variationMatchGroupPresent;
 					if(variationMatchGroupList) {
 						for(var j = 0; j < variationMatchGroupList.length; j++) {
 							var variationMatchGroup = variationMatchGroupList[j];
-							if(variationMatchGroup.variationCategory != $scope.selectedVariationCategoryResult.name) {
+							if(variationMatchGroup.variationCategory != resultVariationCategory.name) {
 								continue;
 							}
 							var definingReferenceName = variationMatchGroup.referenceName;
@@ -245,31 +211,14 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 							var firstResultVariationMatch = null;
 							for(var k = 0; k < variationMatchGroup.variationMatch.length; k++) {
 								var variationMatch = variationMatchGroup.variationMatch[k];
-								if(currentResultVariationMatch == null) {
-									currentResultVariationMatch = {
+								resultVariationMatches.push({
 											definingReferenceName: definingReferenceName,
 											definingFeatureName: definingFeatureName,
-											showDefining: false,
-											variation: []
-									};
-									resultVariationMatches.push(currentResultVariationMatch);
-									if(firstResultVariationMatch == null) {
-										firstResultVariationMatch = currentResultVariationMatch;
-										firstResultVariationMatch.showDefining = true;
-										firstResultVariationMatch.rowspan = 1;
-									} else {
-										firstResultVariationMatch.rowspan = firstResultVariationMatch.rowspan+1;
-									}
-								}
-								currentResultVariationMatch.variation.push({
-									name: variationMatch.variationName,
-									renderedName: variationMatch.variationRenderedName,
-									pLocMatches: variationMatch.pLocMatches
+											name: variationMatch.variationName,
+											renderedName: variationMatch.variationRenderedName,
+											pLocMatches: variationMatch.pLocMatches
 								});
 								number++;
-								if(currentResultVariationMatch.variation.length == $scope.variationsPerRow) {
-									currentResultVariationMatch = null;
-								}
 							}
 						}
 					}
@@ -302,11 +251,6 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.selectedReferenceAnalysisChanged();
 	}, false);
 
-	$scope.$watch( 'selectedVariationCategoryResult', function(newObj, oldObj) {
-		$scope.selectedVariationCategoryResultChanged();
-	}, false);
-
-	
 	$scope.selectVariationCategories = function(item) {
 		var included = _(item.variationCategorySelection).clone();
 		var variationCategories = $scope.variationCategories;

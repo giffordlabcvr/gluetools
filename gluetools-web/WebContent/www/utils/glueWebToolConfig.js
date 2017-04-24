@@ -50,7 +50,14 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 		},
 		getAnalysisModuleName: function() {
 			return analysisModuleName;
-		}
+		},
+		setInterpretationViews: function(newInterpretationViews) {
+			interpretationViews = newInterpretationViews;
+			console.log("interpretationViews set to: "+interpretationViews);
+		},
+		getInterpretationViews: function() {
+			return interpretationViews;
+		},
 	};
 });
 

@@ -184,7 +184,7 @@ task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
 	  ssh.run {
 	    session(remotes.omega) {
 	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
-	      execute 'echo "drop database GLUETOOLS; create database GLUETOOLS;" | mysql -u gluetools --password=gluetools GLUETOOLS'
+	      execute 'echo "drop database GLUETOOLS; create database GLUETOOLS character set UTF8;" | mysql -u gluetools --password=gluetools GLUETOOLS'
 	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUETOOLS'
 	      execute 'rm /tmp/gluedb.sql.gz'
 	    }
@@ -198,7 +198,7 @@ task deployGlueDbToAlpha(dependsOn: ['zipGlueDB']) {
 	  ssh.run {
 	    session(remotes.alpha) {
 	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
-	      execute 'echo "drop database GLUETOOLS_SING01J; create database GLUETOOLS_SING01J;" | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
+	      execute 'echo "drop database GLUETOOLS_SING01J; create database GLUETOOLS_SING01J character set UTF8;" | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
 	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
 	      execute 'rm /tmp/gluedb.sql.gz'
 	    }

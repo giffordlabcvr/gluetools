@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
@@ -200,6 +201,11 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							Boolean multiReference = variationScanHint.getMultiReference();
 							Boolean descendentFeatures = variationScanHint.getDescendentFeatures();
 							Expression variationWhereClause = variationCategory.getWhereClause();
+							
+							String cladeMatchProperty = variationCategory.getCladeMatchProperty();
+							if(cladeMatchProperty != null) {
+								variationWhereClause = variationWhereClause.andExp(ExpressionFactory.inExp(cladeMatchProperty, queryAnalysis.ancestorAlmtName));
+							}
 							
 							boolean excludeAbsent = !variationCategory.getReportAbsence();
 							

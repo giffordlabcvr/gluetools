@@ -3,7 +3,7 @@
                 <username>sing01j</username>
                 <password>sing01j</password>
                 <vendor>MySQL</vendor>
-                <jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS_SING01J</jdbcUrl>        
+                <jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS_SING01J?characterEncoding=UTF-8</jdbcUrl>        
         </database>
         <properties>
         		<!-- BLAST -->

@@ -37,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
 			"-m, --member                                   Demote specific member",
-			"-r, --retainedFieldValue                       Field/value to set on retained members",
 			"-w <whereClause>, --whereClause <whereClause>  Qualify demoted members",
 		    "-a, --allMembers                               Demote all members"},
 		description="Move certain members to a child alignment",

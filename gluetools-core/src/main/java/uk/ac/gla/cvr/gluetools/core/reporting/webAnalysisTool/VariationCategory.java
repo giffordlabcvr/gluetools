@@ -18,6 +18,11 @@ public class VariationCategory implements Plugin {
 	public static final String SELECTED_BY_DEFAULT = "selectedByDefault";
 	public static final String OBJECT_RENDERER_MODULE = "objectRendererModule";
 	public static final String REPORT_ABSENCE = "reportAbsence";
+	// this is a property path defined relative to a variation.
+	// if this is defined, for each variation in the category, the value of this property 
+	// must be equal to one of the clade names in the query sequence 
+	// typing result (e.g. AL_MASTER, AL_1, AL_1a) etc. otherwise the query will not be scanned for that variation.
+	public static final String CLADE_MATCH_PROPERTY = "cladeMatchProperty";
 	
 	private String name;
 	private String displayName;
@@ -26,6 +31,7 @@ public class VariationCategory implements Plugin {
 	private String objectRendererModule;
 	private Boolean selectedByDefault;
 	private Boolean reportAbsence;
+	private String cladeMatchProperty;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -36,6 +42,7 @@ public class VariationCategory implements Plugin {
 		selectedByDefault = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SELECTED_BY_DEFAULT, false)).orElse(false);
 		objectRendererModule = PluginUtils.configureStringProperty(configElem, OBJECT_RENDERER_MODULE, true);
 		reportAbsence = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, REPORT_ABSENCE, false)).orElse(false);
+		cladeMatchProperty = PluginUtils.configureStringProperty(configElem, CLADE_MATCH_PROPERTY, false);
 	}
 
 	public String getName() {
@@ -64,6 +71,10 @@ public class VariationCategory implements Plugin {
 
 	public String getObjectRendererModule() {
 		return objectRendererModule;
+	}
+
+	public String getCladeMatchProperty() {
+		return cladeMatchProperty;
 	}
 
 }

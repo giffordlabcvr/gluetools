@@ -3,7 +3,7 @@
 		<username>gluetools</username>
 		<password>gluetools</password>
 		<vendor>MySQL</vendor>
-		<jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS</jdbcUrl>	
+		<jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS?characterEncoding=UTF-8</jdbcUrl>	
 	</database>
 	<properties>
 		<property>

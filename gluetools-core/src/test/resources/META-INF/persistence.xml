@@ -6,7 +6,7 @@
 	
 	create user 'glue'@'localhost' identified by 'glue';
 	grant all privileges on *.* to 'glue'@'localhost';
-	create database glue;
+	create database glue character set UTF8;
 	
 	-->
 	<persistence-unit name="glue-persistence-unit" transaction-type="RESOURCE_LOCAL">

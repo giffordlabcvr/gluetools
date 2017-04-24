@@ -112,7 +112,7 @@
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
 						ng-model="analysisView" btn-radio="'typingSummary'">Genotyping summary</label>
 					<label ng-show="variationCategories.length > 0" class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid active" 
-						ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Variation summary</label>
+						ng-disabled="!enableVariationSummary" ng-model="analysisView" btn-radio="'variationSummary'">Interpretation</label>
 					<label class="btn btn-primary btn-xs ng-pristine ng-untouched ng-valid" 
 						ng-model="analysisView" btn-radio="'genomeDetail'">Genome detail</label>
 				</div>
@@ -181,7 +181,6 @@
 							<tr>
 								<th>File</th>
 								<th>Query sequence</th>
-								<th>Variation category</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -193,77 +192,21 @@
 										>
 								    </select>
 								</td>
-								<td>
-									<select ng-model="selectedVariationCategoryResult" 
-										ng-options="resultVariationCategory.displayName for resultVariationCategory in fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult"
-										>
-								    </select>
-								</td>
 							</tr>
 						</tbody>
 					</table>
-					<div ng-show="resultVariationMatchesPresent">
-						<h4>{{selectedVariationCategoryResult.displayName}} where a match was found in the query sequence: {{resultVariationMatchesPresent.number}}</h4>
-						<table ng-show="resultVariationMatchesPresent.matches.length > 0" class="table" width="100%">
-							<thead>
-								<col width="2%"></col>
-								<col width="2%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<tr>
-									<th>Reference sequence</th>
-									<th>Genome feature</th>
-									<th colspan="{{variationsPerRow}}">{{selectedVariationCategoryResult.displayName}}</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr ng-repeat="resultVariationMatch in resultVariationMatchesPresent.matches">
-									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}">{{resultVariationMatch.definingReferenceName}}</td>
-									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}"><a ng-click="switchToFeatureDetail(resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName)">{{resultVariationMatch.definingFeatureName}} <i class="glyphicon glyphicon-link"></i></a></td>
-									<td ng-repeat="variation in resultVariationMatch.variation">
-										<a ng-click="displayVariation(selectedVariationCategoryResult.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name, variation.pLocMatches)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+					
+					<div ng-repeat="resultVariationCategory in fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult">
+						<div style="display:table-row;"" >
+							<svg width="45px" height="41px" style="display:table-cell; vertical-align: middle; padding-right:10px;">
+								<rect ng-attr-class="vcat_{{resultVariationCategory.name}}" y="31%" width="100%" height="38%"></rect>
+								<rect class="varBox" y="31%" width="100%" height="38%"></rect>
+							</svg>
+							<div style="display:table-cell; vertical-align: middle;"><h4>{{resultVariationCategory.displayName}}</h4></div>
+						</div>
+						<div ng-include src="getInterpretationView(resultVariationCategory).interpretationViewURL"></div>
 					</div>
-					<div ng-show="resultVariationMatchesAbsent">
-						<h4>{{selectedVariationCategoryResult.displayName}} where no match was found in the query sequence: {{resultVariationMatchesAbsent.number}}</h4>
-						<table ng-show="resultVariationMatchesAbsent.matches.length > 0" class="table" width="100%">
-							<thead>
-								<col width="2%"></col>
-								<col width="2%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<col width="12%"></col>
-								<tr>
-									<th>Reference sequence</th>
-									<th>Genome feature</th>
-									<th colspan="{{variationsPerRow}}">{{selectedVariationCategoryResult.displayName}}</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr ng-repeat="resultVariationMatch in resultVariationMatchesAbsent.matches">
-									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}">{{resultVariationMatch.definingReferenceName}}</td>
-									<td ng-show="resultVariationMatch.showDefining" rowspan="{{resultVariationMatch.rowspan}}"><a ng-click="switchToFeatureDetail(resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName)">{{resultVariationMatch.definingFeatureName}} <i class="glyphicon glyphicon-link"></i></a></td>
-									<td ng-repeat="variation in resultVariationMatch.variation">
-										<a ng-click="displayVariation(selectedVariationCategoryResult.name, resultVariationMatch.definingReferenceName, resultVariationMatch.definingFeatureName, variation.name, variation.pLocMatches)">{{variation.renderedName}} <i class="glyphicon glyphicon-link"></i></a>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+					
 				</div>
 				
 				<div ng-show="analysisView == 'genomeDetail'">

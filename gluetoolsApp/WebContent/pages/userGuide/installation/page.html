@@ -40,7 +40,7 @@ Example set up: </p>
 You can use the following MySQL commands to set this up: </p>
 <div hljs language="sql" no-escape>
 mysql> create user 'gluetools'@'localhost' identified by 'glue12345';
-mysql> create database GLUE_TOOLS;
+mysql> create database GLUE_TOOLS character set UTF8;
 mysql> grant all privileges on GLUE_TOOLS.* to 'gluetools'@'localhost';   
 </div>
 <p>Test that the new user/password works:</p>
