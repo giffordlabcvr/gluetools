@@ -181,6 +181,7 @@
 							<tr>
 								<th>File</th>
 								<th>Query sequence</th>
+								<th>Interpretation task</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -192,19 +193,28 @@
 										>
 								    </select>
 								</td>
+								<td>
+									<select ng-model="selectedVariationCategoryResult" 
+										ng-options="resultVariationCategory.displayName for resultVariationCategory in fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult"
+										>
+								    </select>
+								</td>
+								
 							</tr>
 						</tbody>
 					</table>
 					
 					<div ng-repeat="resultVariationCategory in fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult">
-						<div style="display:table-row;"" >
-							<svg width="45px" height="41px" style="display:table-cell; vertical-align: middle; padding-right:10px;">
-								<rect ng-attr-class="vcat_{{resultVariationCategory.name}}" y="31%" width="100%" height="38%"></rect>
-								<rect class="varBox" y="31%" width="100%" height="38%"></rect>
-							</svg>
-							<div style="display:table-cell; vertical-align: middle;"><h4>{{resultVariationCategory.displayName}}</h4></div>
+						<div ng-show="resultVariationCategory.name == selectedVariationCategoryResult.name">
+							<div style="display:table-row;"" >
+								<svg width="45px" height="41px" style="display:table-cell; vertical-align: middle; padding-right:10px;">
+									<rect ng-attr-class="vcat_{{resultVariationCategory.name}}" y="31%" width="100%" height="38%"></rect>
+									<rect class="varBox" y="31%" width="100%" height="38%"></rect>
+								</svg>
+								<div style="display:table-cell; vertical-align: middle;"><h4>{{resultVariationCategory.displayName}}</h4></div>
+							</div>
+							<div ng-include src="getInterpretationView(resultVariationCategory).interpretationViewURL"></div>
 						</div>
-						<div ng-include src="getInterpretationView(resultVariationCategory).interpretationViewURL"></div>
 					</div>
 					
 				</div>

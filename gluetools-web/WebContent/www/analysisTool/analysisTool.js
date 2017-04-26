@@ -44,6 +44,8 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		$scope.selectedReferenceAnalysis = null;
 		$scope.selectedRefFeatAnalysis = null;
 		$scope.selectedQueryFeatAnalysis = null;
+		$scope.selectedVariationCategoryResult = null;
+
 	}
 	
 	$scope.analysisView = 'typingSummary';
@@ -83,6 +85,16 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		console.log("updated ref name: ", $scope.selectedRefName);
 	}
 
+	$scope.updateSelectedVariationCategoryResult = function(){
+		if($scope.selectedVariationCategoryResult == null &&
+				$scope.selectedQueryAnalysis != null && $scope.fileItemUnderAnalysis && 
+				$scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult &&
+				$scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult.length > 0) {
+			$scope.selectedVariationCategoryResult = $scope.fileItemUnderAnalysis.webAnalysisResult.variationCategoryResult[0];
+		} 
+		console.log("updated selected variationCategoryResult: ", $scope.selectedVariationCategoryResult);
+	}
+	
 	$scope.getInterpretationView = function(resultVariationCategory) {
 		if(resultVariationCategory == null) {
 			return null;
@@ -156,6 +168,7 @@ analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader'
 		console.log("selected query analysis: ", $scope.selectedQueryAnalysis);
 		$scope.updateSelectedQueryFeatAnalysis();
 		$scope.updateSelectedRefName();
+		$scope.updateSelectedVariationCategoryResult();
 	}
 
 	$scope.selectedFeatureAnalysisChanged = function(){
