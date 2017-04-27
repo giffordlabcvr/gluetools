@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
@@ -31,7 +32,7 @@ public class VariationCategory implements Plugin {
 	private String objectRendererModule;
 	private Boolean selectedByDefault;
 	private Boolean reportAbsence;
-	private String cladeMatchProperty;
+	private List<String> cladeMatchProperties;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -42,7 +43,7 @@ public class VariationCategory implements Plugin {
 		selectedByDefault = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SELECTED_BY_DEFAULT, false)).orElse(false);
 		objectRendererModule = PluginUtils.configureStringProperty(configElem, OBJECT_RENDERER_MODULE, true);
 		reportAbsence = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, REPORT_ABSENCE, false)).orElse(false);
-		cladeMatchProperty = PluginUtils.configureStringProperty(configElem, CLADE_MATCH_PROPERTY, false);
+		cladeMatchProperties = PluginUtils.configureStringsProperty(configElem, CLADE_MATCH_PROPERTY);
 	}
 
 	public String getName() {
@@ -73,8 +74,8 @@ public class VariationCategory implements Plugin {
 		return objectRendererModule;
 	}
 
-	public String getCladeMatchProperty() {
-		return cladeMatchProperty;
+	public List<String> getCladeMatchProperties() {
+		return cladeMatchProperties;
 	}
 
 }

@@ -202,8 +202,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							Boolean descendentFeatures = variationScanHint.getDescendentFeatures();
 							Expression variationWhereClause = variationCategory.getWhereClause();
 							
-							String cladeMatchProperty = variationCategory.getCladeMatchProperty();
-							if(cladeMatchProperty != null) {
+							List<String> cladeMatchProperties = variationCategory.getCladeMatchProperties();
+							for(String cladeMatchProperty : cladeMatchProperties) {
 								variationWhereClause = variationWhereClause.andExp(ExpressionFactory.inExp(cladeMatchProperty, queryAnalysis.ancestorAlmtName));
 							}
 							
