@@ -58,6 +58,7 @@ import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 // TODO command lines ending with '\' should be concatenated to allow continuations.
 // TODO improve command line table display to adapt columns to data.
@@ -240,7 +241,12 @@ public class Console implements InteractiveCommandResultRenderingContext
 			if(nextCmdOutputFile != null && commandResult != null) {
 				ResultOutputFormat cmdOutputFileFormat = ResultOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_OUTPUT_FILE_FORMAT).toUpperCase());
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat);
+				
+				LineFeedStyle lineFeedStyle = LineFeedStyle.LF;
+				if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+					lineFeedStyle = LineFeedStyle.CRLF;
+				}
+				OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat, lineFeedStyle);
 				commandResult.renderResult(fileRenderingContext);
 				try {
 					byte[] byteArray = baos.toByteArray();
