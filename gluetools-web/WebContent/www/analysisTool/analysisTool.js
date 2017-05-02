@@ -18,16 +18,36 @@ var analysisTool = angular.module('analysisTool',
 console.log("after analysisTool module definition");
 
 
-analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig', '$analytics',
-    function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig, $analytics) {
+analysisTool.controller('analysisToolCtrl', [ '$scope', 'glueWS', 'FileUploader', 'dialogs', 'glueWebToolConfig', '$analytics', 'saveFile', 'FileSaver', '$http',
+    function($scope, glueWS, FileUploader, dialogs, glueWebToolConfig, $analytics, saveFile, FileSaver, $http) {
 
 	addUtilsToScope($scope);
 
 	$scope.analytics = $analytics;
 	$scope.analysisToolURL = glueWebToolConfig.getAnalysisToolURL();
 	$scope.analysisToolExampleSequenceURL = glueWebToolConfig.getAnalysisToolExampleSequenceURL();
+	$scope.analysisToolExampleMsWindowsSequenceURL = glueWebToolConfig.getAnalysisToolExampleMsWindowsSequenceURL();
 	$scope.analysisModuleName = glueWebToolConfig.getAnalysisModuleName()
 
+	$scope.downloadExampleSequence = function() {
+		var url;
+		if(userAgent.os.family.indexOf("Windows") !== -1) {
+			url = $scope.analysisToolExampleMsWindowsSequenceURL;
+		} else {
+			url = $scope.analysisToolExampleSequenceURL;
+		}
+		$http.get(url)
+		.success(function(data, status, headers, config) {
+			console.log("data", data);
+	    	var blob = new Blob([data], {type: "text/plain"});
+	    	saveFile.saveFile(blob, "example sequence file", "exampleSequenceFile.fasta");
+	    })
+	    .error(glueWS.raiseErrorDialog(dialogs, "downloading example sequence file"));
+
+
+	}
+
+	
 	if($scope.analysisModuleName == null) {
 		$scope.analysisModuleName = "webAnalysisTool";
 	}

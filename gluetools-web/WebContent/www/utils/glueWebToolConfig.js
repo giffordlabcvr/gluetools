@@ -4,6 +4,7 @@ var glueWebToolConfig = angular.module('glueWebToolConfig', []);
 glueWebToolConfig.factory('glueWebToolConfig', function () {
 	var analysisToolURL;
 	var analysisToolExampleSequenceURL;
+	var analysisToolExampleSequenceMsWindowsURL;
 	var projectBrowserURL;
 	var glueWSURL;
 	var rendererDialogs;
@@ -15,6 +16,13 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 		},
 		getAnalysisToolExampleSequenceURL: function() {
 			return analysisToolExampleSequenceURL;
+		},
+		setAnalysisToolExampleMsWindowsSequenceURL: function(newExampleMsWindowsSequenceURL) {
+			analysisToolExampleMsWindowsSequenceURL = newExampleMsWindowsSequenceURL;
+			console.log("analysis tool ExampleMsWindowsSequence URL set to: "+newExampleMsWindowsSequenceURL);
+		},
+		getAnalysisToolExampleMsWindowsSequenceURL: function() {
+			return analysisToolExampleMsWindowsSequenceURL;
 		},
 		setAnalysisToolURL: function(newURL) {
 			analysisToolURL = newURL;
