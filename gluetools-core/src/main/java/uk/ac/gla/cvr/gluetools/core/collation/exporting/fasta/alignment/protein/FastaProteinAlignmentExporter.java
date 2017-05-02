@@ -32,6 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="fastaProteinAlignmentExporter")
 public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporter<FastaProteinAlignmentExporter> {
@@ -44,10 +45,10 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 
 	public CommandResult doExport(ConsoleCommandContext cmdContext, String fileName, 
 			String alignmentName, Optional<Expression> whereClause, SimpleAlignmentColumnsSelector alignmentColumnsSelector,
-			Boolean recursive, Boolean preview, OrderStrategy orderStrategy, Boolean excludeEmptyRows) {
+			Boolean recursive, Boolean preview, OrderStrategy orderStrategy, Boolean excludeEmptyRows, LineFeedStyle lineFeedStyle) {
 		String fastaString = exportAlignment(cmdContext, alignmentName,
 				whereClause, alignmentColumnsSelector, recursive,
-				orderStrategy, excludeEmptyRows);
+				orderStrategy, excludeEmptyRows, lineFeedStyle);
 		return formResult(cmdContext, fastaString, fileName, preview);
 	}
 
@@ -55,7 +56,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			String alignmentName, Optional<Expression> whereClause,
 			SimpleAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean recursive, OrderStrategy orderStrategy,
-			Boolean excludeEmptyRows) {
+			Boolean excludeEmptyRows, LineFeedStyle lineFeedStyle) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
@@ -76,7 +77,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 		
 		StringBuffer stringBuffer = new StringBuffer();
 		fastaIdToAlmtRow.forEach((fastaId, almtRow) -> {
-			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, almtRow));
+			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, almtRow, lineFeedStyle));
 		});
 		String fastaString = stringBuffer.toString();
 		return fastaString;

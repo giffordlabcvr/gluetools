@@ -26,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.programs.mafft.MafftException.Code;
 import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class MafftRunner implements Plugin {
@@ -135,7 +136,7 @@ public class MafftRunner implements Plugin {
 	}
 
 	private void writeFastaFile(File tempDir, File file, Map<String, DNASequence> alignment) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
+		byte[] fastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
 		try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
 			IOUtils.write(fastaBytes, fileOutputStream);
 		} catch (IOException e) {

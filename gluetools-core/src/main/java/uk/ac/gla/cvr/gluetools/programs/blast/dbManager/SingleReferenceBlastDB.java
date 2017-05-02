@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
 public class SingleReferenceBlastDB extends BlastDB {
@@ -94,7 +95,7 @@ public class SingleReferenceBlastDB extends BlastDB {
 	@Override
 	public InputStream getFastaContentInputStream(CommandContext cmdContext) {
 		String referenceSequenceNtString = referenceSequenceNtString(cmdContext, referenceName);
-		String fastaString = FastaUtils.seqIdCompoundsPairToFasta(referenceName, referenceSequenceNtString);
+		String fastaString = FastaUtils.seqIdCompoundsPairToFasta(referenceName, referenceSequenceNtString, LineFeedStyle.LF);
 		return new ByteArrayInputStream(fastaString.getBytes());
 	}
 

@@ -37,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.BlastUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="blastFastaAlignmentImporter")
 public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastFastaAlignmentImporter> {
@@ -96,7 +97,7 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 		}
 		
 		byte[] gaplessFastaBytes = FastaUtils.seqIdCompoundsPairToFasta("alignmentRowNTs", 
-				alignmentRowNtGapless.toString()).getBytes();
+				alignmentRowNtGapless.toString(), LineFeedStyle.LF).getBytes();
 
 		Integer navRegionStart = ReferenceSegment.minRefStart(navigationRegion);
 		Integer navRegionEnd = ReferenceSegment.maxRefEnd(navigationRegion);

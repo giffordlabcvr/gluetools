@@ -19,7 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"generate", "fasta", "aa-consensus"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-i <consensusID>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-i <consensusID>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-w <whereClause>, --whereClause <whereClause>         Qualify included members",
 		    "-a, --allMembers                                      Include all members",
 			"-i <consensusID>, --consensusID <consensusID>         FASTA ID for consensus",
+			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>   LF or CRLF",
 			"-o <fileName>, --fileName <fileName>                  FASTA output file",
 			"-p, --preview                                         Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
@@ -63,7 +64,7 @@ public class GenerateFastaAaConsensusCommand extends ModulePluginCommand<Command
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
 				fileName, delegate.getAlignmentName(), delegate.getWhereClause(), 
 				(SimpleAlignmentColumnsSelector) delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview,
-				consensusID);
+				consensusID, delegate.getLineFeedStyle());
 	}
 	
 	@CompleterClass

@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 public class FastaAlignmentExportCommandDelegate {
 
@@ -41,6 +42,7 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String ORDER_STRATEGY = "orderStrategy";
 	public static final String EXCLUDE_EMPTY_ROWS = "excludeEmptyRows";
 	public static final String SELECTOR_NAME = "selectorName";
+	public static final String LINE_FEED_STYLE = "lineFeedStyle";
 
 	
 	public enum OrderStrategy {
@@ -62,6 +64,7 @@ public class FastaAlignmentExportCommandDelegate {
 	private Boolean excludeEmptyRows;
 	private OrderStrategy orderStrategy;
 	private String selectorName;
+	private LineFeedStyle lineFeedStyle;
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem, boolean featureRequired) {
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
@@ -79,6 +82,7 @@ public class FastaAlignmentExportCommandDelegate {
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
 		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
+		lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
@@ -185,9 +189,14 @@ public class FastaAlignmentExportCommandDelegate {
 		return ntEnd;
 	}
 
+	public LineFeedStyle getLineFeedStyle() {
+		return lineFeedStyle;
+	}
+
 	public static class ExportCompleter extends AdvancedCmdCompleter {
 		public ExportCompleter() {
 			super();
+			registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
 			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
 			registerEnumLookup("orderStrategy", OrderStrategy.class);

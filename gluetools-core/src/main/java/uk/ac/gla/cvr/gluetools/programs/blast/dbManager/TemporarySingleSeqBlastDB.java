@@ -6,6 +6,7 @@ import java.io.InputStream;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
 public class TemporarySingleSeqBlastDB extends BlastDB {
@@ -92,7 +93,7 @@ public class TemporarySingleSeqBlastDB extends BlastDB {
 
 	@Override
 	public InputStream getFastaContentInputStream(CommandContext cmdContext) {
-		String fastaString = FastaUtils.seqIdCompoundsPairToFasta(refFastaID, referenceNTs);
+		String fastaString = FastaUtils.seqIdCompoundsPairToFasta(refFastaID, referenceNTs, LineFeedStyle.LF);
 		return new ByteArrayInputStream(fastaString.getBytes());
 	}
 	

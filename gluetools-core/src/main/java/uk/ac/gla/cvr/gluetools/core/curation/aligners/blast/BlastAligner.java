@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="blastAligner")
 public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAlignerResult, BlastAligner> implements SupportsComputeConstrained {
@@ -94,7 +95,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 
 	@Override
 	public BlastAlignerResult computeConstrained(CommandContext cmdContext, String refName, Map<String,DNASequence> queryIdToNucleotides) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides);
+		byte[] fastaBytes = FastaUtils.mapToFasta(queryIdToNucleotides, LineFeedStyle.LF);
 		final Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
 		
 		// TODO cache reference DBs 

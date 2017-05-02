@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		    "-a, --allMembers                                     Export all members",
 		    "-e, --excludeEmptyRows                               Exclude empty rows",
 			"-d <orderStrategy>, --orderStrategy <orderStrategy>  Specify row ordering strategy",
+			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 			"-o <fileName>, --fileName <fileName>                 FASTA output file",
 			"-p, --preview                                        Preview output", 
 		},

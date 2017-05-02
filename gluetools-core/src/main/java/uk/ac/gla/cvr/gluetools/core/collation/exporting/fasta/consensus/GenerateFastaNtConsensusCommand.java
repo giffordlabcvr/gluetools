@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"generate", "fasta", "nt-consensus"}, 
-		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-i <consensusID>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-i <consensusID>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>        Column selector module name",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-w <whereClause>, --whereClause <whereClause>         Qualify included members",
 		    "-a, --allMembers                                      Include all members",
 			"-i <consensusID>, --consensusID <consensusID>         FASTA ID for consensus",
+			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>   LF or CRLF",
 			"-o <fileName>, --fileName <fileName>                  FASTA output file",
 			"-p, --preview                                         Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
@@ -64,7 +65,7 @@ public class GenerateFastaNtConsensusCommand extends ModulePluginCommand<Command
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
 				fileName, delegate.getAlignmentName(), delegate.getWhereClause(), 
 				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview, 
-				consensusID);
+				consensusID, delegate.getLineFeedStyle());
 	}
 	
 	@CompleterClass

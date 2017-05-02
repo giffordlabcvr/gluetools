@@ -31,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import freemarker.template.Template;
 
 @PluginClass(elemName="fastaAlignmentExporter")
@@ -48,7 +49,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			IAlignmentColumnsSelector alignmentColumnsSelector, Boolean recursive,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
 			Boolean excludeEmptyRows,
-			Template idTemplate) {
+			Template idTemplate, LineFeedStyle lineFeedStyle) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		
@@ -60,7 +61,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		almtMembers.forEach(member -> {
 			pkMapToFastaId.put(member.pkMap(), generateFastaId(idTemplate, member));
 		});
-		return createFastaAlignmentString(pkMapToFastaId, memberAlignmentMap);
+		return createFastaAlignmentString(pkMapToFastaId, memberAlignmentMap, lineFeedStyle);
 	}
 
 	public static Map<Map<String, String>, DNASequence> exportAlignment(
@@ -290,10 +291,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	
 
 	private static String createFastaAlignmentString(Map<Map<String,String>, String> pkMapToFastaId,
-			Map<Map<String,String>, DNASequence> memberAlignmentMap) {
+			Map<Map<String,String>, DNASequence> memberAlignmentMap, LineFeedStyle lineFeedStyle) {
 		StringBuffer stringBuffer = new StringBuffer();
 		memberAlignmentMap.forEach((pkMap, alignmentRow) -> {
-			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(pkMapToFastaId.get(pkMap), alignmentRow.getSequenceAsString()));
+			stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(pkMapToFastaId.get(pkMap), alignmentRow.getSequenceAsString(), lineFeedStyle));
 	    });
 		return stringBuffer.toString();
 	}

@@ -95,9 +95,6 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ListCustomTableRowCommand.class);
 		registerCommandClass(CountCustomTableRowCommand.class);
 		
-		// remove this when no longer needed
-		registerCommandClass(CorrectAlignmentCommand.class);
-		
 		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");
 		addGroupHelp(Arrays.asList("list"), "List certain objects in this project");
 		addGroupHelp(Arrays.asList("delete"), "Delete a certain object from this project");

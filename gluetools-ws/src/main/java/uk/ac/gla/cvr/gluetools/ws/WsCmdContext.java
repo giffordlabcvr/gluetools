@@ -52,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
@@ -114,15 +115,23 @@ public class WsCmdContext extends CommandContext {
 			if(!(cmdResult instanceof BaseTableResult)) {
 				throw new CommandException(CommandException.Code.COMMAND_RESULT_NOT_A_TABLE, cmdClass.getSimpleName(), cmdResult.getClass().getSimpleName());
 			}
-			String glueBinaryTableResultFormat = Optional.of(requestHeaders.getHeaderString("glue-binary-table-result-format")).orElse("TAB");
+			String glueBinaryTableResultFormat = Optional.ofNullable(requestHeaders.getHeaderString("glue-binary-table-result-format")).orElse("TAB");
 			ResultOutputFormat resultOutputFormat;
 			try {
 				resultOutputFormat = ResultOutputFormat.valueOf(glueBinaryTableResultFormat);
 			} catch(IllegalArgumentException iae) {
 				throw new CommandException(CommandException.Code.INVALID_RESULT_FORMAT, glueBinaryTableResultFormat);
 			}
+			String glueBinaryTableLineFeedStyle = Optional.ofNullable(requestHeaders.getHeaderString("glue-binary-table-line-feed-style")).orElse("LF");
+			LineFeedStyle lineFeedStyle;
+			try {
+				lineFeedStyle = LineFeedStyle.valueOf(glueBinaryTableLineFeedStyle);
+			} catch(IllegalArgumentException iae) {
+				throw new CommandException(CommandException.Code.INVALID_LINE_FEED_STYLE, glueBinaryTableLineFeedStyle);
+			}
+			
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			cmdResult.renderResult(new OutputStreamCommandResultRenderingContext(byteArrayOutputStream, resultOutputFormat));
+			cmdResult.renderResult(new OutputStreamCommandResultRenderingContext(byteArrayOutputStream, resultOutputFormat, lineFeedStyle));
 			// replace cmdResult with one containing binary rendering of the table.
 			cmdResult = new CommandBinaryResult("binaryTableResult", byteArrayOutputStream.toByteArray());
 		}

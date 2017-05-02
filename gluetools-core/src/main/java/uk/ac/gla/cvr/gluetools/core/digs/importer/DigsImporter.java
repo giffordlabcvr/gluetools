@@ -48,6 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import freemarker.core.ParseException;
 import freemarker.template.SimpleScalar;
 import freemarker.template.Template;
@@ -214,7 +215,7 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 			String sequenceId = runIdTemplate(sequenceIdTemplate, extracted);
 			Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceId, false);
 			sequence.setFormat(SequenceFormat.FASTA.name());
-			byte[] originalData = FastaUtils.seqIdCompoundsPairToFasta(sequenceId, extracted.getSequence()).getBytes();
+			byte[] originalData = FastaUtils.seqIdCompoundsPairToFasta(sequenceId, extracted.getSequence(), LineFeedStyle.LF).getBytes();
 			sequence.setOriginalData(originalData);
 			sequence.setSource(source);
 			extractedFieldToRule.values().forEach(rule -> {

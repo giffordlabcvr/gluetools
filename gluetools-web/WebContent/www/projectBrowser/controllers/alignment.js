@@ -33,14 +33,11 @@ projectBrowser.controller('alignmentCtrl',
 							labelledCodon:false
 					};
 					var moduleName;
-					var fileExtension;
 					if($scope.configuredResult.alignmentType == 'nucleotide') {
 						moduleName = fastaAlignmentExporter;
 						cmdParams.includeAllColumns = false;
-						fileExtension = 'fna';
 					} else {
 						moduleName = fastaProteinAlignmentExporter;
-						fileExtension = 'faa';
 					}
 					console.log("Downloading alignment, using module '"+moduleName+"'");
 					cmdParams.alignmentName = $scope.almtName;
@@ -69,6 +66,12 @@ projectBrowser.controller('alignmentCtrl',
 						cmdParams.allMembers = true;
 					}
 
+					cmdParams.lineFeedStyle = "LF";
+					if(userAgent.os.family.indexOf("Windows") !== -1) {
+						cmdParams.lineFeedStyle = "CRLF";
+					}
+
+					
 					$scope.analytics.eventTrack("alignmentDownload", 
 							{   category: 'dataDownload', 
 								label: 'type:'+$scope.configuredResult.alignmentType+',feature:'+$scope.selectedNode.featureName+',alignment:'+$scope.almtName });
@@ -197,8 +200,14 @@ projectBrowser.controller('alignmentCtrl',
 
 				var glueHeaders = {
 						"glue-binary-table-result" : true,
-						"glue-binary-table-result-format" : "TAB"
+						"glue-binary-table-result-format" : "TAB",
+						"glue-binary-table-line-feed-style" : "LF"
 				};
+
+				if(userAgent.os.family.indexOf("Windows") !== -1) {
+					glueHeaders["glue-binary-table-line-feed-style"] = "CRLF";
+					
+				}
 				
 				$scope.analytics.eventTrack("memberMetadataDownload", 
 						{   category: 'dataDownload', 

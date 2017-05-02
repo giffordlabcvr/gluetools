@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-i [-m <minColUsage>]] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-i [-m <minColUsage>]] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>      Column selector module",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
@@ -31,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		    "-d <orderStrategy>, --orderStrategy <orderStrategy>   Specify row ordering strategy",
 		    "-i, --includeAllColumns                               Include columns for all NTs",
 		    "-m <minColUsage>, --minColUsage <minColUsage>         Minimum included column usage",
+			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>   LF or CRLF",
 			"-o <fileName>, --fileName <fileName>                  FASTA output file",
 			"-p, --preview                                         Preview output"},
 		metaTags = { CmdMeta.consoleOnly },

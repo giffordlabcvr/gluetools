@@ -16,7 +16,8 @@ public class CommandException extends GlueException {
 		COMMAND_BINARY_INPUT_IO_ERROR("commandWords", "errorText"), 
 		UNKNOWN_MODE_PATH("commandModePath"),
 		COMMAND_RESULT_NOT_A_TABLE("cmdClass", "resultClass"),
-		INVALID_RESULT_FORMAT("invalidFormat");
+		INVALID_RESULT_FORMAT("invalidFormat"),
+		INVALID_LINE_FEED_STYLE("invalidLineFeedStyle");
 
 		private String[] argNames;
 		private Code(String... argNames) {

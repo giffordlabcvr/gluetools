@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
@@ -27,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="fastaExporter")
 public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
@@ -38,7 +40,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		addModulePluginCmdClass(WebExportCommand.class);
 	}
 
-	public byte[] doExport(CommandContext cmdContext, Expression whereClause) {
+	public byte[] doExport(CommandContext cmdContext, Expression whereClause, LineFeedStyle lineFeedStyle) {
 		
 		long startTime = System.currentTimeMillis();
 		GenbankXmlSequenceObject.msInXPath = 0;
@@ -65,7 +67,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 			GlueLogger.getGlueLogger().info("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+totalNumSeqs);
 			sequences.forEach(seq -> {
 				String fastaId = generateFastaId(seq);
-				stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext)));
+				stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext), lineFeedStyle));
 			});
 			offset += batchSize;
 		}
@@ -79,12 +81,17 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 
 	private static abstract class BaseExportCommand<R extends CommandResult> extends ModulePluginCommand<R, FastaExporter> implements ProvidedProjectModeCommand {
 		
+		public static final String LINE_FEED_STYLE = "lineFeedStyle";
+
 		private Expression whereClause;
 		private Boolean allSequences;
-		
+		private LineFeedStyle lineFeedStyle;
+
+
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
+			lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
 			whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, "whereClause", false);
 			allSequences = PluginUtils.configureBooleanProperty(configElem, "allSequences", true);
 			if(whereClause == null && !allSequences) {
@@ -99,6 +106,10 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 			return whereClause;
 		}
 
+		protected LineFeedStyle getLineFeedStyle() {
+			return lineFeedStyle;
+		}
+
 		private void usageError() {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allSequences> must be specified, but not both");
 		}
@@ -108,18 +119,19 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 	
 	@CommandClass( 
 			commandWords={"export"}, 
-			docoptUsages={"(-w <whereClause> | -a) -f <fileName>"},
+			docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] -f <fileName>"},
 			docoptOptions={
-				"-f <fileName>, --fileName <fileName>           FASTA file",
-				"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
-			    "-a, --allSequences                             Export all project sequences"},
+					"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
+					"-f <fileName>, --fileName <fileName>                 FASTA file",
+					"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
+				    "-a, --allSequences                                   Export all project sequences"},
 			metaTags = { CmdMeta.consoleOnly },
 			description="Export sequences to a FASTA file", 
 			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
 	public static class ExportCommand extends BaseExportCommand<OkResult> implements ProvidedProjectModeCommand {
 
 		private String fileName;
-		
+
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			super.configure(pluginConfigContext, configElem);
@@ -128,7 +140,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 
 		@Override
 		protected OkResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
-			byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause());
+			byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause(), getLineFeedStyle());
 			((ConsoleCommandContext) cmdContext).saveBytes(fileName, fastaBytes);
 			return new OkResult();
 
@@ -138,6 +150,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		public static class Completer extends AdvancedCmdCompleter {
 			public Completer() {
 				super();
+				registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
 				registerPathLookup("fileName", false);
 			}
 		}
@@ -150,8 +163,9 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 			commandWords={"web-export"}, 
 			docoptUsages={"(-w <whereClause> | -a)"},
 			docoptOptions={
-				"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
-			    "-a, --allSequences                             Export all project sequences"},
+				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
+				"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
+			    "-a, --allSequences                                   Export all project sequences"},
 			metaTags = { CmdMeta.webApiOnly, CmdMeta.producesBinary },
 			description="Export sequences to a FASTA file", 
 			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
@@ -163,7 +177,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		}
 
 		public CommandBinaryResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
-			byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause());
+			byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause(), getLineFeedStyle());
 			return new CommandBinaryResult("fastaExportResult", fastaBytes);
 		}
 		

@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="nucleotideConsensusGenerator")
 public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<NucleotideConsensusGenerator> {
@@ -34,7 +35,7 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 			String fileName, String alignmentName,
 			Optional<Expression> whereClause, IAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean recursive, Boolean preview,
-			String consensusID) {
+			String consensusID, LineFeedStyle lineFeedStyle) {
 
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
@@ -52,7 +53,7 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 
 		Function<Character,Boolean> validChar = TranslationUtils::isNucleotide;
 		char unknownChar = 'N';
-		String consensusFasta = generateConsensusFasta(almtRows, consensusID, validChar, unknownChar);
+		String consensusFasta = generateConsensusFasta(almtRows, consensusID, validChar, unknownChar, lineFeedStyle);
 		return formResult(cmdContext, consensusFasta, fileName, preview);
 	}
 

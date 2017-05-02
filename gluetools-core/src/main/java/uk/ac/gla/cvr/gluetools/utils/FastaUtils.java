@@ -102,27 +102,28 @@ public class FastaUtils {
 		}
 	}
 
-	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> sequenceIdToNucleotides) {
+	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> sequenceIdToNucleotides, LineFeedStyle lineFeedStyle) {
 		final StringBuffer buf = new StringBuffer();
 		sequenceIdToNucleotides.forEach((seqId, abstractSequence) -> 
-			buf.append(seqIdCompoundsPairToFasta(seqId, abstractSequence.toString())));
+			buf.append(seqIdCompoundsPairToFasta(seqId, abstractSequence.toString(), lineFeedStyle)));
 		return buf.toString().getBytes();
 	}
 	
 	
-	public static String seqIdCompoundsPairToFasta(String seqId, String sequenceAsString) {
+	public static String seqIdCompoundsPairToFasta(String seqId, String sequenceAsString, LineFeedStyle lineFeedStyle) {
 		final StringBuffer buf = new StringBuffer();
-		buf.append(">").append(seqId).append("\n");
+		String lb = lineFeedStyle.lineBreakChars;
+		buf.append(">").append(seqId).append(lb);
 		int start = 0;
 		int blockLen = 70;
 		while(start + blockLen < sequenceAsString.length()) {
 			buf.append(sequenceAsString.substring(start, start+blockLen));
-			buf.append("\n");
+			buf.append(lb);
 			start = start+blockLen;
 		}
 		if(start < sequenceAsString.length()) {
 			buf.append(sequenceAsString.substring(start));
-			buf.append("\n");
+			buf.append(lb);
 		}
 		return buf.toString();
 		
@@ -181,5 +182,24 @@ public class FastaUtils {
 		}
 		return remappedFasta;
 	}
+
+	
+	public enum LineFeedStyle {
+		LF("\n"),
+		CRLF("\r\n");
+		
+		private String lineBreakChars;
+		
+		private LineFeedStyle(String lineBreakChars) {
+			this.lineBreakChars = lineBreakChars;
+		}
+		
+		public String getLineBreakChars() {
+			return this.lineBreakChars;
+		}
+		
+	}
+	
+
 	
 }

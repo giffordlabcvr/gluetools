@@ -46,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.BlastUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="blastProteinFastaAlignmentImporter")
 public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImporter<BlastFastaProteinAlignmentImporter> {
@@ -192,7 +193,7 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 	
 	private List<BlastResult> runTBlastN(CommandContext cmdContext, String queryAAFastaID, String queryAAs, String refFastaID, String referenceNTs) {
 		String tempDbID = UUID.randomUUID().toString();
-		String queryAAFastaRow = FastaUtils.seqIdCompoundsPairToFasta(queryAAFastaID, queryAAs);
+		String queryAAFastaRow = FastaUtils.seqIdCompoundsPairToFasta(queryAAFastaID, queryAAs, LineFeedStyle.LF);
 		byte[] queryAAFastaBytes = queryAAFastaRow.getBytes();
 		BlastDbManager blastDbManager = BlastDbManager.getInstance();
 		List<BlastResult> blastResults = null;

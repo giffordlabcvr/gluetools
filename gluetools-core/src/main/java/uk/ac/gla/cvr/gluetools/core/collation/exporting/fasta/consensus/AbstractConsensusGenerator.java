@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
 public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGenerator<A>> extends ModulePlugin<A> {
@@ -40,7 +41,7 @@ public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGene
 	}
 
 	protected String generateConsensusFasta(List<String> almtRows, String consensusID,
-			Function<Character, Boolean> validChar, char unknownChar) {
+			Function<Character, Boolean> validChar, char unknownChar, LineFeedStyle lineFeedStyle) {
 		int almtWidth = almtRows.get(0).length();
 		TCharIntHashMap[] posToCharToOccurences = new TCharIntHashMap[almtWidth];
 		for(int i = 0; i < almtWidth; i++) {
@@ -66,7 +67,7 @@ public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGene
 				consensus.append(unknownChar);
 			}
 		}
-		return FastaUtils.seqIdCompoundsPairToFasta(consensusID, consensus.toString());
+		return FastaUtils.seqIdCompoundsPairToFasta(consensusID, consensus.toString(), lineFeedStyle);
 	}
 
 	private class HighestOccuringCharProcedure implements TCharIntProcedure {

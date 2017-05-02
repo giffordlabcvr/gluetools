@@ -39,6 +39,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.BlastUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporaryMultiSeqBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="codonAwareBlastAligner")
 public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlastAlignerResult, CodonAwareBlastAligner> implements SupportsComputeConstrained {
@@ -80,7 +81,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 		String queryAAs = buf.toString();
 
 		String queryAAFastaID = refName+"_"+featureName;
-		String queryAAFastaRow = FastaUtils.seqIdCompoundsPairToFasta(queryAAFastaID, queryAAs);
+		String queryAAFastaRow = FastaUtils.seqIdCompoundsPairToFasta(queryAAFastaID, queryAAs, LineFeedStyle.LF);
 		byte[] queryAAFastaBytes = queryAAFastaRow.getBytes();
 
 		BlastRunner blastRunner = getBlastRunner();

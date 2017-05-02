@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="aminoAcidConsensusGenerator")
 public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<AminoAcidConsensusGenerator>{
@@ -34,7 +35,7 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 			String fileName, String alignmentName,
 			Optional<Expression> whereClause, SimpleAlignmentColumnsSelector alignmentColumnsSelector, 
 			Boolean recursive, Boolean preview,
-			String consensusID) {
+			String consensusID, LineFeedStyle lineFeedStyle) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
 		Map<Map<String, String>, String> memberPkMapToAlmtRow = 
@@ -48,7 +49,7 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 
 		Function<Character,Boolean> validChar = TranslationUtils::isAminoAcid;
 		char unknownChar = 'X';
-		String consensusFasta = generateConsensusFasta(almtRows, consensusID, validChar, unknownChar);
+		String consensusFasta = generateConsensusFasta(almtRows, consensusID, validChar, unknownChar, lineFeedStyle);
 		return formResult(cmdContext, consensusFasta, fileName, preview);
 	}
 

@@ -8,6 +8,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 public class FastaSequenceObject extends AbstractSequenceObject {
 
@@ -40,7 +41,7 @@ public class FastaSequenceObject extends AbstractSequenceObject {
 
 	@Override
 	public byte[] toOriginalData() {
-		return FastaUtils.seqIdCompoundsPairToFasta(getHeader(), nucleotides).getBytes();
+		return FastaUtils.seqIdCompoundsPairToFasta(getHeader(), nucleotides, LineFeedStyle.LF).getBytes();
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 		return FastaAlignmentExporter.exportAlignment(cmdContext, delegate.getAlignmentName(),
 				delegate.getWhereClause(), delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), delegate.getOrderStrategy(),
 				includeAllColumns, minColUsage, delegate.getExcludeEmptyRows(),  
-				exporterPlugin.getIdTemplate());
+				exporterPlugin.getIdTemplate(), delegate.getLineFeedStyle());
 	}
 
 	

@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.jmodeltest.JModelTestException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class JModelTestRunner implements Plugin {
@@ -162,7 +163,7 @@ public class JModelTestRunner implements Plugin {
 	}
 
 	private void writeAlignmentFile(File alignmentFile, Map<String, DNASequence> alignment) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
+		byte[] fastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
 		try(FileOutputStream fileOutputStream = new FileOutputStream(alignmentFile)) {
 			IOUtils.write(fastaBytes, fileOutputStream);
 		} catch (IOException e) {

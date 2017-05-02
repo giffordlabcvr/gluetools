@@ -79,8 +79,13 @@ projectBrowser.controller('sequencesCtrl',
 				} else {
 					cmdParams.allSequences = true;
 				}
+				
+				cmdParams.lineFeedStyle = "LF";
+				if(userAgent.os.family.indexOf("Windows") !== -1) {
+					cmdParams.lineFeedStyle = "CRLF";
+				}
 
-				$scope.analytics.eventTrack("sequenceMetadataDownload", 
+				$scope.analytics.eventTrack("sequenceFastaDownload", 
 						{   category: 'dataDownload', 
 							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
 
@@ -109,10 +114,17 @@ projectBrowser.controller('sequencesCtrl',
 
 				var glueHeaders = {
 						"glue-binary-table-result" : true,
-						"glue-binary-table-result-format" : "TAB"
+						"glue-binary-table-result-format" : "TAB",
+						"glue-binary-table-line-feed-style" : "LF"
 				};
+
+				if(userAgent.os.family.indexOf("Windows") !== -1) {
+					glueHeaders["glue-binary-table-line-feed-style"] = "CRLF";
+					
+				}
+
 				
-				$scope.analytics.eventTrack("sequenceFastaDownload", 
+				$scope.analytics.eventTrack("sequenceMetadataDownload", 
 						{   category: 'dataDownload', 
 							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
 

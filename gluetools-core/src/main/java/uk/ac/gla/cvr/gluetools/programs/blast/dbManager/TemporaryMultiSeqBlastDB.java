@@ -9,6 +9,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
 public class TemporaryMultiSeqBlastDB extends BlastDB {
@@ -91,7 +92,7 @@ public class TemporaryMultiSeqBlastDB extends BlastDB {
 
 	@Override
 	public InputStream getFastaContentInputStream(CommandContext cmdContext) {
-		return new ByteArrayInputStream(FastaUtils.mapToFasta(sequences));
+		return new ByteArrayInputStream(FastaUtils.mapToFasta(sequences, LineFeedStyle.LF));
 	}
 	
 }

@@ -23,7 +23,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 			FastaProteinAlignmentExporter exporterPlugin) {
 		String fastaString = exporterPlugin.exportAlignment(cmdContext, delegate.getAlignmentName(),
 				delegate.getWhereClause(), (SimpleAlignmentColumnsSelector) delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(),
-				delegate.getOrderStrategy(), delegate.getExcludeEmptyRows());
+				delegate.getOrderStrategy(), delegate.getExcludeEmptyRows(), delegate.getLineFeedStyle());
 		return fastaString;
 	}
 

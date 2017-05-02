@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass( 
 		commandWords={"concatenate", "sequence"}, 
@@ -73,7 +74,7 @@ public class ConcatenateSequenceCommand extends ProjectModeCommand<CreateResult>
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(newSourceName));
 		sequence.setSource(source);
 		sequence.setFormat(SequenceFormat.FASTA.name());
-		sequence.setOriginalData(FastaUtils.seqIdCompoundsPairToFasta(newSequenceID, nts.toString()).getBytes());
+		sequence.setOriginalData(FastaUtils.seqIdCompoundsPairToFasta(newSequenceID, nts.toString(), LineFeedStyle.LF).getBytes());
 		cmdContext.commit();
 		return new CreateResult(Sequence.class, 1);
 	}

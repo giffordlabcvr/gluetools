@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 public abstract class RaxmlRunner implements Plugin {
 
@@ -50,7 +51,7 @@ public abstract class RaxmlRunner implements Plugin {
 	}
 
 	protected void writeAlignmentFile(File tempDir, File alignmentFile, Map<String, DNASequence> alignment) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(alignment);
+		byte[] fastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
 		try(FileOutputStream fileOutputStream = new FileOutputStream(alignmentFile)) {
 			IOUtils.write(fastaBytes, fileOutputStream);
 		} catch (IOException e) {
