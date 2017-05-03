@@ -98,7 +98,7 @@ public class AlignmentShowFeaturePresenceCommand extends AlignmentModeCommand<Al
 			for(AlignmentMember almtMember: almtMembers) {
 				for(FeatureLocation scannedFeatureLoc: featureLocations) {
 					MemberFeatureCoverage membFeatCoverage = alignmentFeatureCoverage(
-							cmdContext, alignment, ancConstrainingRef, scannedFeatureLoc, almtMember);
+							cmdContext, ancConstrainingRef, scannedFeatureLoc, almtMember);
 					if(membFeatCoverage.getFeatureReferenceNtCoverage() >= presencePct) {
 						fLocPkMapToMembFeatCvg.get(scannedFeatureLoc.pkMap()).incrementMembersWherePresent();
 					}
@@ -110,7 +110,7 @@ public class AlignmentShowFeaturePresenceCommand extends AlignmentModeCommand<Al
 	}
 
 	public static MemberFeatureCoverage alignmentFeatureCoverage(
-			CommandContext cmdContext, Alignment alignment, 
+			CommandContext cmdContext, 
 			ReferenceSequence ancConstrainingRef, FeatureLocation scannedFeatureLoc,
 			AlignmentMember almtMember) {
 		Integer featureLength = IReferenceSegment.totalReferenceLength(scannedFeatureLoc.segmentsAsReferenceSegments());

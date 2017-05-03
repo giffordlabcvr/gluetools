@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGenerator;
 import uk.ac.gla.cvr.gluetools.core.curation.sequenceMergers.AlignmentBasedSequenceMerger;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
+import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
 import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
@@ -84,6 +85,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(FreemarkerObjectRenderer.class);
 		registerPluginClass(VariationFrequenciesGenerator.class);
 
+		registerPluginClass(FeaturePresenceRecorder.class);
+		
 		registerPluginClass(FigTreeAnnotationExporter.class);
 
 		registerPluginClass(WebAnalysisTool.class);

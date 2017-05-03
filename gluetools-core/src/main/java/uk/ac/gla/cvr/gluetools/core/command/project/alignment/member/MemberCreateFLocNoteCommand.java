@@ -16,12 +16,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.memberFLocNote.MemberFLocNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -50,20 +48,20 @@ public class MemberCreateFLocNoteCommand extends MemberModeCommand<CreateResult>
 	public CreateResult execute(CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refSeqName, featureName));
-		createFLocNote(cmdContext, almtMember, featureLoc);
+		createFLocNote(cmdContext, almtMember, featureLoc, false);
 		cmdContext.commit();
 		return new CreateResult(MemberFLocNote.class, 1);
 	}
 
 	public static MemberFLocNote createFLocNote(CommandContext cmdContext, 
-			AlignmentMember almtMember, FeatureLocation featureLoc) {
+			AlignmentMember almtMember, FeatureLocation featureLoc, boolean allowExists) {
 		MemberFLocNote memberFLocNote = GlueDataObject.create(cmdContext, MemberFLocNote.class, 
 				MemberFLocNote.pkMap(
 						almtMember.getAlignment().getName(), 
 						almtMember.getSequence().getSource().getName(), 
 						almtMember.getSequence().getSequenceID(),
 						featureLoc.getReferenceSequence().getName(),
-						featureLoc.getFeature().getName()), false);
+						featureLoc.getFeature().getName()), allowExists);
 		memberFLocNote.setMember(almtMember);
 		memberFLocNote.setFeatureLoc(featureLoc);
 		return memberFLocNote;
