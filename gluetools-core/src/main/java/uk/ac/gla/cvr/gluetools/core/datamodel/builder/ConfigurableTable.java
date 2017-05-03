@@ -5,6 +5,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.memberFLocNote.MemberFLocNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
@@ -46,7 +47,16 @@ public enum ConfigurableTable {
 			ModelBuilder.keyword("variation"), 
 			ModelBuilder.pkPath(VarAlmtNote.VARIATION_NAME_PATH),
 			ModelBuilder.keyword("var-almt-note"), 
-			ModelBuilder.pkPath(VarAlmtNote.ALIGNMENT_NAME_PATH));
+			ModelBuilder.pkPath(VarAlmtNote.ALIGNMENT_NAME_PATH)),
+	member_floc_note(MemberFLocNote.class, 
+			ModelBuilder.keyword("alignment"), 
+			ModelBuilder.pkPath(MemberFLocNote.ALIGNMENT_NAME_PATH), 
+			ModelBuilder.keyword("member"), 
+			ModelBuilder.pkPath(MemberFLocNote.SOURCE_NAME_PATH),
+			ModelBuilder.pkPath(MemberFLocNote.SEQUENCE_ID_PATH),
+			ModelBuilder.keyword("member-floc-note"), 
+			ModelBuilder.pkPath(MemberFLocNote.REF_SEQ_NAME_PATH),
+			ModelBuilder.pkPath(MemberFLocNote.FEATURE_NAME_PATH));
 	
 	Class<? extends GlueDataObject> dataObjectClass;
 	private ModePathElement[] modePath;

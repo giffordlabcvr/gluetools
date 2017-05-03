@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.memberFLocNote.MemberFLocNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
@@ -17,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 public abstract class _FeatureLocation extends GlueDataObject {
 
     public static final String FEATURE_PROPERTY = "feature";
+    public static final String MEMBER_FLOC_NOTES_PROPERTY = "memberFLocNotes";
     public static final String REFERENCE_SEQUENCE_PROPERTY = "referenceSequence";
     public static final String SEGMENTS_PROPERTY = "segments";
     public static final String VARIATIONS_PROPERTY = "variations";
@@ -30,6 +32,18 @@ public abstract class _FeatureLocation extends GlueDataObject {
 
     public Feature getFeature() {
         return (Feature)readProperty(FEATURE_PROPERTY);
+    }
+
+
+    public void addToMemberFLocNotes(MemberFLocNote obj) {
+        addToManyTarget(MEMBER_FLOC_NOTES_PROPERTY, obj, true);
+    }
+    public void removeFromMemberFLocNotes(MemberFLocNote obj) {
+        removeToManyTarget(MEMBER_FLOC_NOTES_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<MemberFLocNote> getMemberFLocNotes() {
+        return (List<MemberFLocNote>)readProperty(MEMBER_FLOC_NOTES_PROPERTY);
     }
 
 

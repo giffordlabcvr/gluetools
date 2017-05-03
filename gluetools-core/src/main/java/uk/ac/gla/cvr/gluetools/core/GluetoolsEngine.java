@@ -153,6 +153,9 @@ public class GluetoolsEngine implements Plugin {
 					String jdbcUrl = dbConfiguration.getJdbcUrl();
 					if(jdbcUrl.contains("/")) {
 						dbName = jdbcUrl.substring(jdbcUrl.lastIndexOf("/")+1);
+						if(dbName.contains("?")) {
+							dbName = dbName.substring(0, dbName.indexOf('?'));
+						}
 					}
 					throw new ModelBuilderException(Code.SCHEMA_MIGRATION_NOT_IMPLEMENTED, 
 							dbSchemaVersion, currentSchemaVersion, mysqlLine, username, password, dbName);

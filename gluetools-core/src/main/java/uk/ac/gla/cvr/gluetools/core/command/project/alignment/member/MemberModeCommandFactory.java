@@ -26,6 +26,11 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(MemberCountAminoAcidCommand.class);
 		registerCommandClass(MemberVariationScanCommand.class);
 
+		registerCommandClass(MemberCreateFLocNoteCommand.class);
+		registerCommandClass(MemberDeleteFLocNoteCommand.class);
+		registerCommandClass(MemberListFLocNoteCommand.class);
+		registerCommandClass(MemberFLocNoteCommand.class);
+		
 		registerCommandClass(RenderObjectCommand.class);
 
 		ConfigurableObjectMode.registerConfigurableObjectCommands(this);

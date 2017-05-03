@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.memberFLocNote.MemberFLocNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
 /**
@@ -18,6 +19,7 @@ public abstract class _AlignmentMember extends GlueDataObject {
     public static final String REFERENCE_MEMBER_PROPERTY = "referenceMember";
     public static final String ALIGNED_SEGMENTS_PROPERTY = "alignedSegments";
     public static final String ALIGNMENT_PROPERTY = "alignment";
+    public static final String F_LOC_NOTES_PROPERTY = "fLocNotes";
     public static final String SEQUENCE_PROPERTY = "sequence";
 
     public static final String ALIGNMENT_NAME_PK_COLUMN = "alignment_name";
@@ -49,6 +51,18 @@ public abstract class _AlignmentMember extends GlueDataObject {
 
     public Alignment getAlignment() {
         return (Alignment)readProperty(ALIGNMENT_PROPERTY);
+    }
+
+
+    public void addToFLocNotes(MemberFLocNote obj) {
+        addToManyTarget(F_LOC_NOTES_PROPERTY, obj, true);
+    }
+    public void removeFromFLocNotes(MemberFLocNote obj) {
+        removeToManyTarget(F_LOC_NOTES_PROPERTY, obj, true);
+    }
+    @SuppressWarnings("unchecked")
+    public List<MemberFLocNote> getFLocNotes() {
+        return (List<MemberFLocNote>)readProperty(F_LOC_NOTES_PROPERTY);
     }
 
 

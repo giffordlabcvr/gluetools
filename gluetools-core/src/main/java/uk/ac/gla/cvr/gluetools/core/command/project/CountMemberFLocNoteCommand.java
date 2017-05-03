@@ -6,28 +6,28 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 
 
 @CommandClass( 
-	commandWords={"count", "var-almt-note"},
+	commandWords={"count", "member-floc-note"},
 	docoptUsages={"[-w <whereClause>]"},
 	docoptOptions={
 		"-w <whereClause>, --whereClause <whereClause>           Qualify result set"},
-	description="Count variation-alignment notes",
+	description="Count member-feature-location notes",
 	furtherHelp=
-	"The optional whereClause qualifies which variation-alignment notes are included.\n"+
+	"The optional whereClause qualifies which member-feature-location notes are included.\n"+
 	"Examples:\n"+
-	"  count var-almt-note -w \"alignment.name = 'AL_1'\"\n"+
-	"  count var-almt-note -w \"variation.name = 'myVariation'\"" 
+	"  count member-floc-note -w \"featureLoc.feature.name = 'NS3'\"\n"+
+	"  count member-floc-note -w \"member.alignment.name = 'AL_1'\"" 
 ) 
-public class CountVarAlmtNoteCommand extends AbstractCountCTableCommand {
+public class CountMemberFLocNoteCommand extends AbstractCountCTableCommand {
 	
-	public CountVarAlmtNoteCommand() {
+	public CountMemberFLocNoteCommand() {
 		super();
-		setTableName(ConfigurableTable.var_almt_note.name());
+		setTableName(ConfigurableTable.member_floc_note.name());
 	}
 
 	@CompleterClass
 	public static final class Completer extends CountCommandCompleter {
 		public Completer() {
-			super(ConfigurableTable.var_almt_note.name());
+			super(ConfigurableTable.member_floc_note.name());
 		}
 	}
 
