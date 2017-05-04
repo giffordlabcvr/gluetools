@@ -22,6 +22,10 @@ projectBrowser.controller('selectFilterCtrl',
 		           {operator:"equals", displayName:"equals", operand:""}
 		];
 	}
+	
+	$scope.typeHasOperator = function(type) {
+		return filterUtils.typeHasOperator(type);
+	}
 
 	$scope.defaultOperandForFilterHints = function(filterHints) {
 		var forType = $scope.defaultOperandForType[filterHints.type];

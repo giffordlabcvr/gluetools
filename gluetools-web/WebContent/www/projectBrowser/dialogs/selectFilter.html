@@ -22,7 +22,7 @@
 			       	{{availableFilterProperty.displayName}}</a></li>
 			     </ul>
 			</div>
-			<div class="btn-group col-md-3" style="padding-right:0px" id="operator-group" dropdown is-open="operator_isopen">
+			<div ng-if="typeHasOperator(filterElemProperty.filterHints.type)" class="btn-group col-md-3" style="padding-right:0px" id="operator-group" dropdown is-open="operator_isopen">
 			     <button id="operator-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
 			       <span>{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !filterElemOperator.multiOperand ? filterElemOperator.displayName : filterElemOperator.multiDisplayName}}</a>
 </span> <span class="caret table-dropdown-caret"></span>
@@ -33,8 +33,17 @@
 			       	{{filterElem.predicate.operand == null || filterElem.predicate.operand.length <= 1 || !availableOperator.multiOperand ? availableOperator.displayName : availableOperator.multiDisplayName}}</a>
 			     </ul>
 			</div>
+			<div ng-if="filterElem.type == 'FeaturePresence'" style="padding-right:0px" class="btn-group col-md-3" id="feature-group" dropdown is-open="feature_isopen">
+			     <button id="feature-button" type="button" class="btn btn-default table-dropdown" dropdown-toggle>
+			       <span>{{filterElem.custom.feature.featureRenderedName}}</a></span> <span class="caret table-dropdown-caret"></span>
+			     </button>
+			     <ul class="dropdown-menu table-feature-elem" style="margin-left: 15px" role="menu" aria-labelledby="feature-button">
+			       <li ng-repeat="feature in filterElemProperty.filterHints.getFeaturePresenceFeatures()" 
+			       		ng-click="setCustomProperty('feature', feature)" class="table-month-elem" role="menuitem"><a>{{feature.featureRenderedName}}</a></li>
+			     </ul>
+			</div>
 			<div class="col-md-3" style="padding-right:0px">
-				<div ng-show="filterElemOperator.hasOperand" ng-switch="filterElem.type">
+				<div ng-show="filterElemOperator.hasOperand || filterElem.type == 'FeaturePresence'" ng-switch="filterElem.type">
 					<div ng-switch-when="Date">
 			            <input type="number" placeholder="dd" class="table-day" ng-change="updateDateOperand" ng-model="date.day"/>
 						<div class="btn-group" id="month-group" style="margin-left: 5px" dropdown is-open="month_isopen">
@@ -47,6 +56,9 @@
 						     </ul>
 						</div>
 			            <input type="number" placeholder="yyyy" class="table-year" ng-change="updateDateOperand" ng-model="date.year"/>
+					</div>
+					<div ng-switch-when="FeaturePresence">
+					     Min. coverage: <input type="number" class="table-coverage-textbox" ng-model="filterElem.custom.minCoveragePct"/> %
 					</div>
 					<div ng-switch-default>
 						<div ng-if="filterElem.predicate.operand.length > 1" class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">

@@ -3,8 +3,10 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 	$scope.operator_isopen = false;
 	$scope.property_isopen = false;
 	$scope.month_isopen = false;
+	$scope.feature_isopen = false;
+
 	$scope.months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-	
+
 	$scope.readDate = function() {
 		if($scope.filterElemProperty.filterHints.type == "Date" && $scope.filterElemOperator.hasOperand) {
 			$scope.date = {
@@ -18,18 +20,28 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 	
 	$scope.setFilterElemProperty = function(filterProperty) {
 		$scope.filterElemProperty = filterProperty;
+		if($scope.filterElemProperty.filterHints.generateCustomDefault != null) {
+			$scope.filterElem.custom = $scope.filterElemProperty.filterHints.generateCustomDefault();
+		}
 		$scope.filterElem.property = $scope.filterElemProperty.property;
 		$scope.filterElem.altProperties = $scope.filterElemProperty.altProperties;
 		$scope.filterElem.type = $scope.filterElemProperty.filterHints.type;
-		var availableOperators = $scope.availableOperatorsForFilterHints($scope.filterElemProperty.filterHints);
 		$scope.filterElem.predicate = null;
-		$scope.setFilterElemOperator(availableOperators[0]);
+		if($scope.typeHasOperator($scope.filterElem.type)) {
+			var availableOperators = $scope.availableOperatorsForFilterHints($scope.filterElemProperty.filterHints);
+			$scope.setFilterElemOperator(availableOperators[0]);
+		}
 		$scope.readDate();
 	}
 
 	$scope.setDateMonth = function(dateMonth) {
 		$scope.date.month = dateMonth;
 	}
+	
+	$scope.setCustomProperty = function(customProperty, customValue) {
+		$scope.filterElem.custom[customProperty] = customValue;
+	}
+	
 	
 	$scope.inputTypeForProperty = function() {
 		switch($scope.filterElemProperty.filterHints.type) {

@@ -20,3 +20,26 @@ function tableResultAsObjectList(tableResult) {
 	return objectList;
 }
 
+function featureTreeToFeatureList(featureTree) {
+	console.log("invoking featureTreeToFeatureList");
+	var featureList = [];
+	if(featureTree.features != null) { 
+		for(var i = 0; i < featureTree.features.length; i++) {
+			var feature = {};
+			feature.featureName = featureTree.features[i].featureName;
+			feature.featureMetatag = featureTree.features[i].featureMetatag;
+			feature.featureDescription = featureTree.features[i].featureDescription;
+			feature.featureRenderedName = featureTree.features[i].featureRenderedName;
+			featureList.push(feature);
+		}
+		for(var i = 0; i < featureTree.features.length; i++) {
+			var childFeatures = featureTreeToFeatureList(featureTree.features[i]);
+			for(var j = 0; j < childFeatures.length; j++) {
+				featureList.push(childFeatures[j]);
+			}
+		}
+	}
+	console.log("featureList", featureList);
+	return featureList;
+} 
+

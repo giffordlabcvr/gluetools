@@ -232,10 +232,18 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 			var whereClause = "";
 			for(var i = 0; i < filterElems.length; i++) {
 				if(i > 0) {
-					whereClause = whereClause + " and"
+					whereClause = whereClause + " and "
 				}
 				var filterElem = filterElems[i];
-				whereClause = whereClause + " "+ filterUtils.filterElemToCayennePredicate(filterElem);
+				var cayennePredicate;
+				var filterProperty = _.find(pagingContext.getFilterProperties(), function(fp) {return fp.property == filterElem.property;});
+				if(filterProperty.filterHints.generatePredicateFromCustom != null) {
+					cayennePredicate = filterProperty.filterHints.generatePredicateFromCustom(filterElem.custom);
+				} else {
+					cayennePredicate = filterUtils.filterElemToCayennePredicate(filterElem);
+				}
+				console.log("cayennePredicate", cayennePredicate);
+				whereClause = whereClause + " " + cayennePredicate;
 			}
 
 			return whereClause;

@@ -177,6 +177,7 @@ projectBrowser.controller('alignmentCtrl',
 					.success(function(data, status, headers, config) {
 						console.info('featureTree', data.referenceFeatureTreeResult);
 						$scope.featureTree = data.referenceFeatureTreeResult;
+						$scope.featureList = featureTreeToFeatureList($scope.featureTree);
 						$scope.pagingContext.countChanged();
 					})
 					.error(glueWS.raiseErrorDialog(dialogs, "retrieving feature tree"));

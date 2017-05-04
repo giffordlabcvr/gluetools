@@ -45,6 +45,13 @@ a {
    width: 100% !important;   
 }
 
+.table-coverage-textbox {
+   height: 39px !important;
+   padding-left: 10px;
+   margin-left: 5px;
+   width: 70px !important;   
+}
+
 .table-button {
    height: 39px !important;
 }
@@ -63,7 +70,7 @@ a {
    width: 70px !important;   
 }
 
-.table-month-elem {
+.table-month-elem .table-feature-elem {
    width: 70px !important;   
    min-width: 0px !important;   
 }

@@ -46,6 +46,8 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 			           {operator:"false", displayName:"is false", hasOperand:false, cayenneOperator:" = false"}, 
 			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
 			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+			],
+			"FeaturePresence" : [
 			]
 		};
 	
@@ -79,10 +81,19 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		}
 	};
 
+	this.typeHasOperator = function(type) {
+		if(type == 'FeaturePresence') {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	
 	this.filterElemToCayennePredicate = function(filterElem) {
+		var cayennePredicate = "";
 		var type = filterElem.type;
 		var filterOperator = _.find(this.filterOperatorsForType[type], function(fo) {return fo.operator == filterElem.predicate.operator});
-		var cayennePredicate = "";
 		var properties = [filterElem.property];
 		if(filterElem.altProperties) {
 			properties = properties.concat(filterElem.altProperties);
