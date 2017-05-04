@@ -104,6 +104,8 @@ public class RecordFeaturePresenceCommand extends ModulePluginCommand<RecordFeat
 		int offset = 0;
 		while(offset < totalMembers) {
 			Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(this.almtName));
+			ReferenceSequence namedAlignmentRef = namedAlignment.getConstrainingRef();
+			
 			int lastBatchIndex = Math.min(offset+BATCH_SIZE, totalMembers);
 			GlueLogger.getGlueLogger().log(Level.FINEST, "Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 			List<AlignmentMember> memberBatch = AlignmentListMemberCommand
@@ -113,9 +115,11 @@ public class RecordFeaturePresenceCommand extends ModulePluginCommand<RecordFeat
 			Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
 			
 			for(AlignmentMember member: memberBatch) {
-				ReferenceSequence constrainingRef = member.getAlignment().getConstrainingRef();
+				List<ReferenceSequence> ancestorPathReferences = member.getAlignment().getAncestorPathReferences(cmdContext, namedAlignmentRef.getName());
+				List<String> ancestorPathRefNames = ancestorPathReferences.stream().map(apr -> apr.getName()).collect(Collectors.toList());
+				
 				Expression featureLocExp = 
-						ExpressionFactory.matchExp(FeatureLocation.REF_SEQ_NAME_PATH, constrainingRef.getName())
+						ExpressionFactory.inExp(FeatureLocation.REF_SEQ_NAME_PATH, ancestorPathRefNames)
 						.andExp(ExpressionFactory.inExp(FeatureLocation.FEATURE_NAME_PATH, featureNameList));
 				List<FeatureLocation> featureLocs = 
 						GlueDataObject.query(cmdContext, FeatureLocation.class, 
