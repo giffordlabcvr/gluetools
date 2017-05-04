@@ -58,7 +58,7 @@
 			            <input type="number" placeholder="yyyy" class="table-year" ng-change="updateDateOperand" ng-model="date.year"/>
 					</div>
 					<div ng-switch-when="FeaturePresence">
-					     Min. coverage: <input type="number" class="table-coverage-textbox" ng-model="filterElem.custom.minCoveragePct"/> %
+					     is at least <input type="number" class="table-coverage-textbox" ng-model="filterElem.custom.minCoveragePct"/> %
 					</div>
 					<div ng-switch-default>
 						<div ng-if="filterElem.predicate.operand.length > 1" class="input-group" style="padding-bottom:5px" ng-repeat="operandElem in filterElem.predicate.operand track by $index">
