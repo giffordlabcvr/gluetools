@@ -24,6 +24,7 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 			$scope.filterElem.custom = $scope.filterElemProperty.filterHints.generateCustomDefault();
 		}
 		$scope.filterElem.property = $scope.filterElemProperty.property;
+		$scope.filterElem.nullProperty = $scope.filterElemProperty.nullProperty;
 		$scope.filterElem.altProperties = $scope.filterElemProperty.altProperties;
 		$scope.filterElem.type = $scope.filterElemProperty.filterHints.type;
 		$scope.filterElem.predicate = null;

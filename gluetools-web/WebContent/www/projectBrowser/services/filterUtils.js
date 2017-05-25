@@ -8,8 +8,8 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 			        	   preTransformOperand: function(op) { return "%"+op+"%"}}, 
 			           {operator:"matches", displayName:"matches", multiDisplayName:"matches one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
 			           {operator:"notmatches", displayName:"does not match", multiDisplayName:"does not match any of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
-			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
-			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+			           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 			],
 			"Integer" : [
 				           {operator:"equals", displayName:"equals", multiDisplayName:"equals one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
@@ -18,8 +18,8 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 				           {operator:"gte", displayName:">=", hasOperand:true, cayenneOperator:">="}, 
 				           {operator:"lt", displayName:"<", hasOperand:true, cayenneOperator:"<"}, 
 				           {operator:"lte", displayName:"<=", hasOperand:true, cayenneOperator:"<="}, 
-				           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
-				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+				           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+				           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 			],
 			"Double" : [
 				           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
@@ -28,8 +28,8 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 				           {operator:"gte", displayName:">=", hasOperand:true, cayenneOperator:">="}, 
 				           {operator:"lt", displayName:"<", hasOperand:true, cayenneOperator:"<"}, 
 				           {operator:"lte", displayName:"<=", hasOperand:true, cayenneOperator:"<="}, 
-				           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
-				           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+				           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+				           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 			],
 			"Date" : [
 			           {operator:"equals", displayName:"equals", hasOperand:true, cayenneOperator:"="}, 
@@ -38,14 +38,14 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 			           {operator:"onorafter", displayName:"on or after", hasOperand:true, cayenneOperator:">="}, 
 			           {operator:"before", displayName:"before", hasOperand:true, cayenneOperator:"<"}, 
 			           {operator:"onorbefore", displayName:"on or before", hasOperand:true, cayenneOperator:"<="}, 
-			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
-			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+			           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 				],
 			"Boolean" : [
 			           {operator:"true", displayName:"is true", hasOperand:false, cayenneOperator:" = true"}, 
 			           {operator:"false", displayName:"is false", hasOperand:false, cayenneOperator:" = false"}, 
-			           {operator:"isnull", displayName:"is null", hasOperand:false, cayenneOperator:"= null"},
-			           {operator:"isnotnull", displayName:"is not null", hasOperand:false, cayenneOperator:"!= null"}
+			           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 			],
 			"FeaturePresence" : [
 			]
@@ -95,8 +95,16 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		var type = filterElem.type;
 		var filterOperator = _.find(this.filterOperatorsForType[type], function(fo) {return fo.operator == filterElem.predicate.operator});
 		var properties = [filterElem.property];
-		if(filterElem.altProperties) {
-			properties = properties.concat(filterElem.altProperties);
+		console.log("filterElem", filterElem);
+		console.log("filterOperator", filterOperator);
+		if(filterOperator.useNullProperty) {
+			if(filterElem.nullProperty) {
+				properties = [filterElem.nullProperty];
+			}
+		} else {
+			if(filterElem.altProperties) {
+				properties = properties.concat(filterElem.altProperties);
+			}
 		}
 		cayennePredicate = cayennePredicate + "(";
 		for(var j = 0; j < properties.length; j++) {
