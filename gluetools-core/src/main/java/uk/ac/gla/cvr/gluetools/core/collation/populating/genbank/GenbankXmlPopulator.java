@@ -59,8 +59,8 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
-	private Map<String, FieldUpdate> populate(Sequence sequence, Map<String, FieldType> fieldTypes) {
-		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(sequence, fieldTypes);
+	private Map<String, PropertyUpdate> populate(Sequence sequence, Map<String, FieldType> fieldTypes, Map<String, String> links) {
+		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(sequence, fieldTypes, links);
 		String format = sequence.getFormat();
 		if(format.equals(SequenceFormat.GENBANK_XML.name())) {
 			Document sequenceDataDoc;
@@ -73,12 +73,12 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 				rule.execute(xmlPopulatorContext, sequenceDataDoc);
 			});
 		}
-		return xmlPopulatorContext.getFieldUpdates();
+		return xmlPopulatorContext.getPropertyUpdates();
 		
 	}
 	
 	private PopulateResult populate(CommandContext cmdContext, int batchSize, 
-			Optional<Expression> whereClause, boolean updateDB, List<String> fieldNames) {
+			Optional<Expression> whereClause, boolean updateDB, List<String> updatableProperties) {
 		SelectQuery selectQuery;
 		if(whereClause.isPresent()) {
 			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
@@ -86,7 +86,8 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			selectQuery = new SelectQuery(Sequence.class);
 		}
 		
-		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, fieldNames);
+		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, updatableProperties);
+		Map<String, String> links = getLinks(cmdContext, updatableProperties);
 		
 		log("Finding sequences to process");
 		int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
@@ -96,7 +97,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		selectQuery.setFetchLimit(batchSize);
 		selectQuery.setPageSize(batchSize);
 		int offset = 0;
-		Map<Map<String,String>, Map<String, FieldUpdate>> pkMapToUpdates = new LinkedHashMap<Map<String,String>, Map<String, FieldUpdate>>();
+		Map<Map<String,String>, Map<String, PropertyUpdate>> pkMapToUpdates = new LinkedHashMap<Map<String,String>, Map<String, PropertyUpdate>>();
 		while(offset < numberToProcess) {
 			selectQuery.setFetchOffset(offset);
 			int lastBatchIndex = Math.min(offset+batchSize, numberToProcess);
@@ -104,14 +105,14 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			currentSequenceBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 			log("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
 			for(Sequence sequence: currentSequenceBatch) {
-				pkMapToUpdates.put(sequence.pkMap(), populate(sequence, fieldTypes));
+				pkMapToUpdates.put(sequence.pkMap(), populate(sequence, fieldTypes, links));
 			}
 			if(updateDB) {
 				/* DB udpate here */
 				currentSequenceBatch.forEach(seq -> {
-					Map<String, FieldUpdate> updates = pkMapToUpdates.get(seq.pkMap());
+					Map<String, PropertyUpdate> updates = pkMapToUpdates.get(seq.pkMap());
 					updates.values().forEach( update -> {
-						applyUpdateToDB(cmdContext, fieldTypes, seq, update);
+						applyUpdateToDB(cmdContext, fieldTypes, links, seq, update);
 					} );
 				});
 				cmdContext.commit();
@@ -126,13 +127,13 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		pkMapToUpdates.forEach((pkMap, updates) -> {
 			String sourceName = (String) pkMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = (String) pkMap.get(Sequence.SEQUENCE_ID_PROPERTY);
-			updates.forEach((fieldName, fieldUpdate) -> {
+			updates.forEach((property, update) -> {
 				Map<String, Object> row = new LinkedHashMap<String, Object>();
 				rowData.add(row);
 				row.put(Sequence.SOURCE_NAME_PATH, sourceName);
 				row.put(Sequence.SEQUENCE_ID_PROPERTY, sequenceID);
-				row.put("fieldName", fieldName);
-				row.put("value", fieldUpdate.getFieldValue());
+				row.put("property", property);
+				row.put("value", update.getValue());
 			});
 		});
 		return new PopulateResult(rowData);
@@ -151,14 +152,14 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 
 		public PopulateResult(List<Map<String, Object>> rowData) {
 			super("gbXmlPopulatorResult", 
-					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY, "fieldName", "value"), rowData);
+					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY, "property", "value"), rowData);
 		}
 		
 	}
 	
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"[-b <batchSize>] [-p] [-w <whereClause>] [<fieldName> ...]"},
+			docoptUsages={"[-b <batchSize>] [-p] [-w <whereClause>] [<property> ...]"},
 			docoptOptions={
 					"-w <whereClause>, --whereClause <whereClause>  Qualify updated sequences",
 					"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
@@ -170,18 +171,18 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			"The <batchSize> argument allows you to control how often updates are committed to the database "+
 					"during the import. The default is every 250 sequences. A larger <batchSize> means fewer database "+
 					"accesses, but requires more Java heap memory. "+
-					"If <fieldName> arguments are supplied, the populator will not update any field unless it appears in the <fieldName> list. "+
-					"If no <fieldName> arguments are supplied, the populator may update any field.") 
+					"If <property> arguments are supplied, the populator will not update any property unless it appears in the <property> list. "+
+					"If no <property> arguments are supplied, the populator may update any property.") 
 	public static class PopulateCommand extends ModulePluginCommand<PopulateResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
 
 		public static final String BATCH_SIZE = "batchSize";
 		public static final String WHERE_CLAUSE = "whereClause";
-		public static final String FIELD_NAME = "fieldName";
+		public static final String PROPERTY = "property";
 		public static final String PREVIEW = "preview";
 
 		private Integer batchSize;
 		private Optional<Expression> whereClause;
-		private List<String> fieldNames;
+		private List<String> updatableProperties;
 		private Boolean preview;
 		
 		@Override
@@ -190,22 +191,22 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
 			whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 			preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
-			fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
-			if(fieldNames.isEmpty()) {
-				fieldNames = null; // default fields
+			updatableProperties = PluginUtils.configureStringsProperty(configElem, PROPERTY);
+			if(updatableProperties.isEmpty()) {
+				updatableProperties = null; // default properties
 			}
 		}
 
 		@Override
 		protected PopulateResult execute(CommandContext cmdContext, GenbankXmlPopulator populatorPlugin) {
-			return populatorPlugin.populate(cmdContext, batchSize, whereClause, !preview, fieldNames);
+			return populatorPlugin.populate(cmdContext, batchSize, whereClause, !preview, updatableProperties);
 		}
 		
 		@CompleterClass
 		public static class Completer extends AdvancedCmdCompleter {
 			public Completer() {
 				super();
-				registerVariableInstantiator("fieldName", new ModifiableFieldNameInstantiator(ConfigurableTable.sequence.name()));
+				registerVariableInstantiator("property", new ModifiablePropertyInstantiator(ConfigurableTable.sequence.name()));
 			}
 		}
 		

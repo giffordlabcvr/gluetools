@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 
-public interface FieldPopulator {
+public interface PropertyPopulator {
 
 	public static final String DEFAULT_NULL_REGEX = " *";
 
@@ -15,7 +15,7 @@ public interface FieldPopulator {
 
 	public Pattern getNullRegex();
 	
-	public default String getFieldName() {
+	public default String getProperty() {
 		return null;
 	}
 	

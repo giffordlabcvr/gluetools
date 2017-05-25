@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 public enum IsoCountry {
 	
 	AF("AFG", "Afghanistan", "AF", "004"),
-	AX("ALA", "Aland Islands", "AX", "248"),
+	AX("ALA", "Åland Islands", "AX", "248"),
 	AL("ALB", "Albania", "AL", "008"),
 	DZ("DZA", "Algeria", "DZ", "012"),
 	AS("ASM", "American Samoa", "AS", "016"),
@@ -161,7 +161,13 @@ public enum IsoCountry {
 	NA("NAM", "Namibia", "NA", "516"),
 	NR("NRU", "Nauru", "NR", "520"),
 	NP("NPL", "Nepal", "NP", "524"),
-	AN("ANT", "Netherlands Antilles", "AN", "530"), // before Netherlands
+	//AN("ANT", "Netherlands Antilles", "AN", "530"), // before Netherlands
+	//These territories replace Netherlands Antilles:
+	BX("BES", "Bonaire, Sint Eustatius and Saba","BX", "535"),
+	CW("CUW", "Curaçao","CW", "531"),
+	SX("SXM", "Sint Maarten (Dutch part)", "SX", "534"),
+
+	
 	NL("NLD", "Netherlands", "Netherlands", "NL", "528", "Netherlands"),
 	NC("NCL", "New Caledonia", "NC", "540"),
 	NZ("NZL", "New Zealand", "NZ", "554"),

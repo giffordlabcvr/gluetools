@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -14,7 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class BaseTextFilePopulatorColumn implements Plugin, FieldPopulator {
+public abstract class BaseTextFilePopulatorColumn implements Plugin, PropertyPopulator {
 
 	private Optional<Boolean> identifier;
 	private Optional<String> header;
@@ -51,7 +51,7 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, FieldPopula
 		return identifier;
 	}
 
-	public String getFieldName() {
+	public String getProperty() {
 		return fieldName;
 	}
 

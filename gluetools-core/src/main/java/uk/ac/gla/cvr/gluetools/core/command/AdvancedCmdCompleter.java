@@ -295,11 +295,11 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	}
 	
 	
-	private static abstract class FieldNameInstantiator extends VariableInstantiator {
+	private static abstract class PropertyInstantiator extends VariableInstantiator {
 		
 		private String tableName;
 
-		protected FieldNameInstantiator(String tableName) {
+		protected PropertyInstantiator(String tableName) {
 			this.tableName = tableName;
 		}
 
@@ -308,14 +308,14 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		protected List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
-			return getFieldNames(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
+			return getProperties(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
 
 		protected String getTableName() {
 			return tableName;
 		}
 		
-		protected abstract List<String> getFieldNames(ConsoleCommandContext cmdContext);
+		protected abstract List<String> getProperties(ConsoleCommandContext cmdContext);
 
 		protected Project getProject(ConsoleCommandContext cmdContext) {
 			InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
@@ -349,32 +349,42 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	}
 
 	
-	public static final class CustomFieldNameInstantiator extends FieldNameInstantiator {
+	public static final class CustomFieldNameInstantiator extends PropertyInstantiator {
 		public CustomFieldNameInstantiator(String tableName) {
 			super(tableName);
 		}
 		@Override
-		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
+		protected List<String> getProperties(ConsoleCommandContext cmdContext) {
 			return getProject(cmdContext).getCustomFieldNames(getTableName());
 		}
 	}
 
-	public static final class ModifiableFieldNameInstantiator extends FieldNameInstantiator {
+	public static final class ModifiableFieldNameInstantiator extends PropertyInstantiator {
 		public ModifiableFieldNameInstantiator(String tableName) {
 			super(tableName);
 		}
 		@Override
-		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
+		protected List<String> getProperties(ConsoleCommandContext cmdContext) {
 			return getProject(cmdContext).getModifiableFieldNames(getTableName());
 		}
 	}
 
-	public static final class ListablePropertyInstantiator extends FieldNameInstantiator {
+	public static final class ModifiablePropertyInstantiator extends PropertyInstantiator {
+		public ModifiablePropertyInstantiator(String tableName) {
+			super(tableName);
+		}
+		@Override
+		protected List<String> getProperties(ConsoleCommandContext cmdContext) {
+			return getProject(cmdContext).getModifiableProperties(getTableName());
+		}
+	}
+
+	public static final class ListablePropertyInstantiator extends PropertyInstantiator {
 		public ListablePropertyInstantiator(String tableName) {
 			super(tableName);
 		}
 		@Override
-		protected List<String> getFieldNames(ConsoleCommandContext cmdContext) {
+		protected List<String> getProperties(ConsoleCommandContext cmdContext) {
 			return getProject(cmdContext).getListableProperties(getTableName());
 		}
 	}

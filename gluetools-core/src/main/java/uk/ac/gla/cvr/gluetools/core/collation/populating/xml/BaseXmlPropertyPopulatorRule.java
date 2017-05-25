@@ -8,22 +8,23 @@ import java.util.regex.Pattern;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator.FieldUpdate;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator.PropertyUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule implements Plugin, FieldPopulator {
+public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule implements Plugin, PropertyPopulator {
 		
-		private String fieldName;
+		private String property;
 		private Pattern nullRegex;
 		private RegexExtractorFormatter mainExtractor = null;
 		private List<RegexExtractorFormatter> valueConverters;
@@ -32,12 +33,15 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
-			fieldName = PluginUtils.configureString(configElem, "@fieldName", true);
 			overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
 			overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
 			nullRegex = Optional.ofNullable(
 					PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
 					orElse(Pattern.compile(DEFAULT_NULL_REGEX));
+		}
+		
+		protected void setProperty(String property) {
+			this.property = property;
 		}
 		
 		protected void setMainExtractor(RegexExtractorFormatter mainExtractor) {
@@ -49,10 +53,10 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 		}
 
 		public void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
-			if(!xmlPopulatorContext.isAllowedField(fieldName)) {
+			if(!xmlPopulatorContext.isAllowedField(property)) {
 				return;
 			}
-			if(xmlPopulatorContext.getFieldUpdates().containsKey(fieldName)) {
+			if(xmlPopulatorContext.getPropertyUpdates().containsKey(property)) {
 				return; // we already have an update for this field.
 			}
 			String selectedText;
@@ -62,12 +66,14 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 				throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 			}
 			if(selectedText != null) {
-				String fieldPopulatorResult = SequencePopulator.runFieldPopulator(this, selectedText);
-				if(fieldPopulatorResult != null) {
-					FieldUpdate fieldUpdateResult = SequencePopulator
-							.generateFieldUpdate(xmlPopulatorContext.getFieldType(fieldName), xmlPopulatorContext.getSequence(), this, fieldPopulatorResult);
-					if(fieldUpdateResult != null && fieldUpdateResult.updated()) {
-						xmlPopulatorContext.getFieldUpdates().put(fieldUpdateResult.getFieldName(), fieldUpdateResult);
+				String propertyPopulatorResult = SequencePopulator.runPropertyPopulator(this, selectedText);
+				if(propertyPopulatorResult != null) {
+					FieldType fieldType = xmlPopulatorContext.getFieldType(property);
+					String customTableName = xmlPopulatorContext.getCustomTableName(property);
+					PropertyUpdate propertyUpdate = SequencePopulator
+							.generatePropertyUpdate(fieldType, customTableName, xmlPopulatorContext.getSequence(), this, propertyPopulatorResult);
+					if(propertyUpdate != null && propertyUpdate.updated()) {
+						xmlPopulatorContext.getPropertyUpdates().put(propertyUpdate.getProperty(), propertyUpdate);
 					}
 				}
 			}
@@ -89,8 +95,8 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 		}
 
 		@Override
-		public String getFieldName() {
-			return fieldName;
+		public String getProperty() {
+			return property;
 		}
 
 		@Override
@@ -106,7 +112,7 @@ public abstract class BaseXmlFieldPopulatorRule extends XmlPopulatorRule impleme
 		@Override
 		public void validate(CommandContext cmdContext) {
 			Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-			project.checkModifiableFieldNames(ConfigurableTable.sequence.name(), Arrays.asList(fieldName));
+			project.checkModifiableProperties(ConfigurableTable.sequence.name(), Arrays.asList(property));
 			
 		}
 		

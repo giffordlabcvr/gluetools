@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -26,8 +27,8 @@ public class PluginFactory<P extends Plugin> {
 	
 	private final String thisFactoryName;
 	
-	private Map<String, Class<? extends P>> typeStringToPluginClass = 
-			new LinkedHashMap<String, Class<? extends P>>();
+	private Map<String, PluginTypeInfo> elemNameToPluginClassInfo = 
+			new LinkedHashMap<String, PluginTypeInfo>();
 		
 	protected void registerPluginClass(Class<? extends P> theClass) {
 		PluginClass pluginClassAnnotation = theClass.getAnnotation(PluginClass.class);
@@ -38,11 +39,11 @@ public class PluginFactory<P extends Plugin> {
 		if(elemName == null) {
 			throw new RuntimeException("No elemName defined on PluginClass annotation on "+theClass.getCanonicalName());
 		}
-		registerPluginClass(elemName, theClass);
+		elemNameToPluginClassInfo.put(elemName, new PluginTypeInfo(theClass, pluginClassAnnotation.deprecated(), pluginClassAnnotation.deprecationWarning()));
 	}
 
 	protected void registerPluginClass(String elemName, Class<? extends P> theClass) {
-		typeStringToPluginClass.put(elemName, theClass);
+		elemNameToPluginClassInfo.put(elemName, new PluginTypeInfo(theClass));
 	}
 	
 	protected PluginFactory() {
@@ -51,7 +52,7 @@ public class PluginFactory<P extends Plugin> {
 	}
 
 	public Set<String> getElementNames() {
-		return typeStringToPluginClass.keySet();
+		return elemNameToPluginClassInfo.keySet();
 	}
 	
 	public P createFromElement(PluginConfigContext pluginConfigContext, Element element)  {
@@ -62,26 +63,38 @@ public class PluginFactory<P extends Plugin> {
 
 	public P instantiateFromElement(Element element) {
 		String elementName = element.getNodeName();
-		Class<? extends P> pluginClass = classForElementName(elementName);
+		PluginTypeInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
+		Class<? extends P> pluginClass = pluginTypeInfo.getTheClass();
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
 		P plugin = instantiatePlugin(element, pluginClass);
+		if(pluginTypeInfo.isDeprecated()) {
+			String deprecationWarning = pluginTypeInfo.getDeprecationWarning();
+			if(deprecationWarning.equals(PluginClass.NULL)) {
+				deprecationWarning = "Plugin element \""+elementName+"\" is deprecated";
+			}
+			GlueLogger.getGlueLogger().warning(deprecationWarning);
+		}
 		return plugin;
 	}
 
-	protected P instantiatePlugin(Element element, Class<? extends P> pluginClass) {
+	private P instantiatePlugin(Element element, Class<? extends P> pluginClass) {
 		P plugin = instantiatePluginStatic(pluginClass, element);
 		return plugin;
 	}
 
 	public Class<? extends P> classForElementName(String elementName) {
-		Class<? extends P> pluginClass = typeStringToPluginClass.get(elementName);
-		return pluginClass;
+		PluginFactory<P>.PluginTypeInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
+		if(pluginTypeInfo != null) {
+			Class<? extends P> pluginClass = pluginTypeInfo.getTheClass();
+			return pluginClass;
+		}
+		return null;
 	}
 
 	public boolean containsElementName(String elementName) {
-		return typeStringToPluginClass.containsKey(elementName);
+		return elemNameToPluginClassInfo.containsKey(elementName);
 	}
 
 	public List<P> createFromElements(PluginConfigContext pluginConfigContext, List<Element> elements)  {
@@ -121,7 +134,39 @@ public class PluginFactory<P extends Plugin> {
 	}
 	
 	public List<Class<? extends P>> getRegisteredClasses() {
-		return new ArrayList<Class<? extends P>>(typeStringToPluginClass.values());
+		return new ArrayList<Class<? extends P>>(elemNameToPluginClassInfo.values()
+					.stream()
+					.map(pci -> pci.getTheClass())
+					.collect(Collectors.toList()));
+	}
+	
+	private class PluginTypeInfo {
+		private Class<? extends P> theClass;
+		private boolean deprecated;
+		private String deprecationWarning;
+		
+		private PluginTypeInfo(Class<? extends P> theClass) {
+			this(theClass, false, null);
+		}
+		
+		private PluginTypeInfo(Class<? extends P> theClass, boolean deprecated, String deprecationWarning) {
+			super();
+			this.theClass = theClass;
+			this.deprecated = deprecated;
+			this.deprecationWarning = deprecationWarning;
+		}
+
+		public String getDeprecationWarning() {
+			return deprecationWarning;
+		}
+
+		public Class<? extends P> getTheClass() {
+			return theClass;
+		}
+
+		public boolean isDeprecated() {
+			return deprecated;
+		}
 	}
 	
 }

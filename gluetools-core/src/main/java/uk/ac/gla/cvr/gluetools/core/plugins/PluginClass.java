@@ -8,5 +8,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PluginClass {
+	
+	public static final String NULL = "NULL";
+	
 	String elemName();
+	boolean deprecated() default false;
+	String deprecationWarning() default NULL;
 }

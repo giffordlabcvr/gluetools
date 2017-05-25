@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
@@ -14,7 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public class FastaFieldParser implements Plugin, FieldPopulator {
+public class FastaFieldParser implements Plugin, PropertyPopulator {
 
 	private String fieldName;
 	private Pattern nullRegex = null;
@@ -29,7 +29,7 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 		fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
 		nullRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
-				orElse(Pattern.compile(FieldPopulator.DEFAULT_NULL_REGEX));
+				orElse(Pattern.compile(PropertyPopulator.DEFAULT_NULL_REGEX));
 		overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
 		overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
 		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
@@ -38,7 +38,7 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	}
 
 	public Optional<Result> parseField(String inputText) {
-		String fieldValue = SequencePopulator.runFieldPopulator(this, inputText);
+		String fieldValue = SequencePopulator.runPropertyPopulator(this, inputText);
 		if(fieldValue != null) {
 			return Optional.of(new Result(this, fieldValue));
 		} else {
@@ -47,16 +47,16 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	}
 	
 	public class Result {
-		private FieldPopulator fieldPopulator;
+		private PropertyPopulator fieldPopulator;
 		private String fieldValue;
 
-		public Result(FieldPopulator fieldPopulator, String fieldValue) {
+		public Result(PropertyPopulator fieldPopulator, String fieldValue) {
 			super();
 			this.fieldPopulator = fieldPopulator;
 			this.fieldValue = fieldValue;
 		}
 		
-		public FieldPopulator getFieldPopulator() {
+		public PropertyPopulator getFieldPopulator() {
 			return fieldPopulator;
 		}
 		public String getFieldValue() {
@@ -65,7 +65,7 @@ public class FastaFieldParser implements Plugin, FieldPopulator {
 	}
 
 	@Override
-	public String getFieldName() {
+	public String getProperty() {
 		return fieldName;
 	}
 

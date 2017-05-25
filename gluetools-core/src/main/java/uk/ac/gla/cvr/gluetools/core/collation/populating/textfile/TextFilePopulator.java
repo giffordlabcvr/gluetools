@@ -143,7 +143,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	private void checkFieldsExist(List<BaseTextFilePopulatorColumn> columns, List<String> definedFieldNames) {
 		columns.forEach(col -> {
-			String fieldName = col.getFieldName();
+			String fieldName = col.getProperty();
 			if(!definedFieldNames.contains(fieldName)) {
 				throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SUCH_FIELD, fieldName, definedFieldNames.toString());
 			}
@@ -168,11 +168,11 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			identifierColumns.stream().map(col -> {
 				int j = populatorContext.columnToPosition.get(col);
 				String processedCellValue = 
-						SequencePopulator.runFieldPopulator(col, cellValues[j]);
+						SequencePopulator.runPropertyPopulator(col, cellValues[j]);
 				if(processedCellValue == null) {
-					throw new TextFilePopulatorException(TextFilePopulatorException.Code.NULL_IDENTIFIER, col.getFieldName());
+					throw new TextFilePopulatorException(TextFilePopulatorException.Code.NULL_IDENTIFIER, col.getProperty());
 				}
-				return ExpressionFactory.matchExp(col.getFieldName(), processedCellValue);
+				return ExpressionFactory.matchExp(col.getProperty(), processedCellValue);
 			}).collect(Collectors.toList());
 		Expression identifyingExp = idExpressions.subList(1, idExpressions.size()).
 				stream().reduce(idExpressions.get(0), Expression::andExp);
@@ -183,6 +183,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		
 		List<Map<String, Object>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
 		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, null);
+		Map<String, String> links = getLinks(cmdContext, null);
 		for(Map<String, Object> seqMap: sequenceMaps) {
 			String sourceName = (String) seqMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = (String) seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
@@ -193,23 +194,23 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 				if(columns != null) {
 					for(BaseTextFilePopulatorColumn populatorColumn : columns) {
 						if(!populatorColumn.getIdentifier().orElse(false)) {
-							if(populatorContext.fieldNames != null && !populatorContext.fieldNames.contains(populatorColumn.getFieldName())) {
+							if(populatorContext.fieldNames != null && !populatorContext.fieldNames.contains(populatorColumn.getProperty())) {
 								continue;
 							}
-							String fieldPopulatorResult = SequencePopulator.runFieldPopulator(populatorColumn, cellText);
+							String fieldPopulatorResult = SequencePopulator.runPropertyPopulator(populatorColumn, cellText);
 
-							FieldUpdate update = SequencePopulator
-									.generateFieldUpdate(fieldTypes.get(populatorColumn.getFieldName()), sequence, populatorColumn, fieldPopulatorResult);
+							PropertyUpdate update = SequencePopulator
+									.generatePropertyUpdate(fieldTypes.get(populatorColumn.getProperty()), null, sequence, populatorColumn, fieldPopulatorResult);
 
 							if(update != null && update.updated()) {
 								Map<String,String> updateMap = new LinkedHashMap<String,String>();
 								updateMap.put(TextFilePopulatorResult.SOURCE_NAME, sourceName);
 								updateMap.put(TextFilePopulatorResult.SEQUENCE_ID, sequenceID);
-								updateMap.put(TextFilePopulatorResult.FIELD_NAME, update.getFieldName());
-								updateMap.put(TextFilePopulatorResult.FIELD_VALUE, update.getFieldValue());
+								updateMap.put(TextFilePopulatorResult.FIELD_NAME, update.getProperty());
+								updateMap.put(TextFilePopulatorResult.FIELD_VALUE, update.getValue());
 								lineResults.add(updateMap);
 								if(populatorContext.updateDB) {
-									super.applyUpdateToDB(cmdContext, fieldTypes, sequence, update);
+									super.applyUpdateToDB(cmdContext, fieldTypes, links, sequence, update);
 								}
 							}
 						}

@@ -179,7 +179,20 @@ public class Project extends _Project {
 		modifiableFields.addAll(getCustomFieldNames(tableName));
 		return modifiableFields;
 	}
-	
+
+	public List<String> getModifiableProperties(String tableName) {
+		List<String> modifiableProperties = getModifiableFieldNames(tableName);
+		modifiableProperties.addAll(getLinksForWhichSource(tableName)
+				.stream()
+				.map(l -> l.getSrcLinkName())
+				.collect(Collectors.toList()));
+		modifiableProperties.addAll(getLinksForWhichDestination(tableName)
+				.stream()
+				.map(l -> l.getDestLinkName())
+				.collect(Collectors.toList()));
+		return modifiableProperties;
+	}
+
 	public FieldType getModifiableFieldType(String tableName, String fieldName) {
 		Field customField = getCustomField(tableName, fieldName);
 		if(customField != null) {
@@ -225,6 +238,18 @@ public class Project extends _Project {
 			fieldNames.forEach(f-> {
 				if(!validFieldNames.contains(f)) {
 					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validFieldNamesList, tableName);
+				}
+			});
+		}
+	}
+
+	public void checkModifiableProperties(String tableName, List<String> properties) {
+		List<String> validPropertiesList = getModifiableProperties(tableName);
+		Set<String> validProperties = new LinkedHashSet<String>(validPropertiesList);
+		if(properties != null) {
+			properties.forEach(f-> {
+				if(!validProperties.contains(f)) {
+					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INVALID_PROPERTY, f, validPropertiesList, tableName);
 				}
 			});
 		}

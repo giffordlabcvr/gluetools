@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaFieldParser.Result;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.FieldPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -37,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaImporter")
-public class FastaImporter extends SequenceImporter<FastaImporter> implements FieldPopulator {
+public class FastaImporter extends SequenceImporter<FastaImporter> implements PropertyPopulator {
 
 	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";
 	private static final String SOURCE_NAME = "sourceName";
@@ -69,7 +69,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 			Element idParserElem  = idParserElems.get(0);
 			nullRegex = Optional.ofNullable(
 					PluginUtils.configureRegexPatternProperty(idParserElem, "nullRegex", false)).
-					orElse(Pattern.compile(FieldPopulator.DEFAULT_NULL_REGEX));
+					orElse(Pattern.compile(PropertyPopulator.DEFAULT_NULL_REGEX));
 			valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 					PluginUtils.findConfigElements(idParserElem, "valueConverter"));
 			mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, idParserElem);
@@ -107,7 +107,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Fi
 
 		@Override
 		public void parseHeader(String header, DNASequence sequence) {
-			String finalID = SequencePopulator.runFieldPopulator(FastaImporter.this, header);
+			String finalID = SequencePopulator.runPropertyPopulator(FastaImporter.this, header);
 			if(finalID == null) {
 				throw new FastaImporterException(FastaImporterException.Code.NULL_IDENTIFIER, header);
 			}
