@@ -1,7 +1,7 @@
 <#-- null handling -->
 <#-- also suppresses number formatting -->
 <#macro elem tag expr type="String" context="">
-<#if (expr?eval) ??>
+<#if ( context?is_hash || !expr?starts_with('context.') ) && (expr?eval) ??>
 <#assign result = expr?eval>
 <#if result?is_number || result?is_boolean>
 	<${tag} glueType="${type}">${result?c}</${tag}>
