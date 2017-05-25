@@ -9,7 +9,7 @@ public class TextFilePopulatorException extends GlueException {
 		NO_SEQUENCE_FOUND("combinedWhereClause"),
 		MULTIPLE_SEQUENCES_FOUND("combinedWhereClause"), 
 		NULL_IDENTIFIER("fieldName"), 
-		NO_SUCH_FIELD("fieldName", "definedFieldNames");
+		NO_SUCH_PROPERTY("property", "definedProperties");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

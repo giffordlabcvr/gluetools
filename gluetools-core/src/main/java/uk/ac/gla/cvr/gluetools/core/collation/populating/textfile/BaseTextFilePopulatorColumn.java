@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -19,7 +20,7 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, PropertyPop
 	private Optional<Boolean> identifier;
 	private Optional<String> header;
 	private Optional<Integer> number;
-	private String fieldName;
+	private String property;
 	private Pattern nullRegex;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters;
@@ -35,13 +36,20 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, PropertyPop
 		nullRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
 				orElse(Pattern.compile(DEFAULT_NULL_REGEX));
-		fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
+		property = PluginUtils.configureStringProperty(configElem, "property", false);
+		if(property == null) {
+			property = PluginUtils.configureStringProperty(configElem, "fieldName", false);
+			GlueLogger.getGlueLogger().warning("<fieldName> property of <"+configElem.getNodeName()+"> is deprecated, please use <property> instead.");
+		}
+		if(property == null) {
+			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "Property must be defined.");
+		}
 		number = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "number", false));
 		if(header.isPresent() && number.isPresent()) {
 			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "At most one of header and number may be defined.");
 		}
 		if(!header.isPresent() && !number.isPresent()) {
-			header = Optional.of(fieldName);
+			header = Optional.of(property);
 		}
 		overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
 		overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
@@ -52,7 +60,7 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, PropertyPop
 	}
 
 	public String getProperty() {
-		return fieldName;
+		return property;
 	}
 
 	public Optional<String> getHeader() {

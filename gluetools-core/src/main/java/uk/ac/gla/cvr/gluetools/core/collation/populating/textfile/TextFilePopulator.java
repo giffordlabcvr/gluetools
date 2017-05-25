@@ -113,9 +113,9 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		}
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		Project project = projectMode.getProject();
-		List<String> definedFieldNames = project.getListableProperties(ConfigurableTable.sequence.name());
-		checkFieldsExist(headerColumns, definedFieldNames);
-		checkFieldsExist(numberColumns, definedFieldNames);
+		List<String> definedProperties = project.getListableProperties(ConfigurableTable.sequence.name());
+		checkPropertiesExist(headerColumns, definedProperties);
+		checkPropertiesExist(numberColumns, definedProperties);
 		LinesProcessedHolder holder = new LinesProcessedHolder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, Charset.forName("UTF-8")));
 		reader.lines().forEach(line -> {
@@ -141,11 +141,11 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		int linesProcessed = 0;
 	}
 
-	private void checkFieldsExist(List<BaseTextFilePopulatorColumn> columns, List<String> definedFieldNames) {
+	private void checkPropertiesExist(List<BaseTextFilePopulatorColumn> columns, List<String> definedProperties) {
 		columns.forEach(col -> {
-			String fieldName = col.getProperty();
-			if(!definedFieldNames.contains(fieldName)) {
-				throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SUCH_FIELD, fieldName, definedFieldNames.toString());
+			String property = col.getProperty();
+			if(!definedProperties.contains(property)) {
+				throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SUCH_PROPERTY, property, definedProperties.toString());
 			}
 		});
 	}
@@ -198,16 +198,16 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 								continue;
 							}
 							String fieldPopulatorResult = SequencePopulator.runPropertyPopulator(populatorColumn, cellText);
-
+							String property = populatorColumn.getProperty();
 							PropertyUpdate update = SequencePopulator
-									.generatePropertyUpdate(fieldTypes.get(populatorColumn.getProperty()), null, sequence, populatorColumn, fieldPopulatorResult);
+									.generatePropertyUpdate(fieldTypes.get(property), links.get(property), sequence, populatorColumn, fieldPopulatorResult);
 
 							if(update != null && update.updated()) {
 								Map<String,String> updateMap = new LinkedHashMap<String,String>();
 								updateMap.put(TextFilePopulatorResult.SOURCE_NAME, sourceName);
 								updateMap.put(TextFilePopulatorResult.SEQUENCE_ID, sequenceID);
-								updateMap.put(TextFilePopulatorResult.FIELD_NAME, update.getProperty());
-								updateMap.put(TextFilePopulatorResult.FIELD_VALUE, update.getValue());
+								updateMap.put(TextFilePopulatorResult.PROPERTY, update.getProperty());
+								updateMap.put(TextFilePopulatorResult.VALUE, update.getValue());
 								lineResults.add(updateMap);
 								if(populatorContext.updateDB) {
 									super.applyUpdateToDB(cmdContext, fieldTypes, links, sequence, update);
