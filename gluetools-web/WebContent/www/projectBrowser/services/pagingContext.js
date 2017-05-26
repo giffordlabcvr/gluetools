@@ -111,13 +111,7 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 		}
 
 		
-		/* Example:
-		 * pagingContxt.setFilterElems([
-		 * 		{ property: "id", type: "String", predicate: { operator: "like", operand: "KJ%"} },
-		 * 		{ property: "gb_length", type: "Integer", predicate: { operator: "gte", operand: "1000"} }
-		 * ]);
-		 * 
-		 */
+	
 		pagingContext.setFilterElems = function(filterElems) {
 			pagingContext.filterElems = filterElems;
 		} 
@@ -232,13 +226,13 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 			var whereClause = "";
 			for(var i = 0; i < filterElems.length; i++) {
 				if(i > 0) {
-					whereClause = whereClause + " and "
+					whereClause = whereClause + " and ";
 				}
 				var filterElem = filterElems[i];
 				var cayennePredicate;
 				var filterProperty = _.find(pagingContext.getFilterProperties(), function(fp) {return fp.property == filterElem.property;});
 				if(filterProperty.filterHints.generatePredicateFromCustom != null) {
-					cayennePredicate = filterProperty.filterHints.generatePredicateFromCustom(filterElem.custom);
+					cayennePredicate = filterProperty.filterHints.generatePredicateFromCustom(filterElem);
 				} else {
 					cayennePredicate = filterUtils.filterElemToCayennePredicate(filterElem);
 				}

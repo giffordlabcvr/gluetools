@@ -3,6 +3,7 @@ projectBrowser.controller('selectFilterCtrl',
 	function($scope, $modalInstance, data, filterUtils){
 	$scope.data = data;
 	
+	addUtilsToScope($scope);
 	
 	$scope.addFilterElem = function() {
 		var filterElem = {};
@@ -35,8 +36,6 @@ projectBrowser.controller('selectFilterCtrl',
 		return "";
 	}
 
-	
-	
 	$scope.removeFilterElem = function(filterElem) {
 		$scope.data.newFilterElems = _.without($scope.data.newFilterElems, filterElem);
 	}

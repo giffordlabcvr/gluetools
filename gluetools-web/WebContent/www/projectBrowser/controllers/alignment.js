@@ -1,6 +1,6 @@
 projectBrowser.controller('alignmentCtrl', 
-		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 'pagingContext', 'FileSaver', 'saveFile', '$analytics',
-		    function($scope, glueWebToolConfig, glueWS, dialogs, pagingContext, FileSaver, saveFile, $analytics) {
+		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 'pagingContext', 'FileSaver', 'saveFile', '$analytics', 'filterUtils',
+		    function($scope, glueWebToolConfig, glueWS, dialogs, pagingContext, FileSaver, saveFile, $analytics, filterUtils) {
 
 			addUtilsToScope($scope);
 			$scope.memberList = null;
@@ -227,8 +227,185 @@ projectBrowser.controller('alignmentCtrl',
 			    .error(glueWS.raiseErrorDialog(dialogs, "downloading clade member metadata"));
 			}
 			
+			$scope.featurePresenceFilter = function() {
+                // note property here is a dummy value.
+				return { property:"featurePresence", displayName: "Coverage of Genome Region", filterHints: 
+            	{ type: "FeaturePresence", 
+              	  generateCustomDefault: function() {
+              		  return {
+              			  feature: $scope.featureList[0], 
+              			  minCoveragePct: 90.0
+              		  };
+              	  },
+              	  generatePredicateFromCustom: function(filterElem) {
+              		  var custom = filterElem.custom;
+              		  var cayennePredicate = 
+                		  	"fLocNotes.featureLoc.referenceSequence.name = '"+$scope.referenceName+"' and "+
+              		  	"fLocNotes.featureLoc.feature.name = '"+custom.feature.featureName+"' and "+
+              		  	"fLocNotes.ref_nt_coverage_pct >= "+custom.minCoveragePct;
+              		  return cayennePredicate;
+              	  },
+              	  getFeaturePresenceFeatures: function() {
+              		  if($scope.nonInformationalFeatureList == null && $scope.featureList != null) {
+              			  $scope.nonInformationalFeatureList = _.filter($scope.featureList, 
+              					  function(f) { return f.featureMetatag == null || f.featureMetatag.indexOf("INFORMATIONAL") < 0;});
+              		  }
+              		  return($scope.nonInformationalFeatureList);
+              	  }
+              	}
+              };
+			}
 			
+			$scope.globalRegionFilter = function() {
+				// note property here is a dummy value.
+                return { property:"globalRegion", nullProperty:"sequence.who_country", displayName: "Global Region", filterHints: 
+	            	{ type: "StringFromFixedValueSet",
+                	  generateCustomDefault: function() {
+	            		  return {
+	            			  fixedValue: $scope.globalRegionFixedValueSet[0]
+	            		  };
+	            	  },
+                	  generatePredicateFromCustom: function(filterElem) {
+                		  var custom = filterElem.custom;
+                		  var fakeFilterElem = {
+                		    property:custom.fixedValue.property,
+                		    nullProperty:filterElem.nullProperty,
+                			type: "String",
+                			predicate: {
+                				operator: filterElem.predicate.operator,
+                				operand: [custom.fixedValue.value]
+                			}
+                		  };
+                		  var cayennePredicate = filterUtils.filterElemToCayennePredicate(fakeFilterElem);
+                		  // we want notmatches here to allow sequences with countries that have a null region/subregion/intregion.
+                		  if(filterElem.predicate.operator == 'notmatches') {
+                			  cayennePredicate = "( ( "+custom.fixedValue.property + " = null ) or ( " + cayennePredicate + " ) )";
+                		  }
+                		  return cayennePredicate;
+                  	  },
+	            	  generateFixedValueSet: function() {
+	            		  return $scope.globalRegionFixedValueSet;
+	            	  }
+	            	}
+                };
+			};
+			$scope.initGlobalRegionFixedValueSet = function () {
+				$scope.globalRegionFixedValueSet = [];
+
+				glueWS.runGlueCommand("", {
+				    "multi-render":{
+				        "tableName":"who_region",
+				        "allObjects":"true",
+				        "rendererModuleName":"whoRegionTreeRenderer"
+				    }
+				})
+				.success(function(data, status, headers, config) {
+					var multiRenderResult = data.multiRenderResult;
+					console.info('who region multi-render result', data.multiRenderResult);
+					$scope.globalRegionFixedValueSet = [];
+					for(var i = 0; i < multiRenderResult.resultDocument.length; i++) {
+						var whoRegion = multiRenderResult.resultDocument[i].whoRegion;
+						$scope.globalRegionFixedValueSet.push({
+							property:"sequence.who_country.who_region",
+				   			  value:whoRegion.id,
+				   			  indent:0,
+				   			  displayName:whoRegion.displayName
+						});
+						if(whoRegion.whoSubRegion != null) {
+							for(var j = 0; j < whoRegion.whoSubRegion.length; j++) {
+								var whoSubRegion = whoRegion.whoSubRegion[j];
+								$scope.globalRegionFixedValueSet.push({
+									property:"sequence.who_country.who_sub_region",
+						   			  value:whoSubRegion.id,
+						   			  indent:1,
+						   			  displayName:whoSubRegion.displayName
+								});
+								if(whoSubRegion.whoIntermediateRegion != null) {
+									for(var k = 0; k < whoSubRegion.whoIntermediateRegion.length; k++) {
+										var whoIntermediateRegion = whoSubRegion.whoIntermediateRegion[k];
+										$scope.globalRegionFixedValueSet.push({
+											property:"sequence.who_country.who_intermediate_region",
+								   			  value:whoIntermediateRegion.id,
+								   			  indent:2,
+								   			  displayName:whoIntermediateRegion.displayName
+										});
+									}
+								}
+							}
+						}
+					}
+					console.info('$scope.globalRegionFixedValueSet', $scope.globalRegionFixedValueSet);
+				})
+				.error(glueWS.raiseErrorDialog(dialogs, "retrieving WHO region tree"));
+			};
 			
-			
+			$scope.developmentStatusFilter = function() {
+                // note property here is a dummy value.
+                return { property:"developmentStatus", nullProperty:"sequence.who_country", displayName: "Country Development Status", filterHints: 
+	            	{ type: "StringFromFixedValueSet",
+                	  generateCustomDefault: function() {
+	            		  return {
+	            			  fixedValue: $scope.developmentStatusFixedValueSet[0]
+	            		  };
+	            	  },
+                	  generatePredicateFromCustom: function(filterElem) {
+                		  var custom = filterElem.custom;
+                		  var type;
+                		  if(custom.fixedValue.property == 'sequence.who_country.development_status') {
+                			  type = "String";
+                		  } else {
+                			  type = "Boolean";
+                		  }
+                		  var fakeFilterElem = {
+                		    property:custom.fixedValue.property,
+                		    nullProperty:filterElem.nullProperty,
+                			type: filterElem.type,
+                			predicate: {
+                				operator: filterElem.predicate.operator,
+                				operand: [custom.fixedValue.value]
+                			}
+                		  };
+                		  return filterUtils.filterElemToCayennePredicate(fakeFilterElem);
+                  	  },
+	            	  generateFixedValueSet: function() {
+	            		  return $scope.developmentStatusFixedValueSet;
+	            	  }
+	            	}
+                };
+			};
+			$scope.initDevelopmentStatusFixedValueSet = function () {
+				$scope.developmentStatusFixedValueSet = [
+				                        				 {
+				                        					 property:"sequence.who_country.development_status",
+				                        					 value:"developed",
+				                        					 indent:0,
+				                        					 displayName:"Developed country"
+				                        				 },
+				                        				 {
+				                        					 property:"sequence.who_country.development_status",
+				                        					 value:"developing",
+				                        					 indent:0,
+				                        					 displayName:"Developing country"
+				                        				 },
+				                        				 {
+				                        					 property:"sequence.who_country.is_ldc",
+				                        					 value:"true",
+				                        					 indent:1,
+				                        					 displayName:"Least developed country (LDC)"
+				                        				 },
+				                        				 {
+				                        					 property:"sequence.who_country.is_lldc",
+				                        					 value:"true",
+				                        					 indent:1,
+				                        					 displayName:"Landlocked developing country (LLDC)"
+				                        				 },
+				                        				 {
+				                        					 property:"sequence.who_country.is_sids",
+				                        					 value:"true",
+				                        					 indent:1,
+				                        					 displayName:"Small island developing state (SIDS)"
+				                        				 },
+				                        			];
+			};
 			
 }]);

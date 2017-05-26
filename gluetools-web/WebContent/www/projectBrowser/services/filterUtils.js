@@ -11,6 +11,12 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 			           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
 			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 			],
+			"StringFromFixedValueSet": [
+			           {operator:"matches", displayName:"matches", hasOperand:true, cayenneOperator:"="}, 
+			           {operator:"notmatches", displayName:"does not match", hasOperand:true, cayenneOperator:"=", negate:true}, 
+			           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
+			],
 			"Integer" : [
 				           {operator:"equals", displayName:"equals", multiDisplayName:"equals one of", hasOperand:true, multiOperand:true, cayenneOperator:"="}, 
 				           {operator:"notequals", displayName:"does not equal", multiDisplayName:"does not equal any of", hasOperand:true, multiOperand:true, cayenneOperator:"=", negate:true}, 
@@ -95,8 +101,6 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 		var type = filterElem.type;
 		var filterOperator = _.find(this.filterOperatorsForType[type], function(fo) {return fo.operator == filterElem.predicate.operator});
 		var properties = [filterElem.property];
-		console.log("filterElem", filterElem);
-		console.log("filterOperator", filterOperator);
 		if(filterOperator.useNullProperty) {
 			if(filterElem.nullProperty) {
 				properties = [filterElem.nullProperty];

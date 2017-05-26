@@ -20,9 +20,24 @@ function addUtilsToScope($scope) {
 	$scope.handleNull = handleNull;
 	$scope.collectionYearRange = collectionYearRange;
 	$scope.b64ToBlob = b64ToBlob;
+	$scope.spacerString = spacerString;
+	$scope.truncate = truncate;
 }
 
+function spacerString(numSpaces) {
+	var string = "";
+	for(var i = 0; i < numSpaces; i++) {
+		string = string+"\u00A0"
+	}
+	return string;
+}
 
+function truncate(string, maxChars) {
+	if(string.length <= maxChars || maxChars < 5) {
+		return string;
+	}
+	return(string.substring(0, maxChars-3) + "...");
+}
 
 function renderDisplayName(name, displayName) {
 	if(displayName == null) {
