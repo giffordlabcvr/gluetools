@@ -10,7 +10,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
@@ -19,10 +18,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-public abstract class SamReporterCommand<R extends CommandResult> extends ModulePluginCommand<R, SamReporter> {
-
-	public static final String FILE_NAME = "fileName";
-	public static final String SAM_REF_NAME = "samRefName";
+// SAM reporter command which links the SAM reads to the GLUE alignment tree before performing
+// some kind of analysis.
+public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> extends BaseSamReporterCommand<R> {
 
 	public static final String AC_REF_NAME = "acRefName";
 	public static final String FEATURE_NAME = "featureName";
@@ -31,8 +29,6 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 	public static final String TARGET_REF_NAME = "targetRefName";
 	public static final String TIP_ALMT_NAME = "tipAlmtName";
 	
-	private String fileName;
-	private String samRefName;
 	private String acRefName;
 	private String featureName;
 	private boolean autoAlign;
@@ -43,14 +39,12 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
-		this.samRefName = PluginUtils.configureStringProperty(configElem, SAM_REF_NAME, false);
+		super.configure(pluginConfigContext, configElem);
 		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.autoAlign = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, AUTO_ALIGN, false)).orElse(false);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
 		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
-		super.configure(pluginConfigContext, configElem);
 	}
 
 	protected List<QueryAlignedSegment> getSamRefToTargetRefSegs(
@@ -60,7 +54,7 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 		if(autoAlign) {
 			// auto-align consensus to target ref
 			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
-			Map<String, DNASequence> samConsensus = SamUtils.getSamConsensus(consoleCmdContext, samRefName, fileName, "samConsensus",
+			Map<String, DNASequence> samConsensus = SamUtils.getSamConsensus(consoleCmdContext, getSuppliedSamRefName(), getFileName(), "samConsensus",
 					samReporter.getSamReaderValidationStringency());
 			AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), samConsensus);
 			// extract segments from aligner result
@@ -71,14 +65,6 @@ public abstract class SamReporterCommand<R extends CommandResult> extends Module
 			samRefToTargetRefSegs = Arrays.asList(new QueryAlignedSegment(1, targetRefLength, 1, targetRefLength));
 		}
 		return samRefToTargetRefSegs;
-	}
-
-	protected String getFileName() {
-		return fileName;
-	}
-
-	protected String getSuppliedSamRefName() {
-		return samRefName;
 	}
 
 	protected String getAcRefName() {

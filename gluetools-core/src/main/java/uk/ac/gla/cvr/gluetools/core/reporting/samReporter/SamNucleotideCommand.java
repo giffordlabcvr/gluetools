@@ -61,7 +61,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 		    " The nucleotide summary will be limited to this feature location.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamNucleotideCommand extends SamReporterCommand<SamNucleotideResult> implements ProvidedProjectModeCommand{
+public class SamNucleotideCommand extends AlignmentTreeSamReporterCommand<SamNucleotideResult> implements ProvidedProjectModeCommand{
 
 
 	@Override

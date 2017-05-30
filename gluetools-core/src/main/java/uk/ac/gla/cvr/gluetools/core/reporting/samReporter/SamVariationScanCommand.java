@@ -83,7 +83,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 			"The <whereClause> may be used to qualify which variations are scanned for. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamVariationScanCommand extends SamReporterCommand<SamVariationScanResult> 
+public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<SamVariationScanResult> 
 	implements ProvidedProjectModeCommand{
 
 	public static final String WHERE_CLAUSE = "whereClause";

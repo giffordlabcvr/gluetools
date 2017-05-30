@@ -8,7 +8,7 @@ public class SamUtilsException extends GlueException {
 	public enum Code implements GlueErrorCode {
 
 		ALIGNMENT_LINE_USES_EQUALS(), 
-		ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER("readChar"),
+		ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER("readChar", "ascii"),
 		SAM_BAM_FILE_HAS_ZERO_REFERENCES("fileName"),
 		SAM_BAM_FILE_HAS_MULTIPLE_REFERENCES("fileName"),
 		SAM_BAM_FILE_MISSING_REFERENCE("fileName", "samRefName"),

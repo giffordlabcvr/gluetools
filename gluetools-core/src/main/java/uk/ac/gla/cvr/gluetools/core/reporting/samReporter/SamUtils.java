@@ -59,8 +59,10 @@ public class SamUtils {
         				gCounts[refStart+baseIndex-1]++;
         			} else if(readChar == 'T') {
         				tCounts[refStart+baseIndex-1]++;
+        			} else if(readChar == 'N') {
+        				// ambiguity character
         			} else {
-        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readChar));
+        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readChar), Integer.toString(readChar));
         			}
         		}
         	});

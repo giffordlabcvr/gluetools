@@ -69,7 +69,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 			"The translated amino acids will be limited to the specified feature location. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamAminoAcidCommand extends SamReporterCommand<SamAminoAcidResult> 
+public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAminoAcidResult> 
 	implements ProvidedProjectModeCommand{
 
 
