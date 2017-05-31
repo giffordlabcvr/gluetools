@@ -118,6 +118,9 @@ public class Module extends _Module {
 
 	@SuppressWarnings("unchecked")
 	public static <M> M resolveModulePlugin(CommandContext cmdContext, Class<M> requiredClass, String moduleName) {
+		if(moduleName == null) {
+			throw new ModuleException(ModuleException.Code.NO_MODULE_DEFINED);
+		}
 		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
 		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
 		Class<?> actualClass = modulePlugin.getClass();

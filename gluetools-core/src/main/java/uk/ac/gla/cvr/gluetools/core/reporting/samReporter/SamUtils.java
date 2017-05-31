@@ -134,8 +134,8 @@ public class SamUtils {
 		return samReaderFactory.open(SamInputResource.of(samInputStream));
 	}
 
-	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String samRefName, String fileName, String fastaID,
-			ValidationStringency validationStringency) {
+	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, ValidationStringency validationStringency, String samRefName,
+			String fastaID) {
 		Map<String, DNASequence> samConsensusFastaMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 

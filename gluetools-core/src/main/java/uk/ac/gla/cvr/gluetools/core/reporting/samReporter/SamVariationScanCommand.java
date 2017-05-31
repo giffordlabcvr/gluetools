@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -119,8 +120,14 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 			throw new RuntimeException(e);
 		}
 		
+		DNASequence consensusSequence = null;
+		if(useMaxLikelihoodPlacer()) {
+			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+		}
+
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-				ReferenceSequence.pkMap(getTargetRefName(consoleCmdContext, samReporter, samRefName)));
+				ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
 		
 		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
@@ -173,7 +180,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				Translator translator = codesAminoAcids ? new CommandContextTranslator(cmdContext) : null;
 
 
-				List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef);
+				List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef, consensusSequence);
 
 				// translate segments to tip alignment reference
 				List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 

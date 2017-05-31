@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMemberException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
@@ -91,6 +93,48 @@ public class AlignmentMember extends _AlignmentMember {
 	
 	public List<QueryAlignedSegment> segmentsAsQueryAlignedSegments() {
 		return getAlignedSegments().stream().map(seg -> seg.asQueryAlignedSegment()).collect(Collectors.toList());
+	}
+	
+	public ReferenceSequence targetReferenceFromMember() {
+		List<ReferenceSequence> memberReferences = this.getSequence().getReferenceSequences();
+		Alignment memberAlmt = this.getAlignment();
+		ReferenceSequence targetRef = null;
+		if(memberReferences.isEmpty()) {
+			targetRef = memberAlmt.getConstrainingRef();
+		} else if(memberReferences.size() == 1) {
+			// single reference, choose that.
+			targetRef = memberReferences.get(0);
+		} else {
+			// if one isn't a constraining ref of any alignment, choose that.
+			for(ReferenceSequence refSeq: memberReferences) {
+				if(refSeq.getAlignmentsWhereRefSequence().isEmpty()) {
+					targetRef = refSeq;
+					break;
+				}
+			}
+			// otherwise if one of the references is the constraining ref of the tip alignment, choose that.
+			if(targetRef == null) {
+				for(ReferenceSequence refSeq: memberReferences) {
+					if(refSeq.getName().equals(memberAlmt.getConstrainingRef().getName())) {
+						targetRef = refSeq;
+						break;
+					}
+				}
+			}
+			// otherwise sort by REF name and choose first.
+			if(targetRef == null) {
+				for(ReferenceSequence refSeq: memberReferences) {
+					if(targetRef == null || refSeq.getName().compareTo(targetRef.getName()) < 0) {
+						targetRef = refSeq;
+					}
+				}
+			}
+			if(targetRef == null) {
+				throw new AlignmentMemberException(Code.CANNOT_DETERMINE_TARGET_REFERENCE_FROM_ALIGNMENT_MEMBER, 
+						memberAlmt.getName(), this.getSequence().getSource().getName(), this.getSequence().getSequenceID());
+			}
+		}
+		return targetRef;
 	}
 	
 }

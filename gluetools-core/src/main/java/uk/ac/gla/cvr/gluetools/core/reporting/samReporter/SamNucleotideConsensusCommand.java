@@ -71,8 +71,8 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
 		Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
-				consoleCmdContext, getSuppliedSamRefName(), getFileName(), this.consensusID,
-				samReporter.getSamReaderValidationStringency());
+				consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),
+				this.consensusID);
 
 		byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
 

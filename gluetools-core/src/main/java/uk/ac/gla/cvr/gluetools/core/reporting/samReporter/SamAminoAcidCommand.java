@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.biojava.nbio.core.sequence.DNASequence;
+
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -39,12 +41,13 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> [-l] [-t <targetRefName>] [-a <tipAlmtName>]" },
+		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>])" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 				"-f <featureName>, --featureName <featureName>        Feature to translate",
+				"-p, --maxLikelihoodPlacer                            Use ML placer module",
 				"-l, --autoAlign                                      Auto-align consensus",
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
@@ -55,11 +58,15 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 			"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 			"file only names a single reference sequence.\n"+
 			"The translation is based on a 'target' GLUE reference sequence's place in the alignment tree. "+
-			"If <targetRefName> is not supplied, it may be inferred from the SAM reference name, if the module is appropriately configured. "+
+			"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
+			"identified as the closest according to this placement. "+
+			"The target reference may alternatively be specified using <targetRefName>."+
+			"Or, inferred from the SAM reference name, if <targetRefName> is not supplied and the module is appropriately configured. "+
 			"By default, the SAM file is assumed to align reads against this target reference, i.e. the target GLUE reference "+
 			"is the reference sequence  mentioned in the SAM file. "+
 			"Alternatively the --autoAlign option may be used; this will generate a pairwise alignment between the SAM file "+
 			"consensus and the target GLUE reference. \n"+
+			"The --autoAlign option is implicit if --maxLikelihoodPlacer is used. "+
 			"The target reference sequence must be a member of a constrained "+
 			"'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
 			"inferred from the target reference if possible. "+
@@ -84,8 +91,14 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		DNASequence consensusSequence = null;
+		if(useMaxLikelihoodPlacer()) {
+			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+		}
+		
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-				ReferenceSequence.pkMap(getTargetRefName(consoleCmdContext, samReporter, samRefName)));
+				ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
 
 		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
@@ -95,7 +108,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
 
-		List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef);
+		List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef, consensusSequence);
 		
 		// translate segments to tip alignment reference
 		List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 

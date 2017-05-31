@@ -1,14 +1,12 @@
-package uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool;
+package uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class WebAnalysisException extends GlueException {
+public class AlignmentMemberException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		UNKNOWN_VARIATION_CATEGORY("vCatName"),
-		GENOTYPING_FAILED("fastaID"),
-		INVALID_CONFIG("errorTxt"),;
+		CANNOT_DETERMINE_TARGET_REFERENCE_FROM_ALIGNMENT_MEMBER("alignmentName","sourceName","sequenceID");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -20,12 +18,12 @@ public class WebAnalysisException extends GlueException {
 		}
 	}
 
-	protected WebAnalysisException(Throwable cause, Code code,
+	protected AlignmentMemberException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}
 
-	public WebAnalysisException(Code code, Object... errorArgs) {
+	public AlignmentMemberException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 	

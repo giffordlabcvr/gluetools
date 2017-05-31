@@ -317,11 +317,11 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 	}
 
 	
-	private Map<String, String> memberLeafNodeNameToPkMap(String leafNodeName) {
+	public static Map<String, String> memberLeafNodeNameToPkMap(String leafNodeName) {
 		return Project.targetPathToPkMap(ConfigurableTable.alignment_member, leafNodeName);
 	}
 
-	private String memberPkMapToLeafNodeName(Map<String, String> pkMap) {
+	public static String memberPkMapToLeafNodeName(Map<String, String> pkMap) {
 		return Project.pkMapToTargetPath(ConfigurableTable.alignment_member.getModePath(), pkMap);
 	}
 

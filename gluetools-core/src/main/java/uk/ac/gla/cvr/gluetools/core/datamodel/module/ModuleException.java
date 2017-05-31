@@ -12,7 +12,8 @@ public class ModuleException extends GlueException {
 		NO_SUCH_MODULE_PROPERTY_GROUP("propertyPath"),
 		MODULE_PLUGIN_IS_NOT_OF_CORRECT_CLASS("moduleName", "requiredClass", "actualClass"),
 		NO_SUCH_RESOURCE("moduleName", "resourceName"),
-		RESOURCE_NOT_LOADED("moduleName", "resourceName");
+		RESOURCE_NOT_LOADED("moduleName", "resourceName"),
+		NO_MODULE_DEFINED;
 
 		private String[] argNames;
 		private Code(String... argNames) {

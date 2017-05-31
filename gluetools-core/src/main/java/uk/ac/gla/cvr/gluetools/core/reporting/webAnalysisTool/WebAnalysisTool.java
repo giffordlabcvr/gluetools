@@ -374,44 +374,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				throw new WebAnalysisException(Code.GENOTYPING_FAILED, fastaId);
 			}
 			
-			List<ReferenceSequence> closestMemberReferences = closestMember.getSequence().getReferenceSequences();
+			ReferenceSequence targetRef = closestMember.targetReferenceFromMember();
+
 			Alignment tipAlmt = closestMember.getAlignment();
-			ReferenceSequence targetRef = null;
-			if(closestMemberReferences.isEmpty()) {
-				targetRef = tipAlmt.getConstrainingRef();
-			} else if(closestMemberReferences.size() == 1) {
-				// single reference, choose that.
-				targetRef = closestMemberReferences.get(0);
-			} else {
-				// if one isn't a constraining ref of any alignment, choose that.
-				for(ReferenceSequence refSeq: closestMemberReferences) {
-					if(refSeq.getAlignmentsWhereRefSequence().isEmpty()) {
-						targetRef = refSeq;
-						break;
-					}
-				}
-				// otherwise if one of the references is the constraining ref of the tip alignment, choose that.
-				if(targetRef == null) {
-					for(ReferenceSequence refSeq: closestMemberReferences) {
-						if(refSeq.getName().equals(tipAlmt.getConstrainingRef().getName())) {
-							targetRef = refSeq;
-							break;
-						}
-					}
-				}
-				// otherwise sort by REF name and choose first.
-				if(targetRef == null) {
-					for(ReferenceSequence refSeq: closestMemberReferences) {
-						if(targetRef == null || refSeq.getName().compareTo(targetRef.getName()) < 0) {
-							targetRef = refSeq;
-						}
-					}
-				}
-				if(targetRef == null) {
-					throw new WebAnalysisException(Code.CANNOT_DETERMINE_REFERENCE_FROM_CLOSEST_MEMBER, 
-							tipAlmt.getName(), closestMember.getSequence().getSource().getName(), closestMember.getSequence().getSequenceID());
-				}
-			}
 
 			String targetRefName = targetRef.getName();
 			List<Alignment> ancestors = tipAlmt.getAncestors();
@@ -453,6 +418,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			fastaIdToQueryAnalysis.put(fastaId, queryAnalysis);
 		});
 	}
+
 
 	private AllColumnsAlignment<Key> initAllColumnsAlignment(
 			CommandContext cmdContext,

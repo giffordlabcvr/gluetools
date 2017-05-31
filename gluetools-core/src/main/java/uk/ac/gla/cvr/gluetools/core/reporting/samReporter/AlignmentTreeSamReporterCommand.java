@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,13 +25,18 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 
 	public static final String AC_REF_NAME = "acRefName";
 	public static final String FEATURE_NAME = "featureName";
-	public static final String AUTO_ALIGN = "autoAlign";
+
+	public static final String MAX_LIKELIHOOD_PLACER = "maxLikelihoodPlacer";
 	
+	public static final String AUTO_ALIGN = "autoAlign";
 	public static final String TARGET_REF_NAME = "targetRefName";
 	public static final String TIP_ALMT_NAME = "tipAlmtName";
 	
 	private String acRefName;
 	private String featureName;
+
+	private boolean maxLikelihoodPlacer;
+
 	private boolean autoAlign;
 	private String targetRefName;
 	private String tipAlmtName;
@@ -42,20 +48,29 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 		super.configure(pluginConfigContext, configElem);
 		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.maxLikelihoodPlacer = PluginUtils.configureBooleanProperty(configElem, MAX_LIKELIHOOD_PLACER, false);
 		this.autoAlign = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, AUTO_ALIGN, false)).orElse(false);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
 		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
 	}
 
+	
+	
 	protected List<QueryAlignedSegment> getSamRefToTargetRefSegs(
 			CommandContext cmdContext, SamReporter samReporter,
-			ConsoleCommandContext consoleCmdContext, ReferenceSequence targetRef) {
+			ConsoleCommandContext consoleCmdContext, ReferenceSequence targetRef, DNASequence consensusSequence) {
 		List<QueryAlignedSegment> samRefToTargetRefSegs;
-		if(autoAlign) {
+		if(autoAlign || maxLikelihoodPlacer) {
 			// auto-align consensus to target ref
 			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
-			Map<String, DNASequence> samConsensus = SamUtils.getSamConsensus(consoleCmdContext, getSuppliedSamRefName(), getFileName(), "samConsensus",
-					samReporter.getSamReaderValidationStringency());
+			Map<String, DNASequence> samConsensus;
+			if(consensusSequence == null) {
+				// compute consensus if we don't already have it.
+				samConsensus = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus");
+			} else {
+				samConsensus = new LinkedHashMap<String, DNASequence>();
+				samConsensus.put("samConsensus", consensusSequence);
+			}
 			AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), samConsensus);
 			// extract segments from aligner result
 			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");
@@ -75,8 +90,12 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 		return featureName;
 	}
 
-	protected String getTargetRefName(CommandContext cmdContext, SamReporter samReporter, String samRefName) {
-		return samReporter.targetRefNameFromSamRefName(cmdContext, samRefName, targetRefName);
+	protected boolean useMaxLikelihoodPlacer() {
+		return maxLikelihoodPlacer;
+	}
+
+	protected String establishTargetRefName(CommandContext cmdContext, SamReporter samReporter, String samRefName, DNASequence consensusSequence) {
+		return samReporter.establishTargetRefName(cmdContext, samRefName, targetRefName, maxLikelihoodPlacer, consensusSequence);
 	}
 
 	protected String getTipAlmtName(CommandContext cmdContext, SamReporter samReporter, String samRefName) {
