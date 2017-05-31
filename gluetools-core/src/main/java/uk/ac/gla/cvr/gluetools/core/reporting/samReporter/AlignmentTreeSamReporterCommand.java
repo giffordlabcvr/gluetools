@@ -95,7 +95,7 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 	}
 
 	protected String establishTargetRefName(CommandContext cmdContext, SamReporter samReporter, String samRefName, DNASequence consensusSequence) {
-		return samReporter.establishTargetRefName(cmdContext, samRefName, targetRefName, maxLikelihoodPlacer, consensusSequence);
+		return samReporter.establishTargetRefName(cmdContext, samRefName, targetRefName);
 	}
 
 	protected String getTipAlmtName(CommandContext cmdContext, SamReporter samReporter, String samRefName) {

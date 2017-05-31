@@ -8,7 +8,7 @@ public class SamReporterCommandException extends GlueException {
 	public enum Code implements GlueErrorCode {
 
 		NO_TARGET_REFERENCE_DEFINED(),
-		NO_PLACEMENT_NEIGHBOURS_FOUND(),
+		NO_PLACEMENT_NEIGHBOURS_FOUND("cutoffDistance"),
 		NO_CONSENSUS_PLACEMENTS(),
 		TARGET_REFERENCE_NOT_FOUND("samReferenceName"),
 		TARGET_REFERENCE_AMBIGUOUS("samReferenceName", "targetRefNames"),

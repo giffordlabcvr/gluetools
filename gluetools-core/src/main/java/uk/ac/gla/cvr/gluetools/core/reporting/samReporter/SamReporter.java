@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
@@ -42,6 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 public class SamReporter extends ModulePlugin<SamReporter> {
 
 	public static final String MAX_LIKELIHOOD_PLACER_MODULE_NAME = "maxLikelihoodPlacerModuleName";
+	public static final String MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF = "maxLikelihoodPlacerDistanceCutoff";
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	public static final String READ_LOG_INTERVAL = "readLogInterval";
 	public static final String SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME = "samRefTextToReferenceQueryModuleName";
@@ -50,6 +50,10 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 
 	// Maximum likelihood placer module: in some cases selects target ref by doing a placement of the consensus sequence.
 	private String maxLikelihoodPlacerModuleName;
+	// cutoff for evo distance to nearest reference if ML-placer is used
+	private Double maxLikelihoodPlacerDistanceCutoff;
+	
+	
 	// Aligner module: generates pairwise alignment between sam reference and target ref.
 	private String alignerModuleName;
 	// optional -- Module of type textToQueryTransformer.
@@ -69,6 +73,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addModulePluginCmdClass(SamAminoAcidCommand.class);
 		addModulePluginCmdClass(SamNucleotideConsensusCommand.class);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_MODULE_NAME);
+		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 		addSimplePropertyName(READ_LOG_INTERVAL);
 		addSimplePropertyName(SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
@@ -83,6 +88,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		super.configure(pluginConfigContext, configElem);
 		this.alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, false);
 		this.maxLikelihoodPlacerModuleName = PluginUtils.configureStringProperty(configElem, MAX_LIKELIHOOD_PLACER_MODULE_NAME, false);
+		this.maxLikelihoodPlacerDistanceCutoff = PluginUtils.configureDoubleProperty(configElem, MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF, 0.75);
 		this.readLogInterval = Optional.ofNullable(
 				PluginUtils.configureIntProperty(configElem, READ_LOG_INTERVAL, false)).orElse(20000);
 		this.samRefTextToReferenceQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME, false);
@@ -102,12 +108,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		return samReaderValidationStringency;
 	}
 
-	public String establishTargetRefName(CommandContext cmdContext, String samRefName, String definedTargetRefName,
-			boolean useMaxLikelihoodPlacer, DNASequence consensusSequence) {
-		if(useMaxLikelihoodPlacer) {
-			return establishTargetRefNameUsingPlacer(cmdContext, consensusSequence);
-		}
-		
+	public String establishTargetRefName(CommandContext cmdContext, String samRefName, String definedTargetRefName) {
 		if(definedTargetRefName != null) {
 			return definedTargetRefName;
 		}
@@ -128,7 +129,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		return referenceSeqNames.get(0);
 	}
 	
-	private String establishTargetRefNameUsingPlacer(CommandContext cmdContext, DNASequence consensusSequence) {
+	public AlignmentMember establishTargetRefMemberUsingPlacer(CommandContext cmdContext, DNASequence consensusSequence) {
 		MaxLikelihoodPlacer maxLikelihoodPlacer = Module.resolveModulePlugin(cmdContext, MaxLikelihoodPlacer.class, maxLikelihoodPlacerModuleName);
 		
 		Map<String, DNASequence> consensusSequenceMap = new LinkedHashMap<String, DNASequence>();
@@ -149,19 +150,15 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 
 		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, singleQueryResult, firstPlacement);
 		
-		// TODO make this a module property
-		BigDecimal distanceCutoff = new BigDecimal(0.4); //?
+		BigDecimal distanceCutoff = new BigDecimal(maxLikelihoodPlacerDistanceCutoff); 
 		List<PlacementNeighbour> placementNeighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, distanceCutoff, 1);
 		if(placementNeighbours.isEmpty()) {
-			throw new SamReporterCommandException(Code.NO_PLACEMENT_NEIGHBOURS_FOUND);
+			throw new SamReporterCommandException(Code.NO_PLACEMENT_NEIGHBOURS_FOUND, Double.toString(maxLikelihoodPlacerDistanceCutoff));
 		}
 		PlacementNeighbour nearestNeighbour = placementNeighbours.get(0);
 		String neighbourLeafName = nearestNeighbour.getPhyloLeaf().getName();
 		Map<String,String> neighbourMemberPkMap = PhyloImporter.memberLeafNodeNameToPkMap(neighbourLeafName);
-		AlignmentMember neighbourMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap);
-		String targetRefName = neighbourMember.targetReferenceFromMember().getName();
-		GlueLogger.getGlueLogger().log(Level.FINEST, "Established target reference using ML-placer, reference "+targetRefName+", distance "+nearestNeighbour.getDistance());
-		return targetRefName;
+		return GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap);
 	}
 
 	public String tipAlignmentNameFromSamRefName(CommandContext cmdContext, String samRefName, String definedTipAlignmentName) {

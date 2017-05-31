@@ -92,15 +92,19 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			throw new RuntimeException(e);
 		}
 		DNASequence consensusSequence = null;
+		ReferenceSequence targetRef;
+		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
 			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
 					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+			targetRef = tipAlmtMember.targetReferenceFromMember();
+		} else {
+			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
+					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
+			tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		}
 		
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-				ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
-
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
