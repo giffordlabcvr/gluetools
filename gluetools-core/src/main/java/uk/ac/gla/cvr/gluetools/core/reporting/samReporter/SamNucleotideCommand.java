@@ -33,12 +33,13 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 @CommandClass(
 		commandWords={"nucleotide"}, 
 		description = "Summarise nucleotides in a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> [-l] [-t <targetRefName>] [-a <tipAlmtName>]" },
+				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>])" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 						"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
 						"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 						"-f <featureName>, --featureName <featureName>        Feature to translate",
+						"-p, --maxLikelihoodPlacer                            Use ML placer module",
 						"-l, --autoAlign                                      Auto-align consensus",
 						"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 						"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
@@ -49,11 +50,15 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
 					"The summarized locations are based on a 'target' GLUE reference sequence's place in the alignment tree. "+
-					"If <targetRefName> is not supplied, it may be inferred from the SAM reference name, if the module is appropriately configured. "+
+					"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
+					"identified as the closest according to this placement. "+
+					"The target reference may alternatively be specified using <targetRefName>."+
+					"Or, inferred from the SAM reference name, if <targetRefName> is not supplied and the module is appropriately configured. "+
 					"By default, the SAM file is assumed to align reads against this target reference, i.e. the target GLUE reference "+
 					"is the reference sequence  mentioned in the SAM file. "+
 					"Alternatively the --autoAlign option may be used; this will generate a pairwise alignment between the SAM file "+
 					"consensus and the target GLUE reference. \n"+
+					"The --autoAlign option is implicit if --maxLikelihoodPlacer is used. "+
 					"The target reference sequence must be a member of a constrained "+
 					"'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
 					"inferred from the target reference if possible. "+
@@ -78,14 +83,19 @@ public class SamNucleotideCommand extends AlignmentTreeSamReporterCommand<SamNuc
 			throw new RuntimeException(e);
 		}
 		DNASequence consensusSequence = null;
+		ReferenceSequence targetRef;
+		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
 			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
 					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+			targetRef = tipAlmtMember.targetReferenceFromMember();
+		} else {
+			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
+					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
+			tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
 		}
-		
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-				ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
+
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
 		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
