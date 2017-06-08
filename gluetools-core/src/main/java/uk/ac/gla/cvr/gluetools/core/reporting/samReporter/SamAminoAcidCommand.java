@@ -11,9 +11,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -29,6 +33,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -41,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>])" },
+		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-e <minDepth>] [-P <minAAPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
@@ -51,6 +57,10 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 				"-l, --autoAlign                                      Auto-align consensus",
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
+				"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
+				"-e <minDepth>, --minDepth <minDepth>                 Minimum depth",
+				"-P <minAAPct>, --minAAPct <minAAPct>                 Minimum AA percentage",
+
 		},
 		furtherHelp = 
 			"This command translates a SAM/BAM file reads to amino acids. "+
@@ -73,11 +83,29 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 			"The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
 			"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
 			"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
-			"The translated amino acids will be limited to the specified feature location. ",
+			"The translated amino acids will be limited to the specified feature location.\n"+
+			"Reads will not contribute to the translation at a given codon location if any reported nucleotide quality score at that location is less than "+
+			"<minQScore> (default 0, range 0 - 99). \n"+
+			"No result will be generated for a codon location if the number of contributing reads is less than <minDepth> "+
+			"(default 0).\n"+
+			"Amino acid values will only display in the result if the percentage of reads contributing that value is at least <minAAPct> (default 0)",
+
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAminoAcidResult> 
 	implements ProvidedProjectModeCommand{
+
+
+	public static final String MIN_AA_PCT = "minAAPct";
+
+	private Double minAAPct;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.minAAPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_AA_PCT, 0.0, true, 100.0, true, false)).orElse(0.0);
+	}
 
 
 	@Override
@@ -95,10 +123,12 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		ReferenceSequence targetRef;
 		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
-			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(), getMinDepth());
+			consensusSequence = consensusMap.get("samConsensus");
 			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 			targetRef = tipAlmtMember.targetReferenceFromMember();
+			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 		} else {
 			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
@@ -173,14 +203,22 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 				List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, readToAncConstrRefSegs);
 
 				final String readString = samRecord.getReadString().toUpperCase();
-
-				for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsCodonAligned) {
+				final String qualityString = samRecord.getBaseQualityString();
+				
+				List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore()); 
+				
+				for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
 					CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
 					String segAAs = translator.translate(nts);
 					Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
 					for(int i = 0; i < segAAs.length(); i++) {
 						char segAA = segAAs.charAt(i);
-						ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt).addAaRead(segAA);
+						AminoAcidReadCount aminoAcidReadCount = ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
+						if(aminoAcidReadCount == null) {
+							int x = 23;
+							x++;
+						}
+						aminoAcidReadCount.addAaRead(segAA);
 						ancConstrRefNt += 3;
 					}
 				}
@@ -212,6 +250,40 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		
 		return new SamAminoAcidResult(rowData);
 		
+	}
+
+	private List<QueryAlignedSegment> filterByQuality(
+			List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned,
+			String qualityString, int minQScore) {
+		List<ReferenceSegment> poorQualityCodons = new ArrayList<ReferenceSegment>();
+		for(QueryAlignedSegment readToAncConstrRefSeg: readToAncConstrRefSegsCodonAligned) {
+			for(int r = readToAncConstrRefSeg.getRefStart(); r <= readToAncConstrRefSeg.getRefEnd(); r += 3) {
+				int q = r+readToAncConstrRefSeg.getReferenceToQueryOffset();
+				boolean poorQuality = false;
+				char qualityChar1 = SegmentUtils.base1Char(qualityString, q);
+				if(SamUtils.qualityCharToQScore(qualityChar1) < minQScore) {
+					poorQuality = true;
+				} else {
+					if(q+1 <= readToAncConstrRefSeg.getQueryEnd()) {
+						char qualityChar2 = SegmentUtils.base1Char(qualityString, q+1);
+						if(SamUtils.qualityCharToQScore(qualityChar2) < minQScore) {
+							poorQuality = true;
+						}
+					} else {
+						if(q+2 <= readToAncConstrRefSeg.getQueryEnd()) {
+							char qualityChar3 = SegmentUtils.base1Char(qualityString, q+2);
+							if(SamUtils.qualityCharToQScore(qualityChar3) < minQScore) {
+								poorQuality = true;
+							}
+						}
+					}
+				}
+				if(poorQuality) {
+					poorQualityCodons.add(new ReferenceSegment(r, r+2));
+				}
+			}
+		}
+		return ReferenceSegment.subtract(readToAncConstrRefSegsCodonAligned, poorQualityCodons);
 	}
 
 	private class AminoAcidReadCount {

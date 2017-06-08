@@ -8,6 +8,7 @@ public class NucleotideReadCount {
 	int readsWithC;
 	int readsWithT;
 	int readsWithG;
+	int totalContributingReads;
 	
 	public NucleotideReadCount(int samRefNt, int acRefNt) {
 		super();
@@ -15,6 +16,10 @@ public class NucleotideReadCount {
 		this.acRefNt = acRefNt;
 	}
 
+	public int getTotalContributingReads() {
+		return totalContributingReads;
+	}
+	
 	public int getSamRefNt() {
 		return samRefNt;
 	}

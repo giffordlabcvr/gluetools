@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -33,7 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 @CommandClass(
 		commandWords={"nucleotide"}, 
 		description = "Summarise nucleotides in a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>])" },
+				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 						"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
@@ -43,6 +45,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 						"-l, --autoAlign                                      Auto-align consensus",
 						"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 						"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
+						"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
+						"-d <minDepth>, --minDepth <minDepth>                 Minimum depth"
 				},
 				furtherHelp = 
 					"This command summarises nucleotides in a SAM/BAM file. "+
@@ -65,7 +69,11 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 					"The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
 					"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
 					"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
-		    " The nucleotide summary will be limited to this feature location.",
+					"The nucleotide summary will be limited to this feature location.\n"+
+					"Reads will not contribute to the summary if their reported quality score at the relevant position is less than "+
+					"<minQScore> (default 0, range 0 - 99). \n"+
+					"No summary will be generated for a nucleotide position if the number of contributing reads is less than <minDepth> "+
+					"(default 0)",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamNucleotideCommand extends AlignmentTreeSamReporterCommand<SamNucleotideResult> implements ProvidedProjectModeCommand{
@@ -86,10 +94,12 @@ public class SamNucleotideCommand extends AlignmentTreeSamReporterCommand<SamNuc
 		ReferenceSequence targetRef;
 		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
-			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(), getMinDepth());
+			consensusSequence = consensusMap.get("samConsensus");
 			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 			targetRef = tipAlmtMember.targetReferenceFromMember();
+			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 		} else {
 			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
@@ -141,13 +151,22 @@ public class SamNucleotideCommand extends AlignmentTreeSamReporterCommand<SamNuc
 
 
         		final String readString = samRecord.getReadString().toUpperCase();
+        		final String qualityString = samRecord.getBaseQualityString();
 
         		for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegs) {
-        			CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
+        			Integer queryStart = readToAncConstRefSeg.getQueryStart();
+					Integer queryEnd = readToAncConstRefSeg.getQueryEnd();
+					CharSequence readNts = SegmentUtils.base1SubString(readString, queryStart, queryEnd);
+					CharSequence readQuality = SegmentUtils.base1SubString(qualityString, queryStart, queryEnd);
         			Integer acRefNt = readToAncConstRefSeg.getRefStart();
-        			for(int i = 0; i < nts.length(); i++) {
+        			for(int i = 0; i < readNts.length(); i++) {
 						NucleotideReadCount refNtInfo = acRefNtToInfo.get(acRefNt+i);
-						char readChar = nts.charAt(i);
+						char qualityChar = readQuality.charAt(i);
+						if(SamUtils.qualityCharToQScore(qualityChar) < getMinQScore()) {
+							continue;
+						}
+						char readChar = readNts.charAt(i);
+						refNtInfo.totalContributingReads++;
 	        			if(readChar == 'A') {
 	        				refNtInfo.readsWithA++;
 	        			} else if(readChar == 'C') {
@@ -169,6 +188,12 @@ public class SamNucleotideCommand extends AlignmentTreeSamReporterCommand<SamNuc
         }
 	
         List<NucleotideReadCount> nucleotideReadCounts = new ArrayList<NucleotideReadCount>(acRefNtToInfo.valueCollection());
+        
+        int minDepth = getMinDepth();
+		nucleotideReadCounts = nucleotideReadCounts.stream()
+        		.filter(nrc -> nrc.totalContributingReads >= minDepth)
+        		.collect(Collectors.toList());
+        
         Comparator<NucleotideReadCount> comparator = new Comparator<NucleotideReadCount>() {
 			@Override
 			public int compare(NucleotideReadCount nrc1, NucleotideReadCount nrc2) {

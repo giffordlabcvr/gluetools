@@ -151,5 +151,8 @@ public class PatternLocation extends _PatternLocation implements IReferenceSegme
 		
 		
 	}
+	public ReferenceSegment asReferenceSegment() {
+		return new ReferenceSegment(getRefStart(), getRefEnd());
+	}
 
 }

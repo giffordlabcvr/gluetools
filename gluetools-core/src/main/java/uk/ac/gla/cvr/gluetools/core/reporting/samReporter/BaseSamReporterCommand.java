@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import java.util.Optional;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
@@ -12,17 +14,22 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 	public static final String FILE_NAME = "fileName";
 	public static final String SAM_REF_NAME = "samRefName";
 
+	public static final String MIN_Q_SCORE = "minQScore";
+	public static final String MIN_DEPTH = "minDepth";
 	
 	private String fileName;
 	private String samRefName;
-
 	
+	private int minQScore;
+	private int minDepth;
+
 	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.samRefName = PluginUtils.configureStringProperty(configElem, SAM_REF_NAME, false);
-		super.configure(pluginConfigContext, configElem);
+		this.minQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
+		this.minDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_DEPTH, 0, true, null, false, false)).orElse(0);
 	}
 
 	protected String getFileName() {
@@ -33,7 +40,12 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		return samRefName;
 	}
 
+	protected int getMinQScore() {
+		return minQScore;
+	}
 
+	protected int getMinDepth() {
+		return minDepth;
+	}
 
-	
 }

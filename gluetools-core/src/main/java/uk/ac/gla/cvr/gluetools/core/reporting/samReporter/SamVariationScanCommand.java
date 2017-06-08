@@ -42,12 +42,13 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.PLocScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>]" },
+		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
@@ -59,7 +60,11 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 				"-l, --autoAlign                                      Auto-align consensus",
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify variations"
+				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
+				"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
+				"-e <minDepth>, --minDepth <minDepth>                 Minimum depth",
+				"-P <minPresentPct>, --minPresentPct <minPresentPct>  Show present at minimum percentage",
+				"-A <minAbsentPct>, --minAbsentPct <minAbsentPct>     Show absent at minimum percentage",
 		},
 		furtherHelp = 
 			"This command scans a SAM/BAM file for variations. "+
@@ -86,7 +91,13 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 			"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
 			"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 			"The variation scan will be limited to the specified features. "+
-			"The <whereClause> may be used to qualify which variations are scanned for. ",
+			"The <whereClause> may be used to qualify which variations are scanned for. "+
+			"Reads will not contribute to the summary if their reported nucleotide quality score at any point within the variation's region is less than "+
+			"<minQScore> (default 0, range 0 - 99). \n"+
+			"No result will be generated for a variation if the number of contributing reads is less than <minDepth> "+
+			"(default 0).\n"+
+			"Scanned variations will only display in the result if the percentage of reads where the variation is present is at least <minPresentPct> (default 0), and "+
+			"if the percentage of reads where it is absent is at least <minAbsentPct> (default 0).",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<SamVariationScanResult> 
@@ -95,11 +106,15 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
-
+	
+	public static final String MIN_PRESENT_PCT = "minPresentPct";
+	public static final String MIN_ABSENT_PCT = "minAbsentPct";
 	
 	private Expression whereClause;
 	private Boolean multiReference;
 	private Boolean descendentFeatures;
+	private Double minPresentPct;
+	private Double minAbsentPct;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -108,6 +123,9 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
+	
+		this.minPresentPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_PRESENT_PCT, 0.0, true, 100.0, true, false)).orElse(0.0);
+		this.minAbsentPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_ABSENT_PCT, 0.0, true, 100.0, true, false)).orElse(0.0);
 	}
 
 
@@ -129,10 +147,12 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		ReferenceSequence targetRef;
 		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
-			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus").get("samConsensus");
+			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(), getMinDepth());
+			consensusSequence = consensusMap.get("samConsensus");
 			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 			targetRef = tipAlmtMember.targetReferenceFromMember();
+			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 		} else {
 			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
@@ -177,9 +197,9 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				if(variationsToScan.isEmpty()) {
 					continue;
 				}
-				ReferenceSegmentTree<PatternLocation> variationSegmentTree = new ReferenceSegmentTree<PatternLocation>();
+				ReferenceSegmentTree<PatternLocation> patternLocSegmentTree = new ReferenceSegmentTree<PatternLocation>();
 				for(Variation variation: variationsToScan) {
-					variation.getPatternLocs().forEach(ploc -> variationSegmentTree.add(ploc));
+					variation.getPatternLocs().forEach(ploc -> patternLocSegmentTree.add(ploc));
 				}
 
 				Feature feature = featureLoc.getFeature();
@@ -196,14 +216,14 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 						tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
 						samRefToTargetRefSegs);
 
-				// translate segments to ancestor constraining reference
-				List<QueryAlignedSegment> samRefToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
+				// translate segments to scanned reference
+				List<QueryAlignedSegment> samRefToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
 
 				// trim down to the feature area.
 				List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
 						.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-				List<QueryAlignedSegment> samRefToAncConstrRefSegs = 
-						ReferenceSegment.intersection(samRefToAncConstrRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+				List<QueryAlignedSegment> samRefToScannedRefSegs = 
+						ReferenceSegment.intersection(samRefToScannedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
 				Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
 
@@ -221,29 +241,33 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 							return;
 						}
 						List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
-						List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToAncConstrRefSegs);
+						List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToScannedRefSegs);
 
 						final String readString = samRecord.getReadString().toUpperCase();
+						final String qualityString = samRecord.getBaseQualityString();
 
-						List<QueryAlignedSegment> readToAncConstrRefSegsMerged = 
-								ReferenceSegment.mergeAbutting(readToAncConstrRefSegs, 
+						List<QueryAlignedSegment> readToScannedRefSegsMerged = 
+								ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
 										QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
 										QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
 						List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
-						for(QueryAlignedSegment readToAncConstrRefSeg: readToAncConstrRefSegsMerged) {
+						for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
 
 							List<PatternLocation> patternLocsToScanForSegment = new LinkedList<PatternLocation>();
-							variationSegmentTree.findOverlapping(readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), patternLocsToScanForSegment);
+							patternLocSegmentTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), patternLocsToScanForSegment);
+							// remove those pattern locs where the read quality is not good enough.
+							patternLocsToScanForSegment = filterPatternLocsOnReadQuality(getMinQScore(), qualityString, readToScannedRefSeg, patternLocsToScanForSegment);
+							
 							if(!patternLocsToScanForSegment.isEmpty()) {
-								NtQueryAlignedSegment readToAncConstrRefNtSeg = 
+								NtQueryAlignedSegment readToScannedRefNtSeg = 
 										new NtQueryAlignedSegment(
-												readToAncConstrRefSeg.getRefStart(), readToAncConstrRefSeg.getRefEnd(), readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd(),
-												SegmentUtils.base1SubString(readString, readToAncConstrRefSeg.getQueryStart(), readToAncConstrRefSeg.getQueryEnd()));
+												readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
+												SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()));
 								
 								List<Variation> variationsToScanForSegment = findVariationsFromPatternLocs(patternLocsToScanForSegment);
 								
-								variationScanResults.addAll(featureLoc.variationScanSegment(cmdContext, translator, codon1Start, readToAncConstrRefNtSeg, variationsToScanForSegment, false));
+								variationScanResults.addAll(featureLoc.variationScanSegment(cmdContext, translator, codon1Start, readToScannedRefNtSeg, variationsToScanForSegment, false));
 							}
 						}
 
@@ -254,6 +278,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 								variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getMinLocStart(), variationScanResult.getMaxLocEnd());
 								variationNameToInfo.put(variationName, variationInfo);
 							}
+							variationInfo.contributingReads++;
 							if(variationScanResult.isPresent()) {
 								variationInfo.readsConfirmedPresent++;
 							} else {
@@ -272,8 +297,11 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 				List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(variationNameToInfo.values());
 
+				final int minDepth = getMinDepth();
+				
 				variationScanReadCounts.addAll(
 						variationInfos.stream()
+						.filter(vInfo -> vInfo.contributingReads >= minDepth)
 						.map(vInfo -> {
 							int readsWherePresent = vInfo.readsConfirmedPresent;
 							int readsWhereAbsent = vInfo.readsConfirmedAbsent;
@@ -288,9 +316,42 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 						);
 			}
 		}
+		variationScanReadCounts = variationScanReadCounts
+				.stream()
+				.filter(vsrc -> vsrc.getPctWherePresent() >= minPresentPct)
+				.filter(vsrc -> vsrc.getPctWhereAbsent() >= minAbsentPct)
+				.collect(Collectors.toList());
 		VariationScanReadCount.sortVariationScanReadCounts(variationScanReadCounts);
 		return new SamVariationScanResult(variationScanReadCounts);
 		
+	}
+
+
+	private List<PatternLocation> filterPatternLocsOnReadQuality(int minQScore,
+			String qualityString, QueryAlignedSegment readToScannedRefSeg,
+			List<PatternLocation> patternLocs) {
+		List<PatternLocation> filteredPatternLocs = new ArrayList<PatternLocation>();
+		for(PatternLocation patternLoc: patternLocs) {
+			List<QueryAlignedSegment> intersection = 
+					ReferenceSegment.intersection(Arrays.asList(patternLoc.asReferenceSegment()), Arrays.asList(readToScannedRefSeg), QueryAlignedSegment.cloneRightSegMerger());
+			if(intersection.size() == 1) {
+				QueryAlignedSegment readSection = intersection.get(0);
+				String qualitySubString = 
+						SegmentUtils.base1SubString(qualityString, readSection.getQueryStart(), readSection.getQueryEnd());
+				boolean qualityPass = true;
+				for(int i = 0; i < qualitySubString.length(); i++) {
+					char qualityChar = qualitySubString.charAt(i);
+					if(SamUtils.qualityCharToQScore(qualityChar) < minQScore) {
+						qualityPass = false;
+						break;
+					}
+				}
+				if(qualityPass) {
+					filteredPatternLocs.add(patternLoc);
+				}
+			}
+		}
+		return filteredPatternLocs;
 	}
 	
 	private List<Variation> findVariationsFromPatternLocs(List<PatternLocation> patternLocsToScanForSegment) {
@@ -311,6 +372,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	private class VariationInfo {
 		Map<String, String> variationPkMap;
 		int minLocStart, maxLocEnd;
+		int contributingReads = 0;
 		int readsConfirmedPresent = 0;
 		int readsConfirmedAbsent = 0;
 		public VariationInfo(Map<String,String> variationPkMap, int minLocStart, int maxLocEnd) {

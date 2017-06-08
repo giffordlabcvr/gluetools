@@ -40,7 +40,6 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 	private boolean autoAlign;
 	private String targetRefName;
 	private String tipAlmtName;
-
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -66,7 +65,9 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 			Map<String, DNASequence> samConsensus;
 			if(consensusSequence == null) {
 				// compute consensus if we don't already have it.
-				samConsensus = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus");
+				samConsensus = 
+						SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", 
+								getMinQScore(), getMinDepth());
 			} else {
 				samConsensus = new LinkedHashMap<String, DNASequence>();
 				samConsensus.put("samConsensus", consensusSequence);

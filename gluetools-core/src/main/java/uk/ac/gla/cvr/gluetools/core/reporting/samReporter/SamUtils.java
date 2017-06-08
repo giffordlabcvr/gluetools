@@ -23,12 +23,13 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
 	
-	public static String getNgsConsensus(SamReader samReader, String samRefName) {
+	public static String getNgsConsensus(SamReader samReader, String samRefName, int minQScore, int minDepth) {
 
         SAMSequenceRecord samReference = samReader.getFileHeader().getSequenceDictionary().getSequence(samRefName);
         Integer samReferenceLength = samReference.getSequenceLength();
         int samReferenceIndex = samReference.getSequenceIndex();
         
+        final int[] depth = new int[samReferenceLength];
         final int[] aCounts = new int[samReferenceLength];
         final int[] cCounts = new int[samReferenceLength];
         final int[] gCounts = new int[samReferenceLength];
@@ -39,6 +40,7 @@ public class SamUtils {
         		return;
         	}
         	String readString = samRecord.getReadString();
+        	String qualityString = samRecord.getBaseQualityString();
         	List<AlignmentBlock> alignmentBlocks = samRecord.getAlignmentBlocks();
         	alignmentBlocks.forEach(alignmentBlock -> {
         		int blockLength = alignmentBlock.getLength();
@@ -47,22 +49,31 @@ public class SamUtils {
         		
         		
         		for(int baseIndex = 0; baseIndex < blockLength; baseIndex++) {
-        			char readChar = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
-        			if(readChar == '=') {
+        			char readQualityChar = qualityString.charAt((readStart+baseIndex)-1);
+        			if(SamUtils.qualityCharToQScore(readQualityChar) < minQScore) {
+        				continue;
+        			}
+        			char readNtChar = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
+        			if(readNtChar == '=') {
         				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_EQUALS);
         			}
-        			if(readChar == 'A') {
-        				aCounts[refStart+baseIndex-1]++;
-        			} else if(readChar == 'C') {
-        				cCounts[refStart+baseIndex-1]++;
-        			} else if(readChar == 'G') {
-        				gCounts[refStart+baseIndex-1]++;
-        			} else if(readChar == 'T') {
-        				tCounts[refStart+baseIndex-1]++;
-        			} else if(readChar == 'N') {
+        			int index = refStart+baseIndex-1;
+					if(readNtChar == 'A') {
+						depth[index]++;
+        				aCounts[index]++;
+        			} else if(readNtChar == 'C') {
+						depth[index]++;
+        				cCounts[index]++;
+        			} else if(readNtChar == 'G') {
+						depth[index]++;
+        				gCounts[index]++;
+        			} else if(readNtChar == 'T') {
+						depth[index]++;
+        				tCounts[index]++;
+        			} else if(readNtChar == 'N') {
         				// ambiguity character
         			} else {
-        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readChar), Integer.toString(readChar));
+        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readNtChar), Integer.toString(readNtChar));
         			}
         		}
         	});
@@ -75,19 +86,21 @@ public class SamUtils {
 		int best;
         for(int i = 0; i < samReferenceLength; i++) {
         	next = 'N';
-			best = 0;
-			counts[0] = aCounts[i];
-			counts[1] = cCounts[i];
-			counts[2] = gCounts[i];
-			counts[3] = tCounts[i];
-			for(int j = 0; j < 4; j++) {
-				if(counts[j] > best) {
-					next = bases[j];
-					best = counts[j];
-				} else if(counts[j] == best) {
-					next = 'N';
-				}
-			}
+        	if(depth[i] >= minDepth) {
+        		best = 0;
+        		counts[0] = aCounts[i];
+        		counts[1] = cCounts[i];
+        		counts[2] = gCounts[i];
+        		counts[3] = tCounts[i];
+        		for(int j = 0; j < 4; j++) {
+        			if(counts[j] > best) {
+        				next = bases[j];
+        				best = counts[j];
+        			} else if(counts[j] == best) {
+        				next = 'N';
+        			}
+        		}
+        	}
 			consensus.append(next);
         }
         return consensus.toString();
@@ -135,13 +148,14 @@ public class SamUtils {
 	}
 
 	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, ValidationStringency validationStringency, String samRefName,
-			String fastaID) {
+			String fastaID, int minQScore, int minDepth) {
 		Map<String, DNASequence> samConsensusFastaMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 
 			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
 
-			String ngsConsensusFastaString = ">"+fastaID+"\n"+SamUtils.getNgsConsensus(samReader, samReference.getSequenceName());
+			String ngsConsensusFastaString = ">"+fastaID+"\n"+
+					SamUtils.getNgsConsensus(samReader, samReference.getSequenceName(), minQScore, minDepth);
 
 			samConsensusFastaMap = FastaUtils.parseFasta(ngsConsensusFastaString.getBytes());
 		} catch (IOException e) {
@@ -176,6 +190,10 @@ public class SamUtils {
 		} catch(SAMFormatException sfe) {
 			throw new SamUtilsException(sfe, Code.SAM_FORMAT_ERROR, sfe.getMessage());
 		}
+	}
+
+	public static int qualityCharToQScore(char qualityChar) {
+		return ((int) qualityChar) - 33;
 	}
 	
 }
