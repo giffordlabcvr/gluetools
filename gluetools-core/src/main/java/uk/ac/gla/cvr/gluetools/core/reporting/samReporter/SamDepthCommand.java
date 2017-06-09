@@ -1,40 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import htsjdk.samtools.SamReader;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
-
-import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
-import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
 @CommandClass(
-		commandWords={"nucleotide"}, 
-		description = "Summarise nucleotides in a SAM/BAM file", 
+		commandWords={"depth"}, 
+		description = "Summarise depth in a SAM/BAM file", 
 				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
@@ -49,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 						"-d <minDepth>, --minDepth <minDepth>                 Minimum depth"
 				},
 				furtherHelp = 
-					"This command summarises nucleotides in a SAM/BAM file. "+
+					"This command summarises read depth in a SAM/BAM file. "+
 					"If <samRefName> is supplied, the reads are limited to those which are aligned to the "+
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
@@ -69,32 +48,18 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 					"The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
 					"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
 					"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
-					"The nucleotide summary will be limited to this feature location.\n"+
-					"Reads will not contribute to the summary if their reported quality score at the relevant position is less than "+
+					"The depth results will be limited to this feature location.\n"+
+					"Reads will not contribute to the depth if their reported quality score at the relevant position is less than "+
 					"<minQScore> (default value is derived from the module config). \n"+
-					"No summary will be generated for a nucleotide position if the number of contributing reads is less than <minDepth> "+
+					"No depth result will be generated for a nucleotide position if the number of contributing reads is less than <minDepth> "+
 					"(default value is derived from the module config)",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamNucleotideCommand extends SamBaseNucleotideCommand<SamNucleotideResult> implements ProvidedProjectModeCommand{
+public class SamDepthCommand extends SamBaseNucleotideCommand<SamDepthResult> implements ProvidedProjectModeCommand{
 
 
-	protected void updateRefNtInfo(NucleotideReadCount refNtInfo, char readChar) {
-		super.updateRefNtInfo(refNtInfo, readChar);
-		if(readChar == 'A') {
-			refNtInfo.readsWithA++;
-		} else if(readChar == 'C') {
-			refNtInfo.readsWithC++;
-		} else if(readChar == 'G') {
-			refNtInfo.readsWithG++;
-		} else if(readChar == 'T') {
-			refNtInfo.readsWithT++;
-		}
-	}
-
-	
 	@Override
-	protected SamNucleotideResult formResult(
+	protected SamDepthResult formResult(
 			List<NucleotideReadCount> nucleotideReadCounts, SamReporter samReporter) {
         int minDepth = getMinDepth(samReporter);
 		nucleotideReadCounts = nucleotideReadCounts.stream()
@@ -107,7 +72,7 @@ public class SamNucleotideCommand extends SamBaseNucleotideCommand<SamNucleotide
 				return Integer.compare(nrc1.getAcRefNt(), nrc2.getAcRefNt());
 			}};
 		Collections.sort(nucleotideReadCounts, comparator);
- 		return new SamNucleotideResult(nucleotideReadCounts);
+ 		return new SamDepthResult(nucleotideReadCounts);
 	}
 
 	@CompleterClass

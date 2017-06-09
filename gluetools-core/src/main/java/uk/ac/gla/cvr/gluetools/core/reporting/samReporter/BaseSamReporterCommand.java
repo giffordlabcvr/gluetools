@@ -20,16 +20,16 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 	private String fileName;
 	private String samRefName;
 	
-	private int minQScore;
-	private int minDepth;
+	private Optional<Integer> minQScore;
+	private Optional<Integer> minDepth;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.samRefName = PluginUtils.configureStringProperty(configElem, SAM_REF_NAME, false);
-		this.minQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
-		this.minDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_DEPTH, 0, true, null, false, false)).orElse(0);
+		this.minQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_Q_SCORE, 0, true, 99, true, false));
+		this.minDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_DEPTH, 0, true, null, false, false));
 	}
 
 	protected String getFileName() {
@@ -40,12 +40,12 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		return samRefName;
 	}
 
-	protected int getMinQScore() {
-		return minQScore;
+	protected int getMinQScore(SamReporter samReporter) {
+		return minQScore.orElse(samReporter.getDefaultMinQScore());
 	}
 
-	protected int getMinDepth() {
-		return minDepth;
+	protected int getMinDepth(SamReporter samReporter) {
+		return minDepth.orElse(samReporter.getDefaultMinDepth());
 	}
 
 }

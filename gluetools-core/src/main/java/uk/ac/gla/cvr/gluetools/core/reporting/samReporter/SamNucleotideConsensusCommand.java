@@ -26,20 +26,26 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass(
 		commandWords={"nucleotide-consensus"}, 
 		description = "Generate FASTA nucleotide consensus from a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)" },
+				docoptUsages = { "-i <fileName> [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                    SAM/BAM input file",
 						"-s <samRefName>, --samRefName <samRefName>              Specific SAM ref seq",
 						"-c <consensusID>, --consensusID <consensusID>           FASTA ID for consensus",
 						"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>     LF or CRLF",
 						"-o <outputFileName>, --outputFileName <outputFileName>  FASTA output file",
-						"-p, --preview                                           Preview output on console"
+						"-p, --preview                                           Preview output on console",
+						"-q <minQScore>, --minQScore <minQScore>                 Minimum Phred quality score",
+						"-d <minDepth>, --minDepth <minDepth>                    Minimum depth"
 				},
 				furtherHelp = 
 					"This generates a consensus FASTA file from a SAM/BAM file. "+
 					"If <samRefName> is supplied, the reads are limited to those which are aligned to the "+
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
-					"file only names a single reference sequence.",
+					"file only names a single reference sequence.\n"+
+					"Reads will not contribute to the consensus if their reported quality score at the relevant position is less than "+
+					"<minQScore> (default value is derived from the module config). \n"+
+					"No consensus will be generated for a nucleotide position if the number of contributing reads is less than <minDepth> "+
+					"(default value is derived from the module config).",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<CommandResult> implements ProvidedProjectModeCommand {
@@ -72,7 +78,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 
 		Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
 				consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),
-				this.consensusID, getMinQScore(), getMinDepth());
+				this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter));
 
 		byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
 

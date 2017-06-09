@@ -93,9 +93,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 			"The variation scan will be limited to the specified features. "+
 			"The <whereClause> may be used to qualify which variations are scanned for. "+
 			"Reads will not contribute to the summary if their reported nucleotide quality score at any point within the variation's region is less than "+
-			"<minQScore> (default 0, range 0 - 99). \n"+
+			"<minQScore> (default value is derived from the module config). \n"+
 			"No result will be generated for a variation if the number of contributing reads is less than <minDepth> "+
-			"(default 0).\n"+
+			"(default value is derived from the module config).\n"+
 			"Scanned variations will only display in the result if the percentage of reads where the variation is present is at least <minPresentPct> (default 0), and "+
 			"if the percentage of reads where it is absent is at least <minAbsentPct> (default 0).",
 		metaTags = {CmdMeta.consoleOnly}	
@@ -148,7 +148,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
 			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(), getMinDepth());
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter));
 			consensusSequence = consensusMap.get("samConsensus");
 			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 			targetRef = tipAlmtMember.targetReferenceFromMember();
@@ -257,7 +257,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 							List<PatternLocation> patternLocsToScanForSegment = new LinkedList<PatternLocation>();
 							patternLocSegmentTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), patternLocsToScanForSegment);
 							// remove those pattern locs where the read quality is not good enough.
-							patternLocsToScanForSegment = filterPatternLocsOnReadQuality(getMinQScore(), qualityString, readToScannedRefSeg, patternLocsToScanForSegment);
+							patternLocsToScanForSegment = filterPatternLocsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, patternLocsToScanForSegment);
 							
 							if(!patternLocsToScanForSegment.isEmpty()) {
 								NtQueryAlignedSegment readToScannedRefNtSeg = 
@@ -297,7 +297,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 				List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(variationNameToInfo.values());
 
-				final int minDepth = getMinDepth();
+				final int minDepth = getMinDepth(samReporter);
 				
 				variationScanReadCounts.addAll(
 						variationInfos.stream()

@@ -47,7 +47,10 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME = "samRefTextToReferenceQueryModuleName";
 	public static final String SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME = "samRefTextToTipAlignmentQueryModuleName";
 	public static final String SAM_READER_VALIDATION_STRINGENCY = "samReaderValidationStringency";
-
+	public static final String DEFAULT_MIN_Q_SCORE = "defaultMinQScore";
+	public static final String DEFAULT_MIN_DEPTH = "defaultMinDepth";
+	
+	
 	// Maximum likelihood placer module: in some cases selects target ref by doing a placement of the consensus sequence.
 	private String maxLikelihoodPlacerModuleName;
 	// cutoff for evo distance to nearest reference if ML-placer is used
@@ -66,10 +69,17 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	// STRICT (default), LENIENT, or SILENT
 	private ValidationStringency samReaderValidationStringency;
 	
+	// minimum quality score used by commands, if no minimum quality score is supplied when the command is executed
+	private int defaultMinQScore;
+	
+	// minimum read depth used by commands, if no minimum read depth is supplied when the command is executed
+	private int defaultMinDepth;
+	
 	public SamReporter() {
 		super();
 		addModulePluginCmdClass(SamVariationScanCommand.class);
 		addModulePluginCmdClass(SamNucleotideCommand.class);
+		addModulePluginCmdClass(SamDepthCommand.class);
 		addModulePluginCmdClass(SamAminoAcidCommand.class);
 		addModulePluginCmdClass(SamNucleotideConsensusCommand.class);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_MODULE_NAME);
@@ -79,6 +89,8 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
 		addSimplePropertyName(SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME);
 		addSimplePropertyName(SAM_READER_VALIDATION_STRINGENCY);
+		addSimplePropertyName(DEFAULT_MIN_DEPTH);
+		addSimplePropertyName(DEFAULT_MIN_Q_SCORE);
 		
 	}
 
@@ -94,6 +106,9 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.samRefTextToReferenceQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME, false);
 		this.samRefTextToTipAlmtQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME, false);
 		this.samReaderValidationStringency = PluginUtils.configureEnumProperty(ValidationStringency.class, configElem, SAM_READER_VALIDATION_STRINGENCY, null);
+		this.defaultMinQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
+		this.defaultMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_DEPTH, 0, true, null, false, false)).orElse(0);
+	
 	}
 
 	public String getAlignerModuleName() {
@@ -213,8 +228,12 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		return readToSamRefSegs;
 	}
 
+	public int getDefaultMinQScore() {
+		return defaultMinQScore;
+	}
 
-
-	
+	public int getDefaultMinDepth() {
+		return defaultMinDepth;
+	}
 	
 }

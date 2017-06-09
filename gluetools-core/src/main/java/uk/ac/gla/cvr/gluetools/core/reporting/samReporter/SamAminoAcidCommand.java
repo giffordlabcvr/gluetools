@@ -85,10 +85,10 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 			"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
 			"The translated amino acids will be limited to the specified feature location.\n"+
 			"Reads will not contribute to the translation at a given codon location if any reported nucleotide quality score at that location is less than "+
-			"<minQScore> (default 0, range 0 - 99). \n"+
+			"<minQScore> (default value is derived from the module config). \n"+
 			"No result will be generated for a codon location if the number of contributing reads is less than <minDepth> "+
-			"(default 0).\n"+
-			"Amino acid values will only display in the result if the percentage of reads contributing that value is at least <minAAPct> (default 0)",
+			"(default value is derived from the module config).\n"+
+			"Amino acid values will only display in the result if the percentage of reads contributing that value is at least <minAAPct> (default 0).",
 
 		metaTags = {CmdMeta.consoleOnly}	
 )
@@ -124,7 +124,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
 			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(), getMinDepth());
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter));
 			consensusSequence = consensusMap.get("samConsensus");
 			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 			targetRef = tipAlmtMember.targetReferenceFromMember();
@@ -205,7 +205,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 				final String readString = samRecord.getReadString().toUpperCase();
 				final String qualityString = samRecord.getBaseQualityString();
 				
-				List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore()); 
+				List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore(samReporter)); 
 				
 				for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
 					CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
@@ -214,10 +214,6 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 					for(int i = 0; i < segAAs.length(); i++) {
 						char segAA = segAAs.charAt(i);
 						AminoAcidReadCount aminoAcidReadCount = ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
-						if(aminoAcidReadCount == null) {
-							int x = 23;
-							x++;
-						}
 						aminoAcidReadCount.addAaRead(segAA);
 						ancConstrRefNt += 3;
 					}
@@ -231,10 +227,13 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			throw new RuntimeException(e);
 		}
 		
-		List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
+		final List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
 		
 		for(Integer ancConstrRefNt: mappedAncConstrRefNts) {
 			AminoAcidReadCount aminoAcidReadCount = ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
+			if(aminoAcidReadCount.totalReadsAtCodon <= getMinDepth(samReporter)) {
+				continue;
+			}
 			aminoAcidReadCount.aaToReadCount.forEachEntry(new TCharIntProcedure() {
 				@Override
 				public boolean execute(char aminoAcid, int numReads) {
@@ -248,8 +247,12 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			});
 		}
 		
-		return new SamAminoAcidResult(rowData);
+		List<LabeledAminoAcidReadCount> rowDataFiltered = rowData.stream()
+				.filter(row -> row.getPercentReadsWithAminoAcid() >= minAAPct)
+				.collect(Collectors.toList());
 		
+		return new SamAminoAcidResult(rowDataFiltered);
+		 
 	}
 
 	private List<QueryAlignedSegment> filterByQuality(

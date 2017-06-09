@@ -154,8 +154,14 @@ public class SamUtils {
 
 			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
 
+			String ngsConsensus = SamUtils.getNgsConsensus(samReader, samReference.getSequenceName(), minQScore, minDepth);
+			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
+				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
+						Integer.toString(minQScore), Integer.toString(minDepth));
+			}
+			
 			String ngsConsensusFastaString = ">"+fastaID+"\n"+
-					SamUtils.getNgsConsensus(samReader, samReference.getSequenceName(), minQScore, minDepth);
+					ngsConsensus;
 
 			samConsensusFastaMap = FastaUtils.parseFasta(ngsConsensusFastaString.getBytes());
 		} catch (IOException e) {
