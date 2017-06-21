@@ -71,6 +71,11 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return new ReferenceSegment(refStart, refEnd);
 	}
 	
+	public static int reverseLocationSense(int length, int location) {
+		return (length - location)+1;
+	}
+
+
 	/**
 	 * Split a segment into two parts, a new left part of length <length>
 	 * which is returned.

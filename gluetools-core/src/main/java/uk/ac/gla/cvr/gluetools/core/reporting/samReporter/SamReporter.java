@@ -49,7 +49,13 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String SAM_READER_VALIDATION_STRINGENCY = "samReaderValidationStringency";
 	public static final String DEFAULT_MIN_Q_SCORE = "defaultMinQScore";
 	public static final String DEFAULT_MIN_DEPTH = "defaultMinDepth";
+	public static final String DEFAULT_SAM_REF_SENSE = "defaultSamRefSense";
 	
+	public enum SamRefSense {
+		FORWARD, // assume SAM reference is in the same sense as the GLUE reference
+		REVERSE_COMPLEMENT, // assume SAM reference is reverse complement relative to GLUE reference
+	}
+
 	
 	// Maximum likelihood placer module: in some cases selects target ref by doing a placement of the consensus sequence.
 	private String maxLikelihoodPlacerModuleName;
@@ -75,6 +81,9 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	// minimum read depth used by commands, if no minimum read depth is supplied when the command is executed
 	private int defaultMinDepth;
 	
+	// samRefSense used by commands if no samRefSense is supplied.
+	private SamRefSense defaultSamRefSense;
+	
 	public SamReporter() {
 		super();
 		addModulePluginCmdClass(SamVariationScanCommand.class);
@@ -91,6 +100,8 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(SAM_READER_VALIDATION_STRINGENCY);
 		addSimplePropertyName(DEFAULT_MIN_DEPTH);
 		addSimplePropertyName(DEFAULT_MIN_Q_SCORE);
+		addSimplePropertyName(DEFAULT_MIN_Q_SCORE);
+		addSimplePropertyName(DEFAULT_SAM_REF_SENSE);
 		
 	}
 
@@ -108,7 +119,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.samReaderValidationStringency = PluginUtils.configureEnumProperty(ValidationStringency.class, configElem, SAM_READER_VALIDATION_STRINGENCY, null);
 		this.defaultMinQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
 		this.defaultMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_DEPTH, 0, true, null, false, false)).orElse(0);
-	
+		this.defaultSamRefSense = Optional.ofNullable(PluginUtils.configureEnumProperty(SamRefSense.class, configElem, DEFAULT_SAM_REF_SENSE, false)).orElse(SamRefSense.FORWARD);
 	}
 
 	public String getAlignerModuleName() {
@@ -234,6 +245,10 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 
 	public int getDefaultMinDepth() {
 		return defaultMinDepth;
+	}
+	
+	public SamRefSense getDefaultSamRefSense() {
+		return defaultSamRefSense;
 	}
 	
 }

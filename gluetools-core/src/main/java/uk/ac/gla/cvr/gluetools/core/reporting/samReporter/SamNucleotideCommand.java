@@ -1,43 +1,24 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import htsjdk.samtools.SamReader;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
-
-import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
-import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 
 @CommandClass(
 		commandWords={"nucleotide"}, 
 		description = "Summarise nucleotides in a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
+				docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
+						"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
 						"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
 						"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 						"-f <featureName>, --featureName <featureName>        Feature",
@@ -54,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
 					"The summarized locations are based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+					"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 					"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
 					"identified as the closest according to this placement. "+
 					"The target reference may alternatively be specified using <targetRefName>."+
@@ -111,6 +93,11 @@ public class SamNucleotideCommand extends SamBaseNucleotideCommand<SamNucleotide
 	}
 
 	@CompleterClass
-	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {}
+	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
+		public Completer() {
+			super();
+			registerEnumLookup("samRefSense", SamRefSense.class);
+		}
+	}
 	
 }

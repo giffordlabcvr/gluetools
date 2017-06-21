@@ -11,6 +11,7 @@ import htsjdk.samtools.ValidationStringency;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -18,15 +19,42 @@ import java.util.function.Consumer;
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
 	
-	public static String getNgsConsensus(SamReader samReader, String samRefName, int minQScore, int minDepth) {
+	public static int getForwardSenseSamRefIndex(SamRefSense samRefSense, int samRefLength, int refStart, int baseIndex) {
+		switch(samRefSense) {
+		case FORWARD:
+			return refStart+baseIndex-1;
+		case REVERSE_COMPLEMENT:
+			return samRefLength - (refStart+baseIndex);
+		default:
+			throw new RuntimeException("SAM ref sense should be determined by the point of querying a ref index");
+		}
+	}
+	
+	public static char getForwardSenseReadBase(SamRefSense samRefSense, char readBase) {
+		switch(samRefSense) {
+		case FORWARD:
+			return readBase;
+		case REVERSE_COMPLEMENT:
+			return FastaUtils.complementChar(readBase);
+		default:
+			throw new RuntimeException("SAM ref sense should be determined by the point of using a read base");
+		}
+	}
+	
+	public static String getNgsConsensus(SamReader samReader, String samRefName, int minQScore, int minDepth, SamRefSense samRefSense) {
 
+		if(!EnumSet.of(SamRefSense.FORWARD, SamRefSense.REVERSE_COMPLEMENT).contains(samRefSense)) {
+			throw new RuntimeException("SAM ref sense should be determined by the point of forming the consensus");
+		}
+		
         SAMSequenceRecord samReference = samReader.getFileHeader().getSequenceDictionary().getSequence(samRefName);
-        Integer samReferenceLength = samReference.getSequenceLength();
+        final int samReferenceLength = samReference.getSequenceLength();
         int samReferenceIndex = samReference.getSequenceIndex();
         
         final int[] depth = new int[samReferenceLength];
@@ -39,8 +67,9 @@ public class SamUtils {
         	if(samRecord.getReferenceIndex() != samReferenceIndex) {
         		return;
         	}
-        	String readString = samRecord.getReadString();
-        	String qualityString = samRecord.getBaseQualityString();
+        	
+			String readString = samRecord.getReadString().toUpperCase();
+			String qualityString = samRecord.getBaseQualityString();
         	List<AlignmentBlock> alignmentBlocks = samRecord.getAlignmentBlocks();
         	alignmentBlocks.forEach(alignmentBlock -> {
         		int blockLength = alignmentBlock.getLength();
@@ -53,27 +82,28 @@ public class SamUtils {
         			if(SamUtils.qualityCharToQScore(readQualityChar) < minQScore) {
         				continue;
         			}
-        			char readNtChar = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
-        			if(readNtChar == '=') {
+        			char readBase = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
+        			char forwardSenseReadBase = getForwardSenseReadBase(samRefSense, readBase);
+        			if(forwardSenseReadBase == '=') {
         				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_EQUALS);
         			}
-        			int index = refStart+baseIndex-1;
-					if(readNtChar == 'A') {
+        			int index = getForwardSenseSamRefIndex(samRefSense, samReferenceLength, refStart, baseIndex);
+					if(forwardSenseReadBase == 'A') {
 						depth[index]++;
         				aCounts[index]++;
-        			} else if(readNtChar == 'C') {
+        			} else if(forwardSenseReadBase == 'C') {
 						depth[index]++;
         				cCounts[index]++;
-        			} else if(readNtChar == 'G') {
+        			} else if(forwardSenseReadBase == 'G') {
 						depth[index]++;
         				gCounts[index]++;
-        			} else if(readNtChar == 'T') {
+        			} else if(forwardSenseReadBase == 'T') {
 						depth[index]++;
         				tCounts[index]++;
-        			} else if(readNtChar == 'N') {
+        			} else if(forwardSenseReadBase == 'N') {
         				// ambiguity character
         			} else {
-        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readNtChar), Integer.toString(readNtChar));
+        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readBase), Integer.toString(readBase));
         			}
         		}
         	});
@@ -148,13 +178,13 @@ public class SamUtils {
 	}
 
 	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, ValidationStringency validationStringency, String samRefName,
-			String fastaID, int minQScore, int minDepth) {
+			String fastaID, int minQScore, int minDepth, SamRefSense samRefSense) {
 		Map<String, DNASequence> samConsensusFastaMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 
 			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
 
-			String ngsConsensus = SamUtils.getNgsConsensus(samReader, samReference.getSequenceName(), minQScore, minDepth);
+			String ngsConsensus = SamUtils.getNgsConsensus(samReader, samReference.getSequenceName(), minQScore, minDepth, samRefSense);
 			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
 				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
 						Integer.toString(minQScore), Integer.toString(minDepth));
@@ -201,5 +231,4 @@ public class SamUtils {
 	public static int qualityCharToQScore(char qualityChar) {
 		return ((int) qualityChar) - 33;
 	}
-	
 }

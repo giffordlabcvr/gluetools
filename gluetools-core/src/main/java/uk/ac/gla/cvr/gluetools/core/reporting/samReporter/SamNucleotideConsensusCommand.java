@@ -20,15 +20,17 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass(
 		commandWords={"nucleotide-consensus"}, 
 		description = "Generate FASTA nucleotide consensus from a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-d <minDepth>]" },
+				docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                    SAM/BAM input file",
+						"-n <samRefSense>, --samRefSense <samRefSense>           SAM ref seq sense",
 						"-s <samRefName>, --samRefName <samRefName>              Specific SAM ref seq",
 						"-c <consensusID>, --consensusID <consensusID>           FASTA ID for consensus",
 						"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>     LF or CRLF",
@@ -42,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 					"If <samRefName> is supplied, the reads are limited to those which are aligned to the "+
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
+					"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 					"Reads will not contribute to the consensus if their reported quality score at the relevant position is less than "+
 					"<minQScore> (default value is derived from the module config). \n"+
 					"No consensus will be generated for a nucleotide position if the number of contributing reads is less than <minDepth> "+
@@ -78,7 +81,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 
 		Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
 				consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),
-				this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter));
+				this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 
 		byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
 
@@ -97,6 +100,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 			registerPathLookup("fileName", false);
 			registerPathLookup("outputFileName", false);
 			registerEnumLookup("lineFieldStyle", LineFeedStyle.class);
+			registerEnumLookup("samRefSense", SamRefSense.class);
 		}
 	}
 }

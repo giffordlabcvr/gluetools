@@ -10,13 +10,15 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 
 @CommandClass(
 		commandWords={"depth"}, 
 		description = "Summarise depth in a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
+				docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
+						"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
 						"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
 						"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 						"-f <featureName>, --featureName <featureName>        Feature",
@@ -32,7 +34,8 @@ import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenc
 					"If <samRefName> is supplied, the reads are limited to those which are aligned to the "+
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
-					"The summarized locations are based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+					"The summarized depths are based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+					"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 					"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
 					"identified as the closest according to this placement. "+
 					"The target reference may alternatively be specified using <targetRefName>."+
@@ -76,6 +79,11 @@ public class SamDepthCommand extends SamBaseNucleotideCommand<SamDepthResult> im
 	}
 
 	@CompleterClass
-	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {}
+	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
+		public Completer() {
+			super();
+			registerEnumLookup("samRefSense", SamRefSense.class);
+		}
+	}
 	
 }

@@ -200,6 +200,50 @@ public class FastaUtils {
 		
 	}
 	
+	public static String reverseComplement(String nts) {
+		int length = nts.length();
+		char[] resultChars = new char[length];
+		for(int i = 0; i < length; i++) {
+			char nt = nts.charAt(i);
+			char compNt = complementChar(nt);
+			resultChars[(length-1) - i] = compNt;
+		}
+		return new String(resultChars);
+		
+	}
+
+	public static char complementChar(char nt) {
+		char compNt;
+		switch(nt) {
+		case 'a':
+			compNt = 't';
+			break;
+		case 'A':
+			compNt = 'T';
+			break;
+		case 't':
+			compNt = 'a';
+			break;
+		case 'T':
+			compNt = 'A';
+			break;
+		case 'g':
+			compNt = 'c';
+			break;
+		case 'G':
+			compNt = 'C';
+			break;
+		case 'c':
+			compNt = 'g';
+			break;
+		case 'C':
+			compNt = 'G';
+			break;
+		default:
+			compNt = nt;
+		}
+		return compNt;
+	}
 
 	
 }

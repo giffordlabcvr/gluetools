@@ -15,7 +15,8 @@ public class SamReporterCommandException extends GlueException {
 		NO_TIP_ALIGNMENT_DEFINED(),
 		TIP_ALIGNMENT_NOT_FOUND("samReferenceName"),
 		TIP_ALIGNMENT_AMBIGUOUS("samReferenceName", "tipAlmtNames"),
-		NO_SAM_CONSENSUS("minQScore", "minDepth");
+		NO_SAM_CONSENSUS("minQScore", "minDepth"),
+		ILLEGAL_SAM_REF_SENSE("illegalSamRefSense", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

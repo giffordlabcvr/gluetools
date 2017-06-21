@@ -34,7 +34,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefInfo;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -42,15 +44,17 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.PLocScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { "-i <fileName> [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
+				"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
 				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 				"-m, --multiReference                                 Scan across references",
@@ -72,6 +76,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 			"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 			"file only names a single reference sequence.\n"+
 			"The translation is based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+			"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 			"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
 			"identified as the closest according to this placement. "+
 			"The target reference may alternatively be specified using <targetRefName>."+
@@ -135,28 +140,22 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
-		String samRefName;
-		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
-				samReporter.getSamReaderValidationStringency())) {
-			samRefName = SamUtils.findReference(samReader, getFileName(), getSuppliedSamRefName()).getSequenceName();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		SamRefInfo samRefInfo = getSamRefInfo(consoleCmdContext, samReporter);
 		
 		DNASequence consensusSequence = null;
 		ReferenceSequence targetRef;
 		AlignmentMember tipAlmtMember;
 		if(useMaxLikelihoodPlacer()) {
 			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter));
+					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 			consensusSequence = consensusMap.get("samConsensus");
 			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 			targetRef = tipAlmtMember.targetReferenceFromMember();
 			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 		} else {
 			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefName, consensusSequence)));
-			tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefName));
+					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
+			tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
 		}
 
 		Alignment tipAlmt = tipAlmtMember.getAlignment();
@@ -227,6 +226,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 				Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
 
+				SamRefSense samRefSense = getSamRefSense(samReporter);
 
 				try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
 						samReporter.getSamReaderValidationStringency())) {
@@ -240,12 +240,17 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 						if(!samRecordFilter.recordPasses(samRecord)) {
 							return;
 						}
+
 						List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
+						String readString = samRecord.getReadString().toUpperCase();
+						String qualityString = samRecord.getBaseQualityString();
+		        		if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
+		        			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), samRefInfo.getSamRefLength());
+		        			readString = FastaUtils.reverseComplement(readString);
+		        			qualityString = StringUtils.reverseString(qualityString);
+		        		}
+
 						List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToScannedRefSegs);
-
-						final String readString = samRecord.getReadString().toUpperCase();
-						final String qualityString = samRecord.getBaseQualityString();
-
 						List<QueryAlignedSegment> readToScannedRefSegsMerged = 
 								ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
 										QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 

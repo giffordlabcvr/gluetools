@@ -13,5 +13,9 @@ public class StringUtils {
 		}
 		return true;
 	}
+
+	public static String reverseString(String inputString) {
+		return new StringBuilder(inputString).reverse().toString();
+	}
 	
 }

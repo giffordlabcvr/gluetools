@@ -358,6 +358,20 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return segList.stream().map(s -> s.getQueryEnd()).max(Integer::compare).orElse(null);
 	}
 
+	// given segment mapping [a,b] on Query to [c,d] on reference returns segment
+	// mapping [(qLength-b)+1, (qLength-a)+1] on Query to [(rLength-d)+1,(rLength-c)+1] on reference returns segment
+	public QueryAlignedSegment reverseSense(int qLength, int rLength) {
+		return new QueryAlignedSegment(
+				reverseLocationSense(rLength, getRefEnd()), reverseLocationSense(rLength, getRefStart()), 
+				reverseLocationSense(qLength, getQueryEnd()), reverseLocationSense(qLength, getQueryStart()));
+	}
 	
-	
+	public static List<QueryAlignedSegment> reverseSense(List<QueryAlignedSegment> qaSegs, int qLength, int rLength) {
+		LinkedList<QueryAlignedSegment> results = new LinkedList<QueryAlignedSegment>();
+		for(QueryAlignedSegment qaSeg: qaSegs) {
+			results.push(qaSeg.reverseSense(qLength, rLength));
+		}
+		return results;
+	}
+
 }

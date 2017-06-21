@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 // SAM reporter command which links the SAM reads to the GLUE alignment tree before performing
@@ -67,7 +68,7 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 				// compute consensus if we don't already have it.
 				samConsensus = 
 						SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", 
-								getMinQScore(samReporter), getMinDepth(samReporter));
+								getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 			} else {
 				samConsensus = new LinkedHashMap<String, DNASequence>();
 				samConsensus.put("samConsensus", consensusSequence);
@@ -76,6 +77,11 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 			// extract segments from aligner result
 			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");
 		} else {
+			SamRefSense samRefSense = getSamRefSense(samReporter);
+			if(!samRefSense.equals(SamRefSense.FORWARD)) {
+				throw new SamReporterCommandException(SamReporterCommandException.Code.ILLEGAL_SAM_REF_SENSE, samRefSense.name(), "The <samRefSense> option must be FORWARD unless --autoAlign or --maxLikelihoodPlacer are used");
+			}
+			
 			// sam ref is same sequence as target ref, so just a single self-mapping segment.
 			int targetRefLength = targetRef.getSequence().getSequenceObject().getNucleotides(consoleCmdContext).length();
 			samRefToTargetRefSegs = Arrays.asList(new QueryAlignedSegment(1, targetRefLength, 1, targetRefLength));
