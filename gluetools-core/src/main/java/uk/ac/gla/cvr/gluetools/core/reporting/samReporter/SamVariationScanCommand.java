@@ -388,7 +388,12 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	}
 	
 	@CompleterClass
-	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {}
+	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
+		public Completer() {
+			super();
+			registerEnumLookup("samRefSense", SamRefSense.class);
+		}
+	}
 
 
 	
