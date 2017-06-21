@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
