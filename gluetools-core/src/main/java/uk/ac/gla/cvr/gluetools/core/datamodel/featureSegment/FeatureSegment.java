@@ -63,8 +63,4 @@ public class FeatureSegment extends _FeatureSegment implements IReferenceSegment
 		return "["+getRefStart()+", "+getRefEnd()+"]";
 	}
 
-	public int reverseLocationSense(int length, int location) {
-		return 0;
-	}
-
 }
