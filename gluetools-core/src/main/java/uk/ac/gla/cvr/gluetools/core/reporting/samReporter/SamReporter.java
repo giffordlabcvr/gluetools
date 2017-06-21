@@ -192,7 +192,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 			return definedTipAlignmentName;
 		}
 		if(samRefTextToTipAlmtQueryModuleName == null) {
-			throw new SamReporterCommandException(Code.NO_TIP_ALIGNMENT_DEFINED);
+			return null;
 		}
 		TextToQueryTransformer samRefTextToTipAlmtQueryTransformer = 
 				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, samRefTextToTipAlmtQueryModuleName,
