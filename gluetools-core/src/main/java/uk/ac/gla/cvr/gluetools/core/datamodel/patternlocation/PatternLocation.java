@@ -31,8 +31,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 		modifiableBuiltInProperties = { _PatternLocation.PATTERN_PROPERTY })		
 public class PatternLocation extends _PatternLocation implements IReferenceSegment {
 
-	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("[NACGT]+");
-	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("[ACDEFGHIKLMNOPQRSTUVWYX*]+");
+	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("^[NACGT]+$");
+	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("^[ACDEFGHIKLMNOPQRSTUVWYX*]+$");
 	
 	public static final String VARIATION_NAME_PATH = _PatternLocation.VARIATION_PROPERTY+"."+_Variation.NAME_PROPERTY;
 	public static final String FEATURE_NAME_PATH = _PatternLocation.VARIATION_PROPERTY+"."+_Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;

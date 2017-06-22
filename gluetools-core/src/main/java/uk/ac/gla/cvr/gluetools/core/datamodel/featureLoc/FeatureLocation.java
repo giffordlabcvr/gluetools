@@ -296,13 +296,24 @@ public class FeatureLocation extends _FeatureLocation {
 		}
 		
 		for(Variation variationToScan: variationsToScan) {
+			List<ReferenceSegment> variationRefSegs = variationToScan.getPatternLocs().stream().map(pl -> pl.asReferenceSegment()).collect(Collectors.toList());
 			VariationScanResult scanResult = null;
 			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
 				if(fullAminoAcidTranslation.length() > 0) {
-					scanResult = variationToScan.scanAminoAcids(cmdContext, ntQaSegCdnAligned, fullAminoAcidTranslation);
+					List<ReferenceSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSegCdnAligned), variationRefSegs, ReferenceSegment.cloneRightSegMerger());
+					if(intersection.isEmpty()) {
+						scanResult = null;
+					} else {
+						scanResult = variationToScan.scanAminoAcids(cmdContext, ntQaSegCdnAligned, fullAminoAcidTranslation);
+					}
 				}
 			} else if(variationToScan.getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
-				scanResult = variationToScan.scanNucleotideVariation(cmdContext, ntQaSeg);
+				List<ReferenceSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), variationRefSegs, ReferenceSegment.cloneRightSegMerger());
+				if(intersection.isEmpty()) {
+					scanResult = null;
+				} else {
+					scanResult = variationToScan.scanNucleotideVariation(cmdContext, ntQaSeg);
+				}
 			} else {
 				throw new RuntimeException("Unknown translation format");
 			}
