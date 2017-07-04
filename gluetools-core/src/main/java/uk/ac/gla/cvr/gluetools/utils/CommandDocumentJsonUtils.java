@@ -89,7 +89,12 @@ public class CommandDocumentJsonUtils {
 		} else if(jsonValue.getValueType() == ValueType.NULL){
 			commandArray.addNull();
 		} else if(jsonValue instanceof JsonString) {
-			commandArray.addString(((JsonString) jsonValue).getChars().toString());
+			String string = ((JsonString) jsonValue).getChars().toString();
+			if(DateUtils.isDateString(string)) {
+				commandArray.addDate(DateUtils.parse(string));
+			} else {
+				commandArray.addString(string);
+			}
 		} else if(jsonValue.toString().equals("true") || jsonValue.toString().equals("false")) {
 			commandArray.addBoolean(Boolean.parseBoolean(jsonValue.toString()));
 		} else if(jsonValue instanceof JsonNumber) {

@@ -46,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRende
 import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingContext;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
@@ -784,6 +785,18 @@ public class Console implements InteractiveCommandResultRenderingContext
 			return Integer.parseInt(commandContext.getOptionValue(ConsoleOption.TABLE_TRUNCATION_LIMIT));
 		} catch(Exception e) {
 			return Integer.parseInt(ConsoleOption.TABLE_TRUNCATION_LIMIT.getDefaultValue());
+		}
+	}
+
+	public void runScript(String filePath, String scriptContent) {
+		String initialModePath = commandContext.getModePath();
+		try {
+			NashornScriptingContext nashornScriptingContext = new NashornScriptingContext(commandContext);
+			nashornScriptingContext.runScript(filePath, scriptContent);
+		} finally {
+			while(!commandContext.getModePath().equals(initialModePath)) {
+				commandContext.popCommandMode();
+			}
 		}
 	}
 	

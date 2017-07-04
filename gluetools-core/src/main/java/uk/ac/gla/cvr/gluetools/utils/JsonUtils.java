@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.json.Json;
@@ -30,7 +31,14 @@ public class JsonUtils {
 	}
 
 	public static String prettyPrint(JsonObject jsonObject) {
-		Map<String, Boolean> config = Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true);
+		return print(jsonObject, true);
+	}
+
+	public static String print(JsonObject jsonObject, boolean pretty) {
+		Map<String, Boolean> config = new LinkedHashMap<String, Boolean>();
+		if(pretty) {
+			config.put(JsonGenerator.PRETTY_PRINTING, pretty);
+		}
         JsonWriterFactory jwf = Json.createWriterFactory(config);
         StringWriter sw = new StringWriter();
         try (JsonWriter jsonWriter = jwf.createWriter(sw)) {
@@ -39,6 +47,7 @@ public class JsonUtils {
         return sw.toString();
    }
 
+	
 	public static JsonObject stringToJsonObject(String string) {
 		return Json.createReader(new StringReader(string)).readObject();
 	}

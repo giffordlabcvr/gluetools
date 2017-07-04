@@ -25,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingContext;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
@@ -301,6 +302,10 @@ public class ConsoleCommandContext extends CommandContext {
 
 	public int getTerminalHeight() {
 		return console.getTerminalHeight();
+	}
+
+	public void runScript(String filePath, String scriptContent) {
+		console.runScript(filePath, scriptContent);
 	}
 
 	
