@@ -2,16 +2,21 @@ package uk.ac.gla.cvr.gluetools.core.command.scripting;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.json.JsonObject;
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
 
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.NashornException;
@@ -35,6 +40,9 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 public class NashornScriptingContext {
 
 	private CommandContext cmdContext;
+	private NashornScriptEngineFactory engineFactory;
+	private ScriptEngine engine;
+	private List<CompiledScript> compiledScripts = new ArrayList<CompiledScript>();
 
 	public NashornScriptingContext(CommandContext cmdContext) {
 		super();
@@ -42,13 +50,24 @@ public class NashornScriptingContext {
 	}
 
 	public void runScript(String filePath, String scriptContent) {
-		NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
-		ScriptEngine engine = factory.getScriptEngine(this.getClass().getClassLoader());
-		ScriptContext scriptContext = engine.getContext();
-		Bindings bindings = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
-		bindings.put("glueAux", new GlueBinding()); // accessed from glue.js
-		loadSource(engine, classpathSourceMap("glue.js"));
-		loadSource(engine, classpathSourceMap("underscore.js"));
+		// create new context for this run, ensuring that any globals defined
+		// in the script are local to this run.
+		ScriptContext context = new SimpleScriptContext();
+		Bindings bindings = engine.createBindings();
+		bindings.put("glueAux", new GlueBinding()); // Java context, accessed from glue.js
+		context.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+		engine.setContext(context);
+		// ensure compiled scripts are evaluated in this context.
+		try {
+			for(CompiledScript compiledScript: compiledScripts) {
+				compiledScript.eval(context);
+			}
+		} catch(ScriptException se) {
+			throw new RuntimeException(se);
+		}
+
+		// use loadSource here to ensure the file path is associated with the script.
+		// this means it will come up during exceptions.
 		try {
 			loadSource(engine, sourceMap(filePath, scriptContent));
 		} catch (NashornException e) {
@@ -101,7 +120,7 @@ public class NashornScriptingContext {
 				Element cmdDocElem = cmdXmlDocument.getDocumentElement();
 				@SuppressWarnings("unused")
 				Class<? extends Command> cmdClass = cmdContext.commandClassFromElement(cmdDocElem);
-				// TODO check cmdClass.
+				cmdContext.checkCommmandIsExecutable(cmdClass);
 				Command command = cmdContext.commandFromElement(cmdDocElem);
 				if(command == null) {
 					// Nashorn-friendly exception
@@ -140,7 +159,7 @@ public class NashornScriptingContext {
 	
     private void loadSource(ScriptEngine e, Map<String,String> sourceMap) {
 		// Get original load function
-		final JSObject loadFn = (JSObject)e.get("load");
+		JSObject loadFn = (JSObject) e.get("load");
 		// Get global. Not really necessary as we could use null too, just for
 		// completeness.
 		final JSObject thiz;
@@ -151,8 +170,23 @@ public class NashornScriptingContext {
 		}
 		loadFn.call(thiz, sourceMap);
     }
+
+	public void init() {
+		this.engineFactory = new NashornScriptEngineFactory();
+		this.engine = engineFactory.getScriptEngine(this.getClass().getClassLoader());
+		compiledScripts.add(compileFromClasspath("glue.js"));
+		compiledScripts.add(compileFromClasspath("underscore.js"));
+	}
 	
-	
+	private CompiledScript compileFromClasspath(String fileName) {
+		String source = classpathSourceMap(fileName).get("script");
+		try {
+			CompiledScript compiledScript = ((Compilable) engine).compile(source);
+			return compiledScript;
+		} catch (ScriptException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	
 }

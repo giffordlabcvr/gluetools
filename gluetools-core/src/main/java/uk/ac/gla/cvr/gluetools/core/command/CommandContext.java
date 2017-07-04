@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
@@ -32,6 +33,7 @@ public class CommandContext {
 	private Map<CacheKey, GlueDataObject> uncommittedCache = new LinkedHashMap<CommandContext.CacheKey, GlueDataObject>();
 	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
 	private XPath xpathEngine;
+	private NashornScriptingContext nashornScriptingContext;
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -69,6 +71,9 @@ public class CommandContext {
 		Class<? extends Command> enterModeCmdClass = 
 				peekCommandMode().getCommandFactory().identifyCommandClass(this, 
 				Collections.singletonList(enterModeCommandWord));
+		if(enterModeCmdClass == null) {
+			throw new CommandException(Code.UNKNOWN_MODE_PATH, String.join("/", words));
+		}
 		if(enterModeCmdClass.getAnnotation(EnterModeCommandClass.class) == null) {
 			throw new CommandException(Code.NOT_A_MODE_COMMAND, String.join(" ", words), getModePath());
 		}
@@ -252,5 +257,16 @@ public class CommandContext {
 			popCommandMode();
 		}
 	}
+
+	public NashornScriptingContext getNashornScriptingContext() {
+		if(nashornScriptingContext == null) {
+			this.nashornScriptingContext = new NashornScriptingContext(this);
+			this.nashornScriptingContext.init();
+		}
+		return nashornScriptingContext;
+	}
+
+	
+	
 	
 }

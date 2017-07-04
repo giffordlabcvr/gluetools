@@ -791,8 +791,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 	public void runScript(String filePath, String scriptContent) {
 		String initialModePath = commandContext.getModePath();
 		try {
-			NashornScriptingContext nashornScriptingContext = new NashornScriptingContext(commandContext);
-			nashornScriptingContext.runScript(filePath, scriptContent);
+			commandContext.getNashornScriptingContext().runScript(filePath, scriptContent);
 		} finally {
 			while(!commandContext.getModePath().equals(initialModePath)) {
 				commandContext.popCommandMode();
