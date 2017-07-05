@@ -150,7 +150,7 @@ public class JsonObjectCmdDocVisitor implements CommandDocumentVisitor {
 			objBuilder.add(fieldName, (Boolean) simpleCommandValue.getValue());
 			break;
 		case Date:
-			objBuilder.add(fieldName, (String) simpleCommandValue.getValue());
+			objBuilder.add(fieldName, DateUtils.render((Date) simpleCommandValue.getValue()));
 			break;
 		case String:
 			objBuilder.add(fieldName, (String) simpleCommandValue.getValue());

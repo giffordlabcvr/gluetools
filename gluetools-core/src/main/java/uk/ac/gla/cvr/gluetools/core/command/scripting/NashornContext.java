@@ -32,19 +32,20 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingException.Code;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
-public class NashornScriptingContext {
+public class NashornContext {
 
 	private CommandContext cmdContext;
 	private NashornScriptEngineFactory engineFactory;
 	private ScriptEngine engine;
 	private List<CompiledScript> compiledScripts = new ArrayList<CompiledScript>();
 
-	public NashornScriptingContext(CommandContext cmdContext) {
+	public NashornContext(CommandContext cmdContext) {
 		super();
 		this.cmdContext = cmdContext;
 	}
@@ -52,11 +53,26 @@ public class NashornScriptingContext {
 	public void runScript(String filePath, String scriptContent) {
 		// create new context for this run, ensuring that any globals defined
 		// in the script are local to this run.
+		ScriptContext scriptContext = newScriptContext();
+		loadScriptInContext(scriptContext, filePath, scriptContent);
+	}
+
+	public void loadScriptInContext(ScriptContext context, String scriptFilePath, String scriptContent) {
+		engine.setContext(context);
+		try {
+			// use loadSource here to ensure the file path is associated with the script.
+			// this means it will come up during exceptions.
+			loadSource(sourceMap(scriptFilePath, scriptContent));
+		} catch (NashornException e) {
+			recastException(scriptFilePath, e);
+		}
+	}
+
+	public ScriptContext newScriptContext() {
 		ScriptContext context = new SimpleScriptContext();
 		Bindings bindings = engine.createBindings();
 		bindings.put("glueAux", new GlueBinding()); // Java context, accessed from glue.js
 		context.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-		engine.setContext(context);
 		// ensure compiled scripts are evaluated in this context.
 		try {
 			for(CompiledScript compiledScript: compiledScripts) {
@@ -65,14 +81,7 @@ public class NashornScriptingContext {
 		} catch(ScriptException se) {
 			throw new RuntimeException(se);
 		}
-
-		// use loadSource here to ensure the file path is associated with the script.
-		// this means it will come up during exceptions.
-		try {
-			loadSource(engine, sourceMap(filePath, scriptContent));
-		} catch (NashornException e) {
-			recastException(filePath, e);
-		}
+		return context;
 	}
 
 	public void recastException(String filePath, NashornException ex) {
@@ -140,7 +149,7 @@ public class NashornScriptingContext {
 	};
 
 	private Map<String, String> classpathSourceMap(String sourceFileName) {
-		InputStream utilInputStream = NashornScriptingContext.class.getResourceAsStream("/nashornJS/"+sourceFileName);
+		InputStream utilInputStream = NashornContext.class.getResourceAsStream("/nashornJS/"+sourceFileName);
 		String jsSource;
 		try {
 			 jsSource = IOUtils.toString(utilInputStream);
@@ -157,20 +166,23 @@ public class NashornScriptingContext {
         return sourceMap;
 	}
 	
-    private void loadSource(ScriptEngine e, Map<String,String> sourceMap) {
-		// Get original load function
-		JSObject loadFn = (JSObject) e.get("load");
+    private void loadSource(Map<String,String> sourceMap) {
+		JSObject loadFn = lookupFunction("load");
+		invokeFunction(loadFn, sourceMap);
+    }
+
+    public Object invokeFunction(JSObject function, Object ... args) {
 		// Get global. Not really necessary as we could use null too, just for
 		// completeness.
 		final JSObject thiz;
 		try {
-			thiz = (JSObject)e.eval("(function() { return this; })()");
+			thiz = (JSObject) (engine.eval("(function() { return this; })()"));
 		} catch(ScriptException se) {
 			throw new RuntimeException(se);
 		}
-		loadFn.call(thiz, sourceMap);
+		return function.call(thiz, args);
     }
-
+    
 	public void init() {
 		this.engineFactory = new NashornScriptEngineFactory();
 		this.engine = engineFactory.getScriptEngine(this.getClass().getClassLoader());
@@ -186,6 +198,21 @@ public class NashornScriptingContext {
 		} catch (ScriptException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setScriptContext(ScriptContext scriptContext) {
+		this.engine.setContext(scriptContext);
+	}
+
+	public JSObject lookupFunction(String functionName) {
+		Object fnObj = engine.get(functionName);
+		if(fnObj == null) {
+			return null;
+		}
+		if(!(fnObj instanceof JSObject)) {
+			throw new NashornScriptingException(Code.SCRIPT_EXCEPTION, "Value "+functionName+" is not a JSObject");
+		}
+		return ((JSObject) fnObj);
 	}
 	
 	

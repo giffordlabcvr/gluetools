@@ -8,9 +8,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
-import uk.ac.gla.cvr.gluetools.utils.CommandDocumentException;
-import uk.ac.gla.cvr.gluetools.utils.CommandDocumentException.Code;
 import uk.ac.gla.cvr.gluetools.utils.DateUtils;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.ScriptObjectMirrorUtilsException.Code;
 
 public class ScriptObjectMirrorUtils {
 
@@ -18,13 +17,13 @@ public class ScriptObjectMirrorUtils {
 	public static CommandDocument scriptObjectMirrorToCommandDocument(ScriptObjectMirror scrObjMirror) {
 		List<String> jsonKeySet = new ArrayList<String>(scrObjMirror.keySet());
 		if(jsonKeySet.size() != 1) {
-			throw new CommandDocumentException(Code.JSON_TO_COMMAND_DOCUMENT_ERROR, "Root JSON object must have a single key");
+			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "Root JavaScript object must have a single key");
 		}
 		String rootName = jsonKeySet.get(0);
 		CommandDocument documentBuilder = new CommandDocument(rootName);
 		Object rootObject = scrObjMirror.get(rootName);
 		if(!(rootObject instanceof ScriptObjectMirror)) {
-			throw new CommandDocumentException(Code.JSON_TO_COMMAND_DOCUMENT_ERROR, "Root JSON object must have an object as its single value");
+			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "Root JavaScript object must have an object as its single value");
 		}
 		populateCommandObjectFromScriptObjectMirror(documentBuilder, (ScriptObjectMirror) rootObject);
 		return documentBuilder;
@@ -68,7 +67,7 @@ public class ScriptObjectMirrorUtils {
 				parentCommandObject.setDouble(key, number.doubleValue());
 			}
 		} else {
-			throw new CommandDocumentException(Code.JSON_TO_COMMAND_DOCUMENT_ERROR, "GLUE object may not contain JSON value "+value);
+			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE object may not contain JavaScript value "+value);
 		}
 	}
 
@@ -78,7 +77,7 @@ public class ScriptObjectMirrorUtils {
 			CommandObject childCommandObject = commandArray.addObject();
 			populateCommandObjectFromScriptObjectMirror(childCommandObject, (ScriptObjectMirror) value);
 		} else if(value instanceof Collection) {
-			throw new CommandDocumentException(Code.JSON_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JSON array as item");
+			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JavaScript array as item");
 		} else if(value == null){
 			commandArray.addNull();
 		} else if(value instanceof String) {
@@ -98,7 +97,7 @@ public class ScriptObjectMirrorUtils {
 				commandArray.addDouble(number.doubleValue());
 			}
 		} else {
-			throw new CommandDocumentException(Code.JSON_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JSON value "+value);
+			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JavaScript value "+value);
 		}
 	}
 

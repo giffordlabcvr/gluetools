@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGenerator;
 import uk.ac.gla.cvr.gluetools.core.curation.sequenceMergers.AlignmentBasedSequenceMerger;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
+import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
 import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
@@ -115,6 +116,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(AlignmentBasedSequenceMerger.class);
 		
 		registerPluginClass(CommonAaAnalyser.class);
+
+		registerPluginClass(EcmaFunctionInvoker.class);
 		
 		// custom project modules
 		registerPluginClass(EpitopeRasOverlap.class);

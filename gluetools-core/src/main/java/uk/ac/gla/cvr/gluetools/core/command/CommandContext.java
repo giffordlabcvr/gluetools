@@ -18,7 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
-import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingContext;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
@@ -33,7 +33,7 @@ public class CommandContext {
 	private Map<CacheKey, GlueDataObject> uncommittedCache = new LinkedHashMap<CommandContext.CacheKey, GlueDataObject>();
 	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
 	private XPath xpathEngine;
-	private NashornScriptingContext nashornScriptingContext;
+	private NashornContext nashornContext;
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -258,12 +258,12 @@ public class CommandContext {
 		}
 	}
 
-	public NashornScriptingContext getNashornScriptingContext() {
-		if(nashornScriptingContext == null) {
-			this.nashornScriptingContext = new NashornScriptingContext(this);
-			this.nashornScriptingContext.init();
+	public NashornContext getNashornContext() {
+		if(nashornContext == null) {
+			this.nashornContext = new NashornContext(this);
+			this.nashornContext.init();
 		}
-		return nashornScriptingContext;
+		return nashornContext;
 	}
 
 	
