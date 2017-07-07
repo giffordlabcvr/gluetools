@@ -3,11 +3,14 @@ package uk.ac.gla.cvr.gluetools.core.command.scripting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 import javax.script.Bindings;
@@ -27,12 +30,19 @@ import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
+import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingException.Code;
+import uk.ac.gla.cvr.gluetools.core.console.Console;
+import uk.ac.gla.cvr.gluetools.core.console.Lexer;
+import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -109,7 +119,12 @@ public class NashornContext {
 		}
 		
 		public void pushMode(String modePath) {
-			cmdContext.pushCommandMode(modePath.replaceFirst("/", "").split("/"));
+			List<String> words = Arrays.asList(modePath.replaceFirst("/", "").split("/"));
+			int numWordsUsed = 0;
+			while(numWordsUsed < words.size()) {
+				String[] nextWords = words.subList(numWordsUsed, words.size()).toArray(new String[]{});
+				numWordsUsed += cmdContext.pushCommandModeReturnNumWordsUsed(nextWords);
+			}
 		}
 		
 		public void popMode() {
@@ -121,22 +136,88 @@ public class NashornContext {
 		}
 
 		@SuppressWarnings("rawtypes")
-		public Map command(ScriptObjectMirror scrObjMirror) {
+		public Map runCommandFromObject(ScriptObjectMirror scrObjMirror) {
+			CommandDocument commandDocument;
+			try {
+				commandDocument = ScriptObjectMirrorUtils.scriptObjectMirrorToCommandDocument(scrObjMirror);
+			} catch(Exception e) {
+				throw new NashornScriptingException(e, Code.COMMAND_INPUT_ERROR, "Unable to convert JavaScript object to input command document: "+e.getMessage());
+			}
+			Document cmdXmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(commandDocument);
+			Element cmdDocElem = cmdXmlDocument.getDocumentElement();
+			@SuppressWarnings("unused")
+			Class<? extends Command> cmdClass = cmdContext.commandClassFromElement(cmdDocElem);
+			cmdContext.checkCommmandIsExecutable(cmdClass);
+			Command command = cmdContext.commandFromElement(cmdDocElem);
+			if(command == null) {
+				// Nashorn-friendly exception
+				JsonObject jsonObject = CommandDocumentJsonUtils.commandDocumentToJsonObject(commandDocument);
+				String modePath = cmdContext.getModePath();
+				throw new NashornScriptingException(Code.UNKNOWN_COMMAND, JsonUtils.print(jsonObject, false), modePath);
+			}
+			return runCommand(command);
+		}
+
+		@SuppressWarnings("rawtypes")
+		public Map runCommandFromString(String string) {
+			List<Token> tokens = Lexer.lex(string);
+			List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
+			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
+			return runCommandFromList(tokenStrings);
+		}
+
+		@SuppressWarnings("rawtypes")
+		private Map runCommandFromList(List<String> tokenStrings) {
+			CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
+			Class<? extends Command> commandClass = commandFactory.identifyCommandClass(cmdContext, tokenStrings);
+			if(commandClass == null) {
+				throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, String.join(" ", tokenStrings), cmdContext.getModePath());
+			}
+			if(commandClass.getAnnotation(EnterModeCommandClass.class) != null || 
+					commandClass.getSimpleName().equals("ExitCommand") ||
+					commandClass.getSimpleName().equals("QuitCommand")) {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Mode changing commands cannot be run from JavaScript, use the mode changing utility functions instead");
+			}
+			String[] commandWords = CommandUsage.cmdWordsForCmdClass(commandClass);
+			LinkedList<String> argStrings = new LinkedList<String>(tokenStrings.subList(commandWords.length, tokenStrings.size()));
+			cmdContext.checkCommmandIsExecutable(commandClass);
+			if(CommandUsage.hasMetaTagForCmdClass(commandClass, CmdMeta.inputIsComplex)) {
+				String cmdWords = String.join(" ", CommandUsage.cmdWordsForCmdClass(commandClass));
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Input must be in the form of an object / document for command \""+cmdWords+"\"");
+			}
+			Map<String, Object> docoptMap;
+			String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
+			docoptMap = Console.runDocopt(commandClass, docoptUsageSingleWord, argStrings);
+			Command command = Console.buildCommand(cmdContext, commandClass, docoptMap);
+			return runCommand(command);
+		}
+
+		@SuppressWarnings("rawtypes")
+		public Map runCommandFromArray(ScriptObjectMirror scrObjMirror) {
+			List<String> tokenStrings = new ArrayList<String>();
+			for(int i = 0; i < scrObjMirror.size(); i++) {
+				Object obj = scrObjMirror.getSlot(i);
+				String string;
+				if(obj instanceof String) {
+					string = (String) obj;
+				} else if(obj instanceof Number) {
+					string = obj.toString();
+				} else if(obj instanceof Boolean) {
+					string = obj.toString();
+				} else if(obj == null) {
+					throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null values may not be used in command input array");
+				} else {
+					throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Values in command input array must be strings, numbers or booleans");
+				}
+				tokenStrings.add(string);
+			}
+			return runCommandFromList(tokenStrings);
+		}
+
+		@SuppressWarnings("rawtypes")
+		private Map runCommand(Command command) {
 			CommandResult cmdResult;
 			try {
-				CommandDocument commandDocument = ScriptObjectMirrorUtils.scriptObjectMirrorToCommandDocument(scrObjMirror);
-				Document cmdXmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(commandDocument);
-				Element cmdDocElem = cmdXmlDocument.getDocumentElement();
-				@SuppressWarnings("unused")
-				Class<? extends Command> cmdClass = cmdContext.commandClassFromElement(cmdDocElem);
-				cmdContext.checkCommmandIsExecutable(cmdClass);
-				Command command = cmdContext.commandFromElement(cmdDocElem);
-				if(command == null) {
-					// Nashorn-friendly exception
-					JsonObject jsonObject = CommandDocumentJsonUtils.commandDocumentToJsonObject(commandDocument);
-					String modePath = cmdContext.getModePath();
-					throw new NashornScriptingException(Code.UNKNOWN_COMMAND, JsonUtils.print(jsonObject, false), modePath);
-				}
 				cmdResult = command.execute(cmdContext);
 			} catch(Exception e) {
 				GlueLogger.getGlueLogger().log(Level.FINEST, e, () -> "GLUE command invoked from NashornScriptingContext threw an exception: ");

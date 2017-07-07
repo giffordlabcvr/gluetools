@@ -66,11 +66,41 @@ var glue = {
 				throw recastException(x);
 			}
 		},
-		command: function(cmdDocument) {
+		command: function(cmdInput, options) {
+			if(options === undefined) {
+				options = {};
+			}
 			try {
-				return valueToNative(glueAux.command(cmdDocument));
+				var cmdResult;
+				if(_.isString(cmdInput)) {
+					cmdResult = glueAux.runCommandFromString(cmdInput);
+				} else if(_.isArray(cmdInput)) {
+					cmdResult = glueAux.runCommandFromArray(cmdInput)
+				} else if(_.isObject(cmdInput)){
+					cmdResult = glueAux.runCommandFromObject(cmdInput);
+				} else {
+					throw new Error("Unable to invoke command using input "+cmdInput);
+				}
+				// this step ensures the result consists of native JavaScript objects;
+				cmdResult = valueToNative(cmdResult);
+				if(options.convertTableToObjects) {
+					cmdResult = tableResultAsObjectList(cmdResult);
+				}
+				return cmdResult;
 			} catch(x) {
 				throw recastException(x);
+			}
+		},
+		inMode: function(modePath, inModeFunction) {
+			var oldModePath = this.currentMode();
+			try {
+				print("pushing mode path "+modePath);
+				this.pushMode(modePath);
+				inModeFunction();
+			} finally {
+				while(this.currentMode() != oldModePath && this.currentMode() != "/") {
+					this.popMode();
+				}
 			}
 		},
 		pushMode: function(modePath) {

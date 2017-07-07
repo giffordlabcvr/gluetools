@@ -276,21 +276,8 @@ public class Console implements InteractiveCommandResultRenderingContext
 		Map<String, Object> docoptMap;
 		String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 		docoptMap = runDocopt(commandClass, docoptUsageSingleWord, argStrings);
-		CommandBuilder<?, ?> commandBuilder = buildCommandElement(commandContext, commandClass, docoptMap);
 		boolean enterModeCmd = commandClass.getAnnotation(EnterModeCommandClass.class) != null;
-		Command command;
-		try {
-			command = commandBuilder.build();
-		} catch(PluginConfigException pce) {
-			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
-					pce.getErrorArgs().length >= 3) {
-				throw new CommandException(pce, CommandException.Code.ARGUMENT_FORMAT_ERROR,
-						pce.getErrorArgs()[0].toString(),
-						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
-			} else {
-				throw pce;
-			}
-		}
+		Command command = buildCommand(commandContext, commandClass, docoptMap);
 		if(!enterModeCmd && console != null) {
 			Document cmdXmlDoc = command.getCmdElem().getOwnerDocument();
 			if(commandContext.getOptionValue(ConsoleOption.ECHO_CMD_XML).equals("true")) {
@@ -304,7 +291,26 @@ public class Console implements InteractiveCommandResultRenderingContext
 		return command;
 	}
 
-	private static Map<String, Object> runDocopt(Class<? extends Command> commandClass,
+	public static Command buildCommand(CommandContext commandContext,
+			Class<? extends Command> commandClass, Map<String, Object> docoptMap) {
+		CommandBuilder<?, ?> commandBuilder = constructCommandBuilder(commandContext, commandClass, docoptMap);
+		Command command;
+		try {
+			command = commandBuilder.build();
+		} catch(PluginConfigException pce) {
+			if(pce.getCode() == PluginConfigException.Code.PROPERTY_FORMAT_ERROR &&
+					pce.getErrorArgs().length >= 3) {
+				throw new CommandException(pce, CommandException.Code.ARGUMENT_FORMAT_ERROR,
+						pce.getErrorArgs()[0].toString(),
+						pce.getErrorArgs()[1], pce.getErrorArgs()[2]);
+			} else {
+				throw pce;
+			}
+		}
+		return command;
+	}
+
+	public static Map<String, Object> runDocopt(Class<? extends Command> commandClass,
 			String docoptUsageSingleWord, List<String> argStrings) {
 		Map<String, Object> docoptMap;
 		try {
@@ -316,7 +322,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 	}
 
 	@SuppressWarnings("unchecked")
-	private static CommandBuilder<?, ?> buildCommandElement(CommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> docoptMap) {
+	private static CommandBuilder<?, ?> constructCommandBuilder(CommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> docoptMap) {
 		CommandBuilder cmdBuilder = cmdContext.cmdBuilder(cmdClass);
 		docoptMap.forEach((key, value) -> {
 			if(value == null) { return; }

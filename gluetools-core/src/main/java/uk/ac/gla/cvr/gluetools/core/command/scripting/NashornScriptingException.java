@@ -7,7 +7,8 @@ public class NashornScriptingException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		SCRIPT_EXCEPTION("fileName", "lineNumber", "columnNumber", "errorTxt", "jsStackTrace"),
-		UNKNOWN_COMMAND("jsonString", "modePath"); 
+		UNKNOWN_COMMAND("jsonString", "modePath"),
+		COMMAND_INPUT_ERROR("errorTxt"); 
 
 		private String[] argNames;
 		private Code(String... argNames) {
