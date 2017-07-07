@@ -37,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTree
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
+import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
@@ -118,6 +119,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(CommonAaAnalyser.class);
 
 		registerPluginClass(EcmaFunctionInvoker.class);
+
+		registerPluginClass(TabularUtility.class);
 		
 		// custom project modules
 		registerPluginClass(EpitopeRasOverlap.class);

@@ -94,7 +94,6 @@ var glue = {
 		inMode: function(modePath, inModeFunction) {
 			var oldModePath = this.currentMode();
 			try {
-				print("pushing mode path "+modePath);
 				this.pushMode(modePath);
 				inModeFunction();
 			} finally {

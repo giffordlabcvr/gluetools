@@ -397,6 +397,14 @@ public class PluginUtils {
 		return(userData != null && userData instanceof Boolean && ((Boolean) userData));
 	}
 
+	public static void setValueConfigRecursive(Node node) {
+		setValidConfigLocal(node);
+		NodeList childNodes = node.getChildNodes();
+		for(int i = 0; i < childNodes.getLength(); i++) {
+			setValueConfigRecursive(childNodes.item(i));
+		}
+	}
+	
 	
 	public static <E extends Enum<E>> E configureEnumProperty(Class<E> enumClass, Element configElem, String propertyName, E defaultValue) {
 		E configuredValue = configureEnumProperty(enumClass, configElem, propertyName, false);

@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.scripting;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandDocumentVisitor;
 import uk.ac.gla.cvr.gluetools.core.document.CommandFieldValue;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.document.SimpleCommandValue;
+import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 
 public class CommandDocumentToMapVisitor implements CommandDocumentVisitor {
 
@@ -52,7 +54,11 @@ public class CommandDocumentToMapVisitor implements CommandDocumentVisitor {
 	@Override
 	public void preVisitCommandFieldValue(String objFieldName, CommandFieldValue commandFieldValue) {
 		if(commandFieldValue instanceof SimpleCommandValue) {
-			currentMap().put(objFieldName, ((SimpleCommandValue) commandFieldValue).getValue());
+			Object value = ((SimpleCommandValue) commandFieldValue).getValue();
+			if(value instanceof Date) {
+				value = DateUtils.render((Date) value);
+			}
+			currentMap().put(objFieldName, value);
 		}
 	}
 
@@ -71,7 +77,11 @@ public class CommandDocumentToMapVisitor implements CommandDocumentVisitor {
 	@Override
 	public void preVisitCommandArrayItem(String arrayFieldName, CommandArrayItem commandArrayItem) {
 		if(commandArrayItem instanceof SimpleCommandValue) {
-			currentList().add(((SimpleCommandValue) commandArrayItem).getValue());
+			Object value = ((SimpleCommandValue) commandArrayItem).getValue();
+			if(value instanceof Date) {
+				value = DateUtils.render((Date) value);
+			}
+			currentList().add(value);
 		}
 	}
 

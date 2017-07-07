@@ -119,5 +119,7 @@ public class CommandArray extends CommandValue implements CommandFieldValue {
 		return (Date) getSimpleValue(i);
 	}
 
-
+	public List<CommandArrayItem> getItems() {
+		return items;
+	}
 }

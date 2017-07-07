@@ -239,20 +239,13 @@ public class Console implements InteractiveCommandResultRenderingContext
 			if(outputResultToConsole) {
 				renderCommandResult(commandResult);
 			}
+			ResultOutputFormat cmdOutputFileFormat = 
+					ResultOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_OUTPUT_FILE_FORMAT).toUpperCase());
+
 			if(nextCmdOutputFile != null && commandResult != null) {
-				ResultOutputFormat cmdOutputFileFormat = ResultOutputFormat.valueOf(commandContext.getOptionValue(ConsoleOption.CMD_OUTPUT_FILE_FORMAT).toUpperCase());
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				LineFeedStyle lineFeedStyle = LineFeedStyle.LF;
-				if(System.getProperty("os.name").toLowerCase().contains("windows")) {
-					lineFeedStyle = LineFeedStyle.CRLF;
-				}
-				OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat, lineFeedStyle);
-				commandResult.renderResult(fileRenderingContext);
 				try {
-					byte[] byteArray = baos.toByteArray();
-					commandContext.saveBytes(nextCmdOutputFile, byteArray);
-					GlueLogger.getGlueLogger().finest("Wrote "+byteArray.length+" bytes of command output to file "+nextCmdOutputFile);
+					commandContext.saveCommandResult(cmdOutputFileFormat, nextCmdOutputFile, commandResult);
+					GlueLogger.getGlueLogger().finest("Wrote command output to file "+nextCmdOutputFile);
 				} catch(Exception e) {
 					GlueLogger.getGlueLogger().warning("Unable to save command results to file: "+e.getMessage());
 				}
@@ -260,7 +253,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 			return commandClass;
 		}
 	}
-	
+
 	public static Command buildCommand(
 			ConsoleCommandContext commandContext,
 			Class<? extends Command> commandClass,

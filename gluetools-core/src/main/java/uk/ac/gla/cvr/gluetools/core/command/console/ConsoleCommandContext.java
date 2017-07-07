@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.console;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,10 +26,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 public class ConsoleCommandContext extends CommandContext {
 
@@ -306,6 +311,19 @@ public class ConsoleCommandContext extends CommandContext {
 
 	public void runScript(String filePath, String scriptContent) {
 		console.runScript(filePath, scriptContent);
+	}
+
+	public void saveCommandResult(ResultOutputFormat cmdOutputFileFormat, String filePath, CommandResult commandResult) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			LineFeedStyle lineFeedStyle = LineFeedStyle.LF;
+			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+				lineFeedStyle = LineFeedStyle.CRLF;
+			}
+			OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat, lineFeedStyle);
+			commandResult.renderResult(fileRenderingContext);
+			byte[] byteArray = baos.toByteArray();
+			saveBytes(filePath, byteArray);
 	}
 
 	
