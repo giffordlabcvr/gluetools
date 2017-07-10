@@ -53,7 +53,7 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 		}
 
 		public void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
-			if(!xmlPopulatorContext.isAllowedField(property)) {
+			if(!(xmlPopulatorContext.isAllowedField(property) || xmlPopulatorContext.isAllowedLink(property))) {
 				return;
 			}
 			if(xmlPopulatorContext.getPropertyUpdates().containsKey(property)) {
