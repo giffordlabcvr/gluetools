@@ -77,18 +77,23 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 			}
 			List<Sequence> sequencesToDelete = 
 					GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-			// filter out reference sequences
-			sequencesToDelete = sequencesToDelete.stream()
-					.filter(seq -> seq.getReferenceSequences().isEmpty())
-					.collect(Collectors.toList());
-			int numDeleted = 0;
-			for(Sequence seqToDelete: sequencesToDelete) {
-				DeleteResult result = GlueDataObject.delete(cmdContext, Sequence.class, seqToDelete.pkMap(), true);
-				numDeleted = numDeleted+result.getNumber();
-			}
-			cmdContext.commit();
+			int numDeleted = deleteSequences(cmdContext, sequencesToDelete);
 			return new DeleteResult(Sequence.class, numDeleted);
 		}
+	}
+
+	public static int deleteSequences(CommandContext cmdContext,List<Sequence> sequencesToDelete) {
+		// filter out reference sequences
+		sequencesToDelete = sequencesToDelete.stream()
+				.filter(seq -> seq.getReferenceSequences().isEmpty())
+				.collect(Collectors.toList());
+		int numDeleted = 0;
+		for(Sequence seqToDelete: sequencesToDelete) {
+			DeleteResult result = GlueDataObject.delete(cmdContext, Sequence.class, seqToDelete.pkMap(), true);
+			numDeleted = numDeleted+result.getNumber();
+		}
+		cmdContext.commit();
+		return numDeleted;
 	}
 
 	@CompleterClass
