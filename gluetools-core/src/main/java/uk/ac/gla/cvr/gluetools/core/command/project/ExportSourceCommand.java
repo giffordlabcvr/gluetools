@@ -39,11 +39,12 @@ import freemarker.template.Template;
 @CommandClass( 
 	commandWords={"export", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u ) ] [-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>] [-t <idTemplate>]"
+		"[ ( -i | -u | -s ) ] [-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>] [-t <idTemplate>]"
 	}, 
 	docoptOptions={
 		"-i, --incremental                              Add to directory, don't overwrite",
 		"-u, --update                                   Add to directory, overwrite",
+		"-s, --sync                                     As -u, delete files not in source",
 		"-b <batchSize>, --batchSize <batchSize>        Batch size [default: 250]",
 		"-p <parentDir>, --parentDir <parentDir>        Parent directory",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
@@ -55,11 +56,13 @@ import freemarker.template.Template;
 			"If <parentDir> is provided, the directory will be located inside <parentDir>. "+
 			"Otherwise it will be located inside the current load-save-path directory. "+
 			"The optional whereClause qualifies which sequences are exported.\n"+
-			"If the --incremental or --update option is used, the directory may already exist. Otherwise "+
+			"If the --incremental, --update or --sync option is used, the directory may already exist. Otherwise "+
 			"it should not exist. If it doesn't exist it will be created by the command."+
 			"This sequence data, one file per sequence, will be written to the files in the directory. "+
 			"In the --incremental case sequences will not be saved to overwrite existing sequences in the directory. "+
 			"In the --update case saved sequences will overwrite existing sequences in the directory. "+
+			"The --sync is like the --update case but any sequence files already in the directory will be "+
+			"deleted first. "+
 			"The first part of the "+
 			"sequence file name will be the sequenceID, unless --idTemplate is specified, in which case this Freemarker template "+
 			"will be used to form the first part of the file name. "+
@@ -75,6 +78,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	public static final String BATCH_SIZE = "batchSize";
 	public static final String INCREMENTAL = "incremental";
 	public static final String UPDATE = "update";
+	public static final String SYNC = "sync";
 	public static final String PARENT_DIR = "parentDir";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ID_TEMPLATE = "idTemplate";
@@ -85,6 +89,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	private Integer batchSize;
 	private Boolean incremental;
 	private Boolean update;
+	private Boolean sync;
 	private Optional<Expression> whereClause;
 	private Template idTemplate;
 	
@@ -95,8 +100,9 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
 		incremental = PluginUtils.configureBooleanProperty(configElem, INCREMENTAL, true);
 		update = PluginUtils.configureBooleanProperty(configElem, UPDATE, true);
-		if(incremental && update) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify both --incremental and --update");
+		sync = PluginUtils.configureBooleanProperty(configElem, SYNC, true);
+		if( (incremental?1:0)+(update?1:0)+(sync?1:0) > 1 ) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify more than one of --incremental, --update, --sync");
 		}
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		parentDir = PluginUtils.configureStringProperty(configElem, PARENT_DIR, false);
@@ -112,7 +118,7 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 			parentDirFile = consoleCmdContext.fileStringToFile(parentDir);
 		}
 		
-		if(!update && !incremental && consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
+		if(!update && !incremental && !sync && consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Directory "+
 					new File(parentDirFile, sourceName).getAbsolutePath()+" already exists");
 		}
@@ -133,6 +139,32 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		File sourceDirFile = new File(parentDirFile, sourceName);
 		
 		consoleCmdContext.mkdirs(sourceDirFile);
+		if(sync) {
+			List<String> existingDirMembers = consoleCmdContext.listMembers(sourceDirFile, true, false, null);
+			int deletedFiles = 0;
+			for(String existingMemberFileName: existingDirMembers) {
+				int lastIndexOfDot = existingMemberFileName.lastIndexOf('.');
+				if(lastIndexOfDot == -1) {
+					continue;
+				}
+				if(lastIndexOfDot == 0) {
+					continue;
+				}
+				SequenceFormat seqFormat = null;
+				String extension = existingMemberFileName.substring(lastIndexOfDot+1, existingMemberFileName.length());
+				seqFormat = SequenceFormat.detectFormatFromExtension(extension, true);
+				if(seqFormat == null) {
+					continue;
+				}
+				File filePath = new File(sourceDirFile, existingMemberFileName);
+				boolean deleteResult = consoleCmdContext.delete(filePath.toString());
+				if(!deleteResult) {
+					throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Unable to delete file: "+filePath.toString());
+				}
+				deletedFiles++;
+			}
+			GlueLogger.getGlueLogger().fine("Deleted "+deletedFiles+" sequence files.");
+		}
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		for(Map<String, String> pkMap: pkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
