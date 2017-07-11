@@ -9,7 +9,8 @@ public class EcmaFunctionInvokerException extends GlueException {
 		INCORRECT_NUMBER_OF_ARGUMENTS("moduleName", "functionName", "expectedNumArguments", "actualNumArguments"), 
 		FUNCTION_LOOKUP_EXCEPTION("moduleName", "functionName", "errorTxt"), 
 		FUNCTION_INVOCATION_EXCEPTION("moduleName", "functionName", "errorTxt"),
-		FUNCTION_RESULT_EXCEPTION("moduleName", "functionName", "errorTxt");
+		FUNCTION_RESULT_EXCEPTION("moduleName", "functionName", "errorTxt"),
+		INVALID_CONFIG_DOCUMENT("moduleName", "errorTxt");
 		
 		private String[] argNames;
 		private Code(String... argNames) {

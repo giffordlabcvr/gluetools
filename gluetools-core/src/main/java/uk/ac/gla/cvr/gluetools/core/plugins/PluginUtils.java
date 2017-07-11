@@ -399,6 +399,12 @@ public class PluginUtils {
 
 	public static void setValueConfigRecursive(Node node) {
 		setValidConfigLocal(node);
+		if(node.getNodeType() == Node.ELEMENT_NODE) {
+			NamedNodeMap attributes = node.getAttributes();
+			for(int i = 0; i < attributes.getLength(); i++) {
+				setValidConfigLocal(attributes.item(i));
+			}
+		}
 		NodeList childNodes = node.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++) {
 			setValueConfigRecursive(childNodes.item(i));

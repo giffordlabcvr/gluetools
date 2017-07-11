@@ -295,6 +295,15 @@ public class NashornContext {
 		}
 		return ((JSObject) fnObj);
 	}
+
+	public void setupConfigDocument(ScriptContext scriptContext, String name, CommandDocument configDocument) {
+		CommandDocumentToMapVisitor cmdDocumentToMapVisitor = new CommandDocumentToMapVisitor();
+		configDocument.accept(cmdDocumentToMapVisitor);
+		JSObject valueToNativeFn = lookupFunction("valueToNative");
+		Object nativeCmdDoc = invokeFunction(valueToNativeFn, cmdDocumentToMapVisitor.getRootMap());
+		scriptContext.setAttribute(name, nativeCmdDoc, ScriptContext.ENGINE_SCOPE);
+	
+	}
 	
 	
 }
