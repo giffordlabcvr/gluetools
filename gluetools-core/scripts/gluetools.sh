@@ -38,5 +38,5 @@ then
     export GLUE_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
 fi
 
-(cd ${GLUETOOLS_HOME} ; gradle --quiet jarAll)
-java ${GLUE_DEBUG_OPTS} -jar ${GLUETOOLS_HOME}/build/libs/gluetools-core-all-${GLUETOOLS_VERSION}.jar -c ${GLUETOOLS_CONFIG_XML} "${remargs[@]}"
+(cd ${GLUETOOLS_HOME} ; gradle --quiet jar)
+java ${GLUE_DEBUG_OPTS} -jar ${GLUETOOLS_HOME}/build/libs/gluetools-core-${GLUETOOLS_VERSION}.jar -c ${GLUETOOLS_CONFIG_XML} "${remargs[@]}"
