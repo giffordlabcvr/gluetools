@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -25,7 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		metaTags = { },
 		furtherHelp = ""
 )
-public class EcmaInvokeFunctionCommand extends ModulePluginCommand<CommandResult, EcmaFunctionInvoker> {
+public class EcmaInvokeFunctionCommand extends ModulePluginCommand<CommandResult, EcmaFunctionInvoker> implements ProvidedProjectModeCommand {
 
 	public static final String FUNCTION_NAME = "functionName";
 	public static final String ARGUMENT = "argument";

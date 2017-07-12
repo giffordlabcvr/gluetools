@@ -60,11 +60,14 @@ public class ScriptObjectMirrorUtils {
 		} else if(value instanceof Boolean) {
 			parentCommandObject.setBoolean(key, (Boolean) value);
 		} else if(value instanceof Number) {
-			Number number = (Number) value;
-			if(number instanceof Integer) {
-				parentCommandObject.setInt(key, number.intValue());
+			Number num = (Number) value;
+			// javascript does not have integers, only floats
+			// here we force integer if the number is mathematically an integer.
+			double doubleVal = Math.round(num.doubleValue());
+			if(doubleVal == num.doubleValue()) {
+				parentCommandObject.setInt(key, num.intValue());
 			} else {
-				parentCommandObject.setDouble(key, number.doubleValue());
+				parentCommandObject.setDouble(key, num.doubleValue());
 			}
 		} else {
 			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE object may not contain JavaScript value "+value);
@@ -90,11 +93,14 @@ public class ScriptObjectMirrorUtils {
 		} else if(value instanceof Boolean) {
 			commandArray.addBoolean((Boolean) value);
 		} else if(value instanceof Number) {
-			Number number = (Number) value;
-			if(number instanceof Integer) {
-				commandArray.addInt(number.intValue());
+			Number num = (Number) value;
+			// javascript does not have integers, only floats
+			// here we force integer if the number is mathematically an integer.
+			double doubleVal = Math.round(num.doubleValue());
+			if(doubleVal == num.doubleValue()) {
+				commandArray.addInt(num.intValue());
 			} else {
-				commandArray.addDouble(number.doubleValue());
+				commandArray.addDouble(doubleVal);
 			}
 		} else {
 			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JavaScript value "+value);

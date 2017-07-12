@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
@@ -49,11 +48,14 @@ public class EcmaFunctionTableResult extends BaseTableResult<Map<String, Object>
 				} else if(value instanceof Boolean) {
 					row.put(key, (Boolean) value);
 				} else if(value instanceof Number) {
-					Number number = (Number) value;
-					if(number instanceof Integer) {
-						row.put(key, number.intValue());
+					Number num = (Number) value;
+					// javascript does not have integers, only floats
+					// here we force integer if the number is mathematically an integer.
+					double doubleVal = Math.round(num.doubleValue());
+					if(doubleVal == num.doubleValue()) {
+						row.put(key, num.intValue());
 					} else {
-						row.put(key, number.doubleValue());
+						row.put(key, num.doubleValue());
 					}
 				} else {
 					throw new EcmaFunctionInvokerException(Code.FUNCTION_RESULT_EXCEPTION, 

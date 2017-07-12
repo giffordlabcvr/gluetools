@@ -53,7 +53,8 @@ public enum ProjectSettingOption {
 			FastaSequenceObject.FASTA_ACCEPTED_EXTENSIONS),
 	ALIGNMENT_PHYLOGENY_FORMAT("alignment-phylogeny-format", "The format used to store phylogenies against Alignment nodes", 
 			PhyloFormat.GLUE_JSON.name(), 
-			Arrays.asList(PhyloFormat.values()).stream().map(pf -> pf.name()).collect(Collectors.toList()).toArray(new String[]{}));
+			Arrays.asList(PhyloFormat.values()).stream().map(pf -> pf.name()).collect(Collectors.toList()).toArray(new String[]{})),
+	PROJECT_VERSION("project-version", "Version number for this project", null, null);
 	
 	private final String name;
 	private final String description;

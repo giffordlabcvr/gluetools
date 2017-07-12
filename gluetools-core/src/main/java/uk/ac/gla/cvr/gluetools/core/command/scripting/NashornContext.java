@@ -119,7 +119,10 @@ public class NashornContext {
 		}
 		
 		public void pushMode(String modePath) {
-			List<String> words = Arrays.asList(modePath.replaceFirst("/", "").split("/"));
+			if(modePath.startsWith("/")) {
+				modePath = modePath.substring(1);
+			}
+			List<String> words = Arrays.asList(modePath.split("/"));
 			int numWordsUsed = 0;
 			while(numWordsUsed < words.size()) {
 				String[] nextWords = words.subList(numWordsUsed, words.size()).toArray(new String[]{});
@@ -201,7 +204,15 @@ public class NashornContext {
 				if(obj instanceof String) {
 					string = (String) obj;
 				} else if(obj instanceof Number) {
-					string = obj.toString();
+					// javascript does not have integers, only floats
+					// here we force integer if the number is mathematically an integer.
+					Number num = (Number) obj;
+					double doubleVal = Math.round(num.doubleValue());
+					if(doubleVal == num.doubleValue()) {
+						string = Integer.toString(num.intValue());
+					} else {
+						string = obj.toString();
+					}
 				} else if(obj instanceof Boolean) {
 					string = obj.toString();
 				} else if(obj == null) {
@@ -300,8 +311,10 @@ public class NashornContext {
 		CommandDocumentToMapVisitor cmdDocumentToMapVisitor = new CommandDocumentToMapVisitor();
 		configDocument.accept(cmdDocumentToMapVisitor);
 		JSObject valueToNativeFn = lookupFunction("valueToNative");
-		Object nativeCmdDoc = invokeFunction(valueToNativeFn, cmdDocumentToMapVisitor.getRootMap());
-		scriptContext.setAttribute(name, nativeCmdDoc, ScriptContext.ENGINE_SCOPE);
+		Map<String, Object> rootMap = cmdDocumentToMapVisitor.getRootMap();
+		Object configDocumentObj = rootMap.get("configDocument");
+		Object nativeCfgDocObj = invokeFunction(valueToNativeFn, configDocumentObj);
+		scriptContext.setAttribute(name, nativeCfgDocObj, ScriptContext.ENGINE_SCOPE);
 	
 	}
 	

@@ -41,7 +41,7 @@ public class EcmaFunction implements Plugin {
 		if(resultTypeElem != null) {
 			resultType = resultTypeFactory.createFromElement(pluginConfigContext, resultTypeElem);
 		} else {
-			resultType = new EcmaFunctionDocumentResultType();
+			resultType = new EcmaFunctionOkFromNullResultType();
 		}
 	}
 
