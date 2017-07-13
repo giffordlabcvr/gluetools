@@ -55,7 +55,7 @@ public enum ProjectSettingOption {
 			PhyloFormat.GLUE_JSON.name(), 
 			Arrays.asList(PhyloFormat.values()).stream().map(pf -> pf.name()).collect(Collectors.toList()).toArray(new String[]{})),
 	PROJECT_VERSION("project-version", "Version number for this project, typically used to version the core project", null, null),
-	BUILD_NUMBER("build-number", "Build number for this project, typically used to version the project extension", null, null),
+	EXTENSION_VERSION("extension-version", "Version number for the project extension", null, null),
 	EXTENSION_DESCRIPTION("extension-description", "Describes the project extension if there is one", null, null),
 	EXTENSION_BUILD_DATE("extension-build-date", "The date that the extension project was built", null, null)
 	;
