@@ -39,12 +39,9 @@ import freemarker.template.Template;
 @CommandClass( 
 	commandWords={"export", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u | -s ) ] [-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>] [-t <idTemplate>]"
+		"[-b <batchSize>] [-p <parentDir>] <sourceName> [-w <whereClause>] [-t <idTemplate>]"
 	}, 
 	docoptOptions={
-		"-i, --incremental                              Add to directory, don't overwrite",
-		"-u, --update                                   Add to directory, overwrite",
-		"-s, --sync                                     As -u, delete files not in source",
 		"-b <batchSize>, --batchSize <batchSize>        Batch size [default: 250]",
 		"-p <parentDir>, --parentDir <parentDir>        Parent directory",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify exported sequences",
@@ -55,14 +52,9 @@ import freemarker.template.Template;
 			"Saves sequences to a directory called <sourceName>. "+
 			"If <parentDir> is provided, the directory will be located inside <parentDir>. "+
 			"Otherwise it will be located inside the current load-save-path directory. "+
-			"The optional whereClause qualifies which sequences are exported.\n"+
-			"If the --incremental, --update or --sync option is used, the directory may already exist. Otherwise "+
-			"it should not exist. If it doesn't exist it will be created by the command."+
+			"If the directory doesn't exist it will be created by the command."+
 			"This sequence data, one file per sequence, will be written to the files in the directory. "+
-			"In the --incremental case sequences will not be saved to overwrite existing sequences in the directory. "+
-			"In the --update case saved sequences will overwrite existing sequences in the directory. "+
-			"The --sync is like the --update case but any sequence files already in the directory will be "+
-			"deleted first. "+
+			"Saved sequences will overwrite existing sequences in the directory. "+
 			"The first part of the "+
 			"sequence file name will be the sequenceID, unless --idTemplate is specified, in which case this Freemarker template "+
 			"will be used to form the first part of the file name. "+
@@ -71,14 +63,11 @@ import freemarker.template.Template;
 			"extension for the sequence format, as specified in the \"list format sequence\" command output. "+
 			"Sequences are retrieved from the database in batches. The <batchSize> option controls the size "+
 			"of each batch.",
-	description="Export all source sequences to files") 
+	description="Export sequences to files in a source dir") 
 public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> {
 
 	public static final String SOURCE_NAME = "sourceName";
 	public static final String BATCH_SIZE = "batchSize";
-	public static final String INCREMENTAL = "incremental";
-	public static final String UPDATE = "update";
-	public static final String SYNC = "sync";
 	public static final String PARENT_DIR = "parentDir";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ID_TEMPLATE = "idTemplate";
@@ -87,9 +76,6 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 	private String sourceName;
 	private String parentDir;
 	private Integer batchSize;
-	private Boolean incremental;
-	private Boolean update;
-	private Boolean sync;
 	private Optional<Expression> whereClause;
 	private Template idTemplate;
 	
@@ -98,12 +84,6 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		super.configure(pluginConfigContext, configElem);
 		sourceName = PluginUtils.configureStringProperty(configElem, SOURCE_NAME, true);
 		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
-		incremental = PluginUtils.configureBooleanProperty(configElem, INCREMENTAL, true);
-		update = PluginUtils.configureBooleanProperty(configElem, UPDATE, true);
-		sync = PluginUtils.configureBooleanProperty(configElem, SYNC, true);
-		if( (incremental?1:0)+(update?1:0)+(sync?1:0) > 1 ) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify more than one of --incremental, --update, --sync");
-		}
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		parentDir = PluginUtils.configureStringProperty(configElem, PARENT_DIR, false);
 		idTemplate = PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false);
@@ -116,11 +96,6 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 
 		if(parentDir != null) {
 			parentDirFile = consoleCmdContext.fileStringToFile(parentDir);
-		}
-		
-		if(!update && !incremental && !sync && consoleCmdContext.listMembers(false, true, "").contains(sourceName)) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Directory "+
-					new File(parentDirFile, sourceName).getAbsolutePath()+" already exists");
 		}
 		GlueLogger.getGlueLogger().fine("Finding sequences in source "+sourceName);
 		Expression exp = ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, sourceName);
@@ -135,36 +110,9 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 		GlueLogger.getGlueLogger().fine("Found "+pkMaps.size()+" sequences.");
 		
 		int exported = 0;
-		int skipped = 0;
 		File sourceDirFile = new File(parentDirFile, sourceName);
 		
 		consoleCmdContext.mkdirs(sourceDirFile);
-		if(sync) {
-			List<String> existingDirMembers = consoleCmdContext.listMembers(sourceDirFile, true, false, null);
-			int deletedFiles = 0;
-			for(String existingMemberFileName: existingDirMembers) {
-				int lastIndexOfDot = existingMemberFileName.lastIndexOf('.');
-				if(lastIndexOfDot == -1) {
-					continue;
-				}
-				if(lastIndexOfDot == 0) {
-					continue;
-				}
-				SequenceFormat seqFormat = null;
-				String extension = existingMemberFileName.substring(lastIndexOfDot+1, existingMemberFileName.length());
-				seqFormat = SequenceFormat.detectFormatFromExtension(extension, true);
-				if(seqFormat == null) {
-					continue;
-				}
-				File filePath = new File(sourceDirFile, existingMemberFileName);
-				boolean deleteResult = consoleCmdContext.delete(filePath.toString());
-				if(!deleteResult) {
-					throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Unable to delete file: "+filePath.toString());
-				}
-				deletedFiles++;
-			}
-			GlueLogger.getGlueLogger().fine("Deleted "+deletedFiles+" sequence files.");
-		}
 		List<Map<String, Object>> rowData = new ArrayList<Map<String, Object>>();
 		for(Map<String, String> pkMap: pkMaps) {
 			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
@@ -175,30 +123,26 @@ public class ExportSourceCommand extends ProjectModeCommand<ExportSourceResult> 
 				fileName = FreemarkerUtils.processTemplate(idTemplate, FreemarkerUtils.templateModelForObject(sequence));
 			}
 			File filePath = new File(sourceDirFile, fileName+"."+seqFormat.getGeneratedFileExtension(cmdContext));
-			if(incremental && consoleCmdContext.isFile(filePath.toString())) {
-				skipped++;
-			} else {
-				if(update && consoleCmdContext.isFile(filePath.toString())) {
-					consoleCmdContext.delete(filePath.toString());
-				}
-				AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
-				byte[] sequenceBytes = sequenceObject.toOriginalData();
-				String filePathString = filePath.getPath();
-				consoleCmdContext.saveBytes(filePathString, sequenceBytes);
-				Map<String, Object> fileResult = new LinkedHashMap<String, Object>();
-				fileResult.put("filePath", filePathString);
-				fileResult.put("sourceName", sourceName);
-				fileResult.put("sequenceID", sequenceID);
-				fileResult.put("sequenceFormat", seqFormat.name());
-				rowData.add(fileResult);
-				exported ++;
+			if(consoleCmdContext.isFile(filePath.toString())) {
+				consoleCmdContext.delete(filePath.toString());
 			}
-			if( (exported+skipped) % batchSize == 0) {
-				GlueLogger.getGlueLogger().fine("Sequences exported: "+exported+ ", skipped: "+skipped);
+			AbstractSequenceObject sequenceObject = sequence.getSequenceObject();
+			byte[] sequenceBytes = sequenceObject.toOriginalData();
+			String filePathString = filePath.getPath();
+			consoleCmdContext.saveBytes(filePathString, sequenceBytes);
+			Map<String, Object> fileResult = new LinkedHashMap<String, Object>();
+			fileResult.put("filePath", filePathString);
+			fileResult.put("sourceName", sourceName);
+			fileResult.put("sequenceID", sequenceID);
+			fileResult.put("sequenceFormat", seqFormat.name());
+			rowData.add(fileResult);
+			exported ++;
+			if( exported % batchSize == 0) {
+				GlueLogger.getGlueLogger().fine("Sequences exported: "+exported);
 				cmdContext.newObjectContext(); // ensure processed sequence objects are GC'd
 			}
 		}
-		GlueLogger.getGlueLogger().fine("Sequences exported: "+exported+ ", skipped: "+skipped);
+		GlueLogger.getGlueLogger().fine("Sequences exported: "+exported);
 		return new ExportSourceResult(rowData);
 	}
 
