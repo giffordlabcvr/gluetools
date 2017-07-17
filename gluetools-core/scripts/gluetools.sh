@@ -1,7 +1,7 @@
 #!/bin/bash
 
 remoteDebug="true"
-verboseGC="true"
+verboseGC="false"
 localConfig="false"
 remargs=()
 
@@ -13,6 +13,9 @@ then
 elif [ "${d}" == "-d" ]
 then
     remoteDebug="false"
+elif [ "${d}" == "-v" ]
+then
+    verboseGC="true"
 else
     remargs=("${remargs[@]}" "${d}") # push element 'd'
 fi
