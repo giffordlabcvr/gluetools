@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -158,7 +159,7 @@ public class ConsoleCommandContext extends CommandContext {
 		if(!dirFile.isDirectory()) {
 			throw new ConsoleException(Code.NOT_A_DIRECTORY, dirFile);
 		}
-		return Arrays.asList(dirFile.list(new FilenameFilter() {
+		List<String> result = Arrays.asList(dirFile.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
 				File theMember = new File(dir, name);
@@ -174,6 +175,8 @@ public class ConsoleCommandContext extends CommandContext {
 				return false;
 			}
 		}));
+		Collections.sort(result);
+		return result;
 	}
 
 	public List<String> listMembers(boolean includeFiles, boolean includeDirectories, String prefix) {

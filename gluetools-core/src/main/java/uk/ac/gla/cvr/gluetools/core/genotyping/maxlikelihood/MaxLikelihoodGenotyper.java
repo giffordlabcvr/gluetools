@@ -167,8 +167,10 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 			resultsComplete++;
 			if(resultsComplete % 500 == 0) {
 				log(Level.FINEST, "Genotyped "+resultsComplete+" of "+singleQueryResults.size()	+" placer results");
+				cmdContext.newObjectContext(); // avoid leaking memory
 			}
 		}
+		cmdContext.newObjectContext(); // avoid leaking memory
 		return queryGenotypingResults;
 	}
 	
