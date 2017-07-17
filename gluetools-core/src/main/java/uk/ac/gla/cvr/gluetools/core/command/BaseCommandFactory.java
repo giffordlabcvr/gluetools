@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import uk.ac.gla.cvr.gluetools.core.command.config.ConfigShowPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.CommitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.NewContextCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.RunFileCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.RunScriptCommand;
@@ -28,6 +29,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(RunFileCommand.class);
 		registerCommandClass(RunScriptCommand.class);
 		registerCommandClass(CommitCommand.class);
+		registerCommandClass(NewContextCommand.class);
 
 		registerCommandClass(FileUtilListFilesCommand.class);
 		registerCommandClass(FileUtilDeleteFileCommand.class);
