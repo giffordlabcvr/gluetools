@@ -20,9 +20,13 @@ import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
@@ -77,8 +81,8 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		
 	}
 	
-	private PopulateResult populate(CommandContext cmdContext, int batchSize, 
-			Optional<Expression> whereClause, boolean updateDB, List<String> updatableProperties) {
+	private CommandResult populate(CommandContext cmdContext, int batchSize, 
+			Optional<Expression> whereClause, boolean updateDB, boolean silent, List<String> updatableProperties) {
 		SelectQuery selectQuery;
 		if(whereClause.isPresent()) {
 			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
@@ -118,10 +122,17 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 				cmdContext.commit();
 			} 
 			cmdContext.newObjectContext();
+			if(silent) {
+				pkMapToUpdates.clear();
+			}
 			offset = offset+batchSize;
 		}
 		log("Processed "+numberToProcess+" sequences");
 		cmdContext.newObjectContext();
+		
+		if(silent) {
+			return new OkResult();
+		}
 		
 		List<Map<String, Object>> rowData = new ArrayList<Map<String,Object>>();
 		pkMapToUpdates.forEach((pkMap, updates) -> {
@@ -159,11 +170,12 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 	
 	@CommandClass( 
 			commandWords={"populate"}, 
-			docoptUsages={"[-b <batchSize>] [-p] [-w <whereClause>] [<property> ...]"},
+			docoptUsages={"[-b <batchSize>] [(-p | -s)] [-w <whereClause>] [<property> ...]"},
 			docoptOptions={
 					"-w <whereClause>, --whereClause <whereClause>  Qualify updated sequences",
 					"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
-					"-p, --preview                                  Database will not be updated"
+					"-p, --preview                                  Database will not be updated",
+					"-s, --silent                                   No result table"
 			},
 			metaTags={CmdMeta.updatesDatabase},
 			description="Populate sequence field values based on Genbank XML",
@@ -173,17 +185,19 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 					"accesses, but requires more Java heap memory. "+
 					"If <property> arguments are supplied, the populator will not update any property unless it appears in the <property> list. "+
 					"If no <property> arguments are supplied, the populator may update any property.") 
-	public static class PopulateCommand extends ModulePluginCommand<PopulateResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
+	public static class PopulateCommand extends ModulePluginCommand<CommandResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
 
 		public static final String BATCH_SIZE = "batchSize";
 		public static final String WHERE_CLAUSE = "whereClause";
 		public static final String PROPERTY = "property";
 		public static final String PREVIEW = "preview";
+		public static final String SILENT = "silent";
 
 		private Integer batchSize;
 		private Optional<Expression> whereClause;
 		private List<String> updatableProperties;
 		private Boolean preview;
+		private Boolean silent;
 		
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -191,15 +205,19 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
 			whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 			preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+			silent = PluginUtils.configureBooleanProperty(configElem, SILENT, true);
 			updatableProperties = PluginUtils.configureStringsProperty(configElem, PROPERTY);
 			if(updatableProperties.isEmpty()) {
 				updatableProperties = null; // default properties
 			}
+			if(preview && silent) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "At most one of --preview and --silent may be used");
+			}
 		}
 
 		@Override
-		protected PopulateResult execute(CommandContext cmdContext, GenbankXmlPopulator populatorPlugin) {
-			return populatorPlugin.populate(cmdContext, batchSize, whereClause, !preview, updatableProperties);
+		protected CommandResult execute(CommandContext cmdContext, GenbankXmlPopulator populatorPlugin) {
+			return populatorPlugin.populate(cmdContext, batchSize, whereClause, !preview, silent, updatableProperties);
 		}
 		
 		@CompleterClass
