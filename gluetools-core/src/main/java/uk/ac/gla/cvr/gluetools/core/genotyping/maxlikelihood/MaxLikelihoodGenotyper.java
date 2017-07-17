@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer.PlacerResultInternal;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSinglePlacement;
@@ -84,7 +86,24 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		log(Level.FINEST, "Genotyping "+singleQueryResults.size()+" placer results");
 		int resultsComplete = 0;
 		Map<String, QueryGenotypingResult> queryGenotypingResults = new LinkedHashMap<String, QueryGenotypingResult>();
-		Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
+		
+		Map<String, List<String>> leafNameToAncestorAlmtNames = new LinkedHashMap<String, List<String>>();
+		glueProjectPhyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void visitLeaf(PhyloLeaf phyloLeaf) {
+				String leafName = phyloLeaf.getName();
+				Map<String,String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, leafName);
+				AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+				List<Alignment> ancestorAlmts = almtMember.getAlignment().getAncestors();
+				List<String> ancestorAlmtNames = new ArrayList<String>();
+				for(Alignment ancestorAlmt: ancestorAlmts) {
+					ancestorAlmtNames.add(ancestorAlmt.getName());
+				}
+				leafNameToAncestorAlmtNames.put(leafName, ancestorAlmtNames);
+			}
+			
+		});
+		
 		for(MaxLikelihoodSingleQueryResult queryResult: singleQueryResults) {
 			QueryGenotypingResult queryGenotypingResult = new QueryGenotypingResult();
 			queryGenotypingResults.put(queryResult.queryName, queryGenotypingResult);
@@ -105,6 +124,8 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 				Map<String, Double> almtNameToScaledDistanceTotal = new LinkedHashMap<String, Double>();
 				Double allNeighboursScaledDistanceTotal = 0.0;
 				
+				Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
+				
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
 					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
 							.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
@@ -114,23 +135,20 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 						Double scaledDistance = Math.pow(distance.doubleValue(), distanceScalingExponent) * placement.likeWeightRatio;
 						
 						String neighbourLeafName = neighbour.getPhyloLeaf().getName();
-						Map<String,String> neighbourMemberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, neighbourLeafName);
-						AlignmentMember neighbourAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap);
-						List<Alignment> neighbourAncestors = neighbourAlmtMember.getAlignment().getAncestors();
-						for(Alignment neighbourAncestor: neighbourAncestors) {
-							String neighbourAncestorName = neighbourAncestor.getName();
-							if(cladeCategoryAlmtNameToAlmt.containsKey(neighbourAncestorName)) {
-								PlacementNeighbour cladeClosestNeighbour = cladeToClosestNeighbour.get(neighbourAncestorName);
+						List<String> neighbourAncestorAlmtNames = leafNameToAncestorAlmtNames.get(neighbourLeafName);
+						for(String neighbourAncestorAlmtName: neighbourAncestorAlmtNames) {
+							if(cladeCategoryAlmtNameToAlmt.containsKey(neighbourAncestorAlmtName)) {
+								PlacementNeighbour cladeClosestNeighbour = cladeToClosestNeighbour.get(neighbourAncestorAlmtName);
 								if(cladeClosestNeighbour == null || neighbour.getDistance().compareTo(cladeClosestNeighbour.getDistance()) < 0) {
-									cladeToClosestNeighbour.put(neighbourAncestorName, neighbour);
+									cladeToClosestNeighbour.put(neighbourAncestorAlmtName, neighbour);
 								}
 								allNeighboursScaledDistanceTotal = allNeighboursScaledDistanceTotal + scaledDistance;
-								Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourAncestorName);
+								Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourAncestorAlmtName);
 								if(currentTotal == null) {
 									currentTotal = 0.0;
 								}
 								currentTotal = currentTotal + scaledDistance;
-								almtNameToScaledDistanceTotal.put(neighbourAncestorName, currentTotal);
+								almtNameToScaledDistanceTotal.put(neighbourAncestorAlmtName, currentTotal);
 								break;
 							}
 						}
