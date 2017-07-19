@@ -57,8 +57,8 @@ public enum ProjectSettingOption {
 	PROJECT_VERSION("project-version", "Version number for this project, typically used to version the core project", null, null),
 	EXTENSION_VERSION("extension-version", "Version number for the project extension", null, null),
 	EXTENSION_DESCRIPTION("extension-description", "Describes the project extension if there is one", null, null),
-	EXTENSION_BUILD_DATE("extension-build-date", "The date that the extension project was built", null, null)
-	;
+	EXTENSION_BUILD_DATE("extension-build-date", "Date of the extension project build", null, null),
+	EXTENSION_BUILD_ID("extension-build-id", "ID for the extension project build", null, null);
 	
 	private final String name;
 	private final String description;
