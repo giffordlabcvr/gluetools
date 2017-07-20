@@ -89,7 +89,7 @@ class DeployWarTask extends DefaultTask {
 		  taskSsh.run {
 		    session(remote) {
 		      put from: warFile.absolutePath, into: '/tmp/'+warFile.name
-		      execute 'sudo service tomcat7 stop'
+		      execute 'sudo service tomcat7 stop; sleep 10s'
 		      execute 'sudo mkdir -p /var/lib/tomcat7/webapps_tools'
 		      execute 'sudo chmod a+rwx /var/lib/tomcat7/webapps_tools'
 		      execute 'sudo rm -rf /var/lib/tomcat7/webapps_tools/'+warBaseName

@@ -395,7 +395,7 @@ task updateGlueAWSServerXml {
 	  ssh.run {
 	    session(remotes.gluehome_aws) {
 
-			execute 'sudo service tomcat7 stop'
+			execute 'sudo service tomcat7 stop; sleep 10s'
 			put from: 'gluehome_aws/server.xml', into: '/home/ubuntu/server.xml'
 			execute "sudo cp /home/ubuntu/server.xml /etc/tomcat7/server.xml"
 			execute 'sudo service tomcat7 start'
