@@ -409,7 +409,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		} catch (ClientProtocolException cpe) {
 			throw new NcbiImporterException(cpe, NcbiImporterException.Code.PROTOCOL_ERROR, requestName, cpe.getLocalizedMessage());
 		} catch (IOException ioe) {
-			throw new NcbiImporterException(ioe, NcbiImporterException.Code.IO_ERROR, requestName);
+			throw new NcbiImporterException(ioe, NcbiImporterException.Code.IO_ERROR, requestName, ioe.getLocalizedMessage());
 		}
 		return result;
 	}
