@@ -127,7 +127,7 @@ public class AlignmentListMemberCommand extends AlignmentModeCommand<ListResult>
 	}
 
 
-	static Expression getMatchExpression(Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
+	public static Expression getMatchExpression(Alignment alignment, Boolean recursive, Optional<Expression> whereClause) {
 		Expression matchAlignmentOrDescendent = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName());
 		if(recursive) {
 			List<Alignment> descendents = alignment.getDescendents();

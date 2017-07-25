@@ -5,28 +5,16 @@ import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
-import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandBinaryResult;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.GenbankXmlSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -38,6 +26,8 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		super();
 		addModulePluginCmdClass(ExportCommand.class);
 		addModulePluginCmdClass(WebExportCommand.class);
+		addModulePluginCmdClass(ExportMemberCommand.class);
+		addModulePluginCmdClass(WebExportMemberCommand.class);
 	}
 
 	public byte[] doExport(CommandContext cmdContext, Expression whereClause, LineFeedStyle lineFeedStyle) {
@@ -71,116 +61,41 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 			});
 			offset += batchSize;
 		}
-		GlueLogger.getGlueLogger().info("Time for doExport was "+(System.currentTimeMillis() - startTime)+"ms");
-		GlueLogger.getGlueLogger().info("Time in genbank sequence xpath was "+GenbankXmlSequenceObject.msInXPath+"ms");
-		GlueLogger.getGlueLogger().info("Time in genbank document parsing was "+GenbankXmlSequenceObject.msInDocParsing+"ms");
+		GlueLogger.getGlueLogger().finest("Time for doExport was "+(System.currentTimeMillis() - startTime)+"ms");
+		GlueLogger.getGlueLogger().finest("Time in genbank sequence xpath was "+GenbankXmlSequenceObject.msInXPath+"ms");
+		GlueLogger.getGlueLogger().finest("Time in genbank document parsing was "+GenbankXmlSequenceObject.msInDocParsing+"ms");
 
 		
 		return stringBuffer.toString().getBytes();
 	}
 
-	private static abstract class BaseExportCommand<R extends CommandResult> extends ModulePluginCommand<R, FastaExporter> implements ProvidedProjectModeCommand {
-		
-		public static final String LINE_FEED_STYLE = "lineFeedStyle";
 
-		private Expression whereClause;
-		private Boolean allSequences;
-		private LineFeedStyle lineFeedStyle;
+	public byte[] doExportMembers(CommandContext cmdContext, String alignmentName, 
+			Boolean recursive, Expression whereClause, LineFeedStyle lineFeedStyle) {
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		Expression matchExp = AlignmentListMemberCommand.getMatchExpression(alignment, recursive, Optional.ofNullable(whereClause));
+		SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, matchExp);
+		int totalNumAlmtMembers = GlueDataObject.count(cmdContext, selectQuery);
+		int batchSize = 500;
+		int offset = 0;
+		selectQuery.setFetchLimit(batchSize);
+		selectQuery.setPageSize(batchSize);
+		StringBuffer stringBuffer = new StringBuffer();
 
-
-		@Override
-		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-			super.configure(pluginConfigContext, configElem);
-			lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
-			whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, "whereClause", false);
-			allSequences = PluginUtils.configureBooleanProperty(configElem, "allSequences", true);
-			if(whereClause == null && !allSequences) {
-				usageError();
-			}
-			if(whereClause != null && allSequences) {
-				usageError();
-			}
+		while(offset < totalNumAlmtMembers) {
+			selectQuery.setFetchOffset(offset);
+			int lastBatchIndex = Math.min(offset+batchSize, totalNumAlmtMembers);
+			GlueLogger.getGlueLogger().info("Retrieving alignment members "+(offset+1)+" to "+lastBatchIndex+" of "+totalNumAlmtMembers);
+			List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
+			GlueLogger.getGlueLogger().info("Processing alignment members "+(offset+1)+" to "+lastBatchIndex+" of "+totalNumAlmtMembers);
+			almtMembers.forEach(almtMember -> {
+				Sequence seq = almtMember.getSequence();
+				String fastaId = generateFastaId(seq);
+				stringBuffer.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, seq.getSequenceObject().getNucleotides(cmdContext), lineFeedStyle));
+			});
+			offset += batchSize;
 		}
-
-		protected Expression getWhereClause() {
-			return whereClause;
-		}
-
-		protected LineFeedStyle getLineFeedStyle() {
-			return lineFeedStyle;
-		}
-
-		private void usageError() {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allSequences> must be specified, but not both");
-		}
-
-	}
-	
-	
-	@CommandClass( 
-			commandWords={"export"}, 
-			docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] -f <fileName>"},
-			docoptOptions={
-					"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
-					"-f <fileName>, --fileName <fileName>                 FASTA file",
-					"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
-				    "-a, --allSequences                                   Export all project sequences"},
-			metaTags = { CmdMeta.consoleOnly },
-			description="Export sequences to a FASTA file", 
-			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-	public static class ExportCommand extends BaseExportCommand<OkResult> implements ProvidedProjectModeCommand {
-
-		private String fileName;
-
-		@Override
-		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-			super.configure(pluginConfigContext, configElem);
-			fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
-		}
-
-		@Override
-		protected OkResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
-			byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause(), getLineFeedStyle());
-			((ConsoleCommandContext) cmdContext).saveBytes(fileName, fastaBytes);
-			return new OkResult();
-
-		}
-		
-		@CompleterClass
-		public static class Completer extends AdvancedCmdCompleter {
-			public Completer() {
-				super();
-				registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
-				registerPathLookup("fileName", false);
-			}
-		}
-
-	}
-
-	
-	
-	@CommandClass( 
-			commandWords={"web-export"}, 
-			docoptUsages={"(-w <whereClause> | -a)"},
-			docoptOptions={
-				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
-			    "-a, --allSequences                                   Export all project sequences"},
-			metaTags = { CmdMeta.webApiOnly, CmdMeta.producesBinary },
-			description="Export sequences to a FASTA file", 
-			furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-	public static class WebExportCommand extends BaseExportCommand<CommandBinaryResult> implements ProvidedProjectModeCommand {
-
-		@Override
-		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-			super.configure(pluginConfigContext, configElem);
-		}
-
-		public CommandBinaryResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
-			byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause(), getLineFeedStyle());
-			return new CommandBinaryResult("fastaExportResult", fastaBytes);
-		}
-		
+		return stringBuffer.toString().getBytes();
 	}
 
 	
