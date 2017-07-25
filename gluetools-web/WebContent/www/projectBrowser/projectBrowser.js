@@ -1,9 +1,17 @@
 'use strict';
 
+var userAgent = detect.parse(navigator.userAgent);
+
+console.log("userAgent.browser.family", userAgent.browser.family);
+console.log("userAgent.browser.name", userAgent.browser.name);
+console.log("userAgent.browser.version", userAgent.browser.version);
+
 var projectBrowser = angular.module('projectBrowser', 
 		['glueWS', 'ui.bootstrap','dialogs.main','ngFileSaver','angularSpinner','glueWebToolConfig',
 		    'angulartics',
 		    'angulartics.google.analytics']);
+
+
 
 projectBrowser.factory("projectBrowserStandardRoutes", function() {
 	return {
