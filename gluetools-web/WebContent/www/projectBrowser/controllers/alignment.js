@@ -13,7 +13,8 @@ projectBrowser.controller('alignmentCtrl',
 			$scope.selectedNode = null;
 			$scope.configuredResult = null;
 			$scope.analytics = $analytics;
-
+			$scope.status = {};
+			
 			$scope.downloadAlignment = function(fastaAlignmentExporter, fastaProteinAlignmentExporter) {
 				console.info('$scope.featureTree', $scope.featureTree);
 				var dlg = dialogs.create(
@@ -193,8 +194,8 @@ projectBrowser.controller('alignmentCtrl',
 		            "fieldName": $scope.memberFields,
 		            "recursive": true
 			    };
-				if($scope.whereClause) {
-					cmdParams.whereClause = $scope.whereClause;
+				if($scope.memberWhereClause) {
+					cmdParams.whereClause = $scope.memberWhereClause;
 				}
 				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
 				$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
@@ -226,6 +227,39 @@ projectBrowser.controller('alignmentCtrl',
 			    })
 			    .error(glueWS.raiseErrorDialog(dialogs, "downloading clade member metadata"));
 			}
+			
+			
+			$scope.downloadSequences = function(moduleName) {
+				console.log("Downloading sequences, using module '"+moduleName+"'");
+				var cmdParams = {
+						alignmentName: $scope.almtName,
+						recursive: true
+				};
+				if($scope.memberWhereClause) {
+					cmdParams.whereClause = $scope.memberWhereClause;
+				}
+				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+
+				cmdParams.lineFeedStyle = "LF";
+				if(userAgent.os.family.indexOf("Windows") !== -1) {
+					cmdParams.lineFeedStyle = "CRLF";
+				}
+
+				$scope.analytics.eventTrack("memberSequenceFastaDownload", 
+						{   category: 'dataDownload', 
+							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+
+				glueWS.runGlueCommandLong("module/"+moduleName, {
+			    	"web-export-member": cmdParams	
+				},
+				"FASTA sequence download in progress")
+			    .success(function(data, status, headers, config) {
+			    	var blob = $scope.b64ToBlob(data.fastaExportResult.base64, "text/plain", 512);
+				    saveFile.saveFile(blob, "FASTA sequence file", "sequences.fasta");
+			    })
+			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequences"));
+			}
+
 			
 			$scope.featurePresenceFilter = function() {
                 // note property here is a dummy value.
