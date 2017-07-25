@@ -25,15 +25,18 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
@@ -46,6 +49,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporterExcepti
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.DeleteSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
+import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
@@ -59,6 +63,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.HttpUtils;
 
 @PluginClass(elemName="ncbiImporter")
 public class NcbiImporter extends SequenceImporter<NcbiImporter> {
@@ -186,7 +191,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		if(specificGiNumbers != null && !specificGiNumbers.isEmpty()) {
 			giNumbersMatching.addAll(specificGiNumbers);
 		} else {
-			try(CloseableHttpClient httpClient = createHttpClient()) {
+			try(CloseableHttpClient httpClient = createHttpClient(cmdContext)) {
 				HttpUriRequest eSearchHttpRequest = createESearchRequest(eSearchTerm);
 				log("Sending eSearch request to NCBI");
 				Document eSearchResponseDoc = runHttpRequestGetDocument("eSearch", eSearchHttpRequest, httpClient);
@@ -260,21 +265,49 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		return giNumbersExisting;
 	}
 
-	private CloseableHttpClient createHttpClient() {
+	private CloseableHttpClient createHttpClient(CommandContext cmdContext) {
 		// ignore cookies, in order to prevent a log warning resulting from NCBI's incorrect
 		// implementation of the spec.
-		RequestConfig globalConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build();
-		CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(globalConfig).build();
+		
+		Builder globalConfigBuilder = RequestConfig.custom();
+		globalConfigBuilder.setCookieSpec(CookieSpecs.IGNORE_COOKIES);
+		RequestConfig globalConfig = globalConfigBuilder.build();
+		HttpClientBuilder httpClientBuilder = HttpClients.custom().setDefaultRequestConfig(globalConfig);
+		setProxyIfSpecified(cmdContext, httpClientBuilder);
+		CloseableHttpClient httpClient = httpClientBuilder.build();
 		return httpClient;
 	}
 
-	private List<RetrievedSequence> fetchBatch(List<String> giNumbers) {
+	private void setProxyIfSpecified(CommandContext cmdContext,
+			HttpClientBuilder httpClientBuilder) {
+		PropertiesConfiguration propertiesConfiguration = cmdContext.getGluetoolsEngine().getPropertiesConfiguration();
+		if(propertiesConfiguration.getPropertyValue(HttpUtils.HTTP_PROXY_ENABLED, "false").equals("true")) {
+			String proxyHostName = propertiesConfiguration.getPropertyValue(HttpUtils.HTTP_PROXY_HOST);
+			if(proxyHostName == null) {
+				throw new NcbiImporterException(Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTP_PROXY_HOST+" was null");
+			}
+			String proxyPortString = propertiesConfiguration.getPropertyValue(HttpUtils.HTTP_PROXY_PORT);
+			if(proxyPortString == null) {
+				throw new NcbiImporterException(Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTP_PROXY_PORT+" was null");
+			}
+			int proxyPort = 0;
+			try {
+				proxyPort = Integer.parseInt(proxyPortString);
+			} catch(NumberFormatException nfe) {
+				throw new NcbiImporterException(nfe, Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTP_PROXY_PORT+" was not an integer");
+			}
+			HttpHost proxyHttpHost = new HttpHost(proxyHostName, proxyPort, "http");
+			httpClientBuilder.setProxy(proxyHttpHost);
+		}
+	}
+
+	private List<RetrievedSequence> fetchBatch(CommandContext cmdContext, List<String> giNumbers) {
 		List<RetrievedSequence> retrievedSequences = new ArrayList<RetrievedSequence>();
 		if(giNumbers.isEmpty()) {
 			return retrievedSequences;
 		}
 		Object eFetchResponseObject;
-		try(CloseableHttpClient httpClient = createHttpClient()) {
+		try(CloseableHttpClient httpClient = createHttpClient(cmdContext)) {
 			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
 				log("Requesting "+giNumbers.size()+" sequences from NCBI via eFetch");
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
@@ -546,7 +579,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		ensureSourceExists(cmdContext, sourceName);
 		do {
 			batchEnd = Math.min(batchStart+eFetchBatchSize, giNumbersToDownload.size());
-			List<RetrievedSequence> batchSequences = fetchBatch(giNumbersToDownload.subList(batchStart, batchEnd));
+			List<RetrievedSequence> batchSequences = fetchBatch(cmdContext, giNumbersToDownload.subList(batchStart, batchEnd));
 			for(RetrievedSequence sequence: batchSequences) {
 				String sequenceID = sequence.sequenceID;
 				SequenceFormat format = sequence.format;

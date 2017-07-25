@@ -11,6 +11,7 @@ public class NcbiImporterException extends ModulePluginException {
 		SEARCH_ERROR("errorTxt"),
 		CONFIG_ERROR("errorTxt"),
 		PROTOCOL_ERROR("requestName", "errorTxt"),
+		PROXY_ERROR("errorTxt"),
 		CANNOT_PROCESS_SEQUENCE_FORMAT("formatName"), 
 		NULL_SEQUENCE_ID("xmlDoc");
 		

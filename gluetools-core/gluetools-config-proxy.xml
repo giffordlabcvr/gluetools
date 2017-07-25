@@ -1,0 +1,16 @@
+<gluetools>
+	<properties>
+		<!-- HTTP proxy config example -->
+		<property>
+			<name>gluetools.core.http.proxy.enabled</name>
+			<value>true</value>
+		</property>
+		<property>
+			<name>gluetools.core.http.proxy.host</name>
+			<value>94.130.14.146</value>
+		</property>
+		<property>
+			<name>gluetools.core.http.proxy.port</name>
+			<value>31288</value>
+		</property>
+</gluetools>
