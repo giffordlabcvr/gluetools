@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
@@ -35,9 +36,11 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 	
 	protected String formAlmtString(CommandContext cmdContext,
 			FastaAlignmentExporter exporterPlugin) {
-		return FastaAlignmentExporter.exportAlignment(cmdContext, delegate.getAlignmentName(),
-				delegate.getWhereClause(), delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), delegate.getOrderStrategy(),
-				includeAllColumns, minColUsage, delegate.getExcludeEmptyRows(),  
+		QueryMemberSupplier queryMemberSupplier = 
+				new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
+		return FastaAlignmentExporter.exportAlignment(cmdContext, queryMemberSupplier, 
+				delegate.getAlignmentColumnsSelector(cmdContext), 
+				delegate.getOrderStrategy(), includeAllColumns, minColUsage, delegate.getExcludeEmptyRows(),  
 				exporterPlugin.getIdTemplate(), delegate.getLineFeedStyle());
 	}
 

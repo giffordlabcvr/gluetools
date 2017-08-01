@@ -11,6 +11,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -37,11 +38,11 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 			Boolean recursive, Boolean preview,
 			String consensusID, LineFeedStyle lineFeedStyle) {
 
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
+		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(alignmentName, recursive, whereClause);
+		
 		Map<Map<String, String>, DNASequence> memberPkMapToAlmtRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, false, null, true, null, 
-						alignment, almtMembers);
+						queryMemberSupplier);
 		
 		if(memberPkMapToAlmtRow.isEmpty()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No alignment members selected");

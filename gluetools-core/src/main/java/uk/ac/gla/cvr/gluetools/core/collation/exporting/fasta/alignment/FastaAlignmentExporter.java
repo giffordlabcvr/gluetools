@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -15,6 +17,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.AbstractMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
@@ -25,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -45,22 +49,32 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	}
 
 	public static String exportAlignment(CommandContext cmdContext,
-			String alignmentName, Optional<Expression> whereClause,
-			IAlignmentColumnsSelector alignmentColumnsSelector, Boolean recursive,
+			AbstractMemberSupplier memberSupplier,
+			IAlignmentColumnsSelector alignmentColumnsSelector,
 			OrderStrategy orderStrategy, Boolean includeAllColumns, Integer minColUsage,
 			Boolean excludeEmptyRows,
 			Template idTemplate, LineFeedStyle lineFeedStyle) {
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
-		
+
+		GlueLogger.getGlueLogger().log(Level.INFO, "Creating alignment");
 		Map<Map<String, String>, DNASequence> memberAlignmentMap = exportAlignment(
 				cmdContext, alignmentColumnsSelector, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy,
-				alignment, almtMembers);
+				memberSupplier);
+		GlueLogger.getGlueLogger().log(Level.INFO, "Alignment created");
 
 		Map<Map<String,String>, String> pkMapToFastaId = new LinkedHashMap<Map<String,String>, String>();
-		almtMembers.forEach(member -> {
-			pkMapToFastaId.put(member.pkMap(), generateFastaId(idTemplate, member));
-		});
+		
+		int numMembers = memberSupplier.countMembers(cmdContext);
+		int offset = 0;
+		int batchSize = 500;
+		while(offset < numMembers) {
+			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
+			for(AlignmentMember almtMember: almtMembers) {
+				pkMapToFastaId.put(almtMember.pkMap(), generateFastaId(idTemplate, almtMember));
+			}
+			offset += batchSize;
+			cmdContext.newObjectContext();
+		}
+		GlueLogger.getGlueLogger().log(Level.INFO, "Creating alignment string");
 		return createFastaAlignmentString(pkMapToFastaId, memberAlignmentMap, lineFeedStyle);
 	}
 
@@ -68,50 +82,44 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			CommandContext cmdContext, IAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean includeAllColumns, Integer minColUsage,
 			Boolean excludeEmptyRows, OrderStrategy orderStrategy,
-			Alignment alignment,
-			List<AlignmentMember> almtMembers) {
+			AbstractMemberSupplier memberSupplier) {
 		
-		ReferenceSequence refSequence = alignment.getRefSequence();
+		ReferenceSequence refSequence = memberSupplier.supplyAlignment(cmdContext).getRefSequence();
 		if(refSequence == null && includeAllColumns) {
-			throw new FastaExporterException(uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException.Code.CANNOT_SPECIFY_INCLUDE_ALL_COLUMNS_FOR_UNCONSTRAINED_ALIGNMENT, alignment.getName());
+			throw new FastaExporterException(uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporterException.Code.CANNOT_SPECIFY_INCLUDE_ALL_COLUMNS_FOR_UNCONSTRAINED_ALIGNMENT, 
+					memberSupplier.supplyAlignment(cmdContext).getName());
 		}
 
+		Map<Map<String, String>, AlmtRowInfo> pkMapToAlmtRowInfo;
 		
-		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
-		Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs = 
-				new LinkedHashMap<Map<String, String>, List<QueryAlignedSegment>>();
-		Map<Map<String, String>, AbstractSequenceObject> pkMapToSeqObj = 
-				new LinkedHashMap<Map<String, String>, AbstractSequenceObject>();
-
 		if(includeAllColumns) {
-			createAlignmentIncludeAllColumns(cmdContext, 
-					alignmentColumnsSelector,
-					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
-					pkMapToSeqObj, minColUsage);
+			throw new RuntimeException("includeAllColumns option deprecated?");
+			
+			/* memAlmtMap = createAlignmentIncludeAllColumns(cmdContext, 
+					alignmentColumnsSelector, memberSupplier, minColUsage); */
 
 		} else {
-			createAlignment(cmdContext, 
-					alignmentColumnsSelector,
-					alignment, almtMembers, minMaxSeg, pkMapToQaSegs,
-					pkMapToSeqObj);
+			pkMapToAlmtRowInfo = createAlignment(cmdContext, alignmentColumnsSelector, memberSupplier);
 		}
-		Map<Map<String, String>, DNASequence> memAlmtMap = createMemberAlignmentMap(cmdContext, minMaxSeg, pkMapToQaSegs, pkMapToSeqObj);
-		memAlmtMap = orderAlmt(memAlmtMap, orderStrategy);
-		if(excludeEmptyRows) {
-			List<Map<String,String>> keysToRemove = new ArrayList<Map<String,String>>();
-			memAlmtMap.forEach((k,v) -> {
-				if(v.getSequenceAsString().matches("^-*$")) {
-					keysToRemove.add(k);
-				}
-			});
-			for(Map<String,String> k: keysToRemove) {
-				memAlmtMap.remove(k);
-			}
-		}
+		GlueLogger.getGlueLogger().log(Level.INFO, "Reordering alignment");
+		pkMapToAlmtRowInfo = orderAlmt(pkMapToAlmtRowInfo, orderStrategy);
 		
+		Map<Map<String,String>, DNASequence> memAlmtMap = new LinkedHashMap<Map<String,String>, DNASequence>();
+		pkMapToAlmtRowInfo.forEach((pkMap, almtRowInfo) -> {
+			if(excludeEmptyRows && almtRowInfo.emptyRow) {
+				return;
+			}
+			memAlmtMap.put(pkMap, almtRowInfo.dnaSequence);
+		});
 		return memAlmtMap;
 	}
 
+	private static class AlmtRowInfo {
+		DNASequence dnaSequence;
+		boolean emptyRow;
+		int firstSegmentStart;
+	}
+	
 
 	private static void createAlignmentIncludeAllColumns(CommandContext cmdContext,
 			IAlignmentColumnsSelector alignmentColumnsSelector,
@@ -205,20 +213,29 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		}
 	}
 	
-	private static void createAlignment(CommandContext cmdContext,
+	private static Map<Map<String,String>, AlmtRowInfo> createAlignment(CommandContext cmdContext,
 			IAlignmentColumnsSelector alignmentColumnsSelector,
-			Alignment alignment, List<AlignmentMember> almtMembers,
-			ReferenceSegment minMaxSeg,
-			Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToQaSegs,
-			Map<Map<String,String>, AbstractSequenceObject> pkMapToSeqObj) {
-		ReferenceSequence alignmentRef = alignment.getRefSequence();
+			AbstractMemberSupplier memberSupplier) {
+		
+		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
+
+		GlueLogger.getGlueLogger().log(Level.INFO, "initialising reference segment");
+		ReferenceSequence alignmentRef = memberSupplier.supplyAlignment(cmdContext).getRefSequence();
 		if(alignmentRef != null) {
 			minMaxSeg.setRefEnd(alignmentRef.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
 		} else {
 			// unconstrained alignment
-			for(AlignmentMember almtMember: almtMembers) {
-				Integer maxRefEnd = ReferenceSegment.maxRefEnd(almtMember.getAlignedSegments());
-				if(maxRefEnd != null) { minMaxSeg.setRefEnd(Math.max(maxRefEnd, minMaxSeg.getRefEnd())); }
+			int numMembers = memberSupplier.countMembers(cmdContext);
+			int offset = 0;
+			int batchSize = 500;
+			while(offset < numMembers) {
+				List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
+				for(AlignmentMember almtMember: almtMembers) {
+					Integer maxRefEnd = ReferenceSegment.maxRefEnd(almtMember.getAlignedSegments());
+					if(maxRefEnd != null) { minMaxSeg.setRefEnd(Math.max(maxRefEnd, minMaxSeg.getRefEnd())); }
+				}
+				offset += batchSize;
+				cmdContext.newObjectContext();
 			}
 		}
 		List<ReferenceSegment> featureRefSegs = null;
@@ -229,38 +246,57 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureRefSegs));
 			}
 		}
-		
-		for(AlignmentMember almtMember: almtMembers) {
-			Map<String,String> pkMap = almtMember.pkMap();
-			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
-			if(alignmentColumnsSelector != null) {
-				// related reference specified in order to specify feature location
-				Alignment tipAlmt = almtMember.getAlignment();
-				ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, alignmentColumnsSelector.getRelatedRefName());
-				memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
-			} else {
-				// no feature location but still need to translate to ancestor-constraining reference, 
-				// because member is of a descendent alignment.
-				if(!alignment.getName().equals(almtMember.getAlignment().getName())) {
-					ReferenceSequence acRef2 = alignment.getRefSequence();
-					memberQaSegs = almtMember.getAlignment().translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef2);
+		Map<Map<String,String>, AlmtRowInfo> pkMapToAlmtRowInfo = new LinkedHashMap<Map<String,String>, AlmtRowInfo>();
+		int numMembers = memberSupplier.countMembers(cmdContext);
+		GlueLogger.getGlueLogger().log(Level.INFO, "processing "+numMembers+" alignment members");
+		int offset = 0;
+		int processed = 0;
+		int batchSize = 500;
+		while(offset < numMembers) {
+			Map<Map<String, String>, List<QueryAlignedSegment>> pkMapToQaSegs = 
+					new LinkedHashMap<Map<String, String>, List<QueryAlignedSegment>>();
+			Map<Map<String, String>, AbstractSequenceObject> pkMapToSeqObj = 
+					new LinkedHashMap<Map<String, String>, AbstractSequenceObject>();
+			Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
+			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
+			for(AlignmentMember almtMember: almtMembers) {
+				Map<String,String> pkMap = almtMember.pkMap();
+				List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
+				if(alignmentColumnsSelector != null) {
+					// related reference specified in order to specify feature location
+					Alignment tipAlmt = almtMember.getAlignment();
+					ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, alignmentColumnsSelector.getRelatedRefName());
+					memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
+				} else {
+					// no feature location but still need to translate to ancestor-constraining reference, 
+					// because member is of a descendent alignment.
+					if(!alignment.getName().equals(almtMember.getAlignment().getName())) {
+						ReferenceSequence acRef2 = alignment.getRefSequence();
+						memberQaSegs = almtMember.getAlignment().translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef2);
+					}
 				}
+				if(featureRefSegs != null) {
+					memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+				}
+				pkMapToQaSegs.put(pkMap, memberQaSegs);
+				pkMapToSeqObj.put(pkMap, almtMember.getSequence().getSequenceObject());
 			}
-			if(featureRefSegs != null) {
-				memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
-			}
-			pkMapToQaSegs.put(pkMap, memberQaSegs);
-			pkMapToSeqObj.put(pkMap, almtMember.getSequence().getSequenceObject());
+			addToMemberAlignmentMap(cmdContext, minMaxSeg, pkMapToQaSegs, pkMapToSeqObj, pkMapToAlmtRowInfo);
+			processed += almtMembers.size();
+			GlueLogger.getGlueLogger().log(Level.INFO, "processed "+processed+" alignment members");
+			offset += batchSize;
+			cmdContext.newObjectContext();
 		}
+		return pkMapToAlmtRowInfo;
 	}
 	
 	
 
-	private static Map<Map<String,String>, DNASequence> createMemberAlignmentMap(CommandContext cmdContext,
+	private static void addToMemberAlignmentMap(CommandContext cmdContext,
 			ReferenceSegment minMaxSeg,
 			Map<Map<String,String>, List<QueryAlignedSegment>> pkMapToQaSegs,
-			Map<Map<String,String>, AbstractSequenceObject> pkMapToSeqObj) {
-		Map<Map<String,String>, DNASequence> memberAlignmentMap = new LinkedHashMap<Map<String,String>, DNASequence>();
+			Map<Map<String,String>, AbstractSequenceObject> pkMapToSeqObj, 
+			Map<Map<String,String>, AlmtRowInfo> pkMapToAlmtRowInfo) {
 		
 		int minRefNt_final = minMaxSeg.getRefStart();
 		int maxRefNt_final = minMaxSeg.getRefEnd();
@@ -269,7 +305,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			
 			List<QueryAlignedSegment> truncatedQaSegs = ReferenceSegment.intersection(qaSegs, Arrays.asList(minMaxSeg), ReferenceSegment.cloneLeftSegMerger());
 			String memberNTs = pkMapToSeqObj.get(pkMap).getNucleotides(cmdContext);
-			StringBuffer alignmentRow = new StringBuffer();
+			StringBuffer alignmentRow = new StringBuffer(maxRefNt_final);
 			int ntIndex = minRefNt_final;
 			for(QueryAlignedSegment seg: truncatedQaSegs) {
 				while(ntIndex < seg.getRefStart()) {
@@ -283,9 +319,17 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				alignmentRow.append("-");
 				ntIndex++;
 			}
-			memberAlignmentMap.put(pkMap, FastaUtils.ntStringToSequence(alignmentRow.toString()));
+			AlmtRowInfo almtRowInfo = new AlmtRowInfo();
+			almtRowInfo.dnaSequence = FastaUtils.ntStringToSequence(alignmentRow.toString());
+			if(truncatedQaSegs.isEmpty()) {
+				almtRowInfo.emptyRow = true;
+				almtRowInfo.firstSegmentStart = maxRefNt_final;
+			} else {
+				almtRowInfo.emptyRow = false;
+				almtRowInfo.firstSegmentStart = ReferenceSegment.minRefStart(truncatedQaSegs);
+			}
+			pkMapToAlmtRowInfo.put(pkMap, almtRowInfo);
 	    });
-		return memberAlignmentMap;
 	}
 
 	
@@ -300,55 +344,30 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	}
 	
 	
-	private static Map<Map<String,String>, DNASequence> orderAlmt(Map<Map<String,String>, DNASequence> alignment, OrderStrategy orderStrategy) {
+	private static Map<Map<String,String>, AlmtRowInfo> orderAlmt(Map<Map<String,String>, AlmtRowInfo> alignment, OrderStrategy orderStrategy) {
 		if(orderStrategy == null) {
 			return alignment;
 		}
-		ArrayList<SortableAlmtMember> arrayList = 
-				new ArrayList<SortableAlmtMember>(
-						alignment.entrySet().stream().
-						map(entry -> new SortableAlmtMember(entry)).collect(Collectors.toList()));
-		Comparator<SortableAlmtMember> comparator = null;
+		Set<Entry<Map<String, String>, AlmtRowInfo>> entrySet = alignment.entrySet();
+		ArrayList<Entry<Map<String, String>, AlmtRowInfo>> entryArray = new ArrayList<Entry<Map<String, String>, AlmtRowInfo>>(entrySet);
+		Comparator<Entry<Map<String, String>, AlmtRowInfo>> comparator = null;
 		switch(orderStrategy) {
 		case increasing_start_segment:
-			comparator = new Comparator<SortableAlmtMember>() {
+			comparator = new Comparator<Entry<Map<String, String>, AlmtRowInfo>>() {
 				@Override
-				public int compare(SortableAlmtMember o1, SortableAlmtMember o2) {
-					return Integer.compare(computeSortKey(o1), computeSortKey(o2));
-				}
-				private int computeSortKey(SortableAlmtMember mem) {
-					if(mem.sortKey == null) {
-						String sequenceAsString = mem.entry.getValue().getSequenceAsString();
-						mem.sortKey = -1; 
-						for(int i = 0; i < sequenceAsString.length(); i++) {
-							if(sequenceAsString.charAt(i) == '-') {
-								mem.sortKey = i;
-							} else {
-								break;
-							}
-						}
-					}
-					return mem.sortKey;
+				public int compare(Entry<Map<String, String>, AlmtRowInfo> o1, Entry<Map<String, String>, AlmtRowInfo> o2) {
+					return Integer.compare(o1.getValue().firstSegmentStart, o2.getValue().firstSegmentStart);
 				}
 			};
 		}
-		arrayList.sort(comparator);
-		Map<Map<String,String>, DNASequence> sorted = new LinkedHashMap<Map<String,String>, DNASequence>();
-		arrayList.forEach(mem -> {
-			sorted.put(mem.entry.getKey(), mem.entry.getValue());
+		entryArray.sort(comparator);
+		Map<Map<String,String>, AlmtRowInfo> sorted = new LinkedHashMap<Map<String,String>, AlmtRowInfo>();
+		entryArray.forEach(mem -> {
+			sorted.put(mem.getKey(), mem.getValue());
 		});
 		return sorted;
 	}
 
-	private static class SortableAlmtMember {
-		Map.Entry<Map<String,String>, DNASequence> entry;
-		Integer sortKey = null;
-		public SortableAlmtMember(Entry<Map<String, String>, DNASequence> entry) {
-			super();
-			this.entry = entry;
-		}
-	}
-	
 	public static abstract class Key {}
 	
 	public static class ReferenceKey extends Key {

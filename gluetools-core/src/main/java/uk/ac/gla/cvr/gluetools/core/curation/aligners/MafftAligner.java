@@ -11,6 +11,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.ExplicitMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaNtAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -84,19 +85,15 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 			List<Map<String, String>> recomputedMembersPkMaps, 
 			File dataDir) {
 		FastaNtAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		
 		int existingIdx = 0;
 		Map<String, Map<String,String>> existingTempIdToPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<String, DNASequence> existingTempIdToSequence = new LinkedHashMap<String, DNASequence>();
 		
-		List<AlignmentMember> existingMembers = existingMembersPkMaps.stream()
-				.map(pkMap -> GlueDataObject.lookup(cmdContext, AlignmentMember.class, pkMap))
-				.collect(Collectors.toList());
-
+		ExplicitMemberSupplier explicitMemberSupplier = new ExplicitMemberSupplier(alignmentName, existingMembersPkMaps);
+		
 		Map<Map<String, String>, DNASequence> existingPkMapToSequence = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, null, 
-						false, null, false, null, alignment, existingMembers);
+						false, null, false, null, explicitMemberSupplier);
 		
 		for(Map<String,String> pkMap: existingMembersPkMaps) {
 			String tempId = "E"+existingIdx;

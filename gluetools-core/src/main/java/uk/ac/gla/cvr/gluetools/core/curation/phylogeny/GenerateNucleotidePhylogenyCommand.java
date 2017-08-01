@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAli
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
@@ -109,9 +110,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 
 	@Override
 	protected final OkResult execute(CommandContext cmdContext, P modulePlugin) {
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
-		
 		IAlignmentColumnsSelector alignmentColumnsSelector;
 		
 		if(selectorName != null) {
@@ -121,10 +119,12 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		} else {
 			alignmentColumnsSelector = null;
 		}
+
+		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(this.alignmentName, this.recursive, this.whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, includeAllColumns, minColUsage, false,
-				null, alignment, almtMembers);
+				null, queryMemberSupplier);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);
 

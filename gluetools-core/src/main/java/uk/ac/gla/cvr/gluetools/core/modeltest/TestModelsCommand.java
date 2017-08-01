@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAli
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -120,9 +121,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 
 	@Override
 	protected TestModelsResult execute(CommandContext cmdContext, ModelTester modelTester) {
-		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause);
-		
 		IAlignmentColumnsSelector alignmentColumnsSelector;
 		if(selectorName != null) {
 			alignmentColumnsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
@@ -132,9 +130,11 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 			alignmentColumnsSelector = null;
 		}
 		
+		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(this.alignmentName, this.recursive, this.whereClause);
+
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, includeAllColumns, minColUsage, 
-				false, null, alignment, almtMembers);
+				false, null, queryMemberSupplier);
 
 		TestModelsResult testModelsResult = modelTester.testModels(cmdContext, memberNucleotideAlignment, dataDir);
 		return testModelsResult;

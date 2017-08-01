@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAli
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.ExplicitMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -176,14 +177,6 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 					// record the correspondence.
 					almtMembPkMapToPhyloMembPkMap.put(almtMembPkMap, phyloMembPkMap);
 				});
-		List<AlignmentMember> almtAlmtMembers = almtMembPkMapToPhyloMembPkMap.keySet().stream()
-				.map(memberPkMap -> GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap))
-				.collect(Collectors.toList());
-		// not required
-		//		List<AlignmentMember> phyloAlmtMembers = almtMembPkMapToPhyloMembPkMap.values().stream()
-		//				.map(memberPkMap -> GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap))
-		//				.collect(Collectors.toList());
-
 		
 		// could make some of these things configurable if necessary, for example if we start using constrained alignments.
 		boolean includeAllColumns = false;
@@ -199,11 +192,13 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		} else {
 			alignmentColumnsSelector = null;
 		}
+		ExplicitMemberSupplier explicitMemberSupplier 
+			= new ExplicitMemberSupplier(alignmentAlignment.getName(), new ArrayList<Map<String,String>>(almtMembPkMapToPhyloMembPkMap.keySet()));
 		
 		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
 						alignmentColumnsSelector, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy, 
-						alignmentAlignment, almtAlmtMembers);
+						explicitMemberSupplier);
 
 		// rename each row to its phylo member equivalent.
 		Map<Map<String,String>, DNASequence> phyloMemberPkMapToAlignmentRow = new LinkedHashMap<Map<String,String>, DNASequence>();
