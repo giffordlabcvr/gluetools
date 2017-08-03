@@ -17,8 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 			"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
 		    "-a, --allSequences                                   Export all project sequences"},
 		metaTags = { CmdMeta.webApiOnly, CmdMeta.producesBinary },
-		description="Export sequences to a FASTA file", 
-		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
+		description="Export sequences to a FASTA file") 
 public class WebExportCommand extends BaseExportCommand<CommandBinaryResult> implements ProvidedProjectModeCommand {
 
 	@Override

@@ -30,7 +30,6 @@ import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
-import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;

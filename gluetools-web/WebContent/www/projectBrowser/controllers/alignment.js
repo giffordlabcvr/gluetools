@@ -30,13 +30,13 @@ projectBrowser.controller('alignmentCtrl',
 					var cmdParams = {
 							recursive:true,
 							excludeEmptyRows:true,
-							orderStrategy:'increasing_start_segment',
 							labelledCodon:false
 					};
 					var moduleName;
 					if($scope.configuredResult.alignmentType == 'nucleotide') {
 						moduleName = fastaAlignmentExporter;
-						cmdParams.includeAllColumns = false;
+						cmdParams.fetchOffset = 0;
+						cmdParams.pageSize = 500;
 					} else {
 						moduleName = fastaProteinAlignmentExporter;
 					}

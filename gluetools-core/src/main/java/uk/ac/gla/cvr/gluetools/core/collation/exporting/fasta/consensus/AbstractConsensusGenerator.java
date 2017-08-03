@@ -4,18 +4,13 @@ import gnu.trove.map.hash.TCharIntHashMap;
 import gnu.trove.procedure.TCharIntProcedure;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
-
-import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -23,21 +18,8 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGenerator<A>> extends ModulePlugin<A> {
 
 	
-	public static final String MINIMUM_ROWS = "minimumRows";
-
-	// minimum number of rows where a value must be present in order to generate a consensus, otherwise N (nt) or X (aa) is generated.
-	private Integer minimumRows;
-
 	protected AbstractConsensusGenerator() {
 		super();
-		addSimplePropertyName(MINIMUM_ROWS);
-	}
-
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		this.minimumRows = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MINIMUM_ROWS, 1, true, null, false, false)).orElse(1);
 	}
 
 	protected String generateConsensusFasta(List<String> almtRows, String consensusID,

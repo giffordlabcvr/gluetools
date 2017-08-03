@@ -1,16 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.ListAlmtMemberCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentCountMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 

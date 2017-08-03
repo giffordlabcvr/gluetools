@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
@@ -15,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.Exp
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaNtAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -93,7 +91,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 		
 		Map<Map<String, String>, DNASequence> existingPkMapToSequence = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, null, 
-						false, null, false, null, explicitMemberSupplier);
+						false, null, explicitMemberSupplier);
 		
 		for(Map<String,String> pkMap: existingMembersPkMaps) {
 			String tempId = "E"+existingIdx;

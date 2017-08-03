@@ -5,11 +5,11 @@ import java.util.Collection;
 import java.util.List;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.ScriptObjectMirrorUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.utils.DateUtils;
-import uk.ac.gla.cvr.gluetools.core.command.scripting.ScriptObjectMirrorUtilsException.Code;
 
 public class ScriptObjectMirrorUtils {
 

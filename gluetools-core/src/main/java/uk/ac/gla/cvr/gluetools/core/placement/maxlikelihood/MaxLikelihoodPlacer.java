@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
@@ -179,8 +178,6 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				});
 		
 		// could make some of these things configurable if necessary, for example if we start using constrained alignments.
-		boolean includeAllColumns = false;
-		Integer minColUsage = null;
 		OrderStrategy orderStrategy = null;
 		boolean excludeEmptyRows = false;
 
@@ -197,7 +194,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						alignmentColumnsSelector, includeAllColumns, minColUsage, excludeEmptyRows, orderStrategy, 
+						alignmentColumnsSelector, excludeEmptyRows, orderStrategy, 
 						explicitMemberSupplier);
 
 		// rename each row to its phylo member equivalent.

@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.curation.phylogeny;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,12 +16,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
@@ -39,9 +34,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
-	public static final String INCLUDE_ALL_COLUMNS = "includeAllColumns";
-	public static final String MIN_COLUMN_USAGE = "minColUsage";
-
 	public static final String OUTPUT_FILE = "outputFile";
 	public static final String OUTPUT_FORMAT = "outputFormat";
 	
@@ -51,8 +43,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
-	private Boolean includeAllColumns;
-	private Integer minColUsage;
 	private String selectorName;
 
 	private String outputFile;
@@ -67,8 +57,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
-		includeAllColumns = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_ALL_COLUMNS, false)).orElse(false);
-		minColUsage = PluginUtils.configureIntProperty(configElem, MIN_COLUMN_USAGE, false);
 		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
 
 		outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
@@ -83,9 +71,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
 		}
-		if(this.minColUsage != null && !this.includeAllColumns) {
-			usageError4();
-		}
 		if(this.outputFormat != null && this.outputFile == null) {
 			usageError5();
 		}
@@ -99,9 +84,6 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 	}
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
-	}
-	private void usageError4() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
 	}
 	private void usageError5() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <outputFormat> argument may only be used if <outputFile> is specified");
@@ -123,7 +105,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(this.alignmentName, this.recursive, this.whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, includeAllColumns, minColUsage, false,
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, false,
 				null, queryMemberSupplier);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);

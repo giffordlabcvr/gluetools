@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.utils;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

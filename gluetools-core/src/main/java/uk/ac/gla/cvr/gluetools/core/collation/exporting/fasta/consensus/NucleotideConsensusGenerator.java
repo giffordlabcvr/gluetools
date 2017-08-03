@@ -15,11 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.Que
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
@@ -41,7 +37,7 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(alignmentName, recursive, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberPkMapToAlmtRow = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, false, null, true, null, 
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, true, null, 
 						queryMemberSupplier);
 		
 		if(memberPkMapToAlmtRow.isEmpty()) {

@@ -28,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
-		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] -o <outputFile> <outputFormat>  [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) -o <outputFile> <outputFormat>  [-d <dataDir>]"},
 		docoptOptions={
 				"-s <selectorName>, --selectorName <selectorName>  Column selector module name",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
@@ -36,8 +36,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 			"-c, --recursive                                       Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>         Qualify members",
 		    "-a, --allMembers                                      All members",
-		    "-i, --includeAllColumns                               Include columns for all NTs",
-		    "-m <minColUsage>, --minColUsage <minColUsage>         Minimum included column usage",
 			"-o <outputFile>, --outputFile <outputFile>            Phylogeny output file",
 			"-d <dataDir>, --dataDir <dataDir>                     Save algorithmic data in this directory"},
 		metaTags = { CmdMeta.consoleOnly },

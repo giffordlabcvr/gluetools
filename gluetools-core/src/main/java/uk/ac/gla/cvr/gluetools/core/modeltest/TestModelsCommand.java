@@ -24,11 +24,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -38,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentC
 @CommandClass(
 		commandWords={"test", "models"}, 
 		description = "Run JModelTest on a nucleotide alignment to compare substitution models", 
-		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-i [-m <minColUsage>]] [-d <dataDir>]"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-d <dataDir>]"},
 		docoptOptions={
 				"-s <selectorName>, --selectorName <selectorName>  Column selector module name",
 				"-r <relRefName>, --relRefName <relRefName>        Related reference",
@@ -46,8 +44,6 @@ import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentC
 				"-c, --recursive                                   Include descendent members",
 				"-w <whereClause>, --whereClause <whereClause>     Qualify members",
 				"-a, --allMembers                                  All members",
-				"-i, --includeAllColumns                           Include columns for all NTs",
-				"-m <minColUsage>, --minColUsage <minColUsage>     Minimum included column usage",
 				"-d <dataDir>, --dataDir <dataDir>                 Save algorithmic data in this directory"},
 		metaTags = { CmdMeta.consoleOnly },
 		furtherHelp="If supplied, <dataDir> must either not exist or be an empty directory.")
@@ -60,8 +56,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
-	public static final String INCLUDE_ALL_COLUMNS = "includeAllColumns";
-	public static final String MIN_COLUMN_USAGE = "minColUsage";
 	public static final String DATA_DIR = "dataDir";
 
 	private String alignmentName;
@@ -71,8 +65,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
 	private Boolean allMembers;
-	private Boolean includeAllColumns;
-	private Integer minColUsage;
 
 	private String dataDir;
 	
@@ -85,8 +77,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
-		includeAllColumns = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_ALL_COLUMNS, false)).orElse(false);
-		minColUsage = PluginUtils.configureIntProperty(configElem, MIN_COLUMN_USAGE, false);
 		dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
 		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
 
@@ -100,9 +90,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
 			usageError2();
 		}
-		if(this.minColUsage != null && !this.includeAllColumns) {
-			usageError3();
-		}
 	}
 
 	private void usageError1() {
@@ -114,10 +101,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
 	}
-	private void usageError3() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <minColUsage> argument may only be used if <includeAllColumns> is specified");
-	}
-	
 
 	@Override
 	protected TestModelsResult execute(CommandContext cmdContext, ModelTester modelTester) {
@@ -133,7 +116,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(this.alignmentName, this.recursive, this.whereClause);
 
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, includeAllColumns, minColUsage, 
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector,  
 				false, null, queryMemberSupplier);
 
 		TestModelsResult testModelsResult = modelTester.testModels(cmdContext, memberNucleotideAlignment, dataDir);

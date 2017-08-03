@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.console;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,10 +42,8 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
-import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
@@ -57,7 +54,6 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLoggingFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 

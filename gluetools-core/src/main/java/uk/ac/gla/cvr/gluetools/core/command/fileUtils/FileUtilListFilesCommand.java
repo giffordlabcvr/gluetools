@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.fileUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
