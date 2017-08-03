@@ -6,11 +6,16 @@
 			<value>true</value>
 		</property>
 		<property>
-			<name>gluetools.core.http.proxy.host</name>
-			<value>94.130.14.146</value>
+			<name>gluetools.core.http.proxy.url</name>
+			<value>http://localhost:8080</value>
+		</property>
+		<!-- HTTPS proxy config example -->
+		<property>
+			<name>gluetools.core.https.proxy.enabled</name>
+			<value>true</value>
 		</property>
 		<property>
-			<name>gluetools.core.http.proxy.port</name>
-			<value>31288</value>
+			<name>gluetools.core.https.proxy.url</name>
+			<value>https://localhost:8080</value>
 		</property>
 </gluetools>
