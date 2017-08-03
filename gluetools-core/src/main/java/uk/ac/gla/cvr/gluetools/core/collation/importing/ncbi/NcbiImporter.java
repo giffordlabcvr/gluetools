@@ -3,6 +3,8 @@ package uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -281,23 +283,27 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private void setProxyIfSpecified(CommandContext cmdContext,
 			HttpClientBuilder httpClientBuilder) {
 		PropertiesConfiguration propertiesConfiguration = cmdContext.getGluetoolsEngine().getPropertiesConfiguration();
-		if(propertiesConfiguration.getPropertyValue(HttpUtils.HTTP_PROXY_ENABLED, "false").equals("true")) {
-			String proxyHostName = propertiesConfiguration.getPropertyValue(HttpUtils.HTTP_PROXY_HOST);
-			if(proxyHostName == null) {
-				throw new NcbiImporterException(Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTP_PROXY_HOST+" was null");
+
+		// E-utils operates over HTTPS therefore we use the HTTPS proxy settings
+		if(propertiesConfiguration.getPropertyValue(HttpUtils.HTTPS_PROXY_ENABLED, "false").equals("true")) {
+			String httpsProxyUrlString = propertiesConfiguration.getPropertyValue(HttpUtils.HTTPS_PROXY_URL);
+			if(httpsProxyUrlString == null) {
+				throw new NcbiImporterException(Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTPS_PROXY_URL+" was null");
 			}
-			String proxyPortString = propertiesConfiguration.getPropertyValue(HttpUtils.HTTP_PROXY_PORT);
-			if(proxyPortString == null) {
-				throw new NcbiImporterException(Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTP_PROXY_PORT+" was null");
-			}
-			int proxyPort = 0;
+			URL httpsProxyUrl;
 			try {
-				proxyPort = Integer.parseInt(proxyPortString);
-			} catch(NumberFormatException nfe) {
-				throw new NcbiImporterException(nfe, Code.PROXY_ERROR, "Engine property "+HttpUtils.HTTP_PROXY_PORT+" was not an integer");
+				httpsProxyUrl = new URL(httpsProxyUrlString);
+			} catch(MalformedURLException mue) {
+				throw new NcbiImporterException(mue, Code.PROXY_ERROR, "Malformed URL: "+httpsProxyUrlString+": "+mue.getLocalizedMessage());
 			}
-			HttpHost proxyHttpHost = new HttpHost(proxyHostName, proxyPort, "http");
-			httpClientBuilder.setProxy(proxyHttpHost);
+			String httpsProxyScheme = httpsProxyUrl.getProtocol();
+			int httpsProxyPort = httpsProxyUrl.getPort();
+			if(httpsProxyPort == -1) {
+				throw new NcbiImporterException(Code.PROXY_ERROR, "Proxy URL port unset");
+			}
+			String httpsProxyHostName = httpsProxyUrl.getHost();
+			HttpHost httpsProxyHost = new HttpHost(httpsProxyHostName, httpsProxyPort, httpsProxyScheme);
+			httpClientBuilder.setProxy(httpsProxyHost);
 		}
 	}
 

@@ -14,5 +14,12 @@ hs_err_pid*
 .gradle/
 .settings/
 build/
-bin/
+bin/exceptionMessages
+bin/freemarker
+bin/META-INF
+bin/nashornJS
+bin/uk
+bin/*.xml
+bin/*.properties
+bin/*.docopt
 derby.log
