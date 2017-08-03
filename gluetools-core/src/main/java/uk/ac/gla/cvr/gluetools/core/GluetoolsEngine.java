@@ -30,6 +30,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
+import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException;
+import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesUtils;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import freemarker.template.Configuration;
@@ -65,6 +68,7 @@ public class GluetoolsEngine implements Plugin {
 	private Map<String, byte[]> classNameToBytes = new LinkedHashMap<String, byte[]>();
 	private GlueClassLoader glueClassLoader = new GlueClassLoader(GluetoolsEngine.class.getClassLoader(), this);
 	private ExecutorService mafftExecutorService;
+	private WebFilesManager webFilesManager;
 
 	
 	private GluetoolsEngine(String configFilePath) {
@@ -87,6 +91,7 @@ public class GluetoolsEngine implements Plugin {
 		} catch(GlueException glueEx) {
 			throw new GluetoolsEngineException(glueEx, GluetoolsEngineException.Code.CONFIG_ERROR, configFilePath, glueEx.getLocalizedMessage());
 		}
+		initWebFilesManager(configFilePath);
 	}
 	
 	public PluginConfigContext createPluginConfigContext() {
@@ -191,6 +196,9 @@ public class GluetoolsEngine implements Plugin {
 		if(mafftExecutorService != null) {
 			mafftExecutorService.shutdown();
 		}
+		if(webFilesManager != null) {
+			webFilesManager.setKeepRunning(false);
+		}
 	}
 
 	public Properties getGluecoreProperties() {
@@ -240,5 +248,24 @@ public class GluetoolsEngine implements Plugin {
 		return mafftExecutorService;
 	}
 	
+	public WebFilesManager getWebFilesManager() {
+		if(webFilesManager == null) {
+			throw new WebFilesManagerException(WebFilesManagerException.Code.WEB_FILES_MANAGER_NOT_ENABLED);
+		}
+		return webFilesManager;
+	}
+
+	private void initWebFilesManager(String configFilePath) {
+		String enabledString = getPropertiesConfiguration().getPropertyValue(WebFilesUtils.WEB_FILES_ENABLED, "false");
+		if(!Boolean.parseBoolean(enabledString)) {
+			return;
+		}
+		String rootDirString = getPropertiesConfiguration().getPropertyValue(WebFilesUtils.WEB_FILES_ROOT_DIR);
+		if(rootDirString == null) {
+			throw new GluetoolsEngineException(GluetoolsEngineException.Code.CONFIG_ERROR, 
+					configFilePath, "Web files manager has been enabled but no root dir was specified");
+		}
+		webFilesManager = new WebFilesManager(rootDirString);
+	}
 	
 }
