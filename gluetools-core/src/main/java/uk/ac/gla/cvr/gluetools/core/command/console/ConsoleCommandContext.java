@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -103,6 +104,18 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 	
 	public static void saveBytesToFile(File file, byte[] bytes) {
+		try(OutputStream fileOutputStream = openFile(file)) {
+			IOUtils.write(bytes, fileOutputStream);
+		} catch (IOException e) {
+			throw new ConsoleException(e, Code.WRITE_ERROR, file, e.getMessage());
+		}
+	}
+
+	public OutputStream openFile(String fileString) {
+		return openFile(fileStringToFile(fileString));
+	}
+	
+	public static OutputStream openFile(File file) {
 		if(file.exists()) {
 			if(!file.canWrite()) {
 				throw new ConsoleException(Code.FILE_NOT_WRITEABLE, file);
@@ -114,13 +127,14 @@ public class ConsoleCommandContext extends CommandContext {
 				throw new ConsoleException(e, Code.FILE_CREATION_ERROR, file, e.getMessage());
 			} 
 		}
-		try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-			IOUtils.write(bytes, fileOutputStream);
-		} catch (IOException e) {
-			throw new ConsoleException(e, Code.WRITE_ERROR, file, e.getMessage());
+		try {
+			return new FileOutputStream(file);
+		} catch (FileNotFoundException e) {
+			throw new ConsoleException(e, Code.FILE_NOT_FOUND, file);
 		}
+		
 	}
-
+	
 	public void mkdirs(String fileString) {
 		File dirFile = fileStringToFile(fileString);
 		mkdirs(dirFile);

@@ -179,7 +179,6 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 				});
 		
 		// could make some of these things configurable if necessary, for example if we start using constrained alignments.
-		OrderStrategy orderStrategy = null;
 		boolean excludeEmptyRows = false;
 
 		IAlignmentColumnsSelector alignmentColumnsSelector;
@@ -195,7 +194,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		Map<Map<String,String>, DNASequence> almtMemberPkMapToAlignmentRow = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, 
-						alignmentColumnsSelector, excludeEmptyRows, orderStrategy, 
+						alignmentColumnsSelector, excludeEmptyRows, 
 						explicitMemberSupplier);
 
 		// rename each row to its phylo member equivalent.

@@ -37,7 +37,7 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(alignmentName, recursive, whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberPkMapToAlmtRow = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, true, null, 
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, true, 
 						queryMemberSupplier);
 		
 		if(memberPkMapToAlmtRow.isEmpty()) {

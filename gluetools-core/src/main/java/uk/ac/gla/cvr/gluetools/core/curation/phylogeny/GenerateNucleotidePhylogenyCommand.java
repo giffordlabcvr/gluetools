@@ -105,8 +105,7 @@ public abstract class GenerateNucleotidePhylogenyCommand<P extends PhylogenyGene
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(this.alignmentName, this.recursive, this.whereClause);
 		
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
-				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, false,
-				null, queryMemberSupplier);
+				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector, false, queryMemberSupplier);
 		
 		PhyloTree phyloTree = generatePhylogeny(cmdContext, modulePlugin, memberNucleotideAlignment);
 

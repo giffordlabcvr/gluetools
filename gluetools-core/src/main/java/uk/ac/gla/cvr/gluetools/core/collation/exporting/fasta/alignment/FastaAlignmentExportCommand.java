@@ -1,5 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Map;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
@@ -10,13 +16,17 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>      Column selector module",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
@@ -27,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-w <whereClause>, --whereClause <whereClause>         Qualify exported members",
 		    "-a, --allMembers                                      Export all members",
 		    "-e, --excludeEmptyRows                                Exclude empty rows",
-		    "-d <orderStrategy>, --orderStrategy <orderStrategy>   Specify row ordering strategy",
 			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>   LF or CRLF",
 			"-o <fileName>, --fileName <fileName>                  FASTA output file",
 			"-p, --preview                                         Preview output"},
@@ -56,13 +65,42 @@ public class FastaAlignmentExportCommand extends BaseFastaAlignmentExportCommand
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaAlignmentExporter exporterPlugin) {
 		FastaAlignmentExportCommandDelegate delegate = getDelegate();
-		QueryMemberSupplier queryMemberSupplier = 
+		QueryMemberSupplier memberSupplier = 
 		new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
-		String fastaAlmtString = FastaAlignmentExporter.exportAlignment(cmdContext, queryMemberSupplier, 
-		delegate.getAlignmentColumnsSelector(cmdContext), 
-		delegate.getOrderStrategy(), delegate.getExcludeEmptyRows(),  
-		exporterPlugin.getIdTemplate(), delegate.getLineFeedStyle());
-		return exporterPlugin.formResult((ConsoleCommandContext) cmdContext, fastaAlmtString, fileName, preview);
+		
+		if(preview) {
+			StringBuffer previewString = new StringBuffer();
+			AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+				@Override
+				public void consumeAlmtRow(CommandContext cmdContext, 
+						Map<String, String> memberPkMap, AlignmentMember almtMember, String alignmentRowString) {
+					String fastaId = FastaAlignmentExporter.generateFastaId(exporterPlugin.getIdTemplate(), almtMember);
+					previewString.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, alignmentRowString, delegate.getLineFeedStyle()));
+				}
+			};
+			FastaAlignmentExporter.exportAlignment(cmdContext, delegate.getAlignmentColumnsSelector(cmdContext), delegate.getExcludeEmptyRows(),  
+					memberSupplier, almtRowConsumer);
+			return new SimpleConsoleCommandResult(previewString.toString());
+		} else {
+			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+			try(OutputStream outputStream = consoleCmdContext.openFile(fileName)) {
+				PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
+			AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+				@Override
+				public void consumeAlmtRow(CommandContext cmdContext, 
+						Map<String, String> memberPkMap, AlignmentMember almtMember, String alignmentRowString) {
+					String fastaId = FastaAlignmentExporter.generateFastaId(exporterPlugin.getIdTemplate(), almtMember);
+					printWriter.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, alignmentRowString, delegate.getLineFeedStyle()));
+					printWriter.flush();
+				}
+			};
+			FastaAlignmentExporter.exportAlignment(cmdContext, delegate.getAlignmentColumnsSelector(cmdContext), delegate.getExcludeEmptyRows(),  
+					memberSupplier, almtRowConsumer);
+			} catch (IOException ioe) {
+				throw new CommandException(ioe, Code.COMMAND_FAILED_ERROR, "Failed to write alignment file: "+ioe.getMessage());
+			}
+			return new OkResult();
+		}
 	}
 	
 	@CompleterClass

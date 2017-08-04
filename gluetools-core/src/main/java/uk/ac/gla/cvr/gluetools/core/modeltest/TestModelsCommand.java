@@ -117,7 +117,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 
 		Map<Map<String, String>, DNASequence> memberNucleotideAlignment = 
 				FastaAlignmentExporter.exportAlignment(cmdContext, alignmentColumnsSelector,  
-				false, null, queryMemberSupplier);
+				false, queryMemberSupplier);
 
 		TestModelsResult testModelsResult = modelTester.testModels(cmdContext, memberNucleotideAlignment, dataDir);
 		return testModelsResult;
