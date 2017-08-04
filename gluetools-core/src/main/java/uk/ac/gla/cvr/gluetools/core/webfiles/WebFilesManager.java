@@ -1,26 +1,27 @@
 package uk.ac.gla.cvr.gluetools.core.webfiles;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException.Code;
 
 public class WebFilesManager implements Runnable {
 
-	private static final int DAYS_UNTIL_EXPIRY = 1;
+	private static final int HOURS_UNTIL_EXPIRY = 48;
 	private Path webFilesRootDir;
 	public boolean keepRunning;
 
@@ -54,21 +55,19 @@ public class WebFilesManager implements Runnable {
 	@Override
 	public void run() {
 		while(getKeepRunning()) {
-			try {
-				List<Path> subDirs = Files.list(webFilesRootDir)
+			try(Stream<Path> subDirsStream = Files.list(webFilesRootDir)) {
+				subDirsStream
 				.filter(p -> Files.isDirectory(p))
-				.collect(Collectors.toList());
-				
-				subDirs.forEach(subDir -> {
+				.forEach(subDir -> {
 					if(isExpired(subDir)) {
-						GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" has expired");
+						//GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" has expired");
 						delete(subDir);
-						GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" deleted");
+						//GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" deleted");
 					} else {
-						GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" is still live");
+						//GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" is still live");
 					}
 				});
-				Thread.sleep(200);
+				Thread.sleep(10000);
 			} catch(Exception ioe) {
 				GlueLogger.getGlueLogger().warning("Exception in main WebFilesManager loop: "+ioe.getLocalizedMessage());
 			} 
@@ -101,8 +100,7 @@ public class WebFilesManager implements Runnable {
 		long fileTimeMillis = fileTime.toMillis();
 		Calendar expiryDateTime = Calendar.getInstance();
 		expiryDateTime.setTimeInMillis(fileTimeMillis);
-		expiryDateTime.add(Calendar.SECOND, 20);
-        //expiryDateTime.add(Calendar.DATE, DAYS_UNTIL_EXPIRY);
+		expiryDateTime.add(Calendar.HOUR, HOURS_UNTIL_EXPIRY);
 		if(currentDateTime.compareTo(expiryDateTime.getTime()) < 0) {
 			return false;
 		} else {
@@ -214,5 +212,57 @@ public class WebFilesManager implements Runnable {
 		return subDirUuid;
 	}
 	
-	
+	public void createWebFileResource(String subDirUuid, String fileName) {
+		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+		Path filePath = subDirPath.resolve(Paths.get(fileName));
+		try {
+			Files.createFile(filePath);
+		} catch(Exception e) {
+			throw new WebFilesManagerException(e, Code.FILE_CREATION_FAILED, filePath.toString());
+		}
+	}
+
+	public OutputStream appendToWebFileResource(String subDirUuid, String fileName) {
+		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+		Path filePath = subDirPath.resolve(Paths.get(fileName));
+		try {
+			return Files.newOutputStream(filePath, StandardOpenOption.APPEND);
+		} catch(Exception e) {
+			throw new WebFilesManagerException(e, Code.FILE_APPEND_FAILED, filePath.toString());
+		}
+	}
+
+	public String getSizeString(String subDirUuid, String fileName) {
+		long size = getSize(subDirUuid, fileName);
+		return humanReadableByteCount(size, true);
+	}
+
+
+
+	public long getSize(String subDirUuid, String fileName) {
+		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+		Path filePath = subDirPath.resolve(Paths.get(fileName));
+		long size;
+		try {
+			size = Files.size(filePath);
+		} catch(Exception e) {
+			throw new WebFilesManagerException(e, Code.FILE_SIZE_FAILED, filePath.toString());
+		}
+		return size;
+	}
+
+	public static String humanReadableByteCount(long bytes, boolean si) {
+	    int unit = si ? 1000 : 1024;
+	    if (bytes < unit) return bytes + " B";
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}
+
+
+
+	public Path getWebFilesRootDir() {
+		return webFilesRootDir;
+	}
+
 }

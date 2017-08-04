@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -41,13 +42,13 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	// no column selector module
 	// alignment members already established
 	// no order strategy
-	public static String webExportAlignment(CommandContext cmdContext, 
+	public static void webExportAlignment(CommandContext cmdContext, 
 			Alignment alignment, 
 			List<AlignmentMember> almtMembers, 
 			Boolean excludeEmptyRows, 
-			Template idTemplate, LineFeedStyle lineFeedStyle) {
+			Template idTemplate, LineFeedStyle lineFeedStyle, 
+			PrintWriter printWriter) {
 		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
-		GlueLogger.getGlueLogger().log(Level.INFO, "initialising reference segment");
 		ReferenceSequence alignmentRef = alignment.getRefSequence();
 		minMaxSeg.setRefEnd(alignmentRef.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
 		Map<Map<String,String>, AlmtRowInfo> pkMapToAlmtRowInfo = new LinkedHashMap<Map<String,String>, AlmtRowInfo>();
@@ -61,8 +62,10 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		for(AlignmentMember almtMember: almtMembers) {
 			pkMapToFastaId.put(almtMember.pkMap(), generateFastaId(idTemplate, almtMember));
 		}
-		GlueLogger.getGlueLogger().log(Level.INFO, "Creating alignment string");
-		return createFastaAlignmentString(pkMapToFastaId, memAlmtMap, lineFeedStyle);
+		memAlmtMap.forEach((pkMap1, alignmentRow) -> {
+			printWriter.append(FastaUtils.seqIdCompoundsPairToFasta(pkMapToFastaId.get(pkMap1), alignmentRow.getSequenceAsString(), lineFeedStyle));
+			printWriter.flush();
+		});
 	}
 	
 	public static String exportAlignment(CommandContext cmdContext,

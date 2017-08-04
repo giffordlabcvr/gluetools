@@ -14,4 +14,17 @@ projectBrowser.service("saveFile", ['dialogs', 'glueWebToolConfig', 'FileSaver',
 
 		return;
 	};
+	
+	this.saveAsDialog = function(fileDesc, defaultFilename, fileNameConsumer) {
+		var dlg = dialogs.create(
+				glueWebToolConfig.getProjectBrowserURL()+'/dialogs/selectSaveFile.html','selectSaveFileCtrl',
+				{ 
+					fileName: defaultFilename,
+					fileDesc: fileDesc
+				}, {});
+		dlg.result.then(function(data){
+		    fileNameConsumer(data.fileName);
+		});
+	}
+	
 }]);

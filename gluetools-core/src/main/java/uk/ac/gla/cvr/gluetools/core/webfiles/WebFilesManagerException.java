@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.webfiles;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
-import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 
 
 public class WebFilesManagerException extends GlueException {
@@ -10,7 +9,10 @@ public class WebFilesManagerException extends GlueException {
 
 		INVALID_ROOT_PATH("rootPath"),
 		WEB_FILES_MANAGER_NOT_ENABLED,
-		SUBDIR_CREATION_FAILED("subDirPath");
+		SUBDIR_CREATION_FAILED("subDirPath"),
+		FILE_CREATION_FAILED("filePath"),
+		FILE_APPEND_FAILED("filePath"),
+		FILE_SIZE_FAILED("filePath");
 
 		private String[] argNames;
 		private Code(String... argNames) {

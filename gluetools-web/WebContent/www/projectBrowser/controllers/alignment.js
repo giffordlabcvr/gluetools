@@ -23,78 +23,84 @@ projectBrowser.controller('alignmentCtrl',
 						  initialResult:_($scope.configuredResult).clone(), 
 						  initialSelectedNode: $scope.selectedNode }, {});
 				dlg.result.then(function(data){
+					
+					
 					console.info('data', data);
 					$scope.configuredResult = data.result;
 					$scope.selectedNode = data.selectedNode;
-					
-					var cmdParams = {
-							recursive:true,
-							excludeEmptyRows:true,
-							labelledCodon:false
-					};
-					var moduleName;
-					if($scope.configuredResult.alignmentType == 'nucleotide') {
-						moduleName = fastaAlignmentExporter;
-						cmdParams.fetchOffset = 0;
-						cmdParams.pageSize = 500;
-					} else {
-						moduleName = fastaProteinAlignmentExporter;
-					}
-					console.log("Downloading alignment, using module '"+moduleName+"'");
-					cmdParams.alignmentName = $scope.almtName;
-					cmdParams.relRefName = $scope.referenceName;
-					cmdParams.featureName = $scope.selectedNode.featureName;
 
-					if($scope.configuredResult.regionPart == 'subRegion') {
-						if($scope.configuredResult.specifySubregionBy == 'nucleotides') {
-							cmdParams.ntRegion = true;
-							cmdParams.ntStart = $scope.configuredResult.refStart;
-							cmdParams.ntEnd = $scope.configuredResult.refEnd;
-						}
-						if($scope.configuredResult.specifySubregionBy == 'codons') {
-							cmdParams.labelledCodon = true;
-							cmdParams.lcStart = $scope.configuredResult.lcStart;
-							cmdParams.lcEnd = $scope.configuredResult.lcEnd;
-						}
-					}
-					if($scope.memberWhereClause) {
-						cmdParams.whereClause = $scope.memberWhereClause;
-					}
-					$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
-					if(cmdParams.whereClause != null) {
-						cmdParams.allMembers = false;
-					} else {
-						cmdParams.allMembers = true;
-					}
-
-					cmdParams.lineFeedStyle = "LF";
-					if(userAgent.os.family.indexOf("Windows") !== -1) {
-						cmdParams.lineFeedStyle = "CRLF";
-					}
-
-					
-					$scope.analytics.eventTrack("alignmentDownload", 
-							{   category: 'dataDownload', 
-								label: 'type:'+$scope.configuredResult.alignmentType+',feature:'+$scope.selectedNode.featureName+',alignment:'+$scope.almtName });
-					
-					glueWS.runGlueCommandLong("module/"+moduleName, {
-				    	"web-export": cmdParams	
-					},
-					"Alignment download in progress")
-				    .success(function(data, status, headers, config) {
-				    	var base64Data;
+					saveFile.saveAsDialog("FASTA alignment file", 
+			    			$scope.almtName+"_"+$scope.selectedNode.featureName+"_"+
+			    			$scope.configuredResult.alignmentType+"_alignment.fasta",
+			    			function(fileName) {
+						var cmdParams = {
+								recursive:true,
+								excludeEmptyRows:true,
+								labelledCodon:false
+						};
+						var moduleName;
 						if($scope.configuredResult.alignmentType == 'nucleotide') {
-							base64Data = data.fastaAlignmentWebExportResult.base64;
+							moduleName = fastaAlignmentExporter;
+							cmdParams.fileName = fileName;
 						} else {
-							base64Data = data.fastaProteinAlignmentWebExportResult.base64;
+							moduleName = fastaProteinAlignmentExporter;
 						}
-				    	var blob = $scope.b64ToBlob(base64Data, "text/plain", 512);
-				    	
-				    	saveFile.saveFile(blob, "FASTA alignment file", 
-				    			$scope.almtName+"_"+$scope.selectedNode.featureName+"_"+
-				    			$scope.configuredResult.alignmentType+"_alignment.fasta");
-				    })
-				    .error(glueWS.raiseErrorDialog(dialogs, "downloading alignment"));
+						console.log("Downloading alignment, using module '"+moduleName+"'");
+						cmdParams.alignmentName = $scope.almtName;
+						cmdParams.relRefName = $scope.referenceName;
+						cmdParams.featureName = $scope.selectedNode.featureName;
+
+						if($scope.configuredResult.regionPart == 'subRegion') {
+							if($scope.configuredResult.specifySubregionBy == 'nucleotides') {
+								cmdParams.ntRegion = true;
+								cmdParams.ntStart = $scope.configuredResult.refStart;
+								cmdParams.ntEnd = $scope.configuredResult.refEnd;
+							}
+							if($scope.configuredResult.specifySubregionBy == 'codons') {
+								cmdParams.labelledCodon = true;
+								cmdParams.lcStart = $scope.configuredResult.lcStart;
+								cmdParams.lcEnd = $scope.configuredResult.lcEnd;
+							}
+						}
+						if($scope.memberWhereClause) {
+							cmdParams.whereClause = $scope.memberWhereClause;
+						}
+						$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+						if(cmdParams.whereClause != null) {
+							cmdParams.allMembers = false;
+						} else {
+							cmdParams.allMembers = true;
+						}
+
+						cmdParams.lineFeedStyle = "LF";
+						if(userAgent.os.family.indexOf("Windows") !== -1) {
+							cmdParams.lineFeedStyle = "CRLF";
+						}
+
+						
+						$scope.analytics.eventTrack("alignmentDownload", 
+								{   category: 'dataDownload', 
+									label: 'type:'+$scope.configuredResult.alignmentType+',feature:'+$scope.selectedNode.featureName+',alignment:'+$scope.almtName });
+						
+						glueWS.runGlueCommandLong("module/"+moduleName, {
+					    	"web-export": cmdParams	
+						},
+						"Alignment file preparation in progress")
+					    .success(function(data, status, headers, config) {
+					    	var result = data.fastaAlignmentWebExportResult;
+							var dlg = dialogs.create(
+									glueWebToolConfig.getProjectBrowserURL()+'/dialogs/fileReady.html','fileReadyCtrl',
+									{ 
+										url:"gluetools-ws/glue_web_files/"+result.webSubDirUuid+"/"+result.webFileName, 
+										fileName: result.webFileName,
+										fileSize: result.webFileSizeString
+									}, {});
+
+					    })
+					    .error(glueWS.raiseErrorDialog(dialogs, "preparing alignment"));
+					});
+
+					
 				});
 			}
 

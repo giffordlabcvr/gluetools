@@ -13,7 +13,7 @@
 		</property>
 		<property>
 			<name>gluetools.core.webfiles.root.dir</name>
-			<value>/Users/joshsinger/glue_web_files</value>
+			<value>/opt/gluetools/glue_web_files</value>
 		</property>
 		<!-- BLAST related config -->
 	    <property>
