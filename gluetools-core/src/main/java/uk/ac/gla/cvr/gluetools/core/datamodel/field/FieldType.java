@@ -8,6 +8,7 @@ public enum FieldType {
 	BOOLEAN(new BooleanFieldTranslator(), Boolean.class.getCanonicalName(), "BIT"),  
 	DATE(new DateFieldTranslator(), Date.class.getCanonicalName()),
 	VARCHAR(new StringFieldTranslator(), String.class.getCanonicalName()),
+	CLOB(new StringFieldTranslator(), String.class.getCanonicalName()),
 	INTEGER(new IntegerFieldTranslator(), Integer.class.getCanonicalName()),
 	DOUBLE(new DoubleFieldTranslator(), Double.class.getCanonicalName());
 	

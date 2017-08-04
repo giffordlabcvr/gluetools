@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.treerenderer;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,7 +71,7 @@ public class ExportPhylogenyCommand extends ModulePluginCommand<CommandResult, P
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName));
 		alignment.getConstrainingRef(); // check constrained
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-		project.checkProperty(ConfigurableTable.alignment.name(), fieldName, FieldType.VARCHAR, false);
+		project.checkProperty(ConfigurableTable.alignment.name(), fieldName, EnumSet.of(FieldType.VARCHAR, FieldType.CLOB), false);
 		PhyloTree phyloTree = 
 				PhyloExporter.exportAlignmentPhyloTree(cmdContext, alignment, fieldName, recursive);
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;

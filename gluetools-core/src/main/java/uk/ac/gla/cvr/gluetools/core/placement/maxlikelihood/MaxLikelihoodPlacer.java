@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +127,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "The phyloAlignment \""+phyloAlignmentName+"\" must be constrained");
 		}
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-		project.checkProperty(ConfigurableTable.alignment.name(), phyloFieldName, FieldType.VARCHAR, true);
+		project.checkProperty(ConfigurableTable.alignment.name(), phyloFieldName, EnumSet.of(FieldType.VARCHAR, FieldType.CLOB), true);
 
 		Alignment alignmentAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentAlignmentName), true);
 		if(alignmentAlignment == null) {

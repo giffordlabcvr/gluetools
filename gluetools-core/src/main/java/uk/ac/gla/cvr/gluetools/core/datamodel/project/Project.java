@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.project;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -198,7 +199,7 @@ public class Project extends _Project {
 		if(customField != null) {
 			return customField.getFieldType();
 		}
-		// assume built in modifiable fields are of string type.
+		// assume built in modifiable fields are of varchar type.
 		return FieldType.VARCHAR;
 	}
 	
@@ -282,21 +283,24 @@ public class Project extends _Project {
 		}
 	}
 
+	public void checkProperty(String tableName, String propertyName, FieldType requiredFieldType, boolean requireModifiable) {
+		checkProperty(tableName, propertyName, EnumSet.of(requiredFieldType), requireModifiable);
+	}
 	/**
 	 * Check that a property exists, is of the correct type, and (optionally) is modifiable.
 	 */
-	public void checkProperty(String tableName, String propertyName, FieldType requiredFieldType, boolean requireModifiable) {
+	public void checkProperty(String tableName, String propertyName, EnumSet<FieldType> requiredFieldTypes, boolean requireModifiable) {
 		if(requireModifiable) {
 			List<String> validList = getModifiableFieldNames(tableName);
 			if(!validList.contains(propertyName)) {
 				throw new ProjectModeCommandException(ProjectModeCommandException.Code.NO_SUCH_MODIFIABLE_PROPERTY, 
 						tableName, propertyName);
 			}
-			if(requiredFieldType != null) {
+			if(requiredFieldTypes != null) {
 				FieldType fieldType = getModifiableFieldType(tableName, propertyName);
-				if(fieldType != requiredFieldType) {
+				if(!requiredFieldTypes.contains(fieldType)) {
 					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INCORRECT_FIELD_TYPE, 
-							tableName, propertyName, requiredFieldType.name(), fieldType.name());
+							tableName, propertyName, requiredFieldTypes.toString(), fieldType.name());
 				}
 			}
 		} else {
@@ -305,11 +309,11 @@ public class Project extends _Project {
 				throw new ProjectModeCommandException(ProjectModeCommandException.Code.NO_SUCH_PROPERTY, 
 						tableName, propertyName);
 			}
-			if(requiredFieldType != null) {
+			if(requiredFieldTypes != null) {
 				FieldType fieldType = getModifiableFieldType(tableName, propertyName);
-				if(fieldType != requiredFieldType) {
+				if(!requiredFieldTypes.contains(fieldType)) {
 					throw new ProjectModeCommandException(ProjectModeCommandException.Code.INCORRECT_FIELD_TYPE, 
-							tableName, propertyName, requiredFieldType.name(), fieldType.name());
+							tableName, propertyName, requiredFieldTypes.toString(), fieldType.name());
 				}
 			}
 		}

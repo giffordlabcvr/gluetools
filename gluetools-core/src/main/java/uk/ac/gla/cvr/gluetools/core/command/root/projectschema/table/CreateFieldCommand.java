@@ -6,6 +6,8 @@ import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -39,8 +41,18 @@ public class CreateFieldCommand extends TableModeCommand<CreateResult> {
 		fieldName = PluginUtils.configureIdentifierProperty(configElem, FIELD_NAME, true);
 		type = PluginUtils.configureEnumProperty(FieldType.class, configElem, TYPE, true);
 		maxLength = PluginUtils.configureIntProperty(configElem, MAX_LENGTH, false);
-		if(type == FieldType.VARCHAR && maxLength == null) {
-			maxLength = 50;
+		if(type == FieldType.VARCHAR) {
+			if(maxLength == null) {
+				maxLength = 50;
+			} else {
+				if(type == FieldType.VARCHAR && maxLength > 10000) {
+					throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <maxLength> upper limit for VARCHAR is 10000");
+				}
+			}
+		} else {
+			if(maxLength != null) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "A <maxLength> may only be specified for VARCHAR");
+			}
 		}
 	}
 
