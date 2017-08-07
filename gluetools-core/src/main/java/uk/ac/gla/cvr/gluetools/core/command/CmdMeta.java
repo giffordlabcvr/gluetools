@@ -21,9 +21,5 @@ public class CmdMeta {
 		nonModeWrappable = "nonModeWrappable",
 		/** command consumes binary data as part of its input.
 		 *  this binary data must be provided in Base64 format using the property name specified in Command.BINARY_INPUT_PROPERTY */
-		consumesBinary = "consumesBinary",
-		/** command produces binary data as part of its output.
-		 *  this binary data must be provided in Base64 format inside an element of the command output document. 
-		 *  This element must have the name specified in Command.BINARY_OUTPUT_PROPERTY */
-		producesBinary = "producesBinary";
+		consumesBinary = "consumesBinary";
 }

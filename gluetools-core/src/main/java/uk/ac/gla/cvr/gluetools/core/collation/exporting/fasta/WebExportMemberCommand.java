@@ -27,9 +27,9 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 				"-c, --recursive                                      Include members of descendent alignments",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
-			    "-o <fileName>, --fileName <fileName>                  File name"
+			    "-o <fileName>, --fileName <fileName>                 File name"
 		},
-		metaTags = { CmdMeta.webApiOnly, CmdMeta.producesBinary },
+		metaTags = { CmdMeta.webApiOnly },
 		description="Export the sequences of alignment members to a FASTA file") 
 public class WebExportMemberCommand extends BaseExportMemberCommand<CommandWebFileResult> implements ProvidedProjectModeCommand {
 
