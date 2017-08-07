@@ -3,22 +3,18 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Map;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandWebFileResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
@@ -52,27 +48,14 @@ public class FastaAlignmentWebExportCommand extends BaseFastaAlignmentExportComm
 	}
 
 	@Override
-	public CommandWebFileResult execute(CommandContext cmdContext, FastaAlignmentExporter exporterPlugin) {
-		FastaAlignmentExportCommandDelegate delegate = getDelegate();
+	public CommandWebFileResult execute(CommandContext cmdContext, FastaAlignmentExporter fastaAlmtExporter) {
 		WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
 		String subDirUuid = webFilesManager.createSubDir();
 		webFilesManager.createWebFileResource(subDirUuid, fileName);
 
-		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
-
 		try(OutputStream outputStream = webFilesManager.appendToWebFileResource(subDirUuid, fileName)) {
 			PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
-			FastaAlignmentExporter.exportAlignment(cmdContext, delegate.getAlignmentColumnsSelector(cmdContext), 
-					delegate.getExcludeEmptyRows(), memberSupplier, new AbstractAlmtRowConsumer() {
-						@Override
-						public void consumeAlmtRow(CommandContext cmdContext, Map<String, String> memberPkMap, AlignmentMember almtMember,
-								String alignmentRowString) {
-							String fastaId = FastaAlignmentExporter.generateFastaId(exporterPlugin.getIdTemplate(), almtMember);
-							String fastaAlmtRowString = FastaUtils.seqIdCompoundsPairToFasta(fastaId, alignmentRowString, delegate.getLineFeedStyle());
-							printWriter.append(fastaAlmtRowString);
-							printWriter.flush();
-						}
-					});
+			super.exportAlignment(cmdContext, printWriter, fastaAlmtExporter);
 		} catch(Exception e) {
 			throw new CommandException(e, Code.COMMAND_FAILED_ERROR, "Write to web file resource "+subDirUuid+"/"+fileName+" failed: "+e.getMessage());
 		}
