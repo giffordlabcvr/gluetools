@@ -1,5 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
@@ -10,14 +16,16 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-d <orderStrategy>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
@@ -26,7 +34,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
 		    "-a, --allMembers                                     Export all members",
 		    "-e, --excludeEmptyRows                               Exclude empty rows",
-			"-d <orderStrategy>, --orderStrategy <orderStrategy>  Specify row ordering strategy",
 			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 			"-o <fileName>, --fileName <fileName>                 FASTA output file",
 			"-p, --preview                                        Preview output", 
@@ -39,13 +46,11 @@ public class FastaProteinAlignmentExportCommand extends BaseFastaProteinAlignmen
 	public static final String PREVIEW = "preview";
 	public static final String FILE_NAME = "fileName";
 
-	private FastaAlignmentExportCommandDelegate delegate = new FastaAlignmentExportCommandDelegate();
 	private Boolean preview;
 	private String fileName;
 
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		delegate.configure(pluginConfigContext, configElem, true);
 		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
 		if(fileName == null && !preview || fileName != null && preview) {
@@ -54,10 +59,22 @@ public class FastaProteinAlignmentExportCommand extends BaseFastaProteinAlignmen
 	}
 	
 	@Override
-	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter exporterPlugin) {
-		String fastaString = formAlmtString(cmdContext, exporterPlugin);
-		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		return exporterPlugin.formResult(consoleCmdContext, fastaString, fileName, preview);
+	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter almtExporter) {
+		if(preview) {
+			ByteArrayOutputStream previewBaos = new ByteArrayOutputStream();
+			PrintWriter printWriter = new PrintWriter(previewBaos);
+			super.exportProteinAlignment(cmdContext, almtExporter, printWriter);
+			return new SimpleConsoleCommandResult(new String(previewBaos.toByteArray()));
+		} else {
+			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+			try(OutputStream outputStream = consoleCmdContext.openFile(fileName)) {
+				PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
+				super.exportProteinAlignment(cmdContext, almtExporter, printWriter);
+			} catch (IOException ioe) {
+				throw new CommandException(ioe, Code.COMMAND_FAILED_ERROR, "Failed to write alignment file: "+ioe.getMessage());
+			}
+			return new OkResult();
+		}
 	}
 
 	

@@ -39,15 +39,10 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
-	public static final String ORDER_STRATEGY = "orderStrategy";
 	public static final String EXCLUDE_EMPTY_ROWS = "excludeEmptyRows";
 	public static final String SELECTOR_NAME = "selectorName";
 	public static final String LINE_FEED_STYLE = "lineFeedStyle";
 
-	
-	public enum OrderStrategy {
-		increasing_start_segment
-	}
 	
 	private String alignmentName;
 	private Optional<Expression> whereClause;
@@ -62,7 +57,6 @@ public class FastaAlignmentExportCommandDelegate {
 	private Integer ntStart;
 	private Integer ntEnd;
 	private Boolean excludeEmptyRows;
-	private OrderStrategy orderStrategy;
 	private String selectorName;
 	private LineFeedStyle lineFeedStyle;
 	
@@ -70,7 +64,6 @@ public class FastaAlignmentExportCommandDelegate {
 		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, true);
-		orderStrategy = PluginUtils.configureEnumProperty(OrderStrategy.class, configElem, ORDER_STRATEGY, false);
 		relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, featureRequired);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, featureRequired);
 		labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
@@ -165,10 +158,6 @@ public class FastaAlignmentExportCommandDelegate {
 		return lcEnd;
 	}
 
-	public OrderStrategy getOrderStrategy() {
-		return orderStrategy;
-	}
-
 	public Boolean getLabelledCodon() {
 		return labelledCodon;
 	}
@@ -199,7 +188,6 @@ public class FastaAlignmentExportCommandDelegate {
 			registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
 			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
-			registerEnumLookup("orderStrategy", OrderStrategy.class);
 			registerVariableInstantiator("relRefName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override

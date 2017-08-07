@@ -36,12 +36,12 @@ projectBrowser.controller('alignmentCtrl',
 						var cmdParams = {
 								recursive:true,
 								excludeEmptyRows:true,
-								labelledCodon:false
+								labelledCodon:false,
+								fileName:fileName
 						};
 						var moduleName;
 						if($scope.configuredResult.alignmentType == 'nucleotide') {
 							moduleName = fastaAlignmentExporter;
-							cmdParams.fileName = fileName;
 						} else {
 							moduleName = fastaProteinAlignmentExporter;
 						}
@@ -87,7 +87,12 @@ projectBrowser.controller('alignmentCtrl',
 						},
 						"Alignment file preparation in progress")
 					    .success(function(data, status, headers, config) {
-					    	var result = data.fastaAlignmentWebExportResult;
+					    	var result;
+							if($scope.configuredResult.alignmentType == 'nucleotide') {
+								result = data.fastaAlignmentWebExportResult;
+							} else {
+								result = data.fastaProteinAlignmentWebExportResult;
+							}
 							var dlg = dialogs.create(
 									glueWebToolConfig.getProjectBrowserURL()+'/dialogs/fileReady.html','fileReadyCtrl',
 									{ 

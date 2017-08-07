@@ -38,7 +38,7 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));
 	}
 
-	protected static String generateFastaId(Template idTemplate, AlignmentMember almtMember) {
+	public static String generateFastaId(Template idTemplate, AlignmentMember almtMember) {
 		TemplateModel templateModel = FreemarkerUtils.templateModelForObject(almtMember);
 		return FreemarkerUtils.processTemplate(idTemplate, templateModel);
 	}
@@ -54,7 +54,7 @@ public class AbstractFastaAlignmentExporter<T extends AbstractFastaAlignmentExpo
 		}
 	}
 
-	protected Template getIdTemplate() {
+	public Template getIdTemplate() {
 		return idTemplate;
 	}
 }

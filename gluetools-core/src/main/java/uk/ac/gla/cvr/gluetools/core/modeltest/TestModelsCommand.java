@@ -9,7 +9,6 @@ import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate.OrderStrategy;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
@@ -129,7 +128,6 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
-			registerEnumLookup("orderStrategy", OrderStrategy.class);
 			registerVariableInstantiator("relRefName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override

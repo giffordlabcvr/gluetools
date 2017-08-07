@@ -63,6 +63,7 @@ public class GenerateFastaAaConsensusCommand extends ModulePluginCommand<Command
 	protected CommandResult execute(CommandContext cmdContext, AminoAcidConsensusGenerator generatorPlugin) {
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
 				fileName, delegate.getAlignmentName(), delegate.getWhereClause(), 
+				delegate.getFeatureName(),
 				(SimpleAlignmentColumnsSelector) delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview,
 				consensusID, delegate.getLineFeedStyle());
 	}
