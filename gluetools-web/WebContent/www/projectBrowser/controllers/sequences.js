@@ -68,36 +68,49 @@ projectBrowser.controller('sequencesCtrl',
 			}
 			
 			$scope.downloadSequences = function(moduleName) {
-				console.log("Downloading sequences, using module '"+moduleName+"'");
-				var cmdParams = {};
-				if($scope.whereClause) {
-					cmdParams.whereClause = $scope.whereClause;
-				}
-				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
-				if(cmdParams.whereClause != null) {
-					cmdParams.allSequences = false;
-				} else {
-					cmdParams.allSequences = true;
-				}
-				
-				cmdParams.lineFeedStyle = "LF";
-				if(userAgent.os.family.indexOf("Windows") !== -1) {
-					cmdParams.lineFeedStyle = "CRLF";
-				}
+				saveFile.saveAsDialog("FASTA sequence file", 
+						"sequences.fasta",
+						function(fileName) {
 
-				$scope.analytics.eventTrack("sequenceFastaDownload", 
-						{   category: 'dataDownload', 
-							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+					console.log("Downloading sequences, using module '"+moduleName+"'");
+					var cmdParams = {
+							fileName: fileName
+					};
+					if($scope.whereClause) {
+						cmdParams.whereClause = $scope.whereClause;
+					}
+					$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+					if(cmdParams.whereClause != null) {
+						cmdParams.allSequences = false;
+					} else {
+						cmdParams.allSequences = true;
+					}
 
-				glueWS.runGlueCommandLong("module/"+moduleName, {
-			    	"web-export": cmdParams	
-				},
-				"FASTA sequence download in progress")
-			    .success(function(data, status, headers, config) {
-			    	var blob = $scope.b64ToBlob(data.fastaExportResult.base64, "text/plain", 512);
-				    saveFile.saveFile(blob, "FASTA sequence file", "sequences.fasta");
-			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequences"));
+					cmdParams.lineFeedStyle = "LF";
+					if(userAgent.os.family.indexOf("Windows") !== -1) {
+						cmdParams.lineFeedStyle = "CRLF";
+					}
+
+					$scope.analytics.eventTrack("sequenceFastaDownload", 
+							{   category: 'dataDownload', 
+						label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+
+					glueWS.runGlueCommandLong("module/"+moduleName, {
+						"web-export": cmdParams	
+					},
+					"FASTA sequence file preparation in progress")
+					.success(function(data, status, headers, config) {
+						var result = data.fastaWebExportResult;
+						var dlg = dialogs.create(
+								glueWebToolConfig.getProjectBrowserURL()+'/dialogs/fileReady.html','fileReadyCtrl',
+								{ 
+									url:"gluetools-ws/glue_web_files/"+result.webSubDirUuid+"/"+result.webFileName, 
+									fileName: result.webFileName,
+									fileSize: result.webFileSizeString
+								}, {});
+					})
+					.error(glueWS.raiseErrorDialog(dialogs, "preparing sequence file"));
+				});
 			}
 			
 			

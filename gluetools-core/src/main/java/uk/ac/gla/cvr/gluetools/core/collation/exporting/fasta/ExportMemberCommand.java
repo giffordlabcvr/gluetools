@@ -52,7 +52,7 @@ public class ExportMemberCommand extends BaseExportMemberCommand<CommandResult> 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
 		if(fileName == null && !preview || fileName != null && preview) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");

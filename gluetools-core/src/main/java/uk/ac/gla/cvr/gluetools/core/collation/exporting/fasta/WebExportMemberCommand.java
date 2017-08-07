@@ -59,7 +59,7 @@ public class WebExportMemberCommand extends BaseExportMemberCommand<CommandWebFi
 		}
 		String webFileSizeString = webFilesManager.getSizeString(subDirUuid, fileName);
 		
-		return new CommandWebFileResult("fastaExportResult", subDirUuid, fileName, webFileSizeString);
+		return new CommandWebFileResult("fastaWebExportMemberResult", subDirUuid, fileName, webFileSizeString);
 	}
 	
 }

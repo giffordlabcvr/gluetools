@@ -102,7 +102,7 @@ projectBrowser.controller('alignmentCtrl',
 									}, {});
 
 					    })
-					    .error(glueWS.raiseErrorDialog(dialogs, "preparing alignment"));
+					    .error(glueWS.raiseErrorDialog(dialogs, "preparing alignment file"));
 					});
 
 					
@@ -241,35 +241,46 @@ projectBrowser.controller('alignmentCtrl',
 			
 			
 			$scope.downloadSequences = function(moduleName) {
-				console.log("Downloading sequences, using module '"+moduleName+"'");
-				var cmdParams = {
-						alignmentName: $scope.almtName,
-						recursive: true
-				};
-				if($scope.memberWhereClause) {
-					cmdParams.whereClause = $scope.memberWhereClause;
-				}
-				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+				saveFile.saveAsDialog("FASTA sequence file", 
+						$scope.almtName+"_sequences.fasta",
+						function(fileName) {
+					console.log("Downloading sequences, using module '"+moduleName+"'");
+					var cmdParams = {
+							alignmentName: $scope.almtName,
+							recursive: true,
+							fileName: fileName
+					};
+					if($scope.memberWhereClause) {
+						cmdParams.whereClause = $scope.memberWhereClause;
+					}
+					$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
 
-				cmdParams.lineFeedStyle = "LF";
-				if(userAgent.os.family.indexOf("Windows") !== -1) {
-					cmdParams.lineFeedStyle = "CRLF";
-				}
+					cmdParams.lineFeedStyle = "LF";
+					if(userAgent.os.family.indexOf("Windows") !== -1) {
+						cmdParams.lineFeedStyle = "CRLF";
+					}
 
-				$scope.analytics.eventTrack("memberSequenceFastaDownload", 
-						{   category: 'dataDownload', 
-							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+					$scope.analytics.eventTrack("memberSequenceFastaDownload", 
+							{   category: 'dataDownload', 
+						label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
 
-				glueWS.runGlueCommandLong("module/"+moduleName, {
-			    	"web-export-member": cmdParams	
-				},
-				"FASTA sequence download in progress")
-			    .success(function(data, status, headers, config) {
-			    	var blob = $scope.b64ToBlob(data.fastaExportResult.base64, "text/plain", 512);
-				    saveFile.saveFile(blob, "FASTA sequence file", "sequences.fasta");
-			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequences"));
-			}
+					glueWS.runGlueCommandLong("module/"+moduleName, {
+						"web-export-member": cmdParams	
+					},
+					"FASTA sequence file preparation in progress")
+					.success(function(data, status, headers, config) {
+						var result = data.fastaWebExportMemberResult;
+						var dlg = dialogs.create(
+								glueWebToolConfig.getProjectBrowserURL()+'/dialogs/fileReady.html','fileReadyCtrl',
+								{ 
+									url:"gluetools-ws/glue_web_files/"+result.webSubDirUuid+"/"+result.webFileName, 
+									fileName: result.webFileName,
+									fileSize: result.webFileSizeString
+								}, {});
+					})
+					.error(glueWS.raiseErrorDialog(dialogs, "preparing sequence file"));
+				})
+			};
 
 			
 			$scope.featurePresenceFilter = function() {
