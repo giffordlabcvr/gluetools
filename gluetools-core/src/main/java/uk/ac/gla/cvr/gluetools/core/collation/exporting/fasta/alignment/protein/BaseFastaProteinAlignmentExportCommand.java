@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein;
 
 import java.io.PrintWriter;
-import java.util.Map;
 
 import org.w3c.dom.Element;
 
@@ -34,9 +33,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 
 		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
 			@Override
-			public void consumeAlmtRow(CommandContext cmdContext,
-					Map<String, String> memberPkMap, AlignmentMember almtMember,
-					String alignmentRowString) {
+			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				String fastaId = FastaProteinAlignmentExporter.generateFastaId(almtExporter.getIdTemplate(), almtMember);
 				printWriter.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId, alignmentRowString, delegate.getLineFeedStyle()));
 				printWriter.flush();

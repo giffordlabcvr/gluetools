@@ -1,14 +1,27 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Optional;
+
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.QuerySequenceSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -16,31 +29,54 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] -f <fileName>"},
+		docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] (-p | -f <fileName>)"},
 		docoptOptions={
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 				"-f <fileName>, --fileName <fileName>                 FASTA file",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
-			    "-a, --allSequences                                   Export all project sequences"},
+			    "-a, --allSequences                                   Export all project sequences",
+				"-p, --preview                                        Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
 		description="Export sequences to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-public class ExportCommand extends BaseExportCommand<OkResult> implements ProvidedProjectModeCommand {
+public class ExportCommand extends BaseExportSequenceCommand<CommandResult> implements ProvidedProjectModeCommand {
 
+	public static final String PREVIEW = "preview";
+	public static final String FILE_NAME = "fileName";
+
+	private Boolean preview;
 	private String fileName;
 
-	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		if(fileName == null && !preview || fileName != null && preview) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
+		}
 	}
-
+	
 	@Override
-	protected OkResult execute(CommandContext cmdContext, FastaExporter importerPlugin) {
-		byte[] fastaBytes = importerPlugin.doExport(cmdContext, getWhereClause(), getLineFeedStyle());
-		((ConsoleCommandContext) cmdContext).saveBytes(fileName, fastaBytes);
-		return new OkResult();
+	protected CommandResult execute(CommandContext cmdContext, FastaExporter fastaExporter) {
+		
+		AbstractSequenceSupplier sequenceSupplier = 
+				new QuerySequenceSupplier(Optional.ofNullable(getWhereClause()));
 
+		if(preview) {
+			ByteArrayOutputStream previewBaos = new ByteArrayOutputStream();
+			PrintWriter printWriter = new PrintWriter(previewBaos);
+			super.export(cmdContext, sequenceSupplier, fastaExporter, printWriter);
+			return new SimpleConsoleCommandResult(new String(previewBaos.toByteArray()));
+		} else {
+			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+			try(OutputStream outputStream = consoleCmdContext.openFile(fileName)) {
+				PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
+				super.export(cmdContext, sequenceSupplier, fastaExporter, printWriter);
+			} catch (IOException ioe) {
+				throw new CommandException(ioe, Code.COMMAND_FAILED_ERROR, "Failed to write alignment file: "+ioe.getMessage());
+			}
+			return new OkResult();
+		}
 	}
 	
 	@CompleterClass

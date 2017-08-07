@@ -108,7 +108,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 				alignmentRow.append("-");
 				ntIndex += 3;
 			}
-			almtRowConsumer.consumeAlmtRow(cmdContext, almtMember.pkMap(), almtMember, alignmentRow.toString());
+			almtRowConsumer.consumeAlmtRow(cmdContext, almtMember, alignmentRow.toString());
 		}
 	}
 

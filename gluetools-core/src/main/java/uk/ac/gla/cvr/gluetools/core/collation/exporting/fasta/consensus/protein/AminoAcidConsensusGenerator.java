@@ -42,10 +42,9 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 		FastaProteinAlignmentExporter.exportAlignment(cmdContext, featureName, alignmentColumnsSelector, false, queryMemberSupplier, 
 				new AbstractAlmtRowConsumer() {
 					@Override
-					public void consumeAlmtRow(CommandContext cmdContext,
-							Map<String, String> memberPkMap, AlignmentMember almtMember,
+					public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember,
 							String alignmentRowString) {
-						memberPkMapToAlmtRow.put(memberPkMap, alignmentRowString);
+						memberPkMapToAlmtRow.put(almtMember.pkMap(), alignmentRowString);
 					}
 				});
 		

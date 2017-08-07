@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
 import java.io.PrintWriter;
-import java.util.Map;
 
 import org.w3c.dom.Element;
 
@@ -27,8 +26,7 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
 		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
 			@Override
-			public void consumeAlmtRow(CommandContext cmdContext, Map<String, String> memberPkMap, AlignmentMember almtMember,
-					String alignmentRowString) {
+			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				String fastaId = FastaAlignmentExporter.generateFastaId(fastaAlmtExporter.getIdTemplate(), almtMember);
 				String fastaAlmtRowString = FastaUtils.seqIdCompoundsPairToFasta(fastaId, alignmentRowString, delegate.getLineFeedStyle());
 				printWriter.append(fastaAlmtRowString);

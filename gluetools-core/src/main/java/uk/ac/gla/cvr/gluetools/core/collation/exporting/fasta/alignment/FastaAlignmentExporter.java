@@ -99,7 +99,6 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		int maxRefNt_final = minMaxSeg.getRefEnd();
 
 		for(AlignmentMember almtMember: almtMembers) {
-			Map<String,String> pkMap = almtMember.pkMap();
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
 			if(alignmentColumnsSelector != null) {
 				// related reference specified in order to specify feature location
@@ -134,7 +133,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				ntIndex++;
 			}
 			if( (!truncatedQaSegs.isEmpty()) || !excludeEmptyRows) {
-				almtRowConsumer.consumeAlmtRow(cmdContext, pkMap, almtMember, alignmentRow.toString());
+				almtRowConsumer.consumeAlmtRow(cmdContext, almtMember, alignmentRow.toString());
 			} 
 	    }
 	}
@@ -146,10 +145,8 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		Map<Map<String,String>, DNASequence> pkMapToRowDnaSeq = new LinkedHashMap<Map<String,String>, DNASequence>();
 		exportAlignment(cmdContext, alignmentColumnsSelector, excludeEmptyRows, memberSupplier, new AbstractAlmtRowConsumer() {
 			@Override
-			public void consumeAlmtRow(CommandContext cmdContext,
-					Map<String, String> memberPkMap, AlignmentMember almtMember,
-					String alignmentRowString) {
-				pkMapToRowDnaSeq.put(memberPkMap, FastaUtils.ntStringToSequence(alignmentRowString));
+			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
+				pkMapToRowDnaSeq.put(almtMember.pkMap(), FastaUtils.ntStringToSequence(alignmentRowString));
 			}
 		});
 		return pkMapToRowDnaSeq;
