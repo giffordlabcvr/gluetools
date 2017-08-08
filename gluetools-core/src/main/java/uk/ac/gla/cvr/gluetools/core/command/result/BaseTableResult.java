@@ -30,10 +30,12 @@ public class BaseTableResult<D> extends CommandResult {
 	public static final String ROW = "row";
 	public static final String COLUMN = "column";
 
+	private int numRows;
 	
 	@SafeVarargs
 	public BaseTableResult(String rootObjectName, List<D> rowObjects, TableColumn<D> ... tableColumns) {
 		super(rootObjectName);
+		this.numRows = rowObjects.size();
 		CommandDocument builder = getCommandDocument();
 		CommandArray columnsArrayBuilder = builder.setArray(COLUMN);
 		for(TableColumn<D> column: tableColumns) {
@@ -47,6 +49,10 @@ public class BaseTableResult<D> extends CommandResult {
 			}
 		}
 
+	}
+	
+	public int getNumRows() {
+		return numRows;
 	}
 	
 	public static <D> TableColumn<D> column(String header, Function<D, Object> columnPopulator) {
@@ -318,16 +324,19 @@ public class BaseTableResult<D> extends CommandResult {
 
 	private void renderDelimitedTable(CommandResultRenderingContext renderCtx,
 			String delimiter) {
+		StringBuffer buf;
 		List<String> columnHeaders = getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps(columnHeaders);
-		StringBuffer buf = new StringBuffer();
-		for(int i = 0; i < columnHeaders.size(); i++) {
-			buf.append(columnHeaders.get(i));
-			if(i < columnHeaders.size() - 1) {
-				buf.append(delimiter);
+		if(renderCtx.renderTableHeaders()) {
+			buf = new StringBuffer();
+			for(int i = 0; i < columnHeaders.size(); i++) {
+				buf.append(columnHeaders.get(i));
+				if(i < columnHeaders.size() - 1) {
+					buf.append(delimiter);
+				}
 			}
+			renderCtx.output(buf.toString());
 		}
-		renderCtx.output(buf.toString());
 		for(Map<String, Object> rowData: listOfMaps) {
 			buf = new StringBuffer();
 			for(int i = 0; i < columnHeaders.size(); i++) {

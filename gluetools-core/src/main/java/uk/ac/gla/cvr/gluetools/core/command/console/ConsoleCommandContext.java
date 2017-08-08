@@ -336,7 +336,7 @@ public class ConsoleCommandContext extends CommandContext {
 			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
 				lineFeedStyle = LineFeedStyle.CRLF;
 			}
-			OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat, lineFeedStyle);
+			OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat, lineFeedStyle, true);
 			commandResult.renderResult(fileRenderingContext);
 			byte[] byteArray = baos.toByteArray();
 			saveBytes(filePath, byteArray);

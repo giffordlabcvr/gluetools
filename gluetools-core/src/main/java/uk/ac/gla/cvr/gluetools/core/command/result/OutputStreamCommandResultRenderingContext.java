@@ -9,11 +9,13 @@ public class OutputStreamCommandResultRenderingContext implements CommandResultR
 	private PrintWriter printWriter;
 	private ResultOutputFormat consoleOutputFormat;
 	private LineFeedStyle lineFeedStyle;
+	private boolean renderTableHeaders;
 	public OutputStreamCommandResultRenderingContext(OutputStream outputStream, ResultOutputFormat consoleOutputFormat,
-			LineFeedStyle lineFeedStyle) {
+			LineFeedStyle lineFeedStyle, boolean renderTableHeaders) {
 		this.printWriter = new PrintWriter(outputStream);
 		this.consoleOutputFormat = consoleOutputFormat;
 		this.lineFeedStyle = lineFeedStyle;
+		this.renderTableHeaders = renderTableHeaders;
 	}
 	
 	@Override
@@ -35,6 +37,13 @@ public class OutputStreamCommandResultRenderingContext implements CommandResultR
 		return this.consoleOutputFormat;
 	}
 
+	@Override
+	public boolean renderTableHeaders() {
+		return renderTableHeaders;
+	}
+
+	
+	
 	
 	
 }

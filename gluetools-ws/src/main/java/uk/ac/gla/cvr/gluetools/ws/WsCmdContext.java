@@ -131,7 +131,7 @@ public class WsCmdContext extends CommandContext {
 			}
 			
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			cmdResult.renderResult(new OutputStreamCommandResultRenderingContext(byteArrayOutputStream, resultOutputFormat, lineFeedStyle));
+			cmdResult.renderResult(new OutputStreamCommandResultRenderingContext(byteArrayOutputStream, resultOutputFormat, lineFeedStyle, true));
 			// replace cmdResult with one containing binary rendering of the table.
 			cmdResult = new CommandBinaryResult("binaryTableResult", byteArrayOutputStream.toByteArray());
 		}

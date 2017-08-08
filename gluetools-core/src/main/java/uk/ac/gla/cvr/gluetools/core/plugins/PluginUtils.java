@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -419,16 +420,26 @@ public class PluginUtils {
 		}
 		return configuredValue;
 	}
-	
+
 	public static <E extends Enum<E>> E configureEnumProperty(Class<E> enumClass, Element configElem, String propertyName, boolean required) {
+		return configureEnumProperty(enumClass, configElem, propertyName, EnumSet.allOf(enumClass), required);
+	}
+	
+	public static <E extends Enum<E>> E configureEnumProperty(Class<E> enumClass, Element configElem, String propertyName, EnumSet<E> allowedValues, boolean required) {
 		String configuredString = configureStringProperty(configElem, propertyName, required);
 		if(configuredString == null) { return null; }
+		E value = null;
 		try {
-			return Enum.valueOf(enumClass, configuredString);
+			value = Enum.valueOf(enumClass, configuredString);
 		} catch(IllegalArgumentException iae) {
-			String msg = "Allowed values: "+Arrays.asList(enumClass.getEnumConstants());
+			String msg = "Allowed values: "+allowedValues.stream().map(s -> s.name()).collect(Collectors.toList());
 			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, msg, configuredString);
 		}
+		if(!allowedValues.contains(value)) {
+			String msg = "Allowed values: "+allowedValues.stream().map(s -> s.name()).collect(Collectors.toList());
+			throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, propertyName, msg, configuredString);
+		}
+		return value;
 	}
 
 	

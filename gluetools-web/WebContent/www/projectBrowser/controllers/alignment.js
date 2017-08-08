@@ -201,42 +201,49 @@ projectBrowser.controller('alignmentCtrl',
 			
 			$scope.downloadMemberMetadata = function() {
 				console.log("Downloading clade member metadata");
-				var cmdParams = {
-		            "fieldName": $scope.memberFields,
-		            "recursive": true
-			    };
-				if($scope.memberWhereClause) {
-					cmdParams.whereClause = $scope.memberWhereClause;
-				}
-				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
-				$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
-
-				var glueHeaders = {
-						"glue-binary-table-result" : true,
-						"glue-binary-table-result-format" : "TAB",
-						"glue-binary-table-line-feed-style" : "LF"
-				};
-
-				if(userAgent.os.family.indexOf("Windows") !== -1) {
-					glueHeaders["glue-binary-table-line-feed-style"] = "CRLF";
-					
-				}
 				
-				$scope.analytics.eventTrack("memberMetadataDownload", 
-						{   category: 'dataDownload', 
-							label: 'alignment:'+$scope.almtName+',totalItems:'+$scope.pagingContext.getTotalItems() });
-				glueWS.runGlueCommandLong("alignment/"+$scope.almtName, {
-			    	"list": {
-			    		"member" : cmdParams
-			    	},
-				},
-				"Clade member metadata download in progress",
-		    	glueHeaders)
-			    .success(function(data, status, headers, config) {
-			    	var blob = $scope.b64ToBlob(data.binaryTableResult.base64, "text/plain", 512);
-			    	saveFile.saveFile(blob, "clade member metadata file", $scope.almtName+"_metadata.txt");
-			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "downloading clade member metadata"));
+				saveFile.saveAsDialog("Metadata file", 
+						$scope.almtName+"_metadata.txt",
+						function(fileName) {
+					var cmdParams = {
+				            "fieldName": $scope.memberFields,
+				            "recursive": true,
+				            "lineFeedStyle": "LF",
+				            "outputFormat": "TAB",
+				            "fileName": fileName
+					    };
+						if($scope.memberWhereClause) {
+							cmdParams.whereClause = $scope.memberWhereClause;
+						}
+						$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+						$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
+
+						if(userAgent.os.family.indexOf("Windows") !== -1) {
+							cmdParams["lineFeedStyle"] = "CRLF";
+							
+						}
+						$scope.analytics.eventTrack("memberMetadataDownload", 
+								{   category: 'dataDownload', 
+									label: 'alignment:'+$scope.almtName+',totalItems:'+$scope.pagingContext.getTotalItems() });
+						glueWS.runGlueCommandLong("alignment/"+$scope.almtName, {
+					    	"web-list": {
+					    		"member" : cmdParams
+					    	},
+						},
+						"Metadata file preparation in progress")
+					    .success(function(data, status, headers, config) {
+					    	var result = data.webListMemberResult;
+							var dlg = dialogs.create(
+									glueWebToolConfig.getProjectBrowserURL()+'/dialogs/fileReady.html','fileReadyCtrl',
+									{ 
+										url:"gluetools-ws/glue_web_files/"+result.webSubDirUuid+"/"+result.webFileName, 
+										fileName: result.webFileName,
+										fileSize: result.webFileSizeString
+									}, {});
+					    })
+					    .error(glueWS.raiseErrorDialog(dialogs, "preparing metadata file"));
+				});
+				
 			}
 			
 			

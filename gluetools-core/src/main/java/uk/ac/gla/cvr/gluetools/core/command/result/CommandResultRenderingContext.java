@@ -10,4 +10,8 @@ public interface CommandResultRenderingContext extends RenderContext {
 
 	public ResultOutputFormat getResultOutputFormat();
 	
+	public default boolean renderTableHeaders() {
+		return true;
+	}
+	
 }

@@ -96,6 +96,18 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 			this.sortComparator = sortComparator;
 		}
 
+		public void setPageSize(int pageSize) {
+			this.pageSize = pageSize;
+		}
+
+		public void setFetchLimit(Optional<Integer> fetchLimit) {
+			this.fetchLimit = fetchLimit;
+		}
+
+		public void setFetchOffset(Optional<Integer> fetchOffset) {
+			this.fetchOffset = fetchOffset;
+		}
+
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 			whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 			fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
