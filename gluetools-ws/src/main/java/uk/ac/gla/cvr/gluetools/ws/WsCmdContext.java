@@ -110,33 +110,6 @@ public class WsCmdContext extends CommandContext {
 		} finally {
 			dispose();
 		}
-		String glueBinaryTableResult = requestHeaders.getHeaderString("glue-binary-table-result");
-		if(glueBinaryTableResult != null && glueBinaryTableResult.equals("true")) {
-			if(!(cmdResult instanceof BaseTableResult)) {
-				throw new CommandException(CommandException.Code.COMMAND_RESULT_NOT_A_TABLE, cmdClass.getSimpleName(), cmdResult.getClass().getSimpleName());
-			}
-			String glueBinaryTableResultFormat = Optional.ofNullable(requestHeaders.getHeaderString("glue-binary-table-result-format")).orElse("TAB");
-			ResultOutputFormat resultOutputFormat;
-			try {
-				resultOutputFormat = ResultOutputFormat.valueOf(glueBinaryTableResultFormat);
-			} catch(IllegalArgumentException iae) {
-				throw new CommandException(CommandException.Code.INVALID_RESULT_FORMAT, glueBinaryTableResultFormat);
-			}
-			String glueBinaryTableLineFeedStyle = Optional.ofNullable(requestHeaders.getHeaderString("glue-binary-table-line-feed-style")).orElse("LF");
-			LineFeedStyle lineFeedStyle;
-			try {
-				lineFeedStyle = LineFeedStyle.valueOf(glueBinaryTableLineFeedStyle);
-			} catch(IllegalArgumentException iae) {
-				throw new CommandException(CommandException.Code.INVALID_LINE_FEED_STYLE, glueBinaryTableLineFeedStyle);
-			}
-			
-			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			cmdResult.renderResult(new OutputStreamCommandResultRenderingContext(byteArrayOutputStream, resultOutputFormat, lineFeedStyle, true));
-			// replace cmdResult with one containing binary rendering of the table.
-			cmdResult = new CommandBinaryResult("binaryTableResult", byteArrayOutputStream.toByteArray());
-		}
-		//logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
-		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart)+"ms");
 		String cmdResultString = serializeToJson(cmdResult);
 		addCacheDisablingHeaders(response);
 		return cmdResultString;
