@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.command.project;
 
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -17,6 +18,9 @@ import uk.ac.gla.cvr.gluetools.core.command.project.AbstractListCTableCommand.Ab
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -25,29 +29,26 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
 @CommandClass( 
-		commandWords={"web-list", "member"},
-		docoptUsages={"[-r] [-w <whereClause>] [-s <sortProperties>] [-f <outputFormat>] [-y <lineFeedStyle>] -o <fileName> [<fieldName> ...]"},
-		docoptOptions={
-				"-r, --recursive                                         Include descendent members",
-				"-w <whereClause>, --whereClause <whereClause>           Qualify result set",
-				"-f <outputFormat>, --outputFormat <outputFormat>        Result output format: CSV/TAB",
-				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>     Line feed style: LF/CRLF",
-				"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties",
-				"-o <fileName>, --fileName <fileName>                    Web file name"
-			},
-		description="List member sequences or field values",
-		metaTags={CmdMeta.webApiOnly},
-		furtherHelp=
-		"The optional whereClause qualifies which alignment member are displayed.\n"+
-		"If whereClause is not specified, all alignment members are displayed.\n"+
-		"The optional sortProperties allows combined ascending/descending orderings, e.g. +property1,-property2.\n"+
-		"Where fieldNames are specified, only these field values will be displayed.\n"+
-		"Examples:\n"+
-		"  web-list member -w \"sequence.source.name = 'local'\" -o values.txt\n"+
-		"  web-list member -w \"sequence.sequenceID like 'f%' and sequence.custom_field = 'value1'\" -o values.txt\n"+
-		"  web-list member -o values.txt sequence.sequenceID sequence.custom_field"
-	) 
-public class AlignmentWebListMemberCommand extends AlignmentBaseListMemberCommand<CommandWebFileResult> {
+	commandWords={"web-list", "sequence"},
+	docoptUsages={"[-w <whereClause>] [-s <sortProperties>] [-f <outputFormat>] [-y <lineFeedStyle>] -o <fileName> [<fieldName> ...]"},
+	docoptOptions={
+		"-w <whereClause>, --whereClause <whereClause>           Qualify result set",
+		"-f <outputFormat>, --outputFormat <outputFormat>        Result output format: CSV/TAB",
+		"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>     Line feed style: LF/CRLF",
+		"-o <fileName>, --fileName <fileName>                    Web file name",
+		"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties"},
+	description="List sequences or sequence field values",
+	metaTags={CmdMeta.webApiOnly},
+	furtherHelp=
+	"The optional whereClause qualifies which sequences are displayed.\n"+
+	"The optional sortProperties allows combined ascending/descending orderings, e.g. +property1,-property2.\n"+
+	"Where fieldNames are specified, only these field values will be displayed.\n"+
+	"Examples:\n"+
+	"  web-list sequence -w \"source.name = 'local'\" -o metadata.txt\n"+
+	"  web-list sequence -w \"sequenceID like 'f%' and custom_field = 'value1'\" -o metadata.txt\n"+
+	"  web-list sequence -o metadata.txt sequenceID custom_field"
+) 
+public class WebListSequenceCommand extends ProjectModeCommand<CommandWebFileResult> {
 
 	public static final String FILE_NAME = "fileName";
 	public static final String LINE_FEED_STYLE = "lineFeedStyle";
@@ -56,32 +57,43 @@ public class AlignmentWebListMemberCommand extends AlignmentBaseListMemberComman
 	private String fileName;
 	private LineFeedStyle lineFeedStyle;
 	private ResultOutputFormat outputFormat;
+	private AbstractListCTableDelegate listCTableDelegate = new AbstractListCTableDelegate();
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		this.listCTableDelegate.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
 		this.outputFormat = Optional.ofNullable(PluginUtils.configureEnumProperty(ResultOutputFormat.class, configElem, OUTPUT_FORMAT,
 				EnumSet.of(ResultOutputFormat.CSV, ResultOutputFormat.TAB), false)).orElse(ResultOutputFormat.TAB);
 	}
-
 	
+	public WebListSequenceCommand() {
+		super();
+		this.listCTableDelegate.setTableName(ConfigurableTable.sequence.name());
+	}
+
 	@Override
 	public CommandWebFileResult execute(CommandContext cmdContext) {
 		WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
 		String subDirUuid = webFilesManager.createSubDir();
 		webFilesManager.createWebFileResource(subDirUuid, fileName);
 		
-		AbstractListCTableDelegate delegate = super.getListCTableDelegate();
-		
-		int numMembers = AlignmentBaseListMemberCommand.countMembers(cmdContext, lookupAlignment(cmdContext), getRecursive(), delegate.getWhereClause());
-		delegate.setWhereClause(Optional.of(getMatchExpression(lookupAlignment(cmdContext), getRecursive(), delegate.getWhereClause())));
-		GlueLogger.getGlueLogger().log(Level.INFO, "processing "+numMembers+" alignment members");
+		AbstractListCTableDelegate delegate = this.listCTableDelegate;
+
+		SelectQuery selectQuery;
+		if(delegate.getWhereClause().isPresent()) {
+			selectQuery = new SelectQuery(Sequence.class, delegate.getWhereClause().get());
+		} else {
+			selectQuery = new SelectQuery(Sequence.class);
+		}
+		int numSeqs = GlueDataObject.count(cmdContext, selectQuery);
+		GlueLogger.getGlueLogger().log(Level.INFO, "processing "+numSeqs+" sequences");
 		int offset = 0;
 		int processed = 0;
 		int batchSize = 500;
-		while(offset < numMembers) {
+		while(offset < numSeqs) {
 			delegate.setFetchOffset(Optional.of(offset));
 			delegate.setFetchLimit(Optional.of(batchSize));
 			delegate.setPageSize(batchSize);
@@ -94,11 +106,13 @@ public class AlignmentWebListMemberCommand extends AlignmentBaseListMemberComman
 				throw new CommandException(e, CommandException.Code.COMMAND_FAILED_ERROR, "Write to web file resource "+subDirUuid+"/"+fileName+" failed: "+e.getMessage());
 			}
 			processed += batchResult.getNumRows();
-			GlueLogger.getGlueLogger().log(Level.INFO, "processed "+processed+" alignment members");
+			GlueLogger.getGlueLogger().log(Level.INFO, "processed "+processed+" sequences");
 			offset += batchSize;
 			cmdContext.newObjectContext();
 		}
 		String webFileSizeString = webFilesManager.getSizeString(subDirUuid, fileName);
-		return new CommandWebFileResult("webListMemberResult", subDirUuid, fileName, webFileSizeString);
+		return new CommandWebFileResult("webListSequenceResult", subDirUuid, fileName, webFileSizeString);
 	}
+
+
 }

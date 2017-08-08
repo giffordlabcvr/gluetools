@@ -116,43 +116,49 @@ projectBrowser.controller('sequencesCtrl',
 			
 			$scope.downloadSequenceMetadata = function() {
 				console.log("Downloading sequence metadata");
-				var cmdParams = {
-		            "fieldName": $scope.fieldNames
-			    };
-				if($scope.whereClause) {
-					cmdParams.whereClause = $scope.whereClause;
-				}
-				$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
-				$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
-
-				var glueHeaders = {
-						"glue-binary-table-result" : true,
-						"glue-binary-table-result-format" : "TAB",
-						"glue-binary-table-line-feed-style" : "LF"
-				};
-
-				if(userAgent.os.family.indexOf("Windows") !== -1) {
-					glueHeaders["glue-binary-table-line-feed-style"] = "CRLF";
-					
-				}
-
 				
-				$scope.analytics.eventTrack("sequenceMetadataDownload", 
-						{   category: 'dataDownload', 
-							label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+				saveFile.saveAsDialog("Sequence metadata file", 
+						"sequence_metadata.txt", function(fileName) {
+					var cmdParams = {
+							"fieldName": $scope.fieldNames,
+							"lineFeedStyle": "LF",
+							"outputFormat": "TAB",
+							"fileName": fileName
+					};
+					if($scope.whereClause) {
+						cmdParams.whereClause = $scope.whereClause;
+					}
+					$scope.pagingContext.extendCmdParamsWhereClause(cmdParams);
+					$scope.pagingContext.extendCmdParamsSortOrder(cmdParams);
 
-				glueWS.runGlueCommandLong("", {
-			    	"list": {
-			    		"sequence" : cmdParams
-			    	},
-				},
-				"Sequence metadata download in progress",
-		    	glueHeaders)
-			    .success(function(data, status, headers, config) {
-			    	var blob = $scope.b64ToBlob(data.binaryTableResult.base64, "text/plain", 512);
-				    saveFile.saveFile(blob, "sequence metadata file", "sequence_metadata.txt");
-			    })
-			    .error(glueWS.raiseErrorDialog(dialogs, "downloading sequence metadata"));
+					if(userAgent.os.family.indexOf("Windows") !== -1) {
+						cmdParams["lineFeedStyle"] = "CRLF";
+
+					}
+
+					$scope.analytics.eventTrack("sequenceMetadataDownload", 
+							{   category: 'dataDownload', 
+						label: 'totalItems:'+$scope.pagingContext.getTotalItems() });
+
+					glueWS.runGlueCommandLong("", {
+						"web-list": {
+							"sequence" : cmdParams
+						},
+					},
+					"Sequence metadata file preparation in progress")
+					.success(function(data, status, headers, config) {
+						var result = data.webListSequenceResult;
+						var dlg = dialogs.create(
+								glueWebToolConfig.getProjectBrowserURL()+'/dialogs/fileReady.html','fileReadyCtrl',
+								{ 
+									url:"gluetools-ws/glue_web_files/"+result.webSubDirUuid+"/"+result.webFileName, 
+									fileName: result.webFileName,
+									fileSize: result.webFileSizeString
+								}, {});
+					})
+					.error(glueWS.raiseErrorDialog(dialogs, "preparing sequence metadata file"));
+				});
+				
 			}
 			
 			
