@@ -81,7 +81,7 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 		for(VariationScanMemberCount memberCount: scanCounts) {
 			double frequency = memberCount.getPctWherePresent();
 			if( (minFrequencyPct == null || frequency >= minFrequencyPct)  ) {
-				if( (minSampleSize == null || memberCount.getMembersWherePresent() >= minSampleSize)  ) {
+				if( (minSampleSize == null || (memberCount.getMembersWherePresent() + memberCount.getMembersWhereAbsent()) >= minSampleSize)  ) {
 					
 					VariationFrequenciesGenerator.AlignmentVariationReport almtVarReport = 
 							new VariationFrequenciesGenerator.AlignmentVariationReport();
