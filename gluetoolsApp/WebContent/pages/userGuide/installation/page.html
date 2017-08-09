@@ -1,17 +1,28 @@
 <h2>{{installationMenuTitle}}</h2>
 
-<p>If you have already installed GLUE and you would like to upgrade your current GLUE installation to a new version, skip to <a ng-click="scrollTo('installTheGlueJar')">Install the GLUE jar</a>
+<ol>
+	<li><a ng-click="scrollTo('operatingSystems')">Supported operating systems</a></li>
+	<li><a ng-click="scrollTo('java')">Core prerequisite: Java</a></li>
+	<li><a ng-click="scrollTo('mySql')">Core prerequisite: MySQL</a></li>
+	<li><a ng-click="scrollTo('installDirectory')">The GLUE install directory</a></li>
+	<li><a ng-click="scrollTo('glueEngineJar')">The GLUE engine jar</a></a></li>
+	<li><a ng-click="scrollTo('configFile')">The GLUE XML configuration file</a></li>
+	<li><a ng-click="scrollTo('runCommandLine')">Running the GLUE command line</a></li>
+	<li><a ng-click="scrollTo('upgradingGlue')">Upgrading GLUE</a></li>
+	<li><a ng-click="scrollTo('blast')">Recommended integration: BLAST+</a></li>
+	<li><a ng-click="scrollTo('exampleProject')">Download and build the example GLUE project</a></li>
+	<li><a ng-click="scrollTo('mafft')">Optional integration: MAFFT</a></li>
+	<li><a ng-click="scrollTo('raxml')">Optional integration: RAxML</a></li>
+</ol>
 
-
-
-<h3>Operating system</h3>
+<h3 id="operatingSystems">Supported operating systems</h3>
 <p>You can install GLUE on MS Windows, Linux and Mac OSX.</p>
-<p>If you are using Windows, we strongly recommend installing Cygwin, which you can download from <a href="http://cygwin.org/">cygwin.org</a>.
+<p>If you are using Windows, you must also install Cygwin, which you can download from <a target="_blank" href="http://cygwin.org/">cygwin.org</a>.
 </p>
 
-<h3>Prerequisite: Java</h3>
+<h3 id="java">Core prerequisite: Java</h3>
 
-Download and install Java 1.8.0 or later, from <a href="http://www.java.com/">java.com</a>.
+Download and install Oracle Java 1.8.0 or later, from <a target="_blank" href="http://www.java.com/">java.com</a>.
 
 <p>
 Make sure you can run the correct version of the "java" program from the command line:
@@ -21,16 +32,15 @@ Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
 Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 </pre>
 
-<h3>Prerequisite: MySQL</h3>
+<h3 id="mySql">Core prerequisite: MySQL</h3>
 
-<p>GLUE requires a relational database manager. We recommend MySQL, certain other vendors may also be possible.</p>
+<p>GLUE requires a relational database management system (RDBMS). MySQL is the only RDBMS which GLUE works with at present, certain other RDBMS options may be possible in the future.</p>
 
-<p>Download and install MySQL 5.6 or later, from <a href="http://www.mysql.com/">mysql.com</a>.</p>
+<p>Download and install MySQL 5.6 or later, from <a target="_blank" href="http://www.mysql.com/">mysql.com</a>.</p>
 
 <p>GLUE connects to a named database with a specific username/password, and stores its data in that database. 
 So within MySQL, you would normally create a username/password and named database specifically for GLUE.
 Example set up: </p>
-
 <ul>
 	<li>MySQL username: gluetools</li>
 	<li>MySQL password: glue12345</li>
@@ -59,27 +69,17 @@ mysql> use GLUE_TOOLS;
 Database changed
 </div>
 
-<h3>Prerequisite: BLAST+</h3>
-<p>GLUE uses the BLAST+ program for auto-alignment and certain other features.</p>
-<p>Download and install BLAST+ 2.2.31 from 
-<a href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/">NCBI's BLAST+ FTP page</a>.
+<h3 id="installDirectory">The GLUE install directory</h3>
 
-<p>In the case of Mac OSX you should use the 'universal-macosx' BLAST+ distribution.</p>
-GLUE may function correctly with later versions of BLAST+ but this has not been fully tested.
-
-Make a note of where BLAST+ is installed as we will refer to this later.
-
-<h3>GLUE install directory</h3>
-
-Your installation of GLUE will be contained within its own directory.
-Download the GLUE install zip from the <a href="#download">GLUE download page</a>.
-This contains various files for running GLUE. Unzip the GLUE install zip file in a 
+Your installation of GLUE will be contained within its own "install" directory.
+Download the GLUE install zip from the <a target="_blank" href="#download">GLUE download page</a>.
+Unzip the GLUE install zip file in a 
 convenient location (e.g. <code>/home/fred</code>), to create a <code>gluetools</code> directory.
 
 Ensure that the path to the <code>gluetools</code> directory is stored in the environment variable
 <code>GLUE_HOME</code>. Also make sure that <code>${GLUE_HOME}/bin</code> is on your bash path.
 
-This can be done for example by adding these lines to the end of your </code>.bash_profile</code> file.
+This can be done for example by adding these lines to the end of your <code>.bash_profile</code> file.
 <div hljs language="bash" no-escape>
 export GLUE_HOME=/home/fred/gluetools
 export PATH=${PATH}:${GLUE_HOME}/bin
@@ -90,36 +90,66 @@ Make sure the bash script is executable:
 $ chmod u+x /home/fred/gluetools/bin/gluetools.sh
 </pre>
 
-<h3>Edit the GLUE configuration XML file</h3>
+<h3 id="glueEngineJar">The GLUE engine jar</h3>
 
-GLUE reads a configuration XML file each time it runs. You need to edit this file to adapt it to your GLUE installation.
-<p>In a text editor, load the XML file <code>${GLUE_HOME}/conf/gluetools-config.xml</code> shown below. 
-You will need to make these changes:<p>
+<p>Download the GLUE engine jar file from the <a target="_blank" href="#download">GLUE download page</a>. 
+Place it inside the <code>gluetools/lib</code> directory.</p>
+
+<h3 id="configFile">The GLUE XML configuration file</h3>
+
+GLUE reads a configuration XML file each time it runs. The role of this file is to make GLUE aware of its local installation. 
+So, you will need to edit this file to adapt it to your local GLUE installation.
+<p>In a text editor, load the XML file <code>gluetools/conf/gluetools-config.xml</code>. 
+You will need to make sure that the database section specifies the correct MySQL username, password and database name as necessary, by editing the contents of the 
+<code>&lt;username&gt;</code>, <code>&lt;password&gt;</code> and <code>&lt;jdbcUrl&gt;</code> elements.
+		
+<div hljs source="basicConfig"></div>
+		
+<h3 id="runCommandLine">Running the GLUE command line</h3>
+<p>GLUE has an interactive command line, this is an important tool for GLUE project developers. 
+We can now test that this works by running <code>gluetools.sh</code></p>
+<pre>
+$ gluetools.sh
+GLUE version 0.1.126
+Mode path: /
+GLUE> 
+...
+</pre>
+
+Use the <code>quit</code> command to exit GLUE.
+
+<h3 id="upgradingGlue">Upgrading GLUE</h3>
+Sometimes you may wish to upgrade your installation to a new version of GLUE.
+Normally this is done as follows:
 <ul>
-	<li>Specify your MySQL username, password and database name as necessary, by editing contents of the 
-		<code>&lt;username&gt;</code>, <code>&lt;password&gt;</code> and <code>&lt;jdbcUrl&gt;</code> elements.</li>
+	<li>Download a new version of the engine jar from the <a target="_blank" href="#download">GLUE download page</a></li>
+	<li>Place the new version in the <code>gluetools/lib</code> directory.</li>
+	<li>Delete the old version from the <code>gluetools/lib</code> directory.</li>
+</ul> 
+
+<h3 id="blast">Recommended integration: BLAST+</h3>
+<p>GLUE uses the BLAST+ suite of programs for auto-alignment and certain other features.</p>
+<p>Download and install BLAST+ 2.2.31 from 
+<a target="_blank" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/">NCBI's BLAST+ FTP page</a>. 
+GLUE may function correctly with later versions of BLAST+ but this has not been fully tested. 
+In the case of Mac OSX you should use the 'universal-macosx' BLAST+ distribution.</p>
+
+<p>To integrate BLAST+ into GLUE, load the XML file <code>gluetools/conf/gluetools-config.xml</code> in a text editor. </p>
+<ul>
 	<li>Specify the location of the blast executables <code>blastn</code>, <code>tblastn</code> and <code>makeblastdb</code></li>
-	<li>GLUE creates BLAST database files. Specify the directory where GLUE can store these files, normally this is the gluetools/blastdbs directory</li>
+	<li>GLUE creates temporary BLAST database files. Specify a directory where GLUE can store these files</li>
 </ul>
-<div hljs source="gluetoolsXml"></div>
 
-<h3>Download the GLUE example project</h3>
+<div hljs source="blastConfig"></div>
 
-<p>Conventionally, files relating to GLUE projects are stored in their own directories, which are inside the <code>gluetools/projects</code> directory.</p>
+<h3>Download and build the GLUE example project</h3>
 
-<p>Download the example project zip from the <a href="#download">GLUE download page</a>. Unzip it inside <code>gluetools/projects</code>.</p>
+<p>Conventionally, files relating to GLUE projects are stored in their own directories, which are inside the <code>gluetools/projects</code> directory. 
+Download the example project zip from the <a target="_blank" href="#download">GLUE download page</a>. Unzip it inside <code>gluetools/projects</code>.</p>
 
-<h3 id="installTheGlueJar">Install the GLUE jar</h3>
-
-<p>The GLUE jar file contains the GLUE engine itself. </p>
-
-<p>Download the GLUE jar file from the <a href="#download">GLUE download page</a>. Place it inside <code>gluetools/lib</code>.</p>
-
-<p>When you upgrade to a new version of GLUE, you will normally only replace the GLUE jar.</p>
-
-<h3>Run GLUE</h3>
-<p>We can now start a GLUE interactive session and build the example project.</p>
+<p>We can now start a GLUE interactive session and build the example project. This requires the BLAST+ integration.</p>
 <p>If the project build was successful, the last output before the GLUE prompt should be "OK".</p>
+
 <pre>
 $ cd /home/fred/gluetools/projects/exampleProject
 $ gluetools.sh
@@ -133,6 +163,32 @@ OK
 Mode path: /
 GLUE>
 </pre>
+
+
+<h3 id="mafft">Optional integration: MAFFT</h3>
+<p>GLUE uses MAFFT as part of its maximum likelihood genotyping procedure, there may be other uses in the future.</p>
+<p>Download MAFFT from the <a target="_blank" href="http://mafft.cbrc.jp/alignment/software/">CBRC MAFFT page</a> and install it locally.</p>
+
+<p>To integrate MAFFT into GLUE, load the XML file <code>gluetools/conf/gluetools-config.xml</code> in a text editor. </p>
+<ul>
+	<li>Specify the location of the MAFFT executable</li>
+	<li>GLUE creates temporary MAFFT files. Specify a directory where GLUE can store these files</li>
+</ul>
+
+<div hljs source="mafftConfig"></div>
+
+<h3 id="raxml">Optional integration: RAxML</h3>
+<p>GLUE uses RAxML as part of its maximum likelihood genotyping procedure, and for general phylogenetics.</p>
+<p>We suggest RAxML be compiled locally so that it is optimised for your hardware. 
+Instructions can be found at the <a target="_blank" href="https://sco.h-its.org/exelixis/web/software/raxml/index.html">Exelixis Lab RAxML page</a>.</p>
+
+<p>To integrate RAxML into GLUE, load the XML file <code>gluetools/conf/gluetools-config.xml</code> in a text editor. </p>
+<ul>
+	<li>Specify the location of the RAxML executable</li>
+	<li>GLUE creates temporary RAxML files. Specify a directory where GLUE can store these files</li>
+</ul>
+
+<div hljs source="raxmlConfig"></div>
 
 
 

@@ -6,6 +6,27 @@ gluetoolsApp.controller('installationCtrl',
 	            $scope.gluetoolsXml = data;
 	        });
 
+		    $http.get('./controllers/userGuide/installation/basic-config.xml')
+	        .success(function(data) {
+	            $scope.basicConfig = data;
+	            console.log("basicConfig", $scope.basicConfig);
+	        });
+
+		    $http.get('./controllers/userGuide/installation/blast-config.xml')
+	        .success(function(data) {
+	            $scope.blastConfig = data;
+	        });
+
+		    $http.get('./controllers/userGuide/installation/raxml-config.xml')
+	        .success(function(data) {
+	            $scope.raxmlConfig = data;
+	        });
+
+		    $http.get('./controllers/userGuide/installation/mafft-config.xml')
+	        .success(function(data) {
+	            $scope.mafftConfig = data;
+	        });
+
 		    $scope.scrollTo = function(id) {
 		        $location.hash(id);
 		        $anchorScroll();

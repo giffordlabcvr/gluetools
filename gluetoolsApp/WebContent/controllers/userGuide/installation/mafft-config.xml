@@ -1,0 +1,20 @@
+<gluetools>
+	<!-- .... -->
+	<properties>
+	<!-- .... -->
+		<!-- MAFFT-specific config -->
+		<property>
+			<name>gluetools.core.programs.mafft.executable</name>
+			<value>/usr/local/bin/mafft</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.cpus</name>
+			<value>1</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.temp.dir</name>
+			<value>/home/fred/gluetools/tmp/mafftfiles</value>
+		</property>
+	<!-- .... -->
+	</properties>
+</gluetools>

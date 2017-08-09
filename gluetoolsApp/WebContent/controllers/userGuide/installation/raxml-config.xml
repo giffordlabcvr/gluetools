@@ -1,0 +1,20 @@
+<gluetools>
+	<!-- .... -->
+	<properties>
+	<!-- .... -->
+		<!-- RAxML-specific config -->
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.executable</name>
+			<value>/home/fred/RAxML/bin/raxmlHPC-PTHREADS-AVX2</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.cpus</name>
+			<value>1</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.temp.dir</name>
+			<value>/home/fred/gluetools/tmp/raxmlfiles</value>
+		</property>
+	<!-- .... -->
+	</properties>
+</gluetools>
