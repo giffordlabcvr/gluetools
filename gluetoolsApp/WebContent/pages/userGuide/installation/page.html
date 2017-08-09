@@ -34,12 +34,10 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 
 <h3 id="mySql">Core prerequisite: MySQL</h3>
 
-<p>GLUE requires a relational database management system (RDBMS). MySQL is the only RDBMS which GLUE works with at present, certain other RDBMS options may be possible in the future.</p>
+<p>GLUE stores all its data in a relational database system: MySQL. Download and install MySQL 5.6 or later, from <a target="_blank" href="http://www.mysql.com/">mysql.com</a>.</p>
 
-<p>Download and install MySQL 5.6 or later, from <a target="_blank" href="http://www.mysql.com/">mysql.com</a>.</p>
-
-<p>GLUE connects to a named database with a specific username/password, and stores its data in that database. 
-So within MySQL, you would normally create a username/password and named database specifically for GLUE.
+<p>The GLUE uses a specific named database within MySQL and accesses this with a specific username/password.
+So you would normally create a username/password and named database specifically for GLUE.
 Example set up: </p>
 <ul>
 	<li>MySQL username: gluetools</li>

@@ -1,39 +1,100 @@
-<h2>{{overviewMenuTitle}}</h2>
+<h1>{{overviewMenuTitle}}</h1>
 
-<h4>The GLUE Model</h4>
-At the heart of the GLUE engine is an <a href="#model">entity-relationship model</a> which has been designed for capturing 
-and developing the interrelated data comprising virus evolutionary hypotheses, including:
-<ul>
-<li>Virus and EVE genome sequences</li>
-<li>Nucleotide-level homologies between sequences</li>
-<li>Groupings of sequences into clades</li>
-<li>Evolutionary relationships between clades</li>
-<li>Genome features</li>
-<li>Phenotypic and other data associated with sequences, genome features and clades</li>
-</ul>
-
-<h4>GLUE Projects</h4>
-
-<p>Data inside a GLUE instance is organised into independent self-contained <em>projects</em>; each project may focus 
-on a virus, a related set of viruses or a specific aspect, such as the evolution of a certain genome region.</p>
-
-<p>GLUE provides a varied set of <em>commands</em> for creating, manipulating and querying the various data 
-elements within a project. These may be run interactively by a bioinformatician working on a GLUE project.</p>
-
-<p>GLUE also allows projects to define <em>modules</em>: larger functional blocks which have the ability to perform 
-more complex operations on the GLUE model.</p>
-
-<p>All aspects of a GLUE project are stored in a relational database. However, the set of GLUE 
-commands which build a project can be stored in files which are version-controlled. This allows controlled development 
-of the hypothesis by multiple bioinformaticians working in parallel.</p>
-
-<h4>GLUE on the Web</h4>
-
-Once a project has been developed, it can be published as a
-web resource by deploying the project into a GLUE instance which has been embedded in a web server. 
-This web deployment allows:
-<ul>
-<li><i>Dissemination</i> of the project data in browsable, graphical form, for example in conjunction with 
-an academic publication</li>
-<li><i>Utilisation</i> of the project for automated sequence analysis, as part of an online tool</li>
-</ul>
+<div class="row">
+	<div class="col-md-6">
+	<h3>Core Schema</h3>
+	<p>
+	The central concept in GLUE is the <a href="#coreSchema">Core Schema</a>, a database design which captures:
+	<ul>
+	<li>Virus sequence data</li>
+	<li>Nucleotide-level homologies between sequences (alignments)</li>
+	<li>Groupings of sequences into clades and evolutionary relationships between clades</li>
+	<li>Genome features such as protein coding regions, annotated on reference sequences</li>
+	<li>Nucleotide or amino-acid patterns or motifs</li>
+	<li>Any project-specific auxiliary data, via the <a href="#schemaExtensions">Schema Extensions</a> mechanism</li>
+	</ul>
+	</p>
+	</div>
+	<div class="col-md-6">
+		<img width="80%" src="images/projectModel.png" />
+	</div>
+</div>
+<hr/>
+<h3>Developing GLUE Projects</h3>
+<div class="row">
+	<div class="col-md-6">
+		<p>
+			Data and functionality inside GLUE is organised into independent self-contained <a
+				href="#managingAProject">Projects</a>. Bioinformaticians can develop and make use of GLUE projects
+			privately or collaboratively. A project focuses on a
+			related set of virus sequences, for example:
+		<ul>
+			<li>Sequences within a particular virus species</li>
+			<li>Sequences within a specific outbreak</li>
+			<li>A subgenomic region of a given set of virus sequences</li>
+		</ul>
+		</p>
+		
+	</div>
+	<div class="col-md-6">
+		<img width="100%" src="images/offlineGlue.png" />
+	</div>
+</div>
+<hr/>
+<h3>GLUE Projects on the Web</h3>
+<div class="row">
+	<div class="col-md-6">
+		<p>
+		A GLUE project can also be published as a web resource by deploying
+		GLUE as a <a href="#webService">Web Service</a>. Example uses of this
+		scenario:
+		<ul>
+			<li>Utilisation of the project functionality for automated
+				sequence analysis, as part of an web-based tool aimed at 
+				reference lab scientists</li>
+			<li>Dissemination of the project data as an interactive
+				resource, in conjunction with an academic publication</li>
+		</ul>
+		<img width="100%" src="images/onlineGlue.png" />
+		</p>
+	</div>
+	<div class="col-md-6">
+		<img width="100%" src="images/alignments.png" />
+	</div>
+</div>
+</p>
+<hr/>
+<div class="row">
+	<div class="col-md-7">
+		<h3>Bioinformatics Functionality</h3>
+		<p>
+		Users and client systems interact with the GLUE database and functionality via the 
+		<a href="#commandLayer">Command Layer</a>.</p>
+		<p>The core set of GLUE commands support operations such as:
+		<ul>
+		<li>Adding, deleting or modifying objects in the database</li>
+		<li>Interrogating the database using a rich query language</li>
+		<li>Deriving frequencies of amino acid resdiues within a certain set of sequences</li>
+		<li>Scanning sequences for specific nucleotide or amino acid patterns</li>
+		</ul>
+		</p>
+		<p>
+		Further GLUE command functionality is accessed using <a href="#modules">Modules</a>.</p> 
+		<p>These provide built-in functionality, customised on a project-specific basis. </p>
+		<p>GLUE contains an extensive range of module-based functionality including:
+		<ul>
+		<li>Importing sequences into the database from NCBI Nucleotide</li>
+		<li>Extracting and normalising data in a GenBank record</li>
+		<li>Computing new alignments</li>
+		<li>Assigning a genotype to sequences using a maximum-likelihood based method</li>
+		<li>Exporting sequences or alignments from the database for use outside GLUE</li>
+		</ul>
+		Users may also add their own project-specific functionality using 
+		the <a href="#scriptingLayer">Scripting Layer</a>.
+		</p>
+	</div>
+	<div class="col-md-5">
+		<img width="100%" src="images/genotyping.png" />
+		Maximum-likelihood genotyping, one of the module types available in GLUE
+	</div>
+</div>

@@ -19,9 +19,13 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/design/overview/page.html',
             controller: 'overviewCtrl'
           }).
-      	when('/model', {
-            templateUrl: './pages/design/model/page.html',
-            controller: 'modelCtrl'
+    	when('/coreSchema', {
+            templateUrl: './pages/design/coreSchema/page.html',
+            controller: 'coreSchemaCtrl'
+          }).
+    	when('/commandLayer', {
+            templateUrl: './pages/design/commandLayer/page.html',
+            controller: 'commandLayerCtrl'
           }).
       	when('/softwareArchitecture', {
             templateUrl: './pages/design/softwareArchitecture/page.html',
@@ -63,6 +67,14 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/modules/page.html',
             controller: 'modulesCtrl'
           }).
+      	when('/scriptingLayer', {
+            templateUrl: './pages/userGuide/scriptingLayer/page.html',
+            controller: 'scriptingLayerCtrl'
+          }).
+    	when('/schemaExtensions', {
+            templateUrl: './pages/userGuide/schemaExtensions/page.html',
+            controller: 'schemaExtensionsCtrl'
+          }).
       	when('/freemarkerTemplates', {
             templateUrl: './pages/userGuide/freemarkerTemplates/page.html',
             controller: 'freemarkerTemplatesCtrl'
@@ -94,10 +106,11 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.homeMenuTitle = "Home";
 
   	$scope.designMenuTitle = "Design";
-  	$scope.overviewMenuTitle = "Overview";
-  	$scope.modelMenuTitle = "Model";
-  	$scope.softwareArchitectureMenuTitle = "Software architecture";
-  	$scope.webServiceMenuTitle = "Web service";
+  	$scope.overviewMenuTitle = "Design Overview";
+  	$scope.coreSchemaMenuTitle = "Core Schema";
+  	$scope.commandLayerMenuTitle = "Command Layer";
+  	$scope.softwareArchitectureMenuTitle = "Software Architecture";
+  	$scope.webServiceMenuTitle = "Web Service";
 
   	$scope.userGuideMenuTitle = "User guide";
   	$scope.introductionMenuTitle = "Introduction";
@@ -108,6 +121,8 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.managingAProjectMenuTitle = "Managing a project";
     $scope.cayenneQueriesMenuTitle = "Cayenne queries";
     $scope.modulesMenuTitle = "Modules";
+    $scope.scriptingLayerMenuTitle = "Scripting Layer";
+    $scope.schemaExtensionsMenuTitle = "Schema Extensions";
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";
 
   	$scope.referenceDocumentationMenuTitle = "Reference documentation";
