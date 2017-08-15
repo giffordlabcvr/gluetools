@@ -2,13 +2,14 @@
 <div class="row">
 	<div class="col-md-6">
 		<p>The data within a GLUE project is structured according to the Core Schema; a fixed set of object types and relationships. These bring a
-		certain level of evolution-oriented organization to virus nucleotide
+		certain level of evolution-oriented organisation to virus nucleotide
 		sequence data and also capture the objects and relationships most commonly
 		required to utilise the data. 
 		</p>
 		<p>
 		In the text below, we outline the main GLUE object types, their intended semantics and the relationships between them. 
-		GLUE object types are denoted in italicised CamelCase, e.g. <em>FeatureLocation</em>.
+		GLUE object types are denoted in italicised CamelCase, e.g. <em>FeatureLocation</em>. Some 
+		of the main fields and relationships between objects are labelled on the diagrams.
 		</p>
 		
 		<ol>
@@ -36,10 +37,7 @@
 			data is produced. Sequences may also be in silico constructs, such
 			ancestral reconstructions, or consensus sequences which are each
 			representatives of a larger set. A <em>Sequence</em> object may cover
-			the whole of the virus genome, or only a part, and may be have
-			unknown subregions, indicated by the ‘N’ character. For endogenous
-			viruses a <em>Sequence</em> may cover some local areas of host
-			nucleotide sequence, beyond the virus genome.
+			the whole of the virus genome, or only a part. 
 		</p>
 		<p>
 			Within a GLUE project, <em>Sequences</em> must be stored within
@@ -54,11 +52,10 @@
 		</p>
 		<p>
 			<em>Sequences</em> may be imported into GLUE from multiple file formats. The 
-			specific format is recorded in a field value on the <em>Sequence</em> object, 
-			and the original file data is stored in the database in byte form. The aim of this is to 
-			allow retrieval of any non-nucleotide data which may be present in the original file.
-			The original file, including the nucleotide data is immutable for the
-			lifetime of the <em>Sequence</em> object.
+			specific format is recorded in a field value on the <em>Sequence</em> object; 
+			the original file data is stored in the database in byte form. The aim of this is to 
+			allow retrieval of any non-nucleotide data which may be present in the original data file.
+			This original data is immutable for the lifetime of the <em>Sequence</em> object.
 		</p>
 	</div>
 	<div class="col-md-4">
@@ -80,12 +77,15 @@
 		arranged in a hierarchy, with each <em>Feature</em> optionally having a single
 		parent <em>Feature</em> object and several child <em>Feature</em> objects associated. This
 		should reflect the containment relationships of the corresponding genome
-		regions. 
+		regions. One example of this would be a genome region that is translated into a precursor 
+		polyprotein which is later cleaved into several final proteins. The precursor polyprotein would 
+		be defined as one genome feature. Each of the final proteins would be defined as an additional
+		feature which is a child of the precursor polyprotein.  
 		</p>
 		<p>
 		<em>Feature</em> objects may also have <em>FeatureMetatag</em> objects
 		associated. These are simple metadata properties, with fixed semantics,
-		which allow specialized GLUE functionality to interpret <em>Feature</em> objects,
+		which allow specialised GLUE functionality to interpret <em>Feature</em> objects,
 		for example to perform protein translation.
 		</p>
 	</div>
@@ -100,7 +100,7 @@
 	<div class="col-md-6">
 
 <p>
-GLUE uses <em>ReferenceSequence</em> objects to organize, link and interpret the
+GLUE uses <em>ReferenceSequence</em> objects to organise, link and interpret the
 wider set of <em>Sequence</em> objects. A <em>ReferenceSequence</em> is based on a
 specific <em>Sequence</em> and this relationship is mandatory and immutable for
 the lifetime of the <em>ReferenceSequence</em>. The choice of which <em>Sequence</em>
@@ -113,40 +113,46 @@ project, some examples are:
 		identified early in the study of a particular virus species or subtype</li>
 	<li>Sequences derived from virus strains which have become
 		established as having important laboratory uses</li>
-	<li>Sequences where the genome is particularly well-annotated.
-		Less frequently, sequences derived from an <em>in silico</em> procedure such as
+	<li>Sequences where the genome is particularly well-annotated</li>
+	<li>Less frequently, sequences derived from an <em>in silico</em> procedure such as
 		computing the consensus of a wider set, or ancestral reconstruction</li>
 </ul>
 </p>
 
 <p>
-A <em>ReferenceSequence</em> object may contain <em>FeatureLocation</em> objects in order
-to represent the presence and position of a specific <em>Feature</em> on the
-<em>ReferenceSequence</em>. A <em>FeatureLocation</em> is considered a wholly contained
-constituent part of a <em>ReferenceSequence</em>, but it is also immutably
-associated with a single <em>Feature</em> during its lifetime. 
-</p>
-<p>
-A certain <em>Feature</em>
-may not be present (i.e. be associated with a <em>FeatureLocation</em>) on every
-<em>ReferenceSequence</em> in the GLUE project. This flexibility may be useful
-for example when specific virus genes exist only in some taxa within the
-project scope. 
+One of the main functions of <em>ReferenceSequences</em> in GLUE is to map the specific 
+co-ordinates of of genome features. To achieve this, a <em>ReferenceSequence</em> object
+may contain <em>FeatureLocation</em> objects in order
+to represent the presence and position of specific <em>Features</em>. A <em>FeatureLocation</em>
+is considered a wholly contained constituent part of a <em>ReferenceSequence</em>, but it 
+is also immutably associated with a single <em>Feature</em> during its lifetime. 
 </p>
 <p>
 A <em>FeatureLocation</em> contains a set of <em>FeatureSegment</em>
-objects which specify the coordinates of the relevant <em>Feature</em> on the
+objects which specify the coordinates of the associated <em>Feature</em> on the
 <em>ReferenceSequence</em>. The <em>FeatureSegment</em> objects contain start and end
 points, and together may specify a discontiguous region.
 </p>
-	</div>
+<p>
+Typically, mulitple <em>ReferenceSequences</em> will contain <em>FeatureLocations</em> for 
+the same <em>Feature</em>, but with different co-ordinates specified by their <em>FeatureSegments</em> as necessary. 
+Additionally, a certain <em>Feature</em> may or may not be present (i.e. be associated with a 
+<em>FeatureLocation</em>) on a given
+<em>ReferenceSequence</em> in the GLUE project. This flexibility may be useful
+for example when specific virus genes exist only in a subset of taxa within the
+project scope. 
+</p>
+</div>
 	<div class="col-md-6">
 		<img width="100%" src="images/referenceSequences.png" />
 	</div>
 </div>
 
+
 <h3 id="Alignments"><em>Alignments</em> and <em>AlignmentMembers</em></h3>
 
+<div class="row">
+	<div class="col-md-6">
 <p>One key aspect which GLUE projects aim to capture is the
 	representation of nucleotide homologies between <em>Sequence</em> objects. At a
 	fine-grained level, these homologies may be thought of as statements
@@ -181,6 +187,14 @@ points, and together may specify a discontiguous region.
 	distinct member <em>Sequence</em> objects within an <em>Alignment</em> are considered to
 	be homologous when they are mapped via <em>AlignedSegment</em> objects to the
 	same reference coordinates.</p>
+	</div>
+	<div class="col-md-6">
+		<img width="100%" src="images/alignments.png" />
+	</div>
+</div>	
+<div class="row">
+	<div class="col-md-12">
+	<h4>Unconstrained <em>Alignments</em></h4>
 <p><em>Alignment</em> objects may be unconstrained or constrained.
 	Unconstrained <em>Alignments</em> are used in GLUE projects to store the results
 	of any multiple sequence alignment process aimed at identifying
@@ -189,17 +203,23 @@ points, and together may specify a discontiguous region.
 	unconstrained alignments the reference coordinate space is purely
 	notional, and not based on any particular <em>Sequence</em>. Nucleotide position
 	columns in an this coordinate space may be added in an unrestricted way
-	in order to accommodate any pairwise homology between member <em>Sequence</em>
-	objects which the alignment process proposes.</p>
+	in order to accommodate any pairwise homology between member <em>Sequences</em>
+	which the alignment process proposes.</p>
+	<p>The example unconstrained <em>Alignment</em> shown below contains three member sequences.
+	The reference coordinate space has been expanded to allow relative insertions present in Member 2 
+	at locations [8,10] and [24,26] in the reference space, and an insertion present in Members 
+	1 and 3 at location [19,21].
+			<img width="100%" src="images/unconstrained.png" />
 <p><em>Sequence</em> objects may be members of multiple <em>Alignments</em>, via
 	different <em>AlignmentMember</em> associations. One application of this is
 	where separate unconstrained <em>Alignment</em> objects are used to represent
 	homologies in different regions of the virus genome. This may be
 	appropriate for example if the best alignment technique differs from
 	one genomic region to another.</p>
+	<h4>Constrained <em>Alignments</em></h4>
 <p>The main function of a <em>ReferenceSequence</em> in GLUE is to provide a
 	concrete coordinate space in which the nucleotide data in <em>Sequence</em>
-	objects may be interpreted. As an alternative to being unconstrained,
+	objects may be interpreted. 
 	<em>Alignment</em> objects may be constrained to a <em>ReferenceSequence</em>. In this
 	case, the nucleotide <em>Sequence</em> underlying the constraining
 	<em>ReferenceSequence</em> provides the reference coordinate space for the
@@ -207,8 +227,13 @@ points, and together may specify a discontiguous region.
 	constrained <em>Alignment</em> propose homology between a nucleotide block on
 	the member <em>Sequence</em> and an equal-length block on the constraining
 	<em>ReferenceSequence</em>.</p>
-<p>[Stylized diagram illustrating constrained vs unconstrained
-	alignments?]</p>
+	<p>The example constrained <em>Alignment</em> shown below contains the same three member sequences.
+	In this case Member 1 has been selected as the constraining reference sequence. Therefore, nucleotide 
+	columns exist in this alignment precisely for the nucleotide positions which exist in Member 1.
+	Therefore, columns are included for insertions present in Member 1 relative to Member 2 
+	(e.g. [19,21] in the reference space), and relative to Member 3 (e.g. [24,26]). However, this alignment 
+	does not contain columns for insertions present in Member 2 relative to Member 1 (e.g. between 13 and 14).
+			<img width="100%" src="images/constrained.png" />
 <p>The <em>AlignedSegment</em> objects within constrained <em>Alignment</em> objects
 	may be derived from those within unconstrained <em>Alignment</em> objects where
 	both the member and reference sequences are present. However, where the
@@ -217,7 +242,8 @@ points, and together may specify a discontiguous region.
 	case the constrained <em>Alignment</em> homologies may be computed using a
 	simple pairwise technique between the member and reference sequence,
 	for example based on BLAST.</p>
-
+	</div>
+</div>
 <h3 id="AlignmentTree"><em>The GLUE <em>Alignment</em> Tree</em></h3>
 
 <h3 id="Variations"><em>Variations</em></h3>
