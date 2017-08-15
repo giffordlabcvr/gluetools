@@ -153,33 +153,32 @@ project scope.
 
 <div class="row">
 	<div class="col-md-6">
-<p>One key aspect which GLUE projects aim to capture is the
-	representation of nucleotide homologies between <em>Sequence</em> objects. At a
+<p>GLUE projects capture nucleotide homologies between <em>Sequences</em>. At a
 	fine-grained level, these homologies may be thought of as statements
-	proposing that a certain segment of nucleotides in one <em>Sequence</em> has the
-	same evolutionary origin as a certain segment in a second <em>Sequence</em>.</p>
+	proposing that a certain block of nucleotides in one <em>Sequence</em> has the
+	same evolutionary origin as a certain block in a second <em>Sequence</em>.</p>
 
-<p><em>Alignment</em> objects in GLUE aggregate homologies relating to a set
-	of “member” <em>Sequence</em> objects that are associated to the <em>Alignment</em> via
-	<em>AlignmentMember</em> objects. So in concrete terms an <em>Alignment</em> object
+<p><em>Alignments</em> in GLUE aggregate homologies relating to a set
+	of “member” <em>Sequences</em> that are associated with the <em>Alignment</em> via
+	<em>AlignmentMember</em> objects. So in concrete terms an <em>Alignment</em>
 	contains a set of <em>AlignmentMember</em> objects and each <em>AlignmentMember</em>
 	associates a member <em>Sequence</em> with the containing <em>Alignment</em>.</p>
 
-<p>Within an <em>Alignment</em> all homologies use the same reference
-	coordinate space. Each <em>AlignmentMember</em> in turn contains a set of
-	<em>AlignedSegment</em> objects, which are each statements of homology between
-	the member <em>Sequence</em> nucleotides and the reference coordinate space of
-	the <em>Alignment</em>. To represent this, the <em>AlignedSegment</em> is a tuple with
+<p>Each <em>Alignment</em> defines a reference
+	coordinate space. Homologies between members of the alignment are expressed in terms of this coordinate space. 
+	Each <em>AlignmentMember</em> contains a set of
+	<em>AlignedSegment</em> objects; these are homology statments locating a block of member <em>Sequence</em> nucleotides in the reference 
+	coordinate space. An <em>AlignedSegment</em> is a tuple with
 	four integer fields:</p>
 <p>
 <em>&lt;refStart, refEnd, memberStart, memberEnd&gt;</em>
 </p>
 <p>
-	This states that the region [<em>memberStart</em>, <em>memberEnd</em>]
-	in the member <em>Sequence</em> is homologous with the region [<em>refStart</em>,
+	This states that the block [<em>memberStart</em>, <em>memberEnd</em>]
+	in the member <em>Sequence</em> is homologous with the block [<em>refStart</em>,
 	<em>refEnd</em>] in the reference coordinate space of the containing
-	<em>Alignment</em>. An invariant maintained by GLUE is that these two regions
-	must be of equal length.
+	<em>Alignment</em>. GLUE ensures that these two regions
+	are always of equal length.
 </p>
 <p>This reference coordinate space associated with an <em>Alignment</em>
 	object is used as an indirect step relating the member sequence
@@ -230,13 +229,13 @@ project scope.
 	<p>The example constrained <em>Alignment</em> shown below contains the same three member sequences.
 	In this case Member 1 has been selected as the constraining reference sequence. Therefore, nucleotide 
 	columns exist in this alignment precisely for the nucleotide positions which exist in Member 1.
-	Therefore, columns are included for insertions present in Member 1 relative to Member 2 
+	Consequently, columns are included for insertions present in Member 1 relative to Member 2 
 	(e.g. [19,21] in the reference space), and relative to Member 3 (e.g. [24,26]). However, this alignment 
 	does not contain columns for insertions present in Member 2 relative to Member 1 (e.g. between 13 and 14).
 			<img width="100%" src="images/constrained.png" />
 <p>Unconstrained alignments have the advantage of being able to represent the full set of homologies between 
 any pair of member sequences, however they must use an artificial coordinate space to achieve this. 
-Constrained alignments use a concrete coordinate space but cannot represent homologies within columns which 
+Constrained alignments use a concrete coordinate space but cannot represent homologies within nucleotide columns if those columns 
 only exist in insertions relative to the reference sequence. </p>
 			
 <p>The <em>AlignedSegment</em> objects within constrained <em>Alignment</em> objects
