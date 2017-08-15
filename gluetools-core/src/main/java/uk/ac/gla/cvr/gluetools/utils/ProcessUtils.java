@@ -75,6 +75,10 @@ public class ProcessUtils {
 				.collect(Collectors.toList());
 		GlueLogger.getGlueLogger().fine("Running external process: "+String.join(" ", quotifiedCmdList));
 		byte[] drainBuffer = new byte[DRAIN_BUFFER_SIZE];
+		Thread outBytesDrainerThread = null;
+		Thread errBytesDrainerThread = null;
+		boolean logStdErr = false;
+		
 		try {
 			try {
 				process = processBuilder.start();
@@ -87,9 +91,9 @@ public class ProcessUtils {
 			InputStream processStdOut = process.getInputStream();
 			InputStream processStdErr = process.getErrorStream();
 			BytesDrainer outBytesDrainer = new BytesDrainer(processStdOut, outputBytes);
-			Thread outBytesDrainerThread = new Thread(outBytesDrainer);
+			outBytesDrainerThread = new Thread(outBytesDrainer);
 			BytesDrainer errBytesDrainer = new BytesDrainer(processStdErr, errorBytes);
-			Thread errBytesDrainerThread = new Thread(errBytesDrainer);
+			errBytesDrainerThread = new Thread(errBytesDrainer);
 			outBytesDrainerThread.start();
 			errBytesDrainerThread.start();
 
@@ -134,10 +138,32 @@ public class ProcessUtils {
 				errBytesDrainerThread.join();
 			} catch (InterruptedException e) {}
 		
+		} catch(Throwable t) {
+			logStdErr = true;
+			throw t;
 		} finally {
+			if(logStdErr) {
+				// give error bytes draining thread a chance to drain any further error output
+				if(errBytesDrainerThread != null) {
+					try {
+						errBytesDrainerThread.join(1000);
+					} catch (InterruptedException e) {}
+				}
+			}
 			if(process != null && process.isAlive()) {
 				try { process.destroyForcibly().waitFor(); } catch (InterruptedException e) {}
 			}
+			if(logStdErr) {
+				if(errBytesDrainerThread != null) {
+					try {
+						// wait for error bytes draining thread to die
+						errBytesDrainerThread.join(1000);
+					} catch (InterruptedException e) {}
+				}
+				// log the contents of the standard error buffer.
+				GlueLogger.getGlueLogger().severe("Process stderr contents:\n"+new String(errorBytes.toByteArray()));
+			}
+			
 		}
 		return new ProcessResult(outputBytes.toByteArray(), errorBytes.toByteArray(), process.exitValue());
 
