@@ -147,7 +147,7 @@ public class ProcessUtils {
 				if(errBytesDrainerThread != null) {
 					try {
 						errBytesDrainerThread.join(1000);
-					} catch (InterruptedException e) {}
+					} catch (Throwable t) {}
 				}
 			}
 			if(process != null && process.isAlive()) {
@@ -158,7 +158,7 @@ public class ProcessUtils {
 					try {
 						// wait for error bytes draining thread to die
 						errBytesDrainerThread.join(1000);
-					} catch (InterruptedException e) {}
+					} catch (Throwable t) {}
 				}
 				// log the contents of the standard error buffer.
 				GlueLogger.getGlueLogger().severe("Process stderr contents:\n"+new String(errorBytes.toByteArray()));
