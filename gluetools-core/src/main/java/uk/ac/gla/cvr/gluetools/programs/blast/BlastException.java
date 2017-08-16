@@ -8,7 +8,8 @@ public class BlastException extends GlueException {
 		
 		BLAST_OUTPUT_FORMAT_ERROR("errorText"),
 		BLAST_UNHANDLED_CASE("refSeqId", "querySeqId", "caseDescription"),
-		UNKNOWN_BLAST_TYPE("blastType");
+		UNKNOWN_BLAST_TYPE("blastType"),
+		INVALID_BLAST_DB_PATH("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

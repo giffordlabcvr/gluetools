@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
+import uk.ac.gla.cvr.gluetools.programs.blast.BlastException;
 
 public abstract class BlastDB {
 	
@@ -29,6 +30,9 @@ public abstract class BlastDB {
 	public final File getBlastDbDir(CommandContext cmdContext) {
 		PropertiesConfiguration propertiesConfiguration = cmdContext.getGluetoolsEngine().getPropertiesConfiguration();
 		String blastDbStoragePath = propertiesConfiguration.getPropertyValue(BLAST_DB_DIR_PROPERTY);
+		if(blastDbStoragePath.contains(" ")) {
+			throw new BlastException(BlastException.Code.INVALID_BLAST_DB_PATH, "Path configured in "+BLAST_DB_DIR_PROPERTY+" contains spaces, which will cause BLAST to fail, please reconfigure.");
+		}
 		File projectPath = new File(blastDbStoragePath, getProjectName());
 		return getProjectRelativeBlastDbDir(projectPath);
 	}
