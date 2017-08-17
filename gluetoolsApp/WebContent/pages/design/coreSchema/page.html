@@ -13,16 +13,35 @@
 		</p>
 		
 		<ol>
+			<li><a ng-click="scrollTo('ERDs')">GLUE Objects, Fields and Relationships</a></li>
 			<li><a ng-click="scrollTo('Sequences')"><em>Sequences</em> and <em>Sources</em></a></li>
 			<li><a ng-click="scrollTo('Features')"><em>Features</em></a></li>
 			<li><a ng-click="scrollTo('ReferenceSequences')"><em>ReferenceSequences</em> and <em>FeatureLocations</em></a></li>
 			<li><a ng-click="scrollTo('Alignments')"><em>Alignments</em> and <em>AlignmentMembers</em></a></em></a></li>
-			<li><a ng-click="scrollTo('AlignmentTree')">The GLUE <em>Alignment</em> Tree</a></li>
+			<li><a ng-click="scrollTo('AlignmentTree')">The GLUE Alignment Tree</a></li>
 			<li><a ng-click="scrollTo('Variations')"><em>Variations</em></a></li>
 		</ol>
 	</div>
 	<div class="col-md-6">
 		<img width="80%" src="images/projectModel.png" />
+	</div>
+</div>
+<h3 id="ERDs">GLUE Objects, Fields and Relationships</h3>
+<div class="row">
+	<div class="col-md-6">
+		<p>
+			Conceptually, GLUE stores data items as objects. These objects include both field values and relationships with other stored objects. 
+			The available object types, fields and relationships are defined in the schema. The core schema is available in every GLUE project, 
+			but the schema may also be extended on a per-project basis. 
+		</p>
+		<p>
+			In this documentation we use a diagrammatic notation to document different parts of the schema. 
+			In the example schema fragment there are three object types: <em>Species</em>, <em>Specimen</em> and <em>Biologist</em>. 
+			
+		</p>
+	</div>
+	<div class="col-md-6">
+		<img width="100%" src="images/ERD_example.png" />
 	</div>
 </div>
 
@@ -194,50 +213,56 @@ project scope.
 <div class="row">
 	<div class="col-md-12">
 	<h4>Unconstrained <em>Alignments</em></h4>
-<p><em>Alignment</em> objects may be unconstrained or constrained.
+<p><em>Alignment</em> objects may be constrained or unconstrained.
 	Unconstrained <em>Alignments</em> are used in GLUE projects to store the results
-	of any multiple sequence alignment process aimed at identifying
-	homologies between sequences. This includes classical algorithms such
-	as MUSCLE or MAFFT but also manual alignment techniques. In
-	unconstrained alignments the reference coordinate space is purely
+	of any process aimed at identifying
+	homologies between nucleotides. This includes classical algorithms such
+	as MUSCLE or MAFFT but also manual techniques. In
+	unconstrained <em>Alignments</em> the reference coordinate space is purely
 	notional, and not based on any particular <em>Sequence</em>. Nucleotide position
-	columns in an this coordinate space may be added in an unrestricted way
-	in order to accommodate any pairwise homology between member <em>Sequences</em>
-	which the alignment process proposes.</p>
-	<p>The example unconstrained <em>Alignment</em> shown below contains three member sequences.
-	The reference coordinate space has been expanded to allow relative insertions present in Member 2 
-	at locations [8,10] and [24,26] in the reference space, and an insertion present in Members 
-	1 and 3 at location [19,21].
-			<img width="100%" src="images/unconstrained.png" />
-<p><em>Sequence</em> objects may be members of multiple <em>Alignments</em>, via
-	different <em>AlignmentMember</em> associations. One application of this is
-	where separate unconstrained <em>Alignment</em> objects are used to represent
-	homologies in different regions of the virus genome. This may be
-	appropriate for example if the best alignment technique differs from
-	one genomic region to another.</p>
+	columns in this coordinate space may be added in an unrestricted way
+	in order to accommodate any pairwise homology between member <em>Sequences</em>.</p>
+		<p>
+			The example unconstrained <em>Alignment</em> shown below contains
+			three <em>AlignmentMembers</em>. Each <em>AlignmentMember</em>
+			contains multiple <em>AlignedSegments</em>; these map between the
+			member sequence coordinates and the reference coordinate system. For
+			example a block of 7 nucleotides starting at position 5 in Member 3
+			is mapped to reference coordinates [1,7]. The reference coordinate
+			space has been expanded to allow for example insertions present in
+			Member 2 at locations [8,10] and [24,26] in the reference space, and
+			an insertion present in Members 1 and 3 at location [16,18].
+		</p>
+
+		<img width="100%" src="images/unconstrained.png" />
 	<h4>Constrained <em>Alignments</em></h4>
-<p>The main function of a <em>ReferenceSequence</em> in GLUE is to provide a
-	concrete coordinate space in which the nucleotide data in <em>Sequence</em>
-	objects may be interpreted. 
-	<em>Alignment</em> objects may be constrained to a <em>ReferenceSequence</em>. In this
-	case, the nucleotide <em>Sequence</em> underlying the constraining
+<p><em>ReferenceSequence</em> in GLUE can provide a
+	concrete coordinate space in which nucleotide data may be interpreted. 
+	<em>Alignment</em> objects may be constrained to a <em>ReferenceSequence</em>. 
+	This association is made at the time an <em>Alignment</em> is created and is 
+	immutable for the lifetime of the <em>Alignment</em>. 
+	The nucleotide <em>Sequence</em> underlying the constraining
 	<em>ReferenceSequence</em> provides the reference coordinate space for the
 	constrained <em>Alignment</em>. Therefore, <em>AlignedSegment</em> objects within a
 	constrained <em>Alignment</em> propose homology between a nucleotide block on
-	the member <em>Sequence</em> and an equal-length block on the constraining
+	a member <em>Sequence</em> and an equal-length block on the constraining
 	<em>ReferenceSequence</em>.</p>
-	<p>The example constrained <em>Alignment</em> shown below contains the same three member sequences.
-	In this case Member 1 has been selected as the constraining reference sequence. Therefore, nucleotide 
-	columns exist in this alignment precisely for the nucleotide positions which exist in Member 1.
+	<p>The example constrained <em>Alignment</em> shown below contains the same three member <em>Sequences</em>.
+	In this case the <em>Sequence</em> underlying Member 1 has also been selected as the constraining 
+	<em>ReferenceSequence</em>. Therefore, nucleotide 
+	columns exist in this <em>Alignment</em> precisely for the nucleotide positions which exist in the Member 1 <em>Sequence</em>.
 	Consequently, columns are included for insertions present in Member 1 relative to Member 2 
 	(e.g. [19,21] in the reference space), and relative to Member 3 (e.g. [24,26]). However, this alignment 
-	does not contain columns for insertions present in Member 2 relative to Member 1 (e.g. between 13 and 14).
+	does not contain columns for insertions present in Member 2 relative to Member 1 (e.g. between 13 and 14), 
+	although the <em>Alignment</em> does record the fact that this insertion exists.</p>
 			<img width="100%" src="images/constrained.png" />
-<p>Unconstrained alignments have the advantage of being able to represent the full set of homologies between 
+<p>Unconstrained <em>Alignments</em> have the advantage of being able to represent the full set of homologies between 
 any pair of member sequences, however they must use an artificial coordinate space to achieve this. 
-Constrained alignments use a concrete coordinate space but cannot represent homologies within nucleotide columns if those columns 
-only exist in insertions relative to the reference sequence. </p>
+Constrained <em>Alignments</em> use a concrete coordinate space but cannot represent homologies within nucleotide columns if those columns 
+only exist in insertions relative to the constraining <em>ReferenceSequence</em>. This limitation is addressed by the <a ng-click="scrollTo('AlignmentTree')">GLUE Alignment Tree</a> concept. </p>
 			
+<h3 id="AlignmentTree"><em>The GLUE Alignment Tree</em></h3>
+
 <p>The <em>AlignedSegment</em> objects within constrained <em>Alignment</em> objects
 	may be derived from those within unconstrained <em>Alignment</em> objects where
 	both the member and reference sequences are present. However, where the
@@ -248,6 +273,7 @@ only exist in insertions relative to the reference sequence. </p>
 	for example based on BLAST.</p>
 	</div>
 </div>
-<h3 id="AlignmentTree"><em>The GLUE <em>Alignment</em> Tree</em></h3>
+
+
 
 <h3 id="Variations"><em>Variations</em></h3>
