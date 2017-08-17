@@ -198,6 +198,16 @@ public class FastaUtils {
 			return this.lineBreakChars;
 		}
 		
+		public static LineFeedStyle forOS() {
+			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+				return LineFeedStyle.CRLF;
+			} else {
+				return LineFeedStyle.LF;
+			}
+			
+		}
+
+		
 	}
 	
 	public static String reverseComplement(String nts) {

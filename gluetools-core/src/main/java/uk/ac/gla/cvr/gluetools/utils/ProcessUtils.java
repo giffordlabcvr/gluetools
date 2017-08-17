@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -90,9 +91,9 @@ public class ProcessUtils {
 			OutputStream processStdIn = process.getOutputStream();
 			InputStream processStdOut = process.getInputStream();
 			InputStream processStdErr = process.getErrorStream();
-			BytesDrainer outBytesDrainer = new BytesDrainer(processStdOut, outputBytes);
+			BytesDrainer outBytesDrainer = new BytesDrainer(processStdOut, outputBytes, "stdout bytes drainer");
 			outBytesDrainerThread = new Thread(outBytesDrainer);
-			BytesDrainer errBytesDrainer = new BytesDrainer(processStdErr, errorBytes);
+			BytesDrainer errBytesDrainer = new BytesDrainer(processStdErr, errorBytes, "stderr bytes drainer");
 			errBytesDrainerThread = new Thread(errBytesDrainer);
 			outBytesDrainerThread.start();
 			errBytesDrainerThread.start();
@@ -184,11 +185,13 @@ public class ProcessUtils {
 		private OutputStream toStream;
 		private byte[] drainBuffer = new byte[DRAIN_BUFFER_SIZE];
 		private IOException ioException;
+		private String name;
 		
-		public BytesDrainer(InputStream fromStream, OutputStream toStream) {
+		public BytesDrainer(InputStream fromStream, OutputStream toStream, String name) {
 			super();
 			this.fromStream = fromStream;
 			this.toStream = toStream;
+			this.name = name;
 		}
 
 		public IOException getIoException() {

@@ -20,6 +20,10 @@
 			<value>/home/fred/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
 		</property>
 		<property>
+			<name>gluetools.core.programs.blast.temp.dir</name>
+			<value>/home/fred/gluetools/tmp/blastfiles</value>
+		</property>
+		<property>
 			<name>gluetools.core.programs.blast.db.dir</name>
 			<value>/home/fred/gluetools/tmp/blastdbs</value>
 		</property>

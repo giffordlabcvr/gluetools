@@ -65,13 +65,13 @@ public abstract class RaxmlRunner implements Plugin {
 
 	protected String getRaxmlExecutable(CommandContext cmdContext) {
 		String raxmlExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXMLHPC_EXECUTABLE_PROPERTY);
-		if(raxmlExecutable == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML executable not defined"); }
+		if(raxmlExecutable == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML executable not defined in config property "+RaxmlUtils.RAXMLHPC_EXECUTABLE_PROPERTY); }
 		return raxmlExecutable;
 	}
 
 	protected String getRaxmlTempDir(CommandContext cmdContext) {
 		String raxmlTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(RaxmlUtils.RAXML_TEMP_DIR_PROPERTY);
-		if(raxmlTempDir == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML temp directory not defined"); }
+		if(raxmlTempDir == null) { throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML temp directory not defined in config property "+RaxmlUtils.RAXML_TEMP_DIR_PROPERTY); }
 		return raxmlTempDir;
 	}
 

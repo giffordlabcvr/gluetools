@@ -64,10 +64,10 @@ public class MafftRunner implements Plugin {
 		}
 		
 		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
-		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined"); }
+		if(mafftTempDir == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT temp directory not defined in config property "+MafftUtils.MAFFT_TEMP_DIR_PROPERTY); }
 
 		String mafftExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_EXECUTABLE_PROPERTY);
-		if(mafftExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT executable not defined"); }
+		if(mafftExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT executable not defined in config property "+MafftUtils.MAFFT_EXECUTABLE_PROPERTY); }
 
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(mafftTempDir, uuid);

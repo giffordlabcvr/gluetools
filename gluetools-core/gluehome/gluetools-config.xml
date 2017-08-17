@@ -24,6 +24,10 @@
 			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs</value>
 		</property>
 		<property>
+			<name>gluetools.core.programs.blast.temp.dir</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/blastfiles</value>
+		</property>
+		<property>
 			<name>gluetools.core.programs.blast.search.threads</name>
 			<value>4</value>
 		</property>

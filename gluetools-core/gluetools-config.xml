@@ -33,6 +33,10 @@
 			<value>4</value>
 		</property>
 		<property>
+			<name>gluetools.core.programs.blast.temp.dir</name>
+			<value>/Users/joshsinger/tmp/blastfiles</value>
+		</property>
+		<property>
 			<name>gluetools.core.programs.blast.db.dir</name>
 			<value>/Users/joshsinger/tmp/blastdbs</value>
 		</property>

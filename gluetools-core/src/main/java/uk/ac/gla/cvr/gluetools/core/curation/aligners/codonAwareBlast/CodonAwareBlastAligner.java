@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -29,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAware
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -81,7 +83,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 		String queryAAs = buf.toString();
 
 		String queryAAFastaID = refName+"_"+featureName;
-		String queryAAFastaRow = FastaUtils.seqIdCompoundsPairToFasta(queryAAFastaID, queryAAs, LineFeedStyle.LF);
+		String queryAAFastaRow = FastaUtils.seqIdCompoundsPairToFasta(queryAAFastaID, queryAAs, LineFeedStyle.forOS());
 		byte[] queryAAFastaBytes = queryAAFastaRow.getBytes();
 
 		BlastRunner blastRunner = getBlastRunner();

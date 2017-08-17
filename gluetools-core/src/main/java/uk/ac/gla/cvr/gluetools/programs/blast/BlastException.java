@@ -9,7 +9,9 @@ public class BlastException extends GlueException {
 		BLAST_OUTPUT_FORMAT_ERROR("errorText"),
 		BLAST_UNHANDLED_CASE("refSeqId", "querySeqId", "caseDescription"),
 		UNKNOWN_BLAST_TYPE("blastType"),
-		INVALID_BLAST_DB_PATH("errorTxt");
+		INVALID_BLAST_DB_PATH("errorTxt"),
+		BLAST_CONFIG_EXCEPTION("errorTxt"),
+		BLAST_FILE_EXCEPTION("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
