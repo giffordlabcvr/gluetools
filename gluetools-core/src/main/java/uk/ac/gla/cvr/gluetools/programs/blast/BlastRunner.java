@@ -76,7 +76,15 @@ public class BlastRunner implements Plugin {
 		}
 	}
 
-	public List<BlastResult> executeBlastUsingTempDir(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
+	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
+		if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+			return executeBlastUsingTempDir(cmdContext, blastType, blastDB, fastaBytes);
+		} else {
+			return executeBlastUsingStreams(cmdContext, blastType, blastDB, fastaBytes);
+		}
+	}	
+	
+	private List<BlastResult> executeBlastUsingTempDir(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
 	
 		String blastTempDir = getBlastTempDir(cmdContext);
 		String uuid = UUID.randomUUID().toString();
@@ -147,16 +155,8 @@ public class BlastRunner implements Plugin {
 
 	}
 	
-	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
-		if(System.getProperty("os.name").toLowerCase().contains("windows")) {
-			return executeBlastUsingTempDir(cmdContext, blastType, blastDB, fastaBytes);
-		} else {
-			return executeBlastUsingStreams(cmdContext, blastType, blastDB, fastaBytes);
-		}
-	}	
-
 	@SuppressWarnings("rawtypes")
-	public List<BlastResult> executeBlastUsingStreams(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
+	private List<BlastResult> executeBlastUsingStreams(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
 		blastDB.readLock().lock();
 		ProcessResult blastProcessResult;
 		try {
