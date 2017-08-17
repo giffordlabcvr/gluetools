@@ -83,7 +83,7 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 			commandWords.add(Integer.toString(randomNumberSeed2));
 			// alignment file
 			commandWords.add("-s");
-			commandWords.add(alignmentFile.getAbsolutePath());
+			commandWords.add(normalisedFilePath(alignmentFile));
 			// substitution model
 			commandWords.add("-m");
 			commandWords.add(this.getSubstitutionModel());

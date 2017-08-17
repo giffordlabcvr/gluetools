@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,10 +96,11 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			}
 			// alignment file
 			commandWords.add("-s");
-			commandWords.add(alignmentFile.getAbsolutePath());
+			
+			commandWords.add(normalisedFilePath(alignmentFile));
 			// phylo tree file
 			commandWords.add("-t");
-			commandWords.add(phyloTreeFile.getAbsolutePath());
+			commandWords.add(normalisedFilePath(phyloTreeFile));
 			// substitution model
 			commandWords.add("-m");
 			commandWords.add(this.getSubstitutionModel());

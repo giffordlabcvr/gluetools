@@ -83,5 +83,13 @@ public abstract class RaxmlRunner implements Plugin {
 		}
 	}
 
+	protected String normalisedFilePath(File file) {
+		String normalizedPath = file.getAbsolutePath();
+		if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+			normalizedPath = normalizedPath.replace('\\', '/');
+		}
+		return normalizedPath;
+	}
+
 	
 }
