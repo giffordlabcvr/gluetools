@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.cygwin.CygwinUtils;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -69,6 +70,12 @@ public class MafftRunner implements Plugin {
 		String mafftExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_EXECUTABLE_PROPERTY);
 		if(mafftExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT executable not defined in config property "+MafftUtils.MAFFT_EXECUTABLE_PROPERTY); }
 
+		String cygwinShExecutable = null;
+		if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+			cygwinShExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(CygwinUtils.CYGWIN_SH_EXECUTABLE_PROPERTY);
+			if(cygwinShExecutable == null) { throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "Cygwin sh executable not defined in config property "+CygwinUtils.CYGWIN_SH_EXECUTABLE_PROPERTY); }
+		}
+		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(mafftTempDir, uuid);
 			boolean mkdirsResult = tempDir.mkdirs();
@@ -84,9 +91,9 @@ public class MafftRunner implements Plugin {
 				if(independentQueries) {
 
 					Map<String, MafftSingleSequenceCallable> fastaIDToCallable = new LinkedHashMap<String, MafftSingleSequenceCallable>();
-
+					final String finalCygwinShExecutable = cygwinShExecutable;
 					query.forEach( (fastaID, sequence) -> {
-						fastaIDToCallable.put(fastaID, new MafftSingleSequenceCallable(task, tempDir, mafftExecutable, uuid, alignmentFile, fastaID, sequence));
+						fastaIDToCallable.put(fastaID, new MafftSingleSequenceCallable(task, tempDir, finalCygwinShExecutable, mafftExecutable, uuid, alignmentFile, fastaID, sequence));
 					});
 
 					ExecutorService mafftExecutorService = cmdContext.getGluetoolsEngine().getMafftExecutorService();
@@ -100,7 +107,7 @@ public class MafftRunner implements Plugin {
 					});
 					mafftResult.setAlignmentWithQuery(alignmentWithQuery);
 				} else {
-					MafftMultiSequenceCallable callable = new MafftMultiSequenceCallable(task, tempDir, mafftExecutable, uuid, alignmentFile, query);
+					MafftMultiSequenceCallable callable = new MafftMultiSequenceCallable(task, tempDir, cygwinShExecutable, mafftExecutable, uuid, alignmentFile, query);
 					callable.call();
 					mafftResult.setAlignmentWithQuery(callable.getAlignmentWithQuery());
 				}
@@ -148,15 +155,17 @@ public class MafftRunner implements Plugin {
 
 		private Task task;
 		private File tempDir;
+		private String cygwinShExecutable;
 		private String mafftExecutable;
 		private String uuid;
 		private File alignmentFile;
 		
-		public MafftCallable(Task task, File tempDir, String mafftExecutable,
+		public MafftCallable(Task task, File tempDir, String cygwinShExecutable, String mafftExecutable,
 				String uuid, File alignmentFile) {
 			super();
 			this.task = task;
 			this.tempDir = tempDir;
+			this.cygwinShExecutable = cygwinShExecutable;
 			this.mafftExecutable = mafftExecutable;
 			this.uuid = uuid;
 			this.alignmentFile = alignmentFile;
@@ -172,6 +181,11 @@ public class MafftRunner implements Plugin {
 		
 		public Map<String, DNASequence> runMafft(File queryFile) {
 			List<String> commandWords = new ArrayList<String>();
+			
+			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+				commandWords.add(cygwinShExecutable);
+			}
+			
 			commandWords.add(mafftExecutable);
 
 			// threads / number of CPUs
@@ -242,10 +256,10 @@ public class MafftRunner implements Plugin {
 		private DNASequence querySequence;
 		private DNASequence alignmentRow;
 		
-		public MafftSingleSequenceCallable(Task task, File tempDir, String mafftExecutable,
+		public MafftSingleSequenceCallable(Task task, File tempDir, String cygwinShExecutable, String mafftExecutable,
 				String uuid, File alignmentFile, String fastaID,
 				DNASequence querySequence) {
-			super(task, tempDir, mafftExecutable, uuid, alignmentFile);
+			super(task, tempDir, cygwinShExecutable, mafftExecutable, uuid, alignmentFile);
 			this.fastaID = fastaID;
 			this.querySequence = querySequence;
 		}
@@ -275,9 +289,9 @@ public class MafftRunner implements Plugin {
 		private Map<String, DNASequence> querySequences;
 		private Map<String, DNASequence> alignmentWithQuery;
 		
-		public MafftMultiSequenceCallable(Task task, File tempDir, String mafftExecutable,
+		public MafftMultiSequenceCallable(Task task, File tempDir, String cygwinShExecutable, String mafftExecutable,
 				String uuid, File alignmentFile, Map<String, DNASequence> querySequences) {
-			super(task, tempDir, mafftExecutable, uuid, alignmentFile);
+			super(task, tempDir, cygwinShExecutable, mafftExecutable, uuid, alignmentFile);
 			this.querySequences = querySequences;
 		}
 
