@@ -23,11 +23,8 @@ import uk.ac.gla.cvr.gluetools.programs.blast.BlastException.Code;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResultBuilder.BlastXPath;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
-import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException;
-import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class BlastRunner implements Plugin {
