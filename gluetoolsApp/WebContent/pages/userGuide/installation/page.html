@@ -100,9 +100,13 @@ So, you will need to edit this file to adapt it to your local GLUE installation.
 <p>In a text editor, load the XML file <code>gluetools/conf/gluetools-config.xml</code>. 
 You will need to make sure that the database section specifies the correct MySQL username, password and database name as necessary, by editing the contents of the 
 <code>&lt;username&gt;</code>, <code>&lt;password&gt;</code> and <code>&lt;jdbcUrl&gt;</code> elements.
-		
 <div hljs source="basicConfig"></div>
-		
+</p>		
+<p>		
+For Windows / Cygwin, you must also add a property showing GLUE where to find the <code>sh</code> executable:
+<div hljs source="cygwinConfig"></div>
+</p>
+ 		
 <h3 id="runCommandLine">Running the GLUE command line</h3>
 <p>GLUE has an interactive command line, this is an important tool for GLUE project developers. 
 We can now test that this works by running <code>gluetools.sh</code></p>

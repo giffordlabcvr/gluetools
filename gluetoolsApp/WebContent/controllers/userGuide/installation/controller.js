@@ -12,6 +12,12 @@ gluetoolsApp.controller('installationCtrl',
 	            console.log("basicConfig", $scope.basicConfig);
 	        });
 
+		    $http.get('./controllers/userGuide/installation/cygwin-config.xml')
+	        .success(function(data) {
+	            $scope.cygwinConfig = data;
+	            console.log("cygwinConfig", $scope.cygwinConfig);
+	        });
+
 		    $http.get('./controllers/userGuide/installation/blast-config.xml')
 	        .success(function(data) {
 	            $scope.blastConfig = data;

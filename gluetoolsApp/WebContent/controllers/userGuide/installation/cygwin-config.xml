@@ -1,0 +1,12 @@
+<gluetools>
+	<!-- .... -->
+	<properties>
+	<!-- .... -->
+		<!-- Cygwin specific config -->
+		<property>
+			<name>gluetools.core.cygwin.sh.executable</name>
+			<value>C:\cygwin\bin\sh.exe</value>
+		</property>
+	<!-- .... -->
+	</properties>
+</gluetools>
