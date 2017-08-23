@@ -20,7 +20,7 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		addModulePluginCmdClass(WebExportMemberCommand.class);
 	}
 
-	public void doExport(CommandContext cmdContext, 
+	public static void doExport(CommandContext cmdContext, 
 			AbstractSequenceSupplier sequenceSupplier, 
 			AbstractSequenceConsumer sequenceConsumer) {
 		

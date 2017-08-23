@@ -40,7 +40,7 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 				printWriter.flush();
 			}
 		};
-		fastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
+		FastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
 	}
 	
 	

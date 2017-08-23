@@ -217,7 +217,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		
 		MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, MafftRunner.Task.ADD_KEEPLENGTH, true, almtFastaContent, queryFastaContent, dataDirFile);
 		
-		Map<String, DNASequence> alignmentWithQuery = mafftResult.getAlignmentWithQuery();
+		Map<String, DNASequence> alignmentWithQuery = mafftResult.getResultAlignment();
 
 		// add special EPA names to leaves 
 		// in the glue alignment tree so that they match the alignment rows when it is passed to Raxml EPA

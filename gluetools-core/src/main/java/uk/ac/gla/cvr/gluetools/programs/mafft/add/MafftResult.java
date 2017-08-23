@@ -6,13 +6,13 @@ import org.biojava.nbio.core.sequence.DNASequence;
 
 public class MafftResult {
 
-	private Map<String, DNASequence> alignmentWithQuery;
+	private Map<String, DNASequence> resultAlignment;
 
-	public Map<String, DNASequence> getAlignmentWithQuery() {
-		return alignmentWithQuery;
+	public Map<String, DNASequence> getResultAlignment() {
+		return resultAlignment;
 	}
 
-	public void setAlignmentWithQuery(Map<String, DNASequence> alignmentWithQuery) {
-		this.alignmentWithQuery = alignmentWithQuery;
+	public void setResultAlignment(Map<String, DNASequence> resultAlignment) {
+		this.resultAlignment = resultAlignment;
 	}
 }

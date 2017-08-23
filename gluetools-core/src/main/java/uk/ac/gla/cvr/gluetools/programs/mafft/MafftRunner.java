@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,8 @@ public class MafftRunner implements Plugin {
 
 	public enum Task {
 		ADD,
-		ADD_KEEPLENGTH
+		ADD_KEEPLENGTH,
+		COMPUTE
 	}
 	
 	@Override
@@ -62,6 +64,10 @@ public class MafftRunner implements Plugin {
 
 		if(independentQueries && !task.equals(Task.ADD_KEEPLENGTH)) {
 			throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT runner independentQueries option can only be used with ADD_KEEPLENGTH task");
+		}
+		
+		if(query != null && !EnumSet.of(Task.ADD, Task.ADD_KEEPLENGTH).contains(task)) {
+			throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT runner query can only be passed to ADD or ADD_KEEPLENGTH task");
 		}
 		
 		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);
@@ -105,11 +111,11 @@ public class MafftRunner implements Plugin {
 					fastaIDToCallable.forEach( (fastaID, callable) -> {
 						alignmentWithQuery.put(fastaID, callable.getAlignmentRow());
 					});
-					mafftResult.setAlignmentWithQuery(alignmentWithQuery);
+					mafftResult.setResultAlignment(alignmentWithQuery);
 				} else {
 					MafftMultiSequenceCallable callable = new MafftMultiSequenceCallable(task, tempDir, cygwinShExecutable, mafftExecutable, uuid, alignmentFile, query);
 					callable.call();
-					mafftResult.setAlignmentWithQuery(callable.getAlignmentWithQuery());
+					mafftResult.setResultAlignment(callable.getResultAlignment());
 				}
 
 			} catch(Exception e) {
@@ -223,6 +229,9 @@ public class MafftRunner implements Plugin {
 				commandWords.add(queryFile.getAbsolutePath());
 				commandWords.add("--keeplength");
 				break;
+			case COMPUTE:
+				// in the compute case, query is not used, and the alignment file is the input sequences.
+				break;
 			default:
 				throw new MafftException(Code.MAFFT_PROCESS_EXCEPTION, "Unknown MAFFT task "+task.name());
 			}
@@ -287,7 +296,7 @@ public class MafftRunner implements Plugin {
 	private class MafftMultiSequenceCallable extends MafftCallable implements Callable<Void> {
 
 		private Map<String, DNASequence> querySequences;
-		private Map<String, DNASequence> alignmentWithQuery;
+		private Map<String, DNASequence> resultAlignment;
 		
 		public MafftMultiSequenceCallable(Task task, File tempDir, String cygwinShExecutable, String mafftExecutable,
 				String uuid, File alignmentFile, Map<String, DNASequence> querySequences) {
@@ -298,16 +307,18 @@ public class MafftRunner implements Plugin {
 		// returns single alignment row for query.
 		@Override
 		public Void call() throws Exception {
-			File queryFile = new File(getTempDir(), getUuid()+"_query.fasta");
-			writeFastaFile(getTempDir(), queryFile, querySequences);
-
-			this.alignmentWithQuery = runMafft(queryFile);
+			File queryFile = null;
+			if(querySequences != null) {
+				queryFile = new File(getTempDir(), getUuid()+"_query.fasta");
+				writeFastaFile(getTempDir(), queryFile, querySequences);
+			}
+			this.resultAlignment = runMafft(queryFile);
 			return null;
 		}
 
 
-		public Map<String, DNASequence> getAlignmentWithQuery() {
-			return this.alignmentWithQuery;
+		public Map<String, DNASequence> getResultAlignment() {
+			return this.resultAlignment;
 		}
 	}
 

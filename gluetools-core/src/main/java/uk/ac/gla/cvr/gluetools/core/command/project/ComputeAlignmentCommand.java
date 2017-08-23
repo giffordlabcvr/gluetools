@@ -18,11 +18,13 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeUnconstrained;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -75,37 +77,62 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 	public ComputeAlignmentResult execute(CommandContext cmdContext) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		Aligner<?, ?> alignerModule = Aligner.getAligner(cmdContext, alignerModuleName);
-		if(!alignment.isConstrained()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, 
-					"Command is currently limited to constrained alignments but alignment '"+alignmentName+"' is unconstrained.");
+		if(alignment.isConstrained()) {
+			if(	(!(alignerModule instanceof SupportsComputeConstrained)) ||
+					!((SupportsComputeConstrained) alignerModule).supportsComputeConstrained()) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, 
+						"Aligner module '"+alignerModuleName+"' does not support computing of constrained alignments.");
+			}
+		} else {
+			if(!(alignerModule instanceof SupportsComputeUnconstrained)) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, 
+						"Aligner module '"+alignerModuleName+"' does not support computing of unconstrained alignments.");
+			}
+			if(whereClause != null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, 
+						"Cannot use --whereClause when computing an unconstrained alignment");
+			}
 		}
-		if(	(!(alignerModule instanceof SupportsComputeConstrained)) ||
-				!((SupportsComputeConstrained) alignerModule).supportsComputeConstrained()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, 
-					"Aligner module '"+alignerModuleName+"' does not support computing of constrained alignments.");
-		}
-		
 		// enter the alignment command mode to get the reference sequence name 
 
-		GlueLogger.getGlueLogger().finest("Searching for members to align");
-		// enter the alignment command mode to get the member ID maps selected by the where clause
-		List<Map<String, Object>> memberIDs = AlignmentComputationUtils.getMemberSequenceIdMaps(cmdContext, alignmentName, whereClause);
-		GlueLogger.getGlueLogger().finest("Found "+memberIDs.size()+" members to align");
-		// get the original data for the reference sequence
-		// modify the aligned segments and generate alignment results results for each selected member.
-		List<Map<String, Object>> resultListOfMaps = 
-				getComputeConstrainedResults(cmdContext, new ArrayList<Map<String,Object>>(memberIDs), alignment.getRefSequence().getName());
+		List<Map<String, Object>> resultListOfMaps;
+		if(alignment.isConstrained()) {
+			GlueLogger.getGlueLogger().finest("Searching for members to align");
+			// enter the alignment command mode to get the member ID maps selected by the where clause
+			List<Map<String, Object>> memberIDs = AlignmentComputationUtils.getMemberSequenceIdMaps(cmdContext, alignmentName, whereClause);
+			GlueLogger.getGlueLogger().finest("Found "+memberIDs.size()+" members to align");
+			ArrayList<Map<String, Object>> memberIDsList = new ArrayList<Map<String,Object>>(memberIDs);
+			@SuppressWarnings("unchecked")
+			SupportsComputeConstrained supportsComputeConstrained = ((SupportsComputeConstrained) alignerModule);
+			resultListOfMaps = getComputeConstrainedResults(cmdContext, supportsComputeConstrained, memberIDsList, alignment.getRefSequence().getName());
+		} else {
+			@SuppressWarnings("unchecked")
+			SupportsComputeUnconstrained supportsComputeUnconstrained = ((SupportsComputeUnconstrained) alignerModule);
+			resultListOfMaps = getComputeUnconstrainedResults(cmdContext, supportsComputeUnconstrained, alignmentName);
+		}
+		
 		return new ComputeAlignmentResult(resultListOfMaps);
 	}
 
 
+	private List<Map<String, Object>> getComputeUnconstrainedResults(
+			CommandContext cmdContext,
+			SupportsComputeUnconstrained supportsComputeUnconstrained,
+			String alignmentName) {
+		Map<Map<String,String>, List<QueryAlignedSegment>>
+			alignmentRows = supportsComputeUnconstrained.computeUnconstrained(cmdContext, alignmentName);
+		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+		alignmentRows.forEach((memberPkMap, memberAlignedSegments) -> {
+			results.add(AlignmentComputationUtils.applyMemberAlignedSegments(cmdContext, memberPkMap, memberAlignedSegments));
+		});
+		return results;
+	}
+
+
 	private <R extends AlignerResult, C extends Command<R>> List<Map<String, Object>> getComputeConstrainedResults(
-			CommandContext cmdContext, ArrayList<Map<String, Object>> memberIDs, String refName) {
-		// get the align command's class for the module.
-		// Look up the module by name, check it is an aligner, and get its align command class.
-		Aligner<?, ?> alignerModule = Aligner.getAligner(cmdContext, alignerModuleName);
+			CommandContext cmdContext, SupportsComputeConstrained supportsComputeConstrained, ArrayList<Map<String, Object>> memberIDs, String refName) {
 		@SuppressWarnings("unchecked")
-		Class<C> alignCommandClass = (Class<C>) ((SupportsComputeConstrained) alignerModule).getComputeConstrainedCommandClass();
+		Class<C> alignCommandClass = (Class<C>) supportsComputeConstrained.getComputeConstrainedCommandClass();
 		
 		int membersAligned = 0;
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
