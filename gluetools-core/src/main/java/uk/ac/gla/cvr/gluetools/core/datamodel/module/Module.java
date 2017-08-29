@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 public class Module extends _Module {
 
 
+	private byte[] configBytes = null;
 	private Document configDoc = null;
 	private ModulePlugin<?> modulePlugin = null;
 	private boolean valid = false;
@@ -97,16 +98,15 @@ public class Module extends _Module {
 	
 	@Override
 	public void writePropertyDirectly(String propName, Object val) {
-		byte[] oldVal;
 		if(propName.equals(CONFIG_PROPERTY)) {
-			oldVal = (byte[]) readPropertyDirectly(CONFIG_PROPERTY);
-			if((oldVal == null && val != null) ||
-				(oldVal != null && val == null) ||
-				(oldVal != null && val != null && !Arrays.equals(oldVal, (byte[]) val))) {
+			if((configBytes == null && val != null) ||
+				(configBytes != null && val == null) ||
+				(configBytes != null && val != null && !Arrays.equals(configBytes, (byte[]) val))) {
 				// updating the config bytes invalidates the cached document / plugin / valid flag.
 				configDoc = null;
 				modulePlugin = null;
 				valid = false;
+				configBytes = (byte[]) val;
 			}
 		}
 		super.writePropertyDirectly(propName, val);
