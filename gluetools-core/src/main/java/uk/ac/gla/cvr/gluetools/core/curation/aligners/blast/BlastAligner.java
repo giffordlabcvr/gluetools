@@ -25,9 +25,9 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner.BlastType;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastUtils;
-import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.SingleReferenceBlastDB;
+import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -124,7 +124,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 						String blastRefName = refName+":"+featureName;
 						List<BlastResult> blastResults;
 						try {
-							BlastDB refDB = blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, blastRefName, refNTs.toString());
+							TemporarySingleSeqBlastDB refDB = blastDbManager.createTempSingleSeqBlastDB(cmdContext, uuid, blastRefName, refNTs.toString());
 							blastResults = getBlastRunner().executeBlast(cmdContext, BlastType.BLASTN, refDB, fastaBytes);
 						} finally {
 							blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);

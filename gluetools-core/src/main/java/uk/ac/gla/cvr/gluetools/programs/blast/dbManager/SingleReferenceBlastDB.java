@@ -16,22 +16,21 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
-public class SingleReferenceBlastDB extends BlastDB {
+public class SingleReferenceBlastDB extends BlastDB<SingleReferenceBlastDB> {
 	
 	private String referenceName;
 	
-	public SingleReferenceBlastDB(String projectName, String referenceName) {
-		super(projectName);
+	public SingleReferenceBlastDB(SingleReferenceBlastDbKey key, String referenceName) {
+		super(key);
 		this.referenceName = referenceName;
 	}
 
 	public static class SingleReferenceBlastDbKey extends BlastDbKey<SingleReferenceBlastDB> {
 
-		private String projectName;
 		private String referenceName;
 
 		public SingleReferenceBlastDbKey(String projectName, String referenceName) {
-			this.projectName = projectName;
+			super(projectName);
 			this.referenceName = referenceName;
 		}
 
@@ -42,7 +41,7 @@ public class SingleReferenceBlastDB extends BlastDB {
 			result = prime * result
 					+ ((referenceName == null) ? 0 : referenceName.hashCode());
 			result = prime * result
-					+ ((projectName == null) ? 0 : projectName.hashCode());
+					+ ((getProjectName() == null) ? 0 : getProjectName().hashCode());
 			return result;
 		}
 
@@ -60,29 +59,30 @@ public class SingleReferenceBlastDB extends BlastDB {
 					return false;
 			} else if (!referenceName.equals(other.referenceName))
 				return false;
-			if (projectName == null) {
-				if (other.projectName != null)
+			if (getProjectName() == null) {
+				if (other.getProjectName() != null)
 					return false;
-			} else if (!projectName.equals(other.projectName))
+			} else if (!getProjectName().equals(other.getProjectName()))
 				return false;
 			return true;
 		}
 
 		@Override
+		protected File getProjectRelativeBlastDbDir(File projectPath) {
+			return new File(projectPath, "reference_"+referenceName);
+		}
+
+
+		@Override
 		public SingleReferenceBlastDB createBlastDB() {
-			return new SingleReferenceBlastDB(projectName, referenceName);
+			return new SingleReferenceBlastDB(this, referenceName);
 		}
 		
 	}
 
 	@Override
-	protected File getProjectRelativeBlastDbDir(File projectPath) {
-		return new File(projectPath, "reference_"+referenceName);
-	}
-
-	@Override
 	public String getTitle() {
-		return "Sequences of reference "+referenceName+" in project "+getProjectName();
+		return "Sequences of reference "+referenceName+" in project "+getKey().getProjectName();
 	}
 
 	@Override

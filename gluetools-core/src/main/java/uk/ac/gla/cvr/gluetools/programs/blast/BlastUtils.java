@@ -68,7 +68,7 @@ public class BlastUtils {
 	
 	
 	
-	protected static List<BlastHsp> blastResultToHsps(String refName,
+	public static List<BlastHsp> blastResultToHsps(String refName,
 			BlastHspFilter blastHspFilter, BlastResult blastResult) {
 		// find hits on the specified reference
 		List<BlastHit> hits =

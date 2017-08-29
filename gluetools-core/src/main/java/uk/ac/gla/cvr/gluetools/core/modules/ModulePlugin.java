@@ -187,5 +187,7 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 		}
 	}
 
+	public void init(CommandContext cmdContext) {}
+
 
 }

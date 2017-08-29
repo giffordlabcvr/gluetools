@@ -12,14 +12,14 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
-public class TemporaryMultiSeqBlastDB extends BlastDB {
+public class TemporaryMultiSeqBlastDB extends BlastDB<TemporaryMultiSeqBlastDB> {
 	
 	private String uuid;
 	private Map<String, DNASequence> sequences;
 	private long creationTime;
 	
-	public TemporaryMultiSeqBlastDB(String projectName, String uuid, Map<String, DNASequence> sequences) {
-		super(projectName);
+	public TemporaryMultiSeqBlastDB(TemporaryMultiSeqBlastDbKey key, String uuid, Map<String, DNASequence> sequences) {
+		super(key);
 		this.uuid = uuid;
 		this.sequences = sequences;
 		this.creationTime = System.currentTimeMillis();
@@ -27,12 +27,11 @@ public class TemporaryMultiSeqBlastDB extends BlastDB {
 
 	public static class TemporaryMultiSeqBlastDbKey extends BlastDbKey<TemporaryMultiSeqBlastDB> {
 
-		private String projectName;
 		private String uuid;
 		private Map<String, DNASequence> sequences;
 		
 		public TemporaryMultiSeqBlastDbKey(String projectName, String uuid, Map<String, DNASequence> sequences) {
-			this.projectName = projectName;
+			super(projectName);
 			this.uuid = uuid;
 			this.sequences = sequences;
 		}
@@ -42,7 +41,7 @@ public class TemporaryMultiSeqBlastDB extends BlastDB {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result
-					+ ((projectName == null) ? 0 : projectName.hashCode());
+					+ ((getProjectName() == null) ? 0 : getProjectName().hashCode());
 			result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
 			return result;
 		}
@@ -56,10 +55,10 @@ public class TemporaryMultiSeqBlastDB extends BlastDB {
 			if (getClass() != obj.getClass())
 				return false;
 			TemporaryMultiSeqBlastDbKey other = (TemporaryMultiSeqBlastDbKey) obj;
-			if (projectName == null) {
-				if (other.projectName != null)
+			if (getProjectName() == null) {
+				if (other.getProjectName() != null)
 					return false;
-			} else if (!projectName.equals(other.projectName))
+			} else if (!getProjectName().equals(other.getProjectName()))
 				return false;
 			if (uuid == null) {
 				if (other.uuid != null)
@@ -70,19 +69,19 @@ public class TemporaryMultiSeqBlastDB extends BlastDB {
 		}
 
 		@Override
+		protected File getProjectRelativeBlastDbDir(File projectPath) {
+			return new File(projectPath, "temp_"+uuid);
+		}
+
+		@Override
 		public TemporaryMultiSeqBlastDB createBlastDB() {
-			return new TemporaryMultiSeqBlastDB(projectName, uuid, sequences);
+			return new TemporaryMultiSeqBlastDB(this, uuid, sequences);
 		}
 	}
 
 	@Override
-	protected File getProjectRelativeBlastDbDir(File projectPath) {
-		return new File(projectPath, "temp_"+uuid);
-	}
-
-	@Override
 	public String getTitle() {
-		return "Temporary BLAST DB "+uuid+" in project "+getProjectName();
+		return "Temporary BLAST DB "+uuid+" in project "+getKey().getProjectName();
 	}
 
 	@Override

@@ -63,7 +63,7 @@ public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 		byte[] config = consoleCmdContext.loadBytes(fileName);
 		module.setConfig(config);
 		try {
-			module.getModulePlugin(cmdContext.getGluetoolsEngine());
+			module.getModulePlugin(cmdContext);
 		} catch(Exception e) {
 			throw new ModuleException(Code.CREATE_FROM_FILE_FAILED, fileName, e.getMessage());
 		}

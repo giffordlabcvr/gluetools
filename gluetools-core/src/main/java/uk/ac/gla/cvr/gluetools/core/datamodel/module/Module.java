@@ -3,6 +3,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.module;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -57,17 +57,18 @@ public class Module extends _Module {
 		return configDoc;
 	}
 	
-	public ModulePlugin<?> getModulePlugin(GluetoolsEngine gluetoolsEngine) {
-		return getModulePlugin(gluetoolsEngine, true);
+	public ModulePlugin<?> getModulePlugin(CommandContext cmdContext) {
+		return getModulePlugin(cmdContext, true);
 	}
 
-	public ModulePlugin<?> getModulePlugin(GluetoolsEngine gluetoolsEngine, boolean requireValid) {
+	public ModulePlugin<?> getModulePlugin(CommandContext cmdContext, boolean requireValid) {
 		if(modulePlugin == null) {
 			modulePlugin = buildModulePlugin();
 			modulePlugin.setModuleName(getName());
 		}
 		if(requireValid == true && !valid) {
-			PluginFactory.configurePlugin(gluetoolsEngine.createPluginConfigContext(), configDoc.getDocumentElement(), modulePlugin);
+			PluginFactory.configurePlugin(cmdContext.getGluetoolsEngine().createPluginConfigContext(), configDoc.getDocumentElement(), modulePlugin);
+			modulePlugin.init(cmdContext);
 			valid = true;
 		}
 		return modulePlugin;
@@ -86,8 +87,8 @@ public class Module extends _Module {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public List<Class<? extends Command>> getProvidedCommandClasses(GluetoolsEngine gluetoolsEngine) {
-		return getModulePlugin(gluetoolsEngine, false).getProvidedCommandClasses();
+	public List<Class<? extends Command>> getProvidedCommandClasses(CommandContext cmdContext) {
+		return getModulePlugin(cmdContext, false).getProvidedCommandClasses();
 	}
 
 	public String getType() {
@@ -96,17 +97,23 @@ public class Module extends _Module {
 	
 	@Override
 	public void writePropertyDirectly(String propName, Object val) {
-		super.writePropertyDirectly(propName, val);
+		byte[] oldVal;
 		if(propName.equals(CONFIG_PROPERTY)) {
-			// updating the config bytes invalidates the cached document / plugin / valid flag.
-			configDoc = null;
-			modulePlugin = null;
-			valid = false;
+			oldVal = (byte[]) readPropertyDirectly(CONFIG_PROPERTY);
+			if((oldVal == null && val != null) ||
+				(oldVal != null && val == null) ||
+				(oldVal != null && val != null && !Arrays.equals(oldVal, (byte[]) val))) {
+				// updating the config bytes invalidates the cached document / plugin / valid flag.
+				configDoc = null;
+				modulePlugin = null;
+				valid = false;
+			}
 		}
+		super.writePropertyDirectly(propName, val);
 	}
 	
 	public void validate(CommandContext cmdContext) {
-		ModulePlugin<?> modulePlugin = getModulePlugin(cmdContext.getGluetoolsEngine());
+		ModulePlugin<?> modulePlugin = getModulePlugin(cmdContext);
 		modulePlugin.validate(cmdContext);
 	}
 	
@@ -122,7 +129,7 @@ public class Module extends _Module {
 			throw new ModuleException(ModuleException.Code.NO_MODULE_DEFINED);
 		}
 		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine());
+		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext);
 		Class<?> actualClass = modulePlugin.getClass();
 		if(!(requiredClass.isAssignableFrom(actualClass))) {
 			throw new ModuleException(ModuleException.Code.MODULE_PLUGIN_IS_NOT_OF_CORRECT_CLASS, moduleName, 
@@ -137,7 +144,7 @@ public class Module extends _Module {
 		byte[] config = ConsoleCommandContext.loadBytesFromFile(file);
 		setConfig(config);
 		if(loadResources) {
-			ModulePlugin<?> modulePlugin = getModulePlugin(consoleCmdContext.getGluetoolsEngine(), true);
+			ModulePlugin<?> modulePlugin = getModulePlugin(consoleCmdContext, true);
 			File resourceDir = file.getParentFile();
 			modulePlugin.loadResources(consoleCmdContext, resourceDir, this);
 		}

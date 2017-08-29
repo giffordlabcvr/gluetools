@@ -39,12 +39,12 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 	}
 
 	protected void checkPropertyPath(CommandContext cmdContext, Module module) {
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine(), false);
+		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
 		modulePlugin.checkProperty(getPropertyPath());
 	}
 
 	protected void checkPropertyGroup(CommandContext cmdContext, Module module) {
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext.getGluetoolsEngine(), false);
+		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
 		modulePlugin.checkPropertyGroup(getPropertyPath());
 	}
 
@@ -83,7 +83,7 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 						Map<String, Object> bindings, String prefix) {
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
 					Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-					return module.getModulePlugin(cmdContext.getGluetoolsEngine(), false).allPropertyPaths()
+					return module.getModulePlugin(cmdContext, false).allPropertyPaths()
 							.stream()
 							.map(pn -> new CompletionSuggestion(pn, true))
 							.collect(Collectors.toList());
@@ -103,7 +103,7 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 						Map<String, Object> bindings, String prefix) {
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
 					Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-					return module.getModulePlugin(cmdContext.getGluetoolsEngine(), false).allPropertyGroupPaths()
+					return module.getModulePlugin(cmdContext, false).allPropertyGroupPaths()
 							.stream()
 							.map(pn -> new CompletionSuggestion(pn, true))
 							.collect(Collectors.toList());

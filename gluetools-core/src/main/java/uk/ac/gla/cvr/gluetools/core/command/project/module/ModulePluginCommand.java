@@ -25,7 +25,7 @@ public abstract class ModulePluginCommand<R extends CommandResult, P extends Mod
 		
 		Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(getModuleName()));
 		@SuppressWarnings("unchecked")
-		P modulePlugin = (P) module.getModulePlugin(cmdContext.getGluetoolsEngine());
+		P modulePlugin = (P) module.getModulePlugin(cmdContext);
 		if(this instanceof ProvidedProjectModeCommand) {
 			CommandMode<?> moduleMode = cmdContext.popCommandMode();
 			// run the command in the next mode up (project mode)
@@ -67,7 +67,7 @@ public abstract class ModulePluginCommand<R extends CommandResult, P extends Mod
 				Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
 				P modulePlugin;
 				try {
-					modulePlugin = (P) module.getModulePlugin(cmdContext.getGluetoolsEngine());
+					modulePlugin = (P) module.getModulePlugin(cmdContext);
 				} catch(Exception e) {
 					return Collections.emptyList();
 				}

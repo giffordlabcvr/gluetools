@@ -18,7 +18,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;

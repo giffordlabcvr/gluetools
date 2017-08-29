@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
+import uk.ac.gla.cvr.gluetools.core.blastRecogniser.BlastSequenceRecogniser;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
@@ -121,6 +122,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(EcmaFunctionInvoker.class);
 
 		registerPluginClass(TabularUtility.class);
+
+		registerPluginClass(BlastSequenceRecogniser.class);
 		
 		// custom project modules
 		registerPluginClass(EpitopeRasOverlap.class);

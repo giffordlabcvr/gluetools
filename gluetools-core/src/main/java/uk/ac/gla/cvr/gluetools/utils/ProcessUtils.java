@@ -184,6 +184,7 @@ public class ProcessUtils {
 		private OutputStream toStream;
 		private byte[] drainBuffer = new byte[DRAIN_BUFFER_SIZE];
 		private IOException ioException;
+		@SuppressWarnings("unused")
 		private String name;
 		
 		public BytesDrainer(InputStream fromStream, OutputStream toStream, String name) {

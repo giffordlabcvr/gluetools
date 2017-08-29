@@ -73,7 +73,7 @@ public class BlastRunner implements Plugin {
 		}
 	}
 
-	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
+	public List<BlastResult> executeBlast(CommandContext cmdContext, BlastType blastType, BlastDB<?> blastDB, byte[] fastaBytes) {
 		if(System.getProperty("os.name").toLowerCase().contains("windows")) {
 			return executeBlastUsingTempDir(cmdContext, blastType, blastDB, fastaBytes);
 		} else {
@@ -81,7 +81,7 @@ public class BlastRunner implements Plugin {
 		}
 	}	
 	
-	private List<BlastResult> executeBlastUsingTempDir(CommandContext cmdContext, BlastType blastType, BlastDB blastDB, byte[] fastaBytes) {
+	private List<BlastResult> executeBlastUsingTempDir(CommandContext cmdContext, BlastType blastType, BlastDB<?> blastDB, byte[] fastaBytes) {
 	
 		String blastTempDir = getBlastTempDir(cmdContext);
 		String uuid = UUID.randomUUID().toString();
@@ -179,7 +179,7 @@ public class BlastRunner implements Plugin {
 	}
 
 	private List<String> constructCommandWords(CommandContext cmdContext,
-			PropertiesConfiguration propsConfig, BlastType blastType, BlastDB blastDB) {
+			PropertiesConfiguration propsConfig, BlastType blastType, BlastDB<?> blastDB) {
 		String blastExecutable = establishBlastType(blastType, propsConfig);
 		Integer blastSearchThreads = establishSearchThreads(propsConfig);
 
@@ -187,11 +187,11 @@ public class BlastRunner implements Plugin {
 		commandWords.add(blastExecutable);
 		// supply reference DB
 		commandWords.add("-db");
-		commandWords.add(new File(blastDB.getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());
+		commandWords.add(new File(blastDB.getKey().getBlastDbDir(cmdContext), BlastDbManager.BLAST_DB_PREFIX).getAbsolutePath());
 		// outfmt 14 is XML2
 		commandWords.add("-outfmt");
 		commandWords.add("14");
-		for(Option numericOption : numericCommandLineOptions) {
+		for(Option<?> numericOption : numericCommandLineOptions) {
 			commandWords.add("-"+numericOption.getName());
 			commandWords.add(numericOption.getValue().toString());
 		}
