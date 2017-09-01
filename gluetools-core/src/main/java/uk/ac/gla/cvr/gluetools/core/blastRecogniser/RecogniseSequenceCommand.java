@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.blastRecogniser;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -60,15 +62,38 @@ public class RecogniseSequenceCommand extends ModulePluginCommand<BlastSequenceR
 		} else {
 			selectQuery = new SelectQuery(Sequence.class, this.whereClause);
 		}
-		List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-		Map<String, DNASequence> querySequenceMap = new LinkedHashMap<String, DNASequence>();
-		sequences.forEach(seq -> {
-			querySequenceMap.put(seq.getSource().getName()+"/"+seq.getSequenceID(), 
-					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
-		});
-		Map<String, List<RecognitionCategoryResult>> queryIdToCatResult = blastSequenceRecogniser.recognise(cmdContext, querySequenceMap);
-		List<BlastSequenceRecogniserResultRow> resultRows = BlastSequenceRecogniserResultRow.rowsFromMap(queryIdToCatResult);
+		
+		
+		List<BlastSequenceRecogniserResultRow> resultRows = new ArrayList<BlastSequenceRecogniserResultRow>();
+		
+		int totalNumSeqs = GlueDataObject.count(cmdContext, selectQuery);
+		int batchSize = 200;
+		int processed = 0;
+		int offset = 0;
+
+		while(processed < totalNumSeqs) {
+			selectQuery.setFetchLimit(batchSize);
+			selectQuery.setPageSize(batchSize);
+			selectQuery.setFetchOffset(offset);
+			GlueLogger.getGlueLogger().finest("Retrieving sequences");
+			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
+
+			Map<String, DNASequence> querySequenceMap = new LinkedHashMap<String, DNASequence>();
+			sequences.forEach(seq -> {
+				querySequenceMap.put(seq.getSource().getName()+"/"+seq.getSequenceID(), 
+						FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
+			});
+			GlueLogger.getGlueLogger().finest("Recognising sequences");
+			Map<String, List<RecognitionCategoryResult>> queryIdToCatResult = blastSequenceRecogniser.recognise(cmdContext, querySequenceMap);
+			resultRows.addAll(BlastSequenceRecogniserResultRow.rowsFromMap(queryIdToCatResult));
+
+			offset += batchSize;
+			processed += sequences.size();
+			GlueLogger.getGlueLogger().finest("Processed "+processed+" of "+totalNumSeqs+" sequences");
+			cmdContext.newObjectContext();
+		}
 		return new BlastSequenceRecogniserResult(resultRows);
+		
 	}
 
 	@CompleterClass

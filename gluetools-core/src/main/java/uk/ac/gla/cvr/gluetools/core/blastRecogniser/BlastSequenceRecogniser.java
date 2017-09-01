@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.blastRecogniser.RecognitionCategoryResult.Di
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -104,6 +105,8 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 		LinkedHashSet<String> refNamesSet = new LinkedHashSet<String>(refSeqNames);
 		Map<String, List<RecognitionCategoryResult>> queryIdToCategoryResults = new LinkedHashMap<String, List<RecognitionCategoryResult>>();
 		MultiReferenceBlastDB multiReferenceDB = BlastDbManager.getInstance().ensureMultiReferenceDB(cmdContext, dbName(), refNamesSet);
+		GlueLogger.getGlueLogger().finest("Executing BLAST");
+
 		List<BlastResult> blastResults = blastRunner.executeBlast(cmdContext, BlastRunner.BlastType.BLASTN, multiReferenceDB, 
 				FastaUtils.mapToFasta(queries, LineFeedStyle.forOS()));
 
@@ -114,7 +117,7 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 				refToCategory.put(categoryUsedRef, recognitionCategory);
 			}
 		}
-		
+
 		for(BlastResult blastResult: blastResults) {
 			String queryId = blastResult.getQueryFastaId();
 			Set<RecognitionCategoryResult> categoryResults = new LinkedHashSet<RecognitionCategoryResult>();
