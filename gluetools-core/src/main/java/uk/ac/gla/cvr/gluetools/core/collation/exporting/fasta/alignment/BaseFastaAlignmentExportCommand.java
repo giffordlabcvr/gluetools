@@ -1,7 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
 import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
@@ -38,5 +41,20 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 				delegate.getExcludeEmptyRows(), memberSupplier, almtRowConsumer);
 	}
 	
-	
+	protected Map<String, DNASequence> exportAlignment(CommandContext cmdContext, FastaAlignmentExporter fastaAlmtExporter) {
+		Map<String, DNASequence> ntFastaMap = new LinkedHashMap<String, DNASequence>();
+		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
+		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+			@Override
+			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
+				String fastaId = FastaAlignmentExporter.generateFastaId(fastaAlmtExporter.getIdTemplate(), almtMember);
+				ntFastaMap.put(fastaId, FastaUtils.ntStringToSequence(alignmentRowString));
+			}
+		};
+		FastaAlignmentExporter.exportAlignment(cmdContext, 
+				delegate.getAlignmentColumnsSelector(cmdContext), 
+				delegate.getExcludeEmptyRows(), memberSupplier, almtRowConsumer);
+		return ntFastaMap;
+	}
+
 }

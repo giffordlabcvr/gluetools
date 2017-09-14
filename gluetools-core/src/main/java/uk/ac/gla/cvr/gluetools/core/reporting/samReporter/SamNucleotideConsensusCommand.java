@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -83,11 +84,11 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 				consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),
 				this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 
-		byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
 
 		if(this.preview) {
-			return new SimpleConsoleCommandResult(new String(fastaBytes), false);
+			return new NucleotideFastaCommandResult(samNtConsensusMap);
 		} else {
+			byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
 			consoleCmdContext.saveBytes(outputFileName, fastaBytes);
 			return new OkResult();
 		}

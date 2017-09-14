@@ -5,7 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Map;
 
+import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
@@ -17,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.AminoAcidFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
@@ -61,10 +64,8 @@ public class FastaProteinAlignmentExportCommand extends BaseFastaProteinAlignmen
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter almtExporter) {
 		if(preview) {
-			ByteArrayOutputStream previewBaos = new ByteArrayOutputStream();
-			PrintWriter printWriter = new PrintWriter(previewBaos);
-			super.exportProteinAlignment(cmdContext, almtExporter, printWriter);
-			return new SimpleConsoleCommandResult(new String(previewBaos.toByteArray()));
+			Map<String, ProteinSequence> proteinFastaMap = super.exportProteinAlignment(cmdContext, almtExporter);
+			return new AminoAcidFastaCommandResult(proteinFastaMap);
 		} else {
 			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 			try(OutputStream outputStream = consoleCmdContext.openFile(fileName)) {

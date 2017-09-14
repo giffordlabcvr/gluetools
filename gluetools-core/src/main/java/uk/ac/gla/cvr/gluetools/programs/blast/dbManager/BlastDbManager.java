@@ -10,7 +10,6 @@ import java.util.Set;
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;

@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.cayenne.exp.Expression;
+import org.biojava.nbio.core.sequence.ProteinSequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
@@ -18,10 +19,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.AminoAcidFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="aminoAcidConsensusGenerator")
@@ -55,8 +58,14 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 		List<String> almtRows = new ArrayList<String>(memberPkMapToAlmtRow.values());
 		Function<Character,Boolean> validChar = TranslationUtils::isAminoAcid;
 		char unknownChar = 'X';
-		String consensusFasta = generateConsensusFasta(almtRows, consensusID, validChar, unknownChar, lineFeedStyle);
-		return formResult(cmdContext, consensusFasta, fileName, preview);
+		String consensusFasta = generateConsensusFasta(almtRows, validChar, unknownChar);
+		if(preview) {
+			Map<String, ProteinSequence> map = new LinkedHashMap<String, ProteinSequence>();
+			map.put(consensusID, FastaUtils.proteinStringToSequence(consensusFasta));
+			return new AminoAcidFastaCommandResult(map);
+		} else {
+			return formResult(cmdContext, consensusID, consensusFasta, fileName, lineFeedStyle);
+		}
 	}
 
 }

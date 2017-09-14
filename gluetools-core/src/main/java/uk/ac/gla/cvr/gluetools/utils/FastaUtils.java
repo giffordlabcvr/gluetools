@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class FastaUtils {
@@ -69,6 +74,15 @@ public class FastaUtils {
 			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
 		}
 	}
+
+	public static ProteinSequence proteinStringToSequence(String proteinString) {
+		try {
+			return new ProteinSequence(proteinString, AminoAcidCompoundSet.getAminoAcidCompoundSet());
+		} catch (CompoundNotFoundException cnfe) {
+			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
+		}
+	}
+
 	
 	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes,
 			SequenceHeaderParserInterface<ProteinSequence, AminoAcidCompound> headerParser) {
@@ -102,9 +116,9 @@ public class FastaUtils {
 		}
 	}
 
-	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> sequenceIdToNucleotides, LineFeedStyle lineFeedStyle) {
+	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> fastaIdToSequence, LineFeedStyle lineFeedStyle) {
 		final StringBuffer buf = new StringBuffer();
-		sequenceIdToNucleotides.forEach((seqId, abstractSequence) -> 
+		fastaIdToSequence.forEach((seqId, abstractSequence) -> 
 			buf.append(seqIdCompoundsPairToFasta(seqId, abstractSequence.toString(), lineFeedStyle)));
 		return buf.toString().getBytes();
 	}
@@ -255,5 +269,62 @@ public class FastaUtils {
 		return compNt;
 	}
 
+	public static CommandDocument ntFastaMapToCommandDocument(Map<String, DNASequence> fastaMap) {
+		return fastaMapToCommandDocument(fastaMap, "nucleotideFasta");
+	}
+
+	public static CommandDocument proteinFastaMapToCommandDocument(Map<String, ProteinSequence> fastaMap) {
+		return fastaMapToCommandDocument(fastaMap, "aminoAcidFasta");
+	}
+
+	private static CommandDocument fastaMapToCommandDocument(Map<String, ? extends AbstractSequence<?>> fastaIdToSequence, String rootName) {
+		CommandDocument commandDocument = new CommandDocument(rootName);
+		CommandArray sequenceArray = commandDocument.setArray("sequences");
+		fastaIdToSequence.forEach((seqId, abstractSequence) -> {
+			CommandObject sequenceObject = sequenceArray.addObject();
+			sequenceObject.set("id", seqId);
+			sequenceObject.set("sequence", abstractSequence.toString());
+		});
+		return commandDocument;
+	}
+
+	public static Map<String, DNASequence> commandDocumentToNucleotideFastaMap(CommandDocument commandDocument) {
+		return commandDocumentToFastaMap(commandDocument, new Function<String, DNASequence>() {
+			@Override
+			public DNASequence apply(String t) {
+				return ntStringToSequence(t);
+			}
+		}, "nucleotideFasta");
+	}
+
+	public static Map<String, ProteinSequence> commandDocumentToProteinFastaMap(CommandDocument commandDocument) {
+		return commandDocumentToFastaMap(commandDocument, new Function<String, ProteinSequence>() {
+			@Override
+			public ProteinSequence apply(String t) {
+				return proteinStringToSequence(t);
+			}
+		}, "aminoAcidFasta");
+	}
+
+	private static <S extends AbstractSequence<?>> Map<String, S> commandDocumentToFastaMap(
+			CommandDocument commandDocument, Function<String, S> seqParser, String expectedRootName) {
+		if(!commandDocument.getRootName().equals(expectedRootName)) {
+			throw new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "Document root name should be '"+expectedRootName+"'");
+		}
+		Map<String, S> fastaMap = new LinkedHashMap<String, S>();
+		CommandArray sequenceArray = Optional.ofNullable(commandDocument.getArray("sequences"))
+				.orElseThrow(() -> new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "Missing 'sequences' array field"));
+		sequenceArray.getItems().forEach(cmdArrayItem -> {
+			if(!(cmdArrayItem instanceof CommandObject)) {
+				throw new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "The 'sequences' array should contain only objects");
+			}
+			CommandObject sequenceObject = ((CommandObject) cmdArrayItem);
+			String id = Optional.ofNullable(sequenceObject.getString("id")).orElseThrow(() -> new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "Missing 'id' object field"));
+			String sequenceString = Optional.ofNullable(sequenceObject.getString("sequence")).orElseThrow(() -> new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "Missing 'sequence' object field"));
+			S sequence = seqParser.apply(sequenceString);
+			fastaMap.put(id,  sequence);
+		});
+		return fastaMap;
+	}
 	
 }

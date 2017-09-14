@@ -1,8 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
 
 import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
@@ -43,6 +46,19 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 		FastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
 	}
 	
-	
+	protected Map<String, DNASequence> export(CommandContext cmdContext, AbstractSequenceSupplier sequenceSupplier, 
+			FastaExporter fastaExporter) {
+		Map<String, DNASequence> ntFastaMap = new LinkedHashMap<String, DNASequence>();
+		AbstractSequenceConsumer sequenceConsumer = new AbstractSequenceConsumer() {
+			@Override
+			public void consumeSequence(CommandContext cmdContext, Sequence sequence) {
+				String fastaId = fastaExporter.generateFastaId(sequence);
+				DNASequence ntSequence = FastaUtils.ntStringToSequence(sequence.getSequenceObject().getNucleotides(cmdContext));
+				ntFastaMap.put(fastaId, ntSequence);
+			}
+		};
+		FastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
+		return ntFastaMap;
+	}
 	
 }

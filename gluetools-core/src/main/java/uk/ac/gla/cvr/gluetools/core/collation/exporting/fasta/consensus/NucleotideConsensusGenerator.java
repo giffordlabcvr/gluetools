@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,8 +17,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @PluginClass(elemName="nucleotideConsensusGenerator")
@@ -50,8 +53,14 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 
 		Function<Character,Boolean> validChar = TranslationUtils::isNucleotide;
 		char unknownChar = 'N';
-		String consensusFasta = generateConsensusFasta(almtRows, consensusID, validChar, unknownChar, lineFeedStyle);
-		return formResult(cmdContext, consensusFasta, fileName, preview);
+		String consensusFasta = generateConsensusFasta(almtRows, validChar, unknownChar);
+		if(preview) {
+			Map<String, DNASequence> map = new LinkedHashMap<String, DNASequence>();
+			map.put(consensusID, FastaUtils.ntStringToSequence(consensusFasta));
+			return new NucleotideFastaCommandResult(map);
+		} else {
+			return formResult(cmdContext, consensusID, consensusFasta, fileName, lineFeedStyle);
+		}
 	}
 
 	

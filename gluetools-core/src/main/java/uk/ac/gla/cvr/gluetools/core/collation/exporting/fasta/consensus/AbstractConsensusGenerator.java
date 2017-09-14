@@ -22,8 +22,8 @@ public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGene
 		super();
 	}
 
-	protected String generateConsensusFasta(List<String> almtRows, String consensusID,
-			Function<Character, Boolean> validChar, char unknownChar, LineFeedStyle lineFeedStyle) {
+	protected String generateConsensusFasta(List<String> almtRows,
+			Function<Character, Boolean> validChar, char unknownChar) {
 		int almtWidth = almtRows.get(0).length();
 		TCharIntHashMap[] posToCharToOccurences = new TCharIntHashMap[almtWidth];
 		for(int i = 0; i < almtWidth; i++) {
@@ -49,7 +49,7 @@ public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGene
 				consensus.append(unknownChar);
 			}
 		}
-		return FastaUtils.seqIdCompoundsPairToFasta(consensusID, consensus.toString(), lineFeedStyle);
+		return consensus.toString();
 	}
 
 	private class HighestOccuringCharProcedure implements TCharIntProcedure {
@@ -66,15 +66,11 @@ public abstract class AbstractConsensusGenerator<A extends AbstractConsensusGene
 		}
 	}
 
-	protected CommandResult formResult(ConsoleCommandContext cmdContext,
-			String fastaString, String fileName, Boolean preview) {
-		if(preview) {
-			return new SimpleConsoleCommandResult(fastaString, false);
-		} else {
-			byte[] bytes = fastaString.getBytes();
-			cmdContext.saveBytes(fileName, bytes);
-			return new OkResult();
-		}
+	protected OkResult formResult(ConsoleCommandContext cmdContext,
+			String consensusId, String consensusString, String fileName, LineFeedStyle lineFeedStyle) {
+		byte[] bytes = FastaUtils.seqIdCompoundsPairToFasta(consensusId, consensusString, lineFeedStyle).getBytes();
+		cmdContext.saveBytes(fileName, bytes);
+		return new OkResult();
 	}
 	
 }

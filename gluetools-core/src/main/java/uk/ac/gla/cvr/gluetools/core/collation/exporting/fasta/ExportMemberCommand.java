@@ -5,8 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Map;
 import java.util.Optional;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
@@ -22,6 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -66,10 +69,8 @@ public class ExportMemberCommand extends BaseExportMemberCommand<CommandResult> 
 				new MemberQuerySequenceSupplier(getAlignmentName(), getRecursive(), Optional.ofNullable(getWhereClause()));
 
 		if(preview) {
-			ByteArrayOutputStream previewBaos = new ByteArrayOutputStream();
-			PrintWriter printWriter = new PrintWriter(previewBaos);
-			super.export(cmdContext, sequenceSupplier, fastaExporter, printWriter);
-			return new SimpleConsoleCommandResult(new String(previewBaos.toByteArray()));
+			Map<String, DNASequence> ntFastaMap = super.export(cmdContext, sequenceSupplier, fastaExporter);
+			return new NucleotideFastaCommandResult(ntFastaMap);
 		} else {
 			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 			try(OutputStream outputStream = consoleCmdContext.openFile(fileName)) {

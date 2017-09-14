@@ -5,7 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Map;
 
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -17,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.SimpleConsoleCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -62,10 +65,8 @@ public class FastaAlignmentExportCommand extends BaseFastaAlignmentExportCommand
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaAlignmentExporter fastaAlmtExporter) {
 		if(preview) {
-			ByteArrayOutputStream previewBaos = new ByteArrayOutputStream();
-			PrintWriter printWriter = new PrintWriter(previewBaos);
-			super.exportAlignment(cmdContext, printWriter, fastaAlmtExporter);
-			return new SimpleConsoleCommandResult(new String(previewBaos.toByteArray()));
+			Map<String, DNASequence> fastaMap = super.exportAlignment(cmdContext, fastaAlmtExporter);
+			return new NucleotideFastaCommandResult(fastaMap);
 		} else {
 			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 			try(OutputStream outputStream = consoleCmdContext.openFile(fileName)) {
