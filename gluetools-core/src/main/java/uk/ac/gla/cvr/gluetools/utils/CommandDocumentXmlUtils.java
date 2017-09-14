@@ -28,7 +28,7 @@ public class CommandDocumentXmlUtils {
 
 	
 	
-	private static void populateCommandObjectFromElement(CommandObject commandObject, Element element) {
+	public static void populateCommandObjectFromElement(CommandObject commandObject, Element element) {
 		GlueXmlUtils.findChildElements(element)
 			.forEach(childElem -> populateCommandObjectFieldFromChildElement(commandObject, childElem));;
 	}

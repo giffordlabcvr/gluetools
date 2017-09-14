@@ -45,7 +45,7 @@ public class SaveTabularCommand extends ModulePluginCommand<OkResult, TabularUti
 		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.tabularData = PluginUtils.findConfigElement(configElem, TABULAR_DATA, true);
-		PluginUtils.setValueConfigRecursive(this.tabularData);
+		PluginUtils.setValidConfigRecursive(this.tabularData);
 	}
 
 	

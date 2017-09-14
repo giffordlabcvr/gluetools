@@ -18,7 +18,8 @@ public class PluginConfigException extends GlueException {
 		PROPERTY_VALUE_OUT_OF_RANGE("propertyName", "value", "operator", "threshold"), 
 		MULTIPLE_PROPERTY_SETTINGS("propertyName"),
 		TOO_MANY_PROPERTY_VALUES("propertyName", "numFound", "maximum"), 
-		TOO_FEW_PROPERTY_VALUES("propertyName", "numFound", "minimum");
+		TOO_FEW_PROPERTY_VALUES("propertyName", "numFound", "minimum"),
+		COMMAND_DOCUMENT_PROPERTY_ERROR("errorTxt");
 
 		
 		private String[] argNames;

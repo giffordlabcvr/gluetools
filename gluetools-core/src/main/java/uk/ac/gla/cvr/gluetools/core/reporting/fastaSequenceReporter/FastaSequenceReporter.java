@@ -3,11 +3,14 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
@@ -23,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaSequenceReporter")
 public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
@@ -40,6 +44,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		super();
 		addModulePluginCmdClass(FastaSequenceAminoAcidCommand.class);
 		addModulePluginCmdClass(FastaSequenceVariationScanCommand.class);
+		addModulePluginCmdClass(FastaSequenceStringVariationScanCommand.class);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 		addSimplePropertyName(FASTA_ID_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
 
@@ -148,6 +153,20 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		public String getTranslation() {
 			return translation;
 		}
+	}
+	
+	public static Entry<String, DNASequence> getFastaEntry(ConsoleCommandContext consoleCmdContext, String fileName) {
+		byte[] fastaFileBytes = consoleCmdContext.loadBytes(fileName);
+		FastaUtils.normalizeFastaBytes(consoleCmdContext, fastaFileBytes);
+		Map<String, DNASequence> headerToSeq = FastaUtils.parseFasta(fastaFileBytes);
+		if(headerToSeq.size() > 1) {
+			throw new FastaSequenceException(Code.MULTIPLE_FASTA_FILE_SEQUENCES, fileName);
+		}
+		if(headerToSeq.size() == 0) {
+			throw new FastaSequenceException(Code.NO_FASTA_FILE_SEQUENCES, fileName);
+		}
+		Entry<String, DNASequence> singleEntry = headerToSeq.entrySet().iterator().next();
+		return singleEntry;
 	}
 	
 }

@@ -22,6 +22,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -398,7 +399,7 @@ public class PluginUtils {
 		return(userData != null && userData instanceof Boolean && ((Boolean) userData));
 	}
 
-	public static void setValueConfigRecursive(Node node) {
+	public static void setValidConfigRecursive(Node node) {
 		setValidConfigLocal(node);
 		if(node.getNodeType() == Node.ELEMENT_NODE) {
 			NamedNodeMap attributes = node.getAttributes();
@@ -408,7 +409,7 @@ public class PluginUtils {
 		}
 		NodeList childNodes = node.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++) {
-			setValueConfigRecursive(childNodes.item(i));
+			setValidConfigRecursive(childNodes.item(i));
 		}
 	}
 	
@@ -510,6 +511,19 @@ public class PluginUtils {
 					"Identifier must begin with a lower-case letter, and may contain lower-case letters, digits and underscores.", propertyName);
 		}
 		return identifierValue;
+	}
+
+	public static CommandDocument configureCommandDocumentProperty(Element configElem, String propertyName, boolean required) {
+		Element cmdDocParent = findConfigElement(configElem, propertyName, required);
+		List<Element> childElements = GlueXmlUtils.findChildElements(cmdDocParent);
+		if(childElements.size() != 1) {
+			throw new PluginConfigException(Code.COMMAND_DOCUMENT_PROPERTY_ERROR, "Command document property "+propertyName+" should have exactly one child element");
+		}
+		Element childElement = childElements.get(0);
+		CommandDocument commandDocument = new CommandDocument(childElement.getNodeName());
+		CommandDocumentXmlUtils.populateCommandObjectFromElement(commandDocument, childElement);
+		setValidConfigRecursive(childElement);
+		return commandDocument;
 	}
 
 }

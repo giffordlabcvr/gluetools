@@ -58,7 +58,7 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 		this.configDocuments = new LinkedHashMap<String, CommandDocument>();
 		List<Element> configDocElements = PluginUtils.findConfigElements(configElem, CONFIG_DOCUMENT);
 		for(Element configDocElement: configDocElements) {
-			PluginUtils.setValueConfigRecursive(configDocElement);
+			PluginUtils.setValidConfigRecursive(configDocElement);
 			String name = configDocElement.getAttribute("name");
 			if(name == null || name.length() == 0) {
 				throw new PluginConfigException(PluginConfigException.Code.CONFIG_CONSTRAINT_VIOLATION, "Every <configDocument> element must have a name attribute");

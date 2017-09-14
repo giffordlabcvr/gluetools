@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -31,6 +32,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -63,13 +66,25 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<FastaSequenceAminoAcidResult> 
 	implements ProvidedProjectModeCommand{
 
+	
+	public static final String FILE_NAME = "fileName";
+
+	private String fileName;
+
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+	}
+	
 
 	@Override
 	protected FastaSequenceAminoAcidResult execute(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		
-		Entry<String, DNASequence> fastaEntry = getFastaEntry(consoleCmdContext);
+		Entry<String, DNASequence> fastaEntry = FastaSequenceReporter.getFastaEntry(consoleCmdContext, fileName);
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
@@ -132,61 +147,12 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 	}
 
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
+	public static class Completer extends FastaSequenceReporterCommand.Completer {
 		public Completer() {
 			super();
 			registerPathLookup("fileName", false);
-			registerDataObjectNameLookup("acRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
-			registerVariableInstantiator("featureName", new VariableInstantiator() {
-				@Override
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext,
-						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
-						String prefix) {
-					String acRefName = (String) bindings.get("acRefName");
-					if(acRefName != null) {
-						ReferenceSequence acRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(acRefName), true);
-						if(acRef != null) {
-							return acRef.getFeatureLocations().stream()
-									.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
-									.collect(Collectors.toList());
-						}
-					}
-					return null;
-				}
-			});
-			registerDataObjectNameLookup("targetRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
-			registerVariableInstantiator("tipAlmtName", new VariableInstantiator() {
-				@Override
-				protected List<CompletionSuggestion> instantiate(
-						ConsoleCommandContext cmdContext,
-						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
-						String prefix) {
-					String targetRefName = (String) bindings.get("targetRefName");
-					if(targetRefName != null) {
-						ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName), true);
-						if(targetRef != null) {
-							return targetRef.getSequence().getAlignmentMemberships().stream()
-									.map(am -> am.getAlignment())
-									.filter(a -> a.isConstrained())
-									.map(a -> new CompletionSuggestion(a.getName(), true))
-									.collect(Collectors.toList());
-						}
-					} else {
-						List<Alignment> almts = GlueDataObject
-								.query(cmdContext, Alignment.class, new SelectQuery(Alignment.class));
-						return almts.stream()
-								.filter(a -> a.isConstrained())
-								.map(a -> new CompletionSuggestion(a.getName(), true))
-								.collect(Collectors.toList());
-					}
-					return null;
-				}
-			});
 		}
 		
 	}
-
-	
 	
 }

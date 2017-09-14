@@ -1,26 +1,23 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
-import java.util.Map.Entry;
-import java.util.Optional;
-
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
-		commandWords={"variation", "scan"}, 
-		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
+		commandWords={"string", "variation", "scan"}, 
+		description = "Scan a FASTA string for variations", 
+		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
 		""},
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 FASTA input file",
+				"-s <fastaString>, --fastaString <fastaString>        FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 				"-m, --multiReference                                 Scan across references",
 				"-f <featureName>, --featureName <featureName>        Feature to scan",
@@ -37,7 +34,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
 		        "scans a section of the query "+
-				"If <targetRefName> is not supplied, it may be inferred from the FASTA sequence ID, if the module is appropriately configured. "+
 				"sequence for variations based on the target reference sequence's "+
 				"place in the alignment tree. The target reference sequence must be a member of a constrained "+
 		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
@@ -51,44 +47,31 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"The variation scan will be limited to the specified features. "+
 				"If <whereClause> is used, this qualifies the set of variations which are scanned for "+
 				"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results.",
-		metaTags = {CmdMeta.consoleOnly}	
+		metaTags = {}	
 )
-public class FastaSequenceVariationScanCommand extends FastaSequenceBaseVariationScanCommand {
+public class FastaSequenceStringVariationScanCommand extends FastaSequenceBaseVariationScanCommand 
+	implements ProvidedProjectModeCommand{
 
-	public static final String FILE_NAME = "fileName";
-
-	private String fileName;
-
+	public static final String FASTA_STRING = "fastaString";
+	
+	private String fastaString;
+	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		this.fastaString = PluginUtils.configureStringProperty(configElem, FASTA_STRING, true);
 	}
 
 	@Override
-	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext,
-			FastaSequenceReporter fastaSequenceReporter) {
+	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext, FastaSequenceReporter fastaSequenceReporter) {
+		DNASequence fastaNTSeq = FastaUtils.ntStringToSequence(fastaString);
+		return executeAux(cmdContext, fastaSequenceReporter, "querySequence", fastaNTSeq, getTargetRefName());
 
-		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		Entry<String, DNASequence> fastaEntry = FastaSequenceReporter.getFastaEntry(consoleCmdContext, fileName);
-		String fastaID = fastaEntry.getKey();
-		DNASequence fastaNTSeq = fastaEntry.getValue();
-
-		String targetRefName = Optional.ofNullable(getTargetRefName())
-				.orElse(fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID));
-
-		return executeAux(cmdContext, fastaSequenceReporter, fastaID,
-				fastaNTSeq, targetRefName);
+		
 	}
-
 
 	@CompleterClass
-	public static class Completer extends FastaSequenceReporterCommand.Completer {
-		public Completer() {
-			super();
-			registerPathLookup("fileName", false);
-		}
-	}
+	public static class Completer extends FastaSequenceReporterCommand.Completer {}
 	
 }

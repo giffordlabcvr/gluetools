@@ -25,6 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGener
 import uk.ac.gla.cvr.gluetools.core.curation.sequenceMergers.AlignmentBasedSequenceMerger;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
+import uk.ac.gla.cvr.gluetools.core.fastaUtility.FastaUtility;
 import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
@@ -122,7 +123,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(EcmaFunctionInvoker.class);
 
 		registerPluginClass(TabularUtility.class);
-
+		registerPluginClass(FastaUtility.class);
+		
 		registerPluginClass(BlastSequenceRecogniser.class);
 		
 		// custom project modules
