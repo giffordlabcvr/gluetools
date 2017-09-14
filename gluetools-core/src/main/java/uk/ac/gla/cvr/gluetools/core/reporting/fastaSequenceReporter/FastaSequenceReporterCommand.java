@@ -10,7 +10,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;

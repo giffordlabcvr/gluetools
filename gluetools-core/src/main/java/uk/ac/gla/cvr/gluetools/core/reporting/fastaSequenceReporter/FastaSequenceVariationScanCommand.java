@@ -1,7 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
@@ -75,8 +74,11 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceBaseVariatio
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
-		String targetRefName = Optional.ofNullable(getTargetRefName())
-				.orElse(fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID));
+		String targetRefName = getTargetRefName();
+		
+		if(targetRefName == null) {
+			targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID);
+		}
 
 		return executeAux(cmdContext, fastaSequenceReporter, fastaID,
 				fastaNTSeq, targetRefName);
