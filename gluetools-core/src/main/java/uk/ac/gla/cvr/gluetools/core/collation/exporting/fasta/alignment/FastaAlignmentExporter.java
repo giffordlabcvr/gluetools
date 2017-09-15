@@ -41,7 +41,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		ReferenceSegment minMaxSeg = initMinMaxSeg(cmdContext, memberSupplier, featureRefSegs);
 		
 		int numMembers = memberSupplier.countMembers(cmdContext);
-		GlueLogger.getGlueLogger().log(Level.INFO, "processing "+numMembers+" alignment members");
+		GlueLogger.getGlueLogger().log(Level.FINEST, "processing "+numMembers+" alignment members");
 		int offset = 0;
 		int processed = 0;
 		int batchSize = 500;
@@ -50,7 +50,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
 			createAlignment(cmdContext, excludeEmptyRows, alignmentColumnsSelector, alignment, almtMembers, featureRefSegs, minMaxSeg, almtRowConsumer);
 			processed += almtMembers.size();
-			GlueLogger.getGlueLogger().log(Level.INFO, "processed "+processed+" alignment members");
+			GlueLogger.getGlueLogger().log(Level.FINEST, "processed "+processed+" alignment members");
 			offset += batchSize;
 			cmdContext.newObjectContext();
 		}
