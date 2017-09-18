@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
 		""},
 		docoptOptions = { 
-				"-s <fastaString>, --fastaString <fastaString>        FASTA input file",
+				"-s <fastaString>, --fastaString <fastaString>        FASTA input string",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
 				"-m, --multiReference                                 Scan across references",
 				"-f <featureName>, --featureName <featureName>        Feature to scan",

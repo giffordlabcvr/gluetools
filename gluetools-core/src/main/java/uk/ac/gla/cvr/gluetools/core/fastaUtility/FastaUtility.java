@@ -10,6 +10,8 @@ public class FastaUtility extends ModulePlugin<FastaUtility>{
 	public FastaUtility() {
 		super();
 		addModulePluginCmdClass(LoadNucleotideFastaCommand.class);
+		addModulePluginCmdClass(SaveNucleotideFastaCommand.class);
+		addModulePluginCmdClass(ReverseComplementFastaStringCommand.class);
 	}
 
 }
