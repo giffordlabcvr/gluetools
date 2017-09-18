@@ -9,7 +9,8 @@ public class CommandDocumentException extends GlueException {
 
 		XML_TO_COMMAND_DOCUMENT_ERROR("errorTxt"),
 		JSON_TO_COMMAND_DOCUMENT_ERROR("errorTxt"),
-		COMMAND_DOCUMENT_TO_JSON_ERROR("errorTxt");
+		COMMAND_DOCUMENT_TO_JSON_ERROR("errorTxt"),
+		COMMAND_DOCUMENT_TO_XML_ERROR("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

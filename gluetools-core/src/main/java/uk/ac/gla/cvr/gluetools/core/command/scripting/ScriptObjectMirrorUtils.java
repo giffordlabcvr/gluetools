@@ -22,8 +22,8 @@ public class ScriptObjectMirrorUtils {
 		String rootName = jsonKeySet.get(0);
 		CommandDocument documentBuilder = new CommandDocument(rootName);
 		Object rootObject = scrObjMirror.get(rootName);
-		if(!(rootObject instanceof ScriptObjectMirror)) {
-			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "Root JavaScript object must have an object as its single value");
+		if(!(rootObject instanceof ScriptObjectMirror) || ((ScriptObjectMirror) rootObject).isArray()) {
+			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "Root JavaScript object must have a non-array object as its single value");
 		}
 		populateCommandObjectFromScriptObjectMirror(documentBuilder, (ScriptObjectMirror) rootObject);
 		return documentBuilder;
