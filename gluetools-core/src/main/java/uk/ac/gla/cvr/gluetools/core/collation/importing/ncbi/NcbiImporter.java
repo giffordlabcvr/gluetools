@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPath;
@@ -26,6 +27,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
@@ -430,9 +432,11 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			EntityConsumer<?> entityConsumer) 
 			 {
 		Object result;
+		logRequest(requestName, httpRequest);
 
 		try(CloseableHttpResponse response = httpClient.execute(httpRequest);) {
 			if(response.getStatusLine().getStatusCode() != 200) {
+				logResponse(requestName, response);
 				throw new NcbiImporterException(NcbiImporterException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
 			}
 
@@ -455,6 +459,48 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	
 	
+	private void logRequest(String requestName, HttpUriRequest httpRequest) {
+		Logger logger = GlueLogger.getGlueLogger();
+		logger.finest("HTTP request details");
+		Header[] headers = httpRequest.getAllHeaders();
+		for(Header header: headers) {
+			logger.finest("Header "+header.getName()+": "+header.getValue());
+		}
+		logger.finest("Method: "+httpRequest.getMethod());
+		logger.finest("Request line: "+httpRequest.getRequestLine());
+		logger.finest("URI: "+httpRequest.getURI());
+	}
+
+	private void logResponse(String requestName, CloseableHttpResponse response) {
+		Logger logger = GlueLogger.getGlueLogger();
+		logger.finest("HTTP response details");
+		Header[] headers = response.getAllHeaders();
+		for(Header header: headers) {
+			logger.finest("Header "+header.getName()+": "+header.getValue());
+		}
+		logger.finest("Protocol version: "+response.getStatusLine().getProtocolVersion());
+		logger.finest("Status code: "+response.getStatusLine().getStatusCode());
+		logger.finest("Reason phrase: "+response.getStatusLine().getReasonPhrase());
+		HttpEntity entity = response.getEntity();
+		if(entity == null) {
+			logger.finest("Entity was null");
+		} else {
+			logger.finest(() -> {
+				StringConsumer stringConsumer = new StringConsumer();
+				String entityString;
+				try {
+					entityString = "Entity:"+stringConsumer.consumeEntity(requestName, entity);
+					EntityUtils.consume(entity);
+				} catch(Exception e) {
+					entityString = "Consuming entity threw exception: "+e.getLocalizedMessage();
+				}
+				return entityString;
+			});
+		}
+	}
+
+
+
 	private abstract static class EntityConsumer<P> {
 		public abstract P consumeEntity(String requestName, HttpEntity entity) ;
 	}
