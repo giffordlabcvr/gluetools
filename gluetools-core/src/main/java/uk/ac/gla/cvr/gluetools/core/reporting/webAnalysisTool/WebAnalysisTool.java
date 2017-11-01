@@ -713,7 +713,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			
 			for(String refName: refNames) {
 				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class,
-						FeatureLocation.pkMap(refName, featureName), false);
+						FeatureLocation.pkMap(refName, featureName), true);
 				if(featureLoc != null) {
 					List<ReferenceSegment> featureLocReferenceSegments = featureLoc.segmentsAsReferenceSegments();
 					List<QueryAlignedSegment> featureLocQaSegments = featureLocReferenceSegments.stream()
