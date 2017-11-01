@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
 
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +13,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -35,8 +38,6 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 	private List<EcmaFunction> functions;
 	private Map<String, CommandDocument> configDocuments;
 	
-	// scripts will be loaded into this context once only during the lifetime
-	// of this EcmaFunctionInvoker 
 	private ScriptContext scriptContext; 
 
 	
@@ -125,6 +126,14 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 					new EcmaFunctionInvokerException(EcmaFunctionInvokerException.Code.FUNCTION_NAME_UNKNOWN, 
 					functionName, this.getModuleName()))
 				.invoke(cmdContext, this, arguments);
+	}
+
+
+	@Override
+	public void loadResources(ConsoleCommandContext consoleCmdContext, File resourceDir, Module module) {
+		super.loadResources(consoleCmdContext, resourceDir, module);
+		// invalidate script context
+		this.scriptContext = null;
 	}
 
 	

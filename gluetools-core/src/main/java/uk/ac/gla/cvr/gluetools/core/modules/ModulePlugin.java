@@ -126,7 +126,7 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	public void validate(CommandContext cmdContext) {
 	}
 
-	public final void loadResources(ConsoleCommandContext consoleCmdContext, File resourceDir, Module module) {
+	public void loadResources(ConsoleCommandContext consoleCmdContext, File resourceDir, Module module) {
 		// delete old resources.
 		List<ModuleResource> oldResources = new LinkedList<ModuleResource>(module.getResources());
 		for(ModuleResource moduleResource: oldResources) {
@@ -143,6 +143,9 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 			moduleResource.setContent(resourceContent);
 			moduleResource.setModule(module);
 		}		
+		if(!resourceNames.isEmpty()) {
+			consoleCmdContext.commit();
+		}
 	}
 
 	public String getModuleName() {
