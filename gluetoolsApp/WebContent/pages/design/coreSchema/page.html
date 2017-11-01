@@ -27,50 +27,16 @@
 	</div>
 </div>
 <h3 id="ERDs">GLUE Objects, Fields and Relationships</h3>
-<div class="row">
-	<div class="col-md-7">
-		<p>
-			GLUE stores data items as objects. These objects include both field values and relationships with other stored objects. 
-			Relationships are named, and allow logic to traverse between related objects. 
-			The definitions of the available object types, fields and relationships together comprise the schema. 
-			The "core" schema is available in every GLUE project, but the schema may also be extended on a per-project basis, via "schema extensions". 
-		</p>
-		<p>
-			We use a diagrammatic notation to document the schema, which we will illustrate with 
-			a contrived example (not part of the core schema). If you are unfamiliar with relational database concepts, this should provide a reasonable grounding.
-		</p>
-		<p>
-			In this schema fragment there are three object types: <em>Species</em>, <em>Specimen</em> and <em>Biologist</em>. 
-			So, the database may contain objects belonging to any of these three types. 
-			Object type <em>Species</em> has two fields, <code>scientificName</code>, a string and <code>isExtinct</code>, a boolean.
-			Similarly, two fields are defined for objects of type <em>Specimen</em> and <em>Biologist</em>. 
-		</p>
-		<p>	
-			A line connects <em>Species</em> and <em>Specimen</em> with a white diamond at the endpoint near <em>Species</em>. This indicates that 
-			objects of type <em>Specimen</em> must be contained by objects of type <em>Species</em>. So, a <em>Specimen</em> is associated with exactly one
-			<em>Species</em>, and if the <em>Species</em> is deleted, so are any <em>Specimens</em> contained by it. Conversely, the endpoint near 
-			<em>Specimen</em> is annotated with an asterisk (*). This indicates that any number of <em>Specimens</em> may be contained by a <em>Species</em>.
-			The asterisk is an example of multiplicity. Asterisk indicates any number, 1 indicates a single object, 0..1 indicates zero or one.
-		</p>
-		<p>  
-			A line also connects <em>Species</em> and <em>Biologist</em>, representing the discovery of a 
-			<em>Species</em> by a <em>Biologist</em>. From the <em>Species</em> viewpoint, the associated <em>Biologist</em> is named <code>discoverer</code>, 
-			whereas from the <em>Biologist</em> viewpoint, the set of <em>Species</em> are named <code>speciesDiscoveries</code>.
-		</p>
-		<p>  
-			At the <em>Species</em> end we have a multiplicity of any number, and at the <em>Biologist</em> end multiplicity is zero or one. 
-			This indicates that there may or may not be a <code>discoverer</code> for a given <em>Species</em>, and that a given <em>Biologist</em> may 
-			have any number of <code>speciesDiscoveries</code>. The line does not have a white diamond on it, it is a plain association rather than a 
-			containment relationship. So if the <em>Biologist</em> is deleted this will not affect any associated <em>Species</em>.
-		</p>
-		<p>
-			These basic concepts are used throughout the GLUE core schema and for schema extensions. We will now explain the core schema in detail. 
-		</p>  
-	</div>
-	<div class="col-md-5">
-		<img width="100%" src="images/ERD_example.png" />
-	</div>
-</div>
+<p>
+	GLUE stores data items as objects. These objects include both field values and relationships with other stored objects. 
+	Relationships are named, and allow logic to traverse between related objects. 
+	The definitions of the available object types, fields and relationships together comprise the schema. 
+	The "core" schema is available in every GLUE project, but the schema may also be extended on a per-project basis, via "schema extensions". 
+	In this page, we use entity-relationship diagram notation to document the schema. If you are unfamiliar with 
+	relational database concepts, this <a ng-click="notationDialog()">explanation based
+	on a contrived example <span class="glyphicon glyphicon-link"></span></a> should 
+	provide a reasonable grounding.
+</p>
 
 <h3 id="Sequences"><em>Sequences</em> and <em>Sources</em></h3>
 <div class="row">

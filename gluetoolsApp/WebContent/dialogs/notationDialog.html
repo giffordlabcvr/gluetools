@@ -1,0 +1,42 @@
+<div class="modal-header">
+	<h2 class="modal-title">GLUE Objects, Fields and Relationships</h2>
+</div>
+<div class="modal-body">
+	<h3 id="ERDs">How a schema is represented using an entity-relationship diagram</h3>
+	<div>
+		<img class="center-block" width="50%" src="images/ERD_example.png" />
+	</div>
+	<div>
+		<p>
+			The above diagram represents a small database schema using entity-relationship diagram notation.
+			In this schema there are three object types: <em>Species</em>, <em>Specimen</em> and <em>Biologist</em>. 
+			So, the database may contain objects belonging to any of these three types. 
+			Object type <em>Species</em> has two fields, <code>scientificName</code>, a string and <code>isExtinct</code>, a boolean.
+			Similarly, two fields are defined for objects of type <em>Specimen</em> and <em>Biologist</em>. 
+		</p>
+		<p>	
+			A line connects <em>Species</em> and <em>Specimen</em> with a white diamond at the endpoint near <em>Species</em>. This indicates that 
+			objects of type <em>Specimen</em> must be contained by objects of type <em>Species</em>. So, a <em>Specimen</em> is associated with exactly one
+			<em>Species</em>, and if the <em>Species</em> is deleted, so are any <em>Specimens</em> contained by it. Conversely, the endpoint near 
+			<em>Specimen</em> is annotated with an asterisk (*). This indicates that any number of <em>Specimens</em> may be contained by a <em>Species</em>.
+			The asterisk is an example of multiplicity. Asterisk indicates any number, 1 indicates a single object, 0..1 indicates zero or one.
+		</p>
+		<p>  
+			A line also connects <em>Species</em> and <em>Biologist</em>, representing the discovery of a 
+			<em>Species</em> by a <em>Biologist</em>. From the <em>Species</em> viewpoint, the associated <em>Biologist</em> is named <code>discoverer</code>, 
+			whereas from the <em>Biologist</em> viewpoint, the set of <em>Species</em> are named <code>speciesDiscoveries</code>.
+		</p>
+		<p>  
+			At the <em>Species</em> end we have a multiplicity of any number, and at the <em>Biologist</em> end multiplicity is zero or one. 
+			This indicates that there may or may not be a <code>discoverer</code> for a given <em>Species</em>, and that a given <em>Biologist</em> may 
+			have any number of <code>speciesDiscoveries</code>. The line does not have a white diamond on it, it is a plain association rather than a 
+			containment relationship. So if the <em>Biologist</em> is deleted this will not affect any associated <em>Species</em>.
+		</p>
+		<p>
+			These basic concepts are used throughout the GLUE core schema and for schema extensions.  
+		</p>  
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary" ng-click="close()">OK</button>
+</div>

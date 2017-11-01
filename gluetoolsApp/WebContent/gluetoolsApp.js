@@ -1,5 +1,6 @@
 var gluetoolsApp = angular.module('gluetoolsApp', [
   'ui.bootstrap',
+  'dialogs.main',
   'ngRoute',
   'hljs'
   ]);
