@@ -1,10 +1,10 @@
-<h2>{{coreSchemaMenuTitle}}</h2>
+<h2>{{coreSchemaMenuTitle}}</em></h2>
 <div class="row">
 	<div class="col-md-6">
 		<p>The data within a GLUE project is structured according to the Core Schema; a fixed set of object types and relationships. These bring a
 		certain level of evolution-oriented organisation to virus nucleotide
 		sequence data and also capture the objects and relationships most commonly
-		required to utilise the data. 
+		required to analyse sequence data. 
 		</p>
 		<p>
 		In the text below, we outline the main GLUE object types, their intended semantics and the relationships between them. 
@@ -18,12 +18,16 @@
 			<li><a ng-click="scrollTo('Features')"><em>Features</em></a></li>
 			<li><a ng-click="scrollTo('ReferenceSequences')"><em>ReferenceSequences</em> and <em>FeatureLocations</em></a></li>
 			<li><a ng-click="scrollTo('Alignments')"><em>Alignments</em> and <em>AlignmentMembers</em></a></em></a></li>
-			<li><a ng-click="scrollTo('AlignmentTree')">The GLUE Alignment Tree</a></li>
 			<li><a ng-click="scrollTo('Variations')"><em>Variations</em></a></li>
 		</ol>
 	</div>
 	<div class="col-md-6">
-		<img width="80%" src="images/projectModel.png" />
+		<p>
+			<a href="images/projectModel.png" ><img width="100%" src="images/projectModel.png" /></a>
+		</p>
+		<div align="center">
+		<p>The main object types and relationships in the glue core schema. <br/>Click image to see a larger version.</p>
+		</div>
 	</div>
 </div>
 <h3 id="ERDs">GLUE Objects, Fields and Relationships</h3>
@@ -31,11 +35,10 @@
 	GLUE stores data items as objects. These objects include both field values and relationships with other stored objects. 
 	Relationships are named, and allow logic to traverse between related objects. 
 	The definitions of the available object types, fields and relationships together comprise the schema. 
-	The "core" schema is available in every GLUE project, but the schema may also be extended on a per-project basis, via "schema extensions". 
+	The core schema is present in every GLUE project, but this schema may also be extended on a per-project basis, via <a href="#/schemaExtensions">schema extensions</a>. 
 	In this page, we use entity-relationship diagram notation to document the schema. If you are unfamiliar with 
 	relational database concepts, this <a ng-click="notationDialog()">explanation based
-	on a contrived example <span class="glyphicon glyphicon-link"></span></a> should 
-	provide a reasonable grounding.
+	on a contrived example</a> should provide a reasonable grounding.
 </p>
 
 <h3 id="Sequences"><em>Sequences</em> and <em>Sources</em></h3>
@@ -203,70 +206,40 @@ project scope.
 		<img width="100%" src="images/alignments.png" />
 	</div>
 </div>	
+
+<h3 id="Variations"><em>Variations</em></h3>
 <div class="row">
-	<div class="col-md-12">
-	<h4>Unconstrained <em>Alignments</em></h4>
-<p><em>Alignment</em> objects may be constrained or unconstrained.
-	Unconstrained <em>Alignments</em> are used in GLUE projects to store the results
-	of any process aimed at identifying
-	homologies between nucleotides. This includes classical algorithms such
-	as MUSCLE or MAFFT but also manual techniques. In
-	unconstrained <em>Alignments</em> the reference coordinate space is purely
-	notional, and not based on any particular <em>Sequence</em>. Nucleotide position
-	columns in this coordinate space may be added in an unrestricted way
-	in order to accommodate any pairwise homology between member <em>Sequences</em>.</p>
+	<div class="col-md-6">
 		<p>
-			The example unconstrained <em>Alignment</em> shown below contains
-			three <em>AlignmentMembers</em>. Each <em>AlignmentMember</em>
-			contains multiple <em>AlignedSegments</em>; these map between the
-			member sequence coordinates and the reference coordinate system. For
-			example a block of 7 nucleotides starting at position 5 in Member 3
-			is mapped to reference coordinates [1,7]. The reference coordinate
-			space has been expanded to allow for example insertions present in
-			Member 2 at locations [8,10] and [24,26] in the reference space, and
-			an insertion present in Members 1 and 3 at location [16,18].
+			Various usage scenarios within virus research and clinical or
+			public health applications require that sequences are analysed for
+			the presence of nucleotide or amino-acid residue patterns.
 		</p>
-
-		<img width="100%" src="images/unconstrained.png" />
-	<h4>Constrained <em>Alignments</em></h4>
-<p><em>ReferenceSequence</em> in GLUE can provide a
-	concrete coordinate space in which nucleotide data may be interpreted. 
-	<em>Alignment</em> objects may be constrained to a <em>ReferenceSequence</em>. 
-	This association is made at the time an <em>Alignment</em> is created and is 
-	immutable for the lifetime of the <em>Alignment</em>. 
-	The nucleotide <em>Sequence</em> underlying the constraining
-	<em>ReferenceSequence</em> provides the reference coordinate space for the
-	constrained <em>Alignment</em>. Therefore, <em>AlignedSegment</em> objects within a
-	constrained <em>Alignment</em> propose homology between a nucleotide block on
-	a member <em>Sequence</em> and an equal-length block on the constraining
-	<em>ReferenceSequence</em>.</p>
-	<p>The example constrained <em>Alignment</em> shown below contains the same three member <em>Sequences</em>.
-	In this case the <em>Sequence</em> underlying Member 1 has also been selected as the constraining 
-	<em>ReferenceSequence</em>. Therefore, nucleotide 
-	columns exist in this <em>Alignment</em> precisely for the nucleotide positions which exist in the Member 1 <em>Sequence</em>.
-	Consequently, columns are included for insertions present in Member 1 relative to Member 2 
-	(e.g. [19,21] in the reference space), and relative to Member 3 (e.g. [24,26]). However, this alignment 
-	does not contain columns for insertions present in Member 2 relative to Member 1 (e.g. between 13 and 14), 
-	although the <em>Alignment</em> does record the fact that this insertion exists.</p>
-			<img width="100%" src="images/constrained.png" />
-<p>Unconstrained <em>Alignments</em> have the advantage of being able to represent the full set of homologies between 
-any pair of member sequences, however they must use an artificial coordinate space to achieve this. 
-Constrained <em>Alignments</em> use a concrete coordinate space but cannot represent homologies within nucleotide columns if those columns 
-only exist in insertions relative to the constraining <em>ReferenceSequence</em>. This limitation is addressed by the <a ng-click="scrollTo('AlignmentTree')">GLUE Alignment Tree</a> concept. </p>
-			
-<h3 id="AlignmentTree"><em>The GLUE Alignment Tree</em></h3>
-
-<p>The <em>AlignedSegment</em> objects within constrained <em>Alignment</em> objects
-	may be derived from those within unconstrained <em>Alignment</em> objects where
-	both the member and reference sequences are present. However, where the
-	member sequences of the constrained <em>Alignment</em> are known to be closely
-	related to the <em>ReferenceSequence</em>, another possibility exists. In this
-	case the constrained <em>Alignment</em> homologies may be computed using a
-	simple pairwise technique between the member and reference sequence,
-	for example based on BLAST.</p>
+		<p>
+			GLUE addresses this type of question via the <em>Variation</em>
+			object class. A <em>Variation</em> is a named nucleotide or
+			amino-acid residue pattern. GLUE contains commands which use these <em>Variation</em>
+			patterns to analyse sequence data.
+		</p>
+		<p>
+			In order to anchor the genomic location in which the pattern may be
+			analysed, <em>Variation</em> objects are contained within a <em>FeatureLocation</em>
+			object belonging to a specific <em>ReferenceSequence</em>. Thus, the
+			<em>FeatureLocation</em> provides a coordinate space in which the <em>Variation</em>
+			is located. This allows documented patterns from the literature to be
+			quickly incorporated into a GLUE project using standardised
+			coordinates. Each <em>Variation</em> specifies one or more 
+			<em>PatternLocation</em>. These are sub-regions within the 
+			<em>FeatureLocation</em> and where specific patterns
+			should be analysed. The patterns associated with a <em>Variation</em>
+			may be simply exact matches against concrete strings of
+			nucleotides or amino acids. Alternatively 
+			<a target="_blank" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">Java regular expressions</a>
+			may be used for greater expressive flexibility.
+		</p>
+	</div>
+	<div class="col-md-6">
+			<img width="100%" src="images/variation.png" />
 	</div>
 </div>
 
-
-
-<h3 id="Variations"><em>Variations</em></h3>

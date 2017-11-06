@@ -20,9 +20,13 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/design/overview/page.html',
             controller: 'overviewCtrl'
           }).
-    	when('/coreSchema', {
+      	when('/coreSchema', {
             templateUrl: './pages/design/coreSchema/page.html',
             controller: 'coreSchemaCtrl'
+          }).
+      	when('/alignmentTree', {
+            templateUrl: './pages/design/alignmentTree/page.html',
+            controller: 'alignmentTreeCtrl'
           }).
     	when('/commandLayer', {
             templateUrl: './pages/design/commandLayer/page.html',
@@ -109,6 +113,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.designMenuTitle = "Design";
   	$scope.overviewMenuTitle = "Design Overview";
   	$scope.coreSchemaMenuTitle = "Core Schema";
+  	$scope.alignmentTreeMenuTitle = "Alignment Tree";
   	$scope.commandLayerMenuTitle = "Command Layer";
   	$scope.softwareArchitectureMenuTitle = "Software Architecture";
   	$scope.webServiceMenuTitle = "Web Service";
