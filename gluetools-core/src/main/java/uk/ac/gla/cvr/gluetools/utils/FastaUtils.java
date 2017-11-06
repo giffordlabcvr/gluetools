@@ -40,6 +40,9 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class FastaUtils {
 	
+	public static final String AMINO_ACID_FASTA_DOC_ROOT = "aminoAcidFasta";
+	public static final String NUCLEOTIDE_FASTA_DOC_ROOT = "nucleotideFasta";
+
 	public static void normalizeFastaBytes(CommandContext cmdContext, byte[] fastaBytes) {
 		if(cmdContext.getProjectSettingValue(ProjectSettingOption.INTERPRET_FASTA_QUESTIONMARK_AS_N).equals("true")) {
 			for(int i = 0; i < fastaBytes.length; i++) {
@@ -270,11 +273,11 @@ public class FastaUtils {
 	}
 
 	public static CommandDocument ntFastaMapToCommandDocument(Map<String, DNASequence> fastaMap) {
-		return fastaMapToCommandDocument(fastaMap, "nucleotideFasta");
+		return fastaMapToCommandDocument(fastaMap, NUCLEOTIDE_FASTA_DOC_ROOT);
 	}
 
 	public static CommandDocument proteinFastaMapToCommandDocument(Map<String, ProteinSequence> fastaMap) {
-		return fastaMapToCommandDocument(fastaMap, "aminoAcidFasta");
+		return fastaMapToCommandDocument(fastaMap, AMINO_ACID_FASTA_DOC_ROOT);
 	}
 
 	private static CommandDocument fastaMapToCommandDocument(Map<String, ? extends AbstractSequence<?>> fastaIdToSequence, String rootName) {
@@ -294,7 +297,7 @@ public class FastaUtils {
 			public DNASequence apply(String t) {
 				return ntStringToSequence(t);
 			}
-		}, "nucleotideFasta");
+		}, NUCLEOTIDE_FASTA_DOC_ROOT);
 	}
 
 	public static Map<String, ProteinSequence> commandDocumentToProteinFastaMap(CommandDocument commandDocument) {
@@ -303,7 +306,7 @@ public class FastaUtils {
 			public ProteinSequence apply(String t) {
 				return proteinStringToSequence(t);
 			}
-		}, "aminoAcidFasta");
+		}, AMINO_ACID_FASTA_DOC_ROOT);
 	}
 
 	private static <S extends AbstractSequence<?>> Map<String, S> commandDocumentToFastaMap(
