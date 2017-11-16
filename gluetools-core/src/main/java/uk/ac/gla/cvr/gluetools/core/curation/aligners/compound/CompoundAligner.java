@@ -38,7 +38,8 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
  * @author joshsinger
  *
  */
-@PluginClass(elemName="compoundAligner")
+@PluginClass(elemName="compoundAligner", 
+		description="Derives a pairwise homology using a combination of aligner types")
 public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAligner> implements SupportsComputeConstrained {
 
 	private List<Aligner<?,?>> aligners = new ArrayList<Aligner<?,?>>();

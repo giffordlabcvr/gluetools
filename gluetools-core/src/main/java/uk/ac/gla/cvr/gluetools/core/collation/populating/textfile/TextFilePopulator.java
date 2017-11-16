@@ -42,7 +42,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@PluginClass(elemName="textFilePopulator")
+@PluginClass(elemName="textFilePopulator",
+		description="Populates auxiliary fields and links in the Sequence table from tabular data files")
 public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 
 	private static final String SKIP_MISSING = "skipMissing";

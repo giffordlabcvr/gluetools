@@ -38,7 +38,8 @@ import freemarker.template.TemplateSequenceModel;
 
 // module which embeds a Freemarker template.
 // This can be applied to a CSV / tab-delimited file to produce GLUE commands.
-@PluginClass(elemName="freemarkerTextToGlueTransformer")
+@PluginClass(elemName="freemarkerTextToGlueTransformer", 
+description="Uses FreeMarker to generate GLUE commands from a tabular input file")
 public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerTextToGlueTransformer> {
 
 	public static final String COLUMN_DELIMITER_REGEX = "columnDelimiterRegex";

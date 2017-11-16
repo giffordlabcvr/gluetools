@@ -13,7 +13,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@PluginClass(elemName="tabularUtility")
+@PluginClass(elemName="tabularUtility", 
+		description="Provides facilities to the scripting layer for loading and saving tabular data")
 public class TabularUtility extends ModulePlugin<TabularUtility>{
 
 	public static final String COLUMN_DELIMITER_REGEX = "columnDelimiterRegex";

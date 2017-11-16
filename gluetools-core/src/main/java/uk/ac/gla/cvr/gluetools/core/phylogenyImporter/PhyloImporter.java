@@ -31,7 +31,8 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="phyloImporter")
+@PluginClass(elemName="phyloImporter",
+		description="Imports a phylogenetic tree to be stored as auxiliary data in Alignment tree nodes")
 public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 
 	public PhyloImporter() {

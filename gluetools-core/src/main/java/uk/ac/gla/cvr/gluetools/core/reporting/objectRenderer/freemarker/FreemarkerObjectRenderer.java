@@ -12,7 +12,8 @@ import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 
-@PluginClass(elemName="freemarkerObjectRenderer")
+@PluginClass(elemName="freemarkerObjectRenderer",
+		description="Uses FreeMarker to query data begining from a specific object, to assemble a JSON or XML document")
 public class FreemarkerObjectRenderer extends ObjectRenderer<FreemarkerObjectRenderer> {
 
 	public static String TEMPLATE_FILE_NAME = "templateFileName";

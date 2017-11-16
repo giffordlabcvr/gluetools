@@ -22,9 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 
-/* module which generates varAlmtNote objects relating variations to alignments, 
- * based on the frequency of the variation within the alignment. */
-@PluginClass(elemName="variationFrequenciesGenerator")
+@PluginClass(elemName="variationFrequenciesGenerator",
+	description="Generates varAlmtNote objects based on the frequency of the variation within the alignment")
 public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequenciesGenerator> {
 
 	public static class AlignmentVariationReport {

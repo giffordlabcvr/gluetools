@@ -58,7 +58,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@PluginClass(elemName="webAnalysisTool")
+@PluginClass(elemName="webAnalysisTool", 
+		includeInWebDocs=false)
 public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 	public static final String FASTA_SEQUENCE_REPORTER_MODULE_NAME = "fastaSequenceReporterModuleName";

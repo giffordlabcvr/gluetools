@@ -18,7 +18,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.jmodeltest.JModelTestRunner;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@PluginClass(elemName="modelTester")
+@PluginClass(elemName="modelTester",
+		includeInWebDocs=false)
 public class ModelTester extends ModulePlugin<ModelTester> {
 
 	private static final String J_MODEL_TEST_RUNNER = "jModelTestRunner";

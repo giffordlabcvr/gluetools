@@ -23,7 +23,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
-@PluginClass(elemName="fastaProteinAlignmentExporter")
+@PluginClass(elemName="fastaProteinAlignmentExporter",
+	description="Exports protein alignments to a FASTA file")
 public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporter<FastaProteinAlignmentExporter> {
 	
 	public FastaProteinAlignmentExporter() {

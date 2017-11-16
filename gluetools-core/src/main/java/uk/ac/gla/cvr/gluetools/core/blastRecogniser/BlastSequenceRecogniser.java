@@ -32,7 +32,8 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.MultiReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
-@PluginClass(elemName="blastSequenceRecogniser")
+@PluginClass(elemName="blastSequenceRecogniser",
+		description="Classifies sequences based on a nucleotide BLAST against a set of ReferenceSequences")
 public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecogniser> {
 
 	

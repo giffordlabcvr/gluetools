@@ -38,7 +38,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-@PluginClass(elemName="maxLikelihoodGenotyper")
+@PluginClass(elemName="maxLikelihoodGenotyper",
+		description="Runs the neighbour-weighting phase of the maximum-likelihood clade assignment method")
 public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper> {
 
 	public static final String MAX_LIKELIHOOD_PLACER_MODULE_NAME = "maxLikelihoodPlacerModuleName";

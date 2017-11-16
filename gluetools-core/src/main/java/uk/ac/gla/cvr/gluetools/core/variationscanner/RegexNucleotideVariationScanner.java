@@ -16,7 +16,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-@PluginClass(elemName="regexNucleotideVariationScanner")
+@PluginClass(elemName="regexNucleotideVariationScanner",
+	description="Detects matches with a regular expression when used with a nucleotide Variation")
+
 public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScanner<RegexNucleotideVariationScanner, VariationScanResult>{
 
 	private static RegexNucleotideVariationScanner defaultInstance = new RegexNucleotideVariationScanner();

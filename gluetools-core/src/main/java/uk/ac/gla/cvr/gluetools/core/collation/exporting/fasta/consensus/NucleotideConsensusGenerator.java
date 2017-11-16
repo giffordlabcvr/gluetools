@@ -23,7 +23,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
-@PluginClass(elemName="nucleotideConsensusGenerator")
+@PluginClass(elemName="nucleotideConsensusGenerator",
+	description="Produces a consensus nucleotide sequence based on a configurable AlignmentMember set")
 public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<NucleotideConsensusGenerator> {
 
 	public NucleotideConsensusGenerator() {

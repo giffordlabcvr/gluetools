@@ -56,7 +56,8 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModel;
 
-@PluginClass(elemName=DigsImporter.ELEM_NAME)
+@PluginClass(elemName=DigsImporter.ELEM_NAME, 
+		includeInWebDocs=false)
 public class DigsImporter extends ModulePlugin<DigsImporter> {
 
 	public static final String ELEM_NAME = "digsImporter";

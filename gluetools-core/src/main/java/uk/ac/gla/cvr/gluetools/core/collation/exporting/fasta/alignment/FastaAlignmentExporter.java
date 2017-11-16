@@ -20,7 +20,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@PluginClass(elemName="fastaAlignmentExporter")
+@PluginClass(elemName="fastaAlignmentExporter",
+description="Exports nucleotide alignments to a FASTA file")
 public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<FastaAlignmentExporter> {
 	
 	public FastaAlignmentExporter() {

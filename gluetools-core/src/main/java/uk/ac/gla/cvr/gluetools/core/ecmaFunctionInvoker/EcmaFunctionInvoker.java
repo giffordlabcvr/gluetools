@@ -27,7 +27,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@PluginClass(elemName="ecmaFunctionInvoker")
+@PluginClass(elemName="ecmaFunctionInvoker",
+		description="Encapsulates arbitrary GLUE logic implemented using JavaScript programs")
 public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 
 	public static String SCRIPT_FILE_NAME = "scriptFileName";

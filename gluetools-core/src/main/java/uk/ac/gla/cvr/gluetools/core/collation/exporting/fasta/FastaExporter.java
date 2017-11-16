@@ -8,7 +8,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="fastaExporter")
+@PluginClass(elemName="fastaExporter", 
+description="Exports nucleotide data from a set of Sequence objects to a FASTA file")
 public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 
 

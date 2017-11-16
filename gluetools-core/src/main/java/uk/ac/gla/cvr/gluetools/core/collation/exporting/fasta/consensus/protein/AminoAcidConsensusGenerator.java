@@ -27,7 +27,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
-@PluginClass(elemName="aminoAcidConsensusGenerator")
+@PluginClass(elemName="aminoAcidConsensusGenerator", 
+		description="Produces a consensus amino acid sequence based on a configurable AlignmentMember set")
 public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<AminoAcidConsensusGenerator>{
 
 	public AminoAcidConsensusGenerator() {

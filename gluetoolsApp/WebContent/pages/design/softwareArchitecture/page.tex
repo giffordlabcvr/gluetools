@@ -1,0 +1,34 @@
+While GLUE is implemented in the Java programming language, its command layer
+consumes and produces structured document objects which are independent of any
+programming language. These documents may take the form of scripting text,
+eXtensible Markup Language (XML), JavaScript Object Notation (JSON) or tabular
+formats where appropriate. The multi-format, language-independent nature of the
+command layer allows GLUE to be integrated quickly into a broad variety of
+computing contexts.
+
+GLUE can be installed on computers running the Microsoft Windows, Apple OSX, or
+Linux operating systems. There are two alternative deployment patterns:
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item Command-line GLUE, typically installed on a private server or desktop
+  computer, is suitable for project development and more advanced
+  bioinformatics. In such a deployment, the interactive GLUE command line may be
+  used, or GLUE may be run non-interactively based on GLUE batch files or
+  JavaScript progams.
+\item Web-based GLUE, installed on a public server or privately as part of a
+  microservices architecture, for GLUE projects with a web UI or
+  programmatic web API.
+\end{enumerate}
+
+
+The analysis of virus sequence data requires that different kinds of information
+are assembled together. For example, to apply drug resistance analysis to a new
+hepatitis C sequence, it must be assigned to a genotype, therefore genotype
+definitions and any data forming part of the assignment process are required for
+this step. The reading frames and protein translations of the drug target genes
+in the new sequence must be determined, for example via comparison with an
+annotated reference sequence. Therefore this reference sequence and its
+annotations are also required. Finally, the scenario requires the set of
+polymorphisms known to be associated with drug resistance so that these may be
+detected in the new sequence.
+

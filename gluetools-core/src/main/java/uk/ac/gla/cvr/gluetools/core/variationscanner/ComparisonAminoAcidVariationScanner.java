@@ -15,7 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-@PluginClass(elemName="comparisonAminoAcidVariationScanner")
+@PluginClass(elemName="comparisonAminoAcidVariationScanner",
+		description="Reports differences from a pattern when used with an amino acid Variation")
 public class ComparisonAminoAcidVariationScanner extends BaseAminoAcidVariationScanner<ComparisonAminoAcidVariationScanner, VariationScanResult>{
 
 	

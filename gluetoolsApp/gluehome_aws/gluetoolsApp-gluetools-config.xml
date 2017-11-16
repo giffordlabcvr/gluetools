@@ -1,0 +1,74 @@
+<gluetools>
+	<database>
+		<username>gluetoolsapp</username>
+		<password>gluetoolsapp</password>
+		<vendor>MySQL</vendor>
+		<jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS_APP?characterEncoding=UTF-8</jdbcUrl>	
+	</database>
+	<properties>
+			<!-- Web files -->
+	    <property>
+			<name>gluetools.core.webfiles.enabled</name>
+			<value>true</value>
+		</property>
+		<property>
+			<name>gluetools.core.webfiles.root.dir</name>
+			<value>/opt/gluetools/glue_web_files</value>
+		</property>
+		<!-- BLAST-specific config -->
+		<property>
+			<name>gluetools.core.programs.blast.blastn.executable</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/blastn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.tblastn.executable</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/tblastn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.makeblastdb.executable</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.db.dir</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.search.threads</name>
+			<value>2</value>
+		</property>
+
+		<!-- RAxML-specific config -->
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.executable</name>
+			<value>/opt/gluetools/raxml/bin/raxmlHPC-PTHREADS-AVX</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.cpus</name>
+			<value>2</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.temp.dir</name>
+			<value>/opt/gluetools/raxml/tmp</value>
+		</property>
+		
+		<!-- MAFFT-specific config -->
+		<property>
+			<name>gluetools.core.programs.mafft.executable</name>
+			<value>/usr/local/bin/mafft</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.cpus</name>
+			<value>2</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.temp.dir</name>
+			<value>/opt/gluetools/mafft/tmp</value>
+		</property>
+
+		<!-- Cayenne -->
+		<property>
+			<name>cayenne.querycache.size</name>
+			<value>30000</value>
+		</property>
+	</properties>
+</gluetools>

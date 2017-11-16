@@ -9,7 +9,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.phylogeny.RaxmlPhylogenyRunner;
 
-@PluginClass(elemName="raxmlPhylogenyGenerator")
+@PluginClass(elemName="raxmlPhylogenyGenerator",
+		description="Uses RAxML to generate a phylogenetic tree from a project Alignment")
 public class RaxmlPhylogenyGenerator extends PhylogenyGenerator<RaxmlPhylogenyGenerator>{
 
 	private static final String RAXML_PHYLOGENY_RUNNER = "raxmlPhylogenyRunner";

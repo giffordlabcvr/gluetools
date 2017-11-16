@@ -22,7 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@PluginClass(elemName="gbRefBuilder")
+@PluginClass(elemName="gbRefBuilder",
+		includeInWebDocs=false)
 public class GbRefBuilder extends ModulePlugin<GbRefBuilder> {
 
 	private List<GbFeatureLocationRule> gbFeatureLocationRules;

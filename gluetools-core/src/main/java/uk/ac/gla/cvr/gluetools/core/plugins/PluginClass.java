@@ -14,4 +14,6 @@ public @interface PluginClass {
 	String elemName();
 	boolean deprecated() default false;
 	String deprecationWarning() default NULL;
+	String description() default "";
+	boolean includeInWebDocs() default true;
 }

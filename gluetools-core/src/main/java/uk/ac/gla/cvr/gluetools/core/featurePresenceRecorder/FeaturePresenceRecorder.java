@@ -13,7 +13,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
  * Module which generates memberFLocNotes based on the presence of a 
  * given feature in a given alignment member.
  */
-@PluginClass(elemName="featurePresenceRecorder")
+@PluginClass(elemName="featurePresenceRecorder",
+		description="Generates MemberFLocNote objects based on the presence of a given Feature amongst AlignmentMembers")
 public class FeaturePresenceRecorder extends ModulePlugin<FeaturePresenceRecorder> {
 
 	

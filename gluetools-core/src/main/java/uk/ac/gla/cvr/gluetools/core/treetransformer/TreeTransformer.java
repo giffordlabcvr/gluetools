@@ -22,7 +22,8 @@ import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 
-@PluginClass(elemName="treeTransformer")
+@PluginClass(elemName="treeTransformer",
+		description="Renames leaf nodes in a Newick file")
 public class TreeTransformer extends ModulePlugin<TreeTransformer> {
 
 	public static String LEAF_TO_SEQ_EXTRACTOR_FORMATTER = "leafToSeqExtractorFormatter";

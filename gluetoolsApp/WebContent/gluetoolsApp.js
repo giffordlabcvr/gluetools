@@ -1,4 +1,9 @@
 var gluetoolsApp = angular.module('gluetoolsApp', [
+  'glueWS', 
+  'glueWebToolConfig', 
+  'treeControl',
+  'angulartics',
+  'angulartics.google.analytics',
   'ui.bootstrap',
   'dialogs.main',
   'ngRoute',
@@ -105,8 +110,12 @@ gluetoolsApp.config(['$routeProvider',
     }]);
 
 gluetoolsApp.controller('gluetoolsCtrl', 
-[ '$scope',
-  function ($scope) {
+[ '$scope', 'glueWS', 'glueWebToolConfig',
+  function ($scope, glueWS, glueWebToolConfig) {
+
+	glueWS.setProjectURL("../../../gluetools-ws");
+	glueWebToolConfig.setGlueWSURL("../gluetools-web/www/glueWS");
+	
   	$scope.brand = "GLUE";
   	$scope.homeMenuTitle = "Home";
 

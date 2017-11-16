@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,8 @@ public class PluginFactory<P extends Plugin> {
 	
 	private final String thisFactoryName;
 	
-	private Map<String, PluginTypeInfo> elemNameToPluginClassInfo = 
-			new LinkedHashMap<String, PluginTypeInfo>();
+	private Map<String, PluginClassInfo> elemNameToPluginClassInfo = 
+			new LinkedHashMap<String, PluginClassInfo>();
 		
 	protected void registerPluginClass(Class<? extends P> theClass) {
 		PluginClass pluginClassAnnotation = theClass.getAnnotation(PluginClass.class);
@@ -39,11 +40,11 @@ public class PluginFactory<P extends Plugin> {
 		if(elemName == null) {
 			throw new RuntimeException("No elemName defined on PluginClass annotation on "+theClass.getCanonicalName());
 		}
-		elemNameToPluginClassInfo.put(elemName, new PluginTypeInfo(theClass, pluginClassAnnotation.deprecated(), pluginClassAnnotation.deprecationWarning()));
+		elemNameToPluginClassInfo.put(elemName, new PluginClassInfo(theClass, Optional.of(pluginClassAnnotation)));
 	}
 
 	protected void registerPluginClass(String elemName, Class<? extends P> theClass) {
-		elemNameToPluginClassInfo.put(elemName, new PluginTypeInfo(theClass));
+		elemNameToPluginClassInfo.put(elemName, new PluginClassInfo(theClass));
 	}
 	
 	protected PluginFactory() {
@@ -55,6 +56,10 @@ public class PluginFactory<P extends Plugin> {
 		return elemNameToPluginClassInfo.keySet();
 	}
 	
+	public PluginClassInfo getPluginClassInfo(String elementName) {
+		return elemNameToPluginClassInfo.get(elementName);
+	}
+	
 	public P createFromElement(PluginConfigContext pluginConfigContext, Element element)  {
 		P plugin = instantiateFromElement(element);
 		configurePlugin(pluginConfigContext, element, plugin);
@@ -63,7 +68,7 @@ public class PluginFactory<P extends Plugin> {
 
 	public P instantiateFromElement(Element element) {
 		String elementName = element.getNodeName();
-		PluginTypeInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
+		PluginClassInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
 		Class<? extends P> pluginClass = pluginTypeInfo.getTheClass();
 		if(pluginClass == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
@@ -85,7 +90,7 @@ public class PluginFactory<P extends Plugin> {
 	}
 
 	public Class<? extends P> classForElementName(String elementName) {
-		PluginFactory<P>.PluginTypeInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
+		PluginFactory<P>.PluginClassInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
 		if(pluginTypeInfo != null) {
 			Class<? extends P> pluginClass = pluginTypeInfo.getTheClass();
 			return pluginClass;
@@ -140,24 +145,22 @@ public class PluginFactory<P extends Plugin> {
 					.collect(Collectors.toList()));
 	}
 	
-	private class PluginTypeInfo {
+	public class PluginClassInfo {
 		private Class<? extends P> theClass;
-		private boolean deprecated;
-		private String deprecationWarning;
+		private Optional<PluginClass> pluginClassAnnotation;
 		
-		private PluginTypeInfo(Class<? extends P> theClass) {
-			this(theClass, false, null);
+		private PluginClassInfo(Class<? extends P> theClass) {
+			this(theClass, Optional.empty());
 		}
 		
-		private PluginTypeInfo(Class<? extends P> theClass, boolean deprecated, String deprecationWarning) {
+		private PluginClassInfo(Class<? extends P> theClass, Optional<PluginClass> pluginClassAnnotation) {
 			super();
 			this.theClass = theClass;
-			this.deprecated = deprecated;
-			this.deprecationWarning = deprecationWarning;
+			this.pluginClassAnnotation = pluginClassAnnotation;
 		}
 
 		public String getDeprecationWarning() {
-			return deprecationWarning;
+			return pluginClassAnnotation.map(pca -> pca.deprecationWarning()).orElse(null);
 		}
 
 		public Class<? extends P> getTheClass() {
@@ -165,8 +168,17 @@ public class PluginFactory<P extends Plugin> {
 		}
 
 		public boolean isDeprecated() {
-			return deprecated;
+			return pluginClassAnnotation.map(pca -> pca.deprecated()).orElse(false);
 		}
+
+		public boolean includeInWebDocs() {
+			return pluginClassAnnotation.map(pca -> pca.includeInWebDocs()).orElse(true);
+		}
+
+		public String getDescription() {
+			return pluginClassAnnotation.map(pca -> pca.description()).orElse(null);
+		}
+
 	}
 	
 }

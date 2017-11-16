@@ -24,7 +24,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 
-@PluginClass(elemName="textToQueryTransformer")
+@PluginClass(elemName="textToQueryTransformer",
+		description="Transforms data extracted from a text string into a GLUE object query")
 public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer> {
 
 	public static final String VALUE_CONVERTER = "valueConverter";

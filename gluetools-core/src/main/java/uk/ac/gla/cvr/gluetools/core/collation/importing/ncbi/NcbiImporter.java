@@ -69,7 +69,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.HttpUtils;
 
-@PluginClass(elemName="ncbiImporter")
+@PluginClass(elemName="ncbiImporter",
+	description="Downloads sequence data from NCBI, via the eUtils interface")
 public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 
 	// name of a VARCHAR field on sequence table which will be used to cache GI number

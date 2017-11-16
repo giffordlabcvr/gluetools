@@ -7,7 +7,8 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
-@PluginClass(elemName="phyloUtility")
+@PluginClass(elemName="phyloUtility",
+		description="Provides various operations on phylogenetic trees")
 public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 
 	public PhyloUtility() {

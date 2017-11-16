@@ -40,7 +40,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
  *
  */
 
-@PluginClass(elemName="commonAaAnalyser")
+@PluginClass(elemName="commonAaAnalyser",
+		description="Creates variations to detect amino acid substitutions that are atypical amongst a set of AlignmentMembers")
 public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 
 	public static final String MIN_FREQUENCY_PCT = "minFrequencyPct";

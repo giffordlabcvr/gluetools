@@ -16,7 +16,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 
-@PluginClass(elemName="exactMatchAminoAcidVariationScanner")
+@PluginClass(elemName="exactMatchAminoAcidVariationScanner",
+	description="Detects exact matches with a pattern when used with an amino acid Variation")
 public class ExactMatchAminoAcidVariationScanner extends BaseAminoAcidVariationScanner<ExactMatchAminoAcidVariationScanner, VariationScanResult>{
 
 	private static ExactMatchAminoAcidVariationScanner defaultInstance = new ExactMatchAminoAcidVariationScanner();

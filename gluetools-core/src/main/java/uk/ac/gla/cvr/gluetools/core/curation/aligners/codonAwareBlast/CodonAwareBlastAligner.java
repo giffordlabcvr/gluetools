@@ -41,7 +41,8 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporaryMultiSeqBlastDB
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
-@PluginClass(elemName="codonAwareBlastAligner")
+@PluginClass(elemName="codonAwareBlastAligner", 
+		description="Derives pairwise homologies using codon-aware BLAST")
 public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlastAlignerResult, CodonAwareBlastAligner> implements SupportsComputeConstrained {
 
 

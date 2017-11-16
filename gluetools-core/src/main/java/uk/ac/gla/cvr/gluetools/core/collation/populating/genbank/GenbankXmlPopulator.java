@@ -40,7 +40,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
-@PluginClass(elemName="genbankXmlPopulator")
+@PluginClass(elemName="genbankXmlPopulator",
+	description="Extracts data from Sequences in GenBank XML format, transforms it and uses it to populate fields and relational links")
 public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> {
 
 	private List<XmlPopulatorRule> rules;

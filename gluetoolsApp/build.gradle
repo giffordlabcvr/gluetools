@@ -29,10 +29,12 @@ repositories {
 
 configurations {
 	gluetoolsWebWar
+	gluetoolsWsWar
 }
 
 dependencies {
     gluetoolsWebWar group: 'cvr.ac.uk', name: 'gluetools-web', version: version
+    gluetoolsWsWar group: 'cvr.ac.uk', name: 'gluetools-ws', version: version
 }
 
 task copyGluetoolsWebWar(type: Copy) {
@@ -40,6 +42,13 @@ task copyGluetoolsWebWar(type: Copy) {
     from configurations.gluetoolsWebWar
     into "$buildDir/runtimeWars"
     rename('gluetools-web-'+version+'.war', 'gluetools-web.war')
+}
+
+task copyGluetoolsWsWar(type: Copy) {
+    dependsOn ':gluetools-ws:install'
+    from configurations.gluetoolsWsWar
+    into "$buildDir/runtimeWars"
+    rename('gluetools-ws-'+version+'.war', 'gluetools-ws.war')
 }
 
 war {
@@ -50,11 +59,26 @@ war {
 
 task deployGluetoolsAppGlueHomeAWS(dependsOn: [
 	'deployGluetoolsWebWarGlueHomeAWS',
+	'deployGluetoolsAppGlueConfigGlueHomeAWS',
+	'deployGluetoolsAppGluetoolsWsContextXmlGlueHomeAWS',
+	'deployGluetoolsWsWarGlueHomeAWS',
 	'deployGluetoolsAppWarGlueHomeAWS'])
 
 task deployGluetoolsWebWarGlueHomeAWS(type: DeployWarTask) {
     dependsOn 'copyGluetoolsWebWar'
     warFile = new File(buildDir, 'runtimeWars/gluetools-web.war')
+    remote = remotes.gluehome_aws
+    taskBuildDir = buildDir
+	warBaseName = org.apache.commons.io.FilenameUtils.getBaseName(warFile.name)
+    touchFile = new File(taskBuildDir, '/deploy.'+warBaseName+'.'+remote.name+'.touchfile')
+    inputs.file warFile
+    outputs.file touchFile
+    taskSsh = ssh
+}
+
+task deployGluetoolsWsWarGlueHomeAWS(type: DeployWarTask) {
+    dependsOn 'copyGluetoolsWsWar'
+    warFile = new File(buildDir, 'runtimeWars/gluetools-ws.war')
     remote = remotes.gluehome_aws
     taskBuildDir = buildDir
 	warBaseName = org.apache.commons.io.FilenameUtils.getBaseName(warFile.name)
@@ -121,6 +145,64 @@ task cleanDownloads(type: Delete) {
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'exampleProject-*.zip' }
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'glueInstallDir-*.zip' }
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-config.xml' }
+}
+
+
+// config for gluetoolsApp gluetools-ws webapp 
+task deployGluetoolsAppGluetoolsWsContextXmlGlueHomeAWS() {
+  ext.file = new File(projectDir, '/gluehome_aws/gluetools-ws-context.xml')
+  ext.touchfile = new File(buildDir, '/deployGluetoolsAppGluetoolsWsContextXmlGlueHomeAWS.touchfile')
+  inputs.file file
+  outputs.file touchfile
+  doLast {
+	  println "Uploading "+file.name
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+	      put from: file.absolutePath, into: '/tmp/gluetools-ws.xml'
+	      execute 'sudo service tomcat7 stop; sleep 10s'
+	      execute 'sudo mkdir -p /var/lib/tomcat7/conf/Catalina/tools.glue.cvr.ac.uk'
+	      execute 'sudo mv /tmp/gluetools-ws.xml /var/lib/tomcat7/conf/Catalina/tools.glue.cvr.ac.uk/gluetools-ws.xml'
+	      execute 'sudo service tomcat7 start'
+	    }
+	  }
+	  touchfile.delete()
+	  buildDir.mkdirs()
+	  touchfile.createNewFile()
+  }
+}
+
+// config for gluetoolsApp glue engine which tells it where to find its database. 
+task deployGluetoolsAppGlueConfigGlueHomeAWS {
+  ext.file = new File(projectDir, '/gluehome_aws/gluetoolsApp-gluetools-config.xml')
+  ext.touchfile = new File(buildDir, '/deployGluetoolsAppGlueConfigGlueHomeAWS.touchfile')
+  inputs.file file
+  outputs.file touchfile
+  doLast {
+	  println "Uploading "+file.name
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+	      execute "sudo mkdir -p /opt/gluetools/conf"
+	      put from: file, into: '/tmp'
+	      execute "sudo mv /tmp/gluetoolsApp-gluetools-config.xml /opt/gluetools/conf/"
+	    }
+	  }
+	  touchfile.delete()
+	  buildDir.mkdirs()
+	  touchfile.createNewFile()
+  }
+}
+
+task initGluetoolsAppDBGlueHomeAWS {
+  doLast {
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+			// create user gluetools with correct grants
+			execute "echo 'GRANT ALL ON GLUETOOLS_APP.* TO \"gluetoolsapp\"@\"localhost\" identified by \"gluetoolsapp\";' | mysql -u root --password=root123"
+			// create GLUETOOLS_APP database
+			execute "echo 'create database GLUETOOLS_APP character set UTF8;' | mysql -u gluetoolsapp --password=gluetoolsapp" 
+	    }
+	  }
+  }
 }
 
 

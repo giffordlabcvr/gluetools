@@ -20,7 +20,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporterException.Code;
 
-@PluginClass(elemName="phyloExporter")
+@PluginClass(elemName="phyloExporter",
+		description="Exports a phylogenetic tree stored as auxiliary data in Alignment tree nodes")
 public class PhyloExporter extends ModulePlugin<PhyloExporter> {
 
 	public PhyloExporter() {

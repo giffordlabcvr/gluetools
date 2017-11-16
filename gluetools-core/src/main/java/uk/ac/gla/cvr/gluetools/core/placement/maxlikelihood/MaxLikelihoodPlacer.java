@@ -53,7 +53,8 @@ import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaResult;
 import uk.ac.gla.cvr.gluetools.programs.raxml.epa.RaxmlEpaRunner;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@PluginClass(elemName="maxLikelihoodPlacer")
+@PluginClass(elemName="maxLikelihoodPlacer",
+		description="Runs the alignment and placement phases of the maximum-likelihood clade assignment methods")
 public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
 	// the root alignment which will provide the phylogeny

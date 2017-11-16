@@ -30,7 +30,8 @@ import freemarker.template.TemplateModel;
  * Module for creating sequences from alignments, based on assigning alignment members into exclusive groups.
  * A new sequence is created for each group, based on the aligned segments of members assigned to the group.
  */
-@PluginClass(elemName="alignmentBasedSequenceMerger")
+@PluginClass(elemName="alignmentBasedSequenceMerger", 
+	description="Creates sequences from alignments, by assigning alignment members to mutually-exclusive groups")
 public class AlignmentBasedSequenceMerger extends ModulePlugin<AlignmentBasedSequenceMerger> {
 
 	/*

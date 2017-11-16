@@ -28,7 +28,8 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@PluginClass(elemName="fastaSequenceReporter")
+@PluginClass(elemName="fastaSequenceReporter",
+		description="Provides commands for protein translation and Variation scanning on FASTA nucleotide files")
 public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";

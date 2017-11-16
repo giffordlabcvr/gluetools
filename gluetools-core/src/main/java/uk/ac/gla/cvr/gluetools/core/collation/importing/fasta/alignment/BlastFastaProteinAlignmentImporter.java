@@ -48,7 +48,8 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastD
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
-@PluginClass(elemName="blastProteinFastaAlignmentImporter")
+@PluginClass(elemName="blastProteinFastaAlignmentImporter",
+	description="Imports a protein alignment from a FASTA file as a nucleotide alignment, using a codon-aware BLAST to identify correct Sequence coordinates."		)
 public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImporter<BlastFastaProteinAlignmentImporter> {
 
 

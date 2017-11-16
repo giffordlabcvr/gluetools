@@ -1,0 +1,39 @@
+As an example from hepatitis C research, a nucleotide binding motif (NBM) was
+suggested in the NS4B protein \cite{Einav_2004}. The most conserved element of
+the NBM is the `A' motif consisting of a Glycine (G) at codon position 129
+followed by four amino acids of any type, followed by a Glycine (G) at position
+134 and a Lysine (K) at position 135. The research showed that Arginine (R) or
+Serine (S) could be substituted for the Lysine with only a small reduction in
+the binding activity, so one formulation of the `A' motif might allow either of
+these substitutions.
+
+This can be represented using a \emph{Variation} containing a single
+\emph{PatternLocation}, defined within NS4B of the HCV master
+\emph{ReferenceSequence} which is the basis for standardised HCV codon
+coordinates \cite{Kuiken_2006}. Figure \ref{fig:variationExample} shows the GLUE
+commands to construct such a variation within the HCV-GLUE project.
+
+  \begin{figure}[h!]
+  \begin{center}
+  \includegraphics[width=\linewidth]{figures/variationExample/variationExample.pdf}
+  \end{center}
+  \caption{\csentence{GLUE commands to create a \emph{Variation} representing
+  the NBM `A' motif in HCV NS4B.} The object is created within
+  the NS4B \emph{FeatureLocation} of the master \emph{ReferenceSequence}
+  allowing standard codon coordinates to define the location. The pattern
+  itself is specified using a regular expression, in which .{\{4\}} allows for a
+  sequence of any four residues, and [KRS] allows either Lysine, Arginine or
+  Serine. }
+  \label{fig:variationExample}
+      \end{figure}
+
+      
+  reference REF_MASTER_NC_004102
+  feature-location NS4B
+    create variation NBM_A --translationType AMINO_ACID
+    variation NBM_A
+      create pattern-location "G.{4}G[KRS]" --labeledCodon 129 135
+      exit
+    exit
+  exit
+  

@@ -36,7 +36,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@PluginClass(elemName="fastaImporter")
+@PluginClass(elemName="fastaImporter",
+	description="Imports nucleotide data from a FASTA file, creating a set of Sequence objects")
+
 public class FastaImporter extends SequenceImporter<FastaImporter> implements PropertyPopulator {
 
 	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";

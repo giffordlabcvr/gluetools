@@ -34,7 +34,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@PluginClass(elemName="fastaAlignmentImporter")
+@PluginClass(elemName="fastaAlignmentImporter",
+description="Imports a nucleotide alignment from a FASTA file")
 public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignmentImporter> {
 
 	public static final String SEQUENCE_GAP_REGEX = "sequenceGapRegex";

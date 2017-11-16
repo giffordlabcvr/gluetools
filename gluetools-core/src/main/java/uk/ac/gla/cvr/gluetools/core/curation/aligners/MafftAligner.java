@@ -32,7 +32,8 @@ import uk.ac.gla.cvr.gluetools.programs.mafft.add.MafftResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 
-@PluginClass(elemName="mafftAligner")
+@PluginClass(elemName="mafftAligner",
+		description="Runs external MAFFT program to populate or extend an unconstrained Alignment")
 public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, MafftAligner> 
 	implements SupportsExtendUnconstrained<MafftAligner.MafftAlignerResult>, SupportsComputeUnconstrained {
 

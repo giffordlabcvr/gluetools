@@ -23,7 +23,8 @@ import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 
-@PluginClass(elemName="figTreeAnnotationExporter")
+@PluginClass(elemName="figTreeAnnotationExporter", 
+		description="Generates annotation files from project data, suitable for use in FigTree")
 public class FigTreeAnnotationExporter extends ModulePlugin<FigTreeAnnotationExporter> {
 
 	public static final String MEMBER_NAME_TEMPLATE = "memberNameTemplate";

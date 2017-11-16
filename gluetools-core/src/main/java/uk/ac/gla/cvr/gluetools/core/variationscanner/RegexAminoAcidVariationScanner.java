@@ -19,7 +19,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-@PluginClass(elemName="regexAminoAcidVariationScanner")
+@PluginClass(elemName="regexAminoAcidVariationScanner",
+	description="Detects matches with a regular expression when used with an amino acid Variation")
 public class RegexAminoAcidVariationScanner extends BaseAminoAcidVariationScanner<RegexAminoAcidVariationScanner, VariationScanResult>{
 
 	private static RegexAminoAcidVariationScanner defaultInstance = new RegexAminoAcidVariationScanner();

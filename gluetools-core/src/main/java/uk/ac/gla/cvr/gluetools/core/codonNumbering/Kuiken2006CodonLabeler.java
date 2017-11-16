@@ -22,7 +22,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
-@PluginClass(elemName="kuiken2006CodonLabeler")
+@PluginClass(elemName="kuiken2006CodonLabeler",
+		description="Facilitates the labelling of codon positions according to a scheme suggested for HCV in Kuiken et, al. 2006")
 public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler> implements CodonLabeler {
 
 	private static final String ROOT_REFERENCE_NAME = "rootReferenceName";

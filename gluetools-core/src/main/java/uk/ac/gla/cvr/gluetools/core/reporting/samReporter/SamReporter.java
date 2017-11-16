@@ -37,7 +37,8 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterCommandExce
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 
-@PluginClass(elemName="samReporter")
+@PluginClass(elemName="samReporter",
+		description="Provides various commands for analysing deep sequencing data in SAM/BAM files")
 public class SamReporter extends ModulePlugin<SamReporter> {
 
 	public static final String MAX_LIKELIHOOD_PLACER_MODULE_NAME = "maxLikelihoodPlacerModuleName";

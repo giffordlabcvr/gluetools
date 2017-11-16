@@ -31,7 +31,8 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.TemporarySingleSeqBlastD
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
-@PluginClass(elemName="blastAligner")
+@PluginClass(elemName="blastAligner", 
+		description="Derives pairwise homologies using nucleotide BLAST")
 public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAlignerResult, BlastAligner> implements SupportsComputeConstrained {
 
 	public BlastAligner() {

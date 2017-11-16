@@ -15,7 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@PluginClass(elemName="alignmentColumnsSelector")
+@PluginClass(elemName="alignmentColumnsSelector",
+	description="Filter applied to an alignment which selects columns based on feature locations or specific coordinates")
 public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelector> implements IAlignmentColumnsSelector {
 
 	private String relRefName;
