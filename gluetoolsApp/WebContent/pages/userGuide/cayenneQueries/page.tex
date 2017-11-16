@@ -1,0 +1,37 @@
+\subsection*{Object-relational mapping}
+
+Object-relational mapping (ORM) is a technique which allows object-oriented
+programming languages such as Java to map between the objects, fields and
+associations processed by application software on the other and the equivalent
+tables, columns and relationships persisted in a relational database on the
+other.
+
+Internally, GLUE uses Apache Cayenne \cite{ApacheCayenne_2017} as its ORM
+system. Apache Cayenne provides a simple but powerful expression language which
+operates on objects, their fields and associations, but is translated internally
+into the Structure Query Language (SQL) of the underlying database.
+
+Many GLUE commands operate on sets of objects of the same type.
+It is often useful to filter the set of objects by some user-defined criterion.
+Consider for example, in \emph{Alignment} command mode, the following GLUE
+command:
+
+\begin{verbatim}
+list member --recursive
+\end{verbatim}
+
+This lists the \emph{AlignmentMember} objects contained within the current
+\emph{Alignment} or one of its descendents. Apache Cayenne expressions may be
+supplied as ``where clause'' row selection options to many GLUE commands. This
+will filter the set of objects on which the command operates. So, the above
+example command may be extended as follows:
+
+\begin{verbatim}
+list member --recursive --whereClause "sequence.sequenceID like 'K%'"
+\end{verbatim}
+
+This will restrict the results to \emph{AlignmentMember} objects where the ID of
+the associated \emph{Sequence} object begins with ``K''. The use of Apache Cayenne
+to filter objects in this way provides significant expressive power as it is
+able to traverse any relational link in the schema, without the user needing to
+construct SQL syntax.

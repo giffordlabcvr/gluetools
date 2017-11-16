@@ -1,0 +1,95 @@
+
+The core GLUE schema is present in every GLUE project and forms the basis for
+the standard, built-in functionality. However, there are often important
+auxiliary data items which are of interest in the target usage scenarios. These
+project-specific data objects may have highly structured relationships with each
+other and with objects in the core schema.
+
+GLUE provides a powerful yet easy-to-use mechanism for extending the database
+schema on a per-project basis. New fields may be added to tables in the core
+schema. New custom tables may be added, with their own data fields.
+Finally, custom relational links may be added between any pair tables in the
+schema.
+
+Schema extensions are defined using GLUE commands. Once schema extensions are
+defined in a GLUE project, the custom tables, fields and links may be populated
+with data either using fine-grained GLUE commands, or using certain GLUE modules
+such as \emph{genbankXmlPopulator}. The custom tables, fields and links may then play
+a role in programmatic row selection criteria or in any other GLUE functionality
+which traverses the data schema.
+
+
+The United Nations defines the M.49 system \cite{M49_1996} for classifying
+countries and grouping them hierarchically into geographical regions. This
+system can be incorporated into a GLUE project, as a schema extension. An
+example rationale for this is to allow the comparison of virus sequences not
+only between countries but between global regions. We give a brief outline
+showing how a schema extension may operate; the full extension, which has been
+used in the HCV-GLUE project, is more detailed.
+
+Within the \texttt{schema-project} GLUE command mode, custom tables are
+introduced for countries, regions and sub-regions:
+\begin{verbatim}
+create custom-table m49_country
+create custom-table m49_region
+create custom-table m49_sub_region
+\end{verbatim}
+
+Objects in custom tables use strings as their unique ID. For the
+\texttt{m49\_country} table, the 3-letter ISO code may be adopted as the object
+ID. Other fields associated with each country may then also be defined for
+custom tables:
+
+\begin{verbatim}
+table m49_country
+  create field m49_code INTEGER
+  create field full_name VARCHAR 100
+\end{verbatim}
+
+Similarly, fields may also be defined for the \texttt{m49\_region} and
+\texttt{m49\_sub\_region} tables. A country in the M.49 system is associated
+with a single sub-region, but a sub-region may contain many countries. This may
+be modelled by introducing a link into the schema extension:
+
+\begin{verbatim}
+create link m49_country m49_sub_region --multiplicity MANY_TO_ONE
+\end{verbatim}
+
+The association between sequences and countries may also be modelled by adding a
+link definition to the schema, in this case between the core \emph{Sequence}
+table and the custom table \texttt{m49\_country}.
+
+\begin{verbatim}
+create link sequence m49_country --multiplicity MANY_TO_ONE
+\end{verbatim}
+
+Data items may now be added, making use of these schema extensions. For example,
+an object may be created to represent France (M.49 code 250, ISO code FRA), and
+associated with the object representing the M.49 sub-region for Western Europe
+via the following commands in \texttt{project} mode:
+
+\begin{verbatim}
+create custom-table-row m49_country FRA
+custom-table-row m49_country FRA
+  set field m49_code 250
+  set field full_name France
+  set link-target m49_sub_region western_europe
+\end{verbatim}
+
+A \emph{Sequence} object may be associated with its country of origin by
+using the \texttt{set link-target} command in the appropriate command mode:
+
+\begin{verbatim}
+sequence ncbi-fmdv AY593780
+  set link-target m49_country FRA
+\end{verbatim}
+
+Such custom extensions may then be used in row selection criteria, for example
+this \texttt{list sequence} command will list all those sequences associated
+with a country in Western or Northern Europe:
+
+\begin{verbatim}
+list sequence --whereClause "m49_country.m49_sub_region.id in
+('western_europe', 'northern_europe')"
+\end{verbatim}
+

@@ -1,0 +1,50 @@
+
+\subsubsection*{Command modes} GLUE commands are executed in a specific command
+mode. Each command mode provides a different data object context and a specific
+set of available commands. Command modes are arranged hierarchically, following
+the object composition relationships within the GLUE schema.
+Each command mode is represented by a mode path, specifying a particular data
+object based on its location within the composition hierarchy.
+Consider for example the following mode path:
+\begin{center}
+\begin{verbatim}
+/project/hcv/reference/REF_MASTER_NC_004102/feature-location/NS5B
+\end{verbatim}
+\end{center}
+This represents the command mode associated with the \texttt{NS5B}
+\emph{FeatureLocation} within the \emph{ReferenceSequence} 
+\texttt{REF\_MASTER\_NC\_004102}, itself contained within the GLUE project
+\texttt{hcv}. In this mode, commands are available which operate on this
+specific \emph{FeatureLocation} object, for example listing the
+set of \emph{FeatureSegment} objects or creating a new
+\emph{Variation} object contained within the \emph{FeatureLocation}. The mode
+path mechanism allows commands which operate on the same object context
+to be grouped together.
+
+Command-line GLUE provides mechanisms for navigating between command modes. For
+commands submitted to web-based GLUE, the mode path is used as the final part of
+the request URL. 
+
+
+The GLUE interactive command line system is a powerful environment focused on
+the development of GLUE projects at a high level of productivity. The command line
+design could be compared to interactive R or Python 
+interpreters \cite{R_2017,Python_2017}, or an interactive database command line
+client.
+
+The interactive command line system has three main uses:
+\begin{itemize}
+  \item Testing the operation of GLUE commands that are later integrated
+  permanently into a GLUE project
+  \item Querying a project dataset to check that it has been assembled
+  correctly
+  \item Running data queries or other analysis functions for research purposes
+\end{itemize} 
+
+Productivity-oriented features include:
+\begin{itemize}
+  \item Automatic completion of both the keywords and arguments of partially-typed commands
+  \item Interactive paging through tabular data
+  \item A command history which is saved between GLUE sessions
+  \item Line editing and history keystrokes similar to GNU Readline
+\end{itemize}
