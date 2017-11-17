@@ -139,11 +139,17 @@ public class CommandUsage {
 
 	public void validate(Class<? extends Command> cmdClass) {
 		try {
-		//System.out.println("command class: "+cmdClass.getCanonicalName());
-		//System.out.println("command words: "+String.join(" ", commandWords));
-		Map<Character, String> optionsMap = optionsMap();
-		//System.out.println("options map: "+optionsMap);
-		createFSM(optionsMap);
+			String[] commandWords = commandWords();
+			for(String commandWord: commandWords) {
+				if(!commandWord.matches("[a-z][a-z0-9\\-]*")) {
+					throw new RuntimeException("Invalid command word \""+commandWord+"\"");
+				}
+			}
+			Map<Character, String> optionsMap = optionsMap();
+			//System.out.println("command class: "+cmdClass.getCanonicalName());
+			//System.out.println("command words: "+String.join(" ", commandWords));
+			//System.out.println("options map: "+optionsMap);
+			createFSM(optionsMap);
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to validate command usage for "+cmdClass.getSimpleName(), e);
 		}
@@ -173,6 +179,10 @@ public class CommandUsage {
 					bits[1].trim().replace("--", ""));
 		}
 		return optionsMap;
+	}
+
+	public String cmdWordID() {
+		return String.join("_", commandWords());
 	}
 
 	

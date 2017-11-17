@@ -85,7 +85,7 @@ public class PluginFactory<P extends Plugin> {
 	}
 
 	private P instantiatePlugin(Element element, Class<? extends P> pluginClass) {
-		P plugin = instantiatePluginStatic(pluginClass, element);
+		P plugin = instantiatePluginWithElement(pluginClass, element);
 		return plugin;
 	}
 
@@ -108,27 +108,32 @@ public class PluginFactory<P extends Plugin> {
 
 	public static <Q extends Plugin> List<Q> createPlugins(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, List<Element> elements) {
 		return elements.stream().map(e -> {
-			Q plugin = instantiatePluginStatic(pluginClass, e);
+			Q plugin = instantiatePluginWithElement(pluginClass, e);
 			configurePlugin(pluginConfigContext, e, plugin);
 			return plugin;
 		}).collect(Collectors.toList());
 	}
 	
 	public static <Q extends Plugin> Q createPlugin(PluginConfigContext pluginConfigContext, Class<Q> pluginClass, Element element) {
-		Q plugin = instantiatePluginStatic(pluginClass, element);
+		Q plugin = instantiatePluginWithElement(pluginClass, element);
 		configurePlugin(pluginConfigContext, element, plugin);
 		return plugin;
 	}
 
-	private static <Q extends Plugin> Q instantiatePluginStatic(Class<Q> pluginClass,
-			Element element) {
+	private static <Q extends Plugin> Q instantiatePluginWithElement(Class<Q> pluginClass, Element element) {
+		Q plugin = instantiatePlugin(pluginClass);
+		PluginUtils.setValidConfigLocal(element);
+		return plugin;
+	}
+
+	private static <Q extends Plugin> Q instantiatePlugin(
+			Class<Q> pluginClass) {
 		Q plugin = null;
 		try {
 			plugin = pluginClass.newInstance();
 		} catch(Exception e) {
 			throw new PluginFactoryException(e, Code.PLUGIN_CREATION_FAILED, pluginClass.getCanonicalName(), e.getMessage());
 		}
-		PluginUtils.setValidConfigLocal(element);
 		return plugin;
 	}
 
@@ -148,6 +153,7 @@ public class PluginFactory<P extends Plugin> {
 	public class PluginClassInfo {
 		private Class<? extends P> theClass;
 		private Optional<PluginClass> pluginClassAnnotation;
+		private P exampleInstance;
 		
 		private PluginClassInfo(Class<? extends P> theClass) {
 			this(theClass, Optional.empty());
@@ -156,6 +162,7 @@ public class PluginFactory<P extends Plugin> {
 		private PluginClassInfo(Class<? extends P> theClass, Optional<PluginClass> pluginClassAnnotation) {
 			super();
 			this.theClass = theClass;
+			this.exampleInstance = instantiatePlugin(theClass);
 			this.pluginClassAnnotation = pluginClassAnnotation;
 		}
 
@@ -167,6 +174,10 @@ public class PluginFactory<P extends Plugin> {
 			return theClass;
 		}
 
+		public P getExampleInstance() {
+			return exampleInstance;
+		}
+		
 		public boolean isDeprecated() {
 			return pluginClassAnnotation.map(pca -> pca.deprecated()).orElse(false);
 		}

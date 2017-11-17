@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
@@ -12,9 +13,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 
 
 @CommandClass( 
-	commandWords={"webdocs", "list-module-types"}, 
+		commandWords={"webdocs", "list-module-types"}, 
 	docoptUsages={""},
-	metaTags={}, 
+	metaTags={CmdMeta.webApiOnly}, 
 	description = "")
 public class WebdocsListModuleTypesCommand extends WebdocsCommand<WebdocsListModuleTypesResult> {
 
