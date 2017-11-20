@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(commandWords={"save", "configuration"},
 	docoptUsages="<fileName>",
 	description = "Save module configuration to a file", 
+	docCategory="General module commands",
 	metaTags = { CmdMeta.consoleOnly } )
 public class ModuleSaveConfigurationCommand extends ModuleDocumentCommand<OkResult> {
 

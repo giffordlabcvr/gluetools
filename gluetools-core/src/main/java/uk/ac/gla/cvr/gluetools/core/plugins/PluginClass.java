@@ -16,4 +16,5 @@ public @interface PluginClass {
 	String deprecationWarning() default NULL;
 	String description() default "";
 	boolean includeInWebDocs() default true;
+	String docCategory() default "";
 }

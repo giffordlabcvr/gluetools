@@ -14,12 +14,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
@@ -28,7 +23,6 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.AbstractBlastAligner
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner.CodonAwareBlastAlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -48,8 +42,8 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 
 	public CodonAwareBlastAligner() {
 		super();
-		addModulePluginCmdClass(CodonAwareBlastAlignCommand.class);
-		addModulePluginCmdClass(CodonAwareBlastFileAlignCommand.class);
+		addModulePluginCmdClass(CodonAwareBlastAlignerAlignCommand.class);
+		addModulePluginCmdClass(CodonAwareBlastAlignerFileAlignCommand.class);
 	}
 
 	@Override
@@ -134,53 +128,13 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class<? extends Aligner.AlignCommand> getComputeConstrainedCommandClass() {
-		return CodonAwareBlastAlignCommand.class;
+		return CodonAwareBlastAlignerAlignCommand.class;
 	}
 	
 	public static class CodonAwareBlastAlignerResult extends Aligner.AlignerResult {
 		public CodonAwareBlastAlignerResult(Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments) {
 			super("codonAwareBlastAlignerResult", fastaIdToAlignedSegments);
 		}
-	}
-
-	@CommandClass(
-			commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
-			description = "Align sequence data to a reference using codon-aware BLAST", 
-			docoptUsages = {}, 
-			metaTags={  CmdMeta.inputIsComplex },
-			furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
-			)
-	public static class CodonAwareBlastAlignCommand extends Aligner.AlignCommand<CodonAwareBlastAligner.CodonAwareBlastAlignerResult, CodonAwareBlastAligner> {
-
-		@Override
-		protected CodonAwareBlastAlignerResult execute(CommandContext cmdContext, CodonAwareBlastAligner modulePlugin) {
-			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
-		}
-	}
-
-	@CommandClass(
-			commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
-			description = "Align sequence file to a reference using codon-aware BLAST", 
-			docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
-			metaTags = {  CmdMeta.consoleOnly },
-			furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
-			)
-	public static class CodonAwareBlastFileAlignCommand extends Aligner.FileAlignCommand<CodonAwareBlastAligner.CodonAwareBlastAlignerResult, CodonAwareBlastAligner> {
-
-		@Override
-		protected CodonAwareBlastAlignerResult execute(CommandContext cmdContext, CodonAwareBlastAligner modulePlugin) {
-			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
-		}
-		
-		@CompleterClass
-		public static class Completer extends AdvancedCmdCompleter {
-			public Completer() {
-				super();
-				registerDataObjectNameLookup("referenceName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
-				registerPathLookup("sequenceFileName", false);
-			}
-		}
-
 	}
 
 

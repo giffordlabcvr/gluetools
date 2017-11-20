@@ -21,11 +21,14 @@ public class WebdocsCommandDocumentation {
 	public List<String> usagePatterns = new ArrayList<String>();
 
 	// could be a more complex object
-	@PojoDocumentListField(itemClass = String.class)
-	public List<String> optionDocs;
+	@PojoDocumentListField(itemClass = WebdocsCommandOptionDocumentation.class)
+	public List<WebdocsCommandOptionDocumentation> optionDocs = new ArrayList<WebdocsCommandOptionDocumentation>();
 
 	@PojoDocumentField
 	public String description;
+
+	@PojoDocumentField
+	public String docCategory;
 
 	@PojoDocumentField
 	public String furtherHelp;
@@ -36,8 +39,11 @@ public class WebdocsCommandDocumentation {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		cmdDoc.commandWords.addAll(Arrays.asList(cmdUsage.commandWords()));
 		cmdDoc.usagePatterns.addAll(Arrays.asList(cmdUsage.docoptUsages()));
-		cmdDoc.optionDocs.addAll(Arrays.asList(cmdUsage.docoptOptions()));
+		List<String> optionStrings = Arrays.asList(cmdUsage.docoptOptions());
+		optionStrings.forEach(optionString -> 
+			cmdDoc.optionDocs.add(WebdocsCommandOptionDocumentation.createFromString(optionString)));
 		cmdDoc.description = cmdUsage.description();
+		cmdDoc.docCategory = cmdUsage.docCategory();
 		cmdDoc.furtherHelp = cmdUsage.furtherHelp();
 		return cmdDoc;
 	}

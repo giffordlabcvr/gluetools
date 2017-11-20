@@ -12,6 +12,7 @@ public @interface CommandClass {
 
 	String[] commandWords();
 	String description();
+	String docCategory() default "";
 	String[] docoptUsages();
 	String[] docoptOptions() default {};
 	String furtherHelp() default "";

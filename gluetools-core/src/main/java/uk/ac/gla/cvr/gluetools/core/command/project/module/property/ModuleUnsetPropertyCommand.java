@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(commandWords={"unset","property"},
 		docoptUsages="<propertyPath>",
+		docCategory="General module commands",
 		description = "Unset a property on the module config")
 public final class ModuleUnsetPropertyCommand extends ModulePropertyCommand<OkResult> 
 	implements ModuleUpdateDocumentCommand {

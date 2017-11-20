@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 @CommandClass(
 		commandWords={"validate"}, 
 		description = "Validate the module's configuration", 
+		docCategory="General module commands",
 		docoptUsages = {""}, 
 		docoptOptions = {}
 )

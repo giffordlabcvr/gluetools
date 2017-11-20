@@ -6,19 +6,13 @@ import java.util.UUID;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException.Code;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -37,51 +31,10 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 
 	public BlastAligner() {
 		super();
-		addModulePluginCmdClass(BlastAlignCommand.class);
-		addModulePluginCmdClass(BlastFileAlignCommand.class);
+		addModulePluginCmdClass(BlastAlignerAlignCommand.class);
+		addModulePluginCmdClass(BlastAlignerFileAlignCommand.class);
 	}
 
-	@CommandClass(
-			commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
-			description = "Align sequence data to a reference using BLAST", 
-			docoptUsages = {}, 
-			metaTags={  CmdMeta.inputIsComplex },
-			furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
-			)
-	public static class BlastAlignCommand extends Aligner.AlignCommand<BlastAligner.BlastAlignerResult, BlastAligner> {
-
-		@Override
-		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
-		}
-	}
-
-	@CommandClass(
-			commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
-			description = "Align sequence file to a reference using BLAST", 
-			docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
-			metaTags = {  CmdMeta.consoleOnly },
-			furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
-			)
-	public static class BlastFileAlignCommand extends Aligner.FileAlignCommand<BlastAligner.BlastAlignerResult, BlastAligner> {
-
-		@Override
-		protected BlastAlignerResult execute(CommandContext cmdContext, BlastAligner modulePlugin) {
-			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
-		}
-		
-		@CompleterClass
-		public static class Completer extends AdvancedCmdCompleter {
-			public Completer() {
-				super();
-				registerDataObjectNameLookup("referenceName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
-				registerPathLookup("sequenceFileName", false);
-			}
-		}
-		
-	}
-
-	
 	public static class BlastAlignerResult extends Aligner.AlignerResult {
 		public BlastAlignerResult(Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments) {
 			super("blastAlignerResult", fastaIdToAlignedSegments);
@@ -91,7 +44,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class<? extends Aligner.AlignCommand> getComputeConstrainedCommandClass() {
-		return BlastAlignCommand.class;
+		return BlastAlignerAlignCommand.class;
 	}
 
 	@Override

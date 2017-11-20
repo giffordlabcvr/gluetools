@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptOptions={
 		"-r, --loadResources  Also load dependent resources",
 	},
+	docCategory="General module commands",
 	description = "Load module configuration from a file", 
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase } )
 public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<UpdateResult> {

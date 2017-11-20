@@ -9,17 +9,11 @@ import java.util.Map;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner.CompoundAlignerResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAlignerException.Code;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -46,8 +40,8 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 	
 	public CompoundAligner() {
 		super();
-		addModulePluginCmdClass(CompoundAlignCommand.class);
-		addModulePluginCmdClass(CompoundFileAlignCommand.class);
+		addModulePluginCmdClass(CompoundAlignerAlignCommand.class);
+		addModulePluginCmdClass(CompoundAlignerFileAlignCommand.class);
 	}
 
 	@Override
@@ -113,53 +107,13 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class<? extends Aligner.AlignCommand> getComputeConstrainedCommandClass() {
-		return CompoundAlignCommand.class;
+		return CompoundAlignerAlignCommand.class;
 	}
 	
 	public static class CompoundAlignerResult extends Aligner.AlignerResult {
 		public CompoundAlignerResult(Map<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments) {
 			super("compoundAlignerResult", fastaIdToAlignedSegments);
 		}
-	}
-
-	@CommandClass(
-			commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
-			description = "Align sequence data to a reference", 
-			docoptUsages = {}, 
-			metaTags={  CmdMeta.inputIsComplex },
-			furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
-			)
-	public static class CompoundAlignCommand extends Aligner.AlignCommand<CompoundAligner.CompoundAlignerResult, CompoundAligner> {
-
-		@Override
-		protected CompoundAlignerResult execute(CommandContext cmdContext, CompoundAligner modulePlugin) {
-			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
-		}
-	}
-
-	@CommandClass(
-			commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
-			description = "Align sequence file to a reference", 
-			docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
-			metaTags = {  CmdMeta.consoleOnly },
-			furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
-			)
-	public static class CompoundFileAlignCommand extends Aligner.FileAlignCommand<CompoundAligner.CompoundAlignerResult, CompoundAligner> {
-
-		@Override
-		protected CompoundAlignerResult execute(CommandContext cmdContext, CompoundAligner modulePlugin) {
-			return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides((ConsoleCommandContext) cmdContext));
-		}
-		
-		@CompleterClass
-		public static class Completer extends AdvancedCmdCompleter {
-			public Completer() {
-				super();
-				registerDataObjectNameLookup("referenceName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
-				registerPathLookup("sequenceFileName", false);
-			}
-		}
-
 	}
 
 	@Override

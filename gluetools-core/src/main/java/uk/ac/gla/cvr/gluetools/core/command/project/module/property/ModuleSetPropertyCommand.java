@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(commandWords={"set", "property"},
 		docoptUsages="<propertyPath> <propertyValue>",
+		docCategory="General module commands",
 		description = "Set a property on the module config")
 public final class ModuleSetPropertyCommand extends ModulePropertyCommand<OkResult> 
 	implements ModuleUpdateDocumentCommand {

@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.plugins;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,7 +11,10 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -163,6 +167,14 @@ public class PluginFactory<P extends Plugin> {
 			super();
 			this.theClass = theClass;
 			this.exampleInstance = instantiatePlugin(theClass);
+			if(this.exampleInstance instanceof ModulePlugin) {
+				List<Class<? extends Command>> providedCommandClasses = ((ModulePlugin) exampleInstance).getProvidedCommandClasses();
+				for(Class c : providedCommandClasses) {
+					if(CommandUsage.commandUsageForCmdClass(c).docCategory().length() == 0) {
+						System.out.println("src/main/java/"+c.getCanonicalName().replace(".", "/")+".java");
+					}
+				}
+			}
 			this.pluginClassAnnotation = pluginClassAnnotation;
 		}
 

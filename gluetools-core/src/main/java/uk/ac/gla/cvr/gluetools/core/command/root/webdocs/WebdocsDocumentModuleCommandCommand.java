@@ -50,7 +50,7 @@ public class WebdocsDocumentModuleCommandCommand extends WebdocsCommand<PojoComm
 		Class<? extends Command> cmdClass = null;
 		
 		for(Class<? extends Command> providedCmdClass: providedCommandClasses) {
-			CommandUsage commandUsageForCmdClass = CommandUsage.commandUsageForCmdClass(cmdClass);
+			CommandUsage commandUsageForCmdClass = CommandUsage.commandUsageForCmdClass(providedCmdClass);
 			if(commandUsageForCmdClass.cmdWordID().equals(cmdWordID)) {
 				cmdClass = providedCmdClass;
 				break;
@@ -59,8 +59,7 @@ public class WebdocsDocumentModuleCommandCommand extends WebdocsCommand<PojoComm
 		if(cmdClass == null) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unknown module command \""+cmdWordID.replaceAll("_", " ")+"\"");
 		}
-		return new PojoCommandResult<WebdocsCommandDocumentation>(
-				WebdocsCommandDocumentation.createDocumentation(cmdClass));
+		return new PojoCommandResult<WebdocsCommandDocumentation>(WebdocsCommandDocumentation.createDocumentation(cmdClass));
 	}
 
 }
