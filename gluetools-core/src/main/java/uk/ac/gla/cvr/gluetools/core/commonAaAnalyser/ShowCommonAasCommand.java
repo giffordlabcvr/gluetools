@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 		commandWords={"show", "common-aas"}, 
 		description = "Show the common amino-acids at different codon locations", 
 		docoptUsages={"<alignmentName> -r <acRefName> -f <featureName> [-c] (-w <whereClause> | -a)"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={
 			"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 			"-f <featureName>, --featureName <featureName>  Protein-coding feature",

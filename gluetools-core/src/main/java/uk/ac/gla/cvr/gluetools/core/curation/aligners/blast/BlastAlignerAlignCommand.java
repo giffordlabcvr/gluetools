@@ -10,6 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner.BlastAl
 		commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
 		description = "Align sequence data to a reference using BLAST", 
 		docoptUsages = {}, 
+		docCategory = "Type-specific module commands",
 		metaTags={  CmdMeta.inputIsComplex },
 		furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
 		)

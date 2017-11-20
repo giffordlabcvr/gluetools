@@ -27,7 +27,8 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass(
 		commandWords={"nucleotide-consensus"}, 
 		description = "Generate FASTA nucleotide consensus from a SAM/BAM file", 
-				docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-d <minDepth>]" },
+		docCategory = "Type-specific module commands",
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                    SAM/BAM input file",
 						"-n <samRefSense>, --samRefSense <samRefSense>           SAM ref seq sense",

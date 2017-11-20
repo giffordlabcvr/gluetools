@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		commandWords={"list", "neighbour"}, 
 		description = "List the neighbours of a placement in order of decreasing distance", 
 		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex>" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
 				"-q <queryName>, --queryName <queryName>                 Query sequence name",

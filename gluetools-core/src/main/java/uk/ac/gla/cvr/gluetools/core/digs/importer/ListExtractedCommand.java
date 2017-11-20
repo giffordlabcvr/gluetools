@@ -26,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"list", "extracted"}, 
 		description = "Show some rows from a DIGS \"Extracted\" table", 
 		docoptUsages = { "<digsDbName> [-w <whereClause>] [<fieldName> ...]" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = {
 				"-w <whereClause>, --whereClause <whereClause>  Qualify listed rows"
 		},

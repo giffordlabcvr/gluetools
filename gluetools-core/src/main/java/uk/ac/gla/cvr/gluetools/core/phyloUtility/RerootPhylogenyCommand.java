@@ -36,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"reroot-phylogeny"}, 
 		description = "Reroot a phylogenetic tree", 
 		docoptUsages = { "-i <inputFile> <inputFormat> (-g <outgroup> [-r] | -m) -o <outputFile> <outputFormat>"},
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     Input file",
 				"-g <outgroup>, --outgroup <outgroup>        Specify outgroup leaf",

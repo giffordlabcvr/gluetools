@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"web-analysis"}, 
 		description = "Run analysis from the web", 
 		docoptUsages = { "-b <inputData> [-v <vCategory> ...]" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-b <inputData>, --base64 <inputData>           Multi-FASTA input data", 
 				"-v <vCategory>..., --vCategory <vCategory>...  One or more variation categories"},

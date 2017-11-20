@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"genotype", "file"}, 
 		description = "Genotype sequences in a file", 
 		docoptUsages = { "-f <fileName> [-l <detailLevel>] [-d <dataDir>]" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-f <fileName>, --fileName <fileName>           FASTA file path",
 				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",

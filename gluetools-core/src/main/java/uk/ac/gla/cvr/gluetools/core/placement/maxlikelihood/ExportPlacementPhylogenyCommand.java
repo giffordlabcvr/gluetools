@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"export", "placement", "phylogeny"}, 
 		description = "Export phylogeny file for a single placement in a result file", 
 		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex> [-l <leafName>] -o <outputFile> <outputFormat>" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
 				"-q <queryName>, --queryName <queryName>                 Query sequence name",

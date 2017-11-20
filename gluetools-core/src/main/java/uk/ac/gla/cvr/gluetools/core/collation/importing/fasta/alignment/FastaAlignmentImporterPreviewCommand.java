@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"preview"}, 
 		docoptUsages={"-f <fileName> [-s <sourceName>]"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={
 		"-f <fileName>, --fileName <fileName>        FASTA file",
 		"-s <sourceName>, --sourceName <sourceName>  Restrict alignment members to a given source"},

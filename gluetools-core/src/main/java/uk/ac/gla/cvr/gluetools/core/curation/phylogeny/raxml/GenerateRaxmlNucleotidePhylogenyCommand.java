@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass( 
 		commandWords={"generate", "nucleotide", "phylogeny"}, 
+		docCategory = "Type-specific module commands",
 		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) -o <outputFile> <outputFormat>  [-d <dataDir>]"},
 		docoptOptions={
 				"-s <selectorName>, --selectorName <selectorName>  Column selector module name",

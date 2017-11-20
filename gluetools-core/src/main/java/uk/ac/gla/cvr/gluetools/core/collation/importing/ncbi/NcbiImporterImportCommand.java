@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"import"}, 
 		docoptUsages={"[-d]"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={"-d, --detailed  Show detailed per-sequence status"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Determine present/missing/surplus, then download missing") 

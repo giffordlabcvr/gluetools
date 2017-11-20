@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 @CommandClass( 
 		commandWords={"web-export-member"}, 
 		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] -o <fileName>"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={
 				"-c, --recursive                                      Include members of descendent alignments",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",

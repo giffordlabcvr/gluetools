@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 		commandWords={"generate", "variation", "uncommon-aas"}, 
 		description = "Generate variations for detecting uncommon amino acids", 
 		docoptUsages={"<alignmentName> -r <acRefName> -f <featureName> [-c] (-w <whereClause> | -a)"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={
 			"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 			"-f <featureName>, --featureName <featureName>  Protein-coding feature",

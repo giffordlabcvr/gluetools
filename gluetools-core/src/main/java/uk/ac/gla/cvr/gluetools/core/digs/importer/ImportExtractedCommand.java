@@ -19,6 +19,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"import", "extracted"}, 
 		description = "Import rows from a DIGS \"Extracted\" table as GLUE sequences", 
 		docoptUsages = { "<digsDbName> [-s <sourceName>] [-w <whereClause>]" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = {
 				"-s <sourceName>, --sourceName <sourceName>     Source to contain sequences",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify imported rows"

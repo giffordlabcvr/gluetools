@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 		commandWords={"list", "query"}, 
 		description = "Summarise the per-query placement results from a file", 
 		docoptUsages = { "-i <inputFile>" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>  Placement results file",
 		},

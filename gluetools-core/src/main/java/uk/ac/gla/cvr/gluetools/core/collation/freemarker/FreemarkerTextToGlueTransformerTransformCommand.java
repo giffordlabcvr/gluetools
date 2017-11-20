@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"transform"}, 
 		docoptUsages={"<inputFile> (-p | -r [-E] [-C] [-O] | -o <outputFile>)"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={
 				"-p, --preview                           Preview GLUE commands",
 				"-r, --run                               Run GLUE commands",

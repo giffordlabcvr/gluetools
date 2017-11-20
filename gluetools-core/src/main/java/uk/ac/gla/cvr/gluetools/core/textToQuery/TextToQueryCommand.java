@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"text-to-query"}, 
 		description = "Transform text to an object query", 
 		docoptUsages = { "<text>" }, 
+		docCategory = "Type-specific module commands",
 		metaTags = {}	
 )
 public class TextToQueryCommand extends ModulePluginCommand<ListResult, TextToQueryTransformer> {

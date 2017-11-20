@@ -30,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		commandWords={"save-tabular"}, 
 		description = "Save tabular data to a file", 
 		docoptUsages = { "" },
+		docCategory = "Type-specific module commands",
 		metaTags = {CmdMeta.consoleOnly, CmdMeta.inputIsComplex}
 )
 public class SaveTabularCommand extends ModulePluginCommand<OkResult, TabularUtility>{

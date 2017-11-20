@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"preview"}, 
 		docoptUsages={"[-d]"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={"-d, --detailed  Show detailed per-sequence status"},
 		metaTags={},
 		description="Preview which GI numbers are present / missing / surplus") 

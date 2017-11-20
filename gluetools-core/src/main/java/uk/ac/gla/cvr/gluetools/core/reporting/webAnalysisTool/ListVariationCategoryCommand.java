@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 		commandWords={"list", "variation-category"}, 
 		description = "List variation categories", 
 		docoptUsages = { "" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { },
 		metaTags = { }	
 )

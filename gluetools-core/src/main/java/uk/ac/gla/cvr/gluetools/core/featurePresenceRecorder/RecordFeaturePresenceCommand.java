@@ -40,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"record", "feature-presence"}, 
 		description = "Record feature presence as member-feature-location notes", 
 		docoptUsages = { "<almtName> [-c] [-w <whereClause>] -f <featureName> [-d] [-p]" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 		"-c, --recursive                                   Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>     Qualify members",

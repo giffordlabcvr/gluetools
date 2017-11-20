@@ -20,6 +20,9 @@ public class WebdocsCommandSummary {
 	public String cmdWordID;
 
 	@PojoDocumentField
+	public String docCategory;
+
+	@PojoDocumentField
 	public String description;
 
 	@SuppressWarnings("rawtypes")
@@ -28,6 +31,7 @@ public class WebdocsCommandSummary {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		cmdSummary.commandWords.addAll(Arrays.asList(cmdUsage.commandWords()));
 		cmdSummary.cmdWordID = cmdUsage.cmdWordID();
+		cmdSummary.docCategory = cmdUsage.docCategory();
 		cmdSummary.description = cmdUsage.description();
 		return cmdSummary;
 	}

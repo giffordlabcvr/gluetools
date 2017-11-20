@@ -9,6 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 		commandWords={"list", "digs-databases"}, 
 		description = "List all available DIGS databases", 
 		docoptUsages = { "" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { },
 		metaTags = {}	
 )

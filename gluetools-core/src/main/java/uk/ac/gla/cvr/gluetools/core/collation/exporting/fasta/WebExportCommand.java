@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 @CommandClass( 
 		commandWords={"web-export"}, 
 		docoptUsages={"(-w <whereClause> | -a) -f <fileName>"},
+		docCategory = "Type-specific module commands",
 		docoptOptions={
 			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 			"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",

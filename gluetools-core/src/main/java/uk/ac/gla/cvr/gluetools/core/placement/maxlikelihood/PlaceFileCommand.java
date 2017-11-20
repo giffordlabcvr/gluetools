@@ -27,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		commandWords={"place", "file"}, 
 		description = "Place sequences from a file into a phylogeny", 
 		docoptUsages = { "-i <inputFile> [-d <dataDir>] -o <outputFile>" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     FASTA file path",
 				"-o <outputFile>, --outputFile <outputFile>  Output file path for placement results",

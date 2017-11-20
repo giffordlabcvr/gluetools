@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
+		docCategory = "Type-specific module commands",
 		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
 		""},
 		docoptOptions = { 

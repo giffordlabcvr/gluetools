@@ -167,14 +167,6 @@ public class PluginFactory<P extends Plugin> {
 			super();
 			this.theClass = theClass;
 			this.exampleInstance = instantiatePlugin(theClass);
-			if(this.exampleInstance instanceof ModulePlugin) {
-				List<Class<? extends Command>> providedCommandClasses = ((ModulePlugin) exampleInstance).getProvidedCommandClasses();
-				for(Class c : providedCommandClasses) {
-					if(CommandUsage.commandUsageForCmdClass(c).docCategory().length() == 0) {
-						System.out.println("src/main/java/"+c.getCanonicalName().replace(".", "/")+".java");
-					}
-				}
-			}
 			this.pluginClassAnnotation = pluginClassAnnotation;
 		}
 

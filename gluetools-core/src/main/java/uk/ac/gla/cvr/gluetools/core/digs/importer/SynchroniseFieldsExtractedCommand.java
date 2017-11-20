@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.digs.importer.ImportExtractedFieldRule.GlueF
 		commandWords={"synchronise", "fields", "extracted"}, 
 		description = "Ensure the GLUE sequence table has fields for DIGS \"Extracted\" data", 
 		docoptUsages = { "" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = {
 		},
 		metaTags = { CmdMeta.updatesDatabase }, 

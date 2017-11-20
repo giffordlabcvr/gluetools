@@ -30,6 +30,7 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGen
 @CommandClass(
 		commandWords={"generate", "frequencies"}, 
 		description = "Generate variation frequencies as variation-alignment notes", 
+		docCategory = "Type-specific module commands",
 		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <acRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>] [-p]" },
 		docoptOptions = { 
 		"-q, --alignmentRecursive                          Include descendent alignments",

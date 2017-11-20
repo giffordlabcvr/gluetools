@@ -15,7 +15,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 		commandWords={"show", "mapping", "extracted"}, 
 		description = "Show mapping between DIGS \"Extracted\" and GLUE sequence fields", 
 		docoptUsages = { "" }
-)
+		docCategory = "Type-specific module commands",
+	      )
 public class ShowMappingExtractedCommand extends ModuleDocumentCommand<ShowMappingExtractedResult> {
 
 	@Override

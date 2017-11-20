@@ -35,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentC
 @CommandClass(
 		commandWords={"test", "models"}, 
 		description = "Run JModelTest on a nucleotide alignment to compare substitution models", 
+		docCategory = "Type-specific module commands",
 		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName>] [-c] (-w <whereClause> | -a) [-d <dataDir>]"},
 		docoptOptions={
 				"-s <selectorName>, --selectorName <selectorName>  Column selector module name",

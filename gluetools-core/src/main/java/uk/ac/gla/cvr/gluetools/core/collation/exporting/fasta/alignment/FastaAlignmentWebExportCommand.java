@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
+		docCategory = "Type-specific module commands",
 		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] [-c] (-w <whereClause> | -a) [-e] -o <fileName>"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",

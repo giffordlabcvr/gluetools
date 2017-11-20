@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"recognise", "file"}, 
 		description = "Apply recognition to sequences in a FASTA file", 
 		docoptUsages = { "-i <inputFile>" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     FASTA file path",
 		},

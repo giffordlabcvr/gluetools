@@ -23,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"analysis"}, 
 		description = "Run analysis from the command line", 
 		docoptUsages = { "-i <fileName> [ -v <vCategory> ] ..." },
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>     Multi-FASTA file to analyse", 
 				"-v <vCategory>, --vCategory <vCategory>  One or more variation categories"},

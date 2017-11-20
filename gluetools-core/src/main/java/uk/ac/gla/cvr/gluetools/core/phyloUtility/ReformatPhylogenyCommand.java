@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"reformat-phylogeny"}, 
 		description = "Translate a phylogenetic tree between file formats", 
 		docoptUsages = { "-i <inputFile> <inputFormat> -o <outputFile> <outputFormat>"},
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     Input file",
 				"-o <outputFile>, --outputFile <outputFile>  Output file",

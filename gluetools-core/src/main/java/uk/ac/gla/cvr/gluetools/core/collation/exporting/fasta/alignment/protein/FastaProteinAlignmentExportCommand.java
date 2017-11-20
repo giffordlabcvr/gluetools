@@ -26,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
+		docCategory = "Type-specific module commands",
 		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",

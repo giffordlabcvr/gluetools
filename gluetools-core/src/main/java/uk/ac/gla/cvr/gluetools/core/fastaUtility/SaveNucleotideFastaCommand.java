@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 		commandWords={"save-nucleotide-fasta"}, 
 		description = "Save FASTA nucleotide command document to a file", 
 		docoptUsages = {}, 
+		docCategory = "Type-specific module commands",
 		metaTags = {CmdMeta.inputIsComplex, CmdMeta.consoleOnly}	
 )
 public class SaveNucleotideFastaCommand extends ModulePluginCommand<OkResult, FastaUtility>{

@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		commandWords={"update", "mapping", "extracted"}, 
 		description = "Update mapping between a DIGS \"Extracted\" and a GLUE sequence field", 
 		docoptUsages = { "<digsExtractedField> ( -i | ( -w | -r ) <glueSequenceField> )" },
+		docCategory = "Type-specific module commands",
 		docoptOptions = {
 				"-i, --ignore   Ignore the DIGS Extracted field",
 				"-w, --warn     Emit warning if field <glueSequenceField> does not exist",

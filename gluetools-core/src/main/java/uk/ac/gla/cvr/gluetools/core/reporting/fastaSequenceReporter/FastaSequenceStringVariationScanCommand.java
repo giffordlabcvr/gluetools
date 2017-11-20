@@ -14,6 +14,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"string", "variation", "scan"}, 
 		description = "Scan a FASTA string for variations", 
+		docCategory = "Type-specific module commands",
 		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
 		""},
 		docoptOptions = { 

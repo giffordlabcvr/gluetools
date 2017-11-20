@@ -17,6 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility.TabularData;
 		commandWords={"load-tabular"}, 
 		description = "Load tabular data from a file", 
 		docoptUsages = { "<fileName>" }, 
+		docCategory = "Type-specific module commands",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class LoadTabularCommand extends ModulePluginCommand<TabularResult, TabularUtility>{

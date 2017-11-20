@@ -34,6 +34,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"export", "phylogeny"}, 
 		description = "Export a phylogeny from a constrained alignment tree", 
 		docoptUsages = { "<almtName> -f <fieldName> [-c] -o <outputFile> <outputFormat>"},
+		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-c, --recursive                             Include child alignments",
 				"-f <fieldName>, --fieldName <fieldName>     Alignment phylogeny field",

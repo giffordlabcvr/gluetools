@@ -1,11 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
@@ -22,8 +23,8 @@ public class WebdocsModuleTypeDocumentation {
 	@PojoDocumentField
 	public String description;
 	
-	@PojoDocumentListField(itemClass = WebdocsCommandDocumentation.class)
-	public List<WebdocsCommandSummary> commands = new ArrayList<WebdocsCommandSummary>();
+	@PojoDocumentListField(itemClass = WebdocsCommandCategory.class)
+	public List<WebdocsCommandCategory> commandCategories = new ArrayList<WebdocsCommandCategory>();
 
 	@SuppressWarnings("rawtypes")
 	public static WebdocsModuleTypeDocumentation createDocumentation(String moduleTypeName) {
@@ -37,9 +38,24 @@ public class WebdocsModuleTypeDocumentation {
 
 		List<Class<? extends Command>> providedCommandClasses = modulePlugin.getProvidedCommandClasses();
 		
-		for(Class<? extends Command> cmdClass: providedCommandClasses) {
-			docPojo.commands.add(WebdocsCommandSummary.createSummary(cmdClass));
-		}
+		Map<String, List<WebdocsCommandSummary>> catNameToSummaries = providedCommandClasses.stream().
+			map(cls -> WebdocsCommandSummary.createSummary(cls)).
+			collect(Collectors.groupingBy(wcs -> wcs.docCategory));
+		
+		catNameToSummaries.forEach( (name, summaries) -> {
+			summaries.sort(new Comparator<WebdocsCommandSummary>() {
+
+				@Override
+				public int compare(WebdocsCommandSummary o1, WebdocsCommandSummary o2) {
+					return o1.cmdWordID.compareTo(o2.cmdWordID);
+				}});
+			WebdocsCommandCategory category = WebdocsCommandCategory.create(name, summaries);
+			if(category.name.equals("Type-specific module commands")) {
+				docPojo.commandCategories.add(0, category);
+			} else {
+				docPojo.commandCategories.add(category);
+			}
+		});
 		
 		return docPojo;
 	}
