@@ -1,8 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
-import java.util.Arrays;
-
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectSetSettingCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectShowSettingCommand;
@@ -23,25 +22,20 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		
-		registerCommandClass(CreateAlignmentCommand.class);
-		registerCommandClass(DeleteAlignmentCommand.class);
-		registerCommandClass(ListAlignmentCommand.class);
+		setCmdGroup(CommandGroup.MODE_NAVIGATION);
+		registerCommandClass(ModuleCommand.class);
+		registerCommandClass(SequenceCommand.class);
+		registerCommandClass(ReferenceSequenceCommand.class);
+		registerCommandClass(FeatureCommand.class);
+		registerCommandClass(AlignmentCommand.class);
+		registerCommandClass(ExitCommand.class);
 
-		registerCommandClass(ComputeAlignmentCommand.class);
-		registerCommandClass(ExtendAlignmentCommand.class);
-		
-		registerCommandClass(TranslateSegmentsCommand.class);
+		setCmdGroup(new CommandGroup("sequences", "Commands for managing sequence objects", 5));
 		registerCommandClass(CreateSourceCommand.class);
 		registerCommandClass(DeleteSourceCommand.class);
 		registerCommandClass(ListSourceCommand.class);
 		registerCommandClass(ImportSourceCommand.class);
 		registerCommandClass(ExportSourceCommand.class);
-
-		registerCommandClass(ImportModuleCommand.class);
-		registerCommandClass(CreateModuleCommand.class);
-		registerCommandClass(DeleteModuleCommand.class);
-		registerCommandClass(ListModuleCommand.class);
-
 		registerCommandClass(CreateSequenceCommand.class);
 		registerCommandClass(ImportSequenceCommand.class);
 		registerCommandClass(DeleteSequenceCommand.class);
@@ -50,22 +44,57 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(MoveSequenceCommand.class);
 		registerCommandClass(CountSequenceCommand.class);
 		registerCommandClass(CopySequenceCommand.class);
-		registerCommandClass(MultiSetFieldCommand.class);
-		registerCommandClass(MultiUnsetFieldCommand.class);
-		registerCommandClass(MultiCopyFieldCommand.class);
-		registerCommandClass(MultiDeleteCommand.class);
 		registerCommandClass(ConcatenateSequenceCommand.class);
-		registerCommandClass(MultiRenderCommand.class);
-		registerCommandClass(MultiUnsetLinkTargetCommand.class);
+		registerCommandClass(ListFormatSequenceCommand.class);
+		registerCommandClass(ExportSequenceCommand.class);
+
 		
+		setCmdGroup(new CommandGroup("alignments", "Commands for managing alignment objects", 6));
+		registerCommandClass(CreateAlignmentCommand.class);
+		registerCommandClass(DeleteAlignmentCommand.class);
+		registerCommandClass(ListAlignmentCommand.class);
+		registerCommandClass(ComputeAlignmentCommand.class);
+		registerCommandClass(ExtendAlignmentCommand.class);
+		registerCommandClass(TranslateSegmentsCommand.class);
+
+
+
+		setCmdGroup(new CommandGroup("references", "Commands for managing reference sequence objects", 7));
 		registerCommandClass(CreateReferenceSequenceCommand.class);
 		registerCommandClass(DeleteReferenceSequenceCommand.class);
 		registerCommandClass(ListReferenceSequenceCommand.class);
 
+		setCmdGroup(new CommandGroup("features", "Commands for managing feature objects", 8));
 		registerCommandClass(CreateFeatureCommand.class);
 		registerCommandClass(DeleteFeatureCommand.class);
 		registerCommandClass(ListFeatureCommand.class);
 
+		setCmdGroup(new CommandGroup("custom-table-row", "Commands for objects in custom tables", 9));
+		registerCommandClass(CreateCustomTableRowCommand.class);
+		registerCommandClass(DeleteCustomTableRowCommand.class);
+		registerCommandClass(CustomTableRowCommand.class);
+		registerCommandClass(ListCustomTableRowCommand.class);
+		registerCommandClass(CountCustomTableRowCommand.class);
+
+		setCmdGroup(new CommandGroup("project-settings", "Commands for managing project settings", 10));
+		registerCommandClass(ProjectSetSettingCommand.class);
+		registerCommandClass(ProjectUnsetSettingCommand.class);
+		registerCommandClass(ProjectShowSettingCommand.class);
+		
+		setCmdGroup(new CommandGroup("modules", "Commands for managing modules", 11));
+		registerCommandClass(ImportModuleCommand.class);
+		registerCommandClass(CreateModuleCommand.class);
+		registerCommandClass(DeleteModuleCommand.class);
+		registerCommandClass(ListModuleCommand.class);
+
+		
+		setCmdGroup(new CommandGroup("bulk-db", "Commands for bulk database operations", 12));
+		registerCommandClass(MultiSetFieldCommand.class);
+		registerCommandClass(MultiUnsetFieldCommand.class);
+		registerCommandClass(MultiCopyFieldCommand.class);
+		registerCommandClass(MultiDeleteCommand.class);
+		registerCommandClass(MultiRenderCommand.class);
+		registerCommandClass(MultiUnsetLinkTargetCommand.class);
 		registerCommandClass(ListVariationCommand.class);
 		registerCommandClass(CountVariationCommand.class);
 		registerCommandClass(ListAlmtMemberCommand.class);
@@ -74,37 +103,11 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(CountVarAlmtNoteCommand.class);
 		registerCommandClass(ListMemberFLocNoteCommand.class);
 		registerCommandClass(CountMemberFLocNoteCommand.class);
-		
-		registerCommandClass(ProjectSetSettingCommand.class);
-		registerCommandClass(ProjectUnsetSettingCommand.class);
-		registerCommandClass(ProjectShowSettingCommand.class);
-		
-		registerCommandClass(ModuleCommand.class);
-		registerCommandClass(SequenceCommand.class);
-		registerCommandClass(ReferenceSequenceCommand.class);
-		registerCommandClass(FeatureCommand.class);
-		registerCommandClass(AlignmentCommand.class);
-		
-		registerCommandClass(ListFormatSequenceCommand.class);
-		registerCommandClass(ExportSequenceCommand.class);
 
+		
+		setCmdGroup(CommandGroup.MISC);
 		registerCommandClass(ProjectValidateCommand.class);
-
 		registerCommandClass(ProjectGenerateGlueConfigCommand.class);
-
-		registerCommandClass(CreateCustomTableRowCommand.class);
-		registerCommandClass(DeleteCustomTableRowCommand.class);
-		registerCommandClass(CustomTableRowCommand.class);
-		registerCommandClass(ListCustomTableRowCommand.class);
-		registerCommandClass(CountCustomTableRowCommand.class);
-		
-		addGroupHelp(Arrays.asList("create"), "Create a new object in this project");
-		addGroupHelp(Arrays.asList("list"), "List certain objects in this project");
-		addGroupHelp(Arrays.asList("delete"), "Delete a certain object from this project");
-
-
-		
-		registerCommandClass(ExitCommand.class);
 	}
 	
 

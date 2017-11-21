@@ -3,17 +3,17 @@ package uk.ac.gla.cvr.gluetools.core.command;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.console.help.GroupHelpLine;
-import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.SpecificCommandHelpLine;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentModeCommandFactory;
@@ -37,13 +37,19 @@ import uk.ac.gla.cvr.gluetools.utils.Multiton.Creator;
 // cmdType should be used wherever cmdClass is now. This should allow more dynamic specification of command types.
 public abstract class CommandFactory {
 
-private static Multiton factories = new Multiton();
+	private static Multiton factories = new Multiton();
 	
 	public static <F extends CommandFactory,
 		C extends Multiton.Creator<F>> F get(C creator) {
 		return factories.get(creator);
 	}
 
+	private Map<CommandGroup, TreeSet<Class<?>>>
+		cmdGroupToCmdClasses = new LinkedHashMap<CommandGroup, TreeSet<Class<?>>>();
+	
+	private Map<Class<?>, CommandGroup> 
+		cmdClassToCmdGroup = new LinkedHashMap<Class<?>, CommandGroup>();
+	
 	public static <F extends CommandFactory> F get(Class<F> commandFactoryClass) {
 		try {
 			@SuppressWarnings("unchecked")
@@ -57,6 +63,11 @@ private static Multiton factories = new Multiton();
 	
 	private CommandTreeNode rootNode;
 	
+	// set this before registering a set of commands.
+	// these commands will be added to the relevant group
+	// for documentation purposes.
+	private CommandGroup cmdGroup = null;
+	
 	protected CommandFactory() {
 		resetCommandTree();
 		populateCommandTree();
@@ -68,13 +79,27 @@ private static Multiton factories = new Multiton();
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
 		cmdUsage.validate(cmdClass);
+		CommandGroup cmdGroupToUse = this.cmdGroup;
+		if(cmdGroupToUse == null) {
+			cmdGroupToUse = CommandGroup.MISC;
+		}
+		
+		this.cmdGroupToCmdClasses.computeIfAbsent(cmdGroupToUse, cmdGrp -> 
+				new TreeSet<Class<?>>(new Comparator<Class<?>>() {
+					@SuppressWarnings("unchecked")
+					public int compare(Class<?> c1, Class<?> c2) {
+						String id1 = String.join("_", CommandUsage.cmdWordsForCmdClass((Class<? extends Command>) c1));
+						String id2 = String.join("_", CommandUsage.cmdWordsForCmdClass((Class<? extends Command>) c2));
+						return id1.compareTo(id2);
+					}
+				})).add(cmdClass);
+		this.cmdClassToCmdGroup.put(cmdClass, cmdGroupToUse);
 		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdUsage.commandWords())), cmdClass);
 	}
 
 	private class CommandTreeNode {
 		Map<String, CommandTreeNode> childNodes = new LinkedHashMap<String, CommandTreeNode>();
 		CommandPluginFactory cmdPluginFactory = new CommandPluginFactory();
-		GroupHelpLine groupHelpLine;
 		boolean modeWrappable = false;
 		
 		
@@ -85,31 +110,25 @@ private static Multiton factories = new Multiton();
 		}
 		
 		// fullHelp means expand group helps to cover sub groups.
-		private List<HelpLine> helpLines(List<String> commandWords, boolean fullHelp, boolean requireModeWrappable) {
-			List<HelpLine> helpLines = new ArrayList<HelpLine>();
+		private List<SpecificCommandHelpLine> helpLines(List<String> commandWords, boolean fullHelp, boolean requireModeWrappable) {
+			List<SpecificCommandHelpLine> helpLines = new ArrayList<SpecificCommandHelpLine>();
 			if(commandWords.size() == 1) {
 				String finalWord = commandWords.get(0);
 				@SuppressWarnings("rawtypes")
 				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
 				if(cmdClass != null) {
 					if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-						helpLines.add(new SpecificCommandHelpLine(cmdClass));
+						helpLines.add(new SpecificCommandHelpLine(cmdClass, cmdClassToCmdGroup.get(cmdClass)));
 					}
 				}
 			}
 			if(commandWords.size() == 0) {
-				if(groupHelpLine != null && !fullHelp) {
-					if(modeWrappable || !requireModeWrappable) {
-						helpLines.add(groupHelpLine);
+				childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false, requireModeWrappable)));
+				cmdPluginFactory.getRegisteredClasses().forEach(c -> { 
+					if(!CommandUsage.hasMetaTagForCmdClass(c, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
+						helpLines.add(new SpecificCommandHelpLine(c, cmdClassToCmdGroup.get(c)));
 					}
-				} else { 
-					childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false, requireModeWrappable)));
-					cmdPluginFactory.getRegisteredClasses().forEach(c -> { 
-						if(!CommandUsage.hasMetaTagForCmdClass(c, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-							helpLines.add(new SpecificCommandHelpLine(c));
-						}
-					});
-				}
+				});
 			} else {
 				String firstWord = commandWords.remove(0);
 				CommandTreeNode treeNode = childNodes.get(firstWord);
@@ -179,19 +198,6 @@ private static Multiton factories = new Multiton();
 			}
 		}
 
-		public void addGroupHelp(LinkedList<String> commandWords,
-				GroupHelpLine groupHelpLine) {
-			if(commandWords.size() == 0) {
-				if(this.groupHelpLine != null) {
-					throw new RuntimeException("Group help line added twice.");
-				}
-				this.groupHelpLine = groupHelpLine;
-			} else {
-				CommandTreeNode treeNode = childNodes.computeIfAbsent(commandWords.remove(0), word -> new CommandTreeNode());
-				treeNode.addGroupHelp(commandWords, groupHelpLine);
-			}
-			
-		}
 
 		@SuppressWarnings("rawtypes")
 		public List<CompletionSuggestion> getCommandWordSuggestions(ConsoleCommandContext cmdContext, 
@@ -259,14 +265,9 @@ private static Multiton factories = new Multiton();
 	}
 	
 
-	public List<HelpLine> helpLinesForCommandWords(ConsoleCommandContext cmdContext, List<String> commandWords) {
+	public List<SpecificCommandHelpLine> helpLinesForCommandWords(ConsoleCommandContext cmdContext, List<String> commandWords) {
 		refreshCommandTree(cmdContext);
 		return rootNode.helpLines(new LinkedList<String>(commandWords), false, cmdContext.isRequireModeWrappable());
-	}
-
-	protected void addGroupHelp(List<String> commandWords, String description) {
-		GroupHelpLine groupHelpLine = new GroupHelpLine(commandWords, description);
-		rootNode.addGroupHelp(new LinkedList<String>(commandWords), groupHelpLine);
 	}
 
 	public List<CompletionSuggestion> getCommandWordSuggestions(ConsoleCommandContext cmdContext, List<String> lookupBasis, 
@@ -349,8 +350,9 @@ private static Multiton factories = new Multiton();
 		rootNode.collectCommandClasses(cmdClasses);
 		return cmdClasses;
 	}
-	
-	
-	
+
+	public void setCmdGroup(CommandGroup cmdGroup) {
+		this.cmdGroup = cmdGroup;
+	}
 
 }

@@ -11,7 +11,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleDelete
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleSetPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleShowPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleUnsetPropertyCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;

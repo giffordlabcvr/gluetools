@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.console.help;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -41,13 +40,12 @@ public class HelpCommand extends Command<ConsoleCommandResult> {
 	public ConsoleCommandResult execute(CommandContext cmdContext) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
-		List<HelpLine> helpLines = commandFactory.helpLinesForCommandWords(consoleCommandContext, commandWords);
+		List<SpecificCommandHelpLine> helpLines = commandFactory.helpLinesForCommandWords(consoleCommandContext, commandWords);
 		if(helpLines.isEmpty()) {
 			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, String.join(" ", commandWords), cmdContext.getModePath());
-		} else if(helpLines.size() == 1 && helpLines.get(0) instanceof SpecificCommandHelpLine) {
-			return new HelpSpecificCommandResult(cmdContext, ((SpecificCommandHelpLine) helpLines.get(0)).getCmdClass());
+		} else if(helpLines.size() == 1) {
+			return new HelpSpecificCommandResult(cmdContext, helpLines.get(0).getCmdClass());
 		} else {
-			Collections.sort(helpLines);
 			return new HelpCommandResult(helpLines);
 		}
 	}
