@@ -11,14 +11,14 @@ import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos.WebdocsCommandMod
 @CommandClass( 
 		commandWords={"webdocs", "list-command-modes"}, 
 	docoptUsages={""},
-	metaTags={CmdMeta.webApiOnly}, 
+	//metaTags={CmdMeta.webApiOnly}, 
 	description = "")
 public class WebdocsListCommandModesCommand extends WebdocsCommand<PojoCommandResult<WebdocsCommandModeTree>> {
 
 	@Override
 	public PojoCommandResult<WebdocsCommandModeTree> execute(CommandContext cmdContext) {
 		RootCommandFactory rootCommandFactory = CommandFactory.get(RootCommandFactory.class);
-		return new PojoCommandResult<WebdocsCommandModeTree>(WebdocsCommandModeTree.create("/", "_", rootCommandFactory));
+		return new PojoCommandResult<WebdocsCommandModeTree>(WebdocsCommandModeTree.create("/", "root", rootCommandFactory));
 	}
 
 	

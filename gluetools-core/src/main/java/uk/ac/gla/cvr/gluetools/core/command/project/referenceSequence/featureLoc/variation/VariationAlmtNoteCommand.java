@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.varAlmtNote.VarAlmtNoteMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.varAlmtNote.VarAlmtNoteModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -22,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"var-almt-note"},
 	docoptUsages={"<alignmentName>"},
 	description="Enter command mode for a variation-alignment note") 
-@EnterModeCommandClass(commandModeClass = VarAlmtNoteMode.class)
+@EnterModeCommandClass(commandFactoryClass = VarAlmtNoteModeCommandFactory.class)
 public class VariationAlmtNoteCommand extends VariationModeCommand<OkResult>  {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";

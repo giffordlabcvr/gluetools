@@ -50,17 +50,6 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	
 	public ModulePlugin() {
 		super();
-		addModuleDocumentCmdClass(ModuleValidateCommand.class);
-		addModuleDocumentCmdClass(ModuleShowConfigurationCommand.class);
-		addModuleDocumentCmdClass(ModuleSetPropertyCommand.class);
-		addModuleDocumentCmdClass(ModuleUnsetPropertyCommand.class);
-		addModuleDocumentCmdClass(ModuleShowPropertyCommand.class);
-
-		addModuleDocumentCmdClass(ModuleCreatePropertyGroupCommand.class);
-		addModuleDocumentCmdClass(ModuleDeletePropertyGroupCommand.class);
-
-		addModuleDocumentCmdClass(ModuleSaveConfigurationCommand.class);
-		addModuleDocumentCmdClass(ModuleLoadConfigurationCommand.class);
 		addSimplePropertyName(LOG_LEVEL);
 	}
 	

@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -20,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<alignmentName>"},
 	description="Enter command mode for an alignment") 
 @EnterModeCommandClass(
-		commandModeClass = AlignmentMode.class)
+		commandFactoryClass = AlignmentModeCommandFactory.class)
 public class AlignmentCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";

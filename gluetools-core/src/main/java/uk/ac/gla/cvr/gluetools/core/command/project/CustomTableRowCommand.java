@@ -17,7 +17,7 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.customtablerow.CustomTableRowMode;
-import uk.ac.gla.cvr.gluetools.core.command.project.feature.FeatureMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.customtablerow.CustomTableRowModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -33,7 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<tableName> <rowId>"},
 	description="Enter command mode for a custom table row")
 @EnterModeCommandClass(
-		commandModeClass = FeatureMode.class)
+		commandFactoryClass = CustomTableRowModeCommandFactory.class)
 public class CustomTableRowCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String TABLE_NAME = "tableName";

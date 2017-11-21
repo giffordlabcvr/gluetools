@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -20,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<featureName>"},
 	description="Enter command mode for a feature location")
 @EnterModeCommandClass(
-		commandModeClass = FeatureLocMode.class)
+		commandFactoryClass = FeatureLocModeCommandFactory.class)
 public class FeatureLocCommand extends ReferenceSequenceModeCommand<OkResult>  {
 
 	public static final String FEATURE_NAME = "featureName";

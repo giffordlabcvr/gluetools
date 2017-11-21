@@ -4,12 +4,12 @@ import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-public class TableSequencesModeCommandFactory extends BaseCommandFactory {
+public class TableModeCommandFactory extends BaseCommandFactory {
 
-	public static Multiton.Creator<TableSequencesModeCommandFactory> creator = new
-			Multiton.SuppliedCreator<>(TableSequencesModeCommandFactory.class, TableSequencesModeCommandFactory::new);
+	public static Multiton.Creator<TableModeCommandFactory> creator = new
+			Multiton.SuppliedCreator<>(TableModeCommandFactory.class, TableModeCommandFactory::new);
 
-	private TableSequencesModeCommandFactory() {
+	private TableModeCommandFactory() {
 	}	
 
 	@Override

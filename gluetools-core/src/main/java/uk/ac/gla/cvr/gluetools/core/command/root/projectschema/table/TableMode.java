@@ -9,7 +9,7 @@ import uk.ac.gla.cvr.gluetools.core.command.root.CommandModeClass;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.TableCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 
-@CommandModeClass(commandFactoryClass = TableSequencesModeCommandFactory.class)
+@CommandModeClass(commandFactoryClass = TableModeCommandFactory.class)
 public class TableMode extends CommandMode<TableCommand> {
 
 	

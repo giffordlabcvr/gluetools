@@ -7,6 +7,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -20,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptUsages={"<projectName>"},
 		description="Enter a project command mode")
 @EnterModeCommandClass(
-		commandModeClass = ProjectMode.class)
+		commandFactoryClass = ProjectModeCommandFactory.class)
 public class ProjectCommand extends RootModeCommand<OkResult>  {
 
 	private String projectName;

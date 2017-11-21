@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc
 import uk.ac.gla.cvr.gluetools.core.command.project.sequence.SequenceModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.ProjectSchemaModeCommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table.TableSequencesModeCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table.TableModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -50,7 +50,8 @@ private static Multiton factories = new Multiton();
 			Creator<F> creator = (Creator<F>) commandFactoryClass.getField("creator").get(null);
 			return get(creator);
 		} catch(Exception e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException("Error creating "+
+					commandFactoryClass.getSimpleName()+": "+e.getMessage(), e);
 		}
 	}
 	
@@ -301,7 +302,7 @@ private static Multiton factories = new Multiton();
 				ReferenceSequenceModeCommandFactory.creator,
 				RootCommandFactory.creator,
 				SequenceModeCommandFactory.creator,
-				TableSequencesModeCommandFactory.creator,
+				TableModeCommandFactory.creator,
 				VariationModeCommandFactory.creator
 		);
 		creators.forEach(creator -> {
@@ -340,6 +341,13 @@ private static Multiton factories = new Multiton();
 				}
 			}
 		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public List<Class<? extends Command>> getRegisteredCommandClasses() {
+		List<Class<? extends Command>> cmdClasses = new ArrayList<Class<? extends Command>>();
+		rootNode.collectCommandClasses(cmdClasses);
+		return cmdClasses;
 	}
 	
 	

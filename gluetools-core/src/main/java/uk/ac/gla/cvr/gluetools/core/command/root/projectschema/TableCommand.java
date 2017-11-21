@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table.TableMode;
+import uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table.TableModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -28,7 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<tableName>"},
 	description="Mode to manage the custom fields of a configurable table")
 @EnterModeCommandClass(
-		commandModeClass = TableMode.class)
+		commandFactoryClass = TableModeCommandFactory.class)
 public class TableCommand extends ProjectSchemaModeCommand<OkResult>  {
 
 	private String tableName;

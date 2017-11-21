@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -37,7 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  member -w \"sequence.gb_primary_accession = 'GR195721'\"\n"+
 	"  member mySource 12823121") 
 @EnterModeCommandClass(
-		commandModeClass = MemberMode.class)
+		commandFactoryClass = MemberModeCommandFactory.class)
 public class MemberCommand extends AlignmentModeCommand<OkResult>  {
 
 	public static final String SEQUENCE_ID = "sequenceID";

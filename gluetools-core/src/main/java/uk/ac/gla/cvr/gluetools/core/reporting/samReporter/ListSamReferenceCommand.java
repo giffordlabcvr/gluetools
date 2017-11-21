@@ -1,10 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import java.io.IOException;
-import java.util.List;
-
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamReader;
+
+import java.io.IOException;
+import java.util.List;
 
 import org.w3c.dom.Element;
 

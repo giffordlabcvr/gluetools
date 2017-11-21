@@ -16,6 +16,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.memberFLocNote.MemberFLocNoteMode;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.memberFLocNote.MemberFLocNoteModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -27,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"member-floc-note"},
 	docoptUsages={"<refSeqName> <featureName>"},
 	description="Enter command mode for a member-featureLoc note") 
-@EnterModeCommandClass(commandModeClass = MemberFLocNoteMode.class)
+@EnterModeCommandClass(commandFactoryClass = MemberFLocNoteModeCommandFactory.class)
 public class MemberFLocNoteCommand extends MemberModeCommand<OkResult>  {
 
 	public static final String REF_SEQ_NAME = "refSeqName";
