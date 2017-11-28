@@ -84,7 +84,8 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 			return Collections.emptyList();
 		}
 		List<LabeledAminoAcidFrequency> almtAaFreqs = 
-				AlignmentAminoAcidFrequencyCommand.alignmentAminoAcidFrequencies(cmdContext, alignmentName, acRefName, featureName, whereClause, recursive);
+				AlignmentAminoAcidFrequencyCommand
+					.alignmentAminoAcidFrequencies(cmdContext, alignmentName, acRefName, featureName, whereClause, recursive, null, null);
 
 		Map<String, CommonAminoAcids> codonLabelToCommonAas = new LinkedHashMap<String, CommonAminoAcids>();
 		almtAaFreqs.forEach(almtAaFreq -> {

@@ -16,17 +16,20 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -34,12 +37,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"amino-acid", "frequency"}, 
 		description = "Compute amino acid frequencies for a given feature location", 
-		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName>" },
+		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> [-l <lcStart> <lcEnd>]" },
 		docoptOptions = { 
 		"-c, --recursive                                Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify members",
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
-		"-f <featureName>, --featureName <featureName>  Feature to translate"
+		"-f <featureName>, --featureName <featureName>  Feature to translate",
+		"-l, --labelledCodon                            Region between codon labels",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
@@ -53,12 +57,22 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String AC_REF_NAME = "acRefName";
 	public static final String FEATURE_NAME = "featureName";
+	public static final String LABELLED_CODON = "labelledCodon";
+	public static final String LC_START = "lcStart";
+	public static final String LC_END = "lcEnd";
+
+
+	// could possibly use FastaAlignmentExportCommandDelegate here.
+	
+	private FastaAlignmentExportCommandDelegate delegate;
 	
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
-
 	private String acRefName;
 	private String featureName;
+	private boolean labelledCodon;
+	private String lcStart;
+	private String lcEnd;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -67,7 +81,18 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
+		this.labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
+		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
+		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
+		if(labelledCodon && (lcStart == null || lcEnd == null)) {
+			usageErrorLC();
+		}
+
+	}
+	
+	private void usageErrorLC() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --labelledCodon is used, both <lcStart> and <lcEnd> must be specified");
 	}
 	
 	@Override
@@ -79,18 +104,53 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false)
 			.getFeature().checkCodesAminoAcids();
 		List<LabeledAminoAcidFrequency> resultRowData = alignmentAminoAcidFrequencies(
-				cmdContext, getAlignmentName(), acRefName, featureName, whereClause, recursive);
+				cmdContext, getAlignmentName(), acRefName, featureName, whereClause, recursive, lcStart, lcEnd);
 		return new AlignmentAminoAcidFrequencyResult(resultRowData);
 	}
 
 	public static List<LabeledAminoAcidFrequency> alignmentAminoAcidFrequencies(
+			CommandContext cmdContext, String almtName, String relRefName, String featureName, 
+			Optional<Expression> whereClause, Boolean recursive, 
+			String lcStart, String lcEnd) {
+
+		SimpleAlignmentColumnsSelector almtColsSelector = 
+					new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, lcStart, lcEnd);
+		
+		LinkedHashMap<String, RefCodonInfo> codonToRefCodonInfo = 
+				initCodonToRefInfoMap(cmdContext, relRefName, featureName, lcStart, lcEnd);
+		
+		String[] codonLabels = codonToRefCodonInfo.keySet().toArray(new String[]{});
+		
+		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
+
+		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+			@Override
+			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
+				for(int i = 0; i < alignmentRowString.length(); i++) {
+					char aaChar = alignmentRowString.charAt(i);
+					String codonLabel = codonLabels[i];
+					if(aaChar != 'X' && aaChar != '-') { // an X or '-' doesn't count as a member covering the codon.
+						codonToRefCodonInfo.get(codonLabel).addAaMamber(aaChar);
+					}
+				}
+			}
+		};
+		FastaProteinAlignmentExporter.exportAlignment(cmdContext,
+				featureName, almtColsSelector, true, queryMemberSupplier, almtRowConsumer);
+		
+		return formLabeledAminoAcidFrequencies(codonToRefCodonInfo);
+	}
+	
+	/*
+	 * old implementation which did not use FastaProteinAlignmentExporter
+	public static List<LabeledAminoAcidFrequency> alignmentAminoAcidFrequenciesOld(
 			CommandContext cmdContext, String almtName, String acRefName, String featureName, 
 			Optional<Expression> whereClause, Boolean recursive) {
 		
 		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, almtName, recursive, whereClause);
 		GlueLogger.getGlueLogger().finest("Computing amino acid frequencies for "+totalMembers+" alignment members");
 		
-		Map<String, RefCodonInfo> codonToRefCodonInfo = initCodonToRefInfoMap(cmdContext, acRefName, featureName);
+		Map<String, RefCodonInfo> codonToRefCodonInfo = initCodonToRefInfoMap(cmdContext, acRefName, featureName, null, null);
 		
 		int batchSize = 500;
 		int offset = 0;
@@ -126,6 +186,12 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		GlueLogger.getGlueLogger().finest("Computed amino acid frequencies for "+totalMembers+" members");
 		cmdContext.newObjectContext();
 
+		return formLabeledAminoAcidFrequencies(codonToRefCodonInfo);
+	}
+	*/
+
+	private static List<LabeledAminoAcidFrequency> formLabeledAminoAcidFrequencies(
+			Map<String, RefCodonInfo> codonToRefCodonInfo) {
 		List<LabeledAminoAcidFrequency> resultRowData = new ArrayList<LabeledAminoAcidFrequency>();
 		codonToRefCodonInfo.forEach((codonLabel, refCodonInfo) -> {
 				refCodonInfo.aaToMemberCount.forEachEntry(new TCharIntProcedure() {
@@ -143,14 +209,29 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		return resultRowData;
 	}
 
-	private static Map<String, RefCodonInfo> initCodonToRefInfoMap(
-			CommandContext cmdContext, String acRefName, String featureName) {
-		Map<String, RefCodonInfo> codonToRefCodonInfo = new LinkedHashMap<String,RefCodonInfo>();
+	private static LinkedHashMap<String, RefCodonInfo> initCodonToRefInfoMap(
+			CommandContext cmdContext, String acRefName, String featureName, String lcStartString, String lcEndString) {
+		LinkedHashMap<String, RefCodonInfo> codonToRefCodonInfo = new LinkedHashMap<String,RefCodonInfo>();
 		FeatureLocation scannedFeatureLoc = 
 				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
 		List<LabeledCodon> labeledCodons = scannedFeatureLoc.getLabeledCodons(cmdContext);
+		LabeledCodon lcStart = null;
+		if(lcStartString != null) {
+			lcStart = scannedFeatureLoc.getLabeledCodon(cmdContext, lcStartString);
+		}
+		LabeledCodon lcEnd = null;
+		if(lcEndString != null) {
+			lcEnd = scannedFeatureLoc.getLabeledCodon(cmdContext, lcEndString);
+		}
 		for(LabeledCodon labeledCodon: labeledCodons) {
-			codonToRefCodonInfo.put(labeledCodon.getCodonLabel(), new RefCodonInfo(labeledCodon));
+			if(lcStart != null && labeledCodon.getNtStart() < lcStart.getNtStart()) {
+				continue;
+			}
+			if(lcEnd != null && labeledCodon.getNtStart() > lcEnd.getNtStart()) {
+				continue;
+			}
+			RefCodonInfo refCodonInfo = new RefCodonInfo(labeledCodon);
+			codonToRefCodonInfo.put(labeledCodon.getCodonLabel(), refCodonInfo);
 		}
 		return codonToRefCodonInfo;
 	}

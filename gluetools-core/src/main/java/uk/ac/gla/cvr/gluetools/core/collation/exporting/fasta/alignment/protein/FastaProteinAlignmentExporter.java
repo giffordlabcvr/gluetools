@@ -46,7 +46,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 		featureLoc.getFeature().checkCodesAminoAcids();
 		
 		int numMembers = memberSupplier.countMembers(cmdContext);
-		GlueLogger.getGlueLogger().log(Level.INFO, "processing "+numMembers+" alignment members");
+		GlueLogger.getGlueLogger().log(Level.FINE, "processing "+numMembers+" alignment members");
 		int offset = 0;
 		int processed = 0;
 		int batchSize = 500;
@@ -55,7 +55,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
 			createAlignment(cmdContext, excludeEmptyRows, featureName, alignmentColumnsSelector, alignment, almtMembers, featureRefSegs, minMaxSeg, almtRowConsumer);
 			processed += almtMembers.size();
-			GlueLogger.getGlueLogger().log(Level.INFO, "processed "+processed+" alignment members");
+			GlueLogger.getGlueLogger().log(Level.FINE, "processed "+processed+" alignment members");
 			offset += batchSize;
 			cmdContext.newObjectContext();
 		}
