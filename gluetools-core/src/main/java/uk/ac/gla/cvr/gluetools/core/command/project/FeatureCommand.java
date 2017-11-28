@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<featureName>"},
 	description="Enter command mode for a genome feature")
 @EnterModeCommandClass(
-		commandFactoryClass = FeatureModeCommandFactory.class)
+		commandFactoryClass = FeatureModeCommandFactory.class, 
+		modeDescription = "Feature mode")
 public class FeatureCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String FEATURE_NAME = "featureName";

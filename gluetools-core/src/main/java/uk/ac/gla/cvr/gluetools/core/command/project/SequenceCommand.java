@@ -43,7 +43,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  sequence -w \"gb_primary_accession = 'GR195721'\"\n"+
 	"  sequence mySource 12823121")
 @EnterModeCommandClass(
-		commandFactoryClass = SequenceModeCommandFactory.class)
+		commandFactoryClass = SequenceModeCommandFactory.class, 
+		modeDescription = "Sequence mode")
 public class SequenceCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String SEQUENCE_ID = "sequenceID";

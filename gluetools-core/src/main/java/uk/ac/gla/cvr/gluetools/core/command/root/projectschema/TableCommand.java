@@ -27,9 +27,10 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"table"},
 	docoptUsages={"<tableName>"},
-	description="Mode to manage the custom fields of a configurable table")
+	description="Enter command mode to manage the custom fields on a specific table")
 @EnterModeCommandClass(
-		commandFactoryClass = TableModeCommandFactory.class)
+		commandFactoryClass = TableModeCommandFactory.class, 
+		modeDescription = "Table mode")
 public class TableCommand extends ProjectSchemaModeCommand<OkResult>  {
 
 	private String tableName;

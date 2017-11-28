@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<projectName>"},
 	description="Enter command mode to manage a project's schema")
 @EnterModeCommandClass(
-		commandFactoryClass = ProjectSchemaModeCommandFactory.class)
+		commandFactoryClass = ProjectSchemaModeCommandFactory.class, 
+		modeDescription = "Schema mode")
 public class ProjectSchemaCommand extends RootModeCommand<OkResult>  {
 
 	private String projectName;

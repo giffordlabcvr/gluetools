@@ -28,7 +28,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"member-floc-note"},
 	docoptUsages={"<refSeqName> <featureName>"},
 	description="Enter command mode for a member-featureLoc note") 
-@EnterModeCommandClass(commandFactoryClass = MemberFLocNoteModeCommandFactory.class)
+@EnterModeCommandClass(commandFactoryClass = MemberFLocNoteModeCommandFactory.class, 
+	modeDescription = "AlignmentMember-FeatureLocation note mode")
 public class MemberFLocNoteCommand extends MemberModeCommand<OkResult>  {
 
 	public static final String REF_SEQ_NAME = "refSeqName";

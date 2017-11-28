@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<refSeqName>"},
 	description="Enter command mode for a reference sequence")
 @EnterModeCommandClass(
-		commandFactoryClass = ReferenceSequenceModeCommandFactory.class)
+		commandFactoryClass = ReferenceSequenceModeCommandFactory.class, 
+		modeDescription = "ReferenceSequence mode")
 public class ReferenceSequenceCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String REF_SEQ_NAME = "refSeqName";

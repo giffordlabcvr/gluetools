@@ -3,18 +3,20 @@ package uk.ac.gla.cvr.gluetools.core.command;
 public class CommandGroup implements Comparable<CommandGroup> {
 
 	public static final CommandGroup 
-		MODE_NAVIGATION = new CommandGroup("navigation", "Commands for navigation between command modes", 0),
-		MISC = new CommandGroup("miscellaneous", "Miscellaneous commands", 90);
+		MODE_NAVIGATION = new CommandGroup("navigation", "Commands for navigation between command modes", 0, false),
+		OTHER = new CommandGroup("other", "Other commands", 100, false);
 	
 	private String id;
 	private String description;
 	private int orderingKey;
+	private boolean nonModeSpecific;
 
-	public CommandGroup(String id, String description, int orderingKey) {
+	public CommandGroup(String id, String description, int orderingKey, boolean nonModeSpecific) {
 		super();
 		this.id = id;
 		this.description = description;
 		this.orderingKey = orderingKey;
+		this.nonModeSpecific = nonModeSpecific;
 	}
 
 	public String getId() {
@@ -53,6 +55,10 @@ public class CommandGroup implements Comparable<CommandGroup> {
 	@Override
 	public int compareTo(CommandGroup o) {
 		return Integer.compare(this.orderingKey, o.orderingKey);
+	}
+
+	public boolean isNonModeSpecific() {
+		return nonModeSpecific;
 	}
 	
 	

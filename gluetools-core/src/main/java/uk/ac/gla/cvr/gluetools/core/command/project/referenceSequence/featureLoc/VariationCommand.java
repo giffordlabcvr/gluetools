@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<variationName>"},
 	description="Enter command mode for a feature variation")
 @EnterModeCommandClass(
-		commandFactoryClass = VariationModeCommandFactory.class)
+		commandFactoryClass = VariationModeCommandFactory.class, 
+		modeDescription = "Variation mode")
 public class VariationCommand extends FeatureLocModeCommand<OkResult>  {
 
 	public static final String VARIATION_NAME = "variationName";

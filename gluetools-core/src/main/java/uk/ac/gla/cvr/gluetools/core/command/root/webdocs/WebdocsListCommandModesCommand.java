@@ -17,7 +17,7 @@ public class WebdocsListCommandModesCommand extends WebdocsCommand<PojoCommandRe
 	@Override
 	public PojoCommandResult<WebdocsCommandModeTree> execute(CommandContext cmdContext) {
 		RootCommandFactory rootCommandFactory = CommandFactory.get(RootCommandFactory.class);
-		return new PojoCommandResult<WebdocsCommandModeTree>(WebdocsCommandModeTree.create("/", "root", rootCommandFactory));
+		return new PojoCommandResult<WebdocsCommandModeTree>(WebdocsCommandModeTree.create("/", "root", "Root mode", rootCommandFactory));
 	}
 
 	

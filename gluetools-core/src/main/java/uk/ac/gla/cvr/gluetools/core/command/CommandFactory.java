@@ -81,7 +81,7 @@ public abstract class CommandFactory {
 		cmdUsage.validate(cmdClass);
 		CommandGroup cmdGroupToUse = this.cmdGroup;
 		if(cmdGroupToUse == null) {
-			cmdGroupToUse = CommandGroup.MISC;
+			cmdGroupToUse = CommandGroup.OTHER;
 		}
 		
 		this.cmdGroupToCmdClasses.computeIfAbsent(cmdGroupToUse, cmdGrp -> 

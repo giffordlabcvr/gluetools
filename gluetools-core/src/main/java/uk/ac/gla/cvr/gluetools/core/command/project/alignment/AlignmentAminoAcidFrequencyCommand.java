@@ -64,8 +64,6 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 
 	// could possibly use FastaAlignmentExportCommandDelegate here.
 	
-	private FastaAlignmentExportCommandDelegate delegate;
-	
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
 	private String acRefName;

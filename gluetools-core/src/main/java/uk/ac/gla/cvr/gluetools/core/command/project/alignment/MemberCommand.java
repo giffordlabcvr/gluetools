@@ -38,7 +38,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	"  member -w \"sequence.gb_primary_accession = 'GR195721'\"\n"+
 	"  member mySource 12823121") 
 @EnterModeCommandClass(
-		commandFactoryClass = MemberModeCommandFactory.class)
+		commandFactoryClass = MemberModeCommandFactory.class, 
+		modeDescription = "AlignmentMember mode")
 public class MemberCommand extends AlignmentModeCommand<OkResult>  {
 
 	public static final String SEQUENCE_ID = "sequenceID";

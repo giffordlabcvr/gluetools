@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<alignmentName>"},
 	description="Enter command mode for an alignment") 
 @EnterModeCommandClass(
-		commandFactoryClass = AlignmentModeCommandFactory.class)
+		commandFactoryClass = AlignmentModeCommandFactory.class, 
+		modeDescription = "Alignment mode")
 public class AlignmentCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";

@@ -3,7 +3,6 @@ gluetoolsApp.controller('moduleTypeCtrl',
 		  function($scope, $route, $routeParams, glueWS, dialogs) {
 
 			$scope.moduleDocumentation = null;
-			$scope.drugResistanceFindings = null;
 			$scope.moduleTypeName = $routeParams.name;
 			
 			glueWS.runGlueCommand("", {

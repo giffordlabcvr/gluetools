@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<moduleName>"},
 	description="Enter command mode for a module") 
 @EnterModeCommandClass(
-		commandFactoryClass = ModuleModeCommandFactory.class)
+		commandFactoryClass = ModuleModeCommandFactory.class, 
+		modeDescription = "Module mode")
 public class ModuleCommand extends ProjectModeCommand<OkResult>  {
 
 	private String moduleName;

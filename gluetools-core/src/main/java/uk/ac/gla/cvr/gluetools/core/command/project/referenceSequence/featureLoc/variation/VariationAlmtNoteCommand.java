@@ -23,7 +23,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"var-almt-note"},
 	docoptUsages={"<alignmentName>"},
 	description="Enter command mode for a variation-alignment note") 
-@EnterModeCommandClass(commandFactoryClass = VarAlmtNoteModeCommandFactory.class)
+@EnterModeCommandClass(commandFactoryClass = VarAlmtNoteModeCommandFactory.class, 
+	modeDescription = "Variation-Alignment note mode")
 public class VariationAlmtNoteCommand extends VariationModeCommand<OkResult>  {
 
 	public static final String ALIGNMENT_NAME = "alignmentName";

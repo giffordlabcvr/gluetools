@@ -1,0 +1,44 @@
+<h2>{{commandModeDocumentation.modeDescription}}</h2>
+
+<table class="table table-striped table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 25%;">
+			<col span="1" style="width: 75%;">
+		</colgroup>
+	<tbody>
+		<tr>
+			<td><b>Mode path</b></td>
+			<td>{{commandModeDocumentation.absoluteModePath}}</td>
+		</tr>
+		<tr ng-if="commandModeDocumentation.parentModePathID">
+			<td><b>Parent mode</b></td>
+			<td><a href="./#/commandReference/commandMode/{{commandModeDocumentation.parentModePathID}}">{{commandModeDocumentation.parentDescription}}</a></td>
+		</tr>
+	</tbody>
+</table>
+
+
+
+<div ng-repeat="cmdCategory in commandModeDocumentation.commandCategories">
+<h4>{{cmdCategory.description}}</h4>
+
+<table class="table table-striped table-bordered">
+	<thead>
+		<th>Command</th>
+		<th>Description</th>
+	<colgroup>
+		<col span="1" style="width: 25%;">
+		<col span="1" style="width: 75%;">
+	</colgroup>
+	</thead>
+	<tbody>
+		<tr ng-repeat="cmdSummary in cmdCategory.commandSummaries track by $index">
+			<td style="font-family:monospace;">
+				<a href="#commandReference/commandMode/{{commandModeDocumentation.absoluteModePathID}}/command/{{cmdSummary.cmdWordID}}">{{cmdSummary.commandWords.join(' ')}}</a>
+			</td>
+			<td>{{cmdSummary.description}}</td>
+		</tr>
+	</tbody>
+</table>
+</div>

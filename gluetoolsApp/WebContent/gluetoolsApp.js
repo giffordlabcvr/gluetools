@@ -89,14 +89,18 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/freemarkerTemplates/page.html',
             controller: 'freemarkerTemplatesCtrl'
           }).
-    	when('/commandReference', {
+      	when('/commandReference', {
             templateUrl: './pages/referenceDocumentation/commandReference/page.html',
             controller: 'commandReferenceCtrl'
           }).
-          when('/moduleReference/moduleType/:name', {
+      	when('/commandReference/commandMode/:absoluteModePathID', {
+            templateUrl: './pages/referenceDocumentation/commandReference/commandMode/page.html',
+            controller: 'commandModeCtrl'
+          }).
+        when('/moduleReference/moduleType/:name', {
               templateUrl: './pages/referenceDocumentation/moduleReference/moduleType/page.html',
               controller: 'moduleTypeCtrl'
-            }).
+          }).
         when('/moduleReference/moduleType/:name/command/:cmdWordID', {
             templateUrl: './pages/referenceDocumentation/moduleReference/moduleCommand/page.html',
             controller: 'moduleCommandCtrl'

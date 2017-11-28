@@ -23,23 +23,22 @@ public abstract class BaseCommandFactory extends CommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
-		setCmdGroup(CommandGroup.MODE_NAVIGATION);
-		registerCommandClass(QuitCommand.class);
-		setCmdGroup(new CommandGroup("documentation", "Commands providing documentation", 91));
+		setCmdGroup(new CommandGroup("otherNonModeSpecific", "Other commands", 100, true));
 		registerCommandClass(HelpCommand.class);
-		setCmdGroup(new CommandGroup("scripting", "Commands for accessing the scripting layer", 92));
+		registerCommandClass(QuitCommand.class);
+		setCmdGroup(new CommandGroup("scripting", "Commands for accessing the scripting layer", 92, true));
 		registerCommandClass(RunFileCommand.class);
 		registerCommandClass(RunScriptCommand.class);
-		setCmdGroup(new CommandGroup("database", "Commands for optimising database access", 93));
+		setCmdGroup(new CommandGroup("database", "Commands for optimising database access", 93, true));
 		registerCommandClass(CommitCommand.class);
 		registerCommandClass(NewContextCommand.class);
 
-		setCmdGroup(new CommandGroup("file-utils", "File system utility commands", 94));
+		setCmdGroup(new CommandGroup("file-utils", "File system utility commands", 94, true));
 		registerCommandClass(FileUtilListFilesCommand.class);
 		registerCommandClass(FileUtilDeleteFileCommand.class);
 		registerCommandClass(FileUtilSaveStringCommand.class);
 
-		setCmdGroup(new CommandGroup("console", "Commands to manage console options", 95));
+		setCmdGroup(new CommandGroup("console", "Commands to manage console options", 95, true));
 		registerCommandClass(ConsoleChangeDirectoryCommand.class);
 		registerCommandClass(ConsoleShowOptionCommand.class);
 		registerCommandClass(ConsoleSetOptionCommand.class);
@@ -48,7 +47,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(ConsoleAddOptionLineCommand.class);
 		registerCommandClass(ConsoleRemoveOptionLineCommand.class);
 
-		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine configuration", 96));
+		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine configuration", 96, true));
 		registerCommandClass(ConfigShowPropertyCommand.class);
 		
 		setCmdGroup(null);

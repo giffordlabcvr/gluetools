@@ -33,7 +33,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<tableName> <rowId>"},
 	description="Enter command mode for a custom table row")
 @EnterModeCommandClass(
-		commandFactoryClass = CustomTableRowModeCommandFactory.class)
+		commandFactoryClass = CustomTableRowModeCommandFactory.class, 
+		modeDescription = "Custom object mode")
 public class CustomTableRowCommand extends ProjectModeCommand<OkResult>  {
 
 	public static final String TABLE_NAME = "tableName";

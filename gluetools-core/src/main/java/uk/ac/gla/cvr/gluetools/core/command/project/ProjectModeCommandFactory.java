@@ -30,7 +30,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentCommand.class);
 		registerCommandClass(ExitCommand.class);
 
-		setCmdGroup(new CommandGroup("sequences", "Commands for managing sequence objects", 5));
+		setCmdGroup(new CommandGroup("sequences", "Commands for managing sequence objects", 5, false));
 		registerCommandClass(CreateSourceCommand.class);
 		registerCommandClass(DeleteSourceCommand.class);
 		registerCommandClass(ListSourceCommand.class);
@@ -49,7 +49,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ExportSequenceCommand.class);
 
 		
-		setCmdGroup(new CommandGroup("alignments", "Commands for managing alignment objects", 6));
+		setCmdGroup(new CommandGroup("alignments", "Commands for managing alignment objects", 6, false));
 		registerCommandClass(CreateAlignmentCommand.class);
 		registerCommandClass(DeleteAlignmentCommand.class);
 		registerCommandClass(ListAlignmentCommand.class);
@@ -59,36 +59,36 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 
 
 
-		setCmdGroup(new CommandGroup("references", "Commands for managing reference sequence objects", 7));
+		setCmdGroup(new CommandGroup("references", "Commands for managing reference sequence objects", 7, false));
 		registerCommandClass(CreateReferenceSequenceCommand.class);
 		registerCommandClass(DeleteReferenceSequenceCommand.class);
 		registerCommandClass(ListReferenceSequenceCommand.class);
 
-		setCmdGroup(new CommandGroup("features", "Commands for managing feature objects", 8));
+		setCmdGroup(new CommandGroup("features", "Commands for managing feature objects", 8, false));
 		registerCommandClass(CreateFeatureCommand.class);
 		registerCommandClass(DeleteFeatureCommand.class);
 		registerCommandClass(ListFeatureCommand.class);
 
-		setCmdGroup(new CommandGroup("custom-table-row", "Commands for objects in custom tables", 9));
+		setCmdGroup(new CommandGroup("custom-table-row", "Commands for objects in custom tables", 9, false));
 		registerCommandClass(CreateCustomTableRowCommand.class);
 		registerCommandClass(DeleteCustomTableRowCommand.class);
 		registerCommandClass(CustomTableRowCommand.class);
 		registerCommandClass(ListCustomTableRowCommand.class);
 		registerCommandClass(CountCustomTableRowCommand.class);
 
-		setCmdGroup(new CommandGroup("project-settings", "Commands for managing project settings", 10));
+		setCmdGroup(new CommandGroup("project-settings", "Commands for managing project settings", 10, false));
 		registerCommandClass(ProjectSetSettingCommand.class);
 		registerCommandClass(ProjectUnsetSettingCommand.class);
 		registerCommandClass(ProjectShowSettingCommand.class);
 		
-		setCmdGroup(new CommandGroup("modules", "Commands for managing modules", 11));
+		setCmdGroup(new CommandGroup("modules", "Commands for managing modules", 11, false));
 		registerCommandClass(ImportModuleCommand.class);
 		registerCommandClass(CreateModuleCommand.class);
 		registerCommandClass(DeleteModuleCommand.class);
 		registerCommandClass(ListModuleCommand.class);
 
 		
-		setCmdGroup(new CommandGroup("bulk-db", "Commands for bulk database operations", 12));
+		setCmdGroup(new CommandGroup("bulk-db", "Commands for bulk database operations", 12, false));
 		registerCommandClass(MultiSetFieldCommand.class);
 		registerCommandClass(MultiUnsetFieldCommand.class);
 		registerCommandClass(MultiCopyFieldCommand.class);
@@ -105,7 +105,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(CountMemberFLocNoteCommand.class);
 
 		
-		setCmdGroup(CommandGroup.MISC);
+		setCmdGroup(CommandGroup.OTHER);
 		registerCommandClass(ProjectValidateCommand.class);
 		registerCommandClass(ProjectGenerateGlueConfigCommand.class);
 	}

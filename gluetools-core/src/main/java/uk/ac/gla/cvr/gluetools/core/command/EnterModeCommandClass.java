@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface EnterModeCommandClass {
 	Class<? extends CommandFactory> commandFactoryClass();
+	String modeDescription();
 }

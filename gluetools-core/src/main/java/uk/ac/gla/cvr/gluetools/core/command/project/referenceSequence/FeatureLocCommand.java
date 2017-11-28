@@ -21,7 +21,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<featureName>"},
 	description="Enter command mode for a feature location")
 @EnterModeCommandClass(
-		commandFactoryClass = FeatureLocModeCommandFactory.class)
+		commandFactoryClass = FeatureLocModeCommandFactory.class, 
+		modeDescription = "FeatureLocation mode")
 public class FeatureLocCommand extends ReferenceSequenceModeCommand<OkResult>  {
 
 	public static final String FEATURE_NAME = "featureName";

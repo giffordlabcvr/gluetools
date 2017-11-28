@@ -15,6 +15,9 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 public class WebdocsCommandModeTree {
 
 	@PojoDocumentField
+	public String modeDescription;
+
+	@PojoDocumentField
 	public String relativeModePath;
 
 	@PojoDocumentField
@@ -24,10 +27,11 @@ public class WebdocsCommandModeTree {
 	public List<WebdocsCommandModeTree> childCommandModes = new ArrayList<WebdocsCommandModeTree>();
 
 	@SuppressWarnings("rawtypes")
-	public static WebdocsCommandModeTree create(String relativeModePath, String absoluteModePathID, CommandFactory commandFactory) {
+	public static WebdocsCommandModeTree create(String relativeModePath, String absoluteModePathID, String modeDescription, CommandFactory commandFactory) {
 		WebdocsCommandModeTree cmdModeTree = new WebdocsCommandModeTree();
 		cmdModeTree.relativeModePath = relativeModePath;
 		cmdModeTree.absoluteModePathID = absoluteModePathID;
+		cmdModeTree.modeDescription = modeDescription;
 		
 		List<Class<? extends Command>> registeredCmdClasses = commandFactory.getRegisteredCommandClasses();
 		registeredCmdClasses.forEach(cmdClass -> {
@@ -40,7 +44,8 @@ public class WebdocsCommandModeTree {
 				String childModeRelativeModePath = enterModeFirstCmdWord+"/"+
 						String.join("/", modeIDs)+"/";
 				String childAbsoluteModePathID = cmdModeTree.absoluteModePathID+"_"+enterModeFirstCmdWord;
-				WebdocsCommandModeTree childCmdModeTree = create(childModeRelativeModePath, childAbsoluteModePathID, childModeCmdFactory);
+				String childModeDescription = enterModeAnno.modeDescription();
+				WebdocsCommandModeTree childCmdModeTree = create(childModeRelativeModePath, childAbsoluteModePathID, childModeDescription, childModeCmdFactory);
 				cmdModeTree.childCommandModes.add(childCmdModeTree);
 			}
 		});

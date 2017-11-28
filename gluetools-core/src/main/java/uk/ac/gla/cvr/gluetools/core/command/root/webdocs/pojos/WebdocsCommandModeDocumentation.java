@@ -3,16 +3,13 @@ package uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.function.BiConsumer;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
@@ -28,10 +25,17 @@ public class WebdocsCommandModeDocumentation {
 	public String absoluteModePathID;
 
 	@PojoDocumentField
+	public String modeDescription;
+
+	@PojoDocumentField
 	public String parentModePathID;
 
 	@PojoDocumentField
 	public String parentModePath;
+
+	@PojoDocumentField
+	public String parentDescription;
+
 
 	@PojoDocumentListField(itemClass = WebdocsCommandCategory.class)
 	public List<WebdocsCommandCategory> commandCategories = new ArrayList<WebdocsCommandCategory>();
@@ -47,6 +51,8 @@ public class WebdocsCommandModeDocumentation {
 			parentModePathID = String.join("_", Arrays.asList(modePathBits).subList(0, modePathBits.length-1));
 		}
 		String parentModePath = null;
+		String parentDescription = null;
+		String modeDescription = "Root mode";
 		CommandFactory commandFactory = CommandFactory.get(RootCommandFactory.class);
 		// start after "root_"..
 		for(int i = 1; i < modePathBits.length; i++) {
@@ -66,6 +72,8 @@ public class WebdocsCommandModeDocumentation {
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unable to identify command mode for path ID \""+absoluteModePathID+"\"");
 			}
 			EnterModeCommandClass enterModeAnno = enterModeCommandClass.getAnnotation(EnterModeCommandClass.class);
+			parentDescription = modeDescription;
+			modeDescription = enterModeAnno.modeDescription();
 			Class<? extends CommandFactory> commandFactoryClass = enterModeAnno.commandFactoryClass();
 			commandFactory = CommandFactory.get(commandFactoryClass);
 			String[] modeIDs = CommandUsage.docoptUsagesForCmdClass(enterModeCommandClass)[0].split(" ");
@@ -74,6 +82,9 @@ public class WebdocsCommandModeDocumentation {
 		}
 
 		commandFactory.getCmdGroupToCmdClasses().forEach((cmdGroup, setOfClasses) -> {
+			if(cmdGroup.isNonModeSpecific()) {
+				return;
+			}
 			List<WebdocsCommandSummary> commandSummaries = new ArrayList<WebdocsCommandSummary>();
 			setOfClasses.forEach(cmdClass -> {
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
@@ -81,10 +92,12 @@ public class WebdocsCommandModeDocumentation {
 			modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getDescription(), commandSummaries));
 		});
 		
-		modeDocumentation.parentModePath = parentModePath;
-		modeDocumentation.parentModePathID = parentModePathID;
 		modeDocumentation.absoluteModePathID = absoluteModePathID;
 		modeDocumentation.absoluteModePath = absoluteModePathBuf.toString();
+		modeDocumentation.modeDescription = modeDescription;
+		modeDocumentation.parentModePath = parentModePath;
+		modeDocumentation.parentModePathID = parentModePathID;
+		modeDocumentation.parentDescription = parentDescription;
 		
 		return modeDocumentation;
 	}
