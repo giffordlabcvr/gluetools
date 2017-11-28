@@ -50,7 +50,7 @@ public class WebdocsModuleTypeDocumentation {
 					return o1.cmdWordID.compareTo(o2.cmdWordID);
 				}});
 			WebdocsCommandCategory category = WebdocsCommandCategory.create(name, summaries);
-			if(category.name.equals("Type-specific module commands")) {
+			if(category.description.equals("Type-specific module commands")) {
 				docPojo.commandCategories.add(0, category);
 			} else {
 				docPojo.commandCategories.add(category);

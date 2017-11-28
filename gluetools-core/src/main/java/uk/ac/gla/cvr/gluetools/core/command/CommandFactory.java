@@ -355,4 +355,8 @@ public abstract class CommandFactory {
 		this.cmdGroup = cmdGroup;
 	}
 
+	public Map<CommandGroup, TreeSet<Class<?>>> getCmdGroupToCmdClasses() {
+		return cmdGroupToCmdClasses;
+	}
+
 }

@@ -50,6 +50,8 @@ public abstract class BaseCommandFactory extends CommandFactory {
 
 		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine configuration", 96));
 		registerCommandClass(ConfigShowPropertyCommand.class);
+		
+		setCmdGroup(null);
 	}
 
 }
