@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -30,6 +31,8 @@ public class FeatureLocModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(FeatureLocAminoAcidCommand.class);
 		registerCommandClass(FeatureLocCountAminoAcidCommand.class);
 		
+		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
+
 		registerCommandClass(ExitCommand.class);
 	}
 	

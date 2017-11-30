@@ -5,6 +5,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.memberFLocNote.MemberFLocNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -24,6 +25,11 @@ public enum ConfigurableTable {
 			ModelBuilder.pkPath(Variation.FEATURE_NAME_PATH), 
 			ModelBuilder.keyword("variation"), 
 			ModelBuilder.pkPath(Variation.NAME_PROPERTY)),
+	feature_location(FeatureLocation.class, 
+			ModelBuilder.keyword("reference"), 
+			ModelBuilder.pkPath(FeatureLocation.REF_SEQ_NAME_PATH), 
+			ModelBuilder.keyword("feature-location"), 
+			ModelBuilder.pkPath(FeatureLocation.FEATURE_NAME_PATH)), 
 	feature(Feature.class, 
 			ModelBuilder.keyword("feature"), 
 			ModelBuilder.pkPath(Feature.NAME_PROPERTY)),
