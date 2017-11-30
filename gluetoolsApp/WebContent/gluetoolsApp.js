@@ -93,9 +93,13 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/referenceDocumentation/commandReference/page.html',
             controller: 'commandReferenceCtrl'
           }).
-      	when('/commandReference/commandMode/:absoluteModePathID', {
+    	when('/commandReference/commandMode/:absoluteModePathID', {
             templateUrl: './pages/referenceDocumentation/commandReference/commandMode/page.html',
             controller: 'commandModeCtrl'
+          }).
+    	when('/commandReference/commandMode/:absoluteModePathID/command/:cmdWordID', {
+            templateUrl: './pages/referenceDocumentation/commandReference/commandMode/command/page.html',
+            controller: 'commandCtrl'
           }).
         when('/moduleReference/moduleType/:name', {
               templateUrl: './pages/referenceDocumentation/moduleReference/moduleType/page.html',

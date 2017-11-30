@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.configurableobject;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 
@@ -12,6 +13,7 @@ public interface ConfigurableObjectMode extends InsideProjectMode {
 	public GlueDataObject getConfigurableObject(CommandContext cmdContext);
 	
 	public static void registerConfigurableObjectCommands(CommandFactory commandFactory) {
+		commandFactory.setCmdGroup(new CommandGroup("configurableObject", "Commands to manage custom object properties", 50, false));
 		commandFactory.registerCommandClass(ConfigurableObjectSetFieldCommand.class);
 		commandFactory.registerCommandClass(ConfigurableObjectUnsetFieldCommand.class);
 		commandFactory.registerCommandClass(ConfigurableObjectShowPropertyCommand.class);
@@ -22,6 +24,7 @@ public interface ConfigurableObjectMode extends InsideProjectMode {
 		commandFactory.registerCommandClass(ConfigurableObjectRemoveLinkTargetCommand.class);
 		commandFactory.registerCommandClass(ConfigurableObjectClearLinkTargetCommand.class);
 		commandFactory.registerCommandClass(ConfigurableObjectListLinkTargetCommand.class);
+		commandFactory.setCmdGroup(null);
 	}
 	
 }

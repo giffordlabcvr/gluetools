@@ -170,6 +170,8 @@ public class GluetoolsEngine implements Plugin {
 			rootServerRuntime.getContext(); // just to check that it works.
 			ModelBuilder.setDbSchemaVersionString(metaObjectContext, currentSchemaVersion);
 			metaObjectContext.commitChanges();
+		} catch(Exception e) {
+			throw new GluetoolsEngineException(GluetoolsEngineException.Code.DB_CONNECTION_ERROR, e.getMessage(), e);
 		} finally {
 			if(metaRuntime != null) { metaRuntime.shutdown(); }
 		}
@@ -192,7 +194,9 @@ public class GluetoolsEngine implements Plugin {
 	}
 	
 	private void dispose() {
-		rootServerRuntime.shutdown();
+		if(rootServerRuntime != null) {
+			rootServerRuntime.shutdown();
+		}
 		if(mafftExecutorService != null) {
 			mafftExecutorService.shutdown();
 		}

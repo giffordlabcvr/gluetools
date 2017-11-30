@@ -16,15 +16,16 @@ import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos.WebdocsCommandDocumentation;
+import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos.WebdocsModeCommandDocumentation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
-		commandWords={"webdocs", "document-command"}, 
+		commandWords={"webdocs", "document-mode-command"}, 
 	docoptUsages={"<absoluteModePathID> <cmdWordID>"},
 	//metaTags={CmdMeta.webApiOnly}, 
 	description = "")
-public class WebdocsDocumentCommandCommand extends WebdocsCommand<PojoCommandResult<WebdocsCommandDocumentation>> {
+public class WebdocsDocumentModeCommand extends WebdocsCommand<PojoCommandResult<WebdocsModeCommandDocumentation>> {
 	
 	
 	public static final String ABSOLUTE_MODE_PATH_ID = "absoluteModePathID";
@@ -42,9 +43,12 @@ public class WebdocsDocumentCommandCommand extends WebdocsCommand<PojoCommandRes
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public PojoCommandResult<WebdocsCommandDocumentation> execute(CommandContext cmdContext) {
+	public PojoCommandResult<WebdocsModeCommandDocumentation> execute(CommandContext cmdContext) {
 
+		WebdocsModeCommandDocumentation modeCommandDocumentation = new WebdocsModeCommandDocumentation();
+		
 		String[] modePathBits = absoluteModePathID.split("_");
+		String modeDescription = "Root mode";
 		CommandFactory commandFactory = CommandFactory.get(RootCommandFactory.class);
 		// start after "root_"..
 		for(int i = 1; i < modePathBits.length; i++) {
@@ -65,6 +69,7 @@ public class WebdocsDocumentCommandCommand extends WebdocsCommand<PojoCommandRes
 			}
 			EnterModeCommandClass enterModeAnno = enterModeCommandClass.getAnnotation(EnterModeCommandClass.class);
 			Class<? extends CommandFactory> commandFactoryClass = enterModeAnno.commandFactoryClass();
+			modeDescription = enterModeAnno.modeDescription();
 			commandFactory = CommandFactory.get(commandFactoryClass);
 		}		
 		List<String> commandWords = Arrays.asList(cmdWordID.split("_"));
@@ -72,7 +77,10 @@ public class WebdocsDocumentCommandCommand extends WebdocsCommand<PojoCommandRes
 		if(cmdClass == null) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unknown command \""+cmdWordID.replaceAll("_", " ")+"\"");
 		}
-		return new PojoCommandResult<WebdocsCommandDocumentation>(WebdocsCommandDocumentation.createDocumentation(cmdClass));
+		modeCommandDocumentation.absoluteModePathID = absoluteModePathID;
+		modeCommandDocumentation.modeDescription = modeDescription;
+		modeCommandDocumentation.commandDocumentation = WebdocsCommandDocumentation.createDocumentation(cmdClass);
+		return new PojoCommandResult<WebdocsModeCommandDocumentation>(modeCommandDocumentation);
 	}
 
 }

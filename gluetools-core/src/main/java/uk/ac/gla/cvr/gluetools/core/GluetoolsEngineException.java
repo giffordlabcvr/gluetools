@@ -7,6 +7,7 @@ public class GluetoolsEngineException extends GlueException {
 
 		ENGINE_ALREADY_INITIALIZED(), 
 		ENGINE_NOT_INITIALIZED(),
+		DB_CONNECTION_ERROR("errorTxt"),
 		CONFIG_INVALID_XML("configFilePath", "errorTxt"),
 		CONFIG_ERROR("configFilePath", "errorTxt");
 
