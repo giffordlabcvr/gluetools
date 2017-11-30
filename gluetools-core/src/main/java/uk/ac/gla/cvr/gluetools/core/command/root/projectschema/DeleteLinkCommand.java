@@ -47,12 +47,19 @@ public class DeleteLinkCommand extends ProjectSchemaModeCommand<DeleteResult> {
 
 	@Override
 	public DeleteResult execute(CommandContext cmdContext) {
-		Project project = GlueDataObject.lookup(cmdContext, Project.class, Project.pkMap(getProjectName()));
-		Link link = GlueDataObject.lookup(cmdContext, Link.class, Link.pkMap(getProjectName(), srcTableName, srcLinkName), false);
-		ModelBuilder.deleteLinkFromModel(cmdContext.getGluetoolsEngine(), project, link);
-		GlueDataObject.delete(cmdContext, Link.class, Link.pkMap(getProjectName(), srcTableName, srcLinkName), false);
-		cmdContext.commit();
-		return new DeleteResult(Link.class, 1);
+		Link link = GlueDataObject.lookup(cmdContext, Link.class, Link.pkMap(getProjectName(), srcTableName, srcLinkName), true);
+		if(link != null) {
+			deleteLink(cmdContext, link);
+			cmdContext.commit();
+			return new DeleteResult(Link.class, 1);
+		} else {
+			return new DeleteResult(Link.class, 0);
+		}
+	}
+
+	public static void deleteLink(CommandContext cmdContext, Link link) {
+		ModelBuilder.deleteLinkFromModel(cmdContext.getGluetoolsEngine(), link.getProject(), link);
+		GlueDataObject.delete(cmdContext, Link.class, link.pkMap(), false);
 	}
 
 	@CompleterClass
