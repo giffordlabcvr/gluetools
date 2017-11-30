@@ -13,7 +13,7 @@
 		</tr>
 		<tr ng-if="commandModeDocumentation.parentModePathID">
 			<td><b>Parent mode</b></td>
-			<td><a href="./#/commandReference/commandMode/{{commandModeDocumentation.parentModePathID}}">{{commandModeDocumentation.parentDescription}}</a></td>
+			<td><a href="./#/commandModes/commandMode/{{commandModeDocumentation.parentModePathID}}">{{commandModeDocumentation.parentDescription}}</a></td>
 		</tr>
 	</tbody>
 </table>
@@ -35,7 +35,7 @@
 	<tbody>
 		<tr ng-repeat="cmdSummary in cmdCategory.commandSummaries track by $index">
 			<td style="font-family:monospace;">
-				<a href="#commandReference/commandMode/{{commandModeDocumentation.absoluteModePathID}}/command/{{cmdSummary.cmdWordID}}">{{cmdSummary.commandWords.join(' ')}}</a>
+				<a href="#commandModes/commandMode/{{commandModeDocumentation.absoluteModePathID}}/command/{{cmdSummary.cmdWordID}}">{{cmdSummary.commandWords.join(' ')}}</a>
 			</td>
 			<td>{{cmdSummary.description}}</td>
 		</tr>

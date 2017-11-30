@@ -25,7 +25,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"<absoluteModePathID> <cmdWordID>"},
 	//metaTags={CmdMeta.webApiOnly}, 
 	description = "")
-public class WebdocsDocumentModeCommand extends WebdocsCommand<PojoCommandResult<WebdocsModeCommandDocumentation>> {
+public class WebdocsDocumentModeCommandCommand extends WebdocsCommand<PojoCommandResult<WebdocsModeCommandDocumentation>> {
 	
 	
 	public static final String ABSOLUTE_MODE_PATH_ID = "absoluteModePathID";

@@ -89,17 +89,25 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/freemarkerTemplates/page.html',
             controller: 'freemarkerTemplatesCtrl'
           }).
-      	when('/commandReference', {
-            templateUrl: './pages/referenceDocumentation/commandReference/page.html',
-            controller: 'commandReferenceCtrl'
+      	when('/commandModes', {
+            templateUrl: './pages/referenceDocumentation/commandModes/page.html',
+            controller: 'commandModesCtrl'
           }).
-    	when('/commandReference/commandMode/:absoluteModePathID', {
-            templateUrl: './pages/referenceDocumentation/commandReference/commandMode/page.html',
+    	when('/commandModes/commandMode/:absoluteModePathID', {
+            templateUrl: './pages/referenceDocumentation/commandModes/commandMode/page.html',
             controller: 'commandModeCtrl'
           }).
-    	when('/commandReference/commandMode/:absoluteModePathID/command/:cmdWordID', {
-            templateUrl: './pages/referenceDocumentation/commandReference/commandMode/command/page.html',
+    	when('/commandModes/commandMode/:absoluteModePathID/command/:cmdWordID', {
+            templateUrl: './pages/referenceDocumentation/commandModes/commandMode/command/page.html',
             controller: 'commandCtrl'
+          }).
+      	when('/nonModeCommands', {
+            templateUrl: './pages/referenceDocumentation/nonModeCommands/page.html',
+            controller: 'nonModeCommandsCtrl'
+          }).
+      	when('/nonModeCommands/command/:cmdWordID', {
+            templateUrl: './pages/referenceDocumentation/nonModeCommands/command/page.html',
+            controller: 'nonModeCommandCtrl'
           }).
         when('/moduleReference/moduleType/:name', {
               templateUrl: './pages/referenceDocumentation/moduleReference/moduleType/page.html',
@@ -157,7 +165,8 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";
 
   	$scope.referenceDocumentationMenuTitle = "Reference documentation";
-  	$scope.commandReferenceMenuTitle = "Command reference";
+  	$scope.commandModesMenuTitle = "Command mode reference";
+  	$scope.nonModeCommandsMenuTitle = "Non-mode command reference"
   	$scope.moduleReferenceMenuTitle = "Module reference";
 
     

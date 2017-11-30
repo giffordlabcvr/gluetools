@@ -2,12 +2,17 @@ package uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
@@ -81,7 +86,9 @@ public class WebdocsCommandModeDocumentation {
 			absoluteModePathBuf.append(modePathBit+"/"+String.join("/", modeIDs)+"/");
 		}
 
-		commandFactory.getCmdGroupToCmdClasses().forEach((cmdGroup, setOfClasses) -> {
+		Map<CommandGroup, TreeSet<Class<?>>> cmdGroupToCmdClasses = commandFactory.getCmdGroupToCmdClasses();
+		
+		cmdGroupToCmdClasses.forEach((cmdGroup, setOfClasses) -> {
 			if(cmdGroup.isNonModeSpecific()) {
 				return;
 			}

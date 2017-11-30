@@ -356,7 +356,13 @@ public abstract class CommandFactory {
 	}
 
 	public Map<CommandGroup, TreeSet<Class<?>>> getCmdGroupToCmdClasses() {
-		return cmdGroupToCmdClasses;
+		ArrayList<CommandGroup> cmdGroups = new ArrayList<CommandGroup>(cmdGroupToCmdClasses.keySet());
+		Collections.sort(cmdGroups);
+		Map<CommandGroup, TreeSet<Class<?>>> cmdGroupToCmdClassesSorted = new LinkedHashMap<CommandGroup, TreeSet<Class<?>>>();
+		for(CommandGroup cmdGroup: cmdGroups) {
+			cmdGroupToCmdClassesSorted.put(cmdGroup, cmdGroupToCmdClasses.get(cmdGroup));
+		}
+		return cmdGroupToCmdClassesSorted;
 	}
 
 }

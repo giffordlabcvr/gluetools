@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 	commandWords={"run", "script"},
 	docoptUsages={"<filePath>"},
 	docoptOptions={},
-	description="Run Nashorn JS script from a file",
+	description="Run a JavaScript program from a file",
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase }
 ) 
 public class RunScriptCommand extends Command<OkResult> {

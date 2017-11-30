@@ -57,9 +57,11 @@
 	<script type="text/javascript" src="./controllers/userGuide/scriptingLayer/controller.js"></script>
 	<script type="text/javascript" src="./controllers/userGuide/freemarkerTemplates/controller.js"></script>
 
-	<script type="text/javascript" src="./controllers/referenceDocumentation/commandReference/controller.js"></script>
-	<script type="text/javascript" src="./controllers/referenceDocumentation/commandReference/commandMode/controller.js"></script>
-	<script type="text/javascript" src="./controllers/referenceDocumentation/commandReference/commandMode/command/controller.js"></script>
+	<script type="text/javascript" src="./controllers/referenceDocumentation/commandModes/controller.js"></script>
+	<script type="text/javascript" src="./controllers/referenceDocumentation/commandModes/commandMode/controller.js"></script>
+	<script type="text/javascript" src="./controllers/referenceDocumentation/commandModes/commandMode/command/controller.js"></script>
+	<script type="text/javascript" src="./controllers/referenceDocumentation/nonModeCommands/controller.js"></script>
+	<script type="text/javascript" src="./controllers/referenceDocumentation/nonModeCommands/command/controller.js"></script>
 	<script type="text/javascript" src="./controllers/referenceDocumentation/moduleReference/controller.js"></script>
 	<script type="text/javascript" src="./controllers/referenceDocumentation/moduleReference/moduleType/controller.js"></script>
 	<script type="text/javascript" src="./controllers/referenceDocumentation/moduleReference/moduleCommand/controller.js"></script>
@@ -123,7 +125,8 @@
 	        <li class="dropdown" dropdown>
 	          <a href="#" dropdown-toggle class="dropdown-toggle" data-toggle="dropdown">{{referenceDocumentationMenuTitle}} <b class="caret"></b></a>
 	          <ul class="dropdown-menu" role="menu">
-		        <li><a href="#commandReference">{{commandReferenceMenuTitle}}</a></li>
+		        <li><a href="#commandModes">{{commandModesMenuTitle}}</a></li>
+		        <li><a href="#nonModeCommands">{{nonModeCommandsMenuTitle}}</a></li>
 		        <li><a href="#moduleReference">{{moduleReferenceMenuTitle}}</a></li>
 	          </ul>
 	        </li>

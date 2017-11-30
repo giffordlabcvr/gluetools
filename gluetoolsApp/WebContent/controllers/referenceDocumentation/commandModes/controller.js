@@ -1,4 +1,4 @@
-gluetoolsApp.controller('commandReferenceCtrl', 
+gluetoolsApp.controller('commandModesCtrl', 
 		[ '$scope', 'glueWebToolConfig', 'glueWS', 'dialogs', 
 		    function($scope, glueWebToolConfig, glueWS, dialogs) {
 			

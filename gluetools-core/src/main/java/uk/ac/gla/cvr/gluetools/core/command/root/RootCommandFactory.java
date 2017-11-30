@@ -1,10 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModeCommandCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentCommandModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModuleCommandCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModuleTypeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentNonModeCommandCommand;
+import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentNonModeCommandsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsListCommandModesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsListModuleTypesCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
@@ -33,6 +35,8 @@ public class RootCommandFactory extends BaseCommandFactory {
 		registerCommandClass(WebdocsDocumentModuleCommandCommand.class);
 		registerCommandClass(WebdocsListCommandModesCommand.class);
 		registerCommandClass(WebdocsDocumentCommandModeCommand.class);
-		registerCommandClass(WebdocsDocumentModeCommand.class);
+		registerCommandClass(WebdocsDocumentModeCommandCommand.class);
+		registerCommandClass(WebdocsDocumentNonModeCommandsCommand.class);
+		registerCommandClass(WebdocsDocumentNonModeCommandCommand.class);
 	}
 }

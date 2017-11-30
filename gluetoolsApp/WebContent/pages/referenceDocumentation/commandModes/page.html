@@ -1,0 +1,16 @@
+<h2>{{commandModesMenuTitle}}</h2>
+	<p>
+	GLUE command layer clients may navigate the data model via hierarchical command modes. 
+	A mode is specifed by a mode path which identifes a specific data or metadata object; commands within 
+	the mode operate on this object.
+	</p>
+	<treecontrol class="tree-light"
+	   tree-model="modeTree"
+	   expanded-nodes="expandedNodes"
+	   selected-node="selectedNode"
+	   options="treeOptions">
+	   <a style="font-size: 15px" href="./#/commandModes/commandMode/{{node.absoluteModePathID}}">{{node.modeDescription}}</a> 
+	</treecontrol>
+
+</div>
+
