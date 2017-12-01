@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 @CommandClass( 
 	commandWords={"list", "link-target"}, 
-	docoptUsages={"<linkName>"},
+	docoptUsages={"<linkName> [<propertyName> ...]"},
 	docoptOptions={},
 	metaTags={CmdMeta.updatesDatabase},
 	description="List target objects on a link") 

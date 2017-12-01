@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.Keyword;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
+import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.LinkException;
@@ -45,6 +46,8 @@ public class PropertyCommandDelegate {
 	public static final String LINK_NAME = "linkName";
 	public static final String TARGET_PATH = "targetPath";
 	public static final String NO_COMMIT = "noCommit";
+	public static final String PROPERTY_NAME = "propertyName";
+	
 	
 	private String property;
 	private String fieldName;
@@ -52,6 +55,7 @@ public class PropertyCommandDelegate {
 	private String linkName;
 	private String targetPath;
 	private Boolean noCommit;
+	public List<String> propertyNames;
 	
 	public void configureSetField(PluginConfigContext pluginConfigContext, Element configElem) {
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
@@ -101,6 +105,11 @@ public class PropertyCommandDelegate {
 
 	public void configureListLinkTarget(PluginConfigContext pluginConfigContext, Element configElem) {
 		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
+		
+		propertyNames = PluginUtils.configureStringsProperty(configElem, PROPERTY_NAME);
+		if(propertyNames.isEmpty()) {
+			propertyNames = Arrays.asList(CustomTableObject.ID_PROPERTY); // default fields
+		}
 	}
 
 	
@@ -205,7 +214,8 @@ public class PropertyCommandDelegate {
 		}
 		Class<D> theClass = (Class<D>) project.getDataObjectClass(otherTableName);
 		Collection<D> targets = (Collection<D>) configurableObject.readNestedProperty(linkName);
-		return new ListResult(cmdContext, theClass, new LinkedList<D>(targets));
+		
+		return new ListResult(cmdContext, theClass, new LinkedList<D>(targets), propertyNames);
 	}
 
 	private Link resolveLink(Project project, String tableName, String linkName) {
