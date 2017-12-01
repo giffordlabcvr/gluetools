@@ -117,7 +117,7 @@ public class ModelBuilder {
 	static PkPath pkPath(String pkPath) { return new PkPath(pkPath); }
 	
 	
-	public static final String configurableTablesString = "[sequence, variation, feature, alignment, reference, alignment_member, var_almt_note, member_floc_note]";
+	public static final String configurableTablesString = "[sequence, variation, feature, feature_location, alignment, reference, alignment_member, var_almt_note, member_floc_note]";
 	
 	public static ServerRuntime createMetaRuntime(DatabaseConfiguration dbConfiguration, PropertiesConfiguration propertiesConfiguration) {
 		return new ServerRuntime(META_DOMAIN_RESOURCE, dbConfigModule(dbConfiguration, propertiesConfiguration));
