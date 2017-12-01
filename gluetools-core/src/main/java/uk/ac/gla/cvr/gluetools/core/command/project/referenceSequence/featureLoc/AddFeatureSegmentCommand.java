@@ -18,6 +18,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureSegmentException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -27,7 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass( 
 	commandWords={"add","segment"}, 
-	docoptUsages={"(<refStart> <refEnd> | -l <lcStart> <lcEnd>"},
+	docoptUsages={"( <refStart> <refEnd> | -l <lcStart> <lcEnd> )"},
 	docoptOptions={
 		"-l, --labeledCodon   Set location based on labeled codons"},
 	metaTags={CmdMeta.updatesDatabase},
@@ -76,11 +77,21 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-				FeatureLocation.pkMap(getRefSeqName(), getFeatureName()));
 		if(labeledCodonBased) {
-			featureLoc.getFeature().checkCodesAminoAcids();
-			Map<String, LabeledCodon> labelToLabeledCodon = featureLoc.getLabelToLabeledCodon(cmdContext);
+			Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
+			Feature parentFeature = feature.getParent();
+			if(parentFeature == null) {
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Feature \""+feature.getName()+"\" does not have a parent feature");
+			}
+			if(!parentFeature.codesAminoAcids()) {
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Parent feature \""+parentFeature.getName()+"\" does not code for amino acids");
+			}
+			FeatureLocation parentFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+					FeatureLocation.pkMap(getRefSeqName(), parentFeature.getName()));
+			if(parentFeatureLoc == null) {
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "No feature location defined for parent feature \""+parentFeature.getName()+"\" on reference sequence \""+getRefSeqName()+"\"");
+			}
+			Map<String, LabeledCodon> labelToLabeledCodon = parentFeatureLoc.getLabelToLabeledCodon(cmdContext);
 			LabeledCodon startLabeledCodon = labelToLabeledCodon.get(lcStart);
 			if(startLabeledCodon == null) {
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "No such labeled codon \""+lcStart+"\"");
@@ -92,6 +103,8 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			}
 			refEnd = endLabeledCodon.getNtStart()+2;
 		}
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+				FeatureLocation.pkMap(getRefSeqName(), getFeatureName()));
 		if(refStart > refEnd) {
 			throw new FeatureSegmentException(Code.FEATURE_SEGMENT_ENDPOINTS_REVERSED, 
 					getRefSeqName(), getFeatureName(), Integer.toString(refStart), Integer.toString(refEnd));
