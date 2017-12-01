@@ -76,7 +76,7 @@ public class Feature extends _Feature implements HasDisplayName {
 		Feature parent = getParent();
 		if(parent == null) {
 			return null;
-		} else if(!parent.getMetatagTypes().contains(FeatureMetatag.Type.INFORMATIONAL)) {
+		} else if(!parent.isInformational()) {
 			return parent;
 		} else {
 			return parent.getNextAncestor();
@@ -98,15 +98,15 @@ public class Feature extends _Feature implements HasDisplayName {
 
 	
 	public boolean hasOwnCodonNumbering() {
-		return getMetatagTypes().contains(FeatureMetatag.Type.OWN_CODON_NUMBERING);
+		return getMetatag(FeatureMetatag.Type.OWN_CODON_NUMBERING).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
 	public boolean isInformational() {
-		return getMetatagTypes().contains(FeatureMetatag.Type.INFORMATIONAL);
+		return getMetatag(FeatureMetatag.Type.INFORMATIONAL).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
 	public boolean codesAminoAcids() {
-		return getMetatagTypes().contains(FeatureMetatag.Type.CODES_AMINO_ACIDS);
+		return getMetatag(FeatureMetatag.Type.CODES_AMINO_ACIDS).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
 	
