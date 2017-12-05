@@ -120,9 +120,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	
 	public NcbiImporter() {
 		super();
-		addModulePluginCmdClass(NcbiImporterSyncCommand.class);
-		addModulePluginCmdClass(NcbiImporterImportCommand.class);
-		addModulePluginCmdClass(NcbiImporterPreviewCommand.class);
+		registerModulePluginCmdClass(NcbiImporterSyncCommand.class);
+		registerModulePluginCmdClass(NcbiImporterImportCommand.class);
+		registerModulePluginCmdClass(NcbiImporterPreviewCommand.class);
 		addSimplePropertyName(DATABASE);
 		addSimplePropertyName(E_FETCH_BATCH_SIZE);
 		addSimplePropertyName(E_SEARCH_RET_MAX);

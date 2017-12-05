@@ -39,7 +39,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 	
 	public GenbankXmlPopulator() {
 		super();
-		addModulePluginCmdClass(GenbankXmlPopulatorPopulateCommand.class);
+		registerModulePluginCmdClass(GenbankXmlPopulatorPopulateCommand.class);
 	}
 
 	protected List<XmlPopulatorRule> getRules() {

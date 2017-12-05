@@ -30,7 +30,7 @@ public class FeaturePresenceRecorder extends ModulePlugin<FeaturePresenceRecorde
 
 	public FeaturePresenceRecorder() {
 		super();
-		addModulePluginCmdClass(RecordFeaturePresenceCommand.class);
+		registerModulePluginCmdClass(RecordFeaturePresenceCommand.class);
 		addSimplePropertyName(REF_NT_COVERAGE_FIELD_NAME);
 		addSimplePropertyName(MIN_REF_NT_COVERAGE_PCT);
 	}

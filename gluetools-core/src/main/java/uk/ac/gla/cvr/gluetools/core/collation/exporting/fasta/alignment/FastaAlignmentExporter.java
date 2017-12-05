@@ -26,8 +26,8 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	
 	public FastaAlignmentExporter() {
 		super();
-		addModulePluginCmdClass(FastaAlignmentExportCommand.class);
-		addModulePluginCmdClass(FastaAlignmentWebExportCommand.class);
+		registerModulePluginCmdClass(FastaAlignmentExportCommand.class);
+		registerModulePluginCmdClass(FastaAlignmentWebExportCommand.class);
 		
 	}
 

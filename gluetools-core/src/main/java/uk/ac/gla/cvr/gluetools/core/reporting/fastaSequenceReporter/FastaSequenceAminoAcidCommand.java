@@ -35,7 +35,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a FASTA file", 
 		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-t <targetRefName>] [-a <tipAlmtName>]" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
 				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",

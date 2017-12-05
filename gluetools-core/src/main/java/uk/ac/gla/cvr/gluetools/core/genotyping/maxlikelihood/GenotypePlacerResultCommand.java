@@ -27,7 +27,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		commandWords={"genotype", "placer-result"}, 
 		description = "Generate genotyping results from a placer result file", 
 		docoptUsages = { "-f <fileName> [-l <detailLevel>]" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-f <fileName>, --fileName <fileName>           Placer result file path",
 				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",

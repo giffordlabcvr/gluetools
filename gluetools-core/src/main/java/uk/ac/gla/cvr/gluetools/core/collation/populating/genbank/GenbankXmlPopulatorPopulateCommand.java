@@ -23,7 +23,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"populate"}, 
 		docoptUsages={"[-b <batchSize>] [(-p | -s)] [-w <whereClause>] [<property> ...]"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify updated sequences",
 				"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",

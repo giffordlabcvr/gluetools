@@ -42,8 +42,8 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 
 	public CodonAwareBlastAligner() {
 		super();
-		addModulePluginCmdClass(CodonAwareBlastAlignerAlignCommand.class);
-		addModulePluginCmdClass(CodonAwareBlastAlignerFileAlignCommand.class);
+		registerModulePluginCmdClass(CodonAwareBlastAlignerAlignCommand.class);
+		registerModulePluginCmdClass(CodonAwareBlastAlignerFileAlignCommand.class);
 	}
 
 	@Override

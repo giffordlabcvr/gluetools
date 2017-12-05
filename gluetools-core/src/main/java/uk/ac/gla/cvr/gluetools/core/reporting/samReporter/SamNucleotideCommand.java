@@ -15,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 @CommandClass(
 		commandWords={"nucleotide"}, 
 		description = "Summarise nucleotides in a SAM/BAM file", 
-		docCategory = "Type-specific module commands",
 		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",

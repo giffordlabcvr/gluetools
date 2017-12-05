@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"genotype", "fasta-document"}, 
 		description = "Genotype sequences in a FASTA command document object", 
 		docoptUsages = { },
-		docCategory = "Type-specific module commands",
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {CmdMeta.inputIsComplex}	
 )

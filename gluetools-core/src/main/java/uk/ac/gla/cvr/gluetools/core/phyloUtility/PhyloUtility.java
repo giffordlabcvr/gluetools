@@ -13,8 +13,8 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 
 	public PhyloUtility() {
 		super();
-		addModulePluginCmdClass(RerootPhylogenyCommand.class);
-		addModulePluginCmdClass(ReformatPhylogenyCommand.class);
+		registerModulePluginCmdClass(RerootPhylogenyCommand.class);
+		registerModulePluginCmdClass(ReformatPhylogenyCommand.class);
 	}
 	
 	public PhyloTree rerootPhylogeny(PhyloBranch rerootBranch, BigDecimal rerootDistance) {

@@ -36,8 +36,8 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 	
 	public FastaAlignmentImporter() {
 		super();
-		addModulePluginCmdClass(FastaAlignmentImporterImportCommand.class);
-		addModulePluginCmdClass(FastaAlignmentImporterPreviewCommand.class);
+		registerModulePluginCmdClass(FastaAlignmentImporterImportCommand.class);
+		registerModulePluginCmdClass(FastaAlignmentImporterPreviewCommand.class);
 		addSimplePropertyName(SEQUENCE_GAP_REGEX);
 		addSimplePropertyName(REQUIRE_TOTAL_COVERAGE);
 		addSimplePropertyName(ALLOW_AMBIGUOUS_SEGMENTS);

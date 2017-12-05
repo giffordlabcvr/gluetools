@@ -44,7 +44,7 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 	
 	public EcmaFunctionInvoker() {
 		super();
-		addModulePluginCmdClass(EcmaInvokeFunctionCommand.class);
+		registerModulePluginCmdClass(EcmaInvokeFunctionCommand.class);
 	}
 
 

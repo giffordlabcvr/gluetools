@@ -22,7 +22,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"list", "sam-reference"}, 
 		description = "Provide basic information about SAM references", 
 				docoptUsages = { "-i <fileName>" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                    SAM/BAM input file",
 				},

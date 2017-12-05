@@ -58,9 +58,9 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 		super();
 		addSimplePropertyName(MIN_FREQUENCY_PCT);
 		addSimplePropertyName(MIN_SAMPLE_SIZE);
-		addModulePluginCmdClass(ShowCommonAasCommand.class);
-		addModulePluginCmdClass(GenerateVariationUncommonAasCommand.class);
-		addModuleDocumentCmdClass(AddVariationFieldSettingCommand.class);
+		registerModulePluginCmdClass(ShowCommonAasCommand.class);
+		registerModulePluginCmdClass(GenerateVariationUncommonAasCommand.class);
+		registerModuleDocumentCmdClass(AddVariationFieldSettingCommand.class);
 	}
 
 	@Override

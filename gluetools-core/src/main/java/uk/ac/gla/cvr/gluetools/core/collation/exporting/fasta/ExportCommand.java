@@ -31,7 +31,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass( 
 		commandWords={"export"}, 
 		docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] (-p | -f <fileName>)"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 				"-f <fileName>, --fileName <fileName>                 FASTA file",

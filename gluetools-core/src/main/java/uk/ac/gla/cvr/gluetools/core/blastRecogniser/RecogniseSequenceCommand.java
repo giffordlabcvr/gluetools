@@ -29,7 +29,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"recognise", "sequence"}, 
 		description = "Apply recognition to stored sequences", 
 		docoptUsages = { "(-w <whereClause> | -a)" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be genotyped",
 				"-a, --allSequences                             Genotype all sequences in the project"

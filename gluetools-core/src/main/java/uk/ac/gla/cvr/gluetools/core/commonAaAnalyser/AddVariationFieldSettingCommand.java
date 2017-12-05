@@ -24,7 +24,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		commandWords={"add", "variation", "field-setting"}, 
 		description = "Add a custom field setting for generated variations", 
 		docoptUsages={"<fieldName> <fieldValue>"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={},
 		metaTags = {CmdMeta.updatesDatabase}, 
 		furtherHelp = "The setting will be applied to all variations which the module generates"

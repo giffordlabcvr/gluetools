@@ -29,7 +29,7 @@ public class NucleotideConsensusGenerator extends AbstractConsensusGenerator<Nuc
 
 	public NucleotideConsensusGenerator() {
 		super();
-		addModulePluginCmdClass(GenerateFastaNtConsensusCommand.class);
+		registerModulePluginCmdClass(GenerateFastaNtConsensusCommand.class);
 	}
 
 	public CommandResult doGenerate(ConsoleCommandContext cmdContext,

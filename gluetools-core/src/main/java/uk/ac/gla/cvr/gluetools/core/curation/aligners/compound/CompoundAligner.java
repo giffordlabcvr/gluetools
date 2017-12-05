@@ -40,8 +40,8 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 	
 	public CompoundAligner() {
 		super();
-		addModulePluginCmdClass(CompoundAlignerAlignCommand.class);
-		addModulePluginCmdClass(CompoundAlignerFileAlignCommand.class);
+		registerModulePluginCmdClass(CompoundAlignerAlignCommand.class);
+		registerModulePluginCmdClass(CompoundAlignerFileAlignCommand.class);
 	}
 
 	@Override

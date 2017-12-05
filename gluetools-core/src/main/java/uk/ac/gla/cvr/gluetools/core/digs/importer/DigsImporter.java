@@ -85,13 +85,13 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 	
 	public DigsImporter() {
 		super();
-		addModulePluginCmdClass(ListExtractedCommand.class);
-		addModulePluginCmdClass(ImportExtractedCommand.class);
-		addModulePluginCmdClass(ListDigsDbsCommand.class);
-		addModulePluginCmdClass(SynchroniseFieldsExtractedCommand.class);
-		addModulePluginCmdClass(CheckFieldsExtractedCommand.class);
-		addModuleDocumentCmdClass(ShowMappingExtractedCommand.class);
-		addModuleDocumentCmdClass(UpdateMappingExtractedCommand.class);
+		registerModulePluginCmdClass(ListExtractedCommand.class);
+		registerModulePluginCmdClass(ImportExtractedCommand.class);
+		registerModulePluginCmdClass(ListDigsDbsCommand.class);
+		registerModulePluginCmdClass(SynchroniseFieldsExtractedCommand.class);
+		registerModulePluginCmdClass(CheckFieldsExtractedCommand.class);
+		registerModuleDocumentCmdClass(ShowMappingExtractedCommand.class);
+		registerModuleDocumentCmdClass(UpdateMappingExtractedCommand.class);
 		addSimplePropertyName(SEQUENCE_ID_TEMPLATE);
 	}
 

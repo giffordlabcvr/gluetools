@@ -27,7 +27,7 @@ public class ModelTester extends ModulePlugin<ModelTester> {
 
 	public ModelTester() {
 		super();
-		addModulePluginCmdClass(TestModelsCommand.class);
+		registerModulePluginCmdClass(TestModelsCommand.class);
 		PropertyGroup jModelTestPropertyGroup = getRootPropertyGroup().addChild(J_MODEL_TEST_RUNNER);
 		jModelTestRunner.configurePropertyGroup(jModelTestPropertyGroup);
 	}

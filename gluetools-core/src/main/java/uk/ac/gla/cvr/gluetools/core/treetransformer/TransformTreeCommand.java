@@ -20,7 +20,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"transform-tree", "newick"}, 
 		description = "Rename leaf nodes in a Newick tree file", 
 		docoptUsages = { "-i <inputFile> -o <outputFile>"},
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     Input newick file",
 				"-o <outputFile>, --outputFile <outputFile>  Output newick file",

@@ -37,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @CommandClass(
 		commandWords={"place", "sequence"}, 
 		description = "Place one or more stored sequences into a phylogeny", 
-		docCategory = "Type-specific module commands",
 		docoptUsages = { "(-w <whereClause> | -a) [-p <pageSize>] [-l <fetchLimit>] [-f <fetchOffset>] [-d <dataDir>] -o <outputFile>" },
 		docoptOptions = { 
 				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be placed",

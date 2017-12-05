@@ -19,7 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"generate", "fasta", "aa-consensus"}, 
-		docCategory = "Type-specific module commands",
 		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-i <consensusID>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",

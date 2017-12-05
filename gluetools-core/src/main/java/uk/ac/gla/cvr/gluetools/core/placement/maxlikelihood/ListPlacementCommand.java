@@ -12,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 		commandWords={"list", "placement"}, 
 		description = "Summarise the placements for a single query in a result file", 
 		docoptUsages = { "-i <inputFile> -q <queryName>" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>  Placement results file",
 				"-q <queryName>, --queryName <queryName>  Query sequence name",

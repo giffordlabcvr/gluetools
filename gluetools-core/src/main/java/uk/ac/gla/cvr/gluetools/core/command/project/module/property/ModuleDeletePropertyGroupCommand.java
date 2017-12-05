@@ -17,7 +17,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @CommandClass(
 		commandWords={"delete", "property-group"},
 		docoptUsages="<propertyPath>",
-		docCategory="General module commands",
 		description = "Delete a property group from the module config")
 public class ModuleDeletePropertyGroupCommand extends ModulePropertyCommand<DeleteResult> implements ModuleUpdateDocumentCommand {
 

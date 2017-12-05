@@ -33,7 +33,7 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 
 	public AminoAcidConsensusGenerator() {
 		super();
-		addModulePluginCmdClass(GenerateFastaAaConsensusCommand.class);
+		registerModulePluginCmdClass(GenerateFastaAaConsensusCommand.class);
 	}
 
 	public CommandResult doGenerate(ConsoleCommandContext cmdContext,

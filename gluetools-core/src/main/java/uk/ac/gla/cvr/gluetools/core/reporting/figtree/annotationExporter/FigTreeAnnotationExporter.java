@@ -37,7 +37,7 @@ public class FigTreeAnnotationExporter extends ModulePlugin<FigTreeAnnotationExp
 	
 	public FigTreeAnnotationExporter() {
 		super();
-		addModulePluginCmdClass(ExportAnnotationsCommand.class);
+		registerModulePluginCmdClass(ExportAnnotationsCommand.class);
 	}
 	
 	

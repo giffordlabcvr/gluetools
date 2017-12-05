@@ -52,7 +52,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	
 	public TextFilePopulator() {
 		super();
-		addModulePluginCmdClass(TextFilePopulatorPopulateCommand.class);
+		registerModulePluginCmdClass(TextFilePopulatorPopulateCommand.class);
 		addSimplePropertyName(SKIP_MISSING);
 		addSimplePropertyName(UPDATE_MULTIPLE);
 		addSimplePropertyName(COLUMN_DELIMITER_REGEX);

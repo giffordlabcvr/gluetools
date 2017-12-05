@@ -24,7 +24,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"export", "figtree-annotation"}, 
 		description = "Export a figtree annotation file based on alignment members", 
 		docoptUsages = { "<almtName> [-c] [-w <whereClause>] -f <fileName>"},
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-c, --recursive                                Include descendent members",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify members",

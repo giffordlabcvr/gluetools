@@ -72,7 +72,7 @@ public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer>
 	public TextToQueryTransformer() {
 		super();
 		addSimplePropertyName(DATA_CLASS);
-		addModulePluginCmdClass(TextToQueryCommand.class);
+		registerModulePluginCmdClass(TextToQueryCommand.class);
 	}
 
 

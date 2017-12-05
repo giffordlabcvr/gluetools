@@ -17,7 +17,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"import"}, 
 		docoptUsages={"-f <fileName>"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={
 			"-f <fileName>, --fileName <fileName>  FASTA file"},
 		description="Import sequences from a FASTA file", 

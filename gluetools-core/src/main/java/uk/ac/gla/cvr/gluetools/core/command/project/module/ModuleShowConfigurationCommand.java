@@ -12,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @CommandClass( 
 		commandWords={"show", "configuration"}, 
 		docoptUsages={},
-		docCategory="General module commands",
 		description="Show the current configuration of this module") 
 public final class ModuleShowConfigurationCommand extends ModuleDocumentCommand<ConsoleCommandResult> {
 

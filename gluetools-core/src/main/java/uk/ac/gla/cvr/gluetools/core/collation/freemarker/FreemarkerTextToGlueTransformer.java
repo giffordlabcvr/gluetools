@@ -43,7 +43,7 @@ public class FreemarkerTextToGlueTransformer extends ModulePlugin<FreemarkerText
 
 	public FreemarkerTextToGlueTransformer() {
 		super();
-		addModulePluginCmdClass(FreemarkerTextToGlueTransformerTransformCommand.class);
+		registerModulePluginCmdClass(FreemarkerTextToGlueTransformerTransformCommand.class);
 	}
 
 	@Override

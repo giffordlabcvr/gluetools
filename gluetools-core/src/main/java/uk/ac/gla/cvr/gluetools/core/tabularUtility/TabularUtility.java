@@ -26,8 +26,8 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 
 	public TabularUtility() {
 		super();
-		addModulePluginCmdClass(LoadTabularCommand.class);
-		addModulePluginCmdClass(SaveTabularCommand.class);
+		registerModulePluginCmdClass(LoadTabularCommand.class);
+		registerModulePluginCmdClass(SaveTabularCommand.class);
 		addSimplePropertyName(COLUMN_DELIMITER_REGEX);
 		addSimplePropertyName(OUTPUT_FORMAT);
 	}

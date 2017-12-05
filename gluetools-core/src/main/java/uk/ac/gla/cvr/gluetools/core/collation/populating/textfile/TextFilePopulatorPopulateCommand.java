@@ -21,7 +21,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"populate"}, 
 		docoptUsages={"[-b <batchSize>] [-w <whereClause>] [-p] -f <fileName> [<fieldName> ...]"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={
 				"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
 				"-p, --preview                                  Preview only, no DB updates",

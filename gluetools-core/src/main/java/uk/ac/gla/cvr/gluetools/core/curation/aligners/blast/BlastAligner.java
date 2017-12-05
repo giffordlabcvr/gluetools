@@ -31,8 +31,8 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 
 	public BlastAligner() {
 		super();
-		addModulePluginCmdClass(BlastAlignerAlignCommand.class);
-		addModulePluginCmdClass(BlastAlignerFileAlignCommand.class);
+		registerModulePluginCmdClass(BlastAlignerAlignCommand.class);
+		registerModulePluginCmdClass(BlastAlignerFileAlignCommand.class);
 	}
 
 	public static class BlastAlignerResult extends Aligner.AlignerResult {

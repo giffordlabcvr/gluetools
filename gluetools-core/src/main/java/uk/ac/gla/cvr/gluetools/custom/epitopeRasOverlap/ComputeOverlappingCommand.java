@@ -27,7 +27,6 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 		commandWords={"compute", "overlapping"}, 
 		description = "Compute which RAS variations overlap which Epitope variations", 
 		docoptUsages = { ""},
-		docCategory = "Type-specific module commands",
 		docoptOptions = {},
 		furtherHelp = "",
 		metaTags = {}	

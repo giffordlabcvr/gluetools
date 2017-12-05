@@ -14,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"reverse-complement", "string"}, 
 		description = "Reverse complement a FASTA string", 
 		docoptUsages = { "-s <fastaString>" }, 
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-s <fastaString>, --fastaString <fastaString>  FASTA input string"
 		},

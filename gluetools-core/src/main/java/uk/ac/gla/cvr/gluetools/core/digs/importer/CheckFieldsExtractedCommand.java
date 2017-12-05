@@ -14,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 		commandWords={"check", "fields", "extracted"}, 
 		description = "Check the GLUE sequence table fields are correct for DIGS \"Extracted\" data", 
 		docoptUsages = { "" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = {
 		},
 		furtherHelp = ""

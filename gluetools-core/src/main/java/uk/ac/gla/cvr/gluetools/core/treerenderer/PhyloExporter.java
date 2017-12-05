@@ -26,7 +26,7 @@ public class PhyloExporter extends ModulePlugin<PhyloExporter> {
 
 	public PhyloExporter() {
 		super();
-		addModulePluginCmdClass(ExportPhylogenyCommand.class);
+		registerModulePluginCmdClass(ExportPhylogenyCommand.class);
 	}
 	
 	@Override

@@ -22,7 +22,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"invoke-function"}, 
 		description = "Invoke an ECMAScript function", 
 		docoptUsages = { "<functionName> [<argument> ...]" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { },
 		metaTags = { },
 		furtherHelp = ""

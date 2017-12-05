@@ -13,7 +13,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(commandWords={"show", "property"},
 		docoptUsages="<propertyPath>",
-		docCategory="General module commands",
 		description = "Show value of a property on the module config")
 public final class ModuleShowPropertyCommand extends ModulePropertyCommand<ModuleShowSimplePropertyResult> {
 	

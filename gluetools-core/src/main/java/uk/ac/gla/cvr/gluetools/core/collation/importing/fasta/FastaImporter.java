@@ -46,7 +46,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Pr
 
 	public FastaImporter() {
 		super();
-		addModulePluginCmdClass(FastaImporterImportCommand.class);
+		registerModulePluginCmdClass(FastaImporterImportCommand.class);
 		addSimplePropertyName(SKIP_EXISTING_SEQUENCES);
 		addSimplePropertyName(SOURCE_NAME);
 	}

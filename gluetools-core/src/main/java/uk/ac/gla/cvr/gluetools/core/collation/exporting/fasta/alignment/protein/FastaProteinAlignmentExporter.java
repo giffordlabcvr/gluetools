@@ -29,8 +29,8 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 	
 	public FastaProteinAlignmentExporter() {
 		super();
-		addModulePluginCmdClass(FastaProteinAlignmentExportCommand.class);
-		addModulePluginCmdClass(FastaProteinAlignmentWebExportCommand.class);
+		registerModulePluginCmdClass(FastaProteinAlignmentExportCommand.class);
+		registerModulePluginCmdClass(FastaProteinAlignmentWebExportCommand.class);
 	}
 
 	public static void exportAlignment(

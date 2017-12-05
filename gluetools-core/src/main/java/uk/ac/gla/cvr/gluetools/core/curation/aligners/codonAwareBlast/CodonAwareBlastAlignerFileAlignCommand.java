@@ -14,7 +14,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 		commandWords = { Aligner.FILE_ALIGN_COMMAND_WORD }, 
 		description = "Align sequence file to a reference using codon-aware BLAST", 
 		docoptUsages = { Aligner.FILE_ALIGN_COMMAND_DOCOPT_USAGE },
-		docCategory = "Type-specific module commands",
 		metaTags = {  CmdMeta.consoleOnly },
 		furtherHelp = Aligner.FILE_ALIGN_COMMAND_FURTHER_HELP
 		)

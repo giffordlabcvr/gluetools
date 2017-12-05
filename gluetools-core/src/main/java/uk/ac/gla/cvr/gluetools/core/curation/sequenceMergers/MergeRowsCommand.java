@@ -32,7 +32,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"merge", "almt-rows"}, 
 		description = "Generate sequences by merging alignment rows", 
 		docoptUsages = { "<almtName> (-a | -w <whereClause>)" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { 
 				"-a, --allRows                                  Select all alignment rows",
 				"-w <whereClause>, --whereClause <whereClause>  Qualify selected rows",

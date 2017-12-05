@@ -13,6 +13,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroupRegistry;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
@@ -36,6 +38,8 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	private PropertyGroup rootPropertyGroup = new PropertyGroup();
 	
 	private Set<String> resourceNames = new LinkedHashSet<String>();
+	
+	private CommandGroupRegistry commandGroupRegistry = new CommandGroupRegistry();
 	
 	private String moduleName;
 	
@@ -75,12 +79,14 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	private List<Class<? extends Command>> providedCmdClasses = 
 			new ArrayList<Class<? extends Command>>();
 	
-	protected void addModulePluginCmdClass(Class<? extends ModulePluginCommand<?, P>> providedCmdClass) {
+	protected void registerModulePluginCmdClass(Class<? extends ModulePluginCommand<?, P>> providedCmdClass) {
 		providedCmdClasses.add(providedCmdClass);
+		commandGroupRegistry.registerCommandClass(providedCmdClass);
 	}
 
-	protected void addModuleDocumentCmdClass(Class<? extends ModuleDocumentCommand<?>> providedCmdClass) {
+	protected void registerModuleDocumentCmdClass(Class<? extends ModuleDocumentCommand<?>> providedCmdClass) {
 		providedCmdClasses.add(providedCmdClass);
+		commandGroupRegistry.registerCommandClass(providedCmdClass);
 	}
 
 	
@@ -173,4 +179,13 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	public void init(CommandContext cmdContext) {}
 
 
+	public void setCmdGroup(CommandGroup cmdGroup) {
+		this.commandGroupRegistry.setCmdGroup(cmdGroup);
+	}
+
+	public CommandGroupRegistry getCommandGroupRegistry() {
+		return commandGroupRegistry;
+	}
+
+	
 }

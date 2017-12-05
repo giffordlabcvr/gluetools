@@ -37,7 +37,7 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 
 	public PhyloImporter() {
 		super();
-		addModulePluginCmdClass(ImportPhylogenyCommand.class);
+		registerModulePluginCmdClass(ImportPhylogenyCommand.class);
 	}
 
 	// anyAlignment -- if true, the alignment mentioned in the name of the incoming leaf 

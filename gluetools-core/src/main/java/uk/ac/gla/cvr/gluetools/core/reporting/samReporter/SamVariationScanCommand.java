@@ -50,7 +50,6 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docCategory = "Type-specific module commands",
 		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",

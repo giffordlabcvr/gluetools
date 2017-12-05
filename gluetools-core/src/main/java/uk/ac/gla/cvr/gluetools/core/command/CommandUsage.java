@@ -17,7 +17,6 @@ public class CommandUsage {
 	private String[] commandWords;
 	private String[] docoptUsages;
 	private String description;
-	private String docCategory = null;
 	private String[] docoptOptions = {};
 	private String furtherHelp = "";
 	private String[] metaTags = {};
@@ -31,12 +30,11 @@ public class CommandUsage {
 
 	public CommandUsage(String[] commandWords, String[] docoptUsages,
 			String description, String[] docoptOptions, String furtherHelp,
-			String[] metaTags, String docCategory) {
+			String[] metaTags) {
 		this(commandWords, docoptUsages, description);
 		this.docoptOptions = docoptOptions;
 		this.furtherHelp = furtherHelp;
 		this.metaTags = metaTags;
-		this.docCategory = docCategory;
 	}
 	
 	private CommandUsage(CommandClass cmdClassAnno) {
@@ -45,8 +43,7 @@ public class CommandUsage {
 				cmdClassAnno.description(), 
 				cmdClassAnno.docoptOptions(), 
 				cmdClassAnno.furtherHelp(),
-				cmdClassAnno.metaTags(),
-				cmdClassAnno.docCategory());
+				cmdClassAnno.metaTags());
 	}
 	
 	public String[] commandWords() {
@@ -59,10 +56,6 @@ public class CommandUsage {
 
 	public String description() {
 		return description;
-	}
-
-	public String docCategory() {
-		return docCategory;
 	}
 
 	public String[] docoptOptions() {

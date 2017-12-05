@@ -54,7 +54,7 @@ public class VariationFrequenciesGenerator extends ModulePlugin<VariationFrequen
 	private Integer minSampleSize; 	
 	public VariationFrequenciesGenerator() {
 		super();
-		addModulePluginCmdClass(GenerateVariationFrequenciesCommand.class);
+		registerModulePluginCmdClass(GenerateVariationFrequenciesCommand.class);
 		addSimplePropertyName(FREQUENCY_FIELD_NAME);
 		addSimplePropertyName(TOTAL_PRESENT_FIELD_NAME);
 		addSimplePropertyName(TOTAL_ABSENT_FIELD_NAME);

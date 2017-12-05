@@ -10,7 +10,6 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner.C
 		commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
 		description = "Align sequence data to a reference", 
 		docoptUsages = {}, 
-		docCategory = "Type-specific module commands",
 		metaTags={  CmdMeta.inputIsComplex },
 		furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
 		)

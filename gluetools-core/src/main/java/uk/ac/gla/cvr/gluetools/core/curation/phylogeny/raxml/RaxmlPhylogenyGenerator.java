@@ -18,7 +18,7 @@ public class RaxmlPhylogenyGenerator extends PhylogenyGenerator<RaxmlPhylogenyGe
 	
 	public RaxmlPhylogenyGenerator() {
 		super();
-		addModulePluginCmdClass(GenerateRaxmlNucleotidePhylogenyCommand.class);
+		registerModulePluginCmdClass(GenerateRaxmlNucleotidePhylogenyCommand.class);
 		raxmlPhylogenyRunner.configurePropertyGroup(getRootPropertyGroup().addChild(RAXML_PHYLOGENY_RUNNER));
 	}
 	

@@ -47,9 +47,9 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 	
 	public BlastSequenceRecogniser() {
 		super();
-		addModulePluginCmdClass(RecogniseFileCommand.class);
-		addModulePluginCmdClass(RecogniseSequenceCommand.class);
-		addModulePluginCmdClass(RecogniseFastaDocumentCommand.class);
+		registerModulePluginCmdClass(RecogniseFileCommand.class);
+		registerModulePluginCmdClass(RecogniseSequenceCommand.class);
+		registerModulePluginCmdClass(RecogniseFastaDocumentCommand.class);
 	}
 
 	@Override

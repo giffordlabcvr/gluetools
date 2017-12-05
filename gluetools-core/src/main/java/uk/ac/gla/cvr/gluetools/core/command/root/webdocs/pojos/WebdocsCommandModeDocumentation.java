@@ -84,7 +84,7 @@ public class WebdocsCommandModeDocumentation {
 			absoluteModePathBuf.append(modePathBit+"/"+String.join("/", modeIDs)+"/");
 		}
 
-		Map<CommandGroup, TreeSet<Class<?>>> cmdGroupToCmdClasses = commandFactory.getCmdGroupToCmdClasses();
+		Map<CommandGroup, TreeSet<Class<?>>> cmdGroupToCmdClasses = commandFactory.getCommandGroupRegistry().getCmdGroupToCmdClasses();
 		
 		cmdGroupToCmdClasses.forEach((cmdGroup, setOfClasses) -> {
 			if(cmdGroup.isNonModeSpecific()) {

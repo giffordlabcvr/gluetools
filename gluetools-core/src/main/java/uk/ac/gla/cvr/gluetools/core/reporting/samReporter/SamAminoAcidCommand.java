@@ -50,7 +50,6 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docCategory = "Type-specific module commands",
 		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-e <minDepth>] [-P <minAAPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",

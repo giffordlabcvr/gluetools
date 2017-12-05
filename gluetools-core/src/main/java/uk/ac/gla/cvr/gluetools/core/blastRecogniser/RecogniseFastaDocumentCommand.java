@@ -20,7 +20,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"recognise", "fasta-document"}, 
 		description = "Apply recognition to sequences in a FASTA document", 
 		docoptUsages = { },
-		docCategory = "Type-specific module commands",
 		metaTags = {CmdMeta.inputIsComplex}	
 )
 public class RecogniseFastaDocumentCommand extends ModulePluginCommand<BlastSequenceRecogniserResult, BlastSequenceRecogniser> 

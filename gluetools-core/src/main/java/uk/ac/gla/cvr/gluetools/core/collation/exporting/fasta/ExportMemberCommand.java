@@ -32,7 +32,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass( 
 		commandWords={"export-member"}, 
 		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] (-p | -f <fileName>)"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={
 				"-c, --recursive                                      Include members of descendent alignments",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",

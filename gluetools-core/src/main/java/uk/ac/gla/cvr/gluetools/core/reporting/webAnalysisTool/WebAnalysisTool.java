@@ -76,9 +76,9 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 	
 	public WebAnalysisTool() {
 		super();
-		addModulePluginCmdClass(WebAnalysisCommand.class);
-		addModulePluginCmdClass(AnalysisCommand.class);
-		addModulePluginCmdClass(ListVariationCategoryCommand.class);
+		registerModulePluginCmdClass(WebAnalysisCommand.class);
+		registerModulePluginCmdClass(AnalysisCommand.class);
+		registerModulePluginCmdClass(ListVariationCategoryCommand.class);
 		addSimplePropertyName(FASTA_SEQUENCE_REPORTER_MODULE_NAME);
 		addSimplePropertyName(MAX_LIKELIHOOD_GENOTYPER_MODULE_NAME);
 	}

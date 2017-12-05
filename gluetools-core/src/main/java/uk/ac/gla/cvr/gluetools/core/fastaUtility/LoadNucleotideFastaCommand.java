@@ -18,7 +18,6 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		commandWords={"load-nucleotide-fasta"}, 
 		description = "Load FASTA nucleotide data from a file", 
 		docoptUsages = { "<fileName>" }, 
-		docCategory = "Type-specific module commands",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class LoadNucleotideFastaCommand extends ModulePluginCommand<NucleotideFastaCommandResult, FastaUtility>{

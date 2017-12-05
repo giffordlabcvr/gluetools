@@ -43,7 +43,6 @@ public class WebdocsCommandDocumentation {
 		optionStrings.forEach(optionString -> 
 			cmdDoc.optionDocs.add(WebdocsCommandOptionDocumentation.createFromString(optionString)));
 		cmdDoc.description = cmdUsage.description();
-		cmdDoc.docCategory = cmdUsage.docCategory();
 		cmdDoc.furtherHelp = cmdUsage.furtherHelp();
 		return cmdDoc;
 	}

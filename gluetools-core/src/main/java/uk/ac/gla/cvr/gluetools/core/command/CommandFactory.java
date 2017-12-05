@@ -44,11 +44,7 @@ public abstract class CommandFactory {
 		return factories.get(creator);
 	}
 
-	private Map<CommandGroup, TreeSet<Class<?>>>
-		cmdGroupToCmdClasses = new LinkedHashMap<CommandGroup, TreeSet<Class<?>>>();
-	
-	private Map<Class<?>, CommandGroup> 
-		cmdClassToCmdGroup = new LinkedHashMap<Class<?>, CommandGroup>();
+	private CommandGroupRegistry commandGroupRegistry = new CommandGroupRegistry();
 	
 	public static <F extends CommandFactory> F get(Class<F> commandFactoryClass) {
 		try {
@@ -63,10 +59,6 @@ public abstract class CommandFactory {
 	
 	private CommandTreeNode rootNode;
 	
-	// set this before registering a set of commands.
-	// these commands will be added to the relevant group
-	// for documentation purposes.
-	private CommandGroup cmdGroup = null;
 	
 	protected CommandFactory() {
 		resetCommandTree();
@@ -79,21 +71,7 @@ public abstract class CommandFactory {
 		CommandUsage cmdUsage = CommandUsage.commandUsageForCmdClass(cmdClass);
 		if(cmdUsage == null) { throw new RuntimeException("No CommandUsage defined for "+cmdClass.getCanonicalName()); }
 		cmdUsage.validate(cmdClass);
-		CommandGroup cmdGroupToUse = this.cmdGroup;
-		if(cmdGroupToUse == null) {
-			cmdGroupToUse = CommandGroup.OTHER;
-		}
-		
-		this.cmdGroupToCmdClasses.computeIfAbsent(cmdGroupToUse, cmdGrp -> 
-				new TreeSet<Class<?>>(new Comparator<Class<?>>() {
-					@SuppressWarnings("unchecked")
-					public int compare(Class<?> c1, Class<?> c2) {
-						String id1 = String.join("_", CommandUsage.cmdWordsForCmdClass((Class<? extends Command>) c1));
-						String id2 = String.join("_", CommandUsage.cmdWordsForCmdClass((Class<? extends Command>) c2));
-						return id1.compareTo(id2);
-					}
-				})).add(cmdClass);
-		this.cmdClassToCmdGroup.put(cmdClass, cmdGroupToUse);
+		commandGroupRegistry.registerCommandClass(cmdClass);
 		rootNode.registerCommandClass(new LinkedList<String>(Arrays.asList(cmdUsage.commandWords())), cmdClass);
 	}
 
@@ -118,7 +96,7 @@ public abstract class CommandFactory {
 				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
 				if(cmdClass != null) {
 					if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-						helpLines.add(new SpecificCommandHelpLine(cmdClass, cmdClassToCmdGroup.get(cmdClass)));
+						helpLines.add(new SpecificCommandHelpLine(cmdClass, commandGroupRegistry.getCmdGroupForCmdClass(cmdClass)));
 					}
 				}
 			}
@@ -126,7 +104,7 @@ public abstract class CommandFactory {
 				childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false, requireModeWrappable)));
 				cmdPluginFactory.getRegisteredClasses().forEach(c -> { 
 					if(!CommandUsage.hasMetaTagForCmdClass(c, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-						helpLines.add(new SpecificCommandHelpLine(c, cmdClassToCmdGroup.get(c)));
+						helpLines.add(new SpecificCommandHelpLine(c, commandGroupRegistry.getCmdGroupForCmdClass(c)));
 					}
 				});
 			} else {
@@ -352,17 +330,11 @@ public abstract class CommandFactory {
 	}
 
 	public void setCmdGroup(CommandGroup cmdGroup) {
-		this.cmdGroup = cmdGroup;
+		this.commandGroupRegistry.setCmdGroup(cmdGroup);
 	}
 
-	public Map<CommandGroup, TreeSet<Class<?>>> getCmdGroupToCmdClasses() {
-		ArrayList<CommandGroup> cmdGroups = new ArrayList<CommandGroup>(cmdGroupToCmdClasses.keySet());
-		Collections.sort(cmdGroups);
-		Map<CommandGroup, TreeSet<Class<?>>> cmdGroupToCmdClassesSorted = new LinkedHashMap<CommandGroup, TreeSet<Class<?>>>();
-		for(CommandGroup cmdGroup: cmdGroups) {
-			cmdGroupToCmdClassesSorted.put(cmdGroup, cmdGroupToCmdClasses.get(cmdGroup));
-		}
-		return cmdGroupToCmdClassesSorted;
+	public CommandGroupRegistry getCommandGroupRegistry() {
+		return commandGroupRegistry;
 	}
-
+	
 }

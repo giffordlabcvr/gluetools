@@ -22,7 +22,7 @@ public class WebdocsNonModeCommandsSummary {
 		
 		CommandFactory commandFactory = CommandFactory.get(RootCommandFactory.class);
 
-		commandFactory.getCmdGroupToCmdClasses().forEach((cmdGroup, setOfClasses) -> {
+		commandFactory.getCommandGroupRegistry().getCmdGroupToCmdClasses().forEach((cmdGroup, setOfClasses) -> {
 			if(!cmdGroup.isNonModeSpecific()) {
 				return;
 			}

@@ -36,7 +36,7 @@ public class TreeTransformer extends ModulePlugin<TreeTransformer> {
 	public TreeTransformer() {
 		super();
 		addSimplePropertyName(OUTPUT_LEAF_TEMPLATE);
-		addModulePluginCmdClass(TransformTreeCommand.class);
+		registerModulePluginCmdClass(TransformTreeCommand.class);
 	}
 
 	@Override

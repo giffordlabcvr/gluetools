@@ -15,10 +15,10 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 
 	public FastaExporter() {
 		super();
-		addModulePluginCmdClass(ExportCommand.class);
-		addModulePluginCmdClass(WebExportCommand.class);
-		addModulePluginCmdClass(ExportMemberCommand.class);
-		addModulePluginCmdClass(WebExportMemberCommand.class);
+		registerModulePluginCmdClass(ExportCommand.class);
+		registerModulePluginCmdClass(WebExportCommand.class);
+		registerModulePluginCmdClass(ExportMemberCommand.class);
+		registerModulePluginCmdClass(WebExportMemberCommand.class);
 	}
 
 	public static void doExport(CommandContext cmdContext, 

@@ -34,7 +34,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"import", "phylogeny"}, 
 		description = "Import a phylogeny into the alignment tree", 
 		docoptUsages={"<alignmentName> [-c] [-n] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
 			"-n, --anyAlignment                             Allow match to any alignment",

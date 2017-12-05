@@ -9,7 +9,7 @@ public class EpitopeRasOverlap extends ModulePlugin<EpitopeRasOverlap> {
 
 	public EpitopeRasOverlap() {
 		super();
-		addModulePluginCmdClass(ComputeOverlappingCommand.class);
+		registerModulePluginCmdClass(ComputeOverlappingCommand.class);
 	
 	}
 

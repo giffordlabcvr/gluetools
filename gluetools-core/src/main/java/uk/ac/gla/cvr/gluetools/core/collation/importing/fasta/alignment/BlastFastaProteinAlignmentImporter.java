@@ -52,7 +52,7 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 
 	public BlastFastaProteinAlignmentImporter() {
 		super();
-		addModulePluginCmdClass(BlastFastaProteinAlignmentImporterImportCommand.class);
+		registerModulePluginCmdClass(BlastFastaProteinAlignmentImporterImportCommand.class);
 		addSimplePropertyName(MIN_ROW_COVERAGE_PERCENT);
 	}
 

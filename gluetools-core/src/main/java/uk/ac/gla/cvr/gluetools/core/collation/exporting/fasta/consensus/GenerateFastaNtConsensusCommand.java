@@ -18,7 +18,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"generate", "fasta", "nt-consensus"}, 
-		docCategory = "Type-specific module commands",
 		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>]] [-c] (-w <whereClause> | -a) [-i <consensusID>] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>        Column selector module name",

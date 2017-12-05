@@ -64,7 +64,7 @@ public class AlignmentBasedSequenceMerger extends ModulePlugin<AlignmentBasedSeq
 		addSimplePropertyName(GROUPING_TEMPLATE);
 		addSimplePropertyName(SORTING_TEMPLATE);
 		addSimplePropertyName(SEQUENCE_ID_TEMPLATE);
-		addModulePluginCmdClass(MergeRowsCommand.class);
+		registerModulePluginCmdClass(MergeRowsCommand.class);
 	}
 
 	private String sourceName;

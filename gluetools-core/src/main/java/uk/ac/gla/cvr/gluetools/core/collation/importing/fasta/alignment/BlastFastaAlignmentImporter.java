@@ -34,8 +34,8 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 
 	public BlastFastaAlignmentImporter() {
 		super();
-		addModulePluginCmdClass(BlastFastaAlignmentImporterImportCommand.class);
-		addModulePluginCmdClass(BlastFastaAlignmentImporterPreviewCommand.class);
+		registerModulePluginCmdClass(BlastFastaAlignmentImporterImportCommand.class);
+		registerModulePluginCmdClass(BlastFastaAlignmentImporterPreviewCommand.class);
 	}
 
 	@Override

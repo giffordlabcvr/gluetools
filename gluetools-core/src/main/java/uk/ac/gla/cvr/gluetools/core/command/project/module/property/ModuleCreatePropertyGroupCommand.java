@@ -17,7 +17,6 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @CommandClass(
 		commandWords={"create", "property-group"},
 		docoptUsages="<propertyPath>",
-		docCategory="General module commands",
 		description = "Create a property group in the module config")
 public class ModuleCreatePropertyGroupCommand extends ModulePropertyCommand<CreateResult> implements ModuleUpdateDocumentCommand {
 

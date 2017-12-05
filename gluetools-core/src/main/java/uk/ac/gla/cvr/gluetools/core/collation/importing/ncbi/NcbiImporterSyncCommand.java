@@ -18,7 +18,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"sync"}, 
 		docoptUsages={"[-d]"},
-		docCategory = "Type-specific module commands",
 		docoptOptions={"-d, --detailed  Show detailed per-sequence status"},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Determine present/missing/surplus, download missing, delete surplus") 

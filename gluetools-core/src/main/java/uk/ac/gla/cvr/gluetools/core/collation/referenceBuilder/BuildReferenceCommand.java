@@ -22,7 +22,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"build", "reference"}, 
 		description = "Build a reference sequence from Genbank metadata", 
 		docoptUsages = { "<sourceName> <sequenceID> -r <refName>" },
-		docCategory = "Type-specific module commands",
 		docoptOptions = { "-r <refName>, --refName <refName>  Name of the reference sequence to create" },
 		metaTags = {CmdMeta.updatesDatabase},
 		furtherHelp = "The named sequence must exist and be in Genbank XML format."
