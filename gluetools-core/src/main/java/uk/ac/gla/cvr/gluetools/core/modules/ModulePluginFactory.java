@@ -33,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginGroupRegistry;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
@@ -57,79 +58,106 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 	public static Multiton.Creator<ModulePluginFactory> creator = new
 			Multiton.SuppliedCreator<>(ModulePluginFactory.class, ModulePluginFactory::new);
 	
+	private PluginGroupRegistry<ModulePluginGroup, ModulePlugin<?>> modulePluginGroupRegistry = 
+			new PluginGroupRegistry<ModulePluginGroup, ModulePlugin<?>>(ModulePluginGroup.OTHER);
+	
 	private ModulePluginFactory() {
 		super();
-		registerPluginClass(NcbiImporter.class);
+		setModulePluginGroup(new ModulePluginGroup("sequenceFasta", "Module types for working with sequences in FASTA format", 80));
 		registerPluginClass(FastaImporter.class);
 		registerPluginClass(FastaExporter.class);
-		registerPluginClass(GenbankXmlPopulator.class);
+		registerPluginClass(FastaSequenceReporter.class);		
+		registerPluginClass(FastaUtility.class);
+		
+		setModulePluginGroup(new ModulePluginGroup("tabular", "Module types for working with tabular data", 81));
 		registerPluginClass(TextFilePopulator.class);
-		registerPluginClass(FreemarkerTextToGlueTransformer.class);
+		registerPluginClass(TabularUtility.class);
+		
+		setModulePluginGroup(new ModulePluginGroup("ncbi", "Module types for working with NCBI / GenBank sequence data", 82));
+		registerPluginClass(NcbiImporter.class);
+		registerPluginClass(GenbankXmlPopulator.class);
+
+		setModulePluginGroup(new ModulePluginGroup("aligners", "Module types for computing alignments", 83));
 		registerPluginClass(BlastAligner.class);
 		registerPluginClass(CodonAwareBlastAligner.class);
 		registerPluginClass(CompoundAligner.class);
+		registerPluginClass(MafftAligner.class);
 		
+		setModulePluginGroup(new ModulePluginGroup("alignmentFasta", "Module types for importing/exporting alignments", 84));
 		registerPluginClass(FastaAlignmentImporter.class);
 		registerPluginClass(BlastFastaAlignmentImporter.class);
 		registerPluginClass(BlastFastaProteinAlignmentImporter.class);
-		
-		registerPluginClass(MafftAligner.class);
-		
 		registerPluginClass(FastaAlignmentExporter.class);
 		registerPluginClass(FastaProteinAlignmentExporter.class);
+		registerPluginClass(AlignmentColumnsSelector.class);
+
+		setModulePluginGroup(new ModulePluginGroup("consensus", "Module types for generating consensus sequences", 85));
 		registerPluginClass(NucleotideConsensusGenerator.class);
 		registerPluginClass(AminoAcidConsensusGenerator.class);
-		
-		registerPluginClass(DigsImporter.class);
-		registerPluginClass(GbRefBuilder.class);
-		registerPluginClass(SamReporter.class);
-		registerPluginClass(FastaSequenceReporter.class);
-		registerPluginClass(Kuiken2006CodonLabeler.class);
-		registerPluginClass(TextToQueryTransformer.class);
-		registerPluginClass(FreemarkerObjectRenderer.class);
-		registerPluginClass(VariationFrequenciesGenerator.class);
 
-		registerPluginClass(FeaturePresenceRecorder.class);
-		
-		registerPluginClass(FigTreeAnnotationExporter.class);
-
-		registerPluginClass(WebAnalysisTool.class);
-
+		setModulePluginGroup(new ModulePluginGroup("phylogenetics", "Module types for working with phylogenetic trees", 86));
+		registerPluginClass(RaxmlPhylogenyGenerator.class);
+		registerPluginClass(PhyloImporter.class);
+		registerPluginClass(PhyloUtility.class);
 		registerPluginClass(PhyloExporter.class);
-
+		registerPluginClass(TreeTransformer.class);
 		registerPluginClass(MaxLikelihoodPlacer.class);
 		registerPluginClass(MaxLikelihoodGenotyper.class);
+		registerPluginClass(FigTreeAnnotationExporter.class);
 		
-		registerPluginClass(TreeTransformer.class);
+		setModulePluginGroup(new ModulePluginGroup("scripting", "Module types for general-purpose scripting", 87));
+		registerPluginClass(EcmaFunctionInvoker.class);
+		registerPluginClass(FreemarkerTextToGlueTransformer.class);
+		registerPluginClass(FreemarkerObjectRenderer.class);
+		registerPluginClass(TextToQueryTransformer.class);
 		
+		setModulePluginGroup(new ModulePluginGroup("deepSequencing", "Module types for working with deep sequencing data", 88));
+		registerPluginClass(SamReporter.class);
+		
+		setModulePluginGroup(new ModulePluginGroup("variations", "Module types for working with variations", 89));
+		registerPluginClass(CommonAaAnalyser.class);
+		registerPluginClass(VariationFrequenciesGenerator.class);
+
+		setModulePluginGroup(new ModulePluginGroup("variationScanner", "Variation scanner module types", 90));
 		registerPluginClass(ComparisonAminoAcidVariationScanner.class);
 		registerPluginClass(ExactMatchAminoAcidVariationScanner.class);
 		registerPluginClass(RegexAminoAcidVariationScanner.class);
 		registerPluginClass(ExactMatchNucleotideVariationScanner.class);
 		registerPluginClass(RegexNucleotideVariationScanner.class);
-
-		registerPluginClass(RaxmlPhylogenyGenerator.class);
+		
+		setModulePluginGroup(new ModulePluginGroup("experimentalUnsupported", "Experimental / unsupported module types", 91));
 		registerPluginClass(ModelTester.class);
-
-		registerPluginClass(PhyloImporter.class);
-		registerPluginClass(PhyloUtility.class);
-
-		registerPluginClass(AlignmentColumnsSelector.class);
-
-		registerPluginClass(AlignmentBasedSequenceMerger.class);
-		
-		registerPluginClass(CommonAaAnalyser.class);
-
-		registerPluginClass(EcmaFunctionInvoker.class);
-
-		registerPluginClass(TabularUtility.class);
-		registerPluginClass(FastaUtility.class);
-		
-		registerPluginClass(BlastSequenceRecogniser.class);
-		
-		// custom project modules
+		registerPluginClass(DigsImporter.class);
+		registerPluginClass(GbRefBuilder.class);
 		registerPluginClass(EpitopeRasOverlap.class);
+		registerPluginClass(WebAnalysisTool.class);
+
+		setModulePluginGroup(null); // OTHER
+		registerPluginClass(BlastSequenceRecogniser.class);
+		registerPluginClass(AlignmentBasedSequenceMerger.class);
+		registerPluginClass(Kuiken2006CodonLabeler.class);
+		registerPluginClass(FeaturePresenceRecorder.class);
+
 		
 	}
+
+	
+	
+	@Override
+	protected void registerPluginClassInternal(String elemName, PluginFactory<ModulePlugin<?>>.PluginClassInfo pluginClassInfo) {
+		super.registerPluginClassInternal(elemName, pluginClassInfo);
+		getModulePluginGroupRegistry().registerElemName(elemName);
+	}
+
+
+	public PluginGroupRegistry<ModulePluginGroup, ModulePlugin<?>> getModulePluginGroupRegistry() {
+		return modulePluginGroupRegistry;
+	}
+	
+	private void setModulePluginGroup(ModulePluginGroup modulePluginGroup) {
+		modulePluginGroupRegistry.setPluginGroup(modulePluginGroup);
+	}
+	
+	
 	
 }

@@ -167,7 +167,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.referenceDocumentationMenuTitle = "Reference documentation";
   	$scope.commandModesMenuTitle = "Command mode reference";
   	$scope.nonModeCommandsMenuTitle = "Non-mode command reference"
-  	$scope.moduleReferenceMenuTitle = "Module reference";
+  	$scope.moduleReferenceMenuTitle = "Module type reference";
 
     
   	$scope.downloadMenuTitle = "Download GLUE";

@@ -9,8 +9,8 @@ gluetoolsApp.controller('moduleReferenceCtrl',
 				}
 			})
 			.success(function(data, status, headers, config) {
-				$scope.moduleTypes = tableResultAsObjectList(data);
-				console.info('$scope.moduleTypes', $scope.moduleTypes);
+				$scope.moduleTypeCategories = data.webdocsModuleTypeList.moduleTypeCategories;
+				console.info('$scope.moduleTypeCategories', $scope.moduleTypeCategories);
 			})
 			.error(glueWS.raiseErrorDialog(dialogs, "listing module types"));
 			

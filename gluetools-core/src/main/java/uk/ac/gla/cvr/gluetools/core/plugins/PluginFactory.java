@@ -40,11 +40,17 @@ public class PluginFactory<P extends Plugin> {
 		if(elemName == null) {
 			throw new RuntimeException("No elemName defined on PluginClass annotation on "+theClass.getCanonicalName());
 		}
-		elemNameToPluginClassInfo.put(elemName, new PluginClassInfo(theClass, Optional.of(pluginClassAnnotation)));
+		PluginClassInfo pluginClassInfo = new PluginClassInfo(theClass, Optional.of(pluginClassAnnotation));
+		registerPluginClassInternal(elemName, pluginClassInfo);
+	}
+
+	protected void registerPluginClassInternal(String elemName, PluginClassInfo pluginClassInfo) {
+		elemNameToPluginClassInfo.put(elemName, pluginClassInfo);
 	}
 
 	protected void registerPluginClass(String elemName, Class<? extends P> theClass) {
-		elemNameToPluginClassInfo.put(elemName, new PluginClassInfo(theClass));
+		PluginClassInfo pluginClassInfo = new PluginClassInfo(theClass, Optional.empty());
+		registerPluginClassInternal(elemName, pluginClassInfo);
 	}
 	
 	protected PluginFactory() {
@@ -154,10 +160,6 @@ public class PluginFactory<P extends Plugin> {
 		private Class<? extends P> theClass;
 		private Optional<PluginClass> pluginClassAnnotation;
 		private P exampleInstance;
-		
-		private PluginClassInfo(Class<? extends P> theClass) {
-			this(theClass, Optional.empty());
-		}
 		
 		private PluginClassInfo(Class<? extends P> theClass, Optional<PluginClass> pluginClassAnnotation) {
 			super();
