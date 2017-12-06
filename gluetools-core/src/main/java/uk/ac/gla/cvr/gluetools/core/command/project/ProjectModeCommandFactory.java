@@ -6,6 +6,9 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectSetSettingCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectShowSettingCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectUnsetSettingCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.settings.extension.ProjectSetExtensionSettingCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.settings.extension.ProjectShowExtensionSettingCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.settings.extension.ProjectUnsetExtensionSettingCommand;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 // TODO -- mode command factories parameterized by mode command base class?
@@ -76,10 +79,13 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ListCustomTableRowCommand.class);
 		registerCommandClass(CountCustomTableRowCommand.class);
 
-		setCmdGroup(new CommandGroup("project-settings", "Commands for managing project settings", 10, false));
+		setCmdGroup(new CommandGroup("project-settings", "Commands for managing project / extension settings", 10, false));
 		registerCommandClass(ProjectSetSettingCommand.class);
 		registerCommandClass(ProjectUnsetSettingCommand.class);
 		registerCommandClass(ProjectShowSettingCommand.class);
+		registerCommandClass(ProjectSetExtensionSettingCommand.class);
+		registerCommandClass(ProjectUnsetExtensionSettingCommand.class);
+		registerCommandClass(ProjectShowExtensionSettingCommand.class);
 		
 		setCmdGroup(new CommandGroup("modules", "Commands for managing modules", 11, false));
 		registerCommandClass(ImportModuleCommand.class);

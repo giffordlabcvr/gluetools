@@ -39,7 +39,7 @@ public abstract class ProjectSettingCommand<R extends CommandResult> extends Pro
 	
 	protected static ProjectSettingOption lookupSettingOptionByName(String optionName) {
 		for(ProjectSettingOption option : ProjectSettingOption.values()) {
-			if(option.getName().equals(optionName)) {
+			if(option.getName().equals(optionName) && !option.getName().startsWith("extension-")) {
 				return option;
 			}
 		}
@@ -59,6 +59,7 @@ public abstract class ProjectSettingCommand<R extends CommandResult> extends Pro
 						Map<String, Object> bindings, String prefix) {
 					return Arrays.asList(ProjectSettingOption.values())
 							.stream()
+							.filter(co -> !co.getName().startsWith("extension-"))
 							.map(co -> new CompletionSuggestion(co.getName(), true))
 							.collect(Collectors.toList());
 				}

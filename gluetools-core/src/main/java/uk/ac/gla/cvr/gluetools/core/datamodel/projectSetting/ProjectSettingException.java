@@ -7,8 +7,11 @@ public class ProjectSettingException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		NO_SUCH_SETTING("settingName"),
+		NO_SUCH_EXTENSION_SETTING("settingName"), 
+		UNKNOWN_SETTING("settingName"),
+		UNKNOWN_EXTENSION_SETTING("settingName"),
 		INVALID_SETTING_VALUE("settingName", "badValue", "errorTxt"), 
-		UNKNOWN_SETTING("settingName");
+		INVALID_EXTENSION_SETTING_VALUE("settingName", "badValue", "errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
