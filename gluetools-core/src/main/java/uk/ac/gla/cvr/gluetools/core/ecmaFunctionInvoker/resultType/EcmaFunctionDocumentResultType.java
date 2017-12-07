@@ -1,8 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
+package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.ScriptObjectMirrorUtils;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
 @PluginClass(elemName="documentResultType")

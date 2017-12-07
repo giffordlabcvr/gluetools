@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
+package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;

@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
+package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;

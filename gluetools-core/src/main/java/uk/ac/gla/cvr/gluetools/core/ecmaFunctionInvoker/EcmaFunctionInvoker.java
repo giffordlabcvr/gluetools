@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 	public static String CONFIG_DOCUMENT = "configDocument";
 	
 	private List<String> scriptFileNames;
-	private List<EcmaFunction> functions;
+	private Map<String, EcmaFunction> functionNameToFunction = new LinkedHashMap<String, EcmaFunction>();
 	private Map<String, CommandDocument> configDocuments;
 	
 	private ScriptContext scriptContext; 
@@ -52,8 +53,9 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.scriptFileNames = PluginUtils.configureStringsProperty(configElem, SCRIPT_FILE_NAME, 1, null);
-		functions = PluginFactory.createPlugins(pluginConfigContext, EcmaFunction.class, 
+		List<EcmaFunction> functions = PluginFactory.createPlugins(pluginConfigContext, EcmaFunction.class, 
 				PluginUtils.findConfigElements(configElem, FUNCTION));
+		functions.forEach(function -> this.functionNameToFunction.put(function.getName(), function));
 		for(String scriptFileName: scriptFileNames) {
 			registerResourceName(scriptFileName);
 		}
@@ -113,9 +115,17 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 		
 		
 	}
+	
+	public EcmaFunction getFunction(String functionName) {
+		return functionNameToFunction.get(functionName);
+	}
 
+	public List<String> getFunctionNames() {
+		return new ArrayList<String>(functionNameToFunction.keySet());
+	}
+	
 	public List<EcmaFunction> getFunctions() {
-		return functions;
+		return new ArrayList<EcmaFunction>(functionNameToFunction.values());
 	}
 
 	public CommandResult invokeFunction(CommandContext cmdContext, String functionName, List<String> arguments) {

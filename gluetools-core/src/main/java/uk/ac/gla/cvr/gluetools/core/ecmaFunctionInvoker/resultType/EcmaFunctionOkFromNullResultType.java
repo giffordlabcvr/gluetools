@@ -1,7 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
+package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType;
 
 import jdk.nashorn.internal.runtime.Undefined;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
