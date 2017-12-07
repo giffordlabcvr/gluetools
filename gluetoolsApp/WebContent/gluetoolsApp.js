@@ -146,7 +146,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.designMenuTitle = "Design";
   	$scope.overviewMenuTitle = "Design Overview";
   	$scope.coreSchemaMenuTitle = "Core Schema";
-  	$scope.alignmentTreeMenuTitle = "Alignment Tree";
+  	$scope.alignmentTreeMenuTitle = "Alignments and Alignment Trees";
   	$scope.commandLayerMenuTitle = "Command Layer";
   	$scope.softwareArchitectureMenuTitle = "Software Architecture";
   	$scope.webServiceMenuTitle = "Web Service";
