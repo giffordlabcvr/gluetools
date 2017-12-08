@@ -47,8 +47,9 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(ConsoleAddOptionLineCommand.class);
 		registerCommandClass(ConsoleRemoveOptionLineCommand.class);
 
-		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine configuration", 96, true));
+		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine version/configuration", 96, true));
 		registerCommandClass(ConfigShowPropertyCommand.class);
+		registerCommandClass(GlueEngineShowVersionCommand.class);
 		
 		setCmdGroup(null);
 	}
