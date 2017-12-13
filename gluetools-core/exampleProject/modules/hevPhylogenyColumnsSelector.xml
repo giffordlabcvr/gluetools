@@ -1,0 +1,17 @@
+<alignmentColumnsSelector>
+	<relRefName>REF_MASTER_M73218</relRefName>
+	<aminoAcidRegionSelector>
+		<featureName>ORF1</featureName>
+ 		<excludeRegions>
+			<aminoAcidRegionSelector>
+				<featureName>PPR</featureName>
+			</aminoAcidRegionSelector>
+		</excludeRegions>
+	</aminoAcidRegionSelector>
+	<aminoAcidRegionSelector>
+		<featureName>ORF3</featureName>
+	</aminoAcidRegionSelector>
+	<aminoAcidRegionSelector>
+		<featureName>ORF2</featureName>
+	</aminoAcidRegionSelector>
+</alignmentColumnsSelector>

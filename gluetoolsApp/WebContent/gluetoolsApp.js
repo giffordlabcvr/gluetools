@@ -53,7 +53,11 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/installation/page.html',
             controller: 'installationCtrl'
           }).
-      	when('/interactiveCommandLine', {
+    	when('/exampleProject', {
+            templateUrl: './pages/userGuide/exampleProject/page.html',
+            controller: 'exampleProjectCtrl'
+          }).
+    	when('/interactiveCommandLine', {
             templateUrl: './pages/userGuide/interactiveCommandLine/page.html',
             controller: 'interactiveCommandLineCtrl'
           }).
@@ -154,12 +158,13 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.userGuideMenuTitle = "User guide";
   	$scope.introductionMenuTitle = "Introduction";
   	$scope.installationMenuTitle = "Installing GLUE";
+  	$scope.exampleProjectMenuTitle = "Example GLUE Project";
   	$scope.interactiveCommandLineMenuTitle = "Interactive command line";
-    $scope.invokingGlueFromTheShellMenuTitle = "Invoking GLUE from the shell"
+    $scope.invokingGlueFromTheShellMenuTitle = "Invoking GLUE as a Unix command"
     $scope.projectStructureMenuTitle = "Project structure";
     $scope.managingAProjectMenuTitle = "Managing a project";
     $scope.cayenneQueriesMenuTitle = "Cayenne queries";
-    $scope.modulesMenuTitle = "Modules";
+    $scope.modulesMenuTitle = "The GLUE Module System";
     $scope.scriptingLayerMenuTitle = "Scripting Layer";
     $scope.schemaExtensionsMenuTitle = "Schema Extensions";
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";

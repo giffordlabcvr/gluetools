@@ -1,0 +1,30 @@
+delete project hev
+
+create project hev "A GLUE project for Hepatitis E virus (HEV)" --minVersion 0.1.136
+
+run file glue/hevSchemaExtensions.glue
+ 
+project hev
+
+  run file glue/hevProjectSettings.glue
+  
+  run file glue/hevModules.glue
+  
+  import source sources/ncbi-refseqs 
+
+  # import unconstrained alignment  
+  # The alignment is based on Smith, et. al 2016, but has also been modified to:
+  # 1. Replace internal NN's with --'s for KJ873911 in order to make blast fasta importer work properly.
+  # 2. Add a row for sequence RR_L08816 -- this sequence is present in order to provide feature locations
+  # 3. The missing subtype has been added for JQ013791 (3ra) KJ013415 (3ra) and EU723513 (3f)
+
+  module unconstrainedAlignmentImporter import AL_UNCONSTRAINED -f alignments/SmithAlignment_23_1_2016_modified.fna
+
+  run file glue/hevFeatures.glue
+  run file glue/hevReferences.glue
+
+  run file glue/hevAlignmentTree.glue
+  run file glue/importPhylogeny.glue
+
+  validate
+  

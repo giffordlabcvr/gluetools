@@ -1,3 +1,134 @@
 <h2>{{interactiveCommandLineMenuTitle}}</h2>
 
-Under construction
+The GLUE interactive command line interpreter is a powerful environment for interacting with the GLUE command layer at a fine-grained level. 
+The design could be compared to interactive R or Python interpreters, or an interactive database command line client.
+
+<h4>Basics</h4>
+
+<p>
+On starting the GLUE interpreter you will see something like this:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+GLUE version 0.1.135
+Mode path: /
+GLUE></pre>
+</div>
+</p>
+<p>
+Try entering the commands displayed below:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /
+GLUE> create project myproject
+OK
+(1 Project created)
+Mode path: /
+GLUE> list project
++===========+================================+
+|   name    |          description           |
++===========+================================+
+| myproject | -                              |
++===========+================================+
+Projects found: 1
+Mode path: /
+GLUE></pre>
+</div>
+</p>
+<p>
+The above commands created a new project "myproject" and then queried GLUE for a list of projects. Now try the following commands:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /
+GLUE> project myproject 
+OK
+Mode path: /project/myproject
+GLUE> create feature L
+OK
+(1 Feature created)
+Mode path: /project/myproject
+GLUE> exit
+OK
+Mode path: /
+GLUE></pre>
+</div>
+</p>
+<p>
+Notice that the GLUE interpreter outputs a mode path each time a command is typed. 
+The <code>project myproject</code> command changed mode path from "/" to 
+"/project/myproject", and the <code>exit</code> command changed it back to "/" again. 
+</p>
+<p>
+The GLUE interpreter provides a <a href="#/commandModes">hierarchy of command modes</a>, based on the 
+<a href="#/coreSchema">GLUE data schema</a>. Each command 
+mode operates on a specific data object and so has a different set of available commands. We changed the current 
+command mode from root mode (which has no data object) to the project mode for "myproject", and then back to root mode again. 
+</p>
+<p>
+The <code>create feature</code> command above created a <em>Feature</em> object "L" within project "myproject", because the 
+command was entered within the mode for that project. Most data objects have an associated command mode. The command modes 
+are arranged in a hierarchy which represents data object containment. The mode path associated with each mode 
+specifies its position in the hierarchy, as shown here as we navigate into the command mode for <em>Feature</em> "L". 
+The <code>exit</code> command here changes the current mode from feature "L" mode to its parent, project "myproject" mode.
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /
+GLUE> project myproject 
+OK
+Mode path: /project/myproject
+GLUE> feature L
+OK
+Mode path: /project/myproject/feature/L
+GLUE>exit
+OK
+Mode path: /project/myproject
+GLUE>exit</pre>
+</div>
+</p>
+
+
+
+
+-- example navigation
+
+<h4>Help system</h4>
+
+-- help system
+
+<h4>Tab completion</h4>
+
+-- common keystrokes
+    -- Tab: suggest completions
+
+<h4>Command history</h4>
+
+-- common keystrokes
+    -- Up, Down: navigate command history.
+	-- Ctrl+R Search history
+
+<h4>Command structure and quoting</h4>
+
+
+<h4>Other tips</h4>
+-- wrapping mode specifier
+
+-- console options
+
+-- other useful keystrokes
+	-- Ctrl+A Move cursor to start of line
+	-- Ctrl+E Move cursor to end of line
+	-- Alt+Left, Alt+Right move cursor backwards, forwards by one word
+	-- Ctrl+W Cut previous word to clipboard
+	-- Ctrl+U Cut all previous words to clipboard
+	-- Ctrl+K Cut all following words to clipboard
+	-- Ctrl+Y Paste from clipboard into command line
+
+
+

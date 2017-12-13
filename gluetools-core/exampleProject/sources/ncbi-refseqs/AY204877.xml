@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<GBSeq>
+  <GBSeq_locus>AY204877</GBSeq_locus>
+  <GBSeq_length>7170</GBSeq_length>
+  <GBSeq_strandedness>single</GBSeq_strandedness>
+  <GBSeq_moltype>RNA</GBSeq_moltype>
+  <GBSeq_topology>linear</GBSeq_topology>
+  <GBSeq_division>VRL</GBSeq_division>
+  <GBSeq_update-date>19-NOV-2003</GBSeq_update-date>
+  <GBSeq_create-date>17-SEP-2003</GBSeq_create-date>
+  <GBSeq_definition>Hepatitis E virus strain T3 from Chad polyprotein gene, partial cds; and ORF3 and structural protein genes, complete cds</GBSeq_definition>
+  <GBSeq_primary-accession>AY204877</GBSeq_primary-accession>
+  <GBSeq_accession-version>AY204877.1</GBSeq_accession-version>
+  <GBSeq_other-seqids>
+    <GBSeqid>gb|AY204877.1|</GBSeqid>
+    <GBSeqid>gi|34808944</GBSeqid>
+  </GBSeq_other-seqids>
+  <GBSeq_secondary-accessions>
+    <GBSecondary-accn>AF001275</GBSecondary-accn>
+    <GBSecondary-accn>AF051349</GBSecondary-accn>
+    <GBSecondary-accn>U40191</GBSecondary-accn>
+    <GBSecondary-accn>U62121</GBSecondary-accn>
+  </GBSeq_secondary-accessions>
+  <GBSeq_source>Hepatitis E virus</GBSeq_source>
+  <GBSeq_organism>Hepatitis E virus</GBSeq_organism>
+  <GBSeq_taxonomy>Viruses; ssRNA viruses; ssRNA positive-strand viruses, no DNA stage; Hepeviridae; Hepevirus</GBSeq_taxonomy>
+  <GBSeq_references>
+    <GBReference>
+      <GBReference_reference>1</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>van Cuyck-Gandre,H.</GBAuthor>
+        <GBAuthor>Zhang,H.Y.</GBAuthor>
+        <GBAuthor>Tsarev,S.A.</GBAuthor>
+        <GBAuthor>Clements,N.J.</GBAuthor>
+        <GBAuthor>Cohen,S.J.</GBAuthor>
+        <GBAuthor>Caudill,J.D.</GBAuthor>
+        <GBAuthor>Buisson,Y.</GBAuthor>
+        <GBAuthor>Coursaget,P.</GBAuthor>
+        <GBAuthor>Warren,R.L.</GBAuthor>
+        <GBAuthor>Longer,C.F.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Characterization of hepatitis E virus (HEV) from Algeria and Chad by partial genome sequence</GBReference_title>
+      <GBReference_journal>J. Med. Virol. 53 (4), 340-347 (1997)</GBReference_journal>
+      <GBReference_pubmed>9407381</GBReference_pubmed>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>2</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>Tsarev,S.A.</GBAuthor>
+        <GBAuthor>Binn,L.N.</GBAuthor>
+        <GBAuthor>Gomatos,P.J.</GBAuthor>
+        <GBAuthor>Arthur,R.R.</GBAuthor>
+        <GBAuthor>Monier,M.K.</GBAuthor>
+        <GBAuthor>van Cuyck-Gandre,H.</GBAuthor>
+        <GBAuthor>Longer,C.F.</GBAuthor>
+        <GBAuthor>Innis,B.L.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Phylogenetic analysis of hepatitis E virus isolates from Egypt</GBReference_title>
+      <GBReference_journal>J. Med. Virol. 57 (1), 68-74 (1999)</GBReference_journal>
+      <GBReference_pubmed>9890424</GBReference_pubmed>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>3</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>van Cuyck,H.</GBAuthor>
+        <GBAuthor>Juge,F.</GBAuthor>
+        <GBAuthor>Roques,P.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Phylogenetic analysis of the first complete hepatitis E virus (HEV) genome from Africa</GBReference_title>
+      <GBReference_journal>FEMS Immunol. Med. Microbiol. 39 (2), 133-139 (2003)</GBReference_journal>
+      <GBReference_pubmed>14625096</GBReference_pubmed>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>4</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>Van Cuyck-Gandre,H.</GBAuthor>
+        <GBAuthor>Clements,N.J.</GBAuthor>
+        <GBAuthor>Zhang,H.Y.</GBAuthor>
+        <GBAuthor>Caudill,J.C.</GBAuthor>
+        <GBAuthor>Cohen,S.J.</GBAuthor>
+        <GBAuthor>Coursaget,P.</GBAuthor>
+        <GBAuthor>Buisson,Y.</GBAuthor>
+        <GBAuthor>Warren,R.L.</GBAuthor>
+        <GBAuthor>Longer,C.F.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Direct Submission</GBReference_title>
+      <GBReference_journal>Submitted (06-NOV-1995) Department of Virus Diseases, Walter Reed Army Institute of Research, Washington, DC 20307-5100, USA</GBReference_journal>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>5</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>Van Cuyck-Gandre,H.</GBAuthor>
+        <GBAuthor>Caudill,J.</GBAuthor>
+        <GBAuthor>Clements,N.J.</GBAuthor>
+        <GBAuthor>Zhang,H.Y.</GBAuthor>
+        <GBAuthor>Buisson,Y.</GBAuthor>
+        <GBAuthor>Cohen,S.J.</GBAuthor>
+        <GBAuthor>Warren,R.L.</GBAuthor>
+        <GBAuthor>Longer,C.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Direct Submission</GBReference_title>
+      <GBReference_journal>Submitted (25-JUN-1996) Department of Virus Diseases, Walter Reed Army Institute of Research, Washington, DC 20307-5100, USA</GBReference_journal>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>6</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>Van Cuyck-Gandre,H.</GBAuthor>
+        <GBAuthor>Zhang,H.Y.</GBAuthor>
+        <GBAuthor>Tsarev,S.A.</GBAuthor>
+        <GBAuthor>Clements,N.J.</GBAuthor>
+        <GBAuthor>Cohen,S.J.</GBAuthor>
+        <GBAuthor>Caudill,J.D.</GBAuthor>
+        <GBAuthor>Buisson,Y.</GBAuthor>
+        <GBAuthor>Coursaget,P.</GBAuthor>
+        <GBAuthor>Warren,R.L.</GBAuthor>
+        <GBAuthor>Longer,C.F.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Direct Submission</GBReference_title>
+      <GBReference_journal>Submitted (23-APR-1997) Department of Virus Diseases, Walter Reed Army Institute of Research, Washington, DC 20307-5100, USA</GBReference_journal>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>7</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>Tsarev,S.A.</GBAuthor>
+        <GBAuthor>Binn,L.N.</GBAuthor>
+        <GBAuthor>Gomatos,P.J.</GBAuthor>
+        <GBAuthor>Arthur,R.R.</GBAuthor>
+        <GBAuthor>Monier,M.K.</GBAuthor>
+        <GBAuthor>van Cuyck-Gandre,H.</GBAuthor>
+        <GBAuthor>Longer,C.F.</GBAuthor>
+        <GBAuthor>Innis,B.L.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Direct Submission</GBReference_title>
+      <GBReference_journal>Submitted (27-FEB-1998) Department of Virus Diseases, Walter Reed Army Institute of Research, Washington, DC 20307-5100, USA</GBReference_journal>
+    </GBReference>
+    <GBReference>
+      <GBReference_reference>8</GBReference_reference>
+      <GBReference_position>1..7170</GBReference_position>
+      <GBReference_authors>
+        <GBAuthor>van Cuyck,H.</GBAuthor>
+        <GBAuthor>Roberston,D.</GBAuthor>
+        <GBAuthor>Juge,F.</GBAuthor>
+        <GBAuthor>Roques,P.</GBAuthor>
+        <GBAuthor>Lemey,P.</GBAuthor>
+      </GBReference_authors>
+      <GBReference_title>Direct Submission</GBReference_title>
+      <GBReference_journal>Submitted (18-DEC-2002) WMD Center, NATO, Bd. Leopold III, Brussels 1110, Belgium</GBReference_journal>
+    </GBReference>
+  </GBSeq_references>
+  <GBSeq_comment>On or before Sep 17, 2003 this sequence version replaced gi:3603257, gi:4096800, gi:2745981, gi:2228353.</GBSeq_comment>
+  <GBSeq_feature-table>
+    <GBFeature>
+      <GBFeature_key>source</GBFeature_key>
+      <GBFeature_location>1..7170</GBFeature_location>
+      <GBFeature_intervals>
+        <GBInterval>
+          <GBInterval_from>1</GBInterval_from>
+          <GBInterval_to>7170</GBInterval_to>
+          <GBInterval_accession>AY204877.1</GBInterval_accession>
+        </GBInterval>
+      </GBFeature_intervals>
+      <GBFeature_quals>
+        <GBQualifier>
+          <GBQualifier_name>organism</GBQualifier_name>
+          <GBQualifier_value>Hepatitis E virus</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>mol_type</GBQualifier_name>
+          <GBQualifier_value>genomic RNA</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>strain</GBQualifier_name>
+          <GBQualifier_value>T3</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>isolation_source</GBQualifier_name>
+          <GBQualifier_value>stools of infected French soldiers from 1983 outbreak</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>db_xref</GBQualifier_name>
+          <GBQualifier_value>taxon:12461</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>country</GBQualifier_name>
+          <GBQualifier_value>Chad</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>genotype</GBQualifier_name>
+          <GBQualifier_value>1</GBQualifier_value>
+        </GBQualifier>
+      </GBFeature_quals>
+    </GBFeature>
+    <GBFeature>
+      <GBFeature_key>CDS</GBFeature_key>
+      <GBFeature_location>&lt;1..5068</GBFeature_location>
+      <GBFeature_intervals>
+        <GBInterval>
+          <GBInterval_from>1</GBInterval_from>
+          <GBInterval_to>5068</GBInterval_to>
+          <GBInterval_accession>AY204877.1</GBInterval_accession>
+        </GBInterval>
+      </GBFeature_intervals>
+      <GBFeature_partial5 value="true"/>
+      <GBFeature_quals>
+        <GBQualifier>
+          <GBQualifier_name>note</GBQualifier_name>
+          <GBQualifier_value>methylase; helicase; RNA polymerase</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>codon_start</GBQualifier_name>
+          <GBQualifier_value>2</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>transl_table</GBQualifier_name>
+          <GBQualifier_value>1</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>product</GBQualifier_name>
+          <GBQualifier_value>polyprotein</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>protein_id</GBQualifier_name>
+          <GBQualifier_value>AAB94808.2</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>db_xref</GBQualifier_name>
+          <GBQualifier_value>GI:34808946</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>translation</GBQualifier_name>
+          <GBQualifier_value>FIKAPGITTAIEQAALAAANSALANAVVVRPFLSHQQIEILINLMQPRQLVFRPEVFWNHPIQRVIHNELELYCRARSGRCLEIGAHPRSINDNPNVVHRCFLRPVGRDVQRWYTAPTRGPAANCRRSALRGLPAADRTYCLDGFSGCSFPAETGIALYSLHDMSPSDVAEAMFRHGMTRLYAALHLPPEVLLPPGTYRTASYLLIHDGRRVVVTYEGDTSAGYNHDVSNLRSWIRTTKVTGNHPLVIERVRAIGCHFVLLLTAAPEPSPMPYVPYPRSTEVYVRSIFGPGGTPSLFPTSCSTKSTFHAVPVHIWDRLMLFGATLDDQAFCCSRLMTYLRGISYKVTVGTLVANEGWNASEDALTAVITAAYLTICHQRYLRTQAISKGMRRLEREHAQKFITRLYSWLFEKSGRDYIPGRQLEFYAQCRRWLSAGFHLDPRVLVFDESAPCHCRTMIRRAVSKFCCFMKWLGQECTCFLQPAEGGVGDQGHDNEAYEGSDVDPAESATCDISGSYVVPGAALQPLYQALDLPADIVARAGRLTATVKVSQAEGRIDCETLIGNKTFRTSFVDGAVLETNGPERHNLSFDVSQSTMAAGPFSLTYAASAAGLEVRYVAAGLDHRAVFAPGVSPRSAPGEVTAFCSALYRFNREAQRHSLTGNFWFHPEGLLGPFAPFSPGHVWESANPFCGESTLYTRTWSEVDAVSGPAQPDLGPVSEPSMSSRAATPTLAAPLPSVVLGPSPPPSAPASSEPAPGASAGTPAITHQMARHRRLLFTYPDGSKVFAGSLFESACTWLVNASNVDHRPGGGLCHAFYQRYPTSFDAASFVMRDGAAAYTLTPRPIIHAVAPDYRLEHNPKRLEAAYRETCSRLGTAAYPLLGTGIYQVPIGPSFDAWERNHRPGDELYLPELAAKWFEANKPTRPTLTITEDVARTANLAIELDSATDVGRACAGCRVTPGVVQYQFTAGVPGSGKSRSVIQTDVDVVVVPTRELRNAWRRRGFAAFTPHTAARVTQGRRVVIDEAPSLPPHLLLLHMQRAATVHLLGDPNQIPAIDFEHAGLVPAIRPDLAPTSWWHVTHRCPADVCELIRGAYPMIQTTSRVLRSLFWGEPAVGQKLVFTQAAKAANPGSVTVHEAQGATYTETTIIATADARGLIQSSRAHAIVALTRHTEKCVIIDAPGLLREVGISDAIVNNFFLAGGEVGHQRPSVIPRGNPDANVDTLAAFPPSCQISAFHQLAEELGHRPAPVAAVLPPCPELEQGLLYLPQELTTCDSVVTFELTDIVHCRMAAPSQRKAVLSTLVGRYGRRTKLYNASHSDVRDSLARFIPTIGPVQVTTCELYELVEAMVEKGQDGSAVLELDLCNRDVSRITFFQKDCNKFTTGETIAHGKVGQGISAWSKTFCALFGPWFRAIEKAILALLPQGVFYGDAFDDTVFSAAVAAARASMVFENDFSEFDSTQNNFSLGLECAIMEECGMPQWLIRLYHLIRSAWILQAPKESLRGFWKKHSGEPGTLLWNTVWNMAVITHCYDFRDLQVAAFKGDDSIVLCSEYRQSPGAAVLIAGCGLKLKVDFRPIGLYAGVVVAPGLGALPDVVRFAGRLTEKNWGPGPERAEQLRLAVSDFLRKLTNVAQMCVDVVSRVYGVSPGLVHNLIGMLQTVADGKAHFTESIKPVLDLTNSILCRVE</GBQualifier_value>
+        </GBQualifier>
+      </GBFeature_quals>
+    </GBFeature>
+    <GBFeature>
+      <GBFeature_key>CDS</GBFeature_key>
+      <GBFeature_location>5065..5436</GBFeature_location>
+      <GBFeature_intervals>
+        <GBInterval>
+          <GBInterval_from>5065</GBInterval_from>
+          <GBInterval_to>5436</GBInterval_to>
+          <GBInterval_accession>AY204877.1</GBInterval_accession>
+        </GBInterval>
+      </GBFeature_intervals>
+      <GBFeature_quals>
+        <GBQualifier>
+          <GBQualifier_name>codon_start</GBQualifier_name>
+          <GBQualifier_value>1</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>transl_table</GBQualifier_name>
+          <GBQualifier_value>1</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>product</GBQualifier_name>
+          <GBQualifier_value>ORF3</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>protein_id</GBQualifier_name>
+          <GBQualifier_value>AAC35757.1</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>db_xref</GBQualifier_name>
+          <GBQualifier_value>GI:3603258</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>translation</GBQualifier_name>
+          <GBQualifier_value>MNNMSFAAPMGSRPCALGLFCCCSSCFCLCCPRHRPVSRLAAVVGGAAAVPAVVSGVTGLILSPSQSPIFIQPTPSPPMSPLRPGLDLVFANPPDHSAPLGVTRPSAPPLPHVVDLPQLGPRR</GBQualifier_value>
+        </GBQualifier>
+      </GBFeature_quals>
+    </GBFeature>
+    <GBFeature>
+      <GBFeature_key>CDS</GBFeature_key>
+      <GBFeature_location>5106..7088</GBFeature_location>
+      <GBFeature_intervals>
+        <GBInterval>
+          <GBInterval_from>5106</GBInterval_from>
+          <GBInterval_to>7088</GBInterval_to>
+          <GBInterval_accession>AY204877.1</GBInterval_accession>
+        </GBInterval>
+      </GBFeature_intervals>
+      <GBFeature_quals>
+        <GBQualifier>
+          <GBQualifier_name>note</GBQualifier_name>
+          <GBQualifier_value>ORF2; antigenic protein; capsid protein</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>codon_start</GBQualifier_name>
+          <GBQualifier_value>1</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>transl_table</GBQualifier_name>
+          <GBQualifier_value>1</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>product</GBQualifier_name>
+          <GBQualifier_value>structural protein</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>protein_id</GBQualifier_name>
+          <GBQualifier_value>AAB61825.2</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>db_xref</GBQualifier_name>
+          <GBQualifier_value>GI:34808945</GBQualifier_value>
+        </GBQualifier>
+        <GBQualifier>
+          <GBQualifier_name>translation</GBQualifier_name>
+          <GBQualifier_value>MRPRPILLLLLMFLPMLPAPPPGQPSGRRRGRRSGGSGGGFWGDRVDSQPFAIPYIHPTNPFAPDVTAAAGAGPRVRQPARPLGSAWRDQAQRPAAASRRRPATAGAAPLTAVAPAHDTPPVSDVDSRGAILRRQYNLSTSPLTSSVATGTNLVLYAAPLSPLLPLQDGTNTHIMATEASNYAQYRVVRATIRYRPLVPNAVGGYAISISFWPQTTTTPTSVDMNSITSTDVRILVQPGIASELVIPSERLHYRNQGWRSVETSGVAEEEATSGLVMLCIHGSPVNSYTNTPYTGALGLLDFALELEFRNLTPGNTNTRVSRYSSTARHRLRRGADGTAELTTTAATRFMKDLYFSSTNGVGEIGRGIALTLFNLADTLLGGLPTELISSAGGQLFYSRPVVSANGEPTVKLYTSVENAQQDKGIAIPHDIDLGESRVVIQDYDNQHEQDRPTPSPAPSRPFSVLRANDVLWLSLTAAEYDQSTYGSSTGPVYVSDSVTLVNVATGAQAVARSLDWTKVTLDGRPLSTIQQYSKTFFVLPLRGKLSFWEAGTTKAGYPYNYNTTASDQLLIENVAGHRVAISTYTTSLGAGPVSISAVAVLAPHSALALLEDTLDYPARAHTFDDFCPECRPLGLQGCAFQSTVAELQRLKMKVGKTREL</GBQualifier_value>
+        </GBQualifier>
+      </GBFeature_quals>
+    </GBFeature>
+  </GBSeq_feature-table>
+  <GBSeq_sequence>gttcattaaggctcctggcatcactactgctattgagcaggctgctctagcagcggccaattctgccttggcgaatgctgtggtagttaggccttttctctctcaccagcagattgagattctcattaacctaatgcaacctcgccagcttgttttccgtcccgaggttttctggaatcaccctatccagcgcgttattcataacgagctggagctttattgccgcgcccgctccggccgttgccttgagattggcgctcatccccgctcaataaatgataatcctaatgtggtccaccgctgctttctccgccctgtcgggcgtgatgttcagcgttggtatactgctcctacccgcgggccggctgctaactgccggcgttccgcactgcgcgggcttcccgctgctgaccgcacctactgccttgatgggttttctggctgtagtttcccagccgagacgggcattgccctctactccctccacgatatgtcaccatccgatgtcgcagaggccatgttccgccatggcatgacgcggctttatgctgccctccatctcccacctgaagtcctgttgccccctggcacataccgtaccgcgtcgtaccttctaattcatgatggcaggcgtgttgtggtgacgtatgagggtgataccagtgctggctataaccatgatgtttctaacctacgttcctggatcagaactaccaaggtcaccgggaaccaccccctcgttatcgagcgggttagggccattggctgccactttgttctcttgctcacggccgccccggagccatctcctatgccttatgttccttacccccggtctaccgaggtctatgttcggtcaatcttcggcccgggtggtaccccctccttgtttccaacctcatgctctactaagtcaactttccatgctgttcctgtccatatctgggatcgtctcatgttgttcggggccaccctggacgatcaggctttttgctgctcccgtcttatgacctatctccgcggcattagctacaaggttactgtcggtacccttgtggccaatgagggttggaacgcctccgaggacgccctcacagctgttattactgccgcttatctaaccatatgtcatcagcgctatctccgcacccaggctatatctaaggggatgcgccgtctggagcgggagcacgcccagaagttcattacacgcctttacagttggctctttgagaagtctggccgtgattacatccctggccgtcagctggagttttacgcccagtgtaggcgctggctctccgctggcttccaccttgacccacgggtgttggtttttgacgagtcggccccctgccactgtaggaccatgatccgtagggcggtctcaaagttttgctgttttatgaagtggcttggccaagagtgtacctgcttcctacagcctgcagaagggggtgttggtgaccagggccatgataacgaagcctatgaggggtccgatgttgatcctgctgagtctgccacttgtgacatatccgggtcctatgtggtacctggtgctgcccttcaaccgctctaccaagctcttgatcttcccgccgacattgtggcccgtgcaggccggctgaccgccacagtaaaggtttcccaggccgaggggcggatcgactgtgagaccctcattggtaataaaactttccgcacgtcgttcgtcgacggggcggtcttagagaccaacggcccagagcgccacaatctctcttttgacgtcagtcagagtaccatggccgccggtccttttagtcttacctacgccgcctctgctgctgggttggaggtgcgctatgttgctgccgggcttgaccaccgggcggtttttgcccccggcgtttcgccccggtcggctcccggtgaggtcaccgccttctgctccgccctatacaggttcaatcgtgaggcccagcgccattcattgaccggcaacttctggttccaccctgaagggctccttggcccctttgccccgttctcgcccgggcatgtctgggagtcggccaacccgttttgtggtgagagcacactctacacccgtacttggtcggaagttgatgctgtctccggcccggcccagcccgacttaggccctgtatctgaaccctccatgtctagcagggccgccacacccaccttggcggctcccttaccctctgttgtattaggcccctcccctcctccttctgccccggcgtccagcgagccggcccctggtgctagcgccgggaccccggccataacccaccagatggcccggcatcgccgcctgctttttacctatccagatggttctaaggtgttcgccggctcgttgttcgagtcggcgtgtacgtggcttgttaatgcgtctaatgttgaccatcgccctggcggtgggctttgccatgcattctaccagaggtaccccacctcctttgatgctgcctcttttgtgatgcgtgacggcgcggccgcgtatacactaactccccggccaataatccatgccgtcgcccctgattataggttggaacataacccaaaaaggcttgaggctgcctatcgggagacttgctctcgcctcggcaccgccgcatacccgctcctcgggaccggcatatatcaggtaccaatcggtcctagctttgacgcctgggagcggaaccaccgccccggggatgagctctatctacctgagcttgctgctaaatggttcgaggccaataagccgacccgtccgactctcactataactgaggatgttgcacggacggcgaacttggccatcgagcttgattcagccacagatgtcggccgggcctgcgctggctgccgagtcacccccggtgttgtgcagtaccagtttaccgcaggtgtgcccgggtctggcaagtcccgttctgttatccaaactgacgtggatgttgttgtggttccgactcgggagttgcgtaacgcctggcgccgccgcggcttcgctgcttttaccccccacactgccgctagagttacccaggggcgccgggtcgttattgatgaggctccatcactcccccctcacctgctgctgctccatatgcagcgggccgccaccgtccaccttctcggtgacccgaaccagatcccagccattgacttcgaacacgctgggctcgttcccgccatcaggcctgatctagcccccacctcctggtggcacgtcacccaccgctgtcccgcggatgtatgtgagctgatccgtggtgcataccccatgatccagaccactagccgggtcctccgttcgttgttttggggcgaacctgccgtcggccagaaattagtgttcacccaggcggccaaggctgcgaaccccggctcggtgacggttcatgaggcgcagggcgctacctacacagagactaccatcattgcaacagcagacgcccgtggcctcattcagtcgtcccgggctcatgccattgttgccctgacgcgccacactgagaagtgcgtcattattgacgcacctggtctgcttcgtgaggtgggcatctctgacgcaattgttaataactttttcctcgctggaggcgaggttggccaccagcgcccgtctgttattccccgcggcaatcctgacgctaatgtcgacaccctggccgccttcccaccgtcttgccagattagtgccttccatcagctggctgaagagctcggccacagacccgcccctgtcgcagctgttttaccaccctgccctgagcttgaacagggccttctctacctgcctcaggaactcaccacctgtgacagtgttgtaacatttgagttgacagatattgtgcattgtcgcatggccgccccgagccagcgcaaggccgtgctctccacacttgtgggccggtacggccgtcgcacgaagctttataatgcctctcattctgatgttcgcgattctctcgcccgcttcatcccgaccattggtcctgtacaggtcacaacctgtgagctgtacgagttagtggaggccatggttgagaagggccaggatggctccgccgtccttgagctcgatctctgtaaccgcgatgtgtccaggatcaccttcttccagaaagactgtaataagtttactactggggagaccattgcccacggcaaagtgggtcagggtatttcggcatggagcaagactttctgtgccctctttggcccctggttccgtgctattgagaaggccatcttggctctgctcccccagggcgtattctatggggacgcttttgatgacactgtcttctctgcggctgtggccgctgcgagggcgtccatggtgtttgagaatgacttttctgagttcgattccactcagaataatttctccttgggccttgagtgtgctattatggaggagtgtgggatgccgcagtggctcatccgcctgtaccatcttataaggtccgcatggatcttgcaggccccgaaggaatctctgcgcgggttctggaagaaacactccggtgagcctggcactctcttatggaatactgtctggaatatggccgttatcacccactgttatgacttccgggacttgcaagtggctgcttttaaaggtgatgattcgatagtgctttgcagtgagtaccgtcaaagtccgggtgctgcagtcctgattgctggctgcggcttgaagctgaaggtggacttccgcccgatcggtttgtacgcgggtgttgttgtggcccccggccttggtgcgcttcctgacgtcgtgcgcttcgccggtcggctcactgagaagaattggggccctggccctgagcgggcggagcagctccgccttgctgtgagtgattttcttcgcaagctcacgaatgtagcccaaatgtgtgtggatgttgtttctcgtgtttatggggtctccccgggacttgttcataacctgatcggcatgctacagactgtcgccgatggcaaggcccattttaccgagtctataaaaccagtgctcgacttgacaaattcaatcttgtgtcgggtggaatgaataacatgtcttttgctgcgcccatgggttcgcgaccatgcgccctcggcctattttgctgctgctcctcatgtttctgcctatgttgcccgcgccaccgcccggtcagccgtctggccgccgtcgtgggcggcgcagcggcggttccggcggtggtttctggggtgaccgggttgattctcagcccttcgcaatcccctatattcatccaaccaaccccttcgcccccgatgtcaccgctgcggccggggctggacctcgtgttcgccaacccgcccgaccactcggctccgcttggcgtgaccaggcccagcgccccgccgctgcctcacgtcgtagacctgccacagctggggccgcgccgctgaccgcggtcgctccggcccatgacaccccgccggtgtccgatgttgattctcgtggcgctatcttgcgccgacagtataatctttcaacatcccccctcacttcttccgtggccactggcaccaacttggttctttatgccgctccccttagcccgcttttaccccttcaggacggcaccaatacccatataatggccacggaagcctctaattatgcccagtatcgggttgttcgtgccacaatccgctaccgtccgctagtccccaatgctgttggtggctatgctatttccatctcgttttggccacagaccaccactaccccgacgtccgttgacatgaattccataacctcgacggatgttcgtatccttgtccagcccggtatagcctccgagcttgtgatcccaagtgagcgcctgcactatcgcaaccagggctggcgttccgttgagacctccggggtggcggaggaggaggccacttctggccttgttatgctctgtatacatggctcacctgtgaactcttatactaatacaccctacaccggtgccctcgggctgctggatttcgcccttgagcttgaattccgcaacctcacccctggtaacaccaatacgcgggtctcccgttactccagcactgcccgccaccgtcttcgccgcggcgcagacggcaccgctgagcttaccaccacggctgcaacccgcttcatgaaagacctttatttttctagcactaatggtgtcggcgagatcggccgcgggatcgcccttaccctgtttaaccttgctgacactctgcttggcggcctaccgacagaattgatttcgtcggccggtggccaactgttctattcacgcccagtcgtctcagccaatggcgagccgaccgttaagctgtatacatctgtagagaatgctcagcaggacaagggtattgctatcccgcatgatatcgacctcggggaatcccgtgtagttatccaggactatgacaaccaacatgagcaagaccgaccgacaccttccccagccccgtcgcgccctttctctgtccttcgggctaatgatgtgctttggctttctctcaccgctgccgagtatgaccagtccacctacggctcctcgactggcccagtctatgtctctgactctgtgaccttggtcaatgttgcgaccggcgcgcaggccgttgcccggtcgctcgactggaccaaggtcacactcgatggtcgccctctatctactattcagcagtattcgaagactttcttcgtcctgccgcttcgtggcaagctctccttctgggaggcgggtactactaaagccgggtacccttataattataataccactgctagcgaccaattgctcatcgagaacgtcgctgggcatcgggtggctatttccacctataccactagcttaggtgcaggccctgtttccatctccgcggtcgctgttctagccccccactctgctttagcactgcttgaggataccttggattaccctgcccgcgctcatacttttgatgatttttgcccggagtgccgcccccttggcctccagggctgtgcttttcagtctactgtcgctgagctccagcggcttaagatgaaggtgggtaaaactcgggagttatagtttatttgcttgtgccccccttctttctgtttcttatttttcttttctgcgttccgcgctccctgaaaaaaaaaaaaaaaaa</GBSeq_sequence>
+</GBSeq>

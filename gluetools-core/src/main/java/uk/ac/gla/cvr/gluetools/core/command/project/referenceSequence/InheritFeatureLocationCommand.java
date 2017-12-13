@@ -37,15 +37,18 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @CommandClass(
 		commandWords={"inherit", "feature-location"}, 
-		docoptUsages={"[-r] [-s] [-t] <alignmentName> <featureName>"},
-		docoptOptions={"-r, --recursive    Add locations for the feature's descendents",
-   				       "-s, --spanGaps     New locations should span any gaps in the alignment",
-				       "-t, --truncateCdn  For coding features, truncate to codon-aligned"},
-		description="Inherit a feature location from parent reference", 
+		docoptUsages={"[-r] [-s] [-t] <alignmentName> [-l <relRefName>] <featureName>"},
+		docoptOptions={"-r, --recursive                             Add locations for the feature's descendents",
+   				       "-s, --spanGaps                              New locations should span any gaps in the alignment",
+				       "-t, --truncateCdn                           For coding features, truncate to codon-aligned",
+				       "-l <relRefName>, --relRefName <relRefName>  Related reference within the same alignment"},
+		description="Inherit a feature location from another reference sequence via an alignment", 
 		furtherHelp="This command adds feature locations to the reference sequence, based on the feature locations "+
-		"of a given alignment's reference sequence. A location for the named feature and each of its ancestors will be added, as long as "+
+		"of another reference sequence within the same specified alignment. A location for the named feature and each of its ancestors will be added, as long as "+
 		"no feature location already exists with that name. "+
-		"The reference sequence must be a member of the specified alignment; the new location segments are derived from this alignment membership. "+
+		"If <relRefName> is not given, it is presumed that the specifed alignment is constrained and the "+
+		"constraining reference is used. "+
+		"Both reference sequences must be members of the specified alignment; the new location segments are derived from this alignment membership. "+
 		"If the recursive option is used, this means that a location will not only be inherited for the named feature, but "+
 		"also for any child features of the named feature, their children, etc. ") 
 public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<InheritFeatureLocationResult>{
@@ -53,11 +56,13 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	public static final String ALIGNMENT_NAME = "alignmentName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String RECURSIVE = "recursive";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String SPAN_GAPS = "spanGaps";
 	public static final String TRUNCATE_CODON = "truncateCdn";
 
 	private String alignmentName;
 	private String featureName;
+	private String relRefName;
 	private boolean recursive;
 	private boolean spanGaps;
 	private boolean truncateCdn;
@@ -75,6 +80,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		this.truncateCdn = PluginUtils.configureBooleanProperty(configElem, TRUNCATE_CODON, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 	}
 
 
@@ -90,16 +96,26 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			throw new InheritFeatureLocationException(Code.NOT_MEMBER_OF_ALIGNMENT, thisRefSeq.getName(), alignmentName);
 		}
 		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-		ReferenceSequence parentRefSeq = alignment.getRefSequence();
-		if(parentRefSeq == null) {
+		ReferenceSequence relatedRef;
+		// query aligned segments with this ref as query and rel ref as reference
+		List<QueryAlignedSegment> relRefAlignedSegments = 
+				almtMember.getAlignedSegments().stream()
+				.map(aSeg -> aSeg.asQueryAlignedSegment()).collect(Collectors.toList());
+		if(relRefName != null) {
+			relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), false);
+			relRefAlignedSegments = alignment.translateToRelatedRef(cmdContext, relRefAlignedSegments, relatedRef);
+		} else {
+			relatedRef = alignment.getRefSequence();
+		}
+		if(relatedRef == null) {
 			throw new InheritFeatureLocationException(Code.PARENT_ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
 		}
-		ReferenceFeatureTreeResult parentRefFeatureTree = parentRefSeq.getFeatureTree(cmdContext, feature, recursive, false);
+		ReferenceFeatureTreeResult relatedRefFeatureTree = relatedRef.getFeatureTree(cmdContext, feature, recursive, false);
 		
 		
 		List<Map<String, Object>> resultRowData = new ArrayList<Map<String, Object>>();
-		for(ReferenceFeatureTreeResult featureTreeResult : parentRefFeatureTree.getChildTrees()) {
-			addFeatureLocs(cmdContext, thisRefSeq, parentRefSeq, almtMember, featureTreeResult, resultRowData);
+		for(ReferenceFeatureTreeResult featureTreeResult : relatedRefFeatureTree.getChildTrees()) {
+			addFeatureLocs(cmdContext, thisRefSeq, relatedRef, relRefAlignedSegments, featureTreeResult, resultRowData);
 		}
 		return new InheritFeatureLocationResult(resultRowData);
 	}
@@ -107,8 +123,8 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	
 	private void addFeatureLocs(CommandContext cmdContext, 
 			ReferenceSequence thisRefSeq, 
-			ReferenceSequence parentRefSeq, 
-			AlignmentMember almtMember,
+			ReferenceSequence relatedRefSeq, 
+			List<QueryAlignedSegment> relRefAlignedSegments,
 			ReferenceFeatureTreeResult featureTreeResult, List<Map<String, Object>> resultRowData) {
 		String featureName = featureTreeResult.getFeatureName();
 		
@@ -118,16 +134,13 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		if(currentFeatureLoc == null && !currentFeature.isInformational()) {
 			// intersect the aligned segments of this ref seq in the parent alignment with the
 			// feature location segments of the parent ref seq for this feature.
-			List<ReferenceSegment> parentFeatureLocSegs = featureTreeResult.getReferenceSegments();
+			List<ReferenceSegment> relRefFeatureLocSegs = featureTreeResult.getReferenceSegments();
 			
-			List<QueryAlignedSegment> refParentAlignedSegments = 
-					almtMember.getAlignedSegments().stream().map(aSeg -> aSeg.asQueryAlignedSegment()).collect(Collectors.toList());
-
-			ReferenceSegment.sortByRefStart(refParentAlignedSegments);
+			ReferenceSegment.sortByRefStart(relRefAlignedSegments);
 			
 			// this generates aligned segments just for this feature.
 			List<QueryAlignedSegment> intersection = 
-					ReferenceSegment.intersection(parentFeatureLocSegs, refParentAlignedSegments, ReferenceSegment.cloneRightSegMerger());
+					ReferenceSegment.intersection(relRefFeatureLocSegs, relRefAlignedSegments, ReferenceSegment.cloneRightSegMerger());
 			
 			if(spanGaps && intersection.size() > 1) {
 				QueryAlignedSegment firstSeg = intersection.get(0);
@@ -147,7 +160,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 
 			if(truncateCdn && currentFeature.codesAminoAcids()) {
 				// assumes parent feature loc is codon aligned
-				Integer parentCodon1Start = ReferenceSegment.minRefStart(parentFeatureLocSegs);
+				Integer parentCodon1Start = ReferenceSegment.minRefStart(relRefFeatureLocSegs);
 				Integer thisCodon1Start = newFeatureQaSegs.get(0).getReferenceToQueryOffset() + parentCodon1Start;
 				newFeatureQaSegs = TranslationUtils.truncateToCodonAligned(thisCodon1Start, newFeatureQaSegs);
 			}
@@ -172,7 +185,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			resultRowData.add(resultRow);
 		}
 		for(ReferenceFeatureTreeResult childTreeResult : featureTreeResult.getChildTrees()) {
-			addFeatureLocs(cmdContext, thisRefSeq, parentRefSeq, almtMember, childTreeResult, resultRowData);
+			addFeatureLocs(cmdContext, thisRefSeq, relatedRefSeq, relRefAlignedSegments, childTreeResult, resultRowData);
 		}		
 		
 	}

@@ -1,0 +1,128 @@
+
+  create reference REF_FEATURES_L08816 ncbi-refseqs L08816
+  reference REF_FEATURES_L08816
+  
+    add feature-location ORF1
+    feature-location ORF1
+      add segment 4 5085
+      exit
+
+    add feature-location MT
+    feature-location MT
+      add segment 169 714
+      exit
+      
+    add feature-location Y
+    feature-location Y
+      add segment 649 1299
+      exit
+      
+    add feature-location PCP
+    feature-location PCP
+      add segment 1300 1779
+      exit
+
+    add feature-location PPR
+    feature-location PPR
+      add segment 2137 2337
+      exit
+
+    add feature-location X
+    feature-location X
+      add segment 2356 2829
+      exit
+
+    add feature-location Hel
+    feature-location Hel
+      add segment 2881 3615
+      exit
+
+    add feature-location RdRp
+    feature-location RdRp
+      add segment 3622 5082
+      exit
+
+    add feature-location ORF3
+    feature-location ORF3
+      add segment 5082 5453
+      exit
+
+    add feature-location ORF2
+    feature-location ORF2
+      add segment 5123 7105
+      exit
+
+  exit  
+
+  create reference REF_MASTER_M73218 ncbi-refseqs M73218
+
+  create reference REF_1_M73218 ncbi-refseqs M73218
+  create reference REF_2_M74506 ncbi-refseqs M74506
+  create reference REF_3_AF082843 ncbi-refseqs AF082843
+  create reference REF_4_AB197673 ncbi-refseqs AB197673
+  create reference REF_5_AB573435 ncbi-refseqs AB573435
+  create reference REF_6_AB602441 ncbi-refseqs AB602441
+  create reference REF_7_KJ496143 ncbi-refseqs KJ496143
+
+
+  create reference REF_1abcf_M73218 ncbi-refseqs M73218
+  create reference REF_1de_AY230202 ncbi-refseqs AY230202
+
+  create reference REF_3abchij_AF082843 ncbi-refseqs AF082843
+  create reference REF_3efg_AB248521 ncbi-refseqs AB248521
+
+  create reference REF_1a_M73218 ncbi-refseqs M73218
+  create reference REF_1b_D11092 ncbi-refseqs D11092
+  create reference REF_1c_X98292 ncbi-refseqs X98292
+  create reference REF_1d_AY230202 ncbi-refseqs AY230202
+  create reference REF_1e_AY204877 ncbi-refseqs AY204877
+  create reference REF_1f_JF443721 ncbi-refseqs JF443721
+  create reference REF_1_FJ457024 ncbi-refseqs FJ457024
+  create reference REF_2a_M74506 ncbi-refseqs M74506
+  create reference REF_3a_AF082843 ncbi-refseqs AF082843
+  create reference REF_3b_AP003430 ncbi-refseqs AP003430
+  create reference REF_3c_FJ705359 ncbi-refseqs FJ705359
+  create reference REF_3e_AB248521 ncbi-refseqs AB248521
+  create reference REF_3_EU360977 ncbi-refseqs EU360977
+  create reference REF_3f_AB369687 ncbi-refseqs AB369687
+  create reference REF_3_EU723513 ncbi-refseqs EU723513
+  create reference REF_3_KJ873911 ncbi-refseqs KJ873911
+  create reference REF_3g_AF455784 ncbi-refseqs AF455784
+  create reference REF_3h_JQ013794 ncbi-refseqs JQ013794
+  create reference REF_3i_FJ998008 ncbi-refseqs FJ998008
+  create reference REF_3j_AY115488 ncbi-refseqs AY115488
+  create reference REF_3_AB290312 ncbi-refseqs AB290312
+  create reference REF_3_AB369689 ncbi-refseqs AB369689
+  create reference REF_3_JQ953664 ncbi-refseqs JQ953664
+  create reference REF_3_AB290313 ncbi-refseqs AB290313
+  create reference REF_3ra_FJ906895 ncbi-refseqs FJ906895
+  create reference REF_3_JQ013791 ncbi-refseqs JQ013791
+  create reference REF_3_KJ013415 ncbi-refseqs KJ013415
+  create reference REF_4a_AB197673 ncbi-refseqs AB197673
+  create reference REF_4b_DQ279091 ncbi-refseqs DQ279091
+  create reference REF_4c_AB074915 ncbi-refseqs AB074915
+  create reference REF_4d_AJ272108 ncbi-refseqs AJ272108
+  create reference REF_4e_AY723745 ncbi-refseqs AY723745
+  create reference REF_4f_AB220974 ncbi-refseqs AB220974
+  create reference REF_4g_AB108537 ncbi-refseqs AB108537
+  create reference REF_4h_GU119961 ncbi-refseqs GU119961
+  create reference REF_4i_DQ450072 ncbi-refseqs DQ450072
+  create reference REF_4_AB369688 ncbi-refseqs AB369688
+  create reference REF_5a_AB573435 ncbi-refseqs AB573435
+  create reference REF_6a_AB602441 ncbi-refseqs AB602441
+  create reference REF_6_AB856243 ncbi-refseqs AB856243
+  create reference REF_7a_KJ496143 ncbi-refseqs KJ496143
+  create reference REF_7_KJ496144 ncbi-refseqs KJ496144
+
+  
+  module hevReferenceMetadataPopulator populate -f tabular/referenceSequenceMetadata.txt
+
+  run file glue/hevReferenceDisplayNames.glue
+
+#  run file glue/hevFeaturesAlignment.glue
+
+  run file glue/inheritFeatureLocations.glue
+  
+#  delete alignment AL_FEATURES
+
+  

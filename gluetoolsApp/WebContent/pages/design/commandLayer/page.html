@@ -1,2 +1,20 @@
 <h2>{{commandLayerMenuTitle}}</h2>
 
+-- all interactions with a live GLUE project are done via the command layer
+
+-- the command layer may be accessed
+	-- via the interactive command line
+	-- via JSON over HTTP (when GLUE is running in a web server)
+	-- from the scripting layer.
+	-- most commands can be accessed from any of these.
+
+-- some commands are in modes
+-- some commands can be executed in any mode
+-- some commands are in modules
+
+-- commands have a document-in document-out interface -- show how this can be investigated.
+
+-- the input document may often be constructed from a text string, as with the interactive command line.
+
+-- output document can be rendered as XML, JSON, text or sometimes an interactive table.
+

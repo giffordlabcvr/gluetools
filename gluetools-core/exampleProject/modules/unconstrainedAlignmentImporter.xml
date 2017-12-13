@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<blastFastaAlignmentImporter>
+    <idClauseExtractorFormatter>
+        <matchPattern><![CDATA[[A-Za-z0-9]+_(?<primaryAcc>[A-Z]{1,2}[0-9]+)]]></matchPattern>
+        <outputTemplate>sequenceID = '${primaryAcc}'</outputTemplate>
+    </idClauseExtractorFormatter>
+    <minRowCoveragePercent>90.0</minRowCoveragePercent>
+</blastFastaAlignmentImporter>

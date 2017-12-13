@@ -1,0 +1,48 @@
+<genbankXmlPopulator>
+	<gbPrimaryAccession>
+		<propertyPopulator property="gb_primary_accession"/>
+	</gbPrimaryAccession>
+	<gbAccessionVersion>
+		<propertyPopulator property="gb_accession_version"/>
+	</gbAccessionVersion>
+	<gbLocus>
+		<propertyPopulator property="gb_locus"/>
+	</gbLocus>
+	<gbOtherID>
+		<propertyPopulator property="gb_gi_number">
+			<matchPattern>gi\|(\d+)</matchPattern>
+			<outputTemplate>${g1}</outputTemplate>
+		</propertyPopulator>
+	</gbOtherID>
+	<gbTaxonomy>
+		<propertyPopulator property="gb_taxonomy"/>
+	</gbTaxonomy>
+	<gbLength>
+		<propertyPopulator property="gb_length"/>
+	</gbLength>
+	<gbUpdateDate>
+		<propertyPopulator property="gb_update_date"/>
+	</gbUpdateDate>
+	<gbCreateDate>
+		<propertyPopulator property="gb_create_date"/>
+	</gbCreateDate>
+
+	<gbOrganism>
+		<propertyPopulator property="gb_organism">
+			<valueConverter>
+				<matchPattern>.*Hepatitis E [vV]irus.*</matchPattern>
+				<outputTemplate>Hepatitis E virus</outputTemplate>
+			</valueConverter>
+		</propertyPopulator>
+	</gbOrganism>
+	
+	<gbReferencePubmed>
+		<propertyPopulator property="gb_pubmed_id"/>
+	</gbReferencePubmed>
+
+	<gbFeature key="source">
+		<gbQualifier name="isolate">
+			<propertyPopulator property="gb_isolate"/>
+		</gbQualifier>
+	</gbFeature>
+</genbankXmlPopulator>

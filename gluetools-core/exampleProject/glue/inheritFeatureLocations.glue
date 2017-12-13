@@ -1,0 +1,259 @@
+  reference REF_MASTER_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_MASTER_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_MASTER_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_2_M74506 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_2_M74506 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_2_M74506 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_4_AB197673 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4_AB197673 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4_AB197673 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4_AB197673 feature-location ORF3 remove segment 5144 5516
+  reference REF_4_AB197673 feature-location ORF3 add segment 5144 5515
+
+  reference REF_5_AB573435 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_5_AB573435 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_5_AB573435 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_5_AB573435 feature-location ORF3 remove segment 5149 5521
+  reference REF_5_AB573435 feature-location ORF3 add segment 5149 5520
+
+  reference REF_6_AB602441 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_6_AB602441 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_6_AB602441 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_6_AB602441 feature-location ORF3 remove segment 5152 5524
+  reference REF_6_AB602441 feature-location ORF3 add segment 5152 5523
+
+  reference REF_7_KJ496143 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_7_KJ496143 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_7_KJ496143 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_7_KJ496143 feature-location ORF3 remove segment 5133 5502
+  reference REF_7_KJ496143 feature-location ORF3 add segment 5133 5501
+  
+  reference REF_1abcf_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1abcf_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1abcf_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1de_AY230202 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1de_AY230202 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1de_AY230202 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3abchij_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3abchij_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3abchij_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3efg_AB248521 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3efg_AB248521 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3efg_AB248521 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1a_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1a_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1a_M73218 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1b_D11092 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1b_D11092 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1b_D11092 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1c_X98292 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1c_X98292 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1c_X98292 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1d_AY230202 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1d_AY230202 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1d_AY230202 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1e_AY204877 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1e_AY204877 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1e_AY204877 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_1e_AY204877 feature-location ORF1 remove segment 1 5068
+  reference REF_1e_AY204877 feature-location ORF1 add segment 2 5068
+
+  reference REF_1f_JF443721 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1f_JF443721 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1f_JF443721 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_1_FJ457024 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_1_FJ457024 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_1_FJ457024 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_2a_M74506 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_2a_M74506 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_2a_M74506 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3a_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3a_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3a_AF082843 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3b_AP003430 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3b_AP003430 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3b_AP003430 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3c_FJ705359 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3c_FJ705359 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3c_FJ705359 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3e_AB248521 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3e_AB248521 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3e_AB248521 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_EU360977 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_EU360977 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_EU360977 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3f_AB369687 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3f_AB369687 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3f_AB369687 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_EU723513 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_EU723513 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_EU723513 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_KJ873911 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_KJ873911 feature-location X remove segment 2423 2886
+  reference REF_3_KJ873911 feature-location X add segment 2425 2886
+  reference REF_3_KJ873911 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_KJ873911 feature-location ORF2 remove segment 5177 7157
+  reference REF_3_KJ873911 feature-location ORF2 add segment 5177 7156
+  reference REF_3_KJ873911 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_3_KJ873911 feature-location ORF3 remove segment 5139 5346
+  reference REF_3_KJ873911 feature-location ORF3 add segment 5139 5345
+
+  reference REF_3g_AF455784 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3g_AF455784 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3g_AF455784 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3h_JQ013794 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3h_JQ013794 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3h_JQ013794 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_3h_JQ013794 feature-location ORF1 remove segment 1 5078
+  reference REF_3h_JQ013794 feature-location ORF1 add segment 3 5078
+
+  reference REF_3i_FJ998008 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3i_FJ998008 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3i_FJ998008 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3j_AY115488 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3j_AY115488 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3j_AY115488 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_AB290312 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_AB290312 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_AB290312 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_AB369689 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_AB369689 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_AB369689 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_JQ953664 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_JQ953664 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_JQ953664 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_AB290313 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_AB290313 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_AB290313 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3ra_FJ906895 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3ra_FJ906895 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3ra_FJ906895 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_JQ013791 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_JQ013791 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_JQ013791 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_3_KJ013415 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_3_KJ013415 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_3_KJ013415 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+
+  reference REF_4a_AB197673 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4a_AB197673 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4a_AB197673 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4a_AB197673 feature-location ORF3 remove segment 5144 5516
+  reference REF_4a_AB197673 feature-location ORF3 add segment 5144 5515
+  
+  reference REF_4b_DQ279091 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4b_DQ279091 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4b_DQ279091 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4b_DQ279091 feature-location ORF3 remove segment 5141 5513
+  reference REF_4b_DQ279091 feature-location ORF3 add segment 5141 5512
+  
+  reference REF_4c_AB074915 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4c_AB074915 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4c_AB074915 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4c_AB074915 feature-location ORF3 remove segment 5130 5502
+  reference REF_4c_AB074915 feature-location ORF3 add segment 5130 5501
+  
+  reference REF_4d_AJ272108 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4d_AJ272108 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4d_AJ272108 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4d_AJ272108 feature-location ORF3 remove segment 5146 5512
+  reference REF_4d_AJ272108 feature-location ORF3 add segment 5146 5511
+
+  reference REF_4e_AY723745 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4e_AY723745 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4e_AY723745 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4e_AY723745 feature-location ORF3 remove segment 5146 5518
+  reference REF_4e_AY723745 feature-location ORF3 add segment 5146 5517
+
+  reference REF_4f_AB220974 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4f_AB220974 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4f_AB220974 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4f_AB220974 feature-location ORF3 remove segment 5146 5518
+  reference REF_4f_AB220974 feature-location ORF3 add segment 5146 5517
+
+  reference REF_4g_AB108537 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4g_AB108537 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4g_AB108537 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4g_AB108537 feature-location ORF3 remove segment 5127 5499
+  reference REF_4g_AB108537 feature-location ORF3 add segment 5127 5498
+
+  reference REF_4h_GU119961 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4h_GU119961 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4h_GU119961 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4h_GU119961 feature-location ORF3 remove segment 5147 5519
+  reference REF_4h_GU119961 feature-location ORF3 add segment 5147 5518
+
+  reference REF_4i_DQ450072 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4i_DQ450072 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4i_DQ450072 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  
+  reference REF_4_AB369688 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_4_AB369688 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_4_AB369688 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_4_AB369688 feature-location ORF3 remove segment 5123 5495
+  reference REF_4_AB369688 feature-location ORF3 add segment 5123 5494
+
+  reference REF_5a_AB573435 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_5a_AB573435 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_5a_AB573435 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_5a_AB573435 feature-location ORF3 remove segment 5149 5521
+  reference REF_5a_AB573435 feature-location ORF3 add segment 5149 5520
+
+  reference REF_6a_AB602441 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_6a_AB602441 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_6a_AB602441 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_6a_AB602441 feature-location ORF3 remove segment 5152 5524
+  reference REF_6a_AB602441 feature-location ORF3 add segment 5152 5523
+
+  reference REF_6_AB856243 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_6_AB856243 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_6_AB856243 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_6_AB856243 feature-location ORF3 remove segment 5152 5524
+  reference REF_6_AB856243 feature-location ORF3 add segment 5152 5523
+
+  reference REF_7a_KJ496143 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_7a_KJ496143 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_7a_KJ496143 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3
+  reference REF_7a_KJ496143 feature-location ORF3 remove segment 5133 5502
+  reference REF_7a_KJ496143 feature-location ORF3 add segment 5133 5501
+
+  reference REF_7_KJ496144 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF1
+  reference REF_7_KJ496144 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF2
+  reference REF_7_KJ496144 inherit feature-location --recursive --spanGaps AL_UNCONSTRAINED --relRefName REF_FEATURES_L08816 ORF3

@@ -1,0 +1,19 @@
+<maxLikelihoodGenotyper>
+	<maxLikelihoodPlacerModuleName>hevMaxLikelihoodPlacer</maxLikelihoodPlacerModuleName>
+	<cladeCategory>
+		<name>genotype</name>	
+		<displayName>Genotype</displayName>	
+		<whereClause>displayName like 'Genotype%'</whereClause>
+		<distanceScalingExponent>-3.0</distanceScalingExponent>
+		<distanceCutoff>0.4</distanceCutoff>
+		<finalCladeCutoff>80.0</finalCladeCutoff>
+	</cladeCategory>
+	<cladeCategory>
+		<name>subtype</name>	
+		<displayName>Subtype</displayName>	
+		<whereClause>displayName like 'Subtype%'</whereClause>
+		<distanceScalingExponent>-4.5</distanceScalingExponent>
+	    <distanceCutoff>0.26</distanceCutoff>
+		<finalCladeCutoff>61.0</finalCladeCutoff>
+	</cladeCategory>
+</maxLikelihoodGenotyper>

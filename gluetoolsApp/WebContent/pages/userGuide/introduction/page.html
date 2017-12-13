@@ -1,12 +1,11 @@
 <h2>{{introductionMenuTitle}}</h2>
 
-GLUE provides a powerful command line interface. This user guide is for bioinformaticians 
-who would like to use the GLUE command line interface to:
+This user guide is for bioinformaticians who would like to:
 <ul>
-	<li>Create a new GLUE project for a specific virus or set of related viruses or EVEs.</li>
+	<li>Create a new GLUE project for a specific virus or set of related viruses.</li>
 	<li>Modify or extend an existing GLUE project.</li>
 	<li>Extract data from an existing GLUE project.</li>
-	<li>Run some new analysis on an existing GLUE project.</li>
+	<li>Run some analysis using a GLUE project.</li>
 </ul>
 
 <h3>Getting started</h3>
@@ -14,20 +13,90 @@ who would like to use the GLUE command line interface to:
 <p>Follow the <a href="#installation">installation guide</a> for step-by-step instructions to get GLUE running 
 on your computer.</p>
 
-<p>Once you have GLUE running, learn how to use the <a href="#interactiveCommandLine">interactive command line</a> to build, 
-manipulate and query the example GLUE project.</p>
+<p>Once you have GLUE running, download and build <a href="#exampleProject">the example GLUE project</a>.</p>
 
-<p>When you are ready to create your own GLUE project, familiarise yourself with the <a href="#coreSchema">core GLUE schema</a> and 
-read about GLUE <a href="#projectStructure">project structure</a>, and how to <a href="#managingAProject">manage a GLUE project.</a>
+<p>Next, learn how to use the <a href="#interactiveCommandLine">command line interpreter</a> 
+to perform basic GLUE project queries.</p>
+
+<h3>Further reading</h3>
+
+<p>
+There are various other aspects of GLUE to learn, the importance of each depends on your particular objectives.
 </p>
-
-<h3>More advanced topics</h3>
-
-<p>Commands often use <a href="#cayenneQueries">Cayenne queries</a> to select sets of objects within the project.
-
-<p>As well as basic commands, you will need to use various <a href="#modules">modules</a> to perform more complex operations.
-
-<p>Some modules use <a href="#freemarkerTemplates">Freemarker templates</a> to transform objects into text.
+<p>
+<table class="table table-striped table-bordered">
+	<thead>
+		<th>Page</th>
+		<th>Summary</th>
+	<colgroup>
+		<col span="1" style="width: 25%;">
+		<col span="1" style="width: 75%;">
+	</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><a href="#modules">{{modulesMenuTitle}}</a></td>
+			<td>Modules are used for tasks such as
+			running phylogenetics and importing metadata, but all share some basic concepts. </td>
+		</tr>
+		<tr>
+			<td><a href="#coreSchema">{{coreSchemaMenuTitle}}</a></td>
+			<td>Explains the fixed set of objects and relationships which is used to structure key
+			GLUE project data.</td>
+		</tr>
+		<tr>
+			<td><a href="#alignmentTree">{{alignmentTreeMenuTitle}}</a></td>
+			<td>Explains how multiple sequence alignments are managed in GLUE. Alignments play 
+			a central in GLUE projects.</td>
+		</tr>
+		<tr>
+			<td><a href="#schemaExtensions">{{schemaExtensionsMenuTitle}}</a></td>
+			<td>Explains how to extend the core schema to add custom
+			fields, object types and relationships.</td>
+		</tr>
+		<tr>
+			<td><a href="#commandLayer">{{commandLayerMenuTitle}}</a></td>
+			<td>Explains at a general level the API of GLUE.</td>
+		</tr>
+		<tr>
+			<td><a href="#scriptingLayer">{{scriptingLayerMenuTitle}}</a></td>
+			<td>Explains how JavaScript programs can be used to introduce custom logic.</td>
+		</tr>
+		<tr>
+			<td><a href="#webService">{{webServiceMenuTitle}}</a></td>
+			<td>Explains how to set up GLUE to run as a programmatic web service, exposing 
+			GLUE-based functionality over a network.</td>
+		</tr>
+		<tr>
+			<td><a href="#softwareArchitecture">{{softwareArchitectureMenuTitle}}</a></td>
+			<td>Quick guide to the main elements which comprise a running GLUE instance.</td>
+		</tr>
+		<tr>
+			<td><a href="#invokingGlueFromTheShell">{{invokingGlueFromTheShellMenuTitle}}</a></td>
+			<td>Some tips on invoking GLUE as a Unix command, for example as 
+			part of a bioinformatics pipeline.</td>
+		</tr>
+		<tr>
+			<td><a href="#cayenneQueries">{{cayenneQueriesMenuTitle}}</a></td>
+			<td>Detailed guide to querying data within a GLUE project using Apache Cayenne's 
+			query language.</td>
+		</tr>
+		<tr>
+			<td><a href="#projectStructure">{{projectStructureMenuTitle}}</a></td>
+			<td>Some conventions for structuring GLUE projects.</td>
+		</tr>
+		<tr>
+			<td><a href="#managingAProject">{{managingAProjectMenuTitle}}</a></td>
+			<td>Overview of how GLUE projects can be developed and managed.</td>
+		</tr>
+		<tr>
+			<td><a href="#freemarkerTemplates">{{freemarkerTemplatesMenuTitle}}</a></td>
+			<td>Quick guide on transforming objects to text with FreeMarker, which is used
+			by some module types.</td>
+		</tr>
+	</tbody>
+</table>
+</p>
 
 
 

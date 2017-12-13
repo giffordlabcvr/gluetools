@@ -1,0 +1,40 @@
+<compoundAligner>
+	<!-- The minimum bit score setting here was added in order to 
+	     prevent alignment of the query to parts of the reference that are self-similar.
+	     Specifically, it was found that two 50 nucleotide segments of reference M73218 are similar enough that
+	     a spurious blast hit is generated on query EU879105.
+	     
+	     However, this spurious hit has a much lower bit score, so the bit score filter will remove it.
+	     
+	     This approach here is fine as the reference self-similarity is not extreme and we are aligning queries which 
+	     are closely related and similar to the reference.
+	     
+	     Incidentally, the problem showed up during a routine check using the alignment show statistics command: 
+	     this particular member had a memberNtCoveragePct of > 100%
+	     
+	     >M73218_249_to_299
+		 GCTGGAGCTTTACTGCCGCGCCCGCTCCGGCCGCTGTCTTGAAATTGGCGC
+		 >M73218_5360_to_5410
+		 GCTGGACCTCGTGTTCGCCAACCCGCCCGACCACTCGGCTCCGCTTGGCGT
+		 >EU879105_125_to_175
+		 GCTGGAGCTTTACTGCCGCGCCCGCTCCGGCCGCTGTCTTGAAATTGGCGC
+
+	     -->
+	<aligners>
+		<codonAwareBlastAligner>
+			<minimumBitScore>50</minimumBitScore>
+			<featureName>ORF1</featureName>
+		</codonAwareBlastAligner>
+		<codonAwareBlastAligner>
+			<minimumBitScore>50</minimumBitScore>
+			<featureName>ORF2</featureName>
+		</codonAwareBlastAligner>
+		<codonAwareBlastAligner>
+			<minimumBitScore>50</minimumBitScore>
+			<featureName>ORF3</featureName>
+		</codonAwareBlastAligner>
+		<blastAligner>
+			<minimumBitScore>50</minimumBitScore>
+		</blastAligner>
+	</aligners>
+</compoundAligner>

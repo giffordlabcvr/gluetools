@@ -1,0 +1,20 @@
+  # create modules from files
+  
+  create module --fileName modules/hevCompoundAligner.xml
+  create module --fileName modules/hevFigTreeAnnotationExporter.xml
+  create module --fileName modules/hevGenbankXmlPopulator.xml
+  create module --fileName modules/hevMaxLikelihoodGenotyper.xml
+  create module --fileName modules/hevMaxLikelihoodPlacer.xml
+  create module --fileName modules/hevPhyloExporter.xml
+  create module --fileName modules/hevPhylogenyColumnsSelector.xml
+  create module --fileName modules/hevPhyloImporter.xml
+  create module --fileName modules/hevPhyloUtility.xml
+  create module --fileName modules/hevRaxmlPhylogenyGenerator.xml
+  create module --fileName modules/hevReferenceMetadataPopulator.xml
+  create module --fileName modules/hevSequenceReporter.xml
+  create module --fileName modules/kuiken2006CodonLabeler.xml
+  create module --fileName modules/ncbiHevImporter.xml
+  create module --fileName modules/unconstrainedAlignmentImporter.xml
+  
+  
+  

@@ -1,0 +1,14 @@
+<figTreeAnnotationExporter>
+	<figTreeAnnotation>
+		<annotationName>genotype</annotationName>
+		<valueFreemarkerTemplate>${renderNestedProperty('sequence.genotype')}</valueFreemarkerTemplate>
+	</figTreeAnnotation>
+	<figTreeAnnotation>
+		<annotationName>genotypeSubtype</annotationName>
+		<valueFreemarkerTemplate>${renderNestedProperty('sequence.genotype')}/${renderNestedProperty('sequence.subtype')}</valueFreemarkerTemplate>
+	</figTreeAnnotation>
+	<figTreeAnnotation>
+		<annotationName>genotypeSubtypePrimaryAcc</annotationName>
+		<valueFreemarkerTemplate>${renderNestedProperty('sequence.genotype')}/${renderNestedProperty('sequence.subtype')}/${renderNestedProperty('sequence.sequenceID')}</valueFreemarkerTemplate>
+	</figTreeAnnotation>
+</figTreeAnnotationExporter>

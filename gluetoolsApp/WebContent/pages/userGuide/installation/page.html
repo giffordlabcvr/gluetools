@@ -9,10 +9,9 @@
 	<li><a ng-click="scrollTo('configFile')">The GLUE XML configuration file</a></li>
 	<li><a ng-click="scrollTo('runCommandLine')">Running the GLUE command line</a></li>
 	<li><a ng-click="scrollTo('upgradingGlue')">Upgrading GLUE</a></li>
-	<li><a ng-click="scrollTo('blast')">Recommended integration: BLAST+</a></li>
-	<li><a ng-click="scrollTo('exampleProject')">Download and build the example GLUE project</a></li>
-	<li><a ng-click="scrollTo('mafft')">Optional integration: MAFFT</a></li>
-	<li><a ng-click="scrollTo('raxml')">Optional integration: RAxML</a></li>
+	<li><a ng-click="scrollTo('blast')">Software integration: BLAST+</a></li>
+	<li><a ng-click="scrollTo('mafft')">Software integration: MAFFT</a></li>
+	<li><a ng-click="scrollTo('raxml')">Software integration: RAxML</a></li>
 </ol>
 
 <h3 id="operatingSystems">Supported operating systems</h3>
@@ -129,7 +128,7 @@ Normally this is done as follows:
 	<li>Delete the old version from the <code>gluetools/lib</code> directory.</li>
 </ul> 
 
-<h3 id="blast">Recommended integration: BLAST+</h3>
+<h3 id="blast">Software integration: BLAST+</h3>
 <p>GLUE uses the BLAST+ suite of programs for auto-alignment and certain other features.</p>
 <p>Download and install BLAST+ 2.2.31 from 
 <a target="_blank" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/">NCBI's BLAST+ FTP page</a>. 
@@ -144,30 +143,8 @@ In the case of Mac OSX you should use the 'universal-macosx' BLAST+ distribution
 
 <div hljs source="blastConfig"></div>
 
-<h3>Download and build the GLUE example project</h3>
 
-<p>Conventionally, files relating to GLUE projects are stored in their own directories, which are inside the <code>gluetools/projects</code> directory. 
-Download the example project zip from the <a target="_blank" href="#download">GLUE download page</a>. Unzip it inside <code>gluetools/projects</code>.</p>
-
-<p>We can now start a GLUE interactive session and build the example project. This requires the BLAST+ integration.</p>
-<p>If the project build was successful, the last output before the GLUE prompt should be "OK".</p>
-
-<pre>
-$ cd /home/fred/gluetools/projects/exampleProject
-$ gluetools.sh
-GLUE version 0.1.136
-Mode path: /
-GLUE> run file exampleProject.glue
-...
-
-...
-OK
-Mode path: /
-GLUE>
-</pre>
-
-
-<h3 id="mafft">Optional integration: MAFFT</h3>
+<h3 id="mafft">Software integration: MAFFT</h3>
 <p>GLUE uses MAFFT as part of its maximum likelihood genotyping procedure, there may be other uses in the future.</p>
 <p>Download MAFFT from the <a target="_blank" href="http://mafft.cbrc.jp/alignment/software/">CBRC MAFFT page</a> and install it locally.</p>
 
@@ -179,7 +156,7 @@ GLUE>
 
 <div hljs source="mafftConfig"></div>
 
-<h3 id="raxml">Optional integration: RAxML</h3>
+<h3 id="raxml">Software integration: RAxML</h3>
 <p>GLUE uses RAxML as part of its maximum likelihood genotyping procedure, and for general phylogenetics.</p>
 <p>We suggest RAxML be compiled locally so that it is optimised for your hardware. 
 Instructions can be found at the <a target="_blank" href="https://sco.h-its.org/exelixis/web/software/raxml/index.html">Exelixis Lab RAxML page</a>.</p>
