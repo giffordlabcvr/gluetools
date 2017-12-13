@@ -13,6 +13,7 @@
   create module --fileName modules/hevReferenceMetadataPopulator.xml
   create module --fileName modules/hevSequenceReporter.xml
   create module --fileName modules/kuiken2006CodonLabeler.xml
+  create module --fileName modules/ncbiHevExamplesImporter.xml
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml
   

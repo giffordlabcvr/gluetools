@@ -24,7 +24,7 @@ alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/D11092	1	1/b	1/b/D11092
 alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/DQ279091	4	4/b	4/b/DQ279091
 alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/DQ450072	4	4/i	4/i/DQ450072
 alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/EU360977	3	3/-	3/-/EU360977
-alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/EU723513	3	3/-	3/-/EU723513
+alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/EU723513	3	3/f	3/f/EU723513
 alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/FJ457024	1	1/-	1/-/FJ457024
 alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/FJ705359	3	3/c	3/c/FJ705359
 alignment/AL_UNCONSTRAINED/member/ncbi-refseqs/FJ906895	3	3/ra	3/ra/FJ906895

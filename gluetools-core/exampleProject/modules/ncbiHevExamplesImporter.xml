@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ncbiImporter>
+    <sourceName>ncbi-hev-examples</sourceName>
+	<sequenceFormat>GENBANK_XML</sequenceFormat>
+	<sequenceIdField>PRIMARY_ACCESSION</sequenceIdField>
+	<specificPrimaryAccessions>
+		<primaryAccession>AF444003</primaryAccession>
+		<primaryAccession>JF443717</primaryAccession>
+		<primaryAccession>AB591734</primaryAccession>
+		<primaryAccession>FJ705359</primaryAccession>
+		<primaryAccession>AB481226</primaryAccession>
+		<primaryAccession>FJ998015</primaryAccession>
+		<primaryAccession>FJ763142</primaryAccession>
+		<primaryAccession>JX855794</primaryAccession>
+		<primaryAccession>JQ013791</primaryAccession>
+		<primaryAccession>KP294371</primaryAccession>
+	</specificPrimaryAccessions>
+	<eFetchBatchSize>20</eFetchBatchSize>
+</ncbiImporter>
