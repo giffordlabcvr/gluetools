@@ -1,17 +1,19 @@
 schema-project hev
   table sequence
+	# fields with name "gb_..." are standard GenBank fields
     create field gb_gi_number VARCHAR
     create field gb_primary_accession VARCHAR
     create field gb_accession_version VARCHAR
     create field gb_locus VARCHAR
     create field gb_length INTEGER
     create field gb_organism VARCHAR
-    create field gb_isolate VARCHAR
-    create field gb_taxonomy VARCHAR 200
-    create field gb_host_species VARCHAR 200
-    create field gb_pubmed_id VARCHAR
     create field gb_create_date DATE
     create field gb_update_date DATE
+    create field gb_taxonomy VARCHAR 200
+    create field gb_pubmed_id VARCHAR
+
+    create field isolate VARCHAR
+    create field host_species VARCHAR 200
     create field genotype VARCHAR 10
     create field subtype VARCHAR 10
     exit

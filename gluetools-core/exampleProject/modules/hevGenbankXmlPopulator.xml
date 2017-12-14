@@ -42,7 +42,7 @@
 
 	<gbFeature key="source">
 		<gbQualifier name="isolate">
-			<propertyPopulator property="gb_isolate"/>
+			<propertyPopulator property="isolate"/>
 		</gbQualifier>
 		
 		<gbQualifier name="country">
@@ -50,7 +50,7 @@
 		</gbQualifier>
 		
 		<gbQualifier name="host">
-			<propertyPopulator property="gb_host_species">
+			<propertyPopulator property="host_species">
 
 				<valueConverter>
 					<matchPattern>.*[Hh]omo [Ss]apiens.*</matchPattern>

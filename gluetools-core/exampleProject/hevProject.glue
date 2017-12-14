@@ -29,5 +29,10 @@ project hev
   run file glue/hevAlignmentTree.glue
   run file glue/importPhylogeny.glue
 
+  import source sources/ncbi-hev-examples
+  module hevGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'"
+
+  run script glue/addExampleSeqsToTree.js
+
   validate
   
