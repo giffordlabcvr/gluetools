@@ -13,6 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -47,7 +48,9 @@ public class CreateCustomTableRowCommand extends ProjectModeCommand<CreateResult
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		CustomTable customTable = getProjectMode(cmdContext).getProject().getCustomTable(tableName);
+		Project project = getProjectMode(cmdContext).getProject();
+		project.checkCustomTableName(tableName);
+		CustomTable customTable = project.getCustomTable(tableName);
 		Class<? extends CustomTableObject> rowClass = customTable.getRowClass();
 		Map<String, String> pkMap = CustomTableObject.pkMap(rowId);
 		CustomTableObject existing = null;

@@ -1,0 +1,18 @@
+<freemarkerTextToGlueTransformer>
+	<columnDelimiterRegex>,</columnDelimiterRegex>
+	<freemarkerTemplate><![CDATA[
+<#list rows as row>
+  <#assign subRegionName>${row["Sub-region Name"]?trim}</#assign>
+  <#assign subRegionId>${subRegionName?lower_case?replace(' ','_')?replace('-','_')}</#assign>
+  <#assign m49Code>${row["Sub-region Code"]?trim}</#assign>
+  <#assign regionName>${row["Region Name"]?trim}</#assign>
+  <#assign regionId>${regionName?lower_case}</#assign>
+  create custom-table-row m49_sub_region "${subRegionId}"
+  custom-table-row m49_sub_region "${subRegionId}"
+    set field display_name "${subRegionName}"
+    set field m49_code "${m49Code}"
+    set link-target m49_region "custom-table-row/m49_region/${regionId}"    
+    exit
+</#list>
+]]></freemarkerTemplate>
+</freemarkerTextToGlueTransformer>

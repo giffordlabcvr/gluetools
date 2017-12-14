@@ -1,0 +1,6 @@
+module m49RegionsTextToCustomTableRows transform tabular/m49_countries/m49_regions.csv --run
+module m49SubRegionsTextToCustomTableRows transform tabular/m49_countries/m49_sub_regions.csv --run
+module m49IntermediateRegionsTextToCustomTableRows transform tabular/m49_countries/m49_intermediate_regions.csv --run
+module m49CountriesTextToCustomTableRows transform tabular/m49_countries/m49_countries.txt --run
+
+run file glue/m49_countries/m49CountriesDisplayNames.glue

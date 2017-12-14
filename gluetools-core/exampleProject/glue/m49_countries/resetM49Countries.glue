@@ -1,0 +1,4 @@
+multi-delete m49_country -a
+multi-delete m49_region -a
+multi-delete m49_sub_region -a
+multi-delete m49_intermediate_region -a

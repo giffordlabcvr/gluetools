@@ -10,6 +10,9 @@ project hev
   
   run file glue/hevModules.glue
   
+  # M49 regions / countries etc (UN standard)
+  run file glue/m49_countries/populateM49Countries.glue
+  
   import source sources/ncbi-refseqs 
 
   # import unconstrained alignment  

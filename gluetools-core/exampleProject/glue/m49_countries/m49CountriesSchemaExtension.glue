@@ -1,0 +1,38 @@
+create custom-table m49_country
+create custom-table m49_region
+create custom-table m49_intermediate_region
+create custom-table m49_sub_region
+
+# id of this table is the ISO-alpha 3 code
+table m49_country
+  create field m49_code INTEGER
+  create field display_name VARCHAR 100
+  create field full_name VARCHAR 100
+  create field is_ldc BOOLEAN
+  create field is_lldc BOOLEAN
+  create field is_sids BOOLEAN
+  # 'developed' or 'developing'
+  create field development_status VARCHAR 20
+  exit
+  
+table m49_region
+  create field m49_code INTEGER
+  create field display_name VARCHAR 100
+  exit
+  
+table m49_sub_region
+  create field m49_code INTEGER
+  create field display_name VARCHAR 100
+  exit
+  
+table m49_intermediate_region
+  create field m49_code INTEGER
+  create field display_name VARCHAR 100
+  exit
+  
+create link m49_country m49_region -m MANY_TO_ONE
+create link m49_country m49_sub_region -m MANY_TO_ONE
+create link m49_country m49_intermediate_region -m MANY_TO_ONE
+create link m49_intermediate_region m49_sub_region -m MANY_TO_ONE
+create link m49_sub_region m49_region -m MANY_TO_ONE
+  

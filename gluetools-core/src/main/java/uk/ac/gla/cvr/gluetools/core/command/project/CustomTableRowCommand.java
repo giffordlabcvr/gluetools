@@ -51,12 +51,9 @@ public class CustomTableRowCommand extends ProjectModeCommand<OkResult>  {
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
-		Project project = insideProjectMode.getProject();
-		CustomTable customTable = project.getCustomTable(tableName); 
-		if(customTable == null) {
-			throw new ProjectModeCommandException(Code.NO_SUCH_TABLE, tableName);
-		}
+		Project project = getProjectMode(cmdContext).getProject();
+		project.checkCustomTableName(tableName);
+		CustomTable customTable = project.getCustomTable(tableName);
 		// check row exists.
 		GlueDataObject.lookup(cmdContext, customTable.getRowClass(), CustomTableObject.pkMap(rowId));
 		cmdContext.pushCommandMode(new CustomTableRowMode(project, this, customTable, rowId));

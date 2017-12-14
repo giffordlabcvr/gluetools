@@ -1,0 +1,252 @@
+ISO-alpha3 Code	Country or Area	M49 Code	Region Name	Sub-region Name	Intermediate Region Name	Least Developed Countries (LDC)	Land Locked Developing Countries (LLDC)	Small Island Developing States (SIDS)	Developed / Developing Countries
+	Sark	680	Europe	Northern Europe	Channel Islands				Developed
+ABW	Aruba	533	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+AFG	Afghanistan	4	Asia	Southern Asia		x	x		Developing
+AGO	Angola	24	Africa	Sub-Saharan Africa	Middle Africa	x			Developing
+AIA	Anguilla	660	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+ALA	Åland Islands	248	Europe	Northern Europe					Developed
+ALB	Albania	8	Europe	Southern Europe					Developed
+AND	Andorra	20	Europe	Southern Europe					Developed
+ARE	United Arab Emirates	784	Asia	Western Asia					Developing
+ARG	Argentina	32	Americas	Latin America and the Caribbean	South America				Developing
+ARM	Armenia	51	Asia	Western Asia			x		Developing
+ASM	American Samoa	16	Oceania	Polynesia				x	Developing
+ATA	Antarctica	10							
+ATF	French Southern Territories	260	Africa	Sub-Saharan Africa	Eastern Africa				Developing
+ATG	Antigua and Barbuda	28	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+AUS	Australia	36	Oceania	Australia and New Zealand					Developed
+AUT	Austria	40	Europe	Western Europe					Developed
+AZE	Azerbaijan	31	Asia	Western Asia			x		Developing
+BDI	Burundi	108	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+BEL	Belgium	56	Europe	Western Europe					Developed
+BEN	Benin	204	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+BES	Bonaire, Sint Eustatius and Saba	535	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+BFA	Burkina Faso	854	Africa	Sub-Saharan Africa	Western Africa	x	x		Developing
+BGD	Bangladesh	50	Asia	Southern Asia		x			Developing
+BGR	Bulgaria	100	Europe	Eastern Europe					Developed
+BHR	Bahrain	48	Asia	Western Asia					Developing
+BHS	Bahamas	44	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+BIH	Bosnia and Herzegovina	70	Europe	Southern Europe					Developed
+BLM	Saint-Barthélemy	652	Americas	Latin America and the Caribbean	Caribbean				Developing
+BLR	Belarus	112	Europe	Eastern Europe					Developed
+BLZ	Belize	84	Americas	Latin America and the Caribbean	Central America			x	Developing
+BMU	Bermuda	60	Americas	Northern America					Developed
+BOL	Bolivia (Plurinational State of)	68	Americas	Latin America and the Caribbean	South America		x		Developing
+BRA	Brazil	76	Americas	Latin America and the Caribbean	South America				Developing
+BRB	Barbados	52	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+BRN	Brunei Darussalam	96	Asia	South-eastern Asia					Developing
+BTN	Bhutan	64	Asia	Southern Asia		x	x		Developing
+BVT	Bouvet Island	74	Americas	Latin America and the Caribbean	South America				Developing
+BWA	Botswana	72	Africa	Sub-Saharan Africa	Southern Africa		x		Developing
+CAF	Central African Republic	140	Africa	Sub-Saharan Africa	Middle Africa	x	x		Developing
+CAN	Canada	124	Americas	Northern America					Developed
+CCK	Cocos (Keeling) Islands	166	Oceania	Australia and New Zealand					Developed
+CHE	Switzerland	756	Europe	Western Europe					Developed
+CHL	Chile	152	Americas	Latin America and the Caribbean	South America				Developing
+CHN	China	156	Asia	Eastern Asia					Developing
+CIV	Côte d'Ivoire	384	Africa	Sub-Saharan Africa	Western Africa				Developing
+CMR	Cameroon	120	Africa	Sub-Saharan Africa	Middle Africa				Developing
+COD	Democratic Republic of the Congo	180	Africa	Sub-Saharan Africa	Middle Africa	x			Developing
+COG	Congo	178	Africa	Sub-Saharan Africa	Middle Africa				Developing
+COK	Cook Islands	184	Oceania	Polynesia				x	Developing
+COL	Colombia	170	Americas	Latin America and the Caribbean	South America				Developing
+COM	Comoros	174	Africa	Sub-Saharan Africa	Eastern Africa	x		x	Developing
+CPV	Cabo Verde	132	Africa	Sub-Saharan Africa	Western Africa			x	Developing
+CRI	Costa Rica	188	Americas	Latin America and the Caribbean	Central America				Developing
+CUB	Cuba	192	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+CUW	Curaí_ao	531	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+CXR	Christmas Island	162	Oceania	Australia and New Zealand					Developed
+CYM	Cayman Islands	136	Americas	Latin America and the Caribbean	Caribbean				Developing
+CYP	Cyprus	196	Asia	Western Asia					Developing
+CZE	Czechia	203	Europe	Eastern Europe					Developed
+DEU	Germany	276	Europe	Western Europe					Developed
+DJI	Djibouti	262	Africa	Sub-Saharan Africa	Eastern Africa	x			Developing
+DMA	Dominica	212	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+DNK	Denmark	208	Europe	Northern Europe					Developed
+DOM	Dominican Republic	214	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+DZA	Algeria	12	Africa	Northern Africa					Developing
+ECU	Ecuador	218	Americas	Latin America and the Caribbean	South America				Developing
+EGY	Egypt	818	Africa	Northern Africa					Developing
+ERI	Eritrea	232	Africa	Sub-Saharan Africa	Eastern Africa	x			Developing
+ESH	Western Sahara	732	Africa	Northern Africa					Developing
+ESP	Spain	724	Europe	Southern Europe					Developed
+EST	Estonia	233	Europe	Northern Europe					Developed
+ETH	Ethiopia	231	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+FIN	Finland	246	Europe	Northern Europe					Developed
+FJI	Fiji	242	Oceania	Melanesia				x	Developing
+FLK	Falkland Islands (Malvinas)	238	Americas	Latin America and the Caribbean	South America				Developing
+FRA	France	250	Europe	Western Europe					Developed
+FRO	Faroe Islands	234	Europe	Northern Europe					Developed
+FSM	Micronesia (Federated States of)	583	Oceania	Micronesia				x	Developing
+GAB	Gabon	266	Africa	Sub-Saharan Africa	Middle Africa				Developing
+GBR	United Kingdom of Great Britain and Northern Ireland	826	Europe	Northern Europe					Developed
+GEO	Georgia	268	Asia	Western Asia					Developing
+GGY	Guernsey	831	Europe	Northern Europe	Channel Islands				Developed
+GHA	Ghana	288	Africa	Sub-Saharan Africa	Western Africa				Developing
+GIB	Gibraltar	292	Europe	Southern Europe					Developed
+GIN	Guinea	324	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+GLP	Guadeloupe	312	Americas	Latin America and the Caribbean	Caribbean				Developing
+GMB	Gambia	270	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+GNB	Guinea-Bissau	624	Africa	Sub-Saharan Africa	Western Africa	x		x	Developing
+GNQ	Equatorial Guinea	226	Africa	Sub-Saharan Africa	Middle Africa	x			Developing
+GRC	Greece	300	Europe	Southern Europe					Developed
+GRD	Grenada	308	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+GRL	Greenland	304	Americas	Northern America					Developed
+GTM	Guatemala	320	Americas	Latin America and the Caribbean	Central America				Developing
+GUF	French Guiana	254	Americas	Latin America and the Caribbean	South America				Developing
+GUM	Guam	316	Oceania	Micronesia				x	Developing
+GUY	Guyana	328	Americas	Latin America and the Caribbean	South America			x	Developing
+HKG	China, Hong Kong Special Administrative Region	344	Asia	Eastern Asia					Developing
+HMD	Heard Island and McDonald Islands	334	Oceania	Australia and New Zealand					Developed
+HND	Honduras	340	Americas	Latin America and the Caribbean	Central America				Developing
+HRV	Croatia	191	Europe	Southern Europe					Developed
+HTI	Haiti	332	Americas	Latin America and the Caribbean	Caribbean	x		x	Developing
+HUN	Hungary	348	Europe	Eastern Europe					Developed
+IDN	Indonesia	360	Asia	South-eastern Asia					Developing
+IMN	Isle of Man	833	Europe	Northern Europe					Developed
+IND	India	356	Asia	Southern Asia					Developing
+IOT	British Indian Ocean Territory	86	Africa	Sub-Saharan Africa	Eastern Africa				Developing
+IRL	Ireland	372	Europe	Northern Europe					Developed
+IRN	Iran (Islamic Republic of)	364	Asia	Southern Asia					Developing
+IRQ	Iraq	368	Asia	Western Asia					Developing
+ISL	Iceland	352	Europe	Northern Europe					Developed
+ISR	Israel	376	Asia	Western Asia					Developing
+ITA	Italy	380	Europe	Southern Europe					Developed
+JAM	Jamaica	388	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+JEY	Jersey	832	Europe	Northern Europe	Channel Islands				Developed
+JOR	Jordan	400	Asia	Western Asia					Developing
+JPN	Japan	392	Asia	Eastern Asia					Developed
+KAZ	Kazakhstan	398	Asia	Central Asia			x		Developing
+KEN	Kenya	404	Africa	Sub-Saharan Africa	Eastern Africa				Developing
+KGZ	Kyrgyzstan	417	Asia	Central Asia			x		Developing
+KHM	Cambodia	116	Asia	South-eastern Asia		x			Developing
+KIR	Kiribati	296	Oceania	Micronesia		x		x	Developing
+KNA	Saint Kitts and Nevis	659	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+KOR	Republic of Korea	410	Asia	Eastern Asia					Developing
+KWT	Kuwait	414	Asia	Western Asia					Developing
+LAO	Lao People's Democratic Republic	418	Asia	South-eastern Asia		x	x		Developing
+LBN	Lebanon	422	Asia	Western Asia					Developing
+LBR	Liberia	430	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+LBY	Libya	434	Africa	Northern Africa					Developing
+LCA	Saint Lucia	662	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+LIE	Liechtenstein	438	Europe	Western Europe					Developed
+LKA	Sri Lanka	144	Asia	Southern Asia					Developing
+LSO	Lesotho	426	Africa	Sub-Saharan Africa	Southern Africa	x	x		Developing
+LTU	Lithuania	440	Europe	Northern Europe					Developed
+LUX	Luxembourg	442	Europe	Western Europe					Developed
+LVA	Latvia	428	Europe	Northern Europe					Developed
+MAC	China, Macao Special Administrative Region	446	Asia	Eastern Asia					Developing
+MAF	Saint Martin (French Part)	663	Americas	Latin America and the Caribbean	Caribbean				Developing
+MAR	Morocco	504	Africa	Northern Africa					Developing
+MCO	Monaco	492	Europe	Western Europe					Developed
+MDA	Republic of Moldova	498	Europe	Eastern Europe			x		Developed
+MDG	Madagascar	450	Africa	Sub-Saharan Africa	Eastern Africa	x			Developing
+MDV	Maldives	462	Asia	Southern Asia				x	Developing
+MEX	Mexico	484	Americas	Latin America and the Caribbean	Central America				Developing
+MHL	Marshall Islands	584	Oceania	Micronesia				x	Developing
+MKD	The former Yugoslav Republic of Macedonia	807	Europe	Southern Europe			x		Developed
+MLI	Mali	466	Africa	Sub-Saharan Africa	Western Africa	x	x		Developing
+MLT	Malta	470	Europe	Southern Europe					Developed
+MMR	Myanmar	104	Asia	South-eastern Asia		x			Developing
+MNE	Montenegro	499	Europe	Southern Europe					Developed
+MNG	Mongolia	496	Asia	Eastern Asia			x		Developing
+MNP	Northern Mariana Islands	580	Oceania	Micronesia				x	Developing
+MOZ	Mozambique	508	Africa	Sub-Saharan Africa	Eastern Africa	x			Developing
+MRT	Mauritania	478	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+MSR	Montserrat	500	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+MTQ	Martinique	474	Americas	Latin America and the Caribbean	Caribbean				Developing
+MUS	Mauritius	480	Africa	Sub-Saharan Africa	Eastern Africa			x	Developing
+MWI	Malawi	454	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+MYS	Malaysia	458	Asia	South-eastern Asia					Developing
+MYT	Mayotte	175	Africa	Sub-Saharan Africa	Eastern Africa				Developing
+NAM	Namibia	516	Africa	Sub-Saharan Africa	Southern Africa				Developing
+NCL	New Caledonia	540	Oceania	Melanesia				x	Developing
+NER	Niger	562	Africa	Sub-Saharan Africa	Western Africa	x	x		Developing
+NFK	Norfolk Island	574	Oceania	Australia and New Zealand					Developed
+NGA	Nigeria	566	Africa	Sub-Saharan Africa	Western Africa				Developing
+NIC	Nicaragua	558	Americas	Latin America and the Caribbean	Central America				Developing
+NIU	Niue	570	Oceania	Polynesia				x	Developing
+NLD	Netherlands	528	Europe	Western Europe					Developed
+NOR	Norway	578	Europe	Northern Europe					Developed
+NPL	Nepal	524	Asia	Southern Asia		x	x		Developing
+NRU	Nauru	520	Oceania	Micronesia				x	Developing
+NZL	New Zealand	554	Oceania	Australia and New Zealand					Developed
+OMN	Oman	512	Asia	Western Asia					Developing
+PAK	Pakistan	586	Asia	Southern Asia					Developing
+PAN	Panama	591	Americas	Latin America and the Caribbean	Central America				Developing
+PCN	Pitcairn	612	Oceania	Polynesia					Developing
+PER	Peru	604	Americas	Latin America and the Caribbean	South America				Developing
+PHL	Philippines	608	Asia	South-eastern Asia					Developing
+PLW	Palau	585	Oceania	Micronesia				x	Developing
+PNG	Papua New Guinea	598	Oceania	Melanesia				x	Developing
+POL	Poland	616	Europe	Eastern Europe					Developed
+PRI	Puerto Rico	630	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+PRK	Democratic People's Republic of Korea	408	Asia	Eastern Asia					Developing
+PRT	Portugal	620	Europe	Southern Europe					Developed
+PRY	Paraguay	600	Americas	Latin America and the Caribbean	South America		x		Developing
+PSE	State of Palestine	275	Asia	Western Asia					Developing
+PYF	French Polynesia	258	Oceania	Polynesia				x	Developing
+QAT	Qatar	634	Asia	Western Asia					Developing
+REU	Réunion	638	Africa	Sub-Saharan Africa	Eastern Africa				Developing
+ROU	Romania	642	Europe	Eastern Europe					Developed
+RUS	Russian Federation	643	Europe	Eastern Europe					Developed
+RWA	Rwanda	646	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+SAU	Saudi Arabia	682	Asia	Western Asia					Developing
+SDN	Sudan	729	Africa	Northern Africa		x			Developing
+SEN	Senegal	686	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+SGP	Singapore	702	Asia	South-eastern Asia				x	Developing
+SGS	South Georgia and the South Sandwich Islands	239	Americas	Latin America and the Caribbean	South America				Developing
+SHN	Saint Helena	654	Africa	Sub-Saharan Africa	Western Africa				Developing
+SJM	Svalbard and Jan Mayen Islands	744	Europe	Northern Europe					Developed
+SLB	Solomon Islands	90	Oceania	Melanesia		x		x	Developing
+SLE	Sierra Leone	694	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+SLV	El Salvador	222	Americas	Latin America and the Caribbean	Central America				Developing
+SMR	San Marino	674	Europe	Southern Europe					Developed
+SOM	Somalia	706	Africa	Sub-Saharan Africa	Eastern Africa	x			Developing
+SPM	Saint Pierre and Miquelon	666	Americas	Northern America					Developed
+SRB	Serbia	688	Europe	Southern Europe					Developed
+SSD	South Sudan	728	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+STP	Sao Tome and Principe	678	Africa	Sub-Saharan Africa	Middle Africa	x		x	Developing
+SUR	Suriname	740	Americas	Latin America and the Caribbean	South America			x	Developing
+SVK	Slovakia	703	Europe	Eastern Europe					Developed
+SVN	Slovenia	705	Europe	Southern Europe					Developed
+SWE	Sweden	752	Europe	Northern Europe					Developed
+SWZ	Swaziland	748	Africa	Sub-Saharan Africa	Southern Africa		x		Developing
+SXM	Sint Maarten (Dutch part)	534	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+SYC	Seychelles	690	Africa	Sub-Saharan Africa	Eastern Africa			x	Developing
+SYR	Syrian Arab Republic	760	Asia	Western Asia					Developing
+TCA	Turks and Caicos Islands	796	Americas	Latin America and the Caribbean	Caribbean				Developing
+TCD	Chad	148	Africa	Sub-Saharan Africa	Middle Africa	x	x		Developing
+TGO	Togo	768	Africa	Sub-Saharan Africa	Western Africa	x			Developing
+THA	Thailand	764	Asia	South-eastern Asia					Developing
+TJK	Tajikistan	762	Asia	Central Asia			x		Developing
+TKL	Tokelau	772	Oceania	Polynesia					Developing
+TKM	Turkmenistan	795	Asia	Central Asia			x		Developing
+TLS	Timor-Leste	626	Asia	South-eastern Asia		x		x	Developing
+TON	Tonga	776	Oceania	Polynesia				x	Developing
+TTO	Trinidad and Tobago	780	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+TUN	Tunisia	788	Africa	Northern Africa					Developing
+TUR	Turkey	792	Asia	Western Asia					Developing
+TUV	Tuvalu	798	Oceania	Polynesia		x		x	Developing
+TWN	Taiwan		Asia	Eastern Asia					Developed
+TZA	United Republic of Tanzania	834	Africa	Sub-Saharan Africa	Eastern Africa	x			Developing
+UGA	Uganda	800	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+UKR	Ukraine	804	Europe	Eastern Europe					Developed
+UMI	United States Minor Outlying Islands	581	Oceania	Micronesia					Developing
+URY	Uruguay	858	Americas	Latin America and the Caribbean	South America				Developing
+USA	United States of America	840	Americas	Northern America					Developed
+UZB	Uzbekistan	860	Asia	Central Asia			x		Developing
+VAT	Holy See	336	Europe	Southern Europe					Developed
+VCT	Saint Vincent and the Grenadines	670	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+VEN	Venezuela (Bolivarian Republic of)	862	Americas	Latin America and the Caribbean	South America				Developing
+VGB	British Virgin Islands	92	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+VIR	United States Virgin Islands	850	Americas	Latin America and the Caribbean	Caribbean			x	Developing
+VNM	Viet Nam	704	Asia	South-eastern Asia					Developing
+VUT	Vanuatu	548	Oceania	Melanesia		x		x	Developing
+WLF	Wallis and Futuna Islands	876	Oceania	Polynesia					Developing
+WSM	Samoa	882	Oceania	Polynesia				x	Developing
+XKX	Kosovo		Europe	Southern Europe					Developed
+YEM	Yemen	887	Asia	Western Asia		x			Developing
+ZAF	South Africa	710	Africa	Sub-Saharan Africa	Southern Africa				Developing
+ZMB	Zambia	894	Africa	Sub-Saharan Africa	Eastern Africa	x	x		Developing
+ZWE	Zimbabwe	716	Africa	Sub-Saharan Africa	Eastern Africa		x		Developing

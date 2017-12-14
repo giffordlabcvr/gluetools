@@ -16,6 +16,11 @@
   create module --fileName modules/ncbiHevExamplesImporter.xml
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml
+
+  create module --fileName modules/m49_countries/m49RegionsTextToCustomTableRows.xml
+  create module --fileName modules/m49_countries/m49SubRegionsTextToCustomTableRows.xml
+  create module --fileName modules/m49_countries/m49IntermediateRegionsTextToCustomTableRows.xml
+  create module --fileName modules/m49_countries/m49CountriesTextToCustomTableRows.xml  
   
   
   

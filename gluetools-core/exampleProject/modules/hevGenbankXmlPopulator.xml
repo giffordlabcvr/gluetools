@@ -44,5 +44,40 @@
 		<gbQualifier name="isolate">
 			<propertyPopulator property="gb_isolate"/>
 		</gbQualifier>
+		
+		<gbQualifier name="country">
+			<isoCountryPropertyPopulator property="m49_country" codeStyle="ALPHA_3"/>
+		</gbQualifier>
+		
+		<gbQualifier name="host">
+			<propertyPopulator property="gb_host_species">
+
+				<valueConverter>
+					<matchPattern>.*[Hh]omo [Ss]apiens.*</matchPattern>
+					<matchPattern>.*[Hh]uman.*</matchPattern>
+					<matchPattern>.*humna.*</matchPattern>
+					<outputTemplate>Homo sapiens</outputTemplate>
+				</valueConverter>
+				
+				<valueConverter>
+					<matchPattern>.*[Rr]abbit.*</matchPattern>
+					<matchPattern>.*[Oo]ryctolagus cuniculus.*</matchPattern>
+					<outputTemplate>Oryctolagus cuniculus</outputTemplate>
+				</valueConverter>
+
+ 				<valueConverter>
+					<matchPattern>.*[Pp]ig.*</matchPattern>
+					<matchPattern>.*[Pp]iglet.*</matchPattern>
+					<matchPattern>.*[Ss]wine.*</matchPattern>
+					<matchPattern>.*Sus scrofa domesticus*</matchPattern>
+					<matchPattern>.*Sus scrofa*</matchPattern>
+					<matchPattern>.*[Pp]orcine.*</matchPattern>
+					<matchPattern>.*[Ww]ild boar.*</matchPattern>
+					<outputTemplate>Sus scrofa</outputTemplate>
+				</valueConverter>
+
+			</propertyPopulator>
+		</gbQualifier>
+		
 	</gbFeature>
 </genbankXmlPopulator>

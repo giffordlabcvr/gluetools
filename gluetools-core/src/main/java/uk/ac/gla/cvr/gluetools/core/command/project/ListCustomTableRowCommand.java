@@ -10,9 +10,11 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtable.CustomTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -53,6 +55,14 @@ public class ListCustomTableRowCommand extends AbstractListCTableCommand {
 		super.configure(pluginConfigContext, configElem);
 		this.tableName = PluginUtils.configureStringProperty(configElem, TABLE_NAME, true);
 		setTableName(tableName);
+	}
+
+
+	@Override
+	public ListResult execute(CommandContext cmdContext) {
+		Project project = getProjectMode(cmdContext).getProject();
+		project.checkCustomTableName(tableName);
+		return super.execute(cmdContext);
 	}
 
 
