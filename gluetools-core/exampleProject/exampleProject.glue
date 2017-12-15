@@ -1,6 +1,6 @@
 delete project example
 
-create project example "A GLUE project for Hepatitis E virus (HEV)" --minVersion 0.1.136
+create project example "An example GLUE project based on hepatitis E virus ()" --minVersion 0.1.136
 
 run file glue/exampleSchemaExtensions.glue
  
