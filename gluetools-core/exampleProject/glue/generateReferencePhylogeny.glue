@@ -1,12 +1,12 @@
-project hev
+project example
 
-  module hevRaxmlPhylogenyGenerator
-    generate nucleotide phylogeny AL_UNCONSTRAINED -s hevPhylogenyColumnsSelector \
+  module exampleRaxmlPhylogenyGenerator
+    generate nucleotide phylogeny AL_UNCONSTRAINED -s examplePhylogenyColumnsSelector \
     	-w "sequence.source.name = 'ncbi-refseqs' and sequence.sequenceID != 'L08816'" \
     	-o trees/referencePhylogeny.tree NEWICK_BOOTSTRAPS
     exit
   
-  module hevFigTreeAnnotationExporter 
+  module exampleFigTreeAnnotationExporter 
     export figtree-annotation AL_UNCONSTRAINED\
      	-w "sequence.source.name = 'ncbi-refseqs' and sequence.sequenceID != 'L08816'" \
      	-f trees/figtreeAnnotationsUnconstrained.txt
@@ -15,7 +15,7 @@ project hev
     	-f trees/figtreeAnnotationsConstrained.txt
     exit
     
-   module hevPhyloUtility 
+   module examplePhyloUtility 
 	 # midpoint rooting 
      reroot-phylogeny --inputFile trees/referencePhylogeny.tree NEWICK_BOOTSTRAPS --midpoint \
      	--outputFile trees/referencePhylogenyRerootedMidpoint.tree NEWICK_BOOTSTRAPS

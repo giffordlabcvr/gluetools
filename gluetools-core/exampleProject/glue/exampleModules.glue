@@ -1,0 +1,26 @@
+  # create modules from files
+  
+  create module --fileName modules/exampleCompoundAligner.xml
+  create module --fileName modules/exampleFigTreeAnnotationExporter.xml
+  create module --fileName modules/exampleGenbankXmlPopulator.xml
+  create module --fileName modules/exampleMaxLikelihoodGenotyper.xml
+  create module --fileName modules/exampleMaxLikelihoodPlacer.xml
+  create module --fileName modules/examplePhyloExporter.xml
+  create module --fileName modules/examplePhylogenyColumnsSelector.xml
+  create module --fileName modules/examplePhyloImporter.xml
+  create module --fileName modules/examplePhyloUtility.xml
+  create module --fileName modules/exampleRaxmlPhylogenyGenerator.xml
+  create module --fileName modules/exampleReferenceMetadataPopulator.xml
+  create module --fileName modules/exampleSequenceReporter.xml
+  create module --fileName modules/kuiken2006CodonLabeler.xml
+  create module --fileName modules/ncbiHevExamplesImporter.xml
+  create module --fileName modules/ncbiHevImporter.xml
+  create module --fileName modules/unconstrainedAlignmentImporter.xml
+
+  create module --fileName modules/m49_countries/m49RegionsTextToCustomTableRows.xml
+  create module --fileName modules/m49_countries/m49SubRegionsTextToCustomTableRows.xml
+  create module --fileName modules/m49_countries/m49IntermediateRegionsTextToCustomTableRows.xml
+  create module --fileName modules/m49_countries/m49CountriesTextToCustomTableRows.xml  
+  
+  
+  

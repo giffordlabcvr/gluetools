@@ -1,14 +1,14 @@
-delete project hev
+delete project example
 
-create project hev "A GLUE project for Hepatitis E virus (HEV)" --minVersion 0.1.136
+create project example "A GLUE project for Hepatitis E virus (HEV)" --minVersion 0.1.136
 
-run file glue/hevSchemaExtensions.glue
+run file glue/exampleSchemaExtensions.glue
  
-project hev
+project example
 
-  run file glue/hevProjectSettings.glue
+  run file glue/exampleProjectSettings.glue
   
-  run file glue/hevModules.glue
+  run file glue/exampleModules.glue
   
   # M49 regions / countries etc (UN standard)
   run file glue/m49_countries/populateM49Countries.glue
@@ -23,14 +23,14 @@ project hev
 
   module unconstrainedAlignmentImporter import AL_UNCONSTRAINED -f alignments/SmithAlignment_23_1_2016_modified.fna
 
-  run file glue/hevFeatures.glue
-  run file glue/hevReferences.glue
+  run file glue/exampleFeatures.glue
+  run file glue/exampleReferences.glue
 
-  run file glue/hevAlignmentTree.glue
+  run file glue/exampleAlignmentTree.glue
   run file glue/importPhylogeny.glue
 
   import source sources/ncbi-hev-examples
-  module hevGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'"
+  module exampleGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'"
 
   run script glue/addExampleSeqsToTree.js
 

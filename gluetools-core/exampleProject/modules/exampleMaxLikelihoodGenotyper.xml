@@ -1,5 +1,5 @@
 <maxLikelihoodGenotyper>
-	<maxLikelihoodPlacerModuleName>hevMaxLikelihoodPlacer</maxLikelihoodPlacerModuleName>
+	<maxLikelihoodPlacerModuleName>exampleMaxLikelihoodPlacer</maxLikelihoodPlacerModuleName>
 	<cladeCategory>
 		<name>genotype</name>	
 		<displayName>Genotype</displayName>	

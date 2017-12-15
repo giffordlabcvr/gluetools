@@ -115,14 +115,11 @@
   create reference REF_7_KJ496144 ncbi-refseqs KJ496144
 
   
-  module hevReferenceMetadataPopulator populate -f tabular/referenceSequenceMetadata.txt
+  module exampleReferenceMetadataPopulator populate -f tabular/referenceSequenceMetadata.txt
 
-  run file glue/hevReferenceDisplayNames.glue
-
-#  run file glue/hevFeaturesAlignment.glue
+  run file glue/exampleReferenceDisplayNames.glue
 
   run file glue/inheritFeatureLocations.glue
   
-#  delete alignment AL_FEATURES
 
   

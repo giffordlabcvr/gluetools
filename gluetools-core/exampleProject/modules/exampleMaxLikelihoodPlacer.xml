@@ -11,5 +11,5 @@
 
 	<!-- where the alignment will come from -->
 	<alignmentAlignmentName>AL_UNCONSTRAINED</alignmentAlignmentName>
-	<selectorName>hevPhylogenyColumnsSelector</selectorName>
+	<selectorName>examplePhylogenyColumnsSelector</selectorName>
 </maxLikelihoodPlacer>
