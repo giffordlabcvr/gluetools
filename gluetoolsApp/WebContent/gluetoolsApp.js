@@ -159,7 +159,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.introductionMenuTitle = "Introduction";
   	$scope.installationMenuTitle = "Installing GLUE";
   	$scope.exampleProjectMenuTitle = "Example GLUE Project";
-  	$scope.interactiveCommandLineMenuTitle = "Interactive command line";
+  	$scope.interactiveCommandLineMenuTitle = "Command Line Interpreter";
     $scope.invokingGlueFromTheShellMenuTitle = "Invoking GLUE as a Unix command"
     $scope.projectStructureMenuTitle = "Project structure";
     $scope.managingAProjectMenuTitle = "Managing a project";
@@ -171,7 +171,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
 
   	$scope.referenceDocumentationMenuTitle = "Reference documentation";
   	$scope.commandModesMenuTitle = "Command mode reference";
-  	$scope.nonModeCommandsMenuTitle = "Non-mode command reference"
+  	$scope.nonModeCommandsMenuTitle = "Non-mode-specific command reference"
   	$scope.moduleReferenceMenuTitle = "Module type reference";
 
     

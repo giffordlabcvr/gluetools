@@ -1,9 +1,26 @@
 <h2>{{interactiveCommandLineMenuTitle}}</h2>
-
+<p>
 The GLUE interactive command line interpreter is a powerful environment for interacting with the GLUE command layer at a fine-grained level. 
-The design could be compared to interactive R or Python interpreters, or an interactive database command line client.
+The design could be compared to interactive R or Python interpreters, or command line clients provided by databases such as MySQL.</p>
 
-<h4>Basics</h4>
+<p>In this tutorial we will use the <a href="#exampleProject">example GLUE project</a> to illustrate the operation of 
+various commands, so you should download and build this project if you have not already done so.
+
+<ol>
+	<li><a ng-click="scrollTo('navigation')">Mode navigation</a></li>
+	<li><a ng-click="scrollTo('autoCompletion')">Automatic command completion</a></li>
+	<li><a ng-click="scrollTo('dataQuery')">Example command: Data query</a></li>
+	<li><a ng-click="scrollTo('commandSyntax')">Command syntax</a></li>
+	<li><a ng-click="scrollTo('exportAlignment')">Example command: Export alignment</a></li>
+	<li><a ng-click="scrollTo('commandHistory')">Command history</a></li>
+	<li><a ng-click="scrollTo('sequenceInterpretation')">Example command: Sequence interpretation</a></li>
+	<li><a ng-click="scrollTo('modeWrapping')">Mode wrapping</a></li>
+	<li><a ng-click="scrollTo('moreUsefulKeystrokes')">More useful keystrokes</a></li>
+	<li><a ng-click="scrollTo('consoleOptions')">Console options</a></li>
+</ol>
+
+
+<h3 id="navigation">Mode navigation</h3>
 
 <p>
 On starting the GLUE interpreter you will see something like this:
@@ -23,35 +40,15 @@ Try entering the commands displayed below:
 <div hljs language="json" no-escape>
 <pre>
 Mode path: /
-GLUE> create project myproject
+GLUE> project example 
 OK
-(1 Project created)
-Mode path: /
-GLUE> list project
-+===========+================================+
-|   name    |          description           |
-+===========+================================+
-| myproject | -                              |
-+===========+================================+
-Projects found: 1
-Mode path: /
-GLUE></pre>
-</div>
-</p>
-<p>
-The above commands created a new project "myproject" and then queried GLUE for a list of projects. Now try the following commands:
-</p>
-<p>
-<div hljs language="json" no-escape>
-<pre>
-Mode path: /
-GLUE> project myproject 
+Mode path: /project/example
+GLUE> feature MT
 OK
-Mode path: /project/myproject
-GLUE> create feature L
+Mode path: /project/example/feature/MT
+GLUE> exit
 OK
-(1 Feature created)
-Mode path: /project/myproject
+Mode path: /project/example
 GLUE> exit
 OK
 Mode path: /
@@ -60,68 +57,240 @@ GLUE></pre>
 </p>
 <p>
 Notice that the GLUE interpreter outputs a mode path each time a command is typed. 
-The <code>project myproject</code> command changed mode path from "/" to 
-"/project/myproject", and the <code>exit</code> command changed it back to "/" again. 
+The <glue-command url="#/commandModes/commandMode/root/command/project" args="example"></glue-command> command changed the mode path from "/" to 
+"/project/example". Then the <glue-command url="#/commandModes/commandMode/root_project/command/feature" args="MT"></glue-command> 
+command changed the mode path from "/project/example" to "/project/example/feature/MT".
 </p>
 <p>
 The GLUE interpreter provides a <a href="#/commandModes">hierarchy of command modes</a>, based on the 
-<a href="#/coreSchema">GLUE data schema</a>. Each command 
-mode operates on a specific data object and so has a different set of available commands. We changed the current 
-command mode from root mode (which has no data object) to the project mode for "myproject", and then back to root mode again. 
+<a href="#/coreSchema">GLUE data schema</a>. A specific command 
+mode operates on a specific object in the database. We started in root mode (path "/") has no associated data object.
+We then moved to the project mode for the example project, and within this we moved to the mode for the "MT" <em>Feature</em> 
+object within the example project. 
 </p>
 <p>
-The <code>create feature</code> command above created a <em>Feature</em> object "L" within project "myproject", because the 
-command was entered within the mode for that project. Most data objects have an associated command mode. The command modes 
-are arranged in a hierarchy which represents data object containment. The mode path associated with each mode 
-specifies its position in the hierarchy, as shown here as we navigate into the command mode for <em>Feature</em> "L". 
-The <code>exit</code> command here changes the current mode from feature "L" mode to its parent, project "myproject" mode.
+Different command modes allow different sets of commands to be entered. 
+While some commands are <a href="#/nonModeCommands">non-mode-specific</a>, others can only be executed in a specific mode. The set of 
+available commands can be found in the online reference documentation, and also within 
+the command line interpreter by using the <glue-command url="#/nonModeCommands/command/help"></glue-command> command, 
+with no arguments, in a specific command mode. 
+</p>
+<p>
+The command mode hierarchy represents data object containment. The path associated with each mode 
+specifies its position in the hierarchy.  The <glue-command url="#/commandModes/commandMode/root_project/command/exit"></glue-command> command 
+changes the current mode to the parent mode within the hiearchy.
+</p>
+
+<h3 id="autoCompletion">Automatic command completion</h3>
+
+<p>
+Navigate into "/project/example" mode, enter "list f" on the command line and press the &lt;Tab&gt; key:
 </p>
 <p>
 <div hljs language="json" no-escape>
 <pre>
 Mode path: /
-GLUE> project myproject 
-OK
-Mode path: /project/myproject
-GLUE> feature L
-OK
-Mode path: /project/myproject/feature/L
-GLUE>exit
-OK
-Mode path: /project/myproject
-GLUE>exit</pre>
+GLUE> project example
+Mode path: /project/example
+GLUE> list f
+feature    format     
+GLUE> list f</pre>
 </div>
 </p>
+<p>
+GLUE is suggesting that the next word after "list" in the command could "feature" or "format". 
+Add an "e" to the command then press the &lt;Tab&gt; key again. GLUE will auto-complete the 
+command so that it is "list feature".</p> 
+<p>
+<ul>
+	<li>Auto-completion applies to both command keywords and to command options and arguments.</li>
+	<li>If there are multiple options based on what is already typed, auto-completion will suggest these.</li>
+	<li>Auto-completion will apply at the end or in the middle of the command line, wherever the cursor is located.</li>
+</ul>
 
+<h3 id="dataQuery">Example command: Data query</h3>
+Let's run a command to query some data from the example project. We will use the 
+<glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> 
+command in "/project/example" mode.
 
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> list sequence
+</pre></div></p>
+<p>
+This command lists all data objects of type <em>Sequence</em>.
+The <a href="#/coreSchema#Sequences" target="_blank">core schema documentation</a> explains the structure of <em>Sequence</em> data in GLUE. 
+The results of the command are displayed in an interactive table.
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
++===================+============+
+|    source.name    | sequenceID |
++===================+============+
+| ncbi-hev-examples | AB481226   |
+| ncbi-hev-examples | AB591734   |
+| ncbi-hev-examples | AF444003   |
+| ncbi-hev-examples | FJ705359   |
+| ncbi-hev-examples | FJ763142   |
+| ncbi-hev-examples | FJ998015   |
+| ncbi-hev-examples | JF443717   |
+| ncbi-hev-examples | JQ013791   |
+| ncbi-hev-examples | JX855794   |
+| ncbi-hev-examples | KP294371   |
+| ncbi-refseqs      | AB074915   |
+| ncbi-refseqs      | AB108537   |
+| ncbi-refseqs      | AB197673   |
+| ncbi-refseqs      | AB220974   |
+| ncbi-refseqs      | AB248521   |
+| ncbi-refseqs      | AB290312   |
+| ncbi-refseqs      | AB290313   |
+| ncbi-refseqs      | AB369687   |
+| ncbi-refseqs      | AB369688   |
++===================+============+
+Sequences 1 to 19 of 53 [F:first, L:last, P:prev, N:next, Q:quit]</pre></div></p>
+<p>You can page backwards and forwards through the table using the &lt;F&gt;, &lt;L&gt;, &lt;P&gt; and &lt;N&gt; 
+keys, and return to the command line using &lt;Q&gt;.</p>
+<p>The <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command 
+and other "list" commands in GLUE are quite powerful.
+<ul>
+	<li>By default values for the source name and sequenceID of each <em>Sequence</em> are returned, however you can specify that 
+	<glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> returns other properties, 
+	including those accessed by traversing relationalships.</li>
+	<li>The <em>Sequence</em> objects for which data is returned can be filtered using a "where clause" option, based on a 
+	logical user-defined expression. </li>
+	<li>The results can be sorted by a combination of properties, in ascending or descending order</li>
+</ul>
+<p>
+As an example let's run this variant of the <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command:
+</p>
+<p>
+<div hljs language="bash" no-escape>
+<pre>
+GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" sequenceID m49_country.display_name gb_create_date
++============+==========================+================+
+| sequenceID | m49_country.display_name | gb_create_date |
++============+==========================+================+
+| AF444003   | -                        | 21-Dec-2001    |
+| AB481226   | Japan                    | 18-Feb-2009    |
+| FJ763142   | South Korea              | 21-Mar-2009    |
+| FJ705359   | Germany                  | 07-Jun-2009    |
+| FJ998015   | Germany                  | 12-Sep-2009    |
+| AB591734   | Japan                    | 29-Mar-2011    |
+| JQ013791   | France                   | 10-Aug-2012    |
+| JF443717   | India                    | 21-Oct-2012    |
+| JX855794   | China                    | 09-Dec-2012    |
+| KP294371   | Germany                  | 15-Jul-2016    |
++============+==========================+================+</pre></div>
+</p>
+<p>
+<ul>
+	<li>Only <em>Sequence</em> objects within the <em>Source</em> named "ncbi-hev-examples" are listed.
+	<br/>This is specified using a "where clause": <code>-w "source.name = 'ncbi-hev-examples'"</code>
+	<br/>Within the example project, this <em>Source</em> actually contains a set of 10 full-length Hepatitis E virus non-reference sequences from GenBank.</li>
+	<li>The sequences are listed in ascending order of their creation date on GenBank, using <code>-s gb_create_date</code></li>
+	<li>At the end of the command we added three properties <code>sequenceID</code>, <code>m49_country.display_name</code> and <code>gb_create_date</code>
+	<br/>This specifies the columns of the result table. The values for the <code>m49_country.display_name</code> column are determined by traversing a relationship between the <em>Sequence</em>
+	table and a custom <code>m49_country</code> table.</li>
+</ul>
+</p>
+<p>
+It is possible to save the results from a GLUE command to a tabular text file, so that we can put them in a spreadsheet or use them in another program.
+One quick way to do this is to run two <code>console</code> commands immediately before running the <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+GLUE> console set cmd-output-file-format tab 
+OK
+Mode path: /project/example
+GLUE> console set next-cmd-output-file sequences.txt
+OK
+Mode path: /project/example
+GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" sequenceID m49_country.display_name gb_create_date</div>
+</p>
+The <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> will operate as normal, 
+but with a side-effect that the results will be written to a file <code>sequences.txt</code>.
+<h3 id="commandSyntax">Command syntax</h3>
+Each GLUE commands has 
+a certain <b>syntax</b> which is documented in the help system. This may be found in the online reference documentation, and also from within 
+the command line interpreter using the <glue-command url="#/nonModeCommands/command/help"></glue-command> command. 
 
+Below, documentation is retrieved for the <glue-command url="#/commandModes/commandMode/root_project/command/multi-set_field"></glue-command> command.
+<p>
+<div hljs language="json" no-escape>
+<pre>GLUE> help multi-set field
+multi-set field: Set a field value for one or more configurable table objects
+Usage: multi-set field &lt;tableName&gt; (-w &lt;whereClause&gt; | -a) &lt;fieldName&gt; &lt;fieldValue&gt; [-b &lt;batchSize&gt;]
 
--- example navigation
+Options:
+  -w &lt;whereClause&gt;, --whereClause &lt;whereClause&gt;  Qualify updated objects
+  -a, --allObjects                               Update all objects in table
+  -b &lt;batchSize&gt;, --batchSize &lt;batchSize&gt;        Update batch size
+The &lt;tableName&gt; argument specifies a configurable object table. Possible values are [sequence,
+variation, feature, feature_location, alignment, reference, alignment_member, var_almt_note, 
+member_floc_note] or a custom table name. Updates to the database are committed in batches, 
+the default batch size is 250.
+</pre></div></p> 
+<p>
+The usage line specifies the command syntax:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>multi-set field &lt;tableName&gt; (-w &lt;whereClause&gt; | -a) &lt;fieldName&gt; &lt;fieldValue&gt; [-b &lt;batchSize&gt;]</pre></div></p> 
 
-<h4>Help system</h4>
+<ul>
+<li>The initial part of any command consists of 1-3 (possibly hyphenated) <b>keywords</b> which identify the command.<br/>In this case the keywords are <code>multi-set field</code>.</li>
+<li>Commands may also have <b>arguments</b> which are values supplied by the user, these are indicated in the usage line using angle brackets <code>&lt; &gt;</code>. 
+<br/>In this case for example the the command takes a <code>&lt;tableName&gt;</code> argument.</li>
+<li>
+Similar to arguments, commands may take <b>options</b>. Options have a short form using a single hyphen, e.g. <code>-a</code> 
+and an alternate long form using a double hyphen, e.g. <code>--allObjects</code>. Some options themselves require an argument. 
+<br/>For example the <code>-b</code> option above requires an integer <code>&lt;batchSize&gt;</code> argument.
+</li>
+<li>
+Arguments and options may be <b>mandatory or optional</b>. In the usage line optional elements are indicated using square brackets <code>[ ]</code>. 
+<br/>For example <code>[-b &lt;batchSize&gt;]</code> indicates that this option is optional. 
+</li>
+<li>
+Sometimes <b>alternative</b> elements may be supplied, this is indicated in the usage line using the pipe character <code>|</code>. 
+<br/>For example 
+<code>(-w &lt;whereClause&gt; | -a)</code> indicates that either the <code>-w</code> or the <code>-a</code> option may be used, but not both.
+</li>
+<li>
+Some options or arguments may be <b>repeated</b>. This is indicated by <code>...</code> in the usage line.
+<br/>For example in the 
+<glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command syntax, <code>[&lt;fieldName&gt; ...]</code> 
+indicates that multiple values may be supplied for this argument.</li>
+<li><b>Quoting</b> Sometimes we would like to supply as an argument value a string which contains significant characters such as space. 
+In this case double or single quotation marks can be used to enclose the string, with <code>\</code> used as an escape character where necessary.
+If double quotation marks are used, single quotation marks within the string do not need to be escaped (and vice versa).<br/>
+Some examples:
+<pre>list sequence --whereClause "source.name = 'ncbi-hev-examples'"
+list sequence --whereClause "source.name = \"ncbi-hev-examples\""
+list sequence --whereClause 'source.name = "ncbi-hev-examples"'
+list sequence --whereClause 'source.name = \'ncbi-hev-examples\''
+</pre>
+</li>
+</ul>
 
--- help system
+<h3 id="exportAlignment">Example command: Export alignment</h3>
 
-<h4>Tab completion</h4>
-
--- common keystrokes
-    -- Tab: suggest completions
-
-<h4>Command history</h4>
+<h3 id="commandHistory">Command history</h3>
 
 -- common keystrokes
     -- Up, Down: navigate command history.
 	-- Ctrl+R Search history
 
-<h4>Command structure and quoting</h4>
 
+<h3 id="sequenceInterpretation">Example command: Sequence interpretation</h3>
 
-<h4>Other tips</h4>
--- wrapping mode specifier
+<h3 id="modeWrapping">Mode wrapping</h3>
 
--- console options
+<h3 id="moreUsefulKeystrokes">More useful keystrokes</h3>
 
--- other useful keystrokes
 	-- Ctrl+A Move cursor to start of line
 	-- Ctrl+E Move cursor to end of line
 	-- Alt+Left, Alt+Right move cursor backwards, forwards by one word
@@ -129,6 +298,10 @@ GLUE>exit</pre>
 	-- Ctrl+U Cut all previous words to clipboard
 	-- Ctrl+K Cut all following words to clipboard
 	-- Ctrl+Y Paste from clipboard into command line
+
+<h3 id="consoleOptions">Console options</h3>
+
+
 
 
 

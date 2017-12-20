@@ -27,7 +27,7 @@ public class Lexer {
 		SINGLEQUOTED("'(?:[^'\\\\]|\\\\.)*'") {
 			@Override
 			protected String render(String data) {
-				return data.substring(1, data.length()-1).replace("\'", "'").replace("\\\\", "\\");
+				return data.substring(1, data.length()-1).replace("\\'", "'").replace("\\\\", "\\");
 			}
 		},
 		WORD("(?:[^ \t\f\r\n\\\\'\"]|\\\\.)+"){

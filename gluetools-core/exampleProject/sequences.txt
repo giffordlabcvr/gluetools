@@ -1,0 +1,11 @@
+sequenceID	m49_country.display_name	gb_create_date
+AF444003	-	21-Dec-2001
+AB481226	Japan	18-Feb-2009
+FJ763142	South Korea	21-Mar-2009
+FJ705359	Germany	07-Jun-2009
+FJ998015	Germany	12-Sep-2009
+AB591734	Japan	29-Mar-2011
+JQ013791	France	10-Aug-2012
+JF443717	India	21-Oct-2012
+JX855794	China	09-Dec-2012
+KP294371	Germany	15-Jul-2016

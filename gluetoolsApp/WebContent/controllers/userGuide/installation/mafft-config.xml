@@ -9,7 +9,7 @@
 		</property>
 		<property>
 			<name>gluetools.core.programs.mafft.cpus</name>
-			<value>1</value>
+			<value>4</value>
 		</property>
 		<property>
 			<name>gluetools.core.programs.mafft.temp.dir</name>

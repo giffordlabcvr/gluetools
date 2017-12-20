@@ -26,8 +26,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-b <batchSize>, --batchSize <batchSize>        Update batch size" },
 		description="Set a field value for one or more configurable table objects", 
 		metaTags={CmdMeta.updatesDatabase},
-		furtherHelp="The <cTable> argument specifies a configurable object table. "+
-		" Possible values are "+ModelBuilder.configurableTablesString+
+		furtherHelp="The <tableName> argument specifies a configurable object table. "+
+		" Possible values are "+ModelBuilder.configurableTablesString+" or a custom table name"+
 		". Updates to the database are committed in batches, the default batch size is 250.") 
 public class MultiSetFieldCommand extends MultiFieldUpdateCommand {
 

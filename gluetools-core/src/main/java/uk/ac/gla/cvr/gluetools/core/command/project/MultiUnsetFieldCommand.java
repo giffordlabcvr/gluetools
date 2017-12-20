@@ -25,8 +25,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-a, --allObjects                               Update all objects in table",
 				"-b <batchSize>, --batchSize <batchSize>        Update batch size" },
 		description="Unset a field's value for one or more sequences", 
-		furtherHelp="The <cTable> argument specifies a configurable object table. "+
-				" Possible values are "+ModelBuilder.configurableTablesString+
+		furtherHelp="The <tableName> argument specifies a configurable object table. "+
+				" Possible values are "+ModelBuilder.configurableTablesString+" or a custom table name"+
 				". Unsetting means reverting the field value to null."+
 				" Updates to the database are committed in batches, the default batch size is 250.") 
 public class MultiUnsetFieldCommand extends MultiFieldUpdateCommand {

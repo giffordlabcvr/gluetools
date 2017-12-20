@@ -12,6 +12,7 @@
 	<li><a ng-click="scrollTo('blast')">Software integration: BLAST+</a></li>
 	<li><a ng-click="scrollTo('mafft')">Software integration: MAFFT</a></li>
 	<li><a ng-click="scrollTo('raxml')">Software integration: RAxML</a></li>
+	<li><a ng-click="scrollTo('nextSteps')">Next steps</a></li>
 </ol>
 
 <h3 id="operatingSystems">Supported operating systems</h3>
@@ -107,7 +108,7 @@ For Windows / Cygwin, you must also add a property showing GLUE where to find th
 </p>
  		
 <h3 id="runCommandLine">Running the GLUE command line</h3>
-<p>GLUE has an interactive command line, this is an important tool for GLUE project developers. 
+<p>GLUE has an interactive command line, this is an important tool for GLUE users. 
 We can now test that this works by running <code>gluetools.sh</code></p>
 <pre>
 $ gluetools.sh
@@ -117,10 +118,10 @@ GLUE>
 ...
 </pre>
 
-Use the <code>quit</code> command to exit GLUE.
+Use the <glue-command url="#/nonModeCommands/command/quit"></glue-command> command to leave the GLUE interpreter.
 
 <h3 id="upgradingGlue">Upgrading GLUE</h3>
-Sometimes you may wish to upgrade your installation to a new version of GLUE.
+At some point in the future you may wish to upgrade your installation to a new version of GLUE.
 Normally this is done as follows:
 <ul>
 	<li>Download a new version of the engine jar from the <a target="_blank" href="#download">GLUE download page</a></li>
@@ -145,7 +146,7 @@ In the case of Mac OSX you should use the 'universal-macosx' BLAST+ distribution
 
 
 <h3 id="mafft">Software integration: MAFFT</h3>
-<p>GLUE uses MAFFT as part of its maximum likelihood genotyping procedure, there may be other uses in the future.</p>
+<p>GLUE uses MAFFT as part of its maximum likelihood genotyping procedure, and other uses are possible.</p>
 <p>Download MAFFT from the <a target="_blank" href="http://mafft.cbrc.jp/alignment/software/">CBRC MAFFT page</a> and install it locally.</p>
 
 <p>To integrate MAFFT into GLUE, load the XML file <code>gluetools/conf/gluetools-config.xml</code> in a text editor. </p>
@@ -169,6 +170,7 @@ Instructions can be found at the <a target="_blank" href="https://sco.h-its.org/
 
 <div hljs source="raxmlConfig"></div>
 
+<h3 id="nextSteps">Next steps</h3>
 
-
+If you are new to GLUE we strongly recommend downloading and building the <a href="#exampleProject">example GLUE project</a> as the next step.
 
