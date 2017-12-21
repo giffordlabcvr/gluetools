@@ -1,11 +1,18 @@
 gluetoolsApp.controller('commandModeCtrl', 
-		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', 
-		  function($scope, $route, $routeParams, glueWS, dialogs) {
+		[ '$scope', '$route', '$routeParams', 'glueWS', 'dialogs', '$location', '$anchorScroll', 
+		  function($scope, $route, $routeParams, glueWS, dialogs, $location, $anchorScroll) {
 			
 			
 			$scope.commandModeDocumentation = null;
 			$scope.absoluteModePathID = $routeParams.absoluteModePathID;
 			
+			$scope.scrollTo = function(id) {
+				var old = $location.hash();
+				$location.hash(id);
+				$anchorScroll();
+				$location.hash(old);
+				};
+				
 			glueWS.runGlueCommand("", {
 				"webdocs": {
 					"document-command-mode": {

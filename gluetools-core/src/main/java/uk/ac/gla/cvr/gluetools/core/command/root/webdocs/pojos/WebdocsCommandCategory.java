@@ -11,13 +11,17 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 public class WebdocsCommandCategory {
 
 	@PojoDocumentField
+	public String id;
+
+	@PojoDocumentField
 	public String description;
 	
 	@PojoDocumentListField(itemClass = WebdocsCommandDocumentation.class)
 	public List<WebdocsCommandSummary> commandSummaries = new ArrayList<WebdocsCommandSummary>();
 
-	public static WebdocsCommandCategory create(String description, List<WebdocsCommandSummary> commandSummaries) {
+	public static WebdocsCommandCategory create(String id, String description, List<WebdocsCommandSummary> commandSummaries) {
 		WebdocsCommandCategory cmdCategory = new WebdocsCommandCategory();
+		cmdCategory.id = id;
 		cmdCategory.description = description;
 		cmdCategory.commandSummaries = commandSummaries;
 		return cmdCategory;

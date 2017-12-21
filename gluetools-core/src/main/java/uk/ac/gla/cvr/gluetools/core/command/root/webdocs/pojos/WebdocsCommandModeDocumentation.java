@@ -94,7 +94,7 @@ public class WebdocsCommandModeDocumentation {
 			setOfClasses.forEach(cmdClass -> {
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
-			modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getDescription(), commandSummaries));
+			modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
 		});
 		
 		modeDocumentation.absoluteModePathID = absoluteModePathID;

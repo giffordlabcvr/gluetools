@@ -30,7 +30,7 @@ public class WebdocsNonModeCommandsSummary {
 			setOfClasses.forEach(cmdClass -> {
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
-			nonModeCommandsSummary.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getDescription(), commandSummaries));
+			nonModeCommandsSummary.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
 		});
 		
 		return nonModeCommandsSummary;

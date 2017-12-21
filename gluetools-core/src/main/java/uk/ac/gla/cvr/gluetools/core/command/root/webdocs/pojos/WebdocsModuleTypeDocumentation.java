@@ -43,7 +43,7 @@ public class WebdocsModuleTypeDocumentation {
 			setOfClasses.forEach(cmdClass -> {
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
-			docPojo.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getDescription(), commandSummaries));
+			docPojo.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
 		});
 		
 		return docPojo;

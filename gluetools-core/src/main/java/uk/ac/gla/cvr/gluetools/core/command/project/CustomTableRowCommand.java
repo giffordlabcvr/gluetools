@@ -15,7 +15,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.EnterModeCommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectModeCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.customtablerow.CustomTableRowMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.customtablerow.CustomTableRowModeCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;

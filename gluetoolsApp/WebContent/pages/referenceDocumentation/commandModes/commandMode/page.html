@@ -18,10 +18,18 @@
 	</tbody>
 </table>
 
+<div>
+<ul>
+	<div ng-repeat="cmdCategory in commandModeDocumentation.commandCategories">
+		<li><a ng-click="scrollTo(cmdCategory.id)">{{cmdCategory.description}}</a></li>
+	</div>
+</ul>
+</div>
 
+<hr/>
 
 <div ng-repeat="cmdCategory in commandModeDocumentation.commandCategories">
-<h4>{{cmdCategory.description}}</h4>
+<h4 id="{{cmdCategory.id}}">{{cmdCategory.description}}</h4>
 
 <table class="table table-striped table-bordered">
 	<thead>
