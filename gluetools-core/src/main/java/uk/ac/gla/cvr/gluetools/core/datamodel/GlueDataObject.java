@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.datamodel;
 
+import java.beans.IntrospectionException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -244,6 +245,18 @@ public abstract class GlueDataObject extends CayenneDataObject {
 	// see docs for BeanModel.TemplateModel get(String key)
 	public final Object get(String key) {
 		return readProperty(key);
+	}
+	@Override
+	public Object readNestedProperty(String path) {
+		try {
+			return super.readNestedProperty(path);
+		} catch(CayenneRuntimeException cre) {
+			Throwable cause = cre;
+			if(cre.getCause() != null && cre.getCause() instanceof IntrospectionException) {
+				cause = cre.getCause();
+			}
+			throw new DataModelException(cause, DataModelException.Code.PROPERTY_ERROR, path, cause.getLocalizedMessage());
+		}
 	}
 
 

@@ -164,7 +164,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.projectStructureMenuTitle = "Project structure";
     $scope.managingAProjectMenuTitle = "Managing a project";
     $scope.cayenneQueriesMenuTitle = "Cayenne queries";
-    $scope.modulesMenuTitle = "The GLUE Module System";
+    $scope.modulesMenuTitle = "Module system";
     $scope.scriptingLayerMenuTitle = "Scripting Layer";
     $scope.schemaExtensionsMenuTitle = "Schema Extensions";
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";

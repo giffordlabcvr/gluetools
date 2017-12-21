@@ -12,6 +12,7 @@ public class DataModelException extends GlueException {
 		ILLEGAL_PRIMARY_KEY_VALUE("entityName", "pkValue"), 
 		DELETE_DENIED("entityName", "idMap", "relationship"),
 		EXPRESSION_ERROR("expression", "errorTxt"),
+		PROPERTY_ERROR("property", "errorTxt"),
 		QUERY_ERROR("expression", "errorTxt");
 
 		private String[] argNames;

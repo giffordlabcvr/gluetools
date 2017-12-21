@@ -1,6 +1,9 @@
   # create modules from files
   
   create module --fileName modules/exampleCompoundAligner.xml
+  create module --fileName modules/exampleFastaAlignmentExporter.xml
+  create module --fileName modules/exampleFastaExporter.xml
+  create module --fileName modules/exampleFastaProteinAlignmentExporter.xml
   create module --fileName modules/exampleFigTreeAnnotationExporter.xml
   create module --fileName modules/exampleGenbankXmlPopulator.xml
   create module --fileName modules/exampleMaxLikelihoodGenotyper.xml

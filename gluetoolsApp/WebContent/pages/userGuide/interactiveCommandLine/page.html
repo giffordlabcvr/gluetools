@@ -3,19 +3,20 @@
 The GLUE interactive command line interpreter is a powerful environment for interacting with the GLUE command layer at a fine-grained level. 
 The design could be compared to interactive R or Python interpreters, or command line clients provided by databases such as MySQL.</p>
 
-<p>In this tutorial we will use the <a href="#exampleProject">example GLUE project</a> to illustrate the operation of 
-various commands, so you should download and build this project if you have not already done so.
+<p>The tutorial covers most of the key aspects of using the interpreter, interspersed with some examples of what can be achieved with it.<p>
+
+<p>In this tutorial we will use the <a href="#exampleProject">example GLUE project</a> so you should download and build this project 
+if you have not already done so.</p>
 
 <ol>
 	<li><a ng-click="scrollTo('navigation')">Mode navigation</a></li>
 	<li><a ng-click="scrollTo('autoCompletion')">Automatic command completion</a></li>
-	<li><a ng-click="scrollTo('dataQuery')">Example command: Data query</a></li>
+	<li><a ng-click="scrollTo('dataQuery')">Example commands: Data query</a></li>
 	<li><a ng-click="scrollTo('commandSyntax')">Command syntax</a></li>
-	<li><a ng-click="scrollTo('exportAlignment')">Example command: Export alignment</a></li>
-	<li><a ng-click="scrollTo('commandHistory')">Command history</a></li>
-	<li><a ng-click="scrollTo('sequenceInterpretation')">Example command: Sequence interpretation</a></li>
+	<li><a ng-click="scrollTo('sequenceAnalysis')">Example commands: Sequence analysis</a></li>
+	<li><a ng-click="scrollTo('commandHistory')">Command history and other useful keystrokes</a></li>
+	<li><a ng-click="scrollTo('exportAlignment')">Example commands: Exporting alignments</a></li>
 	<li><a ng-click="scrollTo('modeWrapping')">Mode wrapping</a></li>
-	<li><a ng-click="scrollTo('moreUsefulKeystrokes')">More useful keystrokes</a></li>
 	<li><a ng-click="scrollTo('consoleOptions')">Console options</a></li>
 </ol>
 
@@ -57,8 +58,8 @@ GLUE></pre>
 </p>
 <p>
 Notice that the GLUE interpreter outputs a mode path each time a command is typed. 
-The <glue-command url="#/commandModes/commandMode/root/command/project" args="example"></glue-command> command changed the mode path from "/" to 
-"/project/example". Then the <glue-command url="#/commandModes/commandMode/root_project/command/feature" args="MT"></glue-command> 
+The <mode-command mode="root" command="project" args="example"></mode-command> command changed the mode path from "/" to 
+"/project/example". Then the <mode-command mode="root_project" command="feature" args="MT"></mode-command> 
 command changed the mode path from "/project/example" to "/project/example/feature/MT".
 </p>
 <p>
@@ -71,13 +72,12 @@ object within the example project.
 <p>
 Different command modes allow different sets of commands to be entered. 
 While some commands are <a href="#/nonModeCommands">non-mode-specific</a>, others can only be executed in a specific mode. The set of 
-available commands can be found in the online reference documentation, and also within 
-the command line interpreter by using the <glue-command url="#/nonModeCommands/command/help"></glue-command> command, 
-with no arguments, in a specific command mode. 
+available commands can be found in the online reference documentation, or from within the interpreter by 
+using the <non-mode-command command="help"></non-mode-command> command, with no arguments, in a specific command mode. 
 </p>
 <p>
 The command mode hierarchy represents data object containment. The path associated with each mode 
-specifies its position in the hierarchy.  The <glue-command url="#/commandModes/commandMode/root_project/command/exit"></glue-command> command 
+specifies its position in the hierarchy.  The <mode-command mode="root_project" command="exit"></mode-command> command 
 changes the current mode to the parent mode within the hiearchy.
 </p>
 
@@ -98,7 +98,7 @@ GLUE> list f</pre>
 </div>
 </p>
 <p>
-GLUE is suggesting that the next word after "list" in the command could "feature" or "format". 
+GLUE is suggesting that the next word after "list" in the command could be "feature" or "format". 
 Add an "e" to the command then press the &lt;Tab&gt; key again. GLUE will auto-complete the 
 command so that it is "list feature".</p> 
 <p>
@@ -108,9 +108,9 @@ command so that it is "list feature".</p>
 	<li>Auto-completion will apply at the end or in the middle of the command line, wherever the cursor is located.</li>
 </ul>
 
-<h3 id="dataQuery">Example command: Data query</h3>
+<h3 id="dataQuery">Example commands: Data query</h3>
 Let's run a command to query some data from the example project. We will use the 
-<glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> 
+<mode-command mode="root_project" command="list_sequence"></mode-command> 
 command in "/project/example" mode.
 
 <p>
@@ -153,37 +153,37 @@ The results of the command are displayed in an interactive table.
 Sequences 1 to 19 of 53 [F:first, L:last, P:prev, N:next, Q:quit]</pre></div></p>
 <p>You can page backwards and forwards through the table using the &lt;F&gt;, &lt;L&gt;, &lt;P&gt; and &lt;N&gt; 
 keys, and return to the command line using &lt;Q&gt;.</p>
-<p>The <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command 
+<p>The <mode-command mode="root_project" command="list_sequence"></mode-command> command 
 and other "list" commands in GLUE are quite powerful.
 <ul>
 	<li>By default values for the source name and sequenceID of each <em>Sequence</em> are returned, however you can specify that 
-	<glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> returns other properties, 
+	<mode-command mode="root_project" command="list_sequence"></mode-command> returns other properties, 
 	including those accessed by traversing relationalships.</li>
 	<li>The <em>Sequence</em> objects for which data is returned can be filtered using a "where clause" option, based on a 
 	logical user-defined expression. </li>
 	<li>The results can be sorted by a combination of properties, in ascending or descending order</li>
 </ul>
 <p>
-As an example let's run this variant of the <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command:
+As an example let's run this variant of the <mode-command mode="root_project" command="list_sequence"></mode-command> command:
 </p>
 <p>
 <div hljs language="bash" no-escape>
 <pre>
-GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" sequenceID m49_country.display_name gb_create_date
-+============+==========================+================+
-| sequenceID | m49_country.display_name | gb_create_date |
-+============+==========================+================+
-| AF444003   | -                        | 21-Dec-2001    |
-| AB481226   | Japan                    | 18-Feb-2009    |
-| FJ763142   | South Korea              | 21-Mar-2009    |
-| FJ705359   | Germany                  | 07-Jun-2009    |
-| FJ998015   | Germany                  | 12-Sep-2009    |
-| AB591734   | Japan                    | 29-Mar-2011    |
-| JQ013791   | France                   | 10-Aug-2012    |
-| JF443717   | India                    | 21-Oct-2012    |
-| JX855794   | China                    | 09-Dec-2012    |
-| KP294371   | Germany                  | 15-Jul-2016    |
-+============+==========================+================+</pre></div>
+GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" sequenceID host_species gb_create_date
++============+=======================+================+
+| sequenceID |     host_species      | gb_create_date |
++============+=======================+================+
+| KP294371   | Sus scrofa            | 15-Jul-2016    |
+| JX855794   | Sus scrofa            | 09-Dec-2012    |
+| JF443717   | Homo sapiens          | 21-Oct-2012    |
+| JQ013791   | Oryctolagus cuniculus | 10-Aug-2012    |
+| AB591734   | Herpestes javanicus   | 29-Mar-2011    |
+| FJ998015   | Sus scrofa            | 12-Sep-2009    |
+| FJ705359   | Sus scrofa            | 07-Jun-2009    |
+| FJ763142   | Homo sapiens          | 21-Mar-2009    |
+| AB481226   | -                     | 18-Feb-2009    |
+| AF444003   | -                     | 21-Dec-2001    |
++============+=======================+================+</pre></div>
 </p>
 <p>
 <ul>
@@ -191,14 +191,13 @@ GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" seq
 	<br/>This is specified using a "where clause": <code>-w "source.name = 'ncbi-hev-examples'"</code>
 	<br/>Within the example project, this <em>Source</em> actually contains a set of 10 full-length Hepatitis E virus non-reference sequences from GenBank.</li>
 	<li>The sequences are listed in ascending order of their creation date on GenBank, using <code>-s gb_create_date</code></li>
-	<li>At the end of the command we added three properties <code>sequenceID</code>, <code>m49_country.display_name</code> and <code>gb_create_date</code>
-	<br/>This specifies the columns of the result table. The values for the <code>m49_country.display_name</code> column are determined by traversing a relationship between the <em>Sequence</em>
-	table and a custom <code>m49_country</code> table.</li>
+	<li>At the end of the command we added three properties <code>sequenceID</code>, <code>host_species</code> and <code>gb_create_date</code>
+	<br/>This specifies the columns of the result table. </li>
 </ul>
 </p>
 <p>
 It is possible to save the results from a GLUE command to a tabular text file, so that we can put them in a spreadsheet or use them in another program.
-One quick way to do this is to run two <code>console</code> commands immediately before running the <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command:
+One quick way to do this is to run two <code>console</code> commands immediately before running the <mode-command mode="root_project" command="list_sequence"></mode-command> command:
 </p>
 <p>
 <div hljs language="json" no-escape>
@@ -209,19 +208,21 @@ Mode path: /project/example
 GLUE> console set next-cmd-output-file sequences.txt
 OK
 Mode path: /project/example
-GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" sequenceID m49_country.display_name gb_create_date</div>
+GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" sequenceID host_species gb_create_date</div>
 </p>
-The <glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> will operate as normal, 
-but with a side-effect that the results will be written to a file <code>sequences.txt</code>.
+The <mode-command mode="root_project" command="list_sequence"></mode-command> command will operate as normal, 
+but with a side-effect that the results will be written to a tab-delimited file <code>sequences.txt</code>.
 <h3 id="commandSyntax">Command syntax</h3>
-Each GLUE commands has 
-a certain <b>syntax</b> which is documented in the help system. This may be found in the online reference documentation, and also from within 
-the command line interpreter using the <glue-command url="#/nonModeCommands/command/help"></glue-command> command. 
+<p>Each GLUE command has a <b>syntax</b> structure which is documented in the help system. 
+You can look up the syntax in the online reference documentation, or use the <non-mode-command command="help"></non-mode-command> 
+command from within the interpreter. </p>
 
-Below, documentation is retrieved for the <glue-command url="#/commandModes/commandMode/root_project/command/multi-set_field"></glue-command> command.
+Below, documentation is retrieved for the <mode-command mode="root_project" command="multi-set_field"></mode-command> command.
 <p>
 <div hljs language="json" no-escape>
-<pre>GLUE> help multi-set field
+<pre>
+Mode path: /project/example
+GLUE> help multi-set field
 multi-set field: Set a field value for one or more configurable table objects
 Usage: multi-set field &lt;tableName&gt; (-w &lt;whereClause&gt; | -a) &lt;fieldName&gt; &lt;fieldValue&gt; [-b &lt;batchSize&gt;]
 
@@ -229,10 +230,6 @@ Options:
   -w &lt;whereClause&gt;, --whereClause &lt;whereClause&gt;  Qualify updated objects
   -a, --allObjects                               Update all objects in table
   -b &lt;batchSize&gt;, --batchSize &lt;batchSize&gt;        Update batch size
-The &lt;tableName&gt; argument specifies a configurable object table. Possible values are [sequence,
-variation, feature, feature_location, alignment, reference, alignment_member, var_almt_note, 
-member_floc_note] or a custom table name. Updates to the database are committed in batches, 
-the default batch size is 250.
 </pre></div></p> 
 <p>
 The usage line specifies the command syntax:
@@ -242,8 +239,9 @@ The usage line specifies the command syntax:
 <pre>multi-set field &lt;tableName&gt; (-w &lt;whereClause&gt; | -a) &lt;fieldName&gt; &lt;fieldValue&gt; [-b &lt;batchSize&gt;]</pre></div></p> 
 
 <ul>
-<li>The initial part of any command consists of 1-3 (possibly hyphenated) <b>keywords</b> which identify the command.<br/>In this case the keywords are <code>multi-set field</code>.</li>
-<li>Commands may also have <b>arguments</b> which are values supplied by the user, these are indicated in the usage line using angle brackets <code>&lt; &gt;</code>. 
+<li>The initial part of any command consists of 1-3 (possibly hyphenated) <b>keywords</b> which identify the command.
+<br/>In this case the keywords are <code>multi-set field</code>.</li>
+<li>Commands may also have <b>arguments</b> which are values supplied by the user, these are indicated in the syntax using angle brackets <code>&lt; &gt;</code>. 
 <br/>In this case for example the the command takes a <code>&lt;tableName&gt;</code> argument.</li>
 <li>
 Similar to arguments, commands may take <b>options</b>. Options have a short form using a single hyphen, e.g. <code>-a</code> 
@@ -251,22 +249,23 @@ and an alternate long form using a double hyphen, e.g. <code>--allObjects</code>
 <br/>For example the <code>-b</code> option above requires an integer <code>&lt;batchSize&gt;</code> argument.
 </li>
 <li>
-Arguments and options may be <b>mandatory or optional</b>. In the usage line optional elements are indicated using square brackets <code>[ ]</code>. 
+Arguments and options may be <b>mandatory or optional</b>. In the command syntax optional elements are indicated using square brackets <code>[ ]</code>. 
 <br/>For example <code>[-b &lt;batchSize&gt;]</code> indicates that this option is optional. 
 </li>
 <li>
-Sometimes <b>alternative</b> elements may be supplied, this is indicated in the usage line using the pipe character <code>|</code>. 
+Sometimes <b>alternative</b> options may be supplied, this is indicated in the command syntax using the pipe character <code>|</code>. 
 <br/>For example 
 <code>(-w &lt;whereClause&gt; | -a)</code> indicates that either the <code>-w</code> or the <code>-a</code> option may be used, but not both.
 </li>
 <li>
-Some options or arguments may be <b>repeated</b>. This is indicated by <code>...</code> in the usage line.
+Some options or arguments may be <b>repeated</b>. This is indicated by <code>...</code> in the command syntax.
 <br/>For example in the 
-<glue-command url="#/commandModes/commandMode/root_project/command/list_sequence"></glue-command> command syntax, <code>[&lt;fieldName&gt; ...]</code> 
+<mode-command mode="root_project" command="list_sequence"></mode-command> command syntax, <code>[&lt;fieldName&gt; ...]</code> 
 indicates that multiple values may be supplied for this argument.</li>
-<li><b>Quoting</b> Sometimes we would like to supply as an argument value a string which contains significant characters such as space. 
-In this case double or single quotation marks can be used to enclose the string, with <code>\</code> used as an escape character where necessary.
-If double quotation marks are used, single quotation marks within the string do not need to be escaped (and vice versa).<br/>
+<li><b>Quoting</b> Sometimes we would like to supply an argument value string which contains reserved characters such as space. 
+In this case double or single quotation marks can be used to enclose the string. The <code>\</code> character is used to escape
+quotation marks within the string where necessary. If double quotation marks enclose the string, single quotation marks within 
+the string do not need to be escaped (and vice versa).<br/>
 Some examples:
 <pre>list sequence --whereClause "source.name = 'ncbi-hev-examples'"
 list sequence --whereClause "source.name = \"ncbi-hev-examples\""
@@ -276,28 +275,265 @@ list sequence --whereClause 'source.name = \'ncbi-hev-examples\''
 </li>
 </ul>
 
-<h3 id="exportAlignment">Example command: Export alignment</h3>
+<h3 id="sequenceAnalysis">Example commands: Sequence analysis</h3>
 
-<h3 id="commandHistory">Command history</h3>
+<p>
+We can use GLUE to analyse sequences in FASTA files. The example project zip contains a file <code>sequence.fasta</code> containing a single HEV sequence.
+We will analyse this sequence using a couple of <a href="#/modules" target="_blank">modules</a> which have been defined in the example project.
+Modules provide extra commands within module command modes. First let's navigate from project mode to the command mode for module 
+"exampleMaxLikelihoodGenotyper", a module of type <module-type name="maxLikelihoodGenotyper"></module-type>.
+</p>
+<p><div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> module exampleMaxLikelihoodGenotyper
+OK
+Mode path: /project/example/module/exampleMaxLikelihoodGenotyper
+GLUE></pre></div></p>
+<p>
+We can use the <module-command module="maxLikelihoodGenotyper" command="genotype_file"></module-command> command to quickly identify the
+genotype and subtype of the sequence.</p>
+<p><div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleMaxLikelihoodGenotyper
+GLUE> genotype file -f sequence.fasta
++===========+====================+===================+
+| queryName | genotypeFinalClade | subtypeFinalClade |
++===========+====================+===================+
+| sequence1 | AL_4               | AL_4b             |
++===========+====================+===================+
+</pre></div></p>
 
--- common keystrokes
-    -- Up, Down: navigate command history.
-	-- Ctrl+R Search history
+<p>Now let's exit the current module mode and enter the command mode for module 
+"exampleSequenceReporter", a module of type <module-type name="fastaSequenceReporter"></module-type>.
 
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleMaxLikelihoodGenotyper
+GLUE> exit
+OK
+Mode path: /project/example/
+GLUE> module exampleSequenceReporter
+OK
+Mode path: /project/example/module/exampleSequenceReporter
+GLUE> </pre></div></p>
 
-<h3 id="sequenceInterpretation">Example command: Sequence interpretation</h3>
+<p>We can translate the nucleotides within the example sequence to amino acids using the 
+<module-command module="fastaSequenceReporter" command="amino-acid"></module-command> command withn this module.</p>
+<p>This command determines the reading frame by aligning the sequence with a "target" <em>ReferenceSequence</em>.
+We know from the previous command that the sequence is of subtype 4b. 
+So we will supply the <em>ReferenceSequence</em> for subtype 4b as the target as this should generate a good alignment.</p>
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+GLUE> amino-acid --fileName sequence.fasta --acRefName REF_MASTER_M73218 --featureName ORF1 --targetRefName REF_4b_DQ279091 
++============+=========+=========+===========+
+| codonLabel | queryNt | acRefNt | aminoAcid |
++============+=========+=========+===========+
+| 1          | 26      | 28      | M         |
+| 2          | 29      | 31      | E         |
+| 3          | 32      | 34      | A         |
+| 4          | 35      | 37      | H         |
+| 5          | 38      | 40      | Q         |
+| 6          | 41      | 43      | F         |
+| 7          | 44      | 46      | I         |
+| 8          | 47      | 49      | K         |
+| 9          | 50      | 52      | A         |
+| 10         | 53      | 55      | P         |
+| 11         | 56      | 58      | G         |
+| 12         | 59      | 61      | V         |
+| 13         | 62      | 64      | T         |
+| 14         | 65      | 67      | T         |
+| 15         | 68      | 70      | A         |
+| 16         | 71      | 73      | I         |
+| 17         | 74      | 76      | D         |
+| 18         | 77      | 79      | Q         |
+| 19         | 80      | 82      | A         |
++============+=========+=========+===========+
+Rows 1 to 19 of 1694 [F:first, L:last, P:prev, N:next, Q:quit]</pre></div></p>
+
+<h3 id="commandHistory">Command history and other useful keystrokes</h3>
+<p>
+Even with auto-completion, GLUE commands can be long and complex to manage. 
+Similar to the Unix Bash command line, the GLUE interpreter stores a history 
+of previously-typed commands so that you can alter and re-use old commands. The history
+is stored in between GLUE interpreter sessions.
+</p>
+<p>
+Use &lt;Up&gt; and &lt;Down&gt; to scroll through the command history. 
+</p>
+<p>
+You can also search for a previous command containing a specific string: press &lt;Ctrl+R&gt;; 
+the <code>(reverse-i-search):</code> prompt will appear, start typing the string and GLUE will
+scroll to a recent command which matches. Keep pressing &lt;Ctrl+R&gt; and older matches will be 
+found.
+</p>
+<p>You can also use the following keystrokes to edit commands more quickly.</p>
+<table class="table table-striped table-bordered">
+	<thead>
+		<th>Keystroke</th>
+		<th>Function</th>
+	<colgroup>
+		<col span="1" style="width: 25%;">
+		<col span="1" style="width: 75%;">
+	</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td>&lt;Ctrl+A&gt</td><td>Move cursor to start of line</td>
+		</tr>
+		<tr>
+			<td>&lt;Ctrl+E&gt</td><td>Move cursor to end of line</td>
+		</tr>
+		<tr>
+			<td>&lt;Alt+Left&gt</td><td>Move cursor backwards by one word</td>
+		</tr>
+		<tr>
+			<td>&lt;Alt+Right&gt</td><td>Move cursor forwards by one word</td>
+		</tr>
+		<tr>
+			<td>&lt;Ctrl+W&gt</td><td>Cut previous word to clipboard</td>
+		</tr>
+		<tr>
+			<td>&lt;Ctrl+U&gt</td><td>Cut all previous words to clipboard</td>
+		</tr>
+		<tr>
+			<td>&lt;Ctrl+K&gt</td><td>Cut all following words to clipboard</td>
+		</tr>
+		<tr>
+			<td>&lt;Ctrl+Y&gt</td><td>Paste from clipboard into command line</td>
+		</tr>
+	</tbody>
+</table>
+</p>
+<h3 id="exportAlignment">Example commands: Exporting alignments</h3>
+<p>
+The example project stores 10 example sequences within a structure called an <a href="/#/alignmentTree" target="_blank">alignment tree</a>. 
+This structure links sequence data based on nucleotide homologies and evolutionary relationships. 
+</p>
+<p>
+GLUE allows us to export data from the alignment tree as nucleotide or protein alignments in FASTA format. First let's navigate from
+project mode to the command mode for module 
+"exampleFastaAlignmentExporter", a module of type <module-type name="fastaAlignmentExporter"></module-type>.
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> module exampleFastaAlignmentExporter
+OK
+Mode path: /project/example/module/exampleFastaAlignmentExporter
+GLUE></pre></div></p>
+
+The following <module-command module="fastaAlignmentExporter" command="export"></module-command> command will create a 
+FASTA file <code>alignment1.fna</code>, containing a nucleotide alignment of the 10 example sequences, constrained to 
+the master reference sequence (restricting the set of nucleotide columns). 
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleFastaAlignmentExporter
+GLUE> export AL_MASTER --recursive --whereClause "sequence.source.name = 'ncbi-hev-examples'" --fileName alignment1.fna
+OK</pre></div></p>
+
+<p>We can also export a protein alignment. Let's exit the current module mode and enter the command mode for module 
+"exampleFastaProteinAlignmentExporter", a module of type <module-type name="fastaProteinAlignmentExporter"></module-type>.
+ 
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleFastaAlignmentExporter
+GLUE> exit
+OK
+Mode path: /project/example/
+GLUE> module exampleFastaProteinAlignmentExporter
+OK
+Mode path: /project/example/module/exampleFastaProteinAlignmentExporter
+GLUE> </pre></div></p>
+
+The following <module-command module="fastaProteinAlignmentExporter" command="export"></module-command> command will create a 
+FASTA file <code>alignment2.faa</code>, containing a protein alignment of the ORF1 region from the 10 example sequences, again constrained to 
+the master reference sequence. 
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleFastaProteinAlignmentExporter
+GLUE> export AL_MASTER -c -r REF_MASTER_M73218 -f ORF1 -w "sequence.source.name = 'ncbi-hev-examples'" -o alignment2.faa
+OK
+</pre></div></p>
+<p>
+Some research questions focus on a small region of the viral genome. The following 
+<module-command module="fastaProteinAlignmentExporter" command="export"></module-command> command will create a 
+a protein alignment of the ORF1 region, but in this case only the region between codons 135 and 155 inclusive. We also use the 
+<code>--preview</code> option which means the alignment is "previewed" in the interpeter rather than
+saved to a file.</p>
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleFastaProteinAlignmentExporter
+GLUE> export AL_MASTER -c -r REF_MASTER_M73218 -f ORF1 -l 135 155 -w "sequence.source.name = 'ncbi-hev-examples'" --preview
+>AL_3e.ncbi-hev-examples.AB481226
+LRGLPPVDRTYCFDGFSRCTF
+>AL_3a.ncbi-hev-examples.AB591734
+LRGLPPADRTYCFDGFSRCAF
+>AL_1b.ncbi-hev-examples.AF444003
+LRGLPAADRTYCFDGFSGCNF
+>AL_3c.ncbi-hev-examples.FJ705359
+LRGLPPVDRTYCFDGFSRCSF
+>AL_4a.ncbi-hev-examples.FJ763142
+LRGLPPVDRTYCFDGFSGCTF
+>AL_3e.ncbi-hev-examples.FJ998015
+LRGLPPVDRTYCFDGFSCCAF
+>AL_1c.ncbi-hev-examples.JF443717
+LRGLSAADRTYCFDGFSGCNF
+>AL_3ra.ncbi-hev-examples.JQ013791
+LRGLPPVDRTYCFDGFARCAF
+>AL_4b.ncbi-hev-examples.JX855794
+LRGLPPADRTYCFDGFSGCTF
+>AL_3i.ncbi-hev-examples.KP294371
+LRGLPPVDRSYCFDGFSRCAF</pre></div></p>
+<p>
+The default FASTA IDs generated in each of these FASTA alignments is a dotted string which identifies the <em>AlignmentMember</em> from which each alignment
+row was generated: the alignment name, the source name and the sequence ID.</p>
+This can be customised in the module's stored configuration document. One way to update this document is the 
+<mode-command mode="root_project_module" command="set_property"></mode-command> command. In this case we
+will specify that the FASTA ID consists of the sequence ID, host species, and subtype name.</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleFastaProteinAlignmentExporter
+GLUE> set property idTemplate "${sequence.sequenceID}/${sequence.renderProperty('host_species')}/${alignment.displayName}"
+OK
+Mode path: /project/example/module/exampleFastaProteinAlignmentExporter
+GLUE> export AL_MASTER -c -r REF_MASTER_M73218 -f ORF1 -l 135 155 -w "sequence.source.name = 'ncbi-hev-examples'" --preview
+>AB481226/-/Subtype 3e
+LRGLPPVDRTYCFDGFSRCTF
+>AB591734/Herpestes javanicus/Subtype 3a
+LRGLPPADRTYCFDGFSRCAF
+>AF444003/-/Subtype 1b
+LRGLPAADRTYCFDGFSGCNF
+>FJ705359/Sus scrofa/Subtype 3c
+LRGLPPVDRTYCFDGFSRCSF
+>FJ763142/Homo sapiens/Subtype 4a
+LRGLPPVDRTYCFDGFSGCTF
+>FJ998015/Sus scrofa/Subtype 3e
+LRGLPPVDRTYCFDGFSCCAF
+>JF443717/Homo sapiens/Subtype 1c
+LRGLSAADRTYCFDGFSGCNF
+>JQ013791/Oryctolagus cuniculus/Subtype 3ra
+LRGLPPVDRTYCFDGFARCAF
+>JX855794/Sus scrofa/Subtype 4b
+LRGLPPADRTYCFDGFSGCTF
+>KP294371/Sus scrofa/Subtype 3i
+LRGLPPVDRSYCFDGFSRCAF
+</pre></div></p>
+
 
 <h3 id="modeWrapping">Mode wrapping</h3>
 
-<h3 id="moreUsefulKeystrokes">More useful keystrokes</h3>
-
-	-- Ctrl+A Move cursor to start of line
-	-- Ctrl+E Move cursor to end of line
-	-- Alt+Left, Alt+Right move cursor backwards, forwards by one word
-	-- Ctrl+W Cut previous word to clipboard
-	-- Ctrl+U Cut all previous words to clipboard
-	-- Ctrl+K Cut all following words to clipboard
-	-- Ctrl+Y Paste from clipboard into command line
 
 <h3 id="consoleOptions">Console options</h3>
 

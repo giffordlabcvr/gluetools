@@ -1,15 +1,45 @@
-gluetoolsApp.directive('glueCommand', function() {
+gluetoolsApp.directive('modeCommand', function() {
   return {
     template: function(elem, attr) {
-      var bits = attr.url.split("/");
-      var lastPart = bits[bits.length-1];
-      var command = lastPart.replace("_", " ");
+      var url = "#/commandModes/commandMode/" + attr.mode + "/command/" + attr.command;
+      var commandWords = attr.command.replace("_", " ");
       if(attr.args != null) {
-    	  command = command + " " + attr.args;
+    	  commandWords = commandWords + " " + attr.args;
       }
       return '<a target="_blank" style="font-family:monospace;" href="'+
-      	attr.url+'">'+
-      	command+'</a>';
+      	url+'">'+
+      	commandWords+'</a>';
     }
   };
 });
+
+gluetoolsApp.directive('nonModeCommand', function() {
+	  return {
+	    template: function(elem, attr) {
+	      var url = "#/nonModeCommands/command/" + attr.command;
+	      var commandWords = attr.command.replace("_", " ");
+	      if(attr.args != null) {
+	    	  commandWords = commandWords + " " + attr.args;
+	      }
+	      return '<a target="_blank" style="font-family:monospace;" href="'+
+	      	url+'">'+
+	      	commandWords+'</a>';
+	    }
+	  };
+	});
+
+
+gluetoolsApp.directive('moduleCommand', function() {
+	  return {
+		    template: function(elem, attr) {
+		      var url = "#/moduleReference/moduleType/" + attr.module + "/command/" + attr.command;
+		      var commandWords = attr.command.replace("_", " ");
+		      if(attr.args != null) {
+		    	  commandWords = commandWords + " " + attr.args;
+		      }
+		      return '<a target="_blank" style="font-family:monospace;" href="'+
+		      	url+'">'+
+		      	commandWords+'</a>';
+		    }
+		  };
+	});
