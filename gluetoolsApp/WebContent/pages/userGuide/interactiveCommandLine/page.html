@@ -531,8 +531,73 @@ LRGLPPADRTYCFDGFSGCTF
 LRGLPPVDRSYCFDGFSRCAF
 </pre></div></p>
 
-
 <h3 id="modeWrapping">Mode wrapping</h3>
+<p>
+Navigation between command modes can become cumbersome, especially if you want to only execute a single command within the mode 
+before exiting that mode, as in this example:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> reference REF_MASTER_M73218 
+OK
+Mode path: /project/example/reference/REF_MASTER_M73218
+GLUE> list feature-location 
++==============+
+| feature.name |
++==============+
+| ORF3         |
+| ORF2         |
+| ORF1         |
+| Y            |
+| X            |
+| RdRp         |
+| PPR          |
+| PCP          |
+| MT           |
+| Hel          |
++==============+
+FeatureLocations found: 10
+Mode path: /project/example/reference/REF_MASTER_M73218
+GLUE> exit
+OK
+Mode path: /project/example</pre></div></p>
+To streamline this, GLUE allows <b>mode wrapping</b>. The command which you would have used to enter the command mode 
+(in this case <mode-command mode="root_project" command="reference" args="REF_MASTER_M73218"></mode-command>) can be prepended 
+to the command which you want to execute within the mode (<mode-command mode="root_project_reference" command="list_feature-location"></mode-command>).
+This creates a single mode-wrapped command, executed from the outer mode, which returns the same result:
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> reference REF_MASTER_M73218 list feature-location 
++==============+
+| feature.name |
++==============+
+| ORF3         |
+| ORF2         |
+| ORF1         |
+| Y            |
+| X            |
+| RdRp         |
+| PPR          |
+| PCP          |
+| MT           |
+| Hel          |
++==============+
+FeatureLocations found: 10
+Mode path: /project/example</pre></div></p>
+
+Mode wrapping can be nested, for example you could run the above commend from root mode as follows:
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /
+GLUE> project example reference REF_MASTER_M73218 list feature-location</pre></div></p>
+
+
+
 
 
 <h3 id="consoleOptions">Console options</h3>
