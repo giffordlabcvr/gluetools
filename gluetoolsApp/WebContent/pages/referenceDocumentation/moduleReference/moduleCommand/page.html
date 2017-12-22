@@ -2,16 +2,16 @@
 	<span style="font-family: monospace;">{{commandDocumentation.commandWords.join(' ')}}</span>
 </h3>
 <p>{{commandDocumentation.description}}</p>
-<h4>Usage</h4>
 <p>
 	Use in the module command mode provided by a module of type <a
 		href="#moduleReference/moduleType/{{moduleTypeName}}">{{moduleTypeName}}</a>.
 </p>
+<h4>Usage</h4>
 <div ng-if="commandDocumentation.usagePatterns.length == 0">
-	<p style="font-family: monospace;">{{commandDocumentation.commandWords.join(' ')}}</p>
+	<pre style="font-family: monospace;">{{commandDocumentation.commandWords.join(' ')}}</pre>
 </div>
 <div ng-repeat="usagePattern in commandDocumentation.usagePatterns track by $index">
-	<p style="font-family: monospace;">{{commandDocumentation.commandWords.join(' ')+" "+usagePattern}}</p>
+	<pre style="font-family: monospace;">{{commandDocumentation.commandWords.join(' ')+" "+usagePattern}}</pre>
 </div>
 <div ng-if="commandDocumentation.optionDocs.length > 0">
 <h4>Options</h4>
@@ -40,5 +40,7 @@
 </div>
 <div ng-if="commandDocumentation.furtherHelp.length > 0">
 <h4>Further help</h4>
+<pre>
 {{commandDocumentation.furtherHelp}}
+</pre>
 </div>

@@ -1,9 +1,19 @@
 <h2>{{nonModeCommandsMenuTitle}}</h2>
 	<p>
-	The following commands are available in any GLUE command mode.
+	These commands are available in any GLUE command mode.
 	</p>
+
+<p><ul>
+	<div ng-repeat="cmdCategory in commandCategories">
+		<li><a ng-click="scrollTo(cmdCategory.id)">{{cmdCategory.description}}</a></li>
+	</div>
+</ul>
+</p>
+</div>
+<hr/>	
+	
 <div ng-repeat="cmdCategory in commandCategories">
-<h4>{{cmdCategory.description}}</h4>
+<h4 id="{{cmdCategory.id}}">{{cmdCategory.description}}</h4>
 
 <table class="table table-striped table-bordered">
 	<thead>
