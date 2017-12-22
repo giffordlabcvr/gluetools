@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
@@ -41,6 +43,9 @@ public class WebdocsModuleTypeDocumentation {
 		cmdGroupToCmdClasses.forEach((cmdGroup, setOfClasses) -> {
 			List<WebdocsCommandSummary> commandSummaries = new ArrayList<WebdocsCommandSummary>();
 			setOfClasses.forEach(cmdClass -> {
+				if(CommandUsage.hasMetaTagForCmdClass((Class<? extends Command>) cmdClass, CmdMeta.suppressDocs)) {
+					return;
+				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
 			docPojo.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));

@@ -94,7 +94,9 @@ public abstract class CommandFactory {
 				Class<? extends Command> cmdClass = cmdPluginFactory.classForElementName(finalWord);
 				if(cmdClass != null) {
 					if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-						helpLines.add(new SpecificCommandHelpLine(cmdClass, commandGroupRegistry.getCmdGroupForCmdClass(cmdClass)));
+						if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.suppressDocs)) {
+							helpLines.add(new SpecificCommandHelpLine(cmdClass, commandGroupRegistry.getCmdGroupForCmdClass(cmdClass)));
+						}
 					}
 				}
 			}
@@ -102,7 +104,9 @@ public abstract class CommandFactory {
 				childNodes.values().stream().forEach(c -> helpLines.addAll(c.helpLines(commandWords, false, requireModeWrappable)));
 				cmdPluginFactory.getRegisteredClasses().forEach(c -> { 
 					if(!CommandUsage.hasMetaTagForCmdClass(c, CmdMeta.nonModeWrappable) || !requireModeWrappable) {
-						helpLines.add(new SpecificCommandHelpLine(c, commandGroupRegistry.getCmdGroupForCmdClass(c)));
+						if(!CommandUsage.hasMetaTagForCmdClass(c, CmdMeta.suppressDocs)) {
+							helpLines.add(new SpecificCommandHelpLine(c, commandGroupRegistry.getCmdGroupForCmdClass(c)));
+						}
 					}
 				});
 			} else {

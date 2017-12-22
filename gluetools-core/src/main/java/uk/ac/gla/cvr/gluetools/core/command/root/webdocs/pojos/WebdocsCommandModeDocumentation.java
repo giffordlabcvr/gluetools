@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
@@ -92,6 +93,9 @@ public class WebdocsCommandModeDocumentation {
 			}
 			List<WebdocsCommandSummary> commandSummaries = new ArrayList<WebdocsCommandSummary>();
 			setOfClasses.forEach(cmdClass -> {
+				if(CommandUsage.hasMetaTagForCmdClass((Class<? extends Command>) cmdClass, CmdMeta.suppressDocs)) {
+					return;
+				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
 			modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));

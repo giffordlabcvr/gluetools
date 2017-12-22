@@ -3,8 +3,10 @@ package uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
@@ -28,6 +30,9 @@ public class WebdocsNonModeCommandsSummary {
 			}
 			List<WebdocsCommandSummary> commandSummaries = new ArrayList<WebdocsCommandSummary>();
 			setOfClasses.forEach(cmdClass -> {
+				if(CommandUsage.hasMetaTagForCmdClass((Class<? extends Command>) cmdClass, CmdMeta.suppressDocs)) {
+					return;
+				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
 			nonModeCommandsSummary.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));

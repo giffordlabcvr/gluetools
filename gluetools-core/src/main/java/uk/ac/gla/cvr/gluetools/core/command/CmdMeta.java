@@ -19,6 +19,8 @@ public class CmdMeta {
 		updatesDatabase = "updatesDatabase",
 		/** command may not be executed in a single line within a mode. */
 		nonModeWrappable = "nonModeWrappable",
+		/** command may not be executed in a single line within a mode. */
+		suppressDocs = "suppressDocs",
 		/** command consumes binary data as part of its input.
 		 *  this binary data must be provided in Base64 format using the property name specified in Command.BINARY_INPUT_PROPERTY */
 		consumesBinary = "consumesBinary";

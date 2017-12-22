@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.root.webdocs;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
@@ -9,7 +10,7 @@ import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.pojos.WebdocsModuleType
 @CommandClass( 
 		commandWords={"webdocs", "list-module-types"}, 
 	docoptUsages={""},
-	//metaTags={CmdMeta.webApiOnly}, 
+	metaTags={CmdMeta.webApiOnly, CmdMeta.suppressDocs}, 
 	description = "")
 public class WebdocsListModuleTypesCommand extends WebdocsCommand<PojoCommandResult<WebdocsModuleTypeList>> {
 

@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.command.root.webdocs;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
@@ -12,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"webdocs", "document-command-mode"}, 
 	docoptUsages={"<absoluteModePathID>"},
-	//metaTags={CmdMeta.webApiOnly}, 
+	metaTags={CmdMeta.webApiOnly, CmdMeta.suppressDocs}, 
 	description = "")
 public class WebdocsDocumentCommandModeCommand extends WebdocsCommand<PojoCommandResult<WebdocsCommandModeDocumentation>> {
 

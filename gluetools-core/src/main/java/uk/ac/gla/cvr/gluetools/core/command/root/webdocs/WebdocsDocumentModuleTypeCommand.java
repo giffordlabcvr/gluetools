@@ -13,7 +13,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"webdocs", "document-module-type"}, 
 	docoptUsages={"<moduleTypeName>"},
-	metaTags={CmdMeta.webApiOnly}, 
+	metaTags={CmdMeta.webApiOnly, CmdMeta.suppressDocs}, 
 	description = "")
 public class WebdocsDocumentModuleTypeCommand extends WebdocsCommand<PojoCommandResult<WebdocsModuleTypeDocumentation>> {
 
