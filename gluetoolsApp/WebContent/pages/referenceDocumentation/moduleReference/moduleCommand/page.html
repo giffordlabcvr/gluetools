@@ -7,7 +7,7 @@
 		href="#moduleReference/moduleType/{{moduleTypeName}}">{{moduleTypeName}}</a>.
 </p>
 <h4>Usage</h4>
-<div ng-if="commandDocumentation.usagePatterns.length == 0">
+<div ng-if="!(commandDocumentation.usagePatterns.length > 0)">
 	<pre style="font-family: monospace;">{{commandDocumentation.commandWords.join(' ')}}</pre>
 </div>
 <div ng-repeat="usagePattern in commandDocumentation.usagePatterns track by $index">
