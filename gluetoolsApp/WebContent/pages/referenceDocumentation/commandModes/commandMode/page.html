@@ -15,6 +15,18 @@
 			<td><b>Parent mode</b></td>
 			<td><a href="./#/commandModes/commandMode/{{commandModeDocumentation.parentModePathID}}">{{commandModeDocumentation.parentDescription}}</a></td>
 		</tr>
+		<tr ng-if="commandModeDocumentation.childModes.length > 0">
+			<td rowspan="{{commandModeDocumentation.childModes.length}}"><b>Child modes</b></td>
+			<td>
+				<a href="./#/commandModes/commandMode/{{commandModeDocumentation.childModes[0].modePathID}}">{{commandModeDocumentation.childModes[0].description}}</a>
+			</td>
+		</tr>
+		<tr ng-if="commandModeDocumentation.childModes.length > 1" 
+			ng-repeat="childMode in commandModeDocumentation.childModes.slice(1, commandModeDocumentation.childModes.length)">
+			<td>
+				<a href="./#/commandModes/commandMode/{{childMode.modePathID}}">{{childMode.description}}</a>
+			</td>
+		</tr>
 	</tbody>
 </table>
 

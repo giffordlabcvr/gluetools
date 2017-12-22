@@ -40,6 +40,8 @@ public class WebdocsCommandModeDocumentation {
 	@PojoDocumentField
 	public String parentDescription;
 
+	@PojoDocumentListField(itemClass = WebdocsCommandModeSummary.class)
+	public List<WebdocsCommandModeSummary> childModes = new ArrayList<WebdocsCommandModeSummary>();
 
 	@PojoDocumentListField(itemClass = WebdocsCommandCategory.class)
 	public List<WebdocsCommandCategory> commandCategories = new ArrayList<WebdocsCommandCategory>();
@@ -85,6 +87,14 @@ public class WebdocsCommandModeDocumentation {
 			absoluteModePathBuf.append(modePathBit+"/"+String.join("/", modeIDs)+"/");
 		}
 
+		modeDocumentation.absoluteModePathID = absoluteModePathID;
+		modeDocumentation.absoluteModePath = absoluteModePathBuf.toString();
+		modeDocumentation.modeDescription = modeDescription;
+		modeDocumentation.parentModePath = parentModePath;
+		modeDocumentation.parentModePathID = parentModePathID;
+		modeDocumentation.parentDescription = parentDescription;
+		
+
 		Map<CommandGroup, TreeSet<Class<?>>> cmdGroupToCmdClasses = commandFactory.getCommandGroupRegistry().getCmdGroupToCmdClasses();
 		
 		cmdGroupToCmdClasses.forEach((cmdGroup, setOfClasses) -> {
@@ -97,18 +107,23 @@ public class WebdocsCommandModeDocumentation {
 					return;
 				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
+				EnterModeCommandClass enterModeAnno = cmdClass.getAnnotation(EnterModeCommandClass.class);
+				if(enterModeAnno != null) {
+					String[] modeIDs = CommandUsage.docoptUsagesForCmdClass((Class<? extends Command>) cmdClass)[0].split(" ");
+					String enterModeFirstCmdWord = CommandUsage.cmdWordsForCmdClass((Class<? extends Command>) cmdClass)[0];
+					WebdocsCommandModeSummary modeSummary = new WebdocsCommandModeSummary();
+					modeSummary.description = enterModeAnno.modeDescription();
+					modeSummary.modePathID = modeDocumentation.absoluteModePathID+"_"+enterModeFirstCmdWord;
+					modeSummary.modePath = modeDocumentation.absoluteModePath+enterModeFirstCmdWord+"/"+String.join("/", modeIDs)+"/";
+					modeDocumentation.childModes.add(modeSummary);
+				}
+				
+				
 			});
 			if(!commandSummaries.isEmpty()) {
 				modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
 			}
 		});
-		
-		modeDocumentation.absoluteModePathID = absoluteModePathID;
-		modeDocumentation.absoluteModePath = absoluteModePathBuf.toString();
-		modeDocumentation.modeDescription = modeDescription;
-		modeDocumentation.parentModePath = parentModePath;
-		modeDocumentation.parentModePathID = parentModePathID;
-		modeDocumentation.parentDescription = parentDescription;
 		
 		return modeDocumentation;
 	}
