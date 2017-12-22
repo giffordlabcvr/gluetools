@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModeCommandCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentCommandModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModuleCommandCommand;
@@ -22,12 +23,15 @@ public class RootCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		
+		setCmdGroup(CommandGroup.MODE_NAVIGATION);
 		registerCommandClass(ProjectCommand.class);
+		registerCommandClass(ProjectSchemaCommand.class);
+		registerCommandClass(ExitCommand.class);
+
+		setCmdGroup(new CommandGroup("projects", "Commands for managing projects", 50, false));
 		registerCommandClass(CreateProjectCommand.class);
 		registerCommandClass(DeleteProjectCommand.class);
 		registerCommandClass(ListProjectCommand.class);
-		registerCommandClass(ProjectSchemaCommand.class);
-		registerCommandClass(ExitCommand.class);
 		
 		// commands for web-based reference documentation
 		registerCommandClass(WebdocsListModuleTypesCommand.class);

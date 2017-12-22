@@ -48,7 +48,9 @@ public class WebdocsModuleTypeDocumentation {
 				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
-			docPojo.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
+			if(!commandSummaries.isEmpty()) {
+				docPojo.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
+			}
 		});
 		
 		return docPojo;

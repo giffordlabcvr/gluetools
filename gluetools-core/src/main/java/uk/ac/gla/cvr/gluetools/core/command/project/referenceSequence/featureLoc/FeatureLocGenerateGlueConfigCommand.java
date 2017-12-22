@@ -24,7 +24,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-f <fileName>, --fileName <fileName>  Name of file to output to",
 				"-p, --preview                         Preview only"},
 		description="Generate GLUE configuration to recreate the feature location",
-		metaTags={ CmdMeta.consoleOnly }
+		metaTags={ CmdMeta.consoleOnly, CmdMeta.suppressDocs }
 )
 public class FeatureLocGenerateGlueConfigCommand extends FeatureLocModeCommand<GlueConfigResult> {
 	

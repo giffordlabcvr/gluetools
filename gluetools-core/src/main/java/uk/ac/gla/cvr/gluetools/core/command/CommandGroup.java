@@ -3,7 +3,9 @@ package uk.ac.gla.cvr.gluetools.core.command;
 public class CommandGroup implements Comparable<CommandGroup> {
 
 	public static final CommandGroup 
-		MODE_NAVIGATION = new CommandGroup("navigation", "Commands for navigation between command modes", 0, false),
+		MODE_NAVIGATION = new CommandGroup("navigation", "Command mode navigation", 0, false),
+		RENDERING = new CommandGroup("rendering", "Commands for rendering a document from the data object", 55, false),
+		VALIDATION = new CommandGroup("validation", "Commands for validating the configuration of the object", 56, false),
 		OTHER = new CommandGroup("other", "Other commands", 100, false);
 	
 	private String id;

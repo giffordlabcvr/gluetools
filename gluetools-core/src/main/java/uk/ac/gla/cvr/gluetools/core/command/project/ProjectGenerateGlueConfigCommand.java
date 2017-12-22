@@ -23,7 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-f <fileName>, --fileName <fileName>  Name of file to output to",
 				"-p, --preview                         Preview only"},
 		description="Generate GLUE configuration to recreate certain project objects",
-		metaTags={ CmdMeta.consoleOnly }
+		metaTags={ CmdMeta.consoleOnly, CmdMeta.suppressDocs }
 )
 public class ProjectGenerateGlueConfigCommand extends ProjectModeCommand<GlueConfigResult> {
 	

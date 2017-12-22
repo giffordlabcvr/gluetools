@@ -13,7 +13,7 @@ public interface ConfigurableObjectMode extends InsideProjectMode {
 	public GlueDataObject getConfigurableObject(CommandContext cmdContext);
 	
 	public static void registerConfigurableObjectCommands(CommandFactory commandFactory) {
-		commandFactory.setCmdGroup(new CommandGroup("configurableObject", "Commands to manage custom object properties", 50, false));
+		commandFactory.setCmdGroup(new CommandGroup("configurableObject", "Commands for managing custom object properties", 50, false));
 		commandFactory.registerCommandClass(ConfigurableObjectSetFieldCommand.class);
 		commandFactory.registerCommandClass(ConfigurableObjectUnsetFieldCommand.class);
 		commandFactory.registerCommandClass(ConfigurableObjectShowPropertyCommand.class);

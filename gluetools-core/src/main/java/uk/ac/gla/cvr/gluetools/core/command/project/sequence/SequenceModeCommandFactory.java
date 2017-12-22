@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.sequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
@@ -19,12 +20,16 @@ public class SequenceModeCommandFactory extends BaseCommandFactory {
 		super.populateCommandTree();
 		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 
+		setCmdGroup(new CommandGroup("sequence", "Commands for querying sequence properties", 50, false));
 		registerCommandClass(ShowOriginalDataCommand.class);
 		registerCommandClass(SequenceShowLengthCommand.class);
 		registerCommandClass(ShowNucleotidesCommand.class);
 
-		registerCommandClass(RenderObjectCommand.class);
+		setCmdGroup(CommandGroup.MODE_NAVIGATION);
 		registerCommandClass(ExitCommand.class);
+
+		setCmdGroup(CommandGroup.RENDERING);
+		registerCommandClass(RenderObjectCommand.class);
 	}
 	
 

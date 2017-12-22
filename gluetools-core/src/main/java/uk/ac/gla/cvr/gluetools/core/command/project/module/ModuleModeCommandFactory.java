@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleCreatePropertyGroupCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleDeletePropertyGroupCommand;
@@ -58,18 +59,24 @@ public class ModuleModeCommandFactory extends BaseCommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
+		setCmdGroup(CommandGroup.VALIDATION);
 		registerCommandClass(ModuleValidateCommand.class);
+
+		setCmdGroup(new CommandGroup("configuration", "General commands for managing the module configuration", 49, false));
+		registerCommandClass(ModuleSaveConfigurationCommand.class);
+		registerCommandClass(ModuleLoadConfigurationCommand.class);
 		registerCommandClass(ModuleShowConfigurationCommand.class);
+
+		setCmdGroup(new CommandGroup("simple-properties", "Commands for managing simple properties within the configuration document", 51, false));
 		registerCommandClass(ModuleSetPropertyCommand.class);
 		registerCommandClass(ModuleUnsetPropertyCommand.class);
 		registerCommandClass(ModuleShowPropertyCommand.class);
 
+		setCmdGroup(new CommandGroup("property-groups", "Commands for managing property groups within the configuration document", 52, false));
 		registerCommandClass(ModuleCreatePropertyGroupCommand.class);
 		registerCommandClass(ModuleDeletePropertyGroupCommand.class);
 
-		registerCommandClass(ModuleSaveConfigurationCommand.class);
-		registerCommandClass(ModuleLoadConfigurationCommand.class);
-
+		setCmdGroup(CommandGroup.MODE_NAVIGATION);
 		registerCommandClass(ExitCommand.class);
 	}
 

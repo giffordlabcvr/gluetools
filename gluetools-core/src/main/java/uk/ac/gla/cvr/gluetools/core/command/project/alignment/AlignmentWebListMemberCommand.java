@@ -36,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 				"-o <fileName>, --fileName <fileName>                    Web file name"
 			},
 		description="List member sequences or field values",
-		metaTags={CmdMeta.webApiOnly},
+		metaTags={CmdMeta.webApiOnly, CmdMeta.suppressDocs},
 		furtherHelp=
 		"The optional whereClause qualifies which alignment member are displayed.\n"+
 		"If whereClause is not specified, all alignment members are displayed.\n"+

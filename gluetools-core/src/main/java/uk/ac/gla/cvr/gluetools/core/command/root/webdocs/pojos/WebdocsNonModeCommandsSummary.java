@@ -35,7 +35,9 @@ public class WebdocsNonModeCommandsSummary {
 				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
-			nonModeCommandsSummary.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
+			if(!commandSummaries.isEmpty()) {
+				nonModeCommandsSummary.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
+			}
 		});
 		
 		return nonModeCommandsSummary;

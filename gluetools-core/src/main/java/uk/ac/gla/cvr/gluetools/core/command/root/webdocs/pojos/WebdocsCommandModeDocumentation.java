@@ -98,7 +98,9 @@ public class WebdocsCommandModeDocumentation {
 				}
 				commandSummaries.add(WebdocsCommandSummary.createSummary((Class<? extends Command>) cmdClass));
 			});
-			modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
+			if(!commandSummaries.isEmpty()) {
+				modeDocumentation.commandCategories.add(WebdocsCommandCategory.create(cmdGroup.getId(), cmdGroup.getDescription(), commandSummaries));
+			}
 		});
 		
 		modeDocumentation.absoluteModePathID = absoluteModePathID;

@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.customtablerow;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectCommand;
@@ -20,8 +21,10 @@ public class CustomTableRowModeCommandFactory extends BaseCommandFactory {
 
 		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 
+		setCmdGroup(CommandGroup.RENDERING);
 		registerCommandClass(RenderObjectCommand.class);
 
+		setCmdGroup(CommandGroup.MODE_NAVIGATION);
 		registerCommandClass(ExitCommand.class);
 	}
 	
