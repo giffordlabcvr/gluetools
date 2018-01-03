@@ -1,6 +1,6 @@
 schema-project example
   table sequence
-	# fields with name "gb_..." are standard GenBank fields
+    # fields with name gb_... are standard GenBank fields
     create field gb_gi_number VARCHAR
     create field gb_primary_accession VARCHAR
     create field gb_accession_version VARCHAR

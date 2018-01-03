@@ -1,3 +1,243 @@
 <h2>{{schemaExtensionsMenuTitle}}</h2>
+<p>
+The <a href="#/coreSchema">core GLUE schema</a> is present in every GLUE project and forms the basis for
+the standard, built-in functionality. However, there are often important
+auxiliary data items which are important for the analysis of sequence data. These
+project-specific data objects may have highly structured relationships with each
+other and with objects in the core schema.
+</p>
+<p>
+GLUE provides a powerful yet easy-to-use mechanism for extending the database
+schema on a per-project basis. New fields may be added to objects in the core
+schema. New custom tables (i.e. object types) may be added, with their own data
+fields. Finally, custom relational links may be added between any pair of tables 
+in the schema.
+</p>
 
-Under construction
+<p>The <a href="#/exampleProject">example GLUE project</a> contains a schema extension 
+which we will use for illustration. In the example, sequences may each be linked with a 
+country of origin, which is defined as a custom object type. Countries are classified 
+and grouped into geographical regions (also custom objects) based on the United Nations 
+<a target="_blank" href="https://unstats.un.org/unsd/methodology/m49/">M.49 system</a>. 
+This could be used for example to analyse sequence variation in association with global region of origin. 
+</p>
+This is merely one example, schema extensions can be used to model a wide variety of data including:
+<ul>
+	<li>The host species of the virus, for example grouped taxonomically</li>
+	<li>Patient-related data, for example known donor-recipient pairs</li>
+	<li>Associations between sequences which came from the same sample (e.g. different segments of a segmented virus)</li>
+</ul>  
+</p>
+<p>
+The key aspects of schema extensions are covered below
+<ol>
+	<li><a ng-click="scrollTo('definingTablesFields')">Defining custom tables and fields</a></li>
+	<li><a ng-click="scrollTo('populatingTablesFields')">Populating custom tables and fields</a></li>
+	<li><a ng-click="scrollTo('queryingTablesFields')">Querying custom tables and fields</a></li>
+	<li><a ng-click="scrollTo('definingLinks')">Defining custom relational links</a></li>
+	<li><a ng-click="scrollTo('populatingLinks')">Populating custom relational links</a></li>
+	<li><a ng-click="scrollTo('queryingLinks')">Using custom links in queries</a></li>
+</ol>
+</p>
+<h3 id="definingTablesFields">Defining custom tables and fields</h3>
+
+<p>The schema of a project is extended by executing commands in the 
+<a href="#/commandModes/commandMode/root_schema-project" target="_blank">Schema mode</a> for that project.
+In the example project build, all the commands which extend the schema are executed from the 
+<a href="exampleProject/glue/exampleSchemaExtensions.glue" target="_blank">exampleSchemaExtensions.glue</a> file; with the 
+M.49 extension commands delegated to the 
+<a href="exampleProject/glue/m49_countries/m49SchemaExtension.glue" target="_blank">m49SchemaExtension.glue</a> file.
+</p>
+
+<p>
+In <a href="exampleProject/glue/m49_countries/m49SchemaExtension.glue" target="_blank">m49SchemaExtension.glue</a>, custom tables are 
+introduced for regions, sub-regions, intermediate regions and countries as required by M.49, using the 
+<mode-command mode="root_schema-project" command="create_custom-table"></mode-command> command:
+<div hljs language="json" no-escape>
+create custom-table m49_region
+create custom-table m49_sub_region
+create custom-table m49_intermediate_region
+create custom-table m49_country
+</div>
+As a consequence, the example project can contain data objects belonging to any of these 4 custom types 
+alongside standard GLUE object types such as <em>Sequences</em> and <em>Alignments</em>.
+</p>
+<p>
+Rows within custom tables must always have an <code>id</code> defined when they are created. 
+The <code>id</code> string for each row acts as the unique identifier for that row within the table. 
+Additional fields may be defined for each custom object table, using the 
+<mode-command mode="root_schema-project_table" command="create_field"></mode-command> command within the
+<a href="#/commandModes/commandMode/root_schema-project" target="_blank">Table mode</a> for that table, so for example the 
+<code>m49_country</code> custom table is fleshed out with various additional fields besides the mandatory <code>id</code> field:
+<div hljs language="json" no-escape>
+# id of this table is the ISO-alpha 3 code
+table m49_country
+  create field m49_code INTEGER
+  create field display_name VARCHAR 100
+  create field full_name VARCHAR 100
+  create field is_ldc BOOLEAN
+  create field is_lldc BOOLEAN
+  create field is_sids BOOLEAN
+  # 'developed' or 'developing'
+  create field development_status VARCHAR 20
+  exit
+</div>
+</p>
+<p>
+Custom field definitions may also be added to many of the standard GLUE object types. This is done in exactly the same way: there is a 
+<a href="#/commandModes/commandMode/root_schema-project" target="_blank">Table mode</a> for each of the standard types which may be extended.
+Within the <a href="exampleProject/glue/exampleSchemaExtensions.glue" target="_blank">exampleSchemaExtensions.glue</a> file, the example project
+adds a number of custom fields to the <em>Sequence</em> table:
+<div hljs language="json" no-escape>
+  table sequence
+    # fields with name gb_... are standard GenBank fields
+    create field gb_gi_number VARCHAR
+    create field gb_primary_accession VARCHAR
+    create field gb_accession_version VARCHAR
+    create field gb_locus VARCHAR
+    create field gb_length INTEGER
+    create field gb_organism VARCHAR
+    create field gb_create_date DATE
+    create field gb_update_date DATE
+    create field gb_taxonomy VARCHAR 200
+    create field gb_pubmed_id VARCHAR
+
+    create field isolate VARCHAR
+    create field host_species VARCHAR 200
+    create field genotype VARCHAR 10
+    create field subtype VARCHAR 10
+    exit
+</div>
+<h3 id="populatingTablesFields">Populating custom tables and fields</h3>
+<p>
+Once custom object types and fields have been defined in a GLUE project, they 
+may be populated with concrete data. Conceptually, the simplest way to do this is to use fine-grained 
+GLUE commands to access the fields and tables. For example to add a new country "Ruritania" (ISO code RUR) 
+to the <code>m49_country</code> table, first use the <mode-command mode="root_project" command="create_custom-table-row"></mode-command> 
+command:
+</p>
+<p><div hljs language="json" no-escape>
+Mode path: /
+GLUE> project example 
+OK
+Mode path: /project/example
+GLUE> create custom-table-row m49_country RUR
+OK
+(1 CustomTableObject_example_m49_country created)
+Mode path: /project/example
+GLUE></div></p>
+We can then enter the <a href="#/commandModes/commandMode/root_project_custom-table-row" target="_blank">custom object mode</a> for this object, 
+and populate its fields using <mode-command mode="root_project_custom-table-row" command="set_field"></mode-command>.
+<p><div hljs language="json" no-escape>
+GLUE> custom-table-row m49_country RUR
+OK
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> set field full_name 'Kingdom of Ruritania'
+OK
+(1 CustomTableObject_example_m49_country updated)
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> set field m49_code 998
+OK
+(1 CustomTableObject_example_m49_country updated)
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> set field display_name Ruritania
+OK
+(1 CustomTableObject_example_m49_country updated)
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> set field development_status developed
+OK
+(1 CustomTableObject_example_m49_country updated)
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE></div></p>
+
+<h3 id="queryingTablesFields">Querying custom tables and fields</h3>
+
+We can list the field values of the custom object representing Ruritania 
+<mode-command mode="root_project_custom-table-row" command="list_property"></mode-command> command:
+<p><div hljs language="json" no-escape>
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> list property 
++=========================+======================+
+|        property         |        value         |
++=========================+======================+
+| id                      | RUR                  |
+| development_status      | developed            |
+| display_name            | Ruritania            |
+| full_name               | Kingdom of Ruritania |
+| is_ldc                  | -                    |
+| is_lldc                 | -                    |
+| is_sids                 | -                    |
+| m49_code                | 998                  |
+| m49_intermediate_region | -                    |
+| m49_region              | -                    |
+| m49_sub_region          | -                    |
++=========================+======================+
+</div></p>
+
+
+<h3 id="definingLinks">Defining custom relational links</h3>
+
+A country in the M.49 system is associated
+with a single sub-region, but a sub-region may contain many countries. This may
+be modelled by introducing a link into the schema extension:
+
+\begin{verbatim}
+create link m49_country m49_sub_region --multiplicity MANY_TO_ONE
+\end{verbatim}
+
+The association between sequences and countries may also be modelled by adding a
+link definition to the schema, in this case between the core \emph{Sequence}
+table and the custom table \texttt{m49\_country}.
+
+\begin{verbatim}
+create link sequence m49_country --multiplicity MANY_TO_ONE
+\end{verbatim}
+
+
+<h3 id="populatingLinks">Populating custom relational links</h3>
+
+<h3 id="queryingLinks">Using custom links in queries</h3>
+
+The custom tables, fields and links may then play a role in programmatic row selection 
+criteria or in any other GLUE functionality which traverses the data schema.
+
+
+<h3 id="bulkPopulation">Bulk population</h3>
+
+At a practical level, it is often more convenient to use certain GLUE modules
+such as <module-type name="genbankXmlPopulator"></module-type> to perform the population.
+
+ 
+
+
+
+Data items may now be added, making use of these schema extensions. For example,
+an object may be created to represent France (M.49 code 250, ISO code FRA), and
+associated with the object representing the M.49 sub-region for Western Europe
+via the following commands in \texttt{project} mode:
+
+\begin{verbatim}
+create custom-table-row m49_country FRA
+custom-table-row m49_country FRA
+  set field m49_code 250
+  set field full_name France
+  set link-target m49_sub_region western_europe
+\end{verbatim}
+
+A \emph{Sequence} object may be associated with its country of origin by
+using the \texttt{set link-target} command in the appropriate command mode:
+
+\begin{verbatim}
+sequence ncbi-fmdv AY593780
+  set link-target m49_country FRA
+\end{verbatim}
+
+Such custom extensions may then be used in row selection criteria, for example
+this \texttt{list sequence} command will list all those sequences associated
+with a country in Western or Northern Europe:
+
+\begin{verbatim}
+list sequence --whereClause "m49_country.m49_sub_region.id in
+('western_europe', 'northern_europe')"
+\end{verbatim}
+
