@@ -23,7 +23,7 @@ schema-project example
     exit
 
   # M49 regions / countries etc (UN standard)
-  run file glue/m49_countries/m49CountriesSchemaExtension.glue
+  run file glue/m49_countries/m49SchemaExtension.glue
 
   # each sequence may be associated with a country
   create link sequence m49_country -m MANY_TO_ONE

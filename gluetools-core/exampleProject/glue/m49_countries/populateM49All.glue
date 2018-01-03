@@ -1,0 +1,4 @@
+run script glue/m49_countries/populateM49Regions.js
+run script glue/m49_countries/populateM49SubRegions.js
+run script glue/m49_countries/populateM49IntermediateRegions.js
+run script glue/m49_countries/populateM49Countries.js
