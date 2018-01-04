@@ -54,7 +54,7 @@ task copyGluetoolsWsWar(type: Copy) {
 war {
 	webAppDirName = 'WebContent'
 	archiveName 'gluetoolsApp.war'
-	dependsOn 'copyToDownloads'
+	dependsOn 'copyStaticContent'
 }
 
 task deployGluetoolsAppGlueHomeAWS(dependsOn: [
@@ -132,7 +132,9 @@ class DeployWarTask extends DefaultTask {
 	}
 }
 
-task copyToDownloads(dependsOn: [':gluetools-core:jar', ':gluetools-core:exampleProjectZip', ':gluetools-core:glueInstallDirZip', 'cleanDownloads'], type: Copy) {
+task copyStaticContent(dependsOn: ['cleanStaticContent', 'copyDownloads', 'copyExampleProject'])
+
+task copyDownloads(dependsOn: [':gluetools-core:jar', ':gluetools-core:exampleProjectZip', ':gluetools-core:glueInstallDirZip', ], type: Copy) {
     from '../gluetools-core/build/libs/gluetools-core-'+version+'.jar'
     from '../gluetools-core/build/distributions/exampleProject-'+version+'.zip'
     from '../gluetools-core/build/distributions/glueInstallDir-'+version+'.zip'
@@ -140,11 +142,18 @@ task copyToDownloads(dependsOn: [':gluetools-core:jar', ':gluetools-core:example
     into 'WebContent/downloads'
 }
 
-task cleanDownloads(type: Delete) {
+task copyExampleProject(dependsOn: [], type: Copy) {
+    from '../gluetools-core/exampleProject'
+    into 'WebContent/exampleProject'
+}
+
+
+task cleanStaticContent(type: Delete) {
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-core-*.jar' }
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'exampleProject-*.zip' }
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'glueInstallDir-*.zip' }
 	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-config.xml' }
+	delete fileTree(dir: 'WebContent/exampleProject').matching { include '*' }
 }
 
 

@@ -15,15 +15,12 @@
   create module --fileName modules/exampleRaxmlPhylogenyGenerator.xml
   create module --fileName modules/exampleReferenceMetadataPopulator.xml
   create module --fileName modules/exampleSequenceReporter.xml
+  create module --fileName modules/exampleTabularUtilityCsv.xml
+  create module --fileName modules/exampleTabularUtilityTab.xml
   create module --fileName modules/kuiken2006CodonLabeler.xml
   create module --fileName modules/ncbiHevExamplesImporter.xml
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml
-
-  create module --fileName modules/m49_countries/m49RegionsTextToCustomTableRows.xml
-  create module --fileName modules/m49_countries/m49SubRegionsTextToCustomTableRows.xml
-  create module --fileName modules/m49_countries/m49IntermediateRegionsTextToCustomTableRows.xml
-  create module --fileName modules/m49_countries/m49CountriesTextToCustomTableRows.xml  
   
   
   

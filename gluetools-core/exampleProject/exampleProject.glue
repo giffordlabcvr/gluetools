@@ -11,7 +11,7 @@ project example
   run file glue/exampleModules.glue
   
   # M49 regions / countries etc (UN standard)
-  run file glue/m49_countries/populateM49Countries.glue
+  run file glue/m49_countries/populateM49All.glue
   
   import source sources/ncbi-refseqs 
 

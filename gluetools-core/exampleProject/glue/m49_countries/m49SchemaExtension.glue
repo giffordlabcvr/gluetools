@@ -30,9 +30,9 @@ table m49_intermediate_region
   create field display_name VARCHAR 100
   exit
   
-create link m49_country m49_region -m MANY_TO_ONE
-create link m49_country m49_sub_region -m MANY_TO_ONE
-create link m49_country m49_intermediate_region -m MANY_TO_ONE
-create link m49_intermediate_region m49_sub_region -m MANY_TO_ONE
-create link m49_sub_region m49_region -m MANY_TO_ONE
+create link m49_country m49_region --multiplicity MANY_TO_ONE
+create link m49_country m49_sub_region --multiplicity MANY_TO_ONE
+create link m49_country m49_intermediate_region --multiplicity MANY_TO_ONE
+create link m49_intermediate_region m49_sub_region --multiplicity MANY_TO_ONE
+create link m49_sub_region m49_region --multiplicity MANY_TO_ONE
   

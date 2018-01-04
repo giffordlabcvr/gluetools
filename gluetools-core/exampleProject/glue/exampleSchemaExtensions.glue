@@ -1,6 +1,6 @@
 schema-project example
   table sequence
-	# fields with name "gb_..." are standard GenBank fields
+    # fields with name gb_... are standard GenBank fields
     create field gb_gi_number VARCHAR
     create field gb_primary_accession VARCHAR
     create field gb_accession_version VARCHAR
@@ -23,9 +23,9 @@ schema-project example
     exit
 
   # M49 regions / countries etc (UN standard)
-  run file glue/m49_countries/m49CountriesSchemaExtension.glue
+  run file glue/m49_countries/m49SchemaExtension.glue
 
   # each sequence may be associated with a country
-  create link sequence m49_country -m MANY_TO_ONE
+  create link sequence m49_country --multiplicity MANY_TO_ONE
 
   exit
