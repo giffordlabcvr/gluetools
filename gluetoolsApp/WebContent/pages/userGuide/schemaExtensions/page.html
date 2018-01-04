@@ -1,7 +1,7 @@
 <h2>{{schemaExtensionsMenuTitle}}</h2>
 <p>
 The <a href="#/coreSchema">core GLUE schema</a> is present in every GLUE project and forms the basis for
-the standard, built-in functionality. However, there are often important
+the standard, built-in functionality. However, there are often
 auxiliary data items which are important for the analysis of sequence data. These
 project-specific data objects may have highly structured relationships with each
 other and with objects in the core schema.
@@ -15,16 +15,24 @@ in the schema.
 </p>
 
 <p>The <a href="#/exampleProject">example GLUE project</a> contains a schema extension 
-which we will use for illustration. In the example, sequences may each be linked with a 
+which we will use for illustration. Firstly, various custom fields are added to the 
+standard GLUE <em>Sequence</em> table. In addition <em>Sequences</em> may each be linked with a 
 country of origin, which is defined as a custom object type. Countries are classified 
 and grouped into geographical regions (also custom objects) based on the United Nations 
 <a target="_blank" href="https://unstats.un.org/unsd/methodology/m49/">M.49 system</a>. 
-This could be used for example to analyse sequence variation in association with global region of origin. 
+This could be used for example to analyse sequence variation in association with global 
+region of origin. The schema extension is shown in the Entity-Relationship diagram below.
 </p>
+<p>
+	<div align="center">
+		<a href="images/exampleSchemaExtension.png" ><img width="100%" src="images/exampleSchemaExtension.png" /></a>
+	</div>
+</p>
+<p>
 This is merely one example, schema extensions can be used to model a wide variety of data including:
 <ul>
 	<li>The host species of the virus, for example grouped taxonomically</li>
-	<li>Patient-related data, for example known donor-recipient pairs</li>
+	<li>Patient-related data, for example sequences from the same patient collected at different dates</li>
 	<li>Associations between sequences which came from the same sample (e.g. different segments of a segmented virus)</li>
 </ul>  
 </p>
@@ -35,8 +43,10 @@ The key aspects of schema extensions are covered below
 	<li><a ng-click="scrollTo('populatingTablesFields')">Populating custom tables and fields</a></li>
 	<li><a ng-click="scrollTo('queryingTablesFields')">Querying custom tables and fields</a></li>
 	<li><a ng-click="scrollTo('definingLinks')">Defining custom relational links</a></li>
-	<li><a ng-click="scrollTo('populatingLinks')">Populating custom relational links</a></li>
-	<li><a ng-click="scrollTo('queryingLinks')">Using custom links in queries</a></li>
+	<li><a ng-click="scrollTo('linkNames')">Source and destination link names</a></li>
+	<li><a ng-click="scrollTo('populatingLinkTargets')">Populating link targets</a></li>
+	<li><a ng-click="scrollTo('queryingLinkTargets')">Querying link targets</a></li>
+	<li><a ng-click="scrollTo('bulkPopulation')">Bulk population of schema extensions</a></li>
 </ol>
 </p>
 <h3 id="definingTablesFields">Defining custom tables and fields</h3>
@@ -67,7 +77,7 @@ Rows within custom tables must always have an <code>id</code> defined when they 
 The <code>id</code> string for each row acts as the unique identifier for that row within the table. 
 Additional fields may be defined for each custom object table, using the 
 <mode-command mode="root_schema-project_table" command="create_field"></mode-command> command within the
-<a href="#/commandModes/commandMode/root_schema-project" target="_blank">Table mode</a> for that table, so for example the 
+<a href="#/commandModes/commandMode/root_schema-project_table" target="_blank">Table mode</a> for that table, so for example the 
 <code>m49_country</code> custom table is fleshed out with various additional fields besides the mandatory <code>id</code> field:
 <div hljs language="json" no-escape>
 # id of this table is the ISO-alpha 3 code
@@ -85,7 +95,7 @@ table m49_country
 </p>
 <p>
 Custom field definitions may also be added to many of the standard GLUE object types. This is done in exactly the same way: there is a 
-<a href="#/commandModes/commandMode/root_schema-project" target="_blank">Table mode</a> for each of the standard types which may be extended.
+<a href="#/commandModes/commandMode/root_schema-project_table" target="_blank">Table mode</a> for each of the standard types which may be extended.
 Within the <a href="exampleProject/glue/exampleSchemaExtensions.glue" target="_blank">exampleSchemaExtensions.glue</a> file, the example project
 adds a number of custom fields to the <em>Sequence</em> table:
 <div hljs language="json" no-escape>
@@ -152,9 +162,15 @@ GLUE></div></p>
 
 <h3 id="queryingTablesFields">Querying custom tables and fields</h3>
 
-We can list the field values of the custom object representing Ruritania 
-<mode-command mode="root_project_custom-table-row" command="list_property"></mode-command> command:
+We can query the property values of the custom object representing Ruritania, created in the previous section, using the
+<mode-command mode="root_project_custom-table-row" command="show_property"></mode-command> and 
+<mode-command mode="root_project_custom-table-row" command="list_property"></mode-command> commands in custom object mode:
 <p><div hljs language="json" no-escape>
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> show property development_status 
+propertyValueResult
+  property: development_status
+  value: developed
 Mode path: /project/example/custom-table-row/m49_country/RUR
 GLUE> list property 
 +=========================+======================+
@@ -173,71 +189,261 @@ GLUE> list property
 | m49_sub_region          | -                    |
 +=========================+======================+
 </div></p>
+<p>
+Back in project mode, we can use the <mode-command mode="root_project" command="list_custom-table-row"></mode-command> 
+command to list custom objects such as the M.49 sub regions. By default only the IDs of the custom objects will be shown. 
+However as with other "list" commands, you can configure the columns in the result, in this case we select the ID and 
+two other columns.
+</p>
 
+<p><div hljs language="json" no-escape>
+Mode path: /project/example
+GLUE> list custom-table-row m49_sub_region id m49_code display_name 
++=================================+==========+=================================+
+|               id                | m49_code |          display_name           |
++=================================+==========+=================================+
+| australia_and_new_zealand       | 53       | Australia and New Zealand       |
+| central_asia                    | 143      | Central Asia                    |
+| eastern_asia                    | 30       | Eastern Asia                    |
+| eastern_europe                  | 151      | Eastern Europe                  |
+| latin_america_and_the_caribbean | 419      | Latin America and the Caribbean |
+| melanesia                       | 54       | Melanesia                       |
+| micronesia                      | 57       | Micronesia                      |
+| northern_africa                 | 15       | Northern Africa                 |
+| northern_america                | 21       | Northern America                |
+| northern_europe                 | 154      | Northern Europe                 |
+| polynesia                       | 61       | Polynesia                       |
+| southern_asia                   | 34       | Southern Asia                   |
+| southern_europe                 | 39       | Southern Europe                 |
+| south_eastern_asia              | 35       | South-eastern Asia              |
+| sub_saharan_africa              | 202      | Sub-Saharan Africa              |
+| western_asia                    | 145      | Western Asia                    |
+| western_europe                  | 155      | Western Europe                  |
++=================================+==========+=================================+
+CustomTableObject_example_m49_sub_regions found: 17
+</div></p>
 
 <h3 id="definingLinks">Defining custom relational links</h3>
-
-A country in the M.49 system is associated
-with a single sub-region, but a sub-region may contain many countries. This may
-be modelled by introducing a link into the schema extension:
-
-\begin{verbatim}
+<p>
+A country in the M.49 system is associated with a single sub-region, but a 
+sub-region may contain many countries. A <em>Sequence</em> is associated with a single
+country of origin but a country is associated with many <em>Sequences</em>. 
+These relationships can be very useful when analysing data. In GLUE, such relationships
+are modelled by introducing <b>relational links</b> into the schema extension, using the 
+<mode-command mode="root_schema-project" command="create_link"></mode-command> command.
+The example project adds a single link in the 
+<a href="exampleProject/glue/exampleSchemaExtensions.glue" target="_blank">exampleSchemaExtensions.glue</a> file:
+</p>
+<p><div hljs language="json" no-escape>
+  # each sequence may be associated with a country
+  create link sequence m49_country -m MANY_TO_ONE
+</div></p>
+<p>
+It also adds several other links in the
+<a href="exampleProject/glue/m49_countries/m49SchemaExtension.glue" target="_blank">m49SchemaExtension.glue</a> file:
+<p>
+<p><div hljs language="json" no-escape>
+create link m49_country m49_region --multiplicity MANY_TO_ONE
 create link m49_country m49_sub_region --multiplicity MANY_TO_ONE
-\end{verbatim}
-
-The association between sequences and countries may also be modelled by adding a
-link definition to the schema, in this case between the core \emph{Sequence}
-table and the custom table \texttt{m49\_country}.
-
-\begin{verbatim}
-create link sequence m49_country --multiplicity MANY_TO_ONE
-\end{verbatim}
-
-
-<h3 id="populatingLinks">Populating custom relational links</h3>
-
-<h3 id="queryingLinks">Using custom links in queries</h3>
-
-The custom tables, fields and links may then play a role in programmatic row selection 
-criteria or in any other GLUE functionality which traverses the data schema.
-
-
-<h3 id="bulkPopulation">Bulk population</h3>
-
-At a practical level, it is often more convenient to use certain GLUE modules
-such as <module-type name="genbankXmlPopulator"></module-type> to perform the population.
-
+create link m49_country m49_intermediate_region --multiplicity MANY_TO_ONE
+create link m49_intermediate_region m49_sub_region --multiplicity MANY_TO_ONE
+create link m49_sub_region m49_region --multiplicity MANY_TO_ONE
+</div></p>
+<p>
+Notice how each of these commands corresponds to one of the association lines 
+in the entity-relationship diagram for the schema extension. Each command names two
+tables, so that objects in the first table (the "source" table) may be associated 
+with objects in the second table (the "destination" table). </p>
+<p>
+The <code>--multiplicity</code> option can be used to specify a multiplicity of 
+<code>ONE_TO_ONE</code> (the default), <code>MANY_TO_ONE</code> or <code>ONE_TO_MANY</code>.
+</p>
+<p>In this command for example, many objects in the source table <code>m49_sub_region</code> may be associated
+with a single object in the destination table <code>m49_region</code>:
+</p>
+<p><div hljs language="json" no-escape>
+create link m49_sub_region m49_region --multiplicity MANY_TO_ONE
+</div></p>
+<h3 id="linkNames">Source and destination link names</h3>
+<p>The <mode-command mode="root_schema-project" command="list_link"></mode-command> command lists all the relational links 
+in the example project:
+</p>
+<p><div hljs language="json" no-escape>
+Mode path: /schema-project/example
+GLUE> list link
++========================+=========================+=========================+=========================+==============+
+|      srcTableName      |       srcLinkName       |      destTableName      |      destLinkName       | multiplicity |
++========================+=========================+=========================+=========================+==============+
+|sequence                | m49_country             | m49_country             | sequence                | MANY_TO_ONE  |
+|m49_country             | m49_intermediate_region | m49_intermediate_region | m49_country             | MANY_TO_ONE  |
+|m49_country             | m49_region              | m49_region              | m49_country             | MANY_TO_ONE  |
+|m49_sub_region          | m49_region              | m49_region              | m49_sub_region          | MANY_TO_ONE  |
+|m49_country             | m49_sub_region          | m49_sub_region          | m49_country             | MANY_TO_ONE  |
+|m49_intermediate_region | m49_sub_region          | m49_sub_region          | m49_intermediate_region | MANY_TO_ONE  |
++========================+=========================+=========================+=========================+==============+
+Links found: 6</div></p>
+<p>
+In the above command output we can see that as well as source and destination tables, each link also has a 
+<code>srcLinkName</code> and a <code>destLinkName</code>. 
+The source link name defines <b>how the link is referenced by an object in the source table</b>, and similarly the
+destination link name defines how it is referenced by a destination table object. 
+The default <code>srcLinkName</code> is the destination table name and vice versa. </p>
+</p>
+<p>
+Link names can be useful in "where clause" filters supplied to GLUE command arguments, for example:
+</p>
+<p><div hljs language="json" no-escape>
+Mode path: /project/example
+GLUE> list sequence --whereClause "m49_country.m49_region.id = 'europe'" sequenceID m49_country.display_name
++============+==========================+
+| sequenceID | m49_country.display_name |
++============+==========================+
+| FJ705359   | Germany                  |
+| FJ998015   | Germany                  |
+| JQ013791   | France                   |
+| KP294371   | Germany                  |
++============+==========================+
+Sequences found: 4</div></p>
+<p>
+The <mode-command mode="root_project" command="list_sequence"></mode-command> command selects <em>Sequence</em> objects. 
+The <em>Sequence</em> table is linked to the M.49 countries table by a link named <code>m49_country</code> by the 
+<em>Sequence</em> table (this is the default <code>sourceLinkName</code> given the destination table). The M.49 countries 
+table links to the M.49 regions table by a link it references as <code>m49_region</code>. 
+So this allows us to use the property path <code>m49_country.m49_region.id</code> to traverse from each <em>Sequence</em> object, 
+first to its country of origin, and then to the region, and finally to the ID of that region.
+</p>
+<div class="row">
+<div class="col-md-6">
+While source and destination link name defaults are based on table names, they may be configured in the 
+<mode-command mode="root_schema-project" command="create_link"></mode-command> command
+which creates the link. This allows links from a table to itself or multiple links between the same two tables. 
+For example a <code>transmission_event</code> object
+representing the transmission of a viral infection between distinct individuals would have two associations to the <code>patient</code>
+object table, representing the donor and recipient of the infection, using the GLUE commands below.
+</p>
+</div>
+<div class="col-md-6">
+<p>
+	<div align="center">
+		<a href="images/srcDestLinkNames.png" ><img width="100%" src="images/srcDestLinkNames.png" /></a>
+	</div>
+</p>
+</div>
+</div>
+<p><div hljs language="json" no-escape>
+create link transmission_event --srcLinkName donor patient --destLinkName events_where_donor --multiplicity MANY_TO_ONE
+create link transmission_event --srcLinkName recipient patient --destLinkName events_where_recipient --multiplicity MANY_TO_ONE
+</div></p>
+<h3 id="populatingLinkTargets">Populating link targets</h3>
+Once a link has been defined, objects in the project database may be associated via the link. There are fine-grained GLUE commands in 
+<a href="#/commandModes/commandMode/root_project_custom-table-row" target="_blank">custom object mode</a> for manipulating these associations. The
+<mode-command mode="root_project_custom-table-row" command="set_link-target"></mode-command> command can be used to set the object on the "ONE" end of a link.
+So for example we can use it to associate our new country Ruritania with the Eastern Europe sub-region:
+<p><div hljs language="json" no-escape>
+Mode path: /project/example
+GLUE> custom-table-row m49_country RUR
+OK
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> set link-target m49_sub_region custom-table-row/m49_sub_region/eastern_europe 
+OK
+(1 CustomTableObject_example_m49_country updated)
+</div></p>
+GLUE does not enforce any minimum multiplicity on custom link targets, this is left to the project developer. 
+So in our example, GLUE allows country Ruritania to have no sub region object associated and we can undo the association using the 
+<mode-command mode="root_project_custom-table-row" command="unset_link-target"></mode-command> command:
+<p><div hljs language="json" no-escape>
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> unset link-target m49_sub_region 
+OK
+(1 CustomTableObject_example_m49_country updated)
+</div></p>
+We can use the <mode-command mode="root_project_custom-table-row" command="add_link-target"></mode-command> command to add an object to the set 
+of targets on the "MANY" end of a link. So, we can add the same association as before but this time from the other end of the link. We perform this change in the command mode associated 
+with the Eastern Europe sub region:
+<p><div hljs language="json" no-escape>
+Mode path: /project/example
+GLUE> custom-table-row m49_sub_region eastern_europe 
+OK
+Mode path: /project/example/custom-table-row/m49_sub_region/eastern_europe
+GLUE> add link-target m49_country custom-table-row/m49_country/RUR
+OK
+(1 CustomTableObject_example_m49_sub_region updated)
+</div></p>
+<h3 id="queryingLinkTargets">Querying link targets</h3>
+<p>The target on the "ONE" end of a link can be shown using the <mode-command mode="root_project_custom-table-row" command="show_property"></mode-command> command:</p>
+<p><div hljs language="json" no-escape>
+Mode path: /project/example/custom-table-row/m49_country/RUR
+GLUE> show property m49_sub_region 
+propertyValueResult
+  property: m49_sub_region
+  value: custom-table-row/m49_sub_region/eastern_europe
+</div></p>
+<p>
+The set of targets on the "MANY" end of a link can be shown using the <mode-command mode="root_project_custom-table-row" command="list_link-target"></mode-command> command:
+</p>
+<p><div hljs language="json" no-escape>
+Mode path: /project/example/custom-table-row/m49_sub_region/eastern_europe
+GLUE> list link-target m49_country id display_name
++=====+==============+
+| id  | display_name |
++=====+==============+
+| BGR | Bulgaria     |
+| BLR | Belarus      |
+| CZE | Czechia      |
+| HUN | Hungary      |
+| MDA | Moldova      |
+| POL | Poland       |
+| ROU | Romania      |
+| RUR | Ruritania    |
+| RUS | Russia       |
+| SVK | Slovakia     |
+| UKR | Ukraine      |
++=====+==============+
+CustomTableObject_example_m49_countrys found: 11</div></p>
+<p>
+A similar result can be produced using the <mode-command mode="root_project" command="list_custom-table-row"></mode-command> command with the appropriate 
+<code>--whereClause</code>:
+</p>
+<p><div hljs language="json" no-escape>
+Mode path: /project/example
+GLUE> list custom-table-row m49_country --whereClause "m49_sub_region.id = 'eastern_europe'" id display_name 
+</div></p>
+<h3 id="bulkPopulation">Bulk population of schema extensions</h3>
+<p>The fine-grained commands in <a href="#/commandModes/commandMode/root_project_custom-table-row" target="_blank">custom object mode</a> are useful for 
+illustration and testing. At a practical level, it is often more convenient to populate field values and link targets in bulk, using various methods. The
+<mode-command mode="root_project" command="multi-set_field"></mode-command> command sets a field to the same value across groups of objects of the same type, the group
+can be selected using the appropriate <code>whereClause</code>.
+</p>
+<p>
+Field values and link targets of the <em>Sequence</em> table can be populated from GenBank XML format using the 
+<module-type name="genbankXmlPopulator"></module-type> module type and from tabular data using the 
+<module-type name="textFilePopulator"></module-type> module type.
+</p>
+<p>
+The GLUE <a href="#/scriptingLayer">scripting layer</a> gives a high level of flexibility for populating any part of a schema extension, by
+invoking fine-grained GLUE commands from a JavaScript program. 
+The example project uses various JavaScript programs to populate the M.49 schema extension objects, 
+field values and link targets. The program below is used to populate the <code>m49_sub_region</code> table by first reading in a tabular data file, 
+and then executing the relevant fine-grained GLUE commands.
+</p>
+<p><div hljs language="javascript" no-escape>
+var subRegions;
+glue.inMode("module/exampleTabularUtilityCsv", function() {
+	subRegions = glue.command(["load-tabular", "tabular/m49_countries/m49_sub_regions.csv"], {convertTableToObjects:true});
+});
+_.each(subRegions, function(subRegion) {
+	var subRegionName = subRegion["Sub-region Name"].trim();
+	var subRegionId = subRegionName.toLowerCase().replace(/[ -]/g, "_");
+	var m49Code = subRegion["Sub-region Code"].trim();
+	var regionName = subRegion["Region Name"].trim();
+	var regionId = regionName.toLowerCase();
+	glue.command(["create", "custom-table-row", "m49_sub_region", subRegionId]);
+	glue.inMode("custom-table-row/m49_sub_region/"+subRegionId, function() {
+		glue.command(["set", "field", "display_name", subRegionName]);
+		glue.command(["set", "field", "m49_code", m49Code]);
+		glue.command(["set", "link-target", "m49_region", "custom-table-row/m49_region/"+regionId]);
+	});
+});
+</div></p>
  
-
-
-
-Data items may now be added, making use of these schema extensions. For example,
-an object may be created to represent France (M.49 code 250, ISO code FRA), and
-associated with the object representing the M.49 sub-region for Western Europe
-via the following commands in \texttt{project} mode:
-
-\begin{verbatim}
-create custom-table-row m49_country FRA
-custom-table-row m49_country FRA
-  set field m49_code 250
-  set field full_name France
-  set link-target m49_sub_region western_europe
-\end{verbatim}
-
-A \emph{Sequence} object may be associated with its country of origin by
-using the \texttt{set link-target} command in the appropriate command mode:
-
-\begin{verbatim}
-sequence ncbi-fmdv AY593780
-  set link-target m49_country FRA
-\end{verbatim}
-
-Such custom extensions may then be used in row selection criteria, for example
-this \texttt{list sequence} command will list all those sequences associated
-with a country in Western or Northern Europe:
-
-\begin{verbatim}
-list sequence --whereClause "m49_country.m49_sub_region.id in
-('western_europe', 'northern_europe')"
-\end{verbatim}
 

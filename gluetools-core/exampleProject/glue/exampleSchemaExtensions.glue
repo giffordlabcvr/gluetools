@@ -26,6 +26,6 @@ schema-project example
   run file glue/m49_countries/m49SchemaExtension.glue
 
   # each sequence may be associated with a country
-  create link sequence m49_country -m MANY_TO_ONE
+  create link sequence m49_country --multiplicity MANY_TO_ONE
 
   exit
