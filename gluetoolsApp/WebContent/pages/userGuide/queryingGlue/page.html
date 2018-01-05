@@ -1,0 +1,156 @@
+<h2>{{queryingGlueMenuTitle}}</h2>
+<p>
+GLUE allows powerful queries to be run on the stored data, using a few simple concepts and command patterns.
+These can be used simply to extract data subsets, to ask simple research questions, or as part of a more complex analysis. 
+To understand this section it is useful to be familiar with the <a href="#/coreSchema">core schema</a> and 
+<a href="#/schemaExtension">schema extension</a> sections. We will also use the <a href="#/exampleProject">example project</a>
+for illustration so it will be useful to have this installed.
+</p>
+<h3>GLUE "where clauses"</h3>
+<p>These are filter expressions which can be used within various GLUE commands with the same basic structure:
+<ol>
+	<li>Start from some particular set of <b>candidate objects</b> of the same type (i.e. in the same table)</li>
+	<li>(Optionally) select a subset of candidate objects</li>
+	<li>Perform some operation on the selected objects</li>
+</ol>
+GLUE "where" clauses are used in step 2 to select a subset of objects, based on a logical filter.
+A command with this structure is the <mode-command mode="root_project_alignment" command="amino-acid_frequency"></mode-command> command. 
+This command is executed in <a href="#/commandModes/commandMode/root_project_alignment">alignment mode</a>, so a specific <em>Alignment</em>
+object is the data context. </p>
+<p><div hljs language="json" no-escape>
+Mode path: /
+GLUE> project example
+OK
+Mode path: /project/example
+GLUE> alignment AL_MASTER
+OK
+Mode path: /project/example/alignment/AL_MASTER
+GLUE> amino-acid frequency -c -w "sequence.source.name = 'ncbi-hev-examples'" -r REF_MASTER_M73218 -f MT -l 56 66
++=======+===========+============+============+
+| codon | aminoAcid | numMembers | pctMembers |
++=======+===========+============+============+
+| 56    | V         | 10         | 100.00     |
+| 57    | F         | 10         | 100.00     |
+| 58    | R         | 10         | 100.00     |
+| 59    | P         | 10         | 100.00     |
+| 60    | E         | 10         | 100.00     |
+| 61    | V         | 10         | 100.00     |
+| 62    | L         | 7          | 70.00      |
+| 62    | F         | 3          | 30.00      |
+| 63    | W         | 10         | 100.00     |
+| 64    | S         | 1          | 10.00      |
+| 64    | N         | 9          | 90.00      |
+| 65    | H         | 10         | 100.00     |
+| 66    | P         | 10         | 100.00     |
++=======+===========+============+============+
+</div></p>
+<p>
+In this case the <em>Alignment</em> AL_MASTER is the data context, and the operation of the command is:
+<ol>
+	<li>The candidate objects consist of all <em>AlignmentMembers</em> which belong to <em>Alignment</em> AL_MASTER, or (since <code>-c</code> was used) one of its descendent 
+	<em>Alignments</em> in the alignment tree</li>
+	<li>Select a subset of these <em>AlignmentMembers</em> which pass the where clause filter specified by <code>-w "sequence.source.name = 'ncbi-hev-examples'"</code></li>
+	<li>Amongst the selected <em>AlignmentMembers</em>, compute the frequency of amino acid residues in the MT (Methyltransferase) genome region 
+	at ORF1 codon positions 56 to 66 inclusive (as specified by the <code>-r</code>, <code>-f</code> and <code>-l</code> options)</li>
+</ol>
+<p>All the objects identified in step 1 will be <b>tested in step 2 against the where clause</b>; those which pass this filter will then contribute 
+to the computation in step 3. </p>
+<p>The where clause string <code>sequence.source.name = 'ncbi-hev-examples'</code> is supplied in double quotes in order to allow 
+space and single quote characters to be used within the string. </p>
+<p>
+<div class="row">
+<div class="col-md-6">
+The first part of the where clause is <code>sequence.source.name</code>.
+This is a <b>property path</b>. Starting from the tested object, in this case an 
+<em>AlignmentMember</em>, the property path <b>traverses named relational links specified by the data schema</b> in order to arrive at a data value. 
+In this case the all links are specified in the <a href="#/coreSchema">core schema</a>; the relevant schema fragment is shown. However
+any or all of them could also be specified by a <a href="#/schemaExtension">schema extension</a>.
+<ul>
+	<li>Start from a candidate <em>AlignmentMember</em></li>
+	<li>Traverse the <code>sequence</code> relational link to the target <em>Sequence</em> object</li>
+	<li>Traverse the <code>source</code> relational link to the target <em>Source</em> object</li>
+	<li>Access the value for the field <code>name</code> on the <em>Source</em> object</li>
+</ul>
+</div>
+<div class="col-md-6">
+	<div align="center">
+		<a href="images/propertyPath.png" ><img width="100%" src="images/propertyPath.png" /></a>
+	</div>
+</div>
+</div>
+</p>
+<p>
+The where clause expression uses the binary operator '=' to compare the <em>Source</em> name with the literal string 'ncbi-hev-examples', so that only 
+<em>AlignmentMembers</em> based on <em>Sequences</em> belongs to <em>Source</em> <code>ncbi-hev-examples</code> are selected. It is also possible to use 
+parentheses and logical operators such as 'and', 'not' and 'or' to join sub clauses together.
+Here are some where clause patterns you could use in the example project:
+</p>
+<table class="table table-striped table-bordered">
+	<thead>
+		<th>Candidate object type</th>
+		<th>Where clause</th>
+		<th>Meaning</th>
+		<th>Note</th>
+		<th>Example command</th>
+	<colgroup>
+		<col span="1" style="width: 10%;">
+		<col span="1" style="width: 30%;">
+		<col span="1" style="width: 20%;">
+		<col span="1" style="width: 20%;">
+		<col span="1" style="width: 20%;">
+	</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><em>Sequence</em></td>
+			<td><code>gb_length >= 7200 and gb_length &lt; 7300</code></td>
+			<td>The field value for <code>gb_length</code> is at least 7200 and less than 7300</td>
+			<td>Numeric comparison operators may be used for INTEGER or DOUBLE fields such as <code>gb_length</code>. The 'and' logical operator
+				joins two sub-clauses together</td>
+			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
+		</tr>
+		<tr>
+			<td><em>m49_country</em></td>
+			<td><code>is_ldc = true or is_lldc = true</code></td>
+			<td>Country is classified as least developed country or landlocked developing country</td>
+			<td>BOOLEAN fields such as <code>is_ldc</code> and <code>is_lldc</code> are tested for value true</td>
+			<td><mode-command mode="root_project" command="list_custom-table-row"></mode-command></td>
+		</tr>
+		<tr>
+			<td><em>m49_country</em></td>
+			<td><code>m49_region.id = 'europe' and m49_sub_region.id != 'northern_europe'</code></td>
+			<td>Country region is Europe but sub-region is not Northern Europe</td>
+			<td>The != comparison operator is used for disequeality</td>
+			<td><mode-command mode="root_project" command="list_custom-table-row"></mode-command></td>
+		</tr>
+		<tr>
+			<td><em>Sequence</em></td>
+			<td><code>gb_create_date > #gluedate(01-Apr-2009)</code></td>
+			<td>First submitted to GenBank after 1st April 2009</td>
+			<td>The <code>#gluedate</code> syntax specifies a concrete date, then numeric comparison operators may be used</td>
+			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
+		</tr>
+		<tr>
+			<td><em>Sequence</em></td>
+			<td><code>m49_country.id in ('CHN', 'JPN')</code></td>
+			<td>Country of origin China or Japan</td>
+			<td>The <code>in</code> syntax allows comparison with any one of a fixed set of strings</td>
+			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
+		</tr>
+		<tr>
+			<td><em>Sequence</em></td>
+			<td><code>sequenceID like 'FJ%'</code></td>
+			<td>The <code>sequenceID</code> field value starts with FJ</td>
+			<td>The like operator my be used for String fields such as <code>sequenceID</code>. 
+			If so, the '%' character acts as a wildcard, matching any number of characters.</td>
+			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
+		</tr>
+	</tbody>
+</table>
+</p>
+
+For those interested in implementation details, where clause strings are 
+actually <a href="https://cayenne.apache.org/docs/3.1/cayenne-guide/expressions.html#path-expressions">Cayenne object path expressions</a>. 
+
+
+

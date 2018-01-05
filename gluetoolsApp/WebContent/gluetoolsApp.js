@@ -73,9 +73,9 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/managingAProject/page.html',
             controller: 'managingAProjectCtrl'
           }).
-      	when('/cayenneQueries', {
-            templateUrl: './pages/userGuide/cayenneQueries/page.html',
-            controller: 'cayenneQueriesCtrl'
+      	when('/queryingGlue', {
+            templateUrl: './pages/userGuide/queryingGlue/page.html',
+            controller: 'queryingGlueCtrl'
           }).
       	when('/modules', {
             templateUrl: './pages/userGuide/modules/page.html',
@@ -163,7 +163,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.invokingGlueFromTheShellMenuTitle = "Invoking GLUE as a Unix command"
     $scope.projectStructureMenuTitle = "Project structure";
     $scope.managingAProjectMenuTitle = "Managing a project";
-    $scope.cayenneQueriesMenuTitle = "Cayenne queries";
+    $scope.queryingGlueMenuTitle = "Querying the GLUE database";
     $scope.modulesMenuTitle = "Module system";
     $scope.scriptingLayerMenuTitle = "Scripting Layer";
     $scope.schemaExtensionsMenuTitle = "Schema Extensions";

@@ -1,17 +1,20 @@
 <h2>{{schemaExtensionsMenuTitle}}</h2>
 <p>
-The <a href="#/coreSchema">core GLUE schema</a> is present in every GLUE project and forms the basis for
-the standard, built-in functionality. However, there are often
-auxiliary data items which are important for the analysis of sequence data. These
-project-specific data objects may have highly structured relationships with each
-other and with objects in the core schema.
+The <a href="#/coreSchema">core GLUE schema</a> is focused on organising virus nucleotide data. 
+It is present in every GLUE project and forms the basis for
+the standard, built-in analysis functionality. However there are often
+auxiliary data items which are important for the analysis of sequence data. 
+These additional, project-specific data objects may have highly structured relationships with each
+other and with objects in the core schema. The addition of such data into a project can enhance
+the value of the nucleotide data.
 </p>
 <p>
-GLUE provides a powerful yet easy-to-use mechanism for extending the database
+Auxilliary data in GLUE is captured within <b>schema extensions</b>. GLUE provides a powerful 
+yet easy-to-use mechanism for extending the database
 schema on a per-project basis. New fields may be added to objects in the core
 schema. New custom tables (i.e. object types) may be added, with their own data
 fields. Finally, custom relational links may be added between any pair of tables 
-in the schema.
+in the schema. This is achieved using a small, simplified set of concepts and commands.
 </p>
 
 <p>The <a href="#/exampleProject">example GLUE project</a> contains a schema extension 
