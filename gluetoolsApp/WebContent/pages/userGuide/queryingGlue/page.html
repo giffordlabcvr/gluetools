@@ -9,7 +9,8 @@ for illustration so it will be useful to have this installed.
 
 <ol>
 	<li><a ng-click="scrollTo('whereClauses')">GLUE "where clauses"</a></li>
-	<li><a ng-click="scrollTo('propertyPaths')">Other uses of property paths</a></li>
+	<li><a ng-click="scrollTo('propertyPathsTableColumns')">Property paths to specify table columns</a></li>
+	<li><a ng-click="scrollTo('propertyPathsFreeMarkerTemplates')">Property paths in FreeMarker templates</a></li>
 </ol>
 
 
@@ -157,7 +158,7 @@ Here are some where clause patterns you could use in the example project:
 			<td><em>Sequence</em></td>
 			<td><code>sequenceID like 'FJ%'</code></td>
 			<td>The <code>sequenceID</code> field value starts with FJ</td>
-			<td>The like operator my be used for String fields such as <code>sequenceID</code>. 
+			<td>The <code>like</code> operator my be used for String fields such as <code>sequenceID</code>. 
 			If so, the '%' character acts as a wildcard, matching any number of characters.</td>
 			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
 		</tr>
@@ -165,7 +166,9 @@ Here are some where clause patterns you could use in the example project:
 			<td><em>ReferenceSequence</em></td>
 			<td><code>alignmentsWhereRefSequence.name != null</code></td>
 			<td><em>ReferenceSequence</em> is the constraining reference sequence of at least one <em>Alignment</em></td>
-			<td>The <code>alignmentsWhereRefSequence</code> link is specified in one of the <a href="#/coreSchema">core schema</a> diagrams</td>
+			<td>The <code>alignmentsWhereRefSequence</code> link is specified in one of the <a href="#/coreSchema">core schema</a> diagrams. 
+			When traversing from <em>ReferenceSequence</em> to <em>Alignment</em> the link allows multiple targets, so the where clause is
+			effectingly requiring that <b>there exists</b> at least one link target</td>
 			<td><mode-command mode="root_project" command="list_reference"></mode-command></td>
 		</tr>
 		<tr>
@@ -186,7 +189,7 @@ Here are some where clause patterns you could use in the example project:
 For those interested in implementation details, where clause strings are 
 actually <a href="https://cayenne.apache.org/docs/3.1/cayenne-guide/expressions.html#path-expressions">Apache Cayenne object path expressions</a>. 
 
-<h3 id="propertyPaths">Other uses of Property Paths</h3>
+<h3 id="propertyPathsTableColumns">Property paths to specify table columns</h3>
 <p>
 The property path concept introduced above has other uses in GLUE. One example use is to configure the 
 result columns of various "list ..." commands such as <mode-command mode="root_project" command="list_custom-table-row"></mode-command>, 
@@ -218,3 +221,19 @@ GLUE> list member --recursive --whereClause "sequence.source.name = 'ncbi-hev-ex
 +=====================+================+=======================+
 AlignmentMembers found: 10
 </div></p>
+<h3 id="propertyPathsFreeMarkerTemplates">Property paths in FreeMarker templates</h3>
+<p>Some GLUE modules use <a href="#/freemarkerTemplates">FreeMarker templates</a> to assemble text strings.
+In some cases the model for the template may be a GLUE data object. Property paths may then be 
+used to access the database from within the FreeMarker template. </p>
+
+<p>
+A simple example is <module-type name="fastaAlignmentExporter"></module-type>. The ID string for each alignment
+row is formed using a FreeMarker template. The default behaviour is to use the following FreeMarker template to create 
+an ID with three sections:
+</p>
+<pre>
+${alignment.name}.${sequence.source.name}.${sequence.sequenceID}
+</pre>
+Each of the three sections is created by evaluating a property path from the <em>AlignmentMember</em> object which contributed
+the alignment row. 
+ 

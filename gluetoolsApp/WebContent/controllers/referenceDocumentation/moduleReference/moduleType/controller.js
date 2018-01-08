@@ -10,7 +10,7 @@ gluetoolsApp.controller('moduleTypeCtrl',
 				$location.hash(id);
 				$anchorScroll();
 				$location.hash(old);
-				};
+			};
 
 			
 			glueWS.runGlueCommand("", {

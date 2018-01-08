@@ -313,7 +313,8 @@ The <em>Sequence</em> table is linked to the M.49 countries table by a link name
 <em>Sequence</em> table (this is the default <code>sourceLinkName</code> given the destination table). The M.49 countries 
 table links to the M.49 regions table by a link it references as <code>m49_region</code>. 
 So this allows us to use the property path <code>m49_country.m49_region.id</code> to traverse from each <em>Sequence</em> object, 
-first to its country of origin, and then to the region, and finally to the ID of that region.
+first to its country of origin, and then to the region, and finally to the ID of that region. Property paths are discussed
+in more detail in the section on <a href="#/queryingGlue">querying the GLUE database</a>.
 </p>
 <div class="row">
 <div class="col-md-6">
@@ -405,7 +406,7 @@ GLUE> list link-target m49_country id display_name
 CustomTableObject_example_m49_countrys found: 11</div></p>
 <p>
 A similar result can be produced using the <mode-command mode="root_project" command="list_custom-table-row"></mode-command> command with the appropriate 
-<code>--whereClause</code>:
+<code>--whereClause</code> (see the section on <a href="#/queryingGlue">querying the GLUE database</a> for more information on "where clauses"):
 </p>
 <p><div hljs language="json" no-escape>
 Mode path: /project/example

@@ -9,7 +9,7 @@ gluetoolsApp.controller('nonModeCommandsCtrl',
 				$location.hash(id);
 				$anchorScroll();
 				$location.hash(old);
-				};
+			};
 			
 			glueWS.runGlueCommand("", {
 				"webdocs": {

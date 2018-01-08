@@ -11,7 +11,7 @@ gluetoolsApp.controller('commandModeCtrl',
 				$location.hash(id);
 				$anchorScroll();
 				$location.hash(old);
-				};
+			};
 				
 			glueWS.runGlueCommand("", {
 				"webdocs": {

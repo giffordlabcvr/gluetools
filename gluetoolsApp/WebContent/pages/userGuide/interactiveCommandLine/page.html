@@ -188,11 +188,12 @@ GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" seq
 <p>
 <ul>
 	<li>Only <em>Sequence</em> objects within the <em>Source</em> named "ncbi-hev-examples" are listed.
-	<br/>This is specified using a "where clause": <code>-w "source.name = 'ncbi-hev-examples'"</code>
+	<br/>This is specified using a "where clause": <code>-w "source.name = 'ncbi-hev-examples'"</code>. 
 	<br/>Within the example project, this <em>Source</em> actually contains a set of 10 full-length Hepatitis E virus non-reference sequences from GenBank.</li>
 	<li>The sequences are listed in ascending order of their creation date on GenBank, using <code>-s gb_create_date</code></li>
 	<li>At the end of the command we added three properties <code>sequenceID</code>, <code>host_species</code> and <code>gb_create_date</code>
 	<br/>This specifies the columns of the result table. </li>
+	<li>For more information on how queries are constructed consult the <a href="#/queryingGlue">guide to querying the GLUE database</a>.
 </ul>
 </p>
 <p>

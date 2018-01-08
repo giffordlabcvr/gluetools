@@ -33,10 +33,12 @@ gluetoolsApp.controller('installationCtrl',
 	            $scope.mafftConfig = data;
 	        });
 
-		    $scope.scrollTo = function(id) {
-		        $location.hash(id);
-		        $anchorScroll();
-		     }
+			$scope.scrollTo = function(id) {
+				var old = $location.hash();
+				$location.hash(id);
+				$anchorScroll();
+				$location.hash(old);
+			};
 		    
 		    
 		} ]);
