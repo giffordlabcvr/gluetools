@@ -6,14 +6,21 @@ To understand this section it is useful to be familiar with the <a href="#/coreS
 <a href="#/schemaExtension">schema extension</a> sections. We will also use the <a href="#/exampleProject">example project</a>
 for illustration so it will be useful to have this installed.
 </p>
-<h3>GLUE "where clauses"</h3>
-<p>These are filter expressions which can be used within various GLUE commands with the same basic structure:
+
+<ol>
+	<li><a ng-click="scrollTo('whereClauses')">GLUE "where clauses"</a></li>
+	<li><a ng-click="scrollTo('propertyPaths')">Other uses of property paths</a></li>
+</ol>
+
+
+<h3 id="whereClauses">GLUE "where clauses"</h3>
+<p>Many GLUE commands have the same basic structure:
 <ol>
 	<li>Start from some particular set of <b>candidate objects</b> of the same type (i.e. in the same table)</li>
 	<li>(Optionally) select a subset of candidate objects</li>
 	<li>Perform some operation on the selected objects</li>
 </ol>
-GLUE "where" clauses are used in step 2 to select a subset of objects, based on a logical filter.
+GLUE "where" clauses are used in step 2 to select a subset of objects, using a logical filter.
 A command with this structure is the <mode-command mode="root_project_alignment" command="amino-acid_frequency"></mode-command> command. 
 This command is executed in <a href="#/commandModes/commandMode/root_project_alignment">alignment mode</a>, so a specific <em>Alignment</em>
 object is the data context. </p>
@@ -45,9 +52,9 @@ GLUE> amino-acid frequency -c -w "sequence.source.name = 'ncbi-hev-examples'" -r
 +=======+===========+============+============+
 </div></p>
 <p>
-In this case the <em>Alignment</em> AL_MASTER is the data context, and the operation of the command is:
+In this case the <em>Alignment</em> AL_MASTER is the data context, and the command operates as follows:
 <ol>
-	<li>The candidate objects consist of all <em>AlignmentMembers</em> which belong to <em>Alignment</em> AL_MASTER, or (since <code>-c</code> was used) one of its descendent 
+	<li>The candidate object set consists of all <em>AlignmentMembers</em> which belong to <em>Alignment</em> AL_MASTER, or (since <code>-c</code> was used) one of its descendent 
 	<em>Alignments</em> in the alignment tree</li>
 	<li>Select a subset of these <em>AlignmentMembers</em> which pass the where clause filter specified by <code>-w "sequence.source.name = 'ncbi-hev-examples'"</code></li>
 	<li>Amongst the selected <em>AlignmentMembers</em>, compute the frequency of amino acid residues in the MT (Methyltransferase) genome region 
@@ -61,12 +68,12 @@ space and single quote characters to be used within the string. </p>
 <div class="row">
 <div class="col-md-6">
 The first part of the where clause is <code>sequence.source.name</code>.
-This is a <b>property path</b>. Starting from the tested object, in this case an 
+This is a <b>property path</b>. Starting from the type of the candidate object, in this case 
 <em>AlignmentMember</em>, the property path <b>traverses named relational links specified by the data schema</b> in order to arrive at a data value. 
 In this case the all links are specified in the <a href="#/coreSchema">core schema</a>; the relevant schema fragment is shown. However
 any or all of them could also be specified by a <a href="#/schemaExtension">schema extension</a>.
 <ul>
-	<li>Start from a candidate <em>AlignmentMember</em></li>
+	<li>Start from the <em>AlignmentMember</em> candidate object type</li>
 	<li>Traverse the <code>sequence</code> relational link to the target <em>Sequence</em> object</li>
 	<li>Traverse the <code>source</code> relational link to the target <em>Source</em> object</li>
 	<li>Access the value for the field <code>name</code> on the <em>Source</em> object</li>
@@ -105,10 +112,18 @@ Here are some where clause patterns you could use in the example project:
 			<td><em>Sequence</em></td>
 			<td><code>gb_length >= 7200 and gb_length &lt; 7300</code></td>
 			<td>The field value for <code>gb_length</code> is at least 7200 and less than 7300</td>
-			<td>Numeric comparison operators may be used for INTEGER or DOUBLE fields such as <code>gb_length</code>. The 'and' logical operator
-				joins two sub-clauses together</td>
+			<td>Numeric comparison operators may be used for INTEGER fields such as <code>gb_length</code>, DOUBLE or DATE fields</td>
 			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
 		</tr>
+		
+		<tr>
+			<td><em>Sequence</em></td>
+			<td><code>gb_length between 7200 and 7300</code></td>
+			<td>The field value for <code>gb_length</code> is at least 7200 and at most 7300</td>
+			<td>The <code>between ... and</code> numeric comparison operator is for testing values within an inclusive range</td>
+			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
+		</tr>
+		
 		<tr>
 			<td><em>m49_country</em></td>
 			<td><code>is_ldc = true or is_lldc = true</code></td>
@@ -120,7 +135,8 @@ Here are some where clause patterns you could use in the example project:
 			<td><em>m49_country</em></td>
 			<td><code>m49_region.id = 'europe' and m49_sub_region.id != 'northern_europe'</code></td>
 			<td>Country region is Europe but sub-region is not Northern Europe</td>
-			<td>The != comparison operator is used for disequeality</td>
+			<td>The <code>!=</code> comparison operator, which may be applied to field values of any type, 
+			is used for disequality, and the <code>and</code> logical operator conjoins two sub-clauses</td>
 			<td><mode-command mode="root_project" command="list_custom-table-row"></mode-command></td>
 		</tr>
 		<tr>
@@ -145,12 +161,60 @@ Here are some where clause patterns you could use in the example project:
 			If so, the '%' character acts as a wildcard, matching any number of characters.</td>
 			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
 		</tr>
+		<tr>
+			<td><em>ReferenceSequence</em></td>
+			<td><code>alignmentsWhereRefSequence.name != null</code></td>
+			<td><em>ReferenceSequence</em> is the constraining reference sequence of at least one <em>Alignment</em></td>
+			<td>The <code>alignmentsWhereRefSequence</code> link is specified in one of the <a href="#/coreSchema">core schema</a> diagrams</td>
+			<td><mode-command mode="root_project" command="list_reference"></mode-command></td>
+		</tr>
+		<tr>
+			<td><em>Sequence</em></td>
+			<td><code>source.name = 'ncbi-hev-examples' and m49_country+.id = null</code></td>
+			<td>Within <em>Source</em> ncbi-hev-examples but M.49 country is undefined</td>
+			<td>The keyword <code>null</code> can be used to test for an undefined value in the database.
+			In this case we must also use the outer join operator <code>+</code> on link 
+			<code>m49_country</code> since by default  
+			sub-clauses which traverse to a non-existent link target will return false. The operator
+			allows such sub-clauses to evaluate to null</td>
+			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
+		</tr>
 	</tbody>
 </table>
 </p>
 
 For those interested in implementation details, where clause strings are 
-actually <a href="https://cayenne.apache.org/docs/3.1/cayenne-guide/expressions.html#path-expressions">Cayenne object path expressions</a>. 
+actually <a href="https://cayenne.apache.org/docs/3.1/cayenne-guide/expressions.html#path-expressions">Apache Cayenne object path expressions</a>. 
 
-
-
+<h3 id="propertyPaths">Other uses of Property Paths</h3>
+<p>
+The property path concept introduced above has other uses in GLUE. One example use is to configure the 
+result columns of various "list ..." commands such as <mode-command mode="root_project" command="list_custom-table-row"></mode-command>, 
+<mode-command mode="root_project" command="list_sequence"></mode-command> or <mode-command mode="root_project_alignment" command="list_member"></mode-command>. 
+Such commands output a table where each row is an instance of a specific given object type. Each such command has a default set of columns, for example 
+<mode-command mode="root_project_alignment" command="list_member"></mode-command> will give <code>alignment.name</code>, 
+<code>sequence.source.name</code> and <code>sequence.sequenceID</code>. Note that these column headings are themselves property paths starting at the 
+<em>AlignmentMember</em> object type. When invoking
+this command, you can supply your own property paths, overriding the columns in the result table, for example:
+</p>
+<p><div hljs language="json" no-escape>
+GLUE> alignment AL_MASTER
+OK
+Mode path: /project/example/alignment/AL_MASTER
+GLUE> list member --recursive --whereClause "sequence.source.name = 'ncbi-hev-examples'" sequence.sequenceID alignment.name sequence.host_species
++=====================+================+=======================+
+| sequence.sequenceID | alignment.name | sequence.host_species |
++=====================+================+=======================+
+| AB481226            | AL_3e          | -                     |
+| AB591734            | AL_3a          | Herpestes javanicus   |
+| AF444003            | AL_1b          | -                     |
+| FJ705359            | AL_3c          | Sus scrofa            |
+| FJ763142            | AL_4a          | Homo sapiens          |
+| FJ998015            | AL_3e          | Sus scrofa            |
+| JF443717            | AL_1c          | Homo sapiens          |
+| JQ013791            | AL_3ra         | Oryctolagus cuniculus |
+| JX855794            | AL_4b          | Sus scrofa            |
+| KP294371            | AL_3i          | Sus scrofa            |
++=====================+================+=======================+
+AlignmentMembers found: 10
+</div></p>
