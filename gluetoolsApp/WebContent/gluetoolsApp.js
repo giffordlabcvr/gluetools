@@ -29,9 +29,9 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/design/coreSchema/page.html',
             controller: 'coreSchemaCtrl'
           }).
-      	when('/alignmentTree', {
-            templateUrl: './pages/design/alignmentTree/page.html',
-            controller: 'alignmentTreeCtrl'
+      	when('/alignments', {
+            templateUrl: './pages/design/alignments/page.html',
+            controller: 'alignmentsCtrl'
           }).
     	when('/commandLayer', {
             templateUrl: './pages/design/commandLayer/page.html',
