@@ -48,6 +48,7 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 
 		setCmdGroup(new CommandGroup("analysis", "Commands performing basic analysis based on the stored homologies", 51, false));
 		registerCommandClass(AlignmentAminoAcidFrequencyCommand.class);
+		registerCommandClass(AlignmentAminoAcidStringsCommand.class);
 		registerCommandClass(AlignmentVariationFrequencyCommand.class);
 		registerCommandClass(AlignmentVariationMemberScanCommand.class);
 		registerCommandClass(AlignmentShowStatisticsCommand.class);
