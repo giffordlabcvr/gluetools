@@ -136,7 +136,7 @@ public enum IsoCountry {
 	LI("LIE", "Liechtenstein", "LI", "438"),
 	LT("LTU", "Lithuania", "LT", "440"),
 	LU("LUX", "Luxembourg", "LU", "442"),
-	MK("MKD", "Republic of Macedonia", "MK", "807"),
+	MK("MKD", "Macedonia", "Republic of Macedonia", "MK", "807", "Macedonia", "Republic of Macedonia"),
 	MG("MDG", "Madagascar", "MG", "450"),
 	MW("MWI", "Malawi", "MW", "454"),
 	MY("MYS", "Malaysia", "MY", "458"),
