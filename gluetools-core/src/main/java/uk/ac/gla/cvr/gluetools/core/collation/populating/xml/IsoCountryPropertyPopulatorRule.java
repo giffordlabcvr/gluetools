@@ -1,9 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
+import java.util.List;
+
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.IsoCountryUtils;
 import uk.ac.gla.cvr.gluetools.utils.IsoCountryUtils.CodeStyle;
@@ -18,7 +22,11 @@ public class IsoCountryPropertyPopulatorRule extends BaseXmlPropertyPopulatorRul
 		super.configure(pluginConfigContext, configElem);
 		this.codeStyle = PluginUtils.configureEnum(CodeStyle.class, configElem, "@codeStyle", true);
 		populateProperty(pluginConfigContext, configElem);
-		setValueConverters(IsoCountryUtils.isoCountryValueConverters(codeStyle));
+		
+		List<RegexExtractorFormatter> valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
+				PluginUtils.findConfigElements(configElem, "valueConverter"));
+		valueConverters.addAll(IsoCountryUtils.isoCountryValueConverters(codeStyle));
+		setValueConverters(valueConverters);
 		setMainExtractor(null);
 	}
 
