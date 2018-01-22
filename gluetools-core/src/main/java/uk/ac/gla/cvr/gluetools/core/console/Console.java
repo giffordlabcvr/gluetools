@@ -1,3 +1,28 @@
+/**
+ *    GLUE: A flexible system for virus sequence data
+ *    Copyright (C) 2018 The University of Glasgow
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Affero General Public License as published
+ *    by the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Affero General Public License for more details.
+
+ *    You should have received a copy of the GNU Affero General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *    Contact details:
+ *    MRC-University of Glasgow Centre for Virus Research
+ *    Sir Michael Stoker Building, Garscube Campus, 464 Bearsden Road, 
+ *    Glasgow G61 1QH, United Kingdom
+ *    
+ *    Josh Singer: josh.singer@glasgow.ac.uk
+ *    Rob Gifford: robert.gifford@glasgow.ac.uk
+*/
 package uk.ac.gla.cvr.gluetools.core.console;
 
 import java.io.File;
@@ -361,7 +386,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 		console.init();
 		try {
 			if(console.version) {
-				console.output(console.versionLine());
+				console.output(console.bannerLines());
 			} else {
 				GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
 				gluetoolsEngine.dbWarning();
@@ -470,7 +495,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 	}
 
 	private void interactiveSession() {
-		output(versionLine());
+		output(bannerLines());
 		runGlueRC();
 		while(!isFinished()) {
 			handleInteractiveLine();
@@ -720,10 +745,14 @@ public class Console implements InteractiveCommandResultRenderingContext
 	}
 
 
-	private String versionLine() {
+	private String bannerLines() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("GLUE version");
-		buffer.append(" ").append(GluetoolsEngine.getInstance().getGluecoreProperties().getProperty("version", "unknown"));
+		buffer.append("GLUE Version ").append(GluetoolsEngine.getInstance().getGluecoreProperties().getProperty("version", "unknown")).append("\n");
+		buffer.append("Copyright (C) 2018 The University of Glasgow\n");	
+		buffer.append(
+		"This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n"+
+		"are welcome to redistribute it under certain conditions. For details see\n"+
+		"GNU Affero General Public License v3: http://www.gnu.org/licenses/\n");
 		return buffer.toString();
 	}
 	
