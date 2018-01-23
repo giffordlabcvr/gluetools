@@ -1,26 +1,34 @@
 <h1>{{aboutMenuTitle}}</h1>
 
-<h3>Who develops GLUE?</h3>
+<ol>
+	<li><a ng-click="scrollTo('whoDevelopsGlue')">Who develops GLUE?</a></li>
+	<li><a ng-click="scrollTo('license')">What license does GLUE have?</a></li>
+	<li><a ng-click="scrollTo('sourceCode')">How can I get the source code for GLUE?</a></li>
+	<li><a ng-click="scrollTo('citeGlue')">How can I cite GLUE?</a></li>
+	<li><a ng-click="scrollTo('softwareGlueUses')">What software does GLUE itself use?</a></li>
+</ol>
+
+<h3 id="whoDevelopsGlue">Who develops GLUE?</h3>
 
 GLUE is a collaboration between virologists and software engineers working at the 
 <a target="_blank" href="http://www.gla.ac.uk/researchinstitutes/iii/cvr/">MRC-University of Glasgow Centre for Virus Research</a>.
 The copyright for GLUE is held by The University of Glasgow.
 
-<h3>What license does GLUE have?</h3>
+<h3 id="license">What license does GLUE have?</h3>
 
 GLUE is free, open source software, and you
 are welcome to use, modify and redistribute it under certain conditions set out in its license.
 GLUE is licensed under the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU Affero General Public License version 3.0</a>.
 
-<h3>How can I get the source code for GLUE?</h3>
+<h3 id="sourceCode">How can I get the source code for GLUE?</h3>
 
 A public github repository will be made available soon.
 
-<h3>How can I cite GLUE?</h3>
+<h3 id="citeGlue">How can I cite GLUE?</h3>
 
 A preprint will be made available soon.
 
-<h3>What software does GLUE itself use?</h3>
+<h3 id="softwareGlueUses">What software does GLUE itself use?</h3>
 <p>
 GLUE uses many different pieces of software provided by other groups. The "Runtime dependencies" are software pieces which you
 must install yourself before running GLUE. Other items are bundled with the GLUE engine.
@@ -74,6 +82,12 @@ must install yourself before running GLUE. Other items are bundled with the GLUE
 				<td><a href="https://sco.h-its.org/exelixis/web/software/raxml/index.html">https://sco.h-its.org/exelixis/web/software/raxml/index.html</a></td>
 			</tr>
 
+			<tr>
+				<td>underscore.js</td>
+				<td>1.8.3</td>
+				<td>JavaScript library, bundled with GLUE engine</td>
+				<td><a href="http://underscorejs.org/">http://underscorejs.org/</a></td>
+			</tr>
 
 			<tr>
 				<td>Apache HttpComponents</td>

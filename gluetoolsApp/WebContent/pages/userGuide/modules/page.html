@@ -1,3 +1,269 @@
 <h2>{{modulesMenuTitle}}</h2>
 
-Under construction
+<ol>
+	<li><a ng-click="scrollTo('whatAreModules')">What are modules?</a></li>
+	<li><a ng-click="scrollTo('creatingAModule')">Creating, querying and
+			deleting modules</a></li>
+	<li><a ng-click="scrollTo('moduleCommandMode')">Module command
+			mode</a></li>
+	<li><a ng-click="scrollTo('managingModuleConfiguration')">Managing
+			module configuration</a></li>
+	<li><a ng-click="scrollTo('associatedResources')">Associated
+			resources</a></li>
+</ol>
+
+<h3 id="whatAreModules">What are modules?</h3>
+<p>
+	The GLUE <b>module system</b> attempts to strike a balance between
+	built-in functionality provided by the GLUE engine and functionality
+	which is configured specifically for an individual GLUE project.
+</p>
+<p>
+	GLUE's <a href="#/moduleReference" target="_blank">module types</a>
+	contain a significant part of the functional value of GLUE. Across all
+	module types, different kinds of operations can be performed. For
+	example, reading and processing data within a project, from the file
+	system or from a web request, creating new data objects within the
+	project, generating reports in tabular or other formats, or writing
+	data to the file system.
+</p>
+
+<p>
+	In order to actually use the functionality, a <em>Module</em> must be
+	first created within a project. <em>Modules</em> are themselves data objects, so in
+	some ways similar to <em>Alignments</em> or <em>Sequences</em>. They
+	are stored in the database and there are commands to create, update,
+	query and delete them.
+</p>
+<p>
+	Each module has a name and is of a specific module type. A <em>Module</em>
+	object also contains an XML <b>configuration document</b>. XML is a text
+	format for structured data (if XML is unfamiliar to you, try reading <a
+		href="https://www.w3schools.com/xml/xml_whatis.asp" target="_blank">this
+		basic introduction</a>). The <em>Module</em>, including its configuration
+	document, is stored in the GLUE database like any other project data
+	object. The document configures the operation of the functionality of
+	the <em>Module</em>, for example providing numeric paramater settings
+	or rules for the <em>Module</em> to work with. In this way, built-in
+	GLUE functionality may be used in slightly different ways from one
+	project to another, or indeed within one project.
+</p>
+<h3 id="creatingAModule">Creating, querying and deleting modules</h3>
+
+<p>
+	Modules are created using the
+	<mode-command mode="root_project" command="create_module"></mode-command>
+	command. Conventionally, there is a step in <a
+		href="#/projectStructure" target="_blank">the project build</a> which
+	will create all the modules required in the project. For simple cases,
+	a <em>Module</em> can be created simply by specifying the module type:
+</p>
+
+<p>
+<div hljs language="json" no-escape><pre>Mode path: /
+GLUE> project example 
+OK
+Mode path: /project/example
+GLUE> create module --moduleType fastaUtility
+OK
+(1 Module created)</pre>
+</div>
+</p>
+<p>
+	More commonly, a module is created by specifying an XML file containing
+	the configuration document for the module. For example, within the <a
+		href="exampleProject/glue/exampleModules.glue" target="_blank">exampleModules.glue</a>
+	file you will find this line:
+</p>
+<p>
+<div hljs language="json" no-escape><pre>create module --fileName modules/exampleRaxmlPhylogenyGenerator.xml</pre>
+</div>
+</p>
+<p>
+	This references a file containing the XML configuration document shown
+	below. Note that the root element name of the configuration document
+	specifies the module type, in this case
+	<code>raxmlPhylogenyGenerator</code>
+	. A couple of settings are configured, setting the substitution model
+	to
+	<code>GTRGAMMAI</code>
+	and the number of bootstrap replicates to 1000.
+</p>
+<p>
+<div hljs source="raxmlPhylogenyGenerator"></div>
+</p>
+
+
+<p>
+	Each module has a name, which is its unique identifier within a
+	project. A project may contain multiple modules of the same type, with
+	different names. You can optionally specify a name when executing the
+	<mode-command mode="root_project" command="create_module"></mode-command>
+	command, if you do not, the command will form a name based on the
+	module type or the XML file's name. You can use the
+	<mode-command mode="root_project" command="list_module"></mode-command>
+	command to list the names and types of project modules. You can delete
+	modules using the
+	<mode-command mode="root_project" command="delete_module"></mode-command>
+	command, typically specifying the module to delete by name.
+</p>
+
+<h3 id="moduleCommandMode">Module command mode</h3>
+
+<p>
+	Similar to other GLUE data objects, when a <em>Module</em> is created,
+	a command mode associated with it becomes available. You can navigate
+	from project mode to the module's command mode using the
+	<mode-command mode="root_project" command="module"></mode-command>
+	command, supplying the module's name.
+</p>
+
+<p>Within module command mode, there is a set of generic commands
+	available to manage the configuration document of the module.
+	Additionally, many (but not all) module types provide their specific
+	functionality in the form of commands within their command mode. So in
+	these cases there are module-type-specific commands available within
+	the command mode, as well as the generic commands.</p>
+<p>
+	For example, in the example project there is a module
+	'exampleGenbankXmlPopulator' of type
+	<code>genbankXmlPopulator</code>
+	. If you navigate into the command mode for this module, you will see
+	that the
+	<module-command module="genbankXmlPopulator" command="populate"></module-command>
+	command is available. This command is specific to the
+	<code>genbankXmlPopulator</code>
+	module type.
+</p>
+<p>
+	Some functionality within module types is not provided by module mode
+	commands. Instead the module name is supplied to some other GLUE module
+	or command and the functionality is then used internally. An example
+	would be the
+	<module-type name="freemarkerObjectRenderer"></module-type>
+	module type: it does not provide any module-type-specific commands,
+	instead the name of a module of this type can be passed for example to
+	the
+	<mode-command mode="root_project_sequence" command="render-object"></mode-command>
+	command, in <em>Sequence</em> mode.
+</p>
+<h3 id="managingModuleConfiguration">Managing module configuration</h3>
+
+<p>Part of developing GLUE projects is concerned with developing
+	module configuration. As a GLUE project developer, you often want to
+	make a small change to a module configuration document, see the effect
+	of the change on the module's operation, make another small change, and so on. So managing module
+	configuration is an important part of this process.</p>
+<p>
+	You can use the
+	<mode-command mode="root_project_module" command="show_configuration"></mode-command>
+	command in module mode to display the <em>Module</em>'s current XML
+	configuration document on the console. If you created the module by
+	loading its configuration from a file, this document will be the same
+	as the document in the file. However even if you created the document
+	by simply specifying the module type, there is still a (simple)
+	configuration document associated with it, as this example shows:
+</p>
+<p>
+<div hljs language="json" no-escape><pre>GLUE> create module --moduleType fastaProteinAlignmentExporter exporter1
+OK
+(1 Module created)
+Mode path: /project/example
+GLUE> module exporter1
+OK
+Mode path: /project/example/module/exporter1
+GLUE> show configuration 
+&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;fastaProteinAlignmentExporter/&gt;
+
+Mode path: /project/example/module/exporter1
+GLUE></pre>
+</div>
+</p>
+<p>
+	As long as a module exists, you can reload its configuration from a
+	file using the
+	<mode-command mode="root_project_module" command="load_configuration"></mode-command>
+	module mode command. So, one way to develop a <em>Module</em>'s
+	configuration is to have its XML configuration document file open in a
+	text editor, make a change to this file, then reload it into GLUE and
+	test the effect of the change, e.g. by running a command.
+</p>
+<p>
+	To streamline this process a little, you can manage certain simple
+	properties within a <em>Module</em> 's configuration document using
+	the
+	<mode-command mode="root_project_module" command="set_property"></mode-command>
+	,
+	<mode-command mode="root_project_module" command="unset_property"></mode-command>
+	and
+	<mode-command mode="root_project_module" command="show_property"></mode-command>
+	module mode commands. For example:
+</p>
+
+<div hljs language="json" no-escape><pre>Mode path: /project/example/module/exporter1
+GLUE> set property idTemplate "${alignment.displayName}/${sequence.sequenceID}"
+OK
+Mode path: /project/example/module/exporter1
+GLUE> show configuration 
+&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;fastaProteinAlignmentExporter&gt;
+    &lt;idTemplate&gt;${alignment.displayName}/${sequence.sequenceID}&lt;/idTemplate&gt;
+&lt;/fastaProteinAlignmentExporter&gt;
+
+Mode path: /project/example/module/exporter1
+GLUE> show property idTemplate 
+moduleShowPropertyResult
+  propertyPath: idTemplate
+  propertyValue: ${alignment.displayName}/${sequence.sequenceID}
+Mode path: /project/example/module/exporter1
+GLUE> unset property idTemplate 
+OK
+Mode path: /project/example/module/exporter1
+GLUE> show configuration 
+&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;fastaProteinAlignmentExporter/&gt;
+
+Mode path: /project/example/module/exporter1
+GLUE></pre>
+</div>
+
+<p>
+	Notice that the
+	<code>idTemplate</code>
+	XML element, which is a child of the
+	<code>fastaProteinAlignmentExporter</code>
+	root XML element, is updated directly within the GLUE database using
+	the
+	<mode-command mode="root_project_module" command="set_property"></mode-command>
+	and
+	<mode-command mode="root_project_module" command="unset_property"></mode-command>
+	commands. If you have modified <em>Module</em> configuration in this
+	way, you may save the XML document back to the file system using the
+	<mode-command mode="root_project_module" command="save_configuration"></mode-command>
+	command.
+</p>
+
+<h3 id="associatedResources">Associated resources</h3>
+
+<p>
+	Certain module types require <b>associated resources</b> . These are
+	additional files, outside the XML connfiguration document but
+	referenced from within it. An example is the
+	<module-type name="ecmaFunctionInvoker"></module-type>
+	module type; its configuration document references one or more
+	JavaScript program files. Another example is the
+	<module-type name="freemarkerObjectRenderer"></module-type>
+	module type which uses a FreeMarker template stored in a separate file.
+</p>
+<p>
+	For these module types, the associated resource is stored in the <em>Module</em>
+	data object along with the XML configuration document. To ensure this
+	is set up correctly, you need to use the
+	<code>--loadResources</code>
+	flag for these module types, both when creating the module from a file,
+	or when reloading its configuration using the
+	<mode-command mode="root_project_module" command="load_configuration"></mode-command>
+	command.
+</p>
+
