@@ -47,6 +47,7 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(MemberAddSegmentCommand.class);
 		registerCommandClass(MemberRemoveSegmentCommand.class);
 		registerCommandClass(MemberListSegmentCommand.class);
+		registerCommandClass(MemberShowFeatureSegmentsCommand.class);
 		
 		setCmdGroup(new CommandGroup("analysis", "Commands performing basic analysis based on the stored homologies", 50, false));
 		registerCommandClass(MemberShowStatisticsCommand.class);

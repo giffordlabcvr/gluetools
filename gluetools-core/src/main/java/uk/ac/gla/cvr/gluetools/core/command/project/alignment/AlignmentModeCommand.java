@@ -187,6 +187,44 @@ public abstract class AlignmentModeCommand<R extends CommandResult> extends Comm
 	}
 
 
+	public static abstract class FeatureOfRelatedRefCompleter extends AdvancedCmdCompleter {
+		public FeatureOfRelatedRefCompleter() {
+			super();
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					InsideAlignmentMode insideAlignmentMode = (InsideAlignmentMode) cmdContext.peekCommandMode();
+					String almtName = insideAlignmentMode.getAlignmentName();
+					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
+					return alignment.getRelatedRefs().stream()
+							.map(ancCR -> new CompletionSuggestion(ancCR.getName(), true))
+							.collect(Collectors.toList());
+				}
+			});
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String referenceName = (String) bindings.get("relRefName");
+					ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
+					if(referenceSequence != null) {
+						return referenceSequence.getFeatureLocations().stream()
+								.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
+		}
+	}
+
+	
+	
 	
 	
 }
