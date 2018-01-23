@@ -125,9 +125,13 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/referenceDocumentation/moduleReference/page.html',
             controller: 'moduleReferenceCtrl'
           }).
-    	when('/download', {
+      	when('/download', {
             templateUrl: './pages/download/page.html',
             controller: 'downloadCtrl'
+          }).
+      	when('/about', {
+            templateUrl: './pages/about/page.html',
+            controller: 'aboutCtrl'
           }).
         when('/', {
             redirectTo: '/home'
@@ -174,8 +178,8 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.nonModeCommandsMenuTitle = "Non-mode-specific command reference"
   	$scope.moduleReferenceMenuTitle = "Module type reference";
 
-    
   	$scope.downloadMenuTitle = "Download GLUE";
+  	$scope.aboutMenuTitle = "About GLUE";
 
 } ]);
 

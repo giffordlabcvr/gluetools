@@ -63,10 +63,20 @@ jar {
         attributes 'Implementation-Title': 'GLUE tools',  
         	       'Implementation-Version': version,
                    'Main-Class': 'uk.ac.gla.cvr.gluetools.core.console.Console'
-
     }
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    
+    exclude 'META-INF/*.RSA', 
+    	'META-INF/*.SF',
+    	'META-INF/*.DSA',
+    	'META-INF/LICENSE.txt',
+    	'META-INF/LICENSE',
+    	'META-INF/DISCLAIMER',
+    	'META-INF/DEPENDENCIES',
+    	'META-INF/NOTICE.txt',
+    	'META-INF/NOTICE'
+    metaInf { from 'src/main/java/META-INF/LICENSE.txt', 'src/main/java/META-INF/NOTICE.txt' }
+
 }
 
 task deployGlueConfigOmega {
@@ -445,6 +455,4 @@ task initGlueAWSWebServerTemp {
 	}
   }
 }
-
-
 
