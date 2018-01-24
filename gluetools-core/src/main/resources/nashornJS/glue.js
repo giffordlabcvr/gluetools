@@ -83,7 +83,7 @@ var glue = {
 		log: function(level, message, object) {
 			var logMessage = message;
 			if(object) {
-				logMessage = logMessage+"\n"+JSON.stringify(object, null, 2); 
+				logMessage = logMessage+"\n"+JSON.stringify(object, null, 2);
 			}
 			try {
 				glueAux.log(level, logMessage);
