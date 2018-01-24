@@ -52,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
 import uk.ac.gla.cvr.gluetools.core.fastaUtility.FastaUtility;
 import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GbSubmisisonGenerator;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
 import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
@@ -101,6 +102,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		setModulePluginGroup(new ModulePluginGroup("ncbi", "Module types for working with NCBI / GenBank sequence data", 82));
 		registerPluginClass(NcbiImporter.class);
 		registerPluginClass(GenbankXmlPopulator.class);
+		registerPluginClass(GbSubmisisonGenerator.class);
 
 		setModulePluginGroup(new ModulePluginGroup("aligners", "Module types for computing alignments", 83));
 		registerPluginClass(BlastAligner.class);
