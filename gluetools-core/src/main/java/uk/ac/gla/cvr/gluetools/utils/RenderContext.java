@@ -31,4 +31,8 @@ public interface RenderContext {
 		return 2;
 	}
 
+	public default String renderNull() {
+		return "-";
+	}
+	
 }

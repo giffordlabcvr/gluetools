@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.AminoAcidStringFrequency;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
 public class AlignmentAminoAcidStringsResult extends BaseTableResult<AminoAcidStringFrequency> {

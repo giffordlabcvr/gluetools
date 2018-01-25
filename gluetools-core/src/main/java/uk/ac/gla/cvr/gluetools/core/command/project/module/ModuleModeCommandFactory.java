@@ -31,6 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroupRegistry;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleCreatePropertyGroupCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.property.ModuleDeletePropertyGroupCommand;
@@ -68,14 +69,18 @@ public class ModuleModeCommandFactory extends BaseCommandFactory {
 	protected void refreshCommandTree(CommandContext cmdContext) {
 		if(moduleName != null) {
 			Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
+			CommandGroupRegistry commandGroupRegistry = module.getCommandGroupRegistry(cmdContext);
 			@SuppressWarnings("rawtypes")
 			List<Class<? extends Command>> providedCmdClasses = module.getProvidedCommandClasses(cmdContext);
 			if(cmdClasses == null || !providedCmdClasses.equals(cmdClasses)) {
 				cmdClasses = providedCmdClasses;
 				resetCommandTree();
 				populateCommandTree();
-				cmdClasses.forEach(cmdClass -> 
-				registerCommandClass((Class<? extends Command>) cmdClass));
+				cmdClasses.forEach(cmdClass -> {
+					setCmdGroup(commandGroupRegistry.getCmdGroupForCmdClass(cmdClass));
+					registerCommandClass((Class<? extends Command>) cmdClass);
+				});
+				setCmdGroup(null);
 			}
 
 		}

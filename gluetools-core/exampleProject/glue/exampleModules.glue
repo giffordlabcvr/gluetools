@@ -44,6 +44,6 @@
   create module --fileName modules/ncbiHevExamplesImporter.xml
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml
-  
+  create module --fileName modules/exampleGbSubmissionGenerator.xml  
   
   

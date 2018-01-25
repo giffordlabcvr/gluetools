@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<gbSubmisisonGenerator>
+	<sourceInfoProviders>
+		<freemarkerSourceInfoProvider>
+			<sourceModifier>organism</sourceModifier>
+			<template>Hepatitis E virus</template>
+		</freemarkerSourceInfoProvider>
+		<freemarkerSourceInfoProvider>
+			<sourceModifier>mol_type</sourceModifier>
+			<template>viral cRNA</template>
+		</freemarkerSourceInfoProvider>
+		<seqPropertySourceInfoProvider>
+			<sourceModifier>country</sourceModifier>
+			<propertyPath>m49_country.display_name</propertyPath>
+		</seqPropertySourceInfoProvider>
+	</sourceInfoProviders>
+</gbSubmisisonGenerator>

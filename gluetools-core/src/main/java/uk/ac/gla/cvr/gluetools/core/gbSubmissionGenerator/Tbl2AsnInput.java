@@ -25,17 +25,47 @@
 */
 package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 
+import java.util.Map;
+
 import org.biojava.nbio.core.sequence.DNASequence;
 
 public class Tbl2AsnInput {
 
+	private String sourceName;
+	private String sequenceID;
 	private String id;
 	private DNASequence fastaSequence;
+	private Map<String, String> sourceInfoMap;
 	
-	public Tbl2AsnInput(String id, DNASequence fastaSequence) {
+	public Tbl2AsnInput(String sourceName, String sequenceID, String id, DNASequence fastaSequence, Map<String, String> sourceInfoMap) {
 		super();
+		this.sourceName = sourceName;
+		this.sequenceID = sequenceID;
 		this.id = id;
 		this.fastaSequence = fastaSequence;
+		this.sourceInfoMap = sourceInfoMap;
 	}
+
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	public String getSequenceID() {
+		return sequenceID;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public DNASequence getFastaSequence() {
+		return fastaSequence;
+	}
+
+	public Map<String, String> getSourceInfoMap() {
+		return sourceInfoMap;
+	}
+	
+	
 	
 }

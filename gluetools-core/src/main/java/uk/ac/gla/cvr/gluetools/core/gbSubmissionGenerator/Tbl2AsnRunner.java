@@ -25,26 +25,31 @@
 */
 package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.Tbl2AsnException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class Tbl2AsnRunner implements Plugin {
@@ -59,13 +64,12 @@ public class Tbl2AsnRunner implements Plugin {
 	}
 
 	
-	public List<Tbl2AsnResult> generateSqnFiles(CommandContext cmdContext, List<Tbl2AsnInput> inputs, byte[] templateBytes, File dataDirFile) {
+	public List<Tbl2AsnResult> generateSqnFiles(CommandContext cmdContext, List<String> sourceColumnHeaders, 
+			List<Tbl2AsnInput> inputs, byte[] templateBytes, File dataDirFile, boolean sourceInfo) {
 		
 		String tbl2asnTempDir = getTbl2AsnTempDir(cmdContext);
 		String tbl2asnExecutable = getTbl2AsnExecutable(cmdContext);
 
-		
-		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(tbl2asnTempDir, uuid);
 		try {
@@ -77,11 +81,34 @@ public class Tbl2AsnRunner implements Plugin {
 			File templateFile = new File(tempDir, "template.sbt");
 			writeFile(templateFile, templateBytes);
 			
+			for(Tbl2AsnInput input: inputs) {
+				byte[] fastaBytes = FastaUtils.seqIdCompoundsPairToFasta(input.getId(), 
+						input.getFastaSequence().getSequenceAsString(), LineFeedStyle.forOS()).getBytes();
+				writeFile(new File(tempDir, input.getId()+".fsa"), fastaBytes);
+				
+				if(sourceInfo) {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					OutputStreamCommandResultRenderingContext renderingContext = 
+							new OutputStreamCommandResultRenderingContext(baos, ResultOutputFormat.TAB, LineFeedStyle.forOS(), true);
+					SourceInfoTableResult sourceInfoTableResult = new SourceInfoTableResult(sourceColumnHeaders, Arrays.asList(input.getSourceInfoMap()));
+					sourceInfoTableResult.renderResult(renderingContext);
+					writeFile(new File(tempDir, input.getId()+".src"), baos.toByteArray());
+				}
+				
+			}
+			
 			List<String> commandWords = new ArrayList<String>();
 			commandWords.add(tbl2asnExecutable);
 			// input directory
 			commandWords.add("-p");
 			commandWords.add(normalisedFilePath(tempDir));
+
+			/* 
+			// batching
+			commandWords.add("-a");
+			commandWords.add("s");
+			*/
+			
 			// template file
 			commandWords.add("-t");
 			commandWords.add(normalisedFilePath(templateFile));
@@ -90,18 +117,29 @@ public class Tbl2AsnRunner implements Plugin {
 
 			ProcessUtils.checkExitCode(commandWords, tbl2asnProcessResult);
 
-			return resultObjectFromTempDir(tempDir, runSpecifier);
+			return resultListFromTempDir(inputs, tempDir);
 		} finally {
 			ProcessUtils.cleanUpTempDir(dataDirFile, tempDir);
 		}
-
-
-		
-		
-		return null;
 	}
 	
 	
+	private List<Tbl2AsnResult> resultListFromTempDir(List<Tbl2AsnInput> inputs, File tempDir) {
+		List<Tbl2AsnResult> results = new ArrayList<Tbl2AsnResult>();
+		
+		for(Tbl2AsnInput input: inputs) {
+			String id = input.getId();
+			File sqnFile = new File(tempDir, id+".sqn");
+			if(!sqnFile.exists()) {
+				throw new Tbl2AsnException(Code.TBL2ASN_FILE_EXCEPTION, "Expected file was not generated: "+id+".sqn");
+			}
+			byte[] sqnFileContent = readFile(sqnFile);
+			results.add(new Tbl2AsnResult(input.getSourceName(), input.getSequenceID(), id, sqnFileContent));
+		}
+		return results;
+	}
+
+
 	private String getTbl2AsnExecutable(CommandContext cmdContext) {
 		String tbl2asnExecutable = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(TBL2ASN_EXECUTABLE_PROPERTY);
 		if(tbl2asnExecutable == null) { throw new Tbl2AsnException(Code.TBL2ASN_CONFIG_EXCEPTION, "tbl2asn executable not defined in config property "+TBL2ASN_EXECUTABLE_PROPERTY); }
@@ -130,6 +168,34 @@ public class Tbl2AsnRunner implements Plugin {
 		} catch (IOException e) {
 			throw new Tbl2AsnException(e, Code.TBL2ASN_FILE_EXCEPTION, "Failed to write "+file.getAbsolutePath()+": "+e.getLocalizedMessage());
 		}
+	}
+	
+	private byte[] readFile(File file) {
+		try(FileInputStream fileInputStream = new FileInputStream(file)) {
+			return IOUtils.toByteArray(fileInputStream);
+		} catch (IOException e) {
+			throw new Tbl2AsnException(e, Code.TBL2ASN_FILE_EXCEPTION, "Failed to read "+file.getAbsolutePath()+": "+e.getLocalizedMessage());
+		}
+	}
+	
+	private static class SourceInfoTableResult extends BaseTableResult<Map<String, String>> {
+
+		public SourceInfoTableResult(List<String> columnHeaders, List<Map<String, String>> sourceInfoMaps) {
+			super("sourceInfoTableResult", sourceInfoMaps, buildColumns(columnHeaders));
+		}
+
+		
+		@SuppressWarnings("unchecked")
+		private static TableColumn<Map<String, String>>[] buildColumns(List<String> columnHeaders) {
+			TableColumn<Map<String, String>>[] columns = new TableColumn[columnHeaders.size()];
+			for(int i = 0; i < columnHeaders.size(); i++) {
+				String header = columnHeaders.get(i);
+				columns[i] = column(header, m -> m.get(header));
+			}
+			return columns;
+		}
+
+
 	}
 	
 	

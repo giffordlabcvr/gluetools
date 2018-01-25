@@ -50,6 +50,13 @@ public class CommandGroupRegistry {
 			cmdGroupToUse = CommandGroup.OTHER;
 		}
 		
+		for(CommandGroup cmdGroup: cmdGroupToCmdClasses.keySet()) {
+			if(cmdGroup.getId().equals(cmdGroupToUse.getId())) {
+				cmdGroupToUse = cmdGroup;
+				break;
+			} 
+		}
+		
 		this.cmdGroupToCmdClasses.computeIfAbsent(cmdGroupToUse, cmdGrp -> 
 				new TreeSet<Class<?>>(new Comparator<Class<?>>() {
 					@SuppressWarnings("unchecked")

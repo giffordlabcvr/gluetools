@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandGroupRegistry;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -115,6 +116,10 @@ public class Module extends _Module {
 	@SuppressWarnings("rawtypes")
 	public List<Class<? extends Command>> getProvidedCommandClasses(CommandContext cmdContext) {
 		return getModulePlugin(cmdContext, false).getProvidedCommandClasses();
+	}
+	
+	public CommandGroupRegistry getCommandGroupRegistry(CommandContext cmdContext) {
+		return getModulePlugin(cmdContext, false).getCommandGroupRegistry();
 	}
 
 	public String getType() {

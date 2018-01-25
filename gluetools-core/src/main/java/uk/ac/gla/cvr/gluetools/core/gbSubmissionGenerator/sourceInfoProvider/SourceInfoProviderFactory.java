@@ -23,36 +23,20 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
+package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider;
 
-public class Tbl2AsnResult {
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-	private String sourceName;
-	private String sequenceID;
-	private String id;
-	private byte[] sqnFileContent;
+public class SourceInfoProviderFactory extends PluginFactory<SourceInfoProvider> {
+
+	public static Multiton.Creator<SourceInfoProviderFactory> creator = new
+			Multiton.SuppliedCreator<>(SourceInfoProviderFactory.class, SourceInfoProviderFactory::new);
 	
-	public Tbl2AsnResult(String sourceName, String sequenceID, String id, byte[] sqnFileContent) {
+	private SourceInfoProviderFactory() {
 		super();
-		this.sourceName = sourceName;
-		this.sequenceID = sequenceID;
-		this.id = id;
-		this.sqnFileContent = sqnFileContent;
+		registerPluginClass(SeqPropertySourceInfoProvider.class);
+		registerPluginClass(FreemarkerSourceInfoProvider.class);
 	}
-
-	public String getSourceName() {
-		return sourceName;
-	}
-
-	public String getSequenceID() {
-		return sequenceID;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public byte[] getSqnFileContent() {
-		return sqnFileContent;
-	}
+	
 }

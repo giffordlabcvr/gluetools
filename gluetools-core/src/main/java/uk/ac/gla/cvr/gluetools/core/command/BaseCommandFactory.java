@@ -48,7 +48,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 	@Override
 	protected void populateCommandTree() {
 		super.populateCommandTree();
-		setCmdGroup(new CommandGroup("otherNonModeSpecific", "Other commands", 100, true));
+		setCmdGroup(new CommandGroup("otherNonModeSpecific", "Other commands (non-mode specific)", 100, true));
 		registerCommandClass(HelpCommand.class);
 		registerCommandClass(QuitCommand.class);
 		setCmdGroup(new CommandGroup("scripting", "Commands for accessing the scripting layer", 92, true));

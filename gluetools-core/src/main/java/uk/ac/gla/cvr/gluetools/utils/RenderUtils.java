@@ -38,7 +38,7 @@ public class RenderUtils {
 	public static String render(Object value, RenderContext renderContext) {
 		String cString;
 		if(value == null) {
-			cString = "-";
+			cString = renderContext.renderNull();
 		} else if(value instanceof Double) {
 			Integer precision = renderContext.floatDecimalPlacePrecision();
 			if(precision != null) {

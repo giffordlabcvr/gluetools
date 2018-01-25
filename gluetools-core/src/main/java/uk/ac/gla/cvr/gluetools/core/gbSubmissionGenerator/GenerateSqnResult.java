@@ -25,34 +25,20 @@
 */
 package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 
-public class Tbl2AsnResult {
+import java.util.List;
 
-	private String sourceName;
-	private String sequenceID;
-	private String id;
-	private byte[] sqnFileContent;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GenerateSqnCommand.SequenceSqnResult;
+
+public class GenerateSqnResult extends BaseTableResult<SequenceSqnResult> {
 	
-	public Tbl2AsnResult(String sourceName, String sequenceID, String id, byte[] sqnFileContent) {
-		super();
-		this.sourceName = sourceName;
-		this.sequenceID = sequenceID;
-		this.id = id;
-		this.sqnFileContent = sqnFileContent;
+	public GenerateSqnResult(List<SequenceSqnResult> rowData) {
+		super("generateSqnResult", rowData,
+				column(Sequence.SOURCE_NAME_PATH, ssr -> ssr.getSourceName()),
+				column(Sequence.SEQUENCE_ID_PROPERTY, ssr -> ssr.getSequenceID()),
+				column("filePath", ssr -> ssr.getFilePath()));
 	}
 
-	public String getSourceName() {
-		return sourceName;
-	}
-
-	public String getSequenceID() {
-		return sequenceID;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public byte[] getSqnFileContent() {
-		return sqnFileContent;
-	}
+	
 }

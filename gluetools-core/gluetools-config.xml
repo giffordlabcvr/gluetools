@@ -92,6 +92,15 @@
 			<name>gluetools.core.programs.jmodeltester.cpus</name>
 			<value>4</value>
 		</property>
+		<!-- tbl2asn-->
+		<property>
+			<name>gluetools.core.programs.tbl2asn.executable</name>
+			<value>/Users/joshsinger/tbl2asn/mac.tbl2asn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.tbl2asn.temp.dir</name>
+			<value>/Users/joshsinger/tbl2asn/tmp</value>
+		</property>
 		<!-- Cayenne -->
 		<property>
 			<name>cayenne.querycache.size</name>
