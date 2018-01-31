@@ -28,9 +28,11 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
@@ -52,23 +54,27 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"list", "module"}, 
-	docoptUsages={"[-t <moduleType>]"},
+	docoptUsages={"[-t <moduleType>] [-w <whereClause>]"},
 	docoptOptions = {
-	"-t <moduleType>, --moduleType <moduleType>  List modules of a specific type"},
+	"-t <moduleType>, --moduleType <moduleType>     List modules of a specific type",
+	"-w <whereClause>, --whereClause <whereClause>  Qualify listed modules"},
 	description="List modules") 
 public class ListModuleCommand extends ProjectModeCommand<ListResult> {
 
 	private String moduleType;
+	private Optional<Expression> whereClause;
 	
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.moduleType = PluginUtils.configureStringProperty(configElem, "moduleType", false);
+		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, "whereClause", false));
 	}
-
+	
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
-		List<Module> modules = listModules(cmdContext, moduleType);
+		List<Module> modules = listModules(cmdContext, whereClause, moduleType);
 		
 		return new ListResult(cmdContext, Module.class, modules, Arrays.asList("name", "type"), 
 				new BiFunction<Module, String, Object>() {
@@ -85,7 +91,17 @@ public class ListModuleCommand extends ProjectModeCommand<ListResult> {
 	}
 
 	public static List<Module> listModules(CommandContext cmdContext, String moduleType) {
-		List<Module> modules = GlueDataObject.query(cmdContext, Module.class, new SelectQuery(Module.class));
+		return listModules(cmdContext, Optional.empty(), moduleType);
+	}
+	
+	public static List<Module> listModules(CommandContext cmdContext, Optional<Expression> whereClause, String moduleType) {
+		SelectQuery query;
+		if(whereClause.isPresent()) {
+			query = new SelectQuery(Module.class, whereClause.get());
+		} else {
+			query = new SelectQuery(Module.class);
+		}
+		List<Module> modules = GlueDataObject.query(cmdContext, Module.class, query);
 		if(moduleType != null) {
 			modules = modules.stream().filter(m -> m.getType().equals(moduleType)).collect(Collectors.toList());
 		}
