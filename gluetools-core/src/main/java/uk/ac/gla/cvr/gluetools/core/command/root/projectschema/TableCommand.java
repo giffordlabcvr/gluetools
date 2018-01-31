@@ -81,7 +81,7 @@ public class TableCommand extends ProjectSchemaModeCommand<OkResult>  {
 			super();
 			registerVariableInstantiator("tableName", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

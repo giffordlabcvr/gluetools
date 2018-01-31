@@ -85,7 +85,7 @@ public class AlignmentSetParentCommand extends AlignmentModeCommand<OkResult> {
 			registerVariableInstantiator("parentAlignmentName", new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					String thisAlmtName = ((AlignmentMode) cmdContext.peekCommandMode()).getAlignmentName();

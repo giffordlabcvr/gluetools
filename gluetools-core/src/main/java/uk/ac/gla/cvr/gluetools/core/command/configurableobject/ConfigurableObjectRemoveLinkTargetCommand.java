@@ -81,7 +81,7 @@ public class ConfigurableObjectRemoveLinkTargetCommand extends Command<UpdateRes
 			registerVariableInstantiator("targetPath", new VariableInstantiator() {
 				@SuppressWarnings("unchecked")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

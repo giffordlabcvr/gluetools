@@ -67,11 +67,7 @@ public final class ModuleSetPropertyCommand extends ModulePropertyCommand<OkResu
 		GlueXmlUtils.appendElementWithText(parentElem, elemName, propertyValue);
 		return CommandResult.OK;
 	}
-
-
-
-	
 	
 	@CompleterClass
-	public static final class Completer extends PropertyNameCompleter {}
+	public static final class Completer extends PropertyNameValueCompleter {}
 }

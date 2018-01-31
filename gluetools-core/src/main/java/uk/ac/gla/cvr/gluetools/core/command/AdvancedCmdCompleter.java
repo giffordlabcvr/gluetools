@@ -51,11 +51,12 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 	public abstract static class VariableInstantiator {
 		@SuppressWarnings("rawtypes")
-		protected abstract List<CompletionSuggestion> instantiate(
+		public
+		abstract List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> bindings, String prefix);
 	}
 	
-	private class SimpleDataObjectNameInstantiator extends VariableInstantiator {
+	public static class SimpleDataObjectNameInstantiator extends VariableInstantiator {
 		private Class<? extends GlueDataObject> theClass;
 		private String nameProperty;
 		@SuppressWarnings("unused")
@@ -67,13 +68,13 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+		public List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return listNames(cmdContext, prefix, theClass, nameProperty);
 		}
 	}
 
-	private class StaticStringListInstantiator extends VariableInstantiator {
+	public static class StaticStringListInstantiator extends VariableInstantiator {
 		private List<String> staticStringList;
 		@SuppressWarnings("unused")
 		public StaticStringListInstantiator(List<String> staticStringList) {
@@ -82,7 +83,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+		public List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return staticStringList.stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
 		}
@@ -101,7 +102,8 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected final List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+		public
+		final List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			Map<String, Object> qualifierValues = new LinkedHashMap<String, Object>();
 			qualifyResults(cmdContext.peekCommandMode(), bindings, qualifierValues);
@@ -118,7 +120,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 	
 	
-	private class SimpleEnumInstantiator extends VariableInstantiator {
+	public static class SimpleEnumInstantiator extends VariableInstantiator {
 		private Class<? extends Enum<?>> theClass;
 		public SimpleEnumInstantiator(Class<? extends Enum<?>> theClass) {
 			super();
@@ -126,14 +128,14 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 		}
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+		public List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return listEnumValues(cmdContext, prefix, theClass);
 		}
 	}
 
 	
-	private class SimplePathInstantiator extends VariableInstantiator {
+	public static class SimplePathInstantiator extends VariableInstantiator {
 		private boolean directoriesOnly;
 		
 		public SimplePathInstantiator(boolean directoriesOnly) {
@@ -143,7 +145,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+		public List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return completePath(cmdContext, prefix, directoriesOnly);
 		}
@@ -164,7 +166,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 	protected void registerModuleNameLookup(String variableName, String moduleType) {
 		registerVariableInstantiator(variableName, new VariableInstantiator() {
 			@Override
-			protected List<CompletionSuggestion> instantiate(
+			public List<CompletionSuggestion> instantiate(
 					ConsoleCommandContext cmdContext,
 					@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 					String prefix) {
@@ -330,7 +332,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return getProperties(cmdContext).stream().map(s -> new CompletionSuggestion(s, true)).collect(Collectors.toList());
@@ -357,7 +359,7 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			return getProject(cmdContext).getCustomTables()

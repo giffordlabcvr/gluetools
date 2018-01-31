@@ -84,7 +84,7 @@ public abstract class AbstractPlacementCommand<R extends CommandResult> extends 
 			super();
 			registerVariableInstantiator("placementIndex", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

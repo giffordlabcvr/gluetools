@@ -91,7 +91,7 @@ public class CustomTableRowCommand extends ProjectModeCommand<OkResult>  {
 			registerVariableInstantiator("tableName", new AdvancedCmdCompleter.VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
@@ -103,7 +103,7 @@ public class CustomTableRowCommand extends ProjectModeCommand<OkResult>  {
 			registerVariableInstantiator("rowId", new AdvancedCmdCompleter.VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {

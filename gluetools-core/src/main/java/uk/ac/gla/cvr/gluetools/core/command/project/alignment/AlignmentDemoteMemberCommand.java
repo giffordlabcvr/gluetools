@@ -178,7 +178,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 			super();
 			registerVariableInstantiator("retainedField", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
@@ -192,7 +192,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 			registerVariableInstantiator("childAlmtName", new VariableInstantiator() {
 				
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

@@ -76,7 +76,7 @@ public abstract class ConsoleOptionCommand<R extends CommandResult> extends Comm
 			registerVariableInstantiator("optionName", new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					return Arrays.asList(ConsoleOption.values())

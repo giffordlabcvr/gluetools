@@ -103,7 +103,7 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 			super();
 			registerVariableInstantiator("propertyPath", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
@@ -118,12 +118,39 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 	}
 
 	@SuppressWarnings("rawtypes")
+	public static class PropertyNameValueCompleter extends PropertyNameCompleter {
+		public PropertyNameValueCompleter() {
+			super();
+			registerVariableInstantiator("propertyValue", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+						Map<String, Object> bindings, String prefix) {
+					Object propertyPathBinding = bindings.get("propertyPath");
+					if(propertyPathBinding == null || !(propertyPathBinding instanceof String) ) {
+						return null;
+					}
+					String propertyPath = (String) propertyPathBinding;
+					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
+					Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
+					ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
+					VariableInstantiator variableInstantiator = modulePlugin.getVariableInstantiator(propertyPath);
+					if(variableInstantiator == null) {
+						return null;
+					}
+					return variableInstantiator.instantiate(cmdContext, cmdClass, bindings, prefix);
+				}
+			});
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
 	public static class PropertyGroupNameCompleter extends AdvancedCmdCompleter {
 		public PropertyGroupNameCompleter() {
 			super();
 			registerVariableInstantiator("propertyPath", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();

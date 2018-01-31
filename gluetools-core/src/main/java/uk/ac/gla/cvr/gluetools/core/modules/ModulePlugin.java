@@ -36,6 +36,7 @@ import java.util.logging.Level;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
@@ -91,11 +92,19 @@ public abstract class ModulePlugin<P extends ModulePlugin<P>> implements Plugin 
 	protected void addSimplePropertyName(String simplePropertyName) {
 		getRootPropertyGroup().addPropertyName(simplePropertyName);
 	}
-	
+
+	protected void addSimplePropertyName(String simplePropertyName, VariableInstantiator variableInstantiator) {
+		getRootPropertyGroup().addPropertyName(simplePropertyName, variableInstantiator);
+	}
+
 	public List<String> allPropertyPaths() {
 		return getRootPropertyGroup().allPropertyPaths();
 	}
 
+	public VariableInstantiator getVariableInstantiator(String propertyName) {
+		return getRootPropertyGroup().getVariableInstantiator(propertyName);
+	}
+	
 	public List<String> allPropertyGroupPaths() {
 		return getRootPropertyGroup().allPropertyGroupPaths();
 	}

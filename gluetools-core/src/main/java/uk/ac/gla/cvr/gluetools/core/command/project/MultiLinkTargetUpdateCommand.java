@@ -129,7 +129,7 @@ public abstract class MultiLinkTargetUpdateCommand extends ProjectModeCommand<Up
 	public static class TableNameInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext,
 				Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
@@ -141,7 +141,7 @@ public abstract class MultiLinkTargetUpdateCommand extends ProjectModeCommand<Up
 	
 	public static class ToOneLinkInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
 		@Override
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext,
 				@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 				String prefix) {

@@ -111,7 +111,7 @@ public class ExportPhylogenyCommand extends ModulePluginCommand<CommandResult, P
 			registerVariableInstantiator("almtName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
@@ -126,7 +126,7 @@ public class ExportPhylogenyCommand extends ModulePluginCommand<CommandResult, P
 			registerEnumLookup("outputFormat", PhyloFormat.class);
 			registerVariableInstantiator("fieldName", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

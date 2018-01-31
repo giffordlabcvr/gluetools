@@ -147,7 +147,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 			registerDataObjectNameLookup("almtName", Alignment.class, Alignment.NAME_PROPERTY);
 			registerVariableInstantiator("acRefName", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
@@ -160,7 +160,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 			});
 			registerVariableInstantiator("featureName", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

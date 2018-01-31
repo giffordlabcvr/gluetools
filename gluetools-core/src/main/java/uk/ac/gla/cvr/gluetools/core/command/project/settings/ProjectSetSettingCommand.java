@@ -102,7 +102,7 @@ public class ProjectSetSettingCommand extends ProjectSettingCommand<OkResult> {
 			registerVariableInstantiator(SETTING_VALUE, new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					try {

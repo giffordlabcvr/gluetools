@@ -35,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -86,6 +87,19 @@ public class AminoAcidRegionSelector extends RegionSelector {
 		return ReferenceSegment
 				.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(lcRegionNtStart, lcRegionNtEnd)), ReferenceSegment.cloneLeftSegMerger());
 
+	}
+
+	@Override
+	public void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature) {
+		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.featureName));
+		if((!referredToFeature.getName().equals(parentFeature.getName())) && !referredToFeature.isDescendentOf(parentFeature)) {
+			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.SELECTOR_NOT_WITHIN_CODING_FEATURE, 
+					parentFeature.getName(), "Amino acid region selector refers to feature "+referredToFeature.getName()+" which is not the same feature, or a descendent.");
+		}
+		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
+		if(excludeRegionSelectors != null) {
+			excludeRegionSelectors.forEach(ers -> ers.checkWithinCodingParentFeature(cmdContext, parentFeature));
+		}
 	}
 	
 	

@@ -58,7 +58,7 @@ public enum ConsoleOption {
 	INTERACTIVE_TABLES("interactive-tables", "If \"true\" table results may be browsed interactively", "true", new String[]{"true", "false"}),
 	CMD_RESULT_FORMAT("cmd-result-format", "Configures the format for command results on the console", "text", new String[]{"text", "xml", "json", "tab", "csv"}),
 	TABLE_RESULT_DOUBLE_PRECISION("table-result-float-precision", "Configures the decimal places precision for floating point numbers in table, tab and csv results", "full", new String[]{"full", "1", "2", "3", "4"}),
-	TABLE_TRUNCATION_LIMIT("table-truncation-limit", "Configures the maximum cell string length in interactive table results", "50", new String[]{"10", "25", "50", "100", "250"}),
+	TABLE_TRUNCATION_LIMIT("table-truncation-limit", "Configures the maximum cell string length in interactive table results", "50", new String[]{"10", "25", "50", "100", "250", "500", "1000"}),
 	SAVE_COMMAND_HISTORY("save-cmd-history", "Configures when command history is saved", "after_every_cmd", new String[]{"after_every_cmd", "at_end_of_session", "never"}),
 	MAX_COMMAND_HISTORY_SIZE("max-cmd-history-size", "Maximum number of commands in command history", "100", null) {
 		public void onSet(Console console, String newValue) {

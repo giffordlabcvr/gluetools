@@ -99,7 +99,7 @@ public class ListModuleCommand extends ProjectModeCommand<ListResult> {
 			registerVariableInstantiator("moduleType", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

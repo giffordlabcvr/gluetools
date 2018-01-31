@@ -30,7 +30,10 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.SimpleDataObjectNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -48,6 +51,12 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 	
 	private List<RegionSelector> regionSelectors;
 	
+	public AlignmentColumnsSelector() {
+		super();
+		addSimplePropertyName("relRefName", new SimpleDataObjectNameInstantiator(ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY));
+		registerModuleDocumentCmdClass(AddRegionSelectorCommand.class);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
@@ -75,7 +84,7 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 			refSegs = ReferenceSegment.subtract(refSegs, intersection);
 			refSegs.addAll(nextRefSegs);
 			ReferenceSegment.sortByRefStart(refSegs);
-			ReferenceSegment.mergeAbutting(refSegs, ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
+			refSegs = ReferenceSegment.mergeAbutting(refSegs, ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
 		}
 		
 		return refSegs;
@@ -86,6 +95,14 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		return relRefName;
 	}
 
-	
+	/**
+	 * Checks that only amino acid selectors are used, and that any features referred to are descendents
+	 * of the named parent feature.
+	 */
+	public void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature) {
+		for(RegionSelector regionSelector: this.regionSelectors) {
+			regionSelector.checkWithinCodingParentFeature(cmdContext, parentFeature);
+		}
+	}
 	
 }

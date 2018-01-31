@@ -30,6 +30,7 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -63,8 +64,12 @@ public abstract class RegionSelector implements Plugin {
 		return refSegs;
 	}
 
-	
-	
+	protected List<RegionSelector> getExcludeRegionSelectors() {
+		return excludeRegionSelectors;
+	}
+
 	protected abstract List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName);
+
+	public abstract void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature);
 
 }

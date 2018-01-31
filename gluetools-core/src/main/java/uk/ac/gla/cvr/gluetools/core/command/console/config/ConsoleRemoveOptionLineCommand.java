@@ -62,7 +62,7 @@ public class ConsoleRemoveOptionLineCommand extends ConsoleOptionCommand<OkResul
 				
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

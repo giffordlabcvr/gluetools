@@ -93,7 +93,7 @@ public class BlastFastaAlignmentImporterImportCommand extends ModulePluginComman
 			registerVariableInstantiator("alignmentName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
@@ -109,7 +109,7 @@ public class BlastFastaAlignmentImporterImportCommand extends ModulePluginComman
 			registerVariableInstantiator("navAlmtName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

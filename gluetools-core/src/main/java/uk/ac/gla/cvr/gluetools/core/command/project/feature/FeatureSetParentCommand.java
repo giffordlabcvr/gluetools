@@ -88,7 +88,7 @@ public class FeatureSetParentCommand extends FeatureModeCommand<OkResult> {
 			registerVariableInstantiator("parentFeatureName", new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					String thisFeatureName = ((FeatureMode) cmdContext.peekCommandMode()).getFeatureName();

@@ -121,7 +121,7 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 	public static class TableNameInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext,
 				Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
@@ -134,7 +134,7 @@ public abstract class MultiFieldUpdateCommand extends ProjectModeCommand<UpdateR
 	public static class ModifiableFieldInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
 		@Override
 		@SuppressWarnings("rawtypes")
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {
 			

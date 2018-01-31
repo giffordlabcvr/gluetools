@@ -98,7 +98,7 @@ public abstract class ProjectExtensionSettingCommand<R extends CommandResult> ex
 			registerVariableInstantiator(EXTENSION_NAME, new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					List<ProjectSetting> allSettings = GlueDataObject.query(cmdContext, ProjectSetting.class, new SelectQuery(ProjectSetting.class));
@@ -122,7 +122,7 @@ public abstract class ProjectExtensionSettingCommand<R extends CommandResult> ex
 			registerVariableInstantiator(EXT_SETTING_NAME, new VariableInstantiator() {
 				@Override
 				@SuppressWarnings("rawtypes")
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {
 					ProjectSettingOption[] values = ProjectSettingOption.values();

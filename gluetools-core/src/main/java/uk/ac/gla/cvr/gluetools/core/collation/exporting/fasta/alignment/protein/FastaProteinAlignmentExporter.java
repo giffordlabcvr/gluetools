@@ -94,7 +94,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 			List<ReferenceSegment> featureRefSegs, ReferenceSegment minMaxSeg,
 			AbstractAlmtRowConsumer almtRowConsumer) {
 		String relatedRefName = alignmentColumnsSelector.getRelatedRefName();
-		ReferenceSequence relatedRef = alignment.getAncConstrainingRef(cmdContext, relatedRefName);
+		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, relatedRefName);
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRefName, featureName));
 
 		int codon1Start = featureLoc.getCodon1Start(cmdContext);
@@ -102,7 +102,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 		for(AlignmentMember almtMember: almtMembers) {
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
 			Alignment tipAlmt = almtMember.getAlignment();
-			memberQaSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberQaSegs, relatedRef);
+			memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
 			memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 			
 			// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.

@@ -43,7 +43,7 @@ public abstract class DigsImporterCommand<R extends CommandResult> extends Modul
 	protected static class DigsDbNameInstantiator extends VariableInstantiator {
 		@SuppressWarnings("rawtypes")
 		@Override
-		protected List<CompletionSuggestion> instantiate(
+		public List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext,
 				Class<? extends Command> cmdClass,
 				Map<String, Object> bindings, String prefix) {

@@ -140,7 +140,7 @@ public class AlignmentExtractChildCommand extends AlignmentModeCommand<CreateRes
 			registerVariableInstantiator("refName", 
 					new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

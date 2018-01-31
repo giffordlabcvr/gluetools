@@ -89,7 +89,7 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 			registerDataObjectNameLookup("acRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("featureName", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
@@ -108,7 +108,7 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 			registerDataObjectNameLookup("targetRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("tipAlmtName", new VariableInstantiator() {
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {

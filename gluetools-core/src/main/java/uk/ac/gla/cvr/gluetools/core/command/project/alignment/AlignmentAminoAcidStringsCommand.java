@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,33 +39,53 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.AminoAcidStringFrequency;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 
 @CommandClass(
 		commandWords={"amino-acid", "strings"}, 
-		description = "Compute the amino acid strings and their frequencies within a given feature location", 
-		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> <lcStart> <lcEnd>" },
+		description = "Compute the amino acid strings and their frequencies within a genome region", 
+		docoptUsages = { "[-c] [-w <whereClause>] (-a <almtColsSelector> -f <featureName> [-s] | -r <relRefName> -f <featureName> <lcStart> <lcEnd>)" },
 		docoptOptions = { 
-		"-c, --recursive                                Include descendent members",
-		"-w <whereClause>, --whereClause <whereClause>  Qualify members",
-		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
-		"-f <featureName>, --featureName <featureName>  Feature to translate",
+		"-c, --recursive                                               Include descendent members",
+		"-w <whereClause>, --whereClause <whereClause>                 Qualify members",
+		"-a <almtColsSelector>, --almtColsSelector <almtColsSelector>  Alignment columns selector module",
+		"-f <featureName>, --featureName <featureName>                 Coding feature to translate",
+		"-r <relRefName>, --relRefName <relRefName>                    Related reference sequence",
+		"-s, --shortForm                                               Elide gaps using forward slash",
 		},
 		furtherHelp = 
-		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
-		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference. "+
+		"The command may be run in two alternative modes. The first possibility is to use an alignment columns selector module. "+
+		"This allows discontiguous regions to be selected. In this case the module may only use amino acid region selectors, and may " +
+		"only refer to descendent features of the named feature. If the --shortForm option is used, then any unselected regions are "+
+		"elided in the output using '/'. "+
+		"The second possibility is to specifically identify a single contiguous genome region. In this case, "+
+		"if this alignment is constrained, <relRefName> names a reference sequence constraining an ancestor alignment "
+		+ "of this alignment. If unconstrained, <relRefName> names a reference sequence which is a member of this alignment. "+
+		"The <featureName> arguments names a feature which has a location defined on the named reference. "+
 		"The <lcStart> and <lcEnd> arguments specify labeled codons, the returned set of strings will be within this region, "
 		+ "including the endpoints.",
 		metaTags = {}	
@@ -74,15 +95,19 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String ALMT_COLS_SELECTOR = "almtColsSelector";
 	public static final String FEATURE_NAME = "featureName";
+	public static final String SHORT_FORM = "shortForm";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
 
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
-	private String acRefName;
+	private String almtColsSelectorModuleName;
 	private String featureName;
+	private Boolean shortForm;
+	private String relRefName;
 	private String lcStart;
 	private String lcEnd;
 	
@@ -90,43 +115,90 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, true);
-		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, true);
-
+		this.almtColsSelectorModuleName = PluginUtils.configureStringProperty(configElem, ALMT_COLS_SELECTOR, false);
+		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.shortForm = PluginUtils.configureBooleanProperty(configElem, SHORT_FORM, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
+		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
+		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
+		if(this.almtColsSelectorModuleName == null) {
+			if(this.shortForm) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --shortForm option may only be used when a columns selector is specified");
+			}
+			if(this.relRefName == null || this.lcStart == null || this.lcEnd == null) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "All the arguments for a specific contiguous genome region must be supplied");
+			}
+		} else {
+			if(this.relRefName != null || this.lcStart != null || this.lcEnd != null) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "If a columns selector module is specified, arguments for a specific contiguous genome region may not be used");
+			}
+		}
 	}
 	@Override
 	public AlignmentAminoAcidStringsResult execute(CommandContext cmdContext) {
 		Alignment alignment = lookupAlignment(cmdContext);
-		alignment.getConstrainingRef(); // check constrained
-		// check it is a coding feature.
-		GlueDataObject
-			.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false)
+
+		List<AminoAcidStringFrequency> resultRowData;
+
+		IAlignmentColumnsSelector iAlmtColsSelector;
+		
+		if(almtColsSelectorModuleName != null) {
+			AlignmentColumnsSelector almtColsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, almtColsSelectorModuleName);
+			Feature parentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+			parentFeature.checkCodesAminoAcids();
+			almtColsSelector.checkWithinCodingParentFeature(cmdContext, parentFeature);
+			String selectorRelRefName = almtColsSelector.getRelatedRefName();
+			// check feature location exists on selectorRelRef
+			GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(selectorRelRefName, featureName));
+			iAlmtColsSelector = almtColsSelector;
+		} else {
+			alignment.getRelatedRef(cmdContext, relRefName); // check related Ref.
+			// check it is a coding feature.
+			GlueDataObject
+			.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName), false)
 			.getFeature().checkCodesAminoAcids();
-		List<AminoAcidStringFrequency> resultRowData = alignmentAminoAcidStrings(
-				cmdContext, getAlignmentName(), acRefName, featureName, whereClause, recursive, lcStart, lcEnd);
+			iAlmtColsSelector = 
+					new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, lcStart, lcEnd);
+		}
+		resultRowData = alignmentAminoAcidStrings(cmdContext, getAlignmentName(), whereClause,
+				recursive, featureName, shortForm, iAlmtColsSelector);
 		return new AlignmentAminoAcidStringsResult(resultRowData);
 	}
 
-	public static List<AminoAcidStringFrequency> alignmentAminoAcidStrings(
-			CommandContext cmdContext, String almtName, String relRefName, String featureName, 
-			Optional<Expression> whereClause, Boolean recursive, 
-			String lcStart, String lcEnd) {
-
-		SimpleAlignmentColumnsSelector almtColsSelector = 
-					new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, lcStart, lcEnd);
-		
+	private static List<AminoAcidStringFrequency> alignmentAminoAcidStrings(
+			CommandContext cmdContext, String almtName,
+			Optional<Expression> whereClause, Boolean recursive,
+			String featureName, Boolean shortForm, IAlignmentColumnsSelector almtColsSelector) {
 		AAStringInfo aaStringInfo = new AAStringInfo();
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
 
+		final List<ReferenceSegment> refSegs;
+		if(shortForm) {
+			refSegs = almtColsSelector.selectAlignmentColumns(cmdContext);
+		} else {
+			refSegs = null;
+		}
+		
 		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				if(alignmentRowString.contains("X")) {
 					return;
+				}
+				if(shortForm) {
+					StringBuffer elidedStringBuffer = new StringBuffer();
+					int minRefStart = ReferenceSegment.minRefStart(refSegs);
+					for(int i = 0; i < refSegs.size(); i++) {
+						if(i > 0) {
+							elidedStringBuffer.append("/");
+						}
+						int aaCharStart = (refSegs.get(i).getRefStart() - minRefStart) / 3;
+						int aaCharEnd = aaCharStart + refSegs.get(i).getCurrentLength() / 3;
+						elidedStringBuffer.append(alignmentRowString.substring(aaCharStart, aaCharEnd));
+					}
+					alignmentRowString = elidedStringBuffer.toString();
 				}
 				aaStringInfo.registerString(alignmentRowString);
 			}
@@ -170,7 +242,46 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	
 	
 	@CompleterClass
-	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {}
+	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {
+		public Completer() {
+			super();
+			registerModuleNameLookup("almtColsSelector", "alignmentColumnsSelector");
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					InsideAlignmentMode insideAlignmentMode = (InsideAlignmentMode) cmdContext.peekCommandMode();
+					String almtName = insideAlignmentMode.getAlignmentName();
+					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
+					return alignment.getAncConstrainingRefs().stream()
+							.map(ancCR -> new CompletionSuggestion(ancCR.getName(), true))
+							.collect(Collectors.toList());
+				}
+			});
+			registerVariableInstantiator("featureName", new SimpleDataObjectNameInstantiator(Feature.class, Feature.NAME_PROPERTY) {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String referenceName = (String) bindings.get("relRefName");
+					if(referenceName == null) {
+						return super.instantiate(cmdContext, cmdClass, bindings, prefix);
+					}
+					ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
+					if(referenceSequence != null) {
+						return referenceSequence.getFeatureLocations().stream()
+								.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
+		}
+		
+	}
 
 	
 }

@@ -78,7 +78,7 @@ public class CountCustomTableRowCommand extends AbstractCountCTableCommand {
 			registerVariableInstantiator("tableName", new AdvancedCmdCompleter.VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
-				protected List<CompletionSuggestion> instantiate(
+				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass,
 						Map<String, Object> bindings, String prefix) {

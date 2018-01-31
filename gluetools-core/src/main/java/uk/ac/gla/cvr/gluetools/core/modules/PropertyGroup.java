@@ -31,18 +31,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
+
 public class PropertyGroup {
-	private List<String> propertyNames = new ArrayList<String>();
+	private Map<String, VariableInstantiator> propertyNameToInstantiator = new LinkedHashMap<String, VariableInstantiator>();
 	private Map<String, PropertyGroup> children = new LinkedHashMap<String, PropertyGroup>();
 
-	public PropertyGroup addPropertyName(String simplePropertyName) {
-		this.propertyNames.add(simplePropertyName);
+	public PropertyGroup addPropertyName(String simplePropertyName, VariableInstantiator variableInstantiator) {
+		this.propertyNameToInstantiator.put(simplePropertyName, variableInstantiator);
 		return this;
+	}
+	
+	public PropertyGroup addPropertyName(String simplePropertyName) {
+		return addPropertyName(simplePropertyName, null);
 	}
 	
 	public List<String> allPropertyPaths() {
 		List<String> paths = new ArrayList<String>();
-		paths.addAll(propertyNames);
+		paths.addAll(propertyNameToInstantiator.keySet());
 		children.forEach((groupName, group) -> {
 			paths.addAll(group.allPropertyPaths().stream().map(s -> groupName+"/"+s).collect(Collectors.toList()));
 		});
@@ -59,7 +65,9 @@ public class PropertyGroup {
 	}
 
 	public List<String> getPropertyNames() {
-		return propertyNames;
+		List<String> propertyNamesList = new ArrayList<String>();
+		propertyNamesList.addAll(propertyNameToInstantiator.keySet());
+		return propertyNamesList;
 	}
 
 	public PropertyGroup addChild(String groupName) {
@@ -77,7 +85,7 @@ public class PropertyGroup {
 			return false;
 		}
 		if(propertyPathElems.size() == 1) {
-			return propertyNames.contains(propertyPathElems.get(0));
+			return propertyNameToInstantiator.containsKey(propertyPathElems.get(0));
 		}
 		PropertyGroup child = getChild(propertyPathElems.get(0));
 		if(child == null) {
@@ -100,4 +108,8 @@ public class PropertyGroup {
 		return child.validPropertyGroup(propertyPathElems.subList(1, propertyPathElems.size()));
 	}
 
+	public VariableInstantiator getVariableInstantiator(String propertyName) {
+		return propertyNameToInstantiator.get(propertyName);
+	}
+	
 }
