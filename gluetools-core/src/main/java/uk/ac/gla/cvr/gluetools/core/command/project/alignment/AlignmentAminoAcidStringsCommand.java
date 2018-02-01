@@ -68,14 +68,16 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"amino-acid", "strings"}, 
 		description = "Compute the amino acid strings and their frequencies within a genome region", 
-		docoptUsages = { "[-c] [-w <whereClause>] (-a <almtColsSelector> -f <featureName> [-s] | -r <relRefName> -f <featureName> <lcStart> <lcEnd>)" },
+		docoptUsages = { "[-c] [-w <whereClause>] [ -x | -g ] (-a <almtColsSelector> -f <featureName> [-s] | -r <relRefName> -f <featureName> <lcStart> <lcEnd>)" },
 		docoptOptions = { 
 		"-c, --recursive                                               Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>                 Qualify members",
 		"-a <almtColsSelector>, --almtColsSelector <almtColsSelector>  Alignment columns selector module",
 		"-f <featureName>, --featureName <featureName>                 Coding feature to translate",
 		"-r <relRefName>, --relRefName <relRefName>                    Related reference sequence",
-		"-s, --shortForm                                               Elide gaps using forward slash",
+		"-s, --shortForm                                               Elide discontiguities with slash",
+		"-x, --excludeAnyGap                                           Exclude if any residue missing",
+		"-g, --excludeAllGap                                           Exclude if all residues missing",
 		},
 		furtherHelp = 
 		"The command may be run in two alternative modes. The first possibility is to use an alignment columns selector module. "+
@@ -101,6 +103,8 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
+	public static final String EXCLUDE_ANY_GAP = "excludeAnyGap";
+	public static final String EXCLUDE_ALL_GAP = "excludeAllGap";
 
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
@@ -110,6 +114,9 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	private String relRefName;
 	private String lcStart;
 	private String lcEnd;
+	private Boolean excludeAnyGap;
+	private Boolean excludeAllGap;
+	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -123,6 +130,10 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
+		this.shortForm = PluginUtils.configureBooleanProperty(configElem, SHORT_FORM, true);
+		this.excludeAnyGap = PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ANY_GAP, true);
+		this.excludeAllGap = PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ALL_GAP, true);
+
 		if(this.almtColsSelectorModuleName == null) {
 			if(this.shortForm) {
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --shortForm option may only be used when a columns selector is specified");
@@ -163,14 +174,16 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 					new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, lcStart, lcEnd);
 		}
 		resultRowData = alignmentAminoAcidStrings(cmdContext, getAlignmentName(), whereClause,
-				recursive, featureName, shortForm, iAlmtColsSelector);
+				recursive, featureName, shortForm, 
+				excludeAnyGap, excludeAllGap, iAlmtColsSelector);
 		return new AlignmentAminoAcidStringsResult(resultRowData);
 	}
 
 	private static List<AminoAcidStringFrequency> alignmentAminoAcidStrings(
 			CommandContext cmdContext, String almtName,
 			Optional<Expression> whereClause, Boolean recursive,
-			String featureName, Boolean shortForm, IAlignmentColumnsSelector almtColsSelector) {
+			String featureName, Boolean shortForm, Boolean excludeAnyGap, Boolean excludeAllGap, 
+			IAlignmentColumnsSelector almtColsSelector) {
 		AAStringInfo aaStringInfo = new AAStringInfo();
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
 
@@ -184,9 +197,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
-				if(alignmentRowString.contains("X")) {
-					return;
-				}
+				alignmentRowString = alignmentRowString.replace('X', '-');
 				if(shortForm) {
 					StringBuffer elidedStringBuffer = new StringBuffer();
 					int minRefStart = ReferenceSegment.minRefStart(refSegs);
@@ -200,11 +211,17 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 					}
 					alignmentRowString = elidedStringBuffer.toString();
 				}
+				if(excludeAnyGap && alignmentRowString.contains("-")) {
+					return;
+				}
+				if(excludeAllGap && alignmentRowString.matches("^[-/]*$")) {
+					return;
+				}
 				aaStringInfo.registerString(alignmentRowString);
 			}
 		};
 		FastaProteinAlignmentExporter.exportAlignment(cmdContext,
-				featureName, almtColsSelector, true, queryMemberSupplier, almtRowConsumer);
+				featureName, almtColsSelector, false, queryMemberSupplier, almtRowConsumer);
 		
 		ArrayList<AminoAcidStringFrequency> aasfList = aaStringInfo.toAASFList();
 		
