@@ -89,9 +89,13 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/schemaExtensions/page.html',
             controller: 'schemaExtensionsCtrl'
           }).
-      	when('/freemarkerTemplates', {
+    	when('/freemarkerTemplates', {
             templateUrl: './pages/userGuide/freemarkerTemplates/page.html',
             controller: 'freemarkerTemplatesCtrl'
+          }).
+    	when('/variations', {
+            templateUrl: './pages/userGuide/variations/page.html',
+            controller: 'variationsCtrl'
           }).
       	when('/commandModes', {
             templateUrl: './pages/referenceDocumentation/commandModes/page.html',
@@ -172,6 +176,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.scriptingLayerMenuTitle = "Scripting Layer";
     $scope.schemaExtensionsMenuTitle = "Schema Extensions";
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";
+    $scope.variationsMenuTitle = "Variations";
 
   	$scope.referenceDocumentationMenuTitle = "Reference documentation";
   	$scope.commandModesMenuTitle = "Command mode reference";

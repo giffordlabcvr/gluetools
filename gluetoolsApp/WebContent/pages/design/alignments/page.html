@@ -1,10 +1,30 @@
 <h2>{{alignmentTreeMenuTitle}}</h2>
 
-<h4>
-	Unconstrained <em>Alignments</em>
-</h4>
 <p>
-	<em>Alignment</em> objects may be constrained or unconstrained.
+	One of the key features of GLUE is its ability to compute, store and
+	query multiple sequence alignments, represented by
+	<em>Alignment</em> objects in the data model. In GLUE,
+	<em>Alignments</em> may be constrained or unconstrained. Unconstrained
+	alignments are best for recording homology between a small number of
+	distantly-related sequences, whereas constrained alignments are good
+	for capturing the homology between a large number of closely-related
+	sequences. Constrained alignments may also be assembled into
+	<a ng-click="scrollTo('alignmentTrees')">alignment trees</a> which 
+	combine homology information together in a phylogenetic data structure. 
+</p>
+
+<p>
+<ol>
+	<li><a ng-click="scrollTo('unconstrainedAlignments')">Unconstrained alignments</a></li>
+	<li><a ng-click="scrollTo('constrainedAlignments')">Constrained alignments</a></li>
+	<li><a ng-click="scrollTo('alignmentTrees')">Alignment trees</a></li>
+</ol>
+</p>
+
+<h3 id="unconstrainedAlignments">
+	Unconstrained <em>Alignments</em>
+</h3>
+<p>
 	Unconstrained <em>Alignments</em> are used in GLUE projects to store
 	the results of any process aimed at identifying homologies between
 	nucleotides. This includes classical algorithms such as MUSCLE or MAFFT
@@ -27,9 +47,9 @@
 </p>
 
 <img width="100%" src="images/unconstrained.png" />
-<h4>
+<h3 id="constrainedAlignments">
 	Constrained <em>Alignments</em>
-</h4>
+</h3>
 <p>
 	<em>ReferenceSequence</em> in GLUE can provide a concrete coordinate
 	space in which nucleotide data may be interpreted. <em>Alignment</em>
@@ -76,6 +96,65 @@
 	the member and reference sequence, for example based on BLAST.
 </p>
 
-<h4>Alignment Trees</h4>
+<h3 id="alignmentTrees">Alignment Trees</h3>
 
-Under construction
+<div class="row">
+	<div class="col-md-5">
+<p>
+	GLUE projects have the option of using a structure called an <b>alignment
+		tree</b>. This links together alignments in an evolution-oriented way.
+	There are often widely recognised phylogenetic clades such as genotypes
+	within a set of virus sequences. The structure of the alignment tree
+	reflects the phylogenetic relationships between these clades.
+</p>
+<p>
+	An alignment tree is built by creating constrained <em>Alignment</em>
+	objects for each of the clades of interest. These <em>Alignments</em>
+	become nodes within the tree. Where a parent-child relationship between
+	two clades exists within the evolutionary hypothesis, a special
+	relational link is introduced between the corresponding pairs of <em>Alignment</em>
+	objects.
+</p>
+<p>
+	There is a special condition called the <b>alignment tree invariant</b>
+	which is enforced by GLUE when working with alignment trees: If <em>Alignment</em>
+	A is a child of <em>Alignment</em> B, the <em>Sequence</em> acting as
+	the constraining <em>ReferenceSequence</em> of <em>Alignment</em> A
+	must also be a member sequence of <em>Alignment</em> B. In this way, a
+	parent <em>Alignment</em> is forced to contain representative member
+	sequences from any child <em>Alignments</em>. The object structure of
+	an example alignment tree, demonstrating the invariant, is shown in the
+	accompanying diagram.
+</p>
+	</div>
+	<div class="col-md-7">
+		<img width="100%" src="images/almtTree.png" />
+	</div>
+</div>
+
+		<p>
+		The constrained <em>Alignment</em> at the root represents an entire
+		virus species. Two child <em>Alignments</em> represent genotypes 3 and
+		4 (clades within the species). Genotype 3 is further subdivided into
+		two subtypes, 3a and 3b. Each constrained <em>Alignment</em> has a
+		constraining <em>ReferenceSequence</em>. Within each <em>Alignment</em>
+		node there are various <em>AlignmentMember</em> objects, each one
+		records the pairwise homology between the member <em>Sequence</em> and
+		the constraining <em>ReferenceSequence</em>. The alignment tree
+		invariant requires for example that the constraining <em>ReferenceSequence</em>
+		of subtype 3a is also a member of its parent, genotype 3.
+		</p>
+
+		<p>
+			There some advantages to using alignment trees in a GLUE project:
+			<ol>
+				<li>For a number of reasons, it's generally useful to organise virus sequences hierarchically, according to clade.</li>
+				<li>Constrained alignments near the tips of the tree can accurately capture homologies between closely-related sequences.</li>
+				<li>The alignment tree invariant guarantees that between any two <em>Sequence</em> objects, there is a path of homologies. 
+				This facilitates comparisons of distantly related sequences.</li>
+			</ol>	
+		</p>
+
+<p></p>
+
+
