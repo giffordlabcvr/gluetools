@@ -427,13 +427,13 @@ Field values and link targets of the <em>Sequence</em> table can be populated fr
 The GLUE <a href="#/scriptingLayer">scripting layer</a> gives a high level of flexibility for populating any part of a schema extension, by
 invoking fine-grained GLUE commands from a JavaScript program. 
 The example project uses various JavaScript programs to populate the M.49 schema extension objects, 
-field values and link targets. The program below is used to populate the <code>m49_sub_region</code> table by first reading in a tabular data file, 
+field values and link targets. For example, the program below is used to populate the <code>m49_sub_region</code> table by first reading in a tabular data file, 
 and then executing the relevant fine-grained GLUE commands.
 </p>
 <p><div hljs language="javascript" no-escape>
 var subRegions;
 glue.inMode("module/exampleTabularUtilityCsv", function() {
-	subRegions = glue.command(["load-tabular", "tabular/m49_countries/m49_sub_regions.csv"], {convertTableToObjects:true});
+	subRegions = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_sub_regions.csv"]));
 });
 _.each(subRegions, function(subRegion) {
 	var subRegionName = subRegion["Sub-region Name"].trim();

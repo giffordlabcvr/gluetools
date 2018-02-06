@@ -33,8 +33,8 @@ function nullTrim(string) {
 var countries;
 var displayNameObjs;
 glue.inMode("module/exampleTabularUtilityTab", function() {
-	countries = glue.command(["load-tabular", "tabular/m49_countries/m49_countries.txt"], {convertTableToObjects:true});
-	displayNameObjs = glue.command(["load-tabular", "tabular/m49_countries/m49_country_display_names.txt"], {convertTableToObjects:true});
+	countries = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_countries.txt"]));
+	displayNameObjs = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_country_display_names.txt"]));
 });
 var idToDisplayName = {};
 _.each(displayNameObjs, function(displayNameObj) {

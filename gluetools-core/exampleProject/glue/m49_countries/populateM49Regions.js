@@ -25,7 +25,7 @@
 */
 var regions;
 glue.inMode("module/exampleTabularUtilityCsv", function() {
-	regions = glue.command(["load-tabular", "tabular/m49_countries/m49_regions.csv"], {convertTableToObjects:true});
+	regions = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_regions.csv"]));
 });
 _.each(regions, function(region) {
 	var regionName = region["Region Name"].trim();

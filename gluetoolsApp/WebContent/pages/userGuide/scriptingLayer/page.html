@@ -1,3 +1,330 @@
 <h2>{{scriptingLayerMenuTitle}}</h2>
 
-Under construction
+<p>
+The GLUE <a href="#/interactiveCommandLine">command line interpreter</a> allows you to enter 
+GLUE commands and see their results interactively. Commands may also be run from a batch file 
+using the <non-mode-command command="run_file"></non-mode-command> command, as in the <a href="#/exampleProject">example
+project build</a>.
+<p>
+
+<p>
+The GLUE scripting layer adds another way to use GLUE functionality. It allows you to add custom logic to your 
+GLUE projects in the form of JavaScript programs. These programs run within the GLUE engine. They may run 
+GLUE commands in the context of other computations. They can also be encapsulated within modules, allowing your 
+custom logic to be invoked from other parts of the project. The main uses of the scripting layer are: 
+<ul>
+	<li>To execute a step in your project build. Using the scripting layer here means the build can use more complex logic
+	 or can simply apply the same logic with less code.</li>
+	<li>To perform some analysis of project data. The scripting layer may access any part of the GLUE project, using any GLUE command, 
+	so it can be used to execute code associated with a research question.</li>
+</ul>
+</p>
+<p>
+The key aspects of the scripting layer are covered below
+<ol>
+	<li><a ng-click="scrollTo('ecmaBasics')">JavaScript background</a></li>
+	<li><a ng-click="scrollTo('logging')">Your first JavaScript program: logging to the console</a></li>
+	<li><a ng-click="scrollTo('runningGlueCommands')">Invoking GLUE commands from JavaScript</a></li>
+	<li><a ng-click="scrollTo('underscrore')">Using underscore.js</a>
+	<li><a ng-click="scrollTo('tabularFileData')">Importing and exporting tabular data</a></li>
+	<li><a ng-click="scrollTo('fastaFileData')">Working with FASTA data</a></li>
+	<li><a ng-click="scrollTo('ecmaFunctionInvoker')">Encapsulating JavaScript code in modules</a></li>
+</ol>
+</p>
+
+<h3 id="ecmaBasics">JavaScript background</h3>
+
+JavaScript is a high-level, dynamic, general-purpose interpreted programming language.
+It is widely used, within web browsers, for server-side development and elsewhere. 
+Consequently, there are plenty of books and online resources for learning JavaScript, 
+and these provide the best way to learn JavaScript. Some options are:
+<ul>
+	<li><a href="http://shop.oreilly.com/product/9780596517748.do">JavaScript: The Good Parts by Douglas Crockford</a>, 
+	a consise but in-depth review of the core language elements from a programmer's perspective.</li>
+	<li><a href="https://www.w3schools.com/js/">The W3schools JavaScript tutorial</a> a good hands-on tutorial, 
+	although targeted at web developers.</li>
+</ul>
+<p>
+The version of JavaScript which is available for use within the GLUE scripting layer is a standardised version called 
+<a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript 5.1</a>. The implementation which is used is the
+<a href="http://www.oracle.com/technetwork/articles/java/jf14-nashorn-2126515.html">Nashorn engine</a>, although GLUE project
+developers should not need to understand the workings at this level. 
+</p>
+<p>
+Contrary to what you might expect, the GLUE engine is not written in JavaScript; it is 
+actually written in Java, which is a different language altogether. JavaScript programs within GLUE projects
+interact with the GLUE engine purely via the <a href="#/commandLayer">GLUE command layer</a>.
+</p>
+
+<h3 id="logging">Your first JavaScript program: logging to the console</h3>
+<p>
+We will create some JavaScript programs and run them within GLUE. Please ensure you have the GLUE <a href="#/exampleProject">example
+project</a> in place, as some of the examples rely on this.
+For your first JavaScript program, use a text editor to create a file within the <code>exampleProject</code> directory called <code>helloWorld.js</code>. 
+Paste the following code into the file, and save it:
+</p>
+<p><div hljs language="javascript" no-escape>
+glue.logInfo("Hello world!");
+</div></p>
+Start GLUE within the same directory, and use the <non-mode-command command="run_script"></non-mode-command> command to run your program:
+<p><div hljs language="json" no-escape>
+GLUE> run script helloWorld.js 
+12:42:28.832 NashornJsScript INFO: Hello world!
+OK</div></p>
+<p>
+The <code>glue</code> object, which is always available, is a special set of utility functions provided by
+GLUE to JavaScript programs operating within the scripting layer. 
+The <code>glue.logInfo</code> function, provided by the <code>glue</code> object, 
+will output a log message (at log level INFO) to the console. This can be used for debugging, to quickly understand what is going on in your 
+program. 
+</p>
+<p>
+The <code>glue.logInfo</code> function may optionally take a second argument. If this second argument is a JavaScript object, 
+it will be logged to the console in 
+<a href="http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf">JSON format</a>. Since your program will 
+often be operating on objects, this can be used to give more details on its operation. To log a JavaScript object, you can 
+modify your program like so:
+</p>
+<p><div hljs language="javascript" no-escape>
+var object = { hello: 1 };
+object.world = 2;
+
+glue.logInfo("Hello world!", object);
+</div></p>
+
+<p><div hljs language="json" no-escape>
+GLUE> run script helloWorld.js
+12:55:09.427 NashornJsScript INFO: Hello world!
+{
+  "hello": 1,
+  "world": 2
+}
+OK
+</div></p>
+<h3 id="runningGlueCommands">Invoking GLUE commands from JavaScript</h3>
+
+<p>The <code>glue</code> object also provides functions for invoking GLUE commands. 
+In your text editor, to create a file within the <code>exampleProject</code> directory called <code>listProjects.js</code>, containing this code:
+</p>
+<p><div hljs language="javascript" no-escape>
+var listProjectsResult = glue.command(["list", "project"]);
+glue.logInfo("listProjectsResult", listProjectsResult);
+</div></p>
+Use <non-mode-command command="run_script"></non-mode-command> to run this program from root command mode (path "/") in GLUE:
+<p><div hljs language="json" no-escape>
+Mode path: /
+GLUE> run script listProjects.js
+16:59:08.905 NashornJsScript INFO: listProjectsResult
+{
+  "listResult": {
+    "column": [
+      "name",
+      "description"
+    ],
+    "row": [
+      {
+        "value": [
+          "example",
+          "An example GLUE project based on hepatitis E virus"
+        ]
+      }
+    ],
+    "objectType": "Project"
+  }
+}
+OK
+</div></p>
+<p>
+The <mode-command mode="root" command="list_project"></mode-command> command was run from within the JavaScript program. 
+Note that <code>glue.command</code> is passed an array with one element per word or argument. So for example the command:
+</p>
+<p><div hljs language="json" no-escape>
+GLUE> list sequence --whereClause "gb_length >= 500"
+</div></p>
+<p>
+would be run from JavaScript using:
+<p>
+<p><div hljs language="javascript" no-escape>
+glue.command(["list", "sequence", "--whereClause", "gb_length >= 500"]);
+</div></p>
+</p>
+<p>
+In <code>listProjects.js</code>, the result of invoking the command was a JavaScript object, this was stored in the 
+variable <code>listProjectsResult</code>. This object was then logged
+to the console, in JSON format.
+</p>
+<p>
+Any GLUE command which is invoked from JavaScript will always return a JavaScript object (even commands which just produce "OK" on the console).
+For commands such as <mode-command mode="root" command="list_project"></mode-command>, which produce tabular output, the structure of
+the object follows a certain convention, with the result type (in this case <code>listResult</code>) appearing at the outer layer
+of the object, and then column headers, row values and a row object type appearing at the next layer in.
+</p>
+<p>
+The <code>glue</code> object contains some utilities for transforming these tabular result objects into more convenient forms. We can 
+modify the first line of <code>listProjects.js</code> as follows:
+</p>
+<p><div hljs language="javascript" no-escape>
+var listProjectsResult = glue.getTableColumn(glue.command(["list", "project"]), "name");
+</div></p>
+By applying the <code>glue.getTableColumn</code> function to the tabular result object, we can extract the "name" column as an array, so that the logged result is simply:
+<p><div hljs language="json" no-escape>
+Mode path: /
+GLUE> run script listProjects.js
+16:59:08.905 NashornJsScript INFO: listProjectsResult
+[
+  "example"
+]
+OK
+</div></p>
+Alternatively, we could apply the <code>glue.tableToObjects</code> function to the result object:
+<p><div hljs language="javascript" no-escape>
+var listProjectsResult = glue.tableToObjects(glue.command(["list", "project"]));
+</div></p>
+This converts it to an array of objects, one per row, with fields named
+according to the column headers:
+<p><div hljs language="json" no-escape>
+Mode path: /
+GLUE> run script listProjects.js
+17:28:08.758 NashornJsScript INFO: listProjectsResult
+[
+  {
+    "name": "example",
+    "description": "An example GLUE project based on hepatitis E virus"
+  }
+]
+OK
+</div></p>
+<p>
+When you are using the 
+<a href="#/interactiveCommandLine">command line interpreter</a>, the commands you can invoke depend on 
+the current command mode. The same applies when commands are invoked from JavaScript programs. 
+When you use <non-mode-command command="run_script"></non-mode-command> to run JavaScript, the program
+inherits the command mode that was in place when <non-mode-command command="run_script"></non-mode-command>
+was executed. The <mode-command mode="root" command="list_project"></mode-command> is only available
+in root command mode, therefore <code>listProjects.js</code> will only work if invoked from root mode. If
+you try to run <code>listProjects.js</code> from within project mode for example, you will get an error. 
+</p>
+<p>
+You can however, change mode within a JavaScript program. This is done by using the <code>glue.inMode</code> utility.
+Paste the following code into a new file <code>listFeatures.js</code>, in the <code>exampleProject</code> directory:
+<p><div hljs language="javascript" no-escape>
+var features;
+glue.inMode("/project/example", function() {
+    features = glue.tableToObjects(glue.command(["list", "feature"]));
+});
+glue.logInfo("features", features);
+</div></p>
+Then run <code>listFeatures.js</code> from root mode:
+<p><div hljs language="json" no-escape>
+Mode path: /
+GLUE> run script listFeatures.js
+17:45:50.389 NashornJsScript INFO: features
+[
+  {
+    "name": "ORF3",
+    "parent.name": null,
+    "description": "ORF 3"
+  },
+  {
+    "name": "ORF2",
+    "parent.name": null,
+    "description": "ORF 2"
+  },
+  {
+    "name": "ORF1",
+    "parent.name": null,
+    "description": "ORF 1"
+  },
+  {
+    "name": "Y",
+    "parent.name": "ORF1",
+    "description": "Y domain"
+  },
+  {
+    "name": "X",
+    "parent.name": "ORF1",
+    "description": "Macro domain"
+  },
+  {
+    "name": "RdRp",
+    "parent.name": "ORF1",
+    "description": "RNA-dependent RNA polymerase"
+  },
+  {
+    "name": "PPR",
+    "parent.name": "ORF1",
+    "description": "Polyproline hypervariable region"
+  },
+  {
+    "name": "PCP",
+    "parent.name": "ORF1",
+    "description": "Papain-like cysteine protease"
+  },
+  {
+    "name": "MT",
+    "parent.name": "ORF1",
+    "description": "Methyltransferase"
+  },
+  {
+    "name": "Hel",
+    "parent.name": "ORF1",
+    "description": "Helicase"
+  }
+]
+OK
+</div></p>
+<p>
+The <code>glue.inMode</code> function temporarily changed the mode path from root ("/") to project mode ("/project/example"). Within
+project mode, the <mode-command mode="root_project" command="list_feature"></mode-command> command was run, and the result transformed
+to an array of objects and logged to the console.
+</p>
+<p>
+Note that the mode path string supplied to <code>glue.inMode</code> is the same as the path displayed in the interactive interpreter when
+in project mode. This mode path string is <b>relative to the current mode</b>; it is effectively appended to the current mode path string to
+produce the new mode path. These mode path strings can be constructed dynamically and composed together so that multiple nested mode changes are executed at 
+once, for example:
+</p>
+<p><div hljs language="javascript" no-escape>
+// assume we are in project mode, and variables refSeqName and featureName are defined
+// switch to reference mode, then within that feature-location mode
+glue.inMode("/reference/"+refSeqName+"/feature-location/"+featureName, function() {
+    // execute something in feature-location mode.
+});
+// at this point we are back in project mode
+</div></p>
+
+<p>
+Also note that a callback function must be supplied to <code>glue.inMode</code> as its second argument. In the example
+we used an anonymous function. The supplied function is then invoked within the specified mode.   
+</p>
+
+
+<h3 id="underscore">Using underscore.js</h3>
+
+
+<h3 id="tabularFileData">Importing and exporting tabular data</h3>
+
+<h3 id="fastaFileData">Working with FASTA data</h3>
+
+<h3 id="ecmaFunctionInvoker">Encapsulating JavaScript code in modules</h3>
+
+<p><div hljs language="javascript" no-escape>
+var subRegions;
+glue.inMode("module/exampleTabularUtilityCsv", function() {
+	subRegions = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_sub_regions.csv"]));
+});
+_.each(subRegions, function(subRegion) {
+	var subRegionName = subRegion["Sub-region Name"].trim();
+	var subRegionId = subRegionName.toLowerCase().replace(/[ -]/g, "_");
+	var m49Code = subRegion["Sub-region Code"].trim();
+	var regionName = subRegion["Region Name"].trim();
+	var regionId = regionName.toLowerCase();
+	glue.command(["create", "custom-table-row", "m49_sub_region", subRegionId]);
+	glue.inMode("custom-table-row/m49_sub_region/"+subRegionId, function() {
+		glue.command(["set", "field", "display_name", subRegionName]);
+		glue.command(["set", "field", "m49_code", m49Code]);
+		glue.command(["set", "link-target", "m49_region", "custom-table-row/m49_region/"+regionId]);
+	});
+});
+</div></p>
+

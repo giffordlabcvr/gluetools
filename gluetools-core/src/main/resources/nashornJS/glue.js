@@ -80,6 +80,15 @@ function recastException(x) {
 // the point of this layer is to always throw an ECMAScript exception
 // which means we will get the JS file, line number and column number context.
 var glue = {
+		tableToObjects: function(tableResult) {
+			return tableResultAsObjectList(tableResult);
+		},
+		getTableColumn: function(tableResult, columnHeader) {
+			return tableResultGetColumn(tableResult, columnHeader);
+		},
+		logInfo: function(message, object) {
+			this.log("INFO", message, object);
+		},
 		log: function(level, message, object) {
 			var logMessage = message;
 			if(object) {
@@ -109,6 +118,7 @@ var glue = {
 				// this step ensures the result consists of native JavaScript objects;
 				cmdResult = valueToNative(cmdResult);
 				if(options.convertTableToObjects) {
+					glueAux.log("WARNING", "The convertTableToObjects option is deprecated. Wrap the call to glue.command(...) with glue.tableToObjects(...) instead.");
 					cmdResult = tableResultAsObjectList(cmdResult);
 				}
 				return cmdResult;

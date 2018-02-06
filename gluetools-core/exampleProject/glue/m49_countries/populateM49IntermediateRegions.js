@@ -25,7 +25,7 @@
 */
 var intermediateRegions;
 glue.inMode("module/exampleTabularUtilityCsv", function() {
-	intermediateRegions = glue.command(["load-tabular", "tabular/m49_countries/m49_intermediate_regions.csv"], {convertTableToObjects:true});
+	intermediateRegions = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_intermediate_regions.csv"]));
 });
 _.each(intermediateRegions, function(intermediateRegion) {
 	var intermediateRegionName = intermediateRegion["Intermediate Region Name"].trim();
