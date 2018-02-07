@@ -1,0 +1,24 @@
+<ecmaFunctionInvoker>
+    <!-- One or more JavaScript files are referenced here. These will be loaded into the
+         database along with the module config by the loadResources option -->
+    <scriptFileName>exampleEcmaFunctionInvoker.js</scriptFileName>
+    <!-- each <function> element specifies a JavaScript function which will be 
+         made available via the invoke-function module command. The function name
+         must match a function defined in one of the JavaScript files -->
+    <function>
+        <name>hostWithGenomeRegion</name>
+        <!-- The parameter names must be specified -->
+        <parameter>
+            <name>feature</name>
+        </parameter>
+        <parameter>
+            <name>startCodon</name>
+        </parameter>
+        <parameter>
+            <name>endCodon</name>
+        </parameter>
+        <!-- This resultType element indicates that the function will return an array of objects
+             and that GLUE should construct a table result from these. -->
+        <tableFromObjectsResultType/>
+    </function>
+</ecmaFunctionInvoker>

@@ -13,8 +13,7 @@ GLUE projects in the form of JavaScript programs. These programs run within the 
 GLUE commands in the context of other computations. They can also be encapsulated within modules, allowing your 
 custom logic to be invoked from other parts of the project. The main uses of the scripting layer are: 
 <ul>
-	<li>To execute a step in your project build. Using the scripting layer here means the build can use more complex logic
-	 or can simply apply the same logic with less code.</li>
+	<li>To execute a step in your project build. Using the scripting layer here means the build can use more complex, dynamic logic.</li>
 	<li>To perform some analysis of project data. The scripting layer may access any part of the GLUE project, using any GLUE command, 
 	so it can be used to execute code associated with a research question.</li>
 </ul>
@@ -25,10 +24,8 @@ The key aspects of the scripting layer are covered below
 	<li><a ng-click="scrollTo('ecmaBasics')">JavaScript background</a></li>
 	<li><a ng-click="scrollTo('logging')">Your first JavaScript program: logging to the console</a></li>
 	<li><a ng-click="scrollTo('runningGlueCommands')">Invoking GLUE commands from JavaScript</a></li>
-	<li><a ng-click="scrollTo('underscrore')">Using underscore.js</a>
-	<li><a ng-click="scrollTo('tabularFileData')">Importing and exporting tabular data</a></li>
-	<li><a ng-click="scrollTo('fastaFileData')">Working with FASTA data</a></li>
-	<li><a ng-click="scrollTo('ecmaFunctionInvoker')">Encapsulating JavaScript code in modules</a></li>
+	<li><a ng-click="scrollTo('underscore')">Using underscore.js</a>
+	<li><a ng-click="scrollTo('ecmaFunctionInvoker')">Encapsulating JavaScript programs as modules</a></li>
 </ol>
 </p>
 
@@ -72,17 +69,16 @@ GLUE> run script helloWorld.js
 12:42:28.832 NashornJsScript INFO: Hello world!
 OK</div></p>
 <p>
-The <code>glue</code> object, which is always available, is a special set of utility functions provided by
+The <code>glue</code> object, which is always available, contains a special set of utility functions provided by
 GLUE to JavaScript programs operating within the scripting layer. 
 The <code>glue.logInfo</code> function, provided by the <code>glue</code> object, 
-will output a log message (at log level INFO) to the console. This can be used for debugging, to quickly understand what is going on in your 
-program. 
+will output a log message (at log level INFO) to the console. 
 </p>
 <p>
 The <code>glue.logInfo</code> function may optionally take a second argument. If this second argument is a JavaScript object, 
 it will be logged to the console in 
 <a href="http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf">JSON format</a>. Since your program will 
-often be operating on objects, this can be used to give more details on its operation. To log a JavaScript object, you can 
+often be operating on objects, this is very useful for debugging. To log a JavaScript object, you can 
 modify your program like so:
 </p>
 <p><div hljs language="javascript" no-escape>
@@ -136,7 +132,7 @@ OK
 </div></p>
 <p>
 The <mode-command mode="root" command="list_project"></mode-command> command was run from within the JavaScript program. 
-Note that <code>glue.command</code> is passed an array with one element per word or argument. So for example the command:
+Note that <code>glue.command</code> was passed an array with one element per word or argument. So for example the command:
 </p>
 <p><div hljs language="json" no-escape>
 GLUE> list sequence --whereClause "gb_length >= 500"
@@ -205,7 +201,7 @@ in root command mode, therefore <code>listProjects.js</code> will only work if i
 you try to run <code>listProjects.js</code> from within project mode for example, you will get an error. 
 </p>
 <p>
-You can however, change mode within a JavaScript program. This is done by using the <code>glue.inMode</code> utility.
+You can however, change mode within a JavaScript program. This is done by using the <code>glue.inMode</code> utility function.
 Paste the following code into a new file <code>listFeatures.js</code>, in the <code>exampleProject</code> directory:
 <p><div hljs language="javascript" no-escape>
 var features;
@@ -274,15 +270,33 @@ GLUE> run script listFeatures.js
 OK
 </div></p>
 <p>
-The <code>glue.inMode</code> function temporarily changed the mode path from root ("/") to project mode ("/project/example"). Within
-project mode, the <mode-command mode="root_project" command="list_feature"></mode-command> command was run, and the result transformed
+Note that the mode path string "/project/example" supplied to <code>glue.inMode</code> is the same as the path displayed in the interactive 
+interpreter when in project mode. The <code>glue.inMode</code> function temporarily changed the mode path from root ("/") to project mode ("/project/example"). Within
+project mode, the <mode-command mode="root_project" command="list_feature"></mode-command> command was, and the result transformed
 to an array of objects and logged to the console.
 </p>
 <p>
-Note that the mode path string supplied to <code>glue.inMode</code> is the same as the path displayed in the interactive interpreter when
-in project mode. This mode path string is <b>relative to the current mode</b>; it is effectively appended to the current mode path string to
-produce the new mode path. These mode path strings can be constructed dynamically and composed together so that multiple nested mode changes are executed at 
-once, for example:
+Note that a callback function must be supplied to <code>glue.inMode</code> as its second argument. In the example
+we used an anonymous function. The supplied function is invoked within the specified mode.   
+Calls to <code>glue.inMode</code> may be nested by running <code>glue.inMode</code> again within the callback function: 
+the supplied mode path string is relative to the current mode; it is effectively appended 
+to the current mode path string to produce the new mode path. 
+</p>
+<p><div hljs language="javascript" no-escape>
+// assume we are in project mode
+// switch to reference mode
+glue.inMode("/reference/REF_MASTER_M73218", function() {
+    // within this switch to feature-location mode
+    glue.inMode("/feature-location/ORF1", function() {
+        // execute something in feature-location mode.
+    });
+    // back in reference mode
+});
+// back in project mode
+</div></p>
+<p>
+Mode path strings can also be constructed dynamically and composed 
+together so that multiple nested mode changes are executed at once, for example:
 </p>
 <p><div hljs language="javascript" no-escape>
 // assume we are in project mode, and variables refSeqName and featureName are defined
@@ -292,39 +306,85 @@ glue.inMode("/reference/"+refSeqName+"/feature-location/"+featureName, function(
 });
 // at this point we are back in project mode
 </div></p>
-
 <p>
-Also note that a callback function must be supplied to <code>glue.inMode</code> as its second argument. In the example
-we used an anonymous function. The supplied function is then invoked within the specified mode.   
+Note that the mode-wrapping feature that is available in the command line interpreter cannot be used within 
+the scripting layer; <code>glue.inMode</code> must be used to change modes.
 </p>
-
-
 <h3 id="underscore">Using underscore.js</h3>
-
-
-<h3 id="tabularFileData">Importing and exporting tabular data</h3>
-
-<h3 id="fastaFileData">Working with FASTA data</h3>
-
-<h3 id="ecmaFunctionInvoker">Encapsulating JavaScript code in modules</h3>
-
+<p>
+<a href="http://underscorejs.org/">Underscore.js</a> is a general-purpose library containing a set of functional 
+programming utilities which are absent from ECMAScript 5.1. It is not strictly necessary to use underscore.js in the 
+GLUE scripting layer but we have found to be useful and so we have built underscore.js into GLUE so that it is 
+always available. For example here we use the <code>_.each</code> utility from underscore.js to iterate over a 
+list using a function:
+</p>
 <p><div hljs language="javascript" no-escape>
-var subRegions;
-glue.inMode("module/exampleTabularUtilityCsv", function() {
-	subRegions = glue.tableToObjects(glue.command(["load-tabular", "tabular/m49_countries/m49_sub_regions.csv"]));
+var features;
+glue.inMode("/project/example", function() {
+    features = glue.tableToObjects(glue.command(["list", "feature"]));
 });
-_.each(subRegions, function(subRegion) {
-	var subRegionName = subRegion["Sub-region Name"].trim();
-	var subRegionId = subRegionName.toLowerCase().replace(/[ -]/g, "_");
-	var m49Code = subRegion["Sub-region Code"].trim();
-	var regionName = subRegion["Region Name"].trim();
-	var regionId = regionName.toLowerCase();
-	glue.command(["create", "custom-table-row", "m49_sub_region", subRegionId]);
-	glue.inMode("custom-table-row/m49_sub_region/"+subRegionId, function() {
-		glue.command(["set", "field", "display_name", subRegionName]);
-		glue.command(["set", "field", "m49_code", m49Code]);
-		glue.command(["set", "link-target", "m49_region", "custom-table-row/m49_region/"+regionId]);
-	});
+_.each(features, function(feature) {
+    glue.logInfo("feature.name", feature.name);
 });
 </div></p>
+<h3 id="ecmaFunctionInvoker">Encapsulating JavaScript programs as modules</h3>
+<p>
+As we have seen, the <non-mode-command command="run_script"></non-mode-command> command 
+can be used to run JavaScript programs directly from a file. 
+The <module-type name="ecmaFunctionInvoker"></module-type> module type provides an additional mechanism
+for running JavaScript programs, encapsulated as <a href="#/modules">GLUE modules</a>. This has several benefits:
+<ul>
+	<li>The JavaScript program is stored in the database, so the project does not rely on the file system
+	in order to run it.</li>
+	<li>Functions within the program can accept parameters as input.</li>
+	<li>Functions can return tabular, or other structured results just like built-in GLUE commands</li> 
+</ul>
+JavaScript programs encapsulated in this way effectively provide a set of custom GLUE commands to be used alongside
+the built-in commands. Using <module-type name="ecmaFunctionInvoker"></module-type> modules can therefore be considered a means 
+for GLUE project developers to extend GLUE functionality on a project-specific basis.
+</p>
+<p>
+The concept is illustrated by the <code>exampleEcmaFunctionInvoker</code> module within the example GLUE project.
+This adds a new function <code>hostWithGenomeRegion</code> which takes a (coding) genome feature and 
+start and end codon positions, and outputs a table.
+The table contains a row for each sequence in the example set, listing its sequence ID, host species
+and the amino acid translation and underlying nucleotides for the specified region.
+</p>
+<p>
+The <code>exampleEcmaFunctionInvoker</code> module essentially consists of two files. The main logic is specified in a JavaScript file, 
+<code>exampleEcmaFunctionInvoker.js</code>. Note that JavaScript code executed within 
+an <module-type name="ecmaFunctionInvoker"></module-type> module always starts its execution in project command mode.
+</p>
+<p><div hljs language="javascript" source="exampleEcmaFunctionInvokerJavaScript" no-escape>
+</div></p>
+<p>
+This is then encapsulated in a module, as specified by the <code>exampleEcmaFunctionInvoker.xml</code> file:
+</p>
+<p><div hljs language="xml" source="exampleEcmaFunctionInvokerXml" no-escape>
+</div></p>
+We can invoke the <code>hostWithGenomeRegion</code> function from the commmand line, it produces an
+interactive table like built-in GLUE commands:
+<p><div hljs language="json" no-escape>
+Mode path: /project/example
+GLUE> module exampleEcmaFunctionInvoker invoke-function hostWithGenomeRegion ORF2 70 75
++============+=======================+==========================+===========================+
+| sequenceID |      hostSpecies      | aminoAcids_ORF2_70_to_75 | nucleotides_ORF2_70_to_75 |
++============+=======================+==========================+===========================+
+| AB481226   | -                     | PGAGAR                   | CCCGGGGCTGGAGCTCGC        |
+| AB591734   | Herpestes javanicus   | SGAGAR                   | TCCGGGGCTGGAGCTCGC        |
+| AF444003   | -                     | AGAGPR                   | GCCGGGGCTGGACCTCGT        |
+| FJ705359   | Sus scrofa            | SGAGAR                   | TCCGGGGCTGGAGCTCGC        |
+| FJ763142   | Homo sapiens          | AGAGAR                   | GCCGGGGCTGGAGCTCGC        |
+| FJ998015   | Sus scrofa            | SGAGAR                   | TCCGGGGCTGGAGCTCGC        |
+| JF443717   | Homo sapiens          | AGAGPR                   | GCCGGGGCTGGACCTCGC        |
+| JQ013791   | Oryctolagus cuniculus | SGSGAR                   | TCCGGGTCTGGAGCCCGT        |
+| JX855794   | Sus scrofa            | AGAGAR                   | GCCGGGGCTGGAGCTCGC        |
+| KP294371   | Sus scrofa            | SGAGAR                   | TCCGGGGCTGGAGCTCGC        |
++============+=======================+==========================+===========================+
+
+Mode path: /project/example
+GLUE> 
+</div></p>
+
+
 
