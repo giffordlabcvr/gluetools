@@ -42,13 +42,16 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 @CommandClass(
 		commandWords={"count", "amino-acid"}, 
 		description = "Count occurrences of specific amino-acid value in a member feature", 
-		docoptUsages = { "-r <acRefName> -f <featureName> <aminoAcid>" },
+		docoptUsages = { "-r <relRefName> -f <featureName> <aminoAcid>" },
 		docoptOptions = { 
-		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
+		"-r <relRefName>, --relRefName <relRefName>     Related reference sequence",
 		"-f <featureName>, --featureName <featureName>  Feature to translate",
 		},
 		furtherHelp = 
-		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
+		"If this is a member of a constrained alignment, the <relRefName> argument names a reference sequence "+
+				"constraining an ancestor alignment of the alignment. "+
+				"If this is a member of an unconstrained alignment, the <relRefName> argument names a reference sequence "+
+				"which is also a member of the alignment. "+
 		"The <featureName> argument names a feature location which is defined on this reference. "+
 		"The result will be confined to this feature location. "+
 		"The command outputs the number of occurrences of <aminoAcid> in the translation.",
@@ -84,7 +87,7 @@ public class MemberCountAminoAcidCommand extends MemberBaseAminoAcidCommand<Memb
 
 
 	@CompleterClass
-	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {}
+	public static final class Completer extends FeatureOfRelatedRefCompleter {}
 
 	
 }

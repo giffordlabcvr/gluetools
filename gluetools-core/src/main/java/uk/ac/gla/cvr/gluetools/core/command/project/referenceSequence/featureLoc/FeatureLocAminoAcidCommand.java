@@ -27,7 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -46,8 +46,8 @@ public class FeatureLocAminoAcidCommand extends FeatureLocBaseAminoAcidCommand<F
 	@Override
 	public FeatureLocAminoAcidResult execute(CommandContext cmdContext) {
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		List<LabeledAminoAcid> labeledAminoAcids = featureLocAminoAcids(cmdContext, featureLoc);
-		return new FeatureLocAminoAcidResult(labeledAminoAcids);
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = featureLocAminoAcids(cmdContext, featureLoc);
+		return new FeatureLocAminoAcidResult(labeledQueryAminoAcids);
 	}
 
 	@CompleterClass

@@ -63,7 +63,7 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 		super.configure(pluginConfigContext, configElem);
 		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
+		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
 		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
 	}
 

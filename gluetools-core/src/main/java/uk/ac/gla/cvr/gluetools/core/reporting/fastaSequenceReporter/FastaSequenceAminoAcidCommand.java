@@ -25,75 +25,74 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
-import gnu.trove.map.TIntObjectMap;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a FASTA file", 
-		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-t <targetRefName>] [-a <tipAlmtName>]" },
+		docoptUsages = { "-i <fileName> -r <targetRefName> -f <featureName>" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
-				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
+				"-r <targetRefName>, --targetRefName <targetRefName>  Target reference sequence",
 				"-f <featureName>, --featureName <featureName>        Feature to translate",
-				"-t <targetRefName>, --targetRefName <targetRefName>  Target reference",
-				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
-		        "translates a section of the query sequence to amino acids based on the target reference sequence's "+
-				"place in the alignment tree. "+
-				"If <targetRefName> is not supplied, it may be inferred from the FASTA sequence ID, if the module is appropriately configured. "+
-				"The target reference sequence must be a member of a constrained "+
-		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
-		        "inferred from the target reference if possible. "+
-		        "The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
-				"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
-				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
+		        "translates a specified feature within the query sequence to amino acids based on the alignment result. "+
+				"The <featureName> arguments specifies a feature location on the target reference sequence. "+
 				"The translated amino acids will be limited to the specified feature location. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<FastaSequenceAminoAcidResult> 
+public class FastaSequenceAminoAcidCommand extends ModulePluginCommand<FastaSequenceAminoAcidResult, FastaSequenceReporter> 
 	implements ProvidedProjectModeCommand{
 
-	
 	public static final String FILE_NAME = "fileName";
+	public static final String TARGET_REF_NAME = "targetRefName";
+	public static final String FEATURE_NAME = "featureName";
 
 	private String fileName;
+	private String targetRefName;
+	private String featureName;
+	
+	protected String getFeatureName() {
+		return featureName;
+	}
+
+	protected String getTargetRefName() {
+		return targetRefName;
+	}
 
 	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
+		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 	}
 	
 
@@ -106,62 +105,17 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		String fastaID = fastaEntry.getKey();
 		DNASequence fastaNTSeq = fastaEntry.getValue();
 
-		String targetRefName = getTargetRefName();
-		
-		if(targetRefName == null) {
-			targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID);
-		}
-		
 		AlignerResult alignerResult = fastaSequenceReporter
-				.alignToTargetReference(consoleCmdContext, targetRefName, fastaID, fastaNTSeq);
-		
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
+				.alignToTargetReference(consoleCmdContext, getTargetRefName(), fastaID, fastaNTSeq);
 
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
-		Alignment tipAlmt = tipAlmtMember.getAlignment();
-
-		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
-		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
-		
 		// extract segments from aligner result
-		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
-
-		// translate segments to tip alignment reference
-		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-				queryToTargetRefSegs);
-		
-		// translate segments to ancestor constraining reference
-		List<QueryAlignedSegment> queryToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, ancConstrainingRef);
-
-		String fastaNTs = fastaNTSeq.getSequenceAsString();
+		List<QueryAlignedSegment> queryToRelatedRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
 
 		
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> queryToAncConstrRefSegsFeatureArea = 
-					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
-		
-		List<TranslatedQueryAlignedSegment> translatedQaSegs = fastaSequenceReporter.translateNucleotides(
-				cmdContext, featureLoc, queryToAncConstrRefSegsFeatureArea, fastaNTs);
+		ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(getTargetRefName()));
 
-		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-
-		for(TranslatedQueryAlignedSegment translatedQaSeg: translatedQaSegs) {
-			int refNt = translatedQaSeg.getQueryAlignedSegment().getRefStart();
-			int queryNt = translatedQaSeg.getQueryAlignedSegment().getQueryStart();
-			for(int i = 0; i < translatedQaSeg.getTranslation().length(); i++) {
-				String segAA = translatedQaSeg.getTranslation().substring(i, i+1);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), segAA), queryNt));
-				refNt = refNt+3;
-				queryNt = queryNt+3;
-			}
-		}
-
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = TranslationUtils.
+				translateQaSegments(consoleCmdContext, relatedRef, getFeatureName(), queryToRelatedRefSegs, fastaNTSeq.getSequenceAsString());
 		
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
@@ -172,6 +126,26 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		public Completer() {
 			super();
 			registerPathLookup("fileName", false);
+			registerDataObjectNameLookup("targetRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String targetRefName = (String) bindings.get("targetRefName");
+					if(targetRefName != null) {
+						ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName), true);
+						if(targetRef != null) {
+							return targetRef.getFeatureLocations().stream()
+									.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
+									.collect(Collectors.toList());
+						}
+					}
+					return null;
+				}
+			});
+
 		}
 		
 	}

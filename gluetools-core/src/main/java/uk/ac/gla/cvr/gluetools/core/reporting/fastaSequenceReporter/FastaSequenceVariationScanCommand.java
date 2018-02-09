@@ -41,7 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] [-t <targetRefName>] [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
+		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
 		""},
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 FASTA input file",
@@ -61,7 +61,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
 		        "scans a section of the query "+
-				"If <targetRefName> is not supplied, it may be inferred from the FASTA sequence ID, if the module is appropriately configured. "+
 				"sequence for variations based on the target reference sequence's "+
 				"place in the alignment tree. The target reference sequence must be a member of a constrained "+
 		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
@@ -101,10 +100,6 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceBaseVariatio
 
 		String targetRefName = getTargetRefName();
 		
-		if(targetRefName == null) {
-			targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID);
-		}
-
 		return executeAux(cmdContext, fastaSequenceReporter, fastaID,
 				fastaNTSeq, targetRefName);
 	}

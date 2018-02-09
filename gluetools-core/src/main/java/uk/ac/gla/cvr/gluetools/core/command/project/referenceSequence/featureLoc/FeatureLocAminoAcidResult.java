@@ -27,23 +27,25 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class FeatureLocAminoAcidResult extends BaseTableResult<LabeledAminoAcid> {
+public class FeatureLocAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid> {
 
 	public static final String 
 		CODON_LABEL = "codonLabel",
 		REF_NT = "refNt",
+		REF_CODON_NTS = "refCodonNts",
 		AMINO_ACID = "aminoAcid";
 
 
-	public FeatureLocAminoAcidResult(List<LabeledAminoAcid> rowData) {
+	public FeatureLocAminoAcidResult(List<LabeledQueryAminoAcid> rowData) {
 		super("featureLocAminoAcidResult", 
 				rowData, 
-				column(CODON_LABEL, laa -> laa.getLabeledCodon().getCodonLabel()),
-				column(REF_NT, laa -> laa.getLabeledCodon().getNtStart()),
-				column(AMINO_ACID, laa -> laa.getAminoAcid()));
+				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
+				column(REF_NT, lqaa -> lqaa.getQueryNt()),
+				column(REF_CODON_NTS, lqaa -> lqaa.getCodonNts()),
+				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()));
 	}
 
 }

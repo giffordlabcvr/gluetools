@@ -45,6 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceException.Code;
+import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
@@ -54,16 +55,13 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaSequenceReporter",
-		description="Provides commands for protein translation and Variation scanning on FASTA nucleotide files")
+		description="Provides commands for protein translation and variation scanning on FASTA nucleotide files")
 public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
-	public static final String FASTA_ID_TEXT_TO_REFERENCE_QUERY_MODULE_NAME = "fastaIdTextToReferenceQueryModuleName";
 
 
 	private String alignerModuleName;
-	// Transforms FASTA ID to a where clause identifying the target reference.
-	private String fastaIdTextToReferenceQueryModuleName;
 
 
 	public FastaSequenceReporter() {
@@ -72,7 +70,6 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		registerModulePluginCmdClass(FastaSequenceVariationScanCommand.class);
 		registerModulePluginCmdClass(FastaSequenceStringVariationScanCommand.class);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
-		addSimplePropertyName(FASTA_ID_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
 
 	}
 
@@ -81,83 +78,24 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.alignerModuleName = PluginUtils.configureStringProperty(configElem, ALIGNER_MODULE_NAME, false);
-		this.fastaIdTextToReferenceQueryModuleName = PluginUtils.configureStringProperty(configElem, FASTA_ID_TEXT_TO_REFERENCE_QUERY_MODULE_NAME, false);
 	}
 	
 	public String getAlignerModuleName() {
 		return alignerModuleName;
 	}
 	
-	public String targetRefNameFromFastaId(CommandContext cmdContext, String fastaId) {
-		if(fastaIdTextToReferenceQueryModuleName == null) {
-			throw new FastaSequenceException(Code.NO_TARGET_REFERENCE_DEFINED);
-		}
-		TextToQueryTransformer fastaIdTextToReferenceQueryTransformer = resolveIdToRefQueryModule(cmdContext);
-		List<String> referenceSeqNames = fastaIdTextToReferenceQueryTransformer.textToQuery(cmdContext, fastaId).
-				getColumnValues(ReferenceSequence.NAME_PROPERTY);
-		if(referenceSeqNames.size() == 0) {
-			throw new FastaSequenceException(Code.TARGET_REFERENCE_NOT_FOUND, fastaId);
-		}
-		if(referenceSeqNames.size() > 1) {
-			throw new FastaSequenceException(Code.TARGET_REFERENCE_AMBIGUOUS, fastaId, referenceSeqNames.toString());
-		}
-		return referenceSeqNames.get(0);
-	}
-
-	private TextToQueryTransformer resolveIdToRefQueryModule(
-			CommandContext cmdContext) {
-		TextToQueryTransformer fastaIdTextToReferenceQueryTransformer = 
-				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, fastaIdTextToReferenceQueryModuleName,
-						TextToQueryTransformer.DataClassEnum.ReferenceSequence);
-		return fastaIdTextToReferenceQueryTransformer;
-	}
-
-	public AlignerResult alignToTargetReference(CommandContext cmdContext, String targetRefName, 
+	public AlignerResult alignToTargetReference(CommandContext cmdContext, String relatedRefName, 
 			String fastaID, DNASequence fastaNTSeq) {
 		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, getAlignerModuleName());
-		return aligner.computeConstrained(cmdContext, targetRefName, fastaID, fastaNTSeq);
+		return aligner.computeConstrained(cmdContext, relatedRefName, fastaID, fastaNTSeq);
 	}
 	
-	
-	public List<TranslatedQueryAlignedSegment> translateNucleotides(
-			CommandContext cmdContext, FeatureLocation featureLoc,
-			List<QueryAlignedSegment> queryToRefSegsFeatureArea, String queryNTs) {
-			
-		// truncate to codon aligned
-		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-
-		List<QueryAlignedSegment> queryToRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefSegsFeatureArea);
-
-		final Translator translator = new CommandContextTranslator(cmdContext);
-		
-		if(queryToRefSegsCodonAligned.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
-		queryToRefSegsCodonAligned = QueryAlignedSegment.mergeAbutting(queryToRefSegsCodonAligned, 
-				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-
-		
-		List<TranslatedQueryAlignedSegment> translatedQaSegs = new ArrayList<TranslatedQueryAlignedSegment>();
-		
-		for(QueryAlignedSegment queryToRefSeg: queryToRefSegsCodonAligned) {
-			CharSequence nts = SegmentUtils.base1SubString(queryNTs, queryToRefSeg.getQueryStart(), queryToRefSeg.getQueryEnd());
-			String segAAs = translator.translate(nts);
-			translatedQaSegs.add(new TranslatedQueryAlignedSegment(queryToRefSeg, segAAs));
-		}
-		return translatedQaSegs;
-	}
 
 
 	
 	@Override
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
-		if(this.fastaIdTextToReferenceQueryModuleName != null) {
-			resolveIdToRefQueryModule(cmdContext);
-		}
 	}
 
 
@@ -193,6 +131,13 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		}
 		Entry<String, DNASequence> singleEntry = headerToSeq.entrySet().iterator().next();
 		return singleEntry;
+	}
+
+	public List<TranslatedQueryAlignedSegment> translateNucleotides(
+			CommandContext cmdContext, FeatureLocation featureLoc,
+			List<QueryAlignedSegment> queryToTargetFeatureArea, String queryNTs) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

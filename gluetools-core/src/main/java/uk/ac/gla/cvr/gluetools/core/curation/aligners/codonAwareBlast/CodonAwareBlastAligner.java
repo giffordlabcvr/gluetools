@@ -39,6 +39,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
@@ -89,13 +90,13 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 		String featureName = getFeatureName();
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName));
 		
-		List<LabeledAminoAcid> featureLocAminoAcids = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
+		List<LabeledQueryAminoAcid> featureLocAminoAcids = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
 		StringBuffer buf = new StringBuffer();
 		TIntIntMap aaToNtMap = new TIntIntHashMap();
 		int i = 1;
-		for(LabeledAminoAcid laa: featureLocAminoAcids) {
-			buf.append(laa.getAminoAcid());
-			aaToNtMap.put(i, laa.getLabeledCodon().getNtStart());
+		for(LabeledQueryAminoAcid lqaa: featureLocAminoAcids) {
+			buf.append(lqaa.getLabeledAminoAcid().getAminoAcid());
+			aaToNtMap.put(i, lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart());
 			i++;
 		}
 		String queryAAs = buf.toString();

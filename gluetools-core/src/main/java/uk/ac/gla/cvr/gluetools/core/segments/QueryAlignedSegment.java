@@ -37,6 +37,9 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
@@ -65,6 +68,9 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 	public QueryAlignedSegment(PluginConfigContext pluginConfigContext, Element configElem) {
 		super();
 		configure(pluginConfigContext, configElem);
+	}
+	
+	public QueryAlignedSegment() {
 	}
 	
 	@Override
@@ -399,4 +405,26 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		return results;
 	}
 
+	public static List<QueryAlignedSegment> fromReferenceSegments(List<ReferenceSegment> refSegs) {
+		LinkedList<QueryAlignedSegment> results = new LinkedList<QueryAlignedSegment>();
+		for(ReferenceSegment refSeg: refSegs) {
+			results.push(new QueryAlignedSegment(refSeg.getRefStart(), refSeg.getRefEnd(), refSeg.getRefStart(), refSeg.getRefEnd()));
+		}
+		return results;
+	}
+
+	
+	public static class QueryAlignedSegmentsResult extends CommandResult {
+
+		public QueryAlignedSegmentsResult(List<QueryAlignedSegment> qaSegs) {
+			super("queryAlignedSegmentsResult");
+			CommandDocument commandDocument = super.getCommandDocument();
+			CommandArray segsArray = commandDocument.setArray("segments");
+			for(QueryAlignedSegment qaSeg: qaSegs) {
+				CommandObject qaSegObj = segsArray.addObject();
+				qaSeg.toDocument(qaSegObj);
+			}
+		}
+	}		
+	
 }

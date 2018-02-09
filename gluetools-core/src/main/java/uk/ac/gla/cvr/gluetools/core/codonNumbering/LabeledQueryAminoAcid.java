@@ -25,14 +25,17 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
+
 public class LabeledQueryAminoAcid {
 
 	private LabeledAminoAcid labeledAminoAcid;
 	private int queryNt;
+	private CharSequence codonNts;
 	
-	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, int queryNt) {
+	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, int queryNt, CharSequence codonNts) {
 		this.labeledAminoAcid = labeledAminoAcid;
 		this.queryNt = queryNt;
+		this.codonNts = codonNts;
 	}
 
 	public LabeledAminoAcid getLabeledAminoAcid() {
@@ -41,5 +44,9 @@ public class LabeledQueryAminoAcid {
 
 	public int getQueryNt() {
 		return queryNt;
+	}
+	
+	public CharSequence getCodonNts() {
+		return codonNts;
 	}
 }

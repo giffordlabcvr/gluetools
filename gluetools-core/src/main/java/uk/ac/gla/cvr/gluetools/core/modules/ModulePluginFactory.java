@@ -76,6 +76,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchAminoAcidVariatio
 import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchNucleotideVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexAminoAcidVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexNucleotideVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.WebVisualisationUtility;
 import uk.ac.gla.cvr.gluetools.custom.epitopeRasOverlap.EpitopeRasOverlap;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
@@ -165,7 +166,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(Kuiken2006CodonLabeler.class);
 		registerPluginClass(FeaturePresenceRecorder.class);
 
-		
+		setModulePluginGroup(new ModulePluginGroup("webVisualisation", "Web visualisation module types", 92));
+		registerPluginClass(WebVisualisationUtility.class);
 	}
 
 	
