@@ -33,21 +33,20 @@ import java.util.regex.Pattern;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator.PropertyUpdate;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule implements Plugin, PropertyPopulator {
+public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule implements Plugin, ValueExtractor, PropertyPopulator {
 		
 		private String property;
 		private Pattern nullRegex;
@@ -78,7 +77,8 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 		}
 
 		public void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
-			if(!(xmlPopulatorContext.isAllowedField(property) || xmlPopulatorContext.isAllowedLink(property))) {
+			PropertyPathInfo propertyPathInfo = xmlPopulatorContext.getPropertyPathInfo(property);
+			if(propertyPathInfo == null) {
 				return;
 			}
 			if(xmlPopulatorContext.getPropertyUpdates().containsKey(property)) {
@@ -91,14 +91,12 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 				throw new XmlPopulatorException(e, XmlPopulatorException.Code.POPULATOR_RULE_FAILED, e.getLocalizedMessage());
 			}
 			if(selectedText != null) {
-				String propertyPopulatorResult = SequencePopulator.runPropertyPopulator(this, selectedText);
+				String propertyPopulatorResult = ValueExtractor.extractValue(this, selectedText);
 				if(propertyPopulatorResult != null) {
-					FieldType fieldType = xmlPopulatorContext.getFieldType(property);
-					String customTableName = xmlPopulatorContext.getCustomTableName(property);
-					PropertyUpdate propertyUpdate = SequencePopulator
-							.generatePropertyUpdate(fieldType, customTableName, xmlPopulatorContext.getSequence(), this, propertyPopulatorResult);
-					if(propertyUpdate != null && propertyUpdate.updated()) {
-						xmlPopulatorContext.getPropertyUpdates().put(propertyUpdate.getProperty(), propertyUpdate);
+					PropertyUpdate propertyUpdate = PropertyPopulator
+							.generatePropertyUpdate(propertyPathInfo, xmlPopulatorContext.getSequence(), this, propertyPopulatorResult);
+					if(propertyUpdate.updated()) {
+						xmlPopulatorContext.getPropertyUpdates().put(propertyPathInfo.getPropertyPath(), propertyUpdate);
 					}
 				}
 			}
@@ -137,8 +135,12 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 		@Override
 		public void validate(CommandContext cmdContext) {
 			Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-			project.checkModifiableProperties(ConfigurableTable.sequence.name(), Arrays.asList(property));
-			
+			PropertyPopulator.analysePropertyPath(project, ConfigurableTable.sequence.name(), property);
+		}
+
+		@Override
+		public List<String> updatablePropertyPaths() {
+			return Arrays.asList(property);
 		}
 		
 		

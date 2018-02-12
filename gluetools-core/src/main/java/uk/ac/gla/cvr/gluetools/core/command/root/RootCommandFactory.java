@@ -27,8 +27,8 @@ package uk.ac.gla.cvr.gluetools.core.command.root;
 
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
-import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModeCommandCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentCommandModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModeCommandCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModuleCommandCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentModuleTypeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.root.webdocs.WebdocsDocumentNonModeCommandCommand;

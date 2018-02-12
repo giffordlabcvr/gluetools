@@ -37,7 +37,9 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorContext;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
@@ -46,7 +48,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -80,8 +81,8 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
-	private Map<String, PropertyUpdate> populate(Sequence sequence, Map<String, FieldType> fieldTypes, Map<String, String> links) {
-		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(sequence, fieldTypes, links);
+	private Map<String, PropertyUpdate> populate(Sequence sequence, Map<String, PropertyPathInfo> propertyPathToInfo) {
+		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(sequence, propertyPathToInfo);
 		String format = sequence.getFormat();
 		if(format.equals(SequenceFormat.GENBANK_XML.name())) {
 			Document sequenceDataDoc;
@@ -106,9 +107,13 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		} else {
 			selectQuery = new SelectQuery(Sequence.class);
 		}
+
+		if(updatableProperties == null) {
+			updatableProperties = allUpdatablePropertyPaths();
+		}
+		Map<String, PropertyPathInfo> propertyPathToInfo = 
+				getPropertyPathToInfoMap(cmdContext, updatableProperties);
 		
-		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, updatableProperties);
-		Map<String, String> links = getLinks(cmdContext, updatableProperties);
 		
 		log("Finding sequences to process");
 		int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
@@ -126,14 +131,14 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 			currentSequenceBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 			log("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
 			for(Sequence sequence: currentSequenceBatch) {
-				pkMapToUpdates.put(sequence.pkMap(), populate(sequence, fieldTypes, links));
+				pkMapToUpdates.put(sequence.pkMap(), populate(sequence, propertyPathToInfo));
 			}
 			if(updateDB) {
 				/* DB udpate here */
 				currentSequenceBatch.forEach(seq -> {
 					Map<String, PropertyUpdate> updates = pkMapToUpdates.get(seq.pkMap());
 					updates.values().forEach( update -> {
-						applyUpdateToDB(cmdContext, fieldTypes, links, seq, update);
+						PropertyPopulator.applyUpdateToDB(cmdContext, seq, update);
 					} );
 				});
 				cmdContext.commit();
@@ -173,6 +178,16 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		for(XmlPopulatorRule rule: rules) {
 			rule.validate(cmdContext);
 		}
+	}
+
+
+	@Override
+	public List<String> allUpdatablePropertyPaths() {
+		List<String> paths = new ArrayList<String>();
+		for(XmlPopulatorRule rule: rules) {
+			paths.addAll(rule.updatablePropertyPaths());
+		}
+		return paths;
 	}
 
 

@@ -23,32 +23,34 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.populating;
+package uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator;
 
-import java.util.List;
-import java.util.regex.Pattern;
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+public class PropertyPopulatorException extends GlueException {
 
-public interface PropertyPopulator {
+	public enum Code implements GlueErrorCode {
+		INVALID_PATH("startTable", "propertyPath", "errorTxt"),
+		NULL_LINK_TARGET("sourceName", "sequenceID", "propertyPath");
 
-	public static final String DEFAULT_NULL_REGEX = " *";
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
+		}
 
-	public RegexExtractorFormatter getMainExtractor();
+	}
 
-	public List<RegexExtractorFormatter> getValueConverters();
+	public PropertyPopulatorException(Code code, Object... errorArgs) {
+		super(code, errorArgs);
+	}
 
-	public Pattern getNullRegex();
-	
-	public default String getProperty() {
-		return null;
+	public PropertyPopulatorException(Throwable cause, Code code,
+			Object... errorArgs) {
+		super(cause, code, errorArgs);
 	}
 	
-	public default boolean overwriteExistingNonNull() {
-		return true;
-	}
-
-	public default boolean overwriteWithNewNull() {
-		return false;
-	}
 }

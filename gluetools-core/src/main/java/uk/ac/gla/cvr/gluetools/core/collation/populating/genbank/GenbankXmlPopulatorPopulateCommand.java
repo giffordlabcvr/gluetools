@@ -26,22 +26,25 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.genbank;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -98,10 +101,22 @@ public class GenbankXmlPopulatorPopulateCommand extends ModulePluginCommand<Comm
 	}
 	
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
+	public static class Completer extends ModuleCmdCompleter<GenbankXmlPopulator> {
 		public Completer() {
 			super();
-			registerVariableInstantiator("property", new ModifiablePropertyInstantiator(ConfigurableTable.sequence.name()));
+			registerVariableInstantiator("property", new ModuleVariableInstantiator() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, GenbankXmlPopulator genbankXmlPopulator,
+						Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					return genbankXmlPopulator.allUpdatablePropertyPaths()
+							.stream()
+							.map(str -> new CompletionSuggestion(str, true))
+							.collect(Collectors.toList());
+				}
+			});
 		}
 	}
 	

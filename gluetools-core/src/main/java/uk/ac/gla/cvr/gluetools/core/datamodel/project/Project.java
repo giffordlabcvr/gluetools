@@ -224,8 +224,11 @@ public class Project extends _Project {
 		if(customField != null) {
 			return customField.getFieldType();
 		}
-		// assume built in modifiable fields are of varchar type.
-		return FieldType.VARCHAR;
+		if(getModifiableFieldNames(tableName).contains(fieldName)) {
+			// assume built in modifiable fields are of varchar type.
+			return FieldType.VARCHAR;
+		}
+		return null;
 	}
 	
 	@Override

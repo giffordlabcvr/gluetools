@@ -31,17 +31,20 @@ import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public class FastaFieldParser implements Plugin, PropertyPopulator {
+public class FastaFieldParser implements Plugin, ValueExtractor, PropertyPopulator {
 
-	private String fieldName;
+	private String property;
 	private Pattern nullRegex = null;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters = null;
@@ -51,10 +54,20 @@ public class FastaFieldParser implements Plugin, PropertyPopulator {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
-		fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", true);
+		property = PluginUtils.configureStringProperty(configElem, "property", false);
+		String fieldName = PluginUtils.configureStringProperty(configElem, "fieldName", false);
+		if(fieldName != null) {
+			GlueLogger.getGlueLogger().warning("Element <fieldName> is deprecated, use element property instead");
+		}
+		if(property == null && fieldName == null) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "No target property defined");
+		}
+		if(fieldName != null && this.property == null) {
+			this.property = fieldName;
+		}
 		nullRegex = Optional.ofNullable(
 				PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
-				orElse(Pattern.compile(PropertyPopulator.DEFAULT_NULL_REGEX));
+				orElse(Pattern.compile(ValueExtractor.DEFAULT_NULL_REGEX));
 		overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
 		overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
 		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
@@ -63,7 +76,7 @@ public class FastaFieldParser implements Plugin, PropertyPopulator {
 	}
 
 	public Optional<Result> parseField(String inputText) {
-		String fieldValue = SequencePopulator.runPropertyPopulator(this, inputText);
+		String fieldValue = ValueExtractor.extractValue(this, inputText);
 		if(fieldValue != null) {
 			return Optional.of(new Result(this, fieldValue));
 		} else {
@@ -72,26 +85,26 @@ public class FastaFieldParser implements Plugin, PropertyPopulator {
 	}
 	
 	public class Result {
-		private PropertyPopulator fieldPopulator;
-		private String fieldValue;
+		private PropertyPopulator propertyPopulator;
+		private String value;
 
-		public Result(PropertyPopulator fieldPopulator, String fieldValue) {
+		public Result(PropertyPopulator propertyPopulator, String value) {
 			super();
-			this.fieldPopulator = fieldPopulator;
-			this.fieldValue = fieldValue;
+			this.propertyPopulator = propertyPopulator;
+			this.value = value;
 		}
 		
-		public PropertyPopulator getFieldPopulator() {
-			return fieldPopulator;
+		public PropertyPopulator getPropertyPopulator() {
+			return propertyPopulator;
 		}
-		public String getFieldValue() {
-			return fieldValue;
+		public String getValue() {
+			return value;
 		}
 	}
 
 	@Override
 	public String getProperty() {
-		return fieldName;
+		return property;
 	}
 
 	@Override

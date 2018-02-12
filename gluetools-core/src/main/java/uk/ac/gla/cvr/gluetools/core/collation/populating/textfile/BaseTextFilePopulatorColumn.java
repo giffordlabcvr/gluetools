@@ -31,7 +31,8 @@ import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
@@ -40,7 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class BaseTextFilePopulatorColumn implements Plugin, PropertyPopulator {
+public abstract class BaseTextFilePopulatorColumn implements Plugin, ValueExtractor, PropertyPopulator {
 
 	private Optional<Boolean> identifier;
 	private Optional<String> header;

@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.xpath.XPathExpression;
@@ -106,4 +107,13 @@ public abstract class NodeSelectorRule extends XmlPopulatorRule {
 		});
 	}
 
+	@Override
+	public List<String> updatablePropertyPaths() {
+		List<String> paths = new ArrayList<String>();
+		childRules.stream().forEach(rule -> paths.addAll(rule.updatablePropertyPaths()));
+		return paths;
+	}
+
+	
+	
 }

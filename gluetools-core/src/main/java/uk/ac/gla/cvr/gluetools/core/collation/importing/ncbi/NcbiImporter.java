@@ -668,10 +668,8 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 					GlueLogger.getGlueLogger().warning("Source "+sourceName+", Sequence "+sequenceID+" already exists: not updated.");
 					continue;
 				}
-				Sequence newSequence = null;
 				Document gbXmlDocument = null;
-				createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
-				newSequence = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true);
+				Sequence newSequence = createSequence(cmdContext, sourceName, sequenceID, format, sequenceData);
 				gbXmlDocument = ((GenbankXmlSequenceObject) newSequence.getSequenceObject()).getDocument();
 				newSequence.writeProperty(giNumberFieldName, giNumberFromDocument(gbXmlDocument));
 				cmdContext.commit();

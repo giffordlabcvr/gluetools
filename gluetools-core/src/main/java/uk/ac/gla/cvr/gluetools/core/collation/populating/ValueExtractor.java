@@ -23,25 +23,32 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.populating.textfile;
+package uk.ac.gla.cvr.gluetools.core.collation.populating;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.regex.Pattern;
 
-import org.apache.cayenne.exp.Expression;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+public interface ValueExtractor {
 
-public class TextFilePopulatorContext {
-	Map<Integer, List<BaseTextFilePopulatorColumn>> positionToColumn = null;
-	Map<BaseTextFilePopulatorColumn, Integer> columnToPosition = null;
-	Optional<Expression> whereClause = null;
-	ConsoleCommandContext cmdContext;
-	List<Map<String,String>> results = new ArrayList<Map<String,String>>();
-	Boolean updateDB;
-	Map<String, PropertyPathInfo> propertyPathToInfoMap;
-	
+	public static final String DEFAULT_NULL_REGEX = " *";
+
+	public RegexExtractorFormatter getMainExtractor();
+
+	public List<RegexExtractorFormatter> getValueConverters();
+
+	public Pattern getNullRegex();
+
+	public static String extractValue(ValueExtractor valueExtractor, String inputText) {
+		String extractAndConvertResult = 
+				RegexExtractorFormatter.extractAndConvert(inputText, valueExtractor.getMainExtractor(), valueExtractor.getValueConverters());
+		if(extractAndConvertResult != null) {
+			Pattern nullRegex = valueExtractor.getNullRegex();
+			if(nullRegex == null || !nullRegex.matcher(extractAndConvertResult).matches()) {
+				return extractAndConvertResult;
+			}
+		}
+		return null;
+	}
 }

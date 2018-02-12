@@ -26,26 +26,28 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.textfile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"populate"}, 
-		docoptUsages={"[-b <batchSize>] [-w <whereClause>] [-p] -f <fileName> [<fieldName> ...]"},
+		docoptUsages={"[-b <batchSize>] [-w <whereClause>] [-p] -f <fileName> [<property> ...]"},
 		docoptOptions={
 				"-b <batchSize>, --batchSize <batchSize>        Commit batch size [default: 250]",
 				"-p, --preview                                  Preview only, no DB updates",
@@ -58,18 +60,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"The <batchSize> argument allows you to control how often updates are committed to the database "+
 				"during the import. The default is every 250 text file lines. A larger <batchSize> means fewer database "+
 				"accesses, but requires more Java heap memory."+
-				"If <fieldName> arguments are supplied, the populator will not update any field unless it appears in the <fieldName> list. "+
-				"If no <fieldName> arguments are supplied, the populator may update any field.") 
+				"If <property> arguments are supplied, the populator will not update any property unless it appears in the <property> list. "+
+				"If no <property> arguments are supplied, the populator may update any field.") 
 public class TextFilePopulatorPopulateCommand extends ModulePluginCommand<TextFilePopulatorResult, TextFilePopulator> implements ProvidedProjectModeCommand {
 
 	public static final String WHERE_CLAUSE = "whereClause";
-	public static final String FIELD_NAME = "fieldName";
+	public static final String PROPERTY = "property";
 
 
 	private Integer batchSize;
 	private Boolean preview;
 	private String fileName;
-	private List<String> fieldNames;
+	private List<String> properties;
 	private Optional<Expression> whereClause;
 	
 	
@@ -80,23 +82,35 @@ public class TextFilePopulatorPopulateCommand extends ModulePluginCommand<TextFi
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		fileName = PluginUtils.configureStringProperty(configElem, "fileName", true);
 		preview = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "preview", false)).orElse(false);
-		fieldNames = PluginUtils.configureStringsProperty(configElem, FIELD_NAME);
-		if(fieldNames.isEmpty()) {
-			fieldNames = null; // default fields
+		properties = PluginUtils.configureStringsProperty(configElem, PROPERTY);
+		if(properties.isEmpty()) {
+			properties = null; // default fields
 		}
 	}
 	
 	@Override
 	protected TextFilePopulatorResult execute(CommandContext cmdContext, TextFilePopulator populatorPlugin) {
-		return new TextFilePopulatorResult(populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize, whereClause, preview, fieldNames));
+		return new TextFilePopulatorResult(populatorPlugin.populate((ConsoleCommandContext) cmdContext, fileName, batchSize, whereClause, preview, properties));
 	}
 	
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
+	public static class Completer extends ModuleCmdCompleter<TextFilePopulator> {
 		public Completer() {
 			super();
 			registerPathLookup("fileName", false);
-			registerVariableInstantiator("fieldName", new ModifiableFieldNameInstantiator(ConfigurableTable.sequence.name()));
+			registerVariableInstantiator("property", new ModuleVariableInstantiator() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				protected List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext, TextFilePopulator textFilePopulator,
+						Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					return textFilePopulator.allUpdatablePropertyPaths()
+							.stream()
+							.map(str -> new CompletionSuggestion(str, true))
+							.collect(Collectors.toList());
+				}
+			});
 		}
 	}
 

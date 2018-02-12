@@ -40,10 +40,11 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaFieldParser.Result;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.PropertyPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
@@ -57,7 +58,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="fastaImporter",
 	description="Imports nucleotide data from a FASTA file, creating a set of Sequence objects")
 
-public class FastaImporter extends SequenceImporter<FastaImporter> implements PropertyPopulator {
+public class FastaImporter extends SequenceImporter<FastaImporter> implements ValueExtractor, PropertyPopulator {
 
 	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";
 	private static final String SOURCE_NAME = "sourceName";
@@ -89,7 +90,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Pr
 			Element idParserElem  = idParserElems.get(0);
 			nullRegex = Optional.ofNullable(
 					PluginUtils.configureRegexPatternProperty(idParserElem, "nullRegex", false)).
-					orElse(Pattern.compile(PropertyPopulator.DEFAULT_NULL_REGEX));
+					orElse(Pattern.compile(ValueExtractor.DEFAULT_NULL_REGEX));
 			valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 					PluginUtils.findConfigElements(idParserElem, "valueConverter"));
 			mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, idParserElem);
@@ -104,20 +105,26 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Pr
 		HeaderParser headerParser = new HeaderParser();
 		Map<String, DNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, headerParser);
 		ensureSourceExists(cmdContext, sourceName);
+		
+		List<String> updatableProperties = fieldParsers.stream().map(fp -> fp.getProperty()).collect(Collectors.toList());
+		Map<String, PropertyPathInfo> propertyPathToInfo = 
+				SequencePopulator.getPropertyPathToInfoMap(cmdContext, updatableProperties);
+		
 		idToSequence.forEach((id, seq) -> {
 			if(skipExistingSequences && sequenceExists(cmdContext, sourceName, id)) {
 				return;
 			}
 			String sequenceAsString = seq.getSequenceAsString();
 			String seqString = ">"+id+"\n"+sequenceAsString+"\n";
-			createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
-			
-			try (ModeCloser seqMode = cmdContext.pushCommandMode("sequence", sourceName, id);){
-				seq.getUserCollection().forEach(obj -> {
-					FastaFieldParser.Result result = (Result) obj;
-					SequencePopulator.runSetFieldCommand(cmdContext, result.getFieldPopulator(), result.getFieldValue(), false);
-				});
-			}
+			Sequence sequence = createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
+			Collection<Object> userCollection = seq.getUserCollection();
+			userCollection.forEach(obj -> {
+				FastaFieldParser.Result result = (Result) obj;
+				PropertyPopulator propertyPopulator = result.getPropertyPopulator();
+				PropertyPathInfo propertyPathInfo = propertyPathToInfo.get(propertyPopulator.getProperty());
+				PropertyUpdate propertyUpdate = PropertyPopulator.generatePropertyUpdate(propertyPathInfo, sequence, propertyPopulator, result.getValue());
+				PropertyPopulator.applyUpdateToDB(cmdContext, sequence, propertyUpdate);
+			});
 		});
 		return new CreateResult(Sequence.class, idToSequence.keySet().size());
 	}
@@ -127,7 +134,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Pr
 
 		@Override
 		public void parseHeader(String header, DNASequence sequence) {
-			String finalID = SequencePopulator.runPropertyPopulator(FastaImporter.this, header);
+			String finalID = ValueExtractor.extractValue(FastaImporter.this, header);
 			if(finalID == null) {
 				throw new FastaImporterException(FastaImporterException.Code.NULL_IDENTIFIER, header);
 			}

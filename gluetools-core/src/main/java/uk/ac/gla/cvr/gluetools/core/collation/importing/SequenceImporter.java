@@ -25,14 +25,13 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.importing;
 
-import java.util.Base64;
-
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSourceCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 
 public abstract class SequenceImporter<P extends SequenceImporter<P>> extends ModulePlugin<P> {
@@ -48,13 +47,15 @@ public abstract class SequenceImporter<P extends SequenceImporter<P>> extends Mo
 		return GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName, sequenceID), true) != null;
 	}
 	
-	protected final void createSequence(CommandContext cmdContext, String sourceName, String sequenceID, 
+	protected final Sequence createSequence(CommandContext cmdContext, String sourceName, String sequenceID, 
 			SequenceFormat format, byte[] sequenceData) {
-		cmdContext.cmdBuilder(CreateSequenceCommand.class).
-			set(CreateSequenceCommand.SOURCE_NAME, sourceName).
-			set(CreateSequenceCommand.SEQUENCE_ID, sequenceID).
-			set(CreateSequenceCommand.FORMAT, format.name()).
-			set(CreateSequenceCommand.BASE64, new String(Base64.getEncoder().encode(sequenceData))).
-			execute();
+		
+		Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, sourceName, sequenceID, false);
+		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(sourceName));
+		sequence.setSource(source);
+		sequence.setFormat(format.name());
+		sequence.setOriginalData(sequenceData);
+		cmdContext.commit();
+		return sequence;
 	}
 }

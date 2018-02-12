@@ -31,7 +31,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,14 +41,15 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.SequencePopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -111,16 +111,20 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 	}
 
 	
-	List<Map<String,String>> populate(ConsoleCommandContext cmdContext, String fileName, int batchSize, Optional<Expression> whereClause, Boolean preview, List<String> fieldNames) {
+	List<Map<String,String>> populate(ConsoleCommandContext cmdContext, String fileName, int batchSize, Optional<Expression> whereClause, Boolean preview, List<String> updatableProperties) {
 		byte[] fileBytes = cmdContext.loadBytes(fileName);
 		ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
 		TextFilePopulatorContext populatorContext = new TextFilePopulatorContext();
+		
+		if(updatableProperties == null) {
+			updatableProperties = allUpdatablePropertyPaths();
+		}
+		Map<String, PropertyPathInfo> propertyPathToInfoMap = getPropertyPathToInfoMap(cmdContext, updatableProperties);
+
 		populatorContext.cmdContext = cmdContext;
 		populatorContext.whereClause = whereClause;
 		populatorContext.updateDB = !preview;
-		if(fieldNames != null) {
-			populatorContext.fieldNames = new LinkedHashSet<String>(fieldNames);
-		}
+		populatorContext.propertyPathToInfoMap = propertyPathToInfoMap;
 		if(!numberColumns.isEmpty()) {
 			populatorContext.positionToColumn = new LinkedHashMap<Integer, List<BaseTextFilePopulatorColumn>>();
 			populatorContext.columnToPosition = new LinkedHashMap<BaseTextFilePopulatorColumn, Integer>();
@@ -132,9 +136,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		}
 		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
 		Project project = projectMode.getProject();
-		List<String> definedProperties = project.getListableProperties(ConfigurableTable.sequence.name());
-		checkPropertiesExist(headerColumns, definedProperties);
-		checkPropertiesExist(numberColumns, definedProperties);
 		LinesProcessedHolder holder = new LinesProcessedHolder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, Charset.forName("UTF-8")));
 		reader.lines().forEach(line -> {
@@ -160,16 +161,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		int linesProcessed = 0;
 	}
 
-	private void checkPropertiesExist(List<BaseTextFilePopulatorColumn> columns, List<String> definedProperties) {
-		columns.forEach(col -> {
-			String property = col.getProperty();
-			if(!definedProperties.contains(property)) {
-				throw new TextFilePopulatorException(TextFilePopulatorException.Code.NO_SUCH_PROPERTY, property, definedProperties.toString());
-			}
-		});
-	}
-	
-
 	private List<Map<String,String>> processLine(TextFilePopulatorContext populatorContext, String line) {
 		List<Map<String,String>> lineResults = new ArrayList<Map<String,String>>();
 		if(line.trim().isEmpty()) {
@@ -187,7 +178,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			identifierColumns.stream().map(col -> {
 				int j = populatorContext.columnToPosition.get(col);
 				String processedCellValue = 
-						SequencePopulator.runPropertyPopulator(col, cellValues[j]);
+						ValueExtractor.extractValue(col, cellValues[j]);
 				if(processedCellValue == null) {
 					throw new TextFilePopulatorException(TextFilePopulatorException.Code.NULL_IDENTIFIER, col.getProperty());
 				}
@@ -201,8 +192,7 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 		}
 		
 		List<Map<String, Object>> sequenceMaps = identifySequences(identifyingExp, cmdContext);
-		Map<String, FieldType> fieldTypes = getFieldTypes(cmdContext, null);
-		Map<String, String> links = getLinks(cmdContext, null);
+
 		for(Map<String, Object> seqMap: sequenceMaps) {
 			String sourceName = (String) seqMap.get(Sequence.SOURCE_NAME_PATH);
 			String sequenceID = (String) seqMap.get(Sequence.SEQUENCE_ID_PROPERTY);
@@ -213,23 +203,24 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 				if(columns != null) {
 					for(BaseTextFilePopulatorColumn populatorColumn : columns) {
 						if(!populatorColumn.getIdentifier().orElse(false)) {
-							if(populatorContext.fieldNames != null && !populatorContext.fieldNames.contains(populatorColumn.getProperty())) {
+							String property = populatorColumn.getProperty();
+							PropertyPathInfo propertyPathInfo = populatorContext.propertyPathToInfoMap.get(property);
+							if(propertyPathInfo == null) {
 								continue;
 							}
-							String fieldPopulatorResult = SequencePopulator.runPropertyPopulator(populatorColumn, cellText);
-							String property = populatorColumn.getProperty();
-							PropertyUpdate update = SequencePopulator
-									.generatePropertyUpdate(fieldTypes.get(property), links.get(property), sequence, populatorColumn, fieldPopulatorResult);
+							String extractedValue = ValueExtractor.extractValue(populatorColumn, cellText);
+							PropertyUpdate update = PropertyPopulator
+									.generatePropertyUpdate(propertyPathInfo, sequence, populatorColumn, extractedValue);
 
-							if(update != null && update.updated()) {
+							if(update.updated()) {
 								Map<String,String> updateMap = new LinkedHashMap<String,String>();
 								updateMap.put(TextFilePopulatorResult.SOURCE_NAME, sourceName);
 								updateMap.put(TextFilePopulatorResult.SEQUENCE_ID, sequenceID);
-								updateMap.put(TextFilePopulatorResult.PROPERTY, update.getProperty());
+								updateMap.put(TextFilePopulatorResult.PROPERTY, update.getPropertyPathInfo().getPropertyPath());
 								updateMap.put(TextFilePopulatorResult.VALUE, update.getValue());
 								lineResults.add(updateMap);
 								if(populatorContext.updateDB) {
-									super.applyUpdateToDB(cmdContext, fieldTypes, links, sequence, update);
+									PropertyPopulator.applyUpdateToDB(cmdContext, sequence, update);
 								}
 							}
 						}
@@ -271,6 +262,25 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 			throw new TextFilePopulatorException(TextFilePopulatorException.Code.MULTIPLE_SEQUENCES_FOUND, identifyingExp.toString());
 		}
 		return sequenceMaps;
+	}
+
+
+	@Override
+	public List<String> allUpdatablePropertyPaths() {
+		List<String> propertyPaths = new ArrayList<String>();
+		headerColumns.forEach(col -> {
+			if(!col.getIdentifier().orElse(false)) { 
+				propertyPaths.add(col.getProperty()); 
+			};
+			return;
+		});
+		numberColumns.forEach(col -> {
+			if(!col.getIdentifier().orElse(false)) { 
+				propertyPaths.add(col.getProperty()); 
+			};
+			return;
+		});
+		return propertyPaths;
 	}
 
 }
