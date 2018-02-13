@@ -39,6 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link.Multiplicity;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 
 public interface PropertyPopulator {
@@ -53,6 +54,23 @@ public interface PropertyPopulator {
 
 	public default boolean overwriteWithNewNull() {
 		return false;
+	}
+	
+	/*
+	 * This enum governs how the populator deals with link targets it requires as it 
+	 * traverses a property path.
+	 */
+	public enum TraversedLinkStrategy {
+		// assume the traversed link target exists, throw an error otherwise
+		MUST_EXIST,
+		// if a traversed link target does not exist, skip this rule silently
+		SKIP_MISSING,
+		// if a traversed link target does not exist, skip with a logged warning
+		SKIP_MISSING_WITH_WARNING,
+	}
+	
+	public default TraversedLinkStrategy getTraversedLinkStrategy() {
+		return TraversedLinkStrategy.SKIP_MISSING;
 	}
 	
 	
@@ -83,6 +101,10 @@ public interface PropertyPopulator {
 					throw new PropertyPopulatorException(Code.INVALID_PATH, startTable, propertyPath,  
 							"Relational link '"+pathBits[i]+"' from table "+currentTable+" has a to-many multiplicity");
 				}
+			}
+			if(!project.getCustomTableNames().contains(currentTable)) {
+				throw new PropertyPopulatorException(Code.INVALID_PATH, startTable, propertyPath,  
+						"Relational link '"+pathBits[i]+"' links to a non-custom table "+currentTable);
 			}
 		}
 		String finalPathBit = pathBits[pathBits.length - 1];
@@ -197,7 +219,35 @@ public interface PropertyPopulator {
 			Sequence sequence, PropertyPopulator propertyPopulator, String newValueString) {
 		boolean overwriteExistingNonNull = propertyPopulator.overwriteExistingNonNull();
 		boolean overwriteWithNewNull = propertyPopulator.overwriteWithNewNull();
-		
+
+		GlueDataObject modifiedObject = sequence;
+		String modifiedObjectPath = propertyPathInfo.getModifiedObjectPath();
+		if(modifiedObjectPath != null) {
+			TraversedLinkStrategy trvLnkStrategy = propertyPopulator.getTraversedLinkStrategy();
+			String[] pathBits = modifiedObjectPath.split("\\.");
+			StringBuffer pathSoFar = new StringBuffer();
+			for(int i = 0; i < pathBits.length; i++) {
+				if(i > 0) {
+					pathSoFar.append(".");
+				}
+				pathSoFar.append(pathBits[i]);
+				modifiedObject = (GlueDataObject) modifiedObject.readProperty(pathBits[i]);
+				if(modifiedObject == null) {
+					switch(trvLnkStrategy) {
+					case MUST_EXIST:
+						throw new PropertyPopulatorException(Code.NULL_LINK_TARGET,
+								sequence.getSource().getName(), sequence.getSequenceID(), pathSoFar.toString());
+					case SKIP_MISSING:
+						return new PropertyUpdate(false, propertyPathInfo, newValueString);
+					case SKIP_MISSING_WITH_WARNING:
+						GlueLogger.getGlueLogger().warning("Path '"+pathSoFar+"' from sequence "+
+								sequence.getSource().getName()+"/"+sequence.getSequenceID()+" returned a null object");
+						return new PropertyUpdate(false, propertyPathInfo, newValueString);
+					}
+				}
+			}
+		}
+
 		String propertyPath = propertyPathInfo.getPropertyPath();
 		Object oldValue = sequence.readNestedProperty(propertyPath);
 		if(!overwriteExistingNonNull) {
@@ -233,17 +283,7 @@ public interface PropertyPopulator {
 		PropertyPathInfo propertyPathInfo = update.getPropertyPathInfo();
 		String modifiedObjectPath = propertyPathInfo.getModifiedObjectPath();
 		if(modifiedObjectPath != null) {
-			String[] pathBits = modifiedObjectPath.split("\\.");
-			StringBuffer pathSoFar = new StringBuffer();
-			for(int i = 0; i < pathBits.length; i++) {
-				if(i > 0) {
-					pathSoFar.append(".");
-				}
-				modifiedObject = (GlueDataObject) modifiedObject.readProperty(pathBits[i]);
-				if(modifiedObject == null) {
-					throw new PropertyPopulatorException(Code.NULL_LINK_TARGET, seq.getSource().getName(), seq.getSequenceID(), pathSoFar.toString());
-				}
-			}
+			modifiedObject = (GlueDataObject) modifiedObject.readNestedProperty(modifiedObjectPath);
 		}
 		
 		if(propertyPathInfo.isLink) {

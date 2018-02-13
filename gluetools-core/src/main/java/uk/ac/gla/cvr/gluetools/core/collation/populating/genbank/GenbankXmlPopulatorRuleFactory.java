@@ -37,6 +37,7 @@ public class GenbankXmlPopulatorRuleFactory extends XmlPopulatorRuleFactory {
 		super();
 		registerPluginClass(GenbankFeatureRule.class);
 		registerPluginClass(GenbankQualifierRule.class);
+		registerPluginClass(GenbankReferenceRule.class);
 		registerPluginClass(GenbankSimpleFieldRule.Length.class);
 		registerPluginClass(GenbankSimpleFieldRule.Locus.class);
 		registerPluginClass(GenbankSimpleFieldRule.Organism.class);
@@ -49,6 +50,10 @@ public class GenbankXmlPopulatorRuleFactory extends XmlPopulatorRuleFactory {
 		registerPluginClass(GenbankSimpleFieldRule.UpdateDate.class);
 		registerPluginClass(GenbankSimpleFieldRule.ReferenceTitle.class);
 		registerPluginClass(GenbankSimpleFieldRule.ReferencePubmed.class);
+		registerPluginClass(GenbankSimpleFieldRule.RefDoi.class);
+		registerPluginClass(GenbankSimpleFieldRule.RefJournal.class);
+		registerPluginClass(GenbankSimpleFieldRule.RefPubmed.class);
+		registerPluginClass(GenbankSimpleFieldRule.RefTitle.class);
 	}
 	
 }

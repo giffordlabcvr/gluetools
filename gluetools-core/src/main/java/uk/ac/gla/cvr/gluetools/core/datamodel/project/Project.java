@@ -472,5 +472,9 @@ public class Project extends _Project {
 		}
 		return link;
 	}
+
+	public List<String> getCustomTableNames() {
+		return getCustomTables().stream().map(t -> t.getName()).collect(Collectors.toList());
+	}
 	
 }

@@ -37,10 +37,14 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomRowCreator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomTableUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorContext;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorCustomTableUpdateContext;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorPropertyUpdateContext;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -66,6 +70,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 	public GenbankXmlPopulator() {
 		super();
 		registerModulePluginCmdClass(GenbankXmlPopulatorPopulateCommand.class);
+		registerModulePluginCmdClass(GenbankXmlPopulatorUpdateCustomTablesCommand.class);
 	}
 
 	protected List<XmlPopulatorRule> getRules() {
@@ -81,8 +86,21 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		rules = populatorRuleFactory.createFromElements(pluginConfigContext, ruleElems);
 	}
 
-	private Map<String, PropertyUpdate> populate(Sequence sequence, Map<String, PropertyPathInfo> propertyPathToInfo) {
-		XmlPopulatorContext xmlPopulatorContext = new XmlPopulatorContext(sequence, propertyPathToInfo);
+	private Map<String, PropertyUpdate> populate(CommandContext cmdContext, Sequence sequence, Map<String, PropertyPathInfo> propertyPathToInfo) {
+		XmlPopulatorPropertyUpdateContext xmlPopulatorPropertyUpdateContext = new XmlPopulatorPropertyUpdateContext(cmdContext, sequence, propertyPathToInfo);
+		runRules(sequence, xmlPopulatorPropertyUpdateContext);
+		return xmlPopulatorPropertyUpdateContext.getPropertyUpdates();
+	}
+
+	private List<CustomTableUpdate> updateCustomTableRows(CommandContext cmdContext, Sequence sequence) {
+		XmlPopulatorCustomTableUpdateContext xmlPopulatorCustomTableUpdateContext = 
+				new XmlPopulatorCustomTableUpdateContext(cmdContext, sequence);
+		runRules(sequence, xmlPopulatorCustomTableUpdateContext);
+		return xmlPopulatorCustomTableUpdateContext.getCustomTableUpdates();
+	}
+
+	
+	private void runRules(Sequence sequence, XmlPopulatorContext xmlPopulatorContext) {
 		String format = sequence.getFormat();
 		if(format.equals(SequenceFormat.GENBANK_XML.name())) {
 			Document sequenceDataDoc;
@@ -95,67 +113,86 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 				rule.execute(xmlPopulatorContext, sequenceDataDoc);
 			});
 		}
-		return xmlPopulatorContext.getPropertyUpdates();
-		
+	}
+
+	
+	CommandResult updateCustomTables(CommandContext cmdContext, int batchSize, 
+			Optional<Expression> whereClause, boolean updateDB, boolean silent) {
+		Map<Map<String,String>, List<CustomTableUpdate>> pkMapToUpdates = 
+				new LinkedHashMap<Map<String,String>, List<CustomTableUpdate>>();
+
+		processSequences(cmdContext, batchSize, whereClause, updateDB, new SequenceConsumer() {
+			@Override
+			public void consumeSequence(Sequence sequence) {
+				pkMapToUpdates.put(sequence.pkMap(), updateCustomTableRows(cmdContext, sequence));
+			}
+			@Override
+			public void applySequenceUpdates(Sequence seq) {
+				List<CustomTableUpdate> updates = pkMapToUpdates.get(seq.pkMap());
+				updates.forEach( update -> {
+					CustomRowCreator.applyUpdateToDB(cmdContext, update);
+				} );
+			}
+			@Override
+			public void batchComplete() {
+				if(silent) {
+					pkMapToUpdates.clear();
+				}
+			}
+		});
+		if(silent) {
+			return new OkResult();
+		}
+		List<Map<String, Object>> rowData = new ArrayList<Map<String,Object>>();
+		pkMapToUpdates.forEach((pkMap, updates) -> {
+			String sourceName = (String) pkMap.get(Sequence.SOURCE_NAME_PATH);
+			String sequenceID = (String) pkMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+			updates.forEach(update -> {
+				Map<String, Object> row = new LinkedHashMap<String, Object>();
+				rowData.add(row);
+				row.put(Sequence.SOURCE_NAME_PATH, sourceName);
+				row.put(Sequence.SEQUENCE_ID_PROPERTY, sequenceID);
+				row.put("customTable", update.getTableName());
+				row.put("newRowId", update.getNewRowId());
+			});
+		});
+		return new CustomTableResult(rowData);
+
 	}
 	
 	CommandResult populate(CommandContext cmdContext, int batchSize, 
 			Optional<Expression> whereClause, boolean updateDB, boolean silent, List<String> updatableProperties) {
-		SelectQuery selectQuery;
-		if(whereClause.isPresent()) {
-			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
-		} else {
-			selectQuery = new SelectQuery(Sequence.class);
-		}
-
 		if(updatableProperties == null) {
 			updatableProperties = allUpdatablePropertyPaths();
 		}
 		Map<String, PropertyPathInfo> propertyPathToInfo = 
 				getPropertyPathToInfoMap(cmdContext, updatableProperties);
-		
-		
-		log("Finding sequences to process");
-		int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
-		log("Found "+numberToProcess+" sequences to process");
-		List<Sequence> currentSequenceBatch;
 
-		selectQuery.setFetchLimit(batchSize);
-		selectQuery.setPageSize(batchSize);
-		int offset = 0;
-		Map<Map<String,String>, Map<String, PropertyUpdate>> pkMapToUpdates = new LinkedHashMap<Map<String,String>, Map<String, PropertyUpdate>>();
-		while(offset < numberToProcess) {
-			selectQuery.setFetchOffset(offset);
-			int lastBatchIndex = Math.min(offset+batchSize, numberToProcess);
-			log("Retrieving sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
-			currentSequenceBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-			log("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
-			for(Sequence sequence: currentSequenceBatch) {
-				pkMapToUpdates.put(sequence.pkMap(), populate(sequence, propertyPathToInfo));
+		Map<Map<String,String>, Map<String, PropertyUpdate>> pkMapToUpdates = 
+				new LinkedHashMap<Map<String,String>, Map<String, PropertyUpdate>>();
+
+		processSequences(cmdContext, batchSize, whereClause, updateDB, new SequenceConsumer() {
+			@Override
+			public void consumeSequence(Sequence sequence) {
+				pkMapToUpdates.put(sequence.pkMap(), populate(cmdContext, sequence, propertyPathToInfo));
 			}
-			if(updateDB) {
-				/* DB udpate here */
-				currentSequenceBatch.forEach(seq -> {
-					Map<String, PropertyUpdate> updates = pkMapToUpdates.get(seq.pkMap());
-					updates.values().forEach( update -> {
-						PropertyPopulator.applyUpdateToDB(cmdContext, seq, update);
-					} );
-				});
-				cmdContext.commit();
-			} 
-			cmdContext.newObjectContext();
-			if(silent) {
-				pkMapToUpdates.clear();
+			@Override
+			public void applySequenceUpdates(Sequence seq) {
+				Map<String, PropertyUpdate> updates = pkMapToUpdates.get(seq.pkMap());
+				updates.values().forEach( update -> {
+					PropertyPopulator.applyUpdateToDB(cmdContext, seq, update);
+				} );
 			}
-			offset = offset+batchSize;
-		}
-		log("Processed "+numberToProcess+" sequences");
-		cmdContext.newObjectContext();
-		
+			@Override
+			public void batchComplete() {
+				if(silent) {
+					pkMapToUpdates.clear();
+				}
+			}
+		});
 		if(silent) {
 			return new OkResult();
 		}
-		
 		List<Map<String, Object>> rowData = new ArrayList<Map<String,Object>>();
 		pkMapToUpdates.forEach((pkMap, updates) -> {
 			String sourceName = (String) pkMap.get(Sequence.SOURCE_NAME_PATH);
@@ -200,5 +237,61 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		
 	}
 
+	private static class CustomTableResult extends TableResult {
+
+		public CustomTableResult(List<Map<String, Object>> rowData) {
+			super("gbXmlCustomTableRowsResult", 
+					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY, "customTable", "newRowId"), rowData);
+		}
+		
+	}
+	
+	private interface SequenceConsumer {
+		public void consumeSequence(Sequence sequence);
+		public void applySequenceUpdates(Sequence sequence);
+		public void batchComplete();
+	}
+	
+	private void processSequences(CommandContext cmdContext, int batchSize, 
+			Optional<Expression> whereClause, boolean updateDB, SequenceConsumer sequenceConsumer) {
+		SelectQuery selectQuery;
+		if(whereClause.isPresent()) {
+			selectQuery = new SelectQuery(Sequence.class, whereClause.get());
+		} else {
+			selectQuery = new SelectQuery(Sequence.class);
+		}
+		log("Finding sequences to process");
+		int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
+		log("Found "+numberToProcess+" sequences to process");
+		List<Sequence> currentSequenceBatch;
+
+		selectQuery.setFetchLimit(batchSize);
+		selectQuery.setPageSize(batchSize);
+		int offset = 0;
+		while(offset < numberToProcess) {
+			selectQuery.setFetchOffset(offset);
+			int lastBatchIndex = Math.min(offset+batchSize, numberToProcess);
+			log("Retrieving sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
+			currentSequenceBatch = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
+			log("Processing sequences "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
+			for(Sequence sequence: currentSequenceBatch) {
+				sequenceConsumer.consumeSequence(sequence);
+			}
+			if(updateDB) {
+				/* DB udpate here */
+				currentSequenceBatch.forEach(seq -> {
+					sequenceConsumer.applySequenceUpdates(seq);
+				});
+				cmdContext.commit();
+			} 
+			cmdContext.newObjectContext();
+			sequenceConsumer.batchComplete();
+			offset = offset+batchSize;
+		}
+		log("Processed "+numberToProcess+" sequences");
+		cmdContext.newObjectContext();
+
+	}
+	
 	
 }

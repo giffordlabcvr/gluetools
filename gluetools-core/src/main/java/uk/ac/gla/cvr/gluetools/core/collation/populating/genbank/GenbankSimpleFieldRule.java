@@ -102,14 +102,34 @@ public abstract class GenbankSimpleFieldRule extends NodeSelectorRule {
 		public CreateDate() { super("/GBSeq/GBSeq_create-date/text()"); }	
 	}
 
-	@PluginClass(elemName="gbReferenceTitle")
+	@PluginClass(elemName="gbReferenceTitle", deprecated=true, deprecationWarning="Use a <gbRefTitle> rule nested within a <gbReference> rule")
 	public static class ReferenceTitle extends GenbankSimpleFieldRule {
 		public ReferenceTitle() { super("/GBSeq/GBSeq_references/GBReference/GBReference_title/text()"); }	
 	}
 
-	@PluginClass(elemName="gbReferencePubmed")
+	@PluginClass(elemName="gbReferencePubmed", deprecated=true, deprecationWarning="Use a <gbRefPubmed> rule nested within a <gbReference> rule")
 	public static class ReferencePubmed extends GenbankSimpleFieldRule {
 		public ReferencePubmed() { super("/GBSeq/GBSeq_references/GBReference/GBReference_pubmed/text()"); }	
+	}
+
+	@PluginClass(elemName="gbRefTitle")
+	public static class RefTitle extends GenbankSimpleFieldRule {
+		public RefTitle() { super("GBReference_title/text()"); }	
+	}
+
+	@PluginClass(elemName="gbRefPubmed")
+	public static class RefPubmed extends GenbankSimpleFieldRule {
+		public RefPubmed() { super("GBReference_pubmed/text()"); }	
+	}
+
+	@PluginClass(elemName="gbRefJournal")
+	public static class RefJournal extends GenbankSimpleFieldRule {
+		public RefJournal() { super("GBReference_journal/text()"); }	
+	}
+
+	@PluginClass(elemName="gbRefDoi")
+	public static class RefDoi extends GenbankSimpleFieldRule {
+		public RefDoi() { super("GBReference_xref/GBXref[GBXref_dbname='doi']/GBXref_id/text()"); }	
 	}
 
 	

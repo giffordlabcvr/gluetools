@@ -36,6 +36,7 @@ public class XmlPopulatorRuleFactory extends PluginFactory<XmlPopulatorRule>{
 		registerPluginClass(IsoCountryPropertyPopulatorRule.class);
 		registerPluginClass(XmlPropertyPopulatorRule.class);
 		registerPluginClass(XPathNodesRule.class);
+		registerPluginClass(XmlCreateCustomTableRowRule.class);
 
 		// deprecated
 		registerPluginClass(IsoCountryFieldPopulatorRule.class);

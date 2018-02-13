@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Node;
@@ -49,7 +50,9 @@ public abstract class XmlPopulatorRule implements Plugin {
 
 	public abstract void validate(CommandContext cmdContext);
 
-	public abstract List<String> updatablePropertyPaths();
+	public List<String> updatablePropertyPaths() {
+		return Collections.emptyList();
+	}
 
 	
 }

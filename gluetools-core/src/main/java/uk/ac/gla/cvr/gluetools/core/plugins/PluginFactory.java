@@ -106,9 +106,10 @@ public class PluginFactory<P extends Plugin> {
 		}
 		P plugin = instantiatePlugin(element, pluginClass);
 		if(pluginTypeInfo.isDeprecated()) {
-			String deprecationWarning = pluginTypeInfo.getDeprecationWarning();
-			if(deprecationWarning.equals(PluginClass.NULL)) {
-				deprecationWarning = "Plugin element \""+elementName+"\" is deprecated";
+			String deprecationWarning = "Plugin element \""+elementName+"\" is deprecated";
+			String additionalWarning = pluginTypeInfo.getDeprecationWarning();
+			if(!deprecationWarning.equals(PluginClass.NULL)) {
+				deprecationWarning = deprecationWarning+": "+additionalWarning;
 			}
 			GlueLogger.getGlueLogger().warning(deprecationWarning);
 		}

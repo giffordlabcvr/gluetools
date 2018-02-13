@@ -58,46 +58,30 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-s, --silent                                   No result table"
 		},
 		metaTags={CmdMeta.updatesDatabase},
-		description="Populate sequence field values based on Genbank XML",
+		description="Populate sequence and other object values based on Genbank XML",
 		furtherHelp=
 		"The <batchSize> argument allows you to control how often updates are committed to the database "+
 				"during the import. The default is every 250 sequences. A larger <batchSize> means fewer database "+
 				"accesses, but requires more Java heap memory. "+
 				"If <property> arguments are supplied, the populator will not update any property unless it appears in the <property> list. "+
 				"If no <property> arguments are supplied, the populator may update any property.") 
-public class GenbankXmlPopulatorPopulateCommand extends ModulePluginCommand<CommandResult, GenbankXmlPopulator> implements ProvidedProjectModeCommand {
+public class GenbankXmlPopulatorPopulateCommand extends GenbankXmlPopulatorCommand {
 
-	public static final String BATCH_SIZE = "batchSize";
-	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String PROPERTY = "property";
-	public static final String PREVIEW = "preview";
-	public static final String SILENT = "silent";
-
-	private Integer batchSize;
-	private Optional<Expression> whereClause;
 	private List<String> updatableProperties;
-	private Boolean preview;
-	private Boolean silent;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
-		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
-		silent = PluginUtils.configureBooleanProperty(configElem, SILENT, true);
 		updatableProperties = PluginUtils.configureStringsProperty(configElem, PROPERTY);
 		if(updatableProperties.isEmpty()) {
 			updatableProperties = null; // default properties
-		}
-		if(preview && silent) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "At most one of --preview and --silent may be used");
 		}
 	}
 
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, GenbankXmlPopulator populatorPlugin) {
-		return populatorPlugin.populate(cmdContext, batchSize, whereClause, !preview, silent, updatableProperties);
+		return populatorPlugin.populate(cmdContext, getBatchSize(), getWhereClause(), !getPreview(), getSilent(), updatableProperties);
 	}
 	
 	@CompleterClass

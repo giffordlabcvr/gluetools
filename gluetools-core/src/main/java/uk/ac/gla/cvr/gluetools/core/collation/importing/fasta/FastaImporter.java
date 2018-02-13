@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaFieldParser.Result;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
@@ -58,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @PluginClass(elemName="fastaImporter",
 	description="Imports nucleotide data from a FASTA file, creating a set of Sequence objects")
 
-public class FastaImporter extends SequenceImporter<FastaImporter> implements ValueExtractor, PropertyPopulator {
+public class FastaImporter extends SequenceImporter<FastaImporter> implements ValueExtractor {
 
 	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";
 	private static final String SOURCE_NAME = "sourceName";

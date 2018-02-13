@@ -50,6 +50,7 @@ public class FastaFieldParser implements Plugin, ValueExtractor, PropertyPopulat
 	private List<RegexExtractorFormatter> valueConverters = null;
 	private Boolean overwriteExistingNonNull;
 	private Boolean overwriteWithNewNull;
+	private TraversedLinkStrategy traversedLinkStrategy;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -73,6 +74,8 @@ public class FastaFieldParser implements Plugin, ValueExtractor, PropertyPopulat
 		valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
 				PluginUtils.findConfigElements(configElem, "valueConverter"));
 		mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
+		traversedLinkStrategy = PluginUtils.configureEnumProperty(TraversedLinkStrategy.class, configElem, "traversedLinkStrategy", TraversedLinkStrategy.MUST_EXIST);
+
 	}
 
 	public Optional<Result> parseField(String inputText) {
@@ -130,6 +133,11 @@ public class FastaFieldParser implements Plugin, ValueExtractor, PropertyPopulat
 	@Override
 	public boolean overwriteWithNewNull() {
 		return overwriteWithNewNull;
+	}
+
+	@Override
+	public TraversedLinkStrategy getTraversedLinkStrategy() {
+		return traversedLinkStrategy;
 	}
 
 }

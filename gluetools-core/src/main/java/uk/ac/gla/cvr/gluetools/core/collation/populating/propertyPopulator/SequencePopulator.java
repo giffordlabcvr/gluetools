@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.TraversedLinkStrategy;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
@@ -63,6 +64,7 @@ public abstract class SequencePopulator<P extends ModulePlugin<P>> extends Modul
 		public PropertyPathInfo getPropertyPathInfo() {
 			return propertyPathInfo;
 		}
+
 	}
 
 	public static Map<String, PropertyPathInfo> getPropertyPathToInfoMap(CommandContext cmdContext, List<String> updatableProperties) {

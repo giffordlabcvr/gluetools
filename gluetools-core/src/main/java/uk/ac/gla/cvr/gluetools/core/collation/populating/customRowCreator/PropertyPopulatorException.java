@@ -23,37 +23,34 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
+package uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomTableUpdate;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+public class PropertyPopulatorException extends GlueException {
 
-public abstract class XmlPopulatorContext {
+	public enum Code implements GlueErrorCode {
+		INVALID_PATH("startTable", "propertyPath", "errorTxt"),
+		NULL_LINK_TARGET("sourceName", "sequenceID", "propertyPath");
 
-	private Sequence sequence;
-	private CommandContext cmdContext;
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
+		}
 
-	protected XmlPopulatorContext(CommandContext cmdContext, Sequence sequence) {
-		super();
-		this.cmdContext = cmdContext;
-		this.sequence = sequence;
 	}
 
-	public CommandContext getCmdContext() {
-		return cmdContext;
+	public PropertyPopulatorException(Code code, Object... errorArgs) {
+		super(code, errorArgs);
 	}
 
-	public Sequence getSequence() {
-		return sequence;
+	public PropertyPopulatorException(Throwable cause, Code code,
+			Object... errorArgs) {
+		super(cause, code, errorArgs);
 	}
-	
 	
 }

@@ -53,6 +53,13 @@ project example
   run file glue/importPhylogeny.glue
 
   import source sources/ncbi-hev-examples
+  
+  # create custom publication objects for each pubmed ID mentioned in GenBank XML
+  module exampleGenbankXmlPopulator update custom-tables -w "source.name = 'ncbi-hev-examples'"
+  # ensure sequence is linked to publication object as appropriate
+  module exampleGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'" publication
+
+  # populate all other properties.
   module exampleGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'"
 
   run script glue/addExampleSeqsToTree.js

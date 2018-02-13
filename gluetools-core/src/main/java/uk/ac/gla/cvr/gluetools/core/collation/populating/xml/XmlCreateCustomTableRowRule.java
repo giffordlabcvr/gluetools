@@ -25,7 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -34,67 +33,49 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomRowCreator;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomTableUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule implements Plugin, ValueExtractor, PropertyPopulator {
+/**
+ * Creates a row in a named custom table, using the extracted value as an ID.
+ */
+
+@PluginClass(elemName="createCustomTableRow")
+public class XmlCreateCustomTableRowRule extends XmlPopulatorRule implements Plugin, ValueExtractor {
 		
-		private String property;
+		private String tableName;
 		private Pattern nullRegex;
 		private RegexExtractorFormatter mainExtractor = null;
 		private List<RegexExtractorFormatter> valueConverters;
-		private Boolean overwriteExistingNonNull;
-		private Boolean overwriteWithNewNull;
-		private TraversedLinkStrategy traversedLinkStrategy;
 
 		@Override
 		public void configure(PluginConfigContext pluginConfigContext, Element configElem)  {
-			overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
-			overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
-			nullRegex = Optional.ofNullable(
+			this.tableName = PluginUtils.configureString(configElem, "@tableName", true);
+			this.valueConverters = PluginFactory.createPlugins(pluginConfigContext, RegexExtractorFormatter.class, 
+					PluginUtils.findConfigElements(configElem, "valueConverter"));
+			this.mainExtractor = PluginFactory.createPlugin(pluginConfigContext, RegexExtractorFormatter.class, configElem);
+			this.nullRegex = Optional.ofNullable(
 					PluginUtils.configureRegexPatternProperty(configElem, "nullRegex", false)).
 					orElse(Pattern.compile(DEFAULT_NULL_REGEX));
-			traversedLinkStrategy = PluginUtils.configureEnumProperty(TraversedLinkStrategy.class, configElem, 
-					"traversedLinkStrategy", TraversedLinkStrategy.SKIP_MISSING);
 
 		}
 		
-		protected void setProperty(String property) {
-			this.property = property;
-		}
-		
-		protected void setMainExtractor(RegexExtractorFormatter mainExtractor) {
-			this.mainExtractor = mainExtractor;
-		}
-
-		protected void setValueConverters(List<RegexExtractorFormatter> valueConverters) {
-			this.valueConverters = valueConverters;
-		}
-
 		public void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
-			if(!(xmlPopulatorContext instanceof XmlPopulatorPropertyUpdateContext)) {
+			if(!(xmlPopulatorContext instanceof XmlPopulatorCustomTableUpdateContext)) {
 				return;
 			}
-			XmlPopulatorPropertyUpdateContext xmlPopulatorPropertyUpdateContext = 
-					((XmlPopulatorPropertyUpdateContext) xmlPopulatorContext);
-			
-			
-			PropertyPathInfo propertyPathInfo = xmlPopulatorPropertyUpdateContext.getPropertyPathInfo(property);
-			if(propertyPathInfo == null) {
-				return;
-			}
-			if(xmlPopulatorPropertyUpdateContext.getPropertyUpdates().containsKey(property)) {
-				return; // we already have an update for this field.
-			}
+			XmlPopulatorCustomTableUpdateContext xmlPopulatorCustomTableUpdateContext = 
+					((XmlPopulatorCustomTableUpdateContext) xmlPopulatorContext);
 			String selectedText;
 			try {
 				selectedText = GlueXmlUtils.getNodeText(node);
@@ -104,10 +85,10 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 			if(selectedText != null) {
 				String valueExtractorResult = ValueExtractor.extractValue(this, selectedText);
 				if(valueExtractorResult != null) {
-					PropertyUpdate propertyUpdate = PropertyPopulator
-							.generatePropertyUpdate(propertyPathInfo, xmlPopulatorContext.getSequence(), this, valueExtractorResult);
-					if(propertyUpdate.updated()) {
-						xmlPopulatorPropertyUpdateContext.getPropertyUpdates().put(propertyPathInfo.getPropertyPath(), propertyUpdate);
+					CustomTableUpdate customTableUpdate = CustomRowCreator
+							.createCustomTableUpdate(xmlPopulatorCustomTableUpdateContext.getCmdContext(), tableName, valueExtractorResult);
+					if(customTableUpdate.isUpdated()) {
+						xmlPopulatorCustomTableUpdateContext.getCustomTableUpdates().add(customTableUpdate);
 					}
 				}
 			}
@@ -129,36 +110,10 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 		}
 
 		@Override
-		public String getProperty() {
-			return property;
-		}
-
-		@Override
-		public boolean overwriteExistingNonNull() {
-			return overwriteExistingNonNull;
-		}
-
-		@Override
-		public boolean overwriteWithNewNull() {
-			return overwriteWithNewNull;
-		}
-		
-		@Override
-		public TraversedLinkStrategy getTraversedLinkStrategy() {
-			return traversedLinkStrategy;
-		}
-
-		@Override
 		public void validate(CommandContext cmdContext) {
 			Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
-			PropertyPopulator.analysePropertyPath(project, ConfigurableTable.sequence.name(), property);
-		}
-
-		@Override
-		public List<String> updatablePropertyPaths() {
-			return Arrays.asList(property);
+			project.checkCustomTableName(tableName);
 		}
 		
 		
-	
 }

@@ -25,34 +25,30 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomTableUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
-public abstract class XmlPopulatorContext {
+public class XmlPopulatorPropertyUpdateContext extends XmlPopulatorContext {
 
-	private Sequence sequence;
-	private CommandContext cmdContext;
-
-	protected XmlPopulatorContext(CommandContext cmdContext, Sequence sequence) {
-		super();
-		this.cmdContext = cmdContext;
-		this.sequence = sequence;
+	private Map<String, PropertyUpdate> propertyUpdates = new LinkedHashMap<String, PropertyUpdate>();
+	private Map<String, PropertyPathInfo> propertyPathToInfo;
+	
+	public XmlPopulatorPropertyUpdateContext(CommandContext cmdContext, Sequence sequence, Map<String, PropertyPathInfo> propertyPathToInfo) {
+		super(cmdContext, sequence);
+		this.propertyPathToInfo = propertyPathToInfo;
 	}
 
-	public CommandContext getCmdContext() {
-		return cmdContext;
+	public PropertyPathInfo getPropertyPathInfo(String propertyPath) {
+		return propertyPathToInfo.get(propertyPath);
 	}
-
-	public Sequence getSequence() {
-		return sequence;
+	
+	public Map<String, PropertyUpdate> getPropertyUpdates() {
+		return propertyUpdates;
 	}
 	
 	

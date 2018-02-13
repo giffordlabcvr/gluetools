@@ -52,6 +52,7 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, ValueExtrac
 	private List<RegexExtractorFormatter> valueConverters;
 	private Boolean overwriteExistingNonNull;
 	private Boolean overwriteWithNewNull;
+	private TraversedLinkStrategy traversedLinkStrategy;
 
 	
 	@Override
@@ -79,6 +80,7 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, ValueExtrac
 		}
 		overwriteExistingNonNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteExistingNonNull", false)).orElse(false);
 		overwriteWithNewNull = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, "overwriteWithNewNull", false)).orElse(false);
+		traversedLinkStrategy = PluginUtils.configureEnumProperty(TraversedLinkStrategy.class, configElem, "traversedLinkStrategy", TraversedLinkStrategy.MUST_EXIST);
 	}
 
 	public Optional<Boolean> getIdentifier() {
@@ -125,5 +127,10 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, ValueExtrac
 	@Override
 	public boolean overwriteWithNewNull() {
 		return overwriteWithNewNull;
+	}
+	
+	@Override
+	public TraversedLinkStrategy getTraversedLinkStrategy() {
+		return traversedLinkStrategy;
 	}
 }

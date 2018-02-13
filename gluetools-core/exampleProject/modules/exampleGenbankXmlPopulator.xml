@@ -51,6 +51,25 @@
 	<gbCreateDate>
 		<propertyPopulator property="gb_create_date"/>
 	</gbCreateDate>
+	<gbReference>
+		<gbRefPubmed>
+			<!-- Under the 'update custom-tables' command, 
+			     this rule will create a custom publication object using the pubmed number as its ID -->
+			<createCustomTableRow tableName="publication"/>
+			<!-- This rule will link each sequence to the relevant custom publication object -->
+			<propertyPopulator property="publication"/>
+		</gbRefPubmed>
+		<!-- These rules set properties on the linked publication object -->
+		<gbRefJournal>
+			<propertyPopulator property="publication.journal"/>
+		</gbRefJournal>
+		<gbRefTitle>
+			<propertyPopulator property="publication.title"/>
+		</gbRefTitle>
+		<gbRefDoi>
+			<propertyPopulator property="publication.doi"/>
+		</gbRefDoi>
+	</gbReference>
 
 	<gbOrganism>
 		<propertyPopulator property="gb_organism">
@@ -61,10 +80,6 @@
 		</propertyPopulator>
 	</gbOrganism>
 	
-	<gbReferencePubmed>
-		<propertyPopulator property="gb_pubmed_id"/>
-	</gbReferencePubmed>
-
 	<gbFeature key="source">
 		<gbQualifier name="isolate">
 			<propertyPopulator property="isolate"/>
