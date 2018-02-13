@@ -69,7 +69,7 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 	public static final String UPDATE_EXISTING_ALIGNMENT = "updateExistingAlignment";
 
 	// regex extractor / formatter which transforms the incoming alignment IDs
-	// into a where-clause to look up the relevant alignment member.
+	// into a where-clause to look up the relevant sequence
 	// if absent, it is expected to exactly match the sequenceID.
 	public static final String ID_CLAUSE_EXTRACTOR_FORMATTER = "idClauseExtractorFormatter";
 	// Boolean. If true, ignore alignment rows where the ID does not match the regex of the above extractor / formatter.
