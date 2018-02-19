@@ -32,7 +32,9 @@ public class TranslationException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		UNKNOWN_TRANSLATION_TYPE("unknownTranslationType"),
-		UNKNOWN_NUCLEOTIDE_CHAR("unknownChar");
+		UNKNOWN_NUCLEOTIDE_CHAR("unknownChar"),
+		UNKNOWN_CONCRETE_NUCLEOTIDE_CHAR("unknownChar"),
+		UNKNOWN_AMINO_ACID_CHAR("unknownChar");
 
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -25,11 +25,16 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import uk.ac.gla.cvr.gluetools.core.bitmap.BitmapUtils;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationException.Code;
+
+
 
 /**
  * The role of this class is to perform fast translation of a char array of 3 nucleotide 
@@ -41,10 +46,16 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationException.Code;
  * integer between 0 and 16. A precomputed 3-dimensional array is used to store the results
  * of mapping any combination of 3 IUPAC codes to the appropriate amino acid code.
  *
+ *
+ * There are 
+ *
+ *
  */
 
 public class CodonTableUtils {
 
+	
+	
 	// see https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?chapter=cgencodes
 	private static String standardCodonTable =
 		"  AAs  = FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG\n"+
@@ -52,8 +63,16 @@ public class CodonTableUtils {
 		"  Base1  = TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG\n"+
 		"  Base2  = TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG\n"+
 		"  Base3  = TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG\n";
-		
-	private static LinkedHashMap<String, String> standardCodonTableMap = new LinkedHashMap<String, String>();
+	
+	// 3-dimensional array mapping triplet of concrete NT (integer representation)
+	// to amino acid (integer representation);
+	private static int[][][] concreteNtTripletToAa = new int[4][4][4];
+	
+	// array of lists of int[], mapping amino acid (integer representation)
+	// to list of concrete NT triplets which code for it.
+	private static List<?>[] aaToConcreteNtTriplets = new List<?>[21];
+	
+	// parse the codon table, populating concreteNtTripletToAa
 	static {
 		String codonTable = standardCodonTable;
 		String[] codonTableLines = codonTable.split("\\n");
@@ -63,55 +82,181 @@ public class CodonTableUtils {
 		String base3 = codonTableLines[4].substring(codonTableLines[4].lastIndexOf(' ')+1);
 		
 		for(int i = 0; i < 64; i++) {
-			char[] triplet = new char[3];
-			triplet[0] = base1.charAt(i);
-			triplet[1] = base2.charAt(i);
-			triplet[2] = base3.charAt(i);
-			standardCodonTableMap.put(new String(triplet), Character.toString(aAs.charAt(i)));
+			int intAa = ResidueUtils.aaToInt(aAs.charAt(i));
+			int intConcreteNt1 = ResidueUtils.concreteNtToInt(base1.charAt(i));
+			int intConcreteNt2 = ResidueUtils.concreteNtToInt(base2.charAt(i));
+			int intConcreteNt3 = ResidueUtils.concreteNtToInt(base3.charAt(i));
+			concreteNtTripletToAa[intConcreteNt1][intConcreteNt2][intConcreteNt3] = intAa;
+			@SuppressWarnings("unchecked")
+			List<int[]> aaTripletsList = (List<int[]>) aaToConcreteNtTriplets[intAa];
+			if(aaTripletsList == null) {
+				aaTripletsList = new LinkedList<int[]>();
+				aaToConcreteNtTriplets[intAa] = aaTripletsList;
+			}
+			aaTripletsList.add(new int[]{intConcreteNt1, intConcreteNt2, intConcreteNt3});
 		}
 	}
 	
-	private static char[][][] standardCodonTableTripletToAa = new char[16][16][16];
-	private static String ntChars = "ACGTURYKMSWBDHVN";
+	// map ambiguous NT to an array of the underlying concrete NTs
+	private static int[][] ambigNtToConcreteNts = new int[16][];
+	// map a bitmap of concrete NTs to an ambiguous NT
+	private static int[] concreteNtsBitmapToAmbigNt = new int[16];
 	
-	// populate 3d array for a specific combination of 3 IUPAC codes.
-	// this is done by iterating over all possible triplets concrete (ACGT) nucleotides
-	// which could underly the 3 input codes. If all concrete triplets map to the same
-	// amino acid, 
-	private static void populateAa(int i, int j, int k) {
-		char char0 = ntChars.charAt(i);
-		char char1 = ntChars.charAt(j);
-		char char2 = ntChars.charAt(k);
-		char[] possibleBases0 = ntCharToPossibleBases(char0);
-		char[] possibleBases1 = ntCharToPossibleBases(char1);
-		char[] possibleBases2 = ntCharToPossibleBases(char2);
-		char[] triplet = new char[3];
-		LinkedHashSet<String> possibleAAs = new LinkedHashSet<String>();
-		for(char base0: possibleBases0) {
-			triplet[0] = base0;
-			for(char base1: possibleBases1) {
-				triplet[1] = base1;
-				for(char base2: possibleBases2) {
-					triplet[2] = base2;
-					String possibleAA = standardCodonTableMap.get(new String(triplet));
-					possibleAAs.add(possibleAA);
+	// populate ambigNtToConcreteNtsBitmap
+	static {
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_A] =
+			new int[]{ResidueUtils.CONCRETE_NT_A};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_C] =
+			new int[]{ResidueUtils.CONCRETE_NT_C};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_G] =
+			new int[]{ResidueUtils.CONCRETE_NT_G};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_T] =
+			new int[]{ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_U] =
+			new int[]{ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_R] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_G};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_Y] =
+			new int[]{ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_K] =
+			new int[]{ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_M] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_S] =
+			new int[]{ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_W] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_B] =
+			new int[]{ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_D] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_H] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_T};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_V] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G};
+		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_N] =
+			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
+
+		// populate concreteNtsBitmapToAmbigNt
+		for(int ambigNt = 0 ; ambigNt < 16; ambigNt++) {
+			int[] concreteNts = ambigNtToConcreteNts[ambigNt];
+			int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
+			concreteNtsBitmapToAmbigNt[concreteNtsBitmap] = ambigNt;
+		}
+	}
+	
+	
+	
+	// 3-dimensional array mapping triplet of ambiguous NT (integer representation)
+	// to AmbigNtTripletInfo instance
+	private static AmbigNtTripletInfo[][][] ambigNtTripletToInfo = new AmbigNtTripletInfo[16][16][16];
+	
+	// return AmbigNtTripletInfo for specific triplet of ambiguous NTs (integer representation)
+	private static AmbigNtTripletInfo computeAmbigNtTripletInfo(int ambigNt1, int ambigNt2, int ambigNt3) {
+		// find the set of all possible concrete NT triplets for the ambiguous NT triplet
+		// mapping each of these to AA, this gives the set of possible AAs for the ambiguous NT triplet
+		// for each AA in turn
+		//    - delete the concrete NT triplets which code for that AA from the concrete triplets set.
+		//    - if the set is now empty then the AA is "definitely present".
+		//      otherwise
+		//    - recompute the ambiguous triplet for the remaining concrete triplets.
+		//    - if this is different from the original ambiguous triplet, then the AA is "definitely present", 
+		//      otherwise it is merely "possibly present".
+		// Example 1
+		// ambiguous NT triplet: YAY (Y = C/T)
+		// concrete triplets set: CAC, CAT, TAC, TAT
+		// AAs: Y (CAC, CAT), H (TAC, TAT)
+		// Deleting CAC, CAT from the set gives TAC, TAT, equivalent to ambiguous triplet TAY, != YAY so Y is definite.
+		// Deleting TAC, TAT from the set gives CAC, CAT, equivalent to ambiguous triplet CAY, != YAY so H is definite.
+		// Example 2
+		// ambiguous NT triplet: TSR (S = C/G, R = A/G)
+		// concrete triplets set: TCA, TCG, TGA, TGG
+		// AAs: S (TCA, TCG), * (TGA), W (TGG)
+		// Deleting TCA, TCG from the set gives TGA, TGG, equivalent to ambiguous triplet TGR, != TSR so S is definite.
+		// Deleting TGA from the set gives TCA, TCG, TGG, equivalent to ambiguous triplet TSR so * is merely possible.
+		// Deleting TGG from the set gives TCA, TCG, TGA, equivalent to ambiguous triplet TSR so W is merely possible.
+		boolean log = false;
+		if(ambigNt1 == ResidueUtils.AMBIG_NT_T && ambigNt2 == ResidueUtils.AMBIG_NT_S && ambigNt3 == ResidueUtils.AMBIG_NT_R) {
+			log = true;
+		}
+		LinkedHashSet<Integer> possibleAas = new LinkedHashSet<Integer>();
+		LinkedHashSet<Integer> triplets = new LinkedHashSet<Integer>();
+		for(int concreteNt1: ambigNtToConcreteNts[ambigNt1]) {
+			for(int concreteNt2: ambigNtToConcreteNts[ambigNt2]) {
+				for(int concreteNt3: ambigNtToConcreteNts[ambigNt3]) {
+					int aa = concreteNtTripletToAa[concreteNt1][concreteNt2][concreteNt3];
+					possibleAas.add(aa);
+					triplets.add(concreteNtTripletToInt(concreteNt1, concreteNt2, concreteNt3));
 				}
 			}
 		}
-		if(possibleAAs.size() == 1) {
-			standardCodonTableTripletToAa[i][j][k] = possibleAAs.iterator().next().charAt(0);
-		} else {
-			standardCodonTableTripletToAa[i][j][k] = 'X';
+		LinkedList<Integer> definiteAas = new LinkedList<Integer>();
+		for(Integer possibleAa: possibleAas) {
+			if(log) {
+				System.out.println("possibleAa: "+Character.toString(ResidueUtils.intToAa(possibleAa)));
+			}
+			LinkedList<Integer> deletedTriplets = new LinkedList<Integer>();
+			@SuppressWarnings("unchecked")
+			List<int[]> codingTriplets = (List<int[]>) aaToConcreteNtTriplets[possibleAa];
+			for(int[] codingTriplet: codingTriplets) {
+				int codingTripletInt = concreteNtTripletToInt(codingTriplet[0], codingTriplet[1], codingTriplet[2]);
+				if(triplets.remove(codingTripletInt)) {
+					if(log) {
+						StringBuffer tripletStringBuf = new StringBuffer();
+						for(int nt: codingTriplet) { tripletStringBuf.append(ResidueUtils.intToConcreteNt(nt)); }
+						System.out.println("removed triplet: "+tripletStringBuf.toString());
+					}
+					deletedTriplets.add(codingTripletInt);
+				}
+			}
+			if(triplets.isEmpty()) {
+				definiteAas.add(possibleAa);
+			} else {
+				int[] pos1ConcreteNts = new int[triplets.size()];
+				int[] pos2ConcreteNts = new int[triplets.size()];
+				int[] pos3ConcreteNts = new int[triplets.size()];
+				int i = 0;
+				for(int remainingTripletInt: triplets) {
+					int[] remainingTriplet = intToConcreteNtTriplet(remainingTripletInt);
+					if(log) {
+						StringBuffer tripletStringBuf = new StringBuffer();
+						for(int nt: remainingTriplet) { tripletStringBuf.append(ResidueUtils.intToConcreteNt(nt)); }
+						System.out.println("remaining triplet: "+tripletStringBuf.toString());
+					}
+					pos1ConcreteNts[i] = remainingTriplet[0];
+					pos2ConcreteNts[i] = remainingTriplet[1];
+					pos3ConcreteNts[i] = remainingTriplet[2];
+					i++;
+				}
+				int pos1Bitmap = BitmapUtils.intsToIntBitmap(pos1ConcreteNts);
+				int pos2Bitmap = BitmapUtils.intsToIntBitmap(pos2ConcreteNts);
+				int pos3Bitmap = BitmapUtils.intsToIntBitmap(pos3ConcreteNts);
+				int pos1AmbigNt = concreteNtsBitmapToAmbigNt[pos1Bitmap];
+				int pos2AmbigNt = concreteNtsBitmapToAmbigNt[pos2Bitmap];
+				int pos3AmbigNt = concreteNtsBitmapToAmbigNt[pos3Bitmap];
+				if(pos1AmbigNt != ambigNt1 || pos2AmbigNt != ambigNt2 || pos3AmbigNt != ambigNt3) {
+					definiteAas.add(possibleAa);
+				}
+			}
+			triplets.addAll(deletedTriplets);
 		}
+		List<Character> definiteAaChars = definiteAas.stream()
+				.map(intAa -> ResidueUtils.intToAa(intAa))
+				.collect(Collectors.toList());
+		List<Character> possibleAaChars = possibleAas.stream()
+				.map(intAa -> ResidueUtils.intToAa(intAa))
+				.collect(Collectors.toList());
+		return new AmbigNtTripletInfo(definiteAaChars, possibleAaChars);
 	}
 	
-	// populate 3d array for all possible combinations of 3 IUPAC codes.
+	// populate ambigNtTripletToInfo for all possible ambiguous NT triplets.
 	static {
-		GlueLogger.getGlueLogger().finest("Initialising fast amino acid translation subsystem.");
-		for(int i = 0; i < 16; i++) {
-			for(int j = 0; j < 16; j++) {
-				for(int k = 0; k < 16; k++) {
-					populateAa(i, j, k);
+		GlueLogger.getGlueLogger().finest("Initialising amino acid translation subsystem.");
+		for(int intAmbigNt1 = 0; intAmbigNt1 < 16; intAmbigNt1++) {
+			for(int intAmbigNt2 = 0; intAmbigNt2 < 16; intAmbigNt2++) {
+				for(int intAmbigNt3 = 0; intAmbigNt3 < 16; intAmbigNt3++) {
+					ambigNtTripletToInfo[intAmbigNt1][intAmbigNt2][intAmbigNt3] = 
+							computeAmbigNtTripletInfo(intAmbigNt1, intAmbigNt2, intAmbigNt3);
 				}
 			}
 		}
@@ -119,120 +264,67 @@ public class CodonTableUtils {
 	}
 	
 	
-	/**
-	 * 
-	 *	Nucleic Acid Code	Meaning								Mnemonic
-	 * ---------------------------------------------------------------------------------
-	 *	A					A							 		Adenine
-	 *	C					C									Cytosine
-	 *	G					G									Guanine
-	 *	T					T									Thymine
-	 *	U					U									Uracil
-	 *	R					A or G								puRine
-	 *	Y					C, T or U							pYrimidines
-	 *	K					G, T or U							bases which are Ketones
-	 *	M					A or C								bases with aMino groups
-	 *	S					C or G								Strong interaction
-	 *	W					A, T or U							Weak interaction
-	 *	B					not A (i.e. C, G, T or U)			B comes after A
-	 *	D					not C (i.e. A, G, T or U)			D comes after C
-	 *	H					not G (i.e., A, C, T or U)			H comes after G
-	 *	V					neither T nor U (i.e. A, C or G)	V comes after U
-	 *	N					A C G T U							Nucleic acid
-	 *	-					gap of indeterminate length	
- 	 *
-	 */
-	
-	// internally, each nucleotide code is represented as an integer between 0 and 16.
-
-	private static int ntCharTo16BitInteger(char ntChar) {
-		switch (ntChar) {
-		case 'A':
-			return 0;
-		case 'C':
-			return 1;
-		case 'G':
-			return 2;
-		case 'T':
-			return 3;
-		case 'U':
-			return 4;
-		case 'R':
-			return 5;
-		case 'Y':
-			return 6;
-		case 'K':
-			return 7;
-		case 'M':
-			return 8;
-		case 'S':
-			return 9;
-		case 'W':
-			return 10;
-		case 'B':
-			return 11;
-		case 'D':
-			return 12;
-		case 'H':
-			return 13;
-		case 'V':
-			return 14;
-		case 'N':
-			return 15;
-		default:
-			throw new TranslationException(Code.UNKNOWN_NUCLEOTIDE_CHAR, Character.toString(ntChar));
-		}
-	}
-
-	
-	
-	// this method captures the ambiguities.
-	private static char[] ntCharToPossibleBases(char ntChar) {
-		switch (ntChar) {
-		case 'A':
-			return new char[]{'A'};
-		case 'C':
-			return new char[]{'C'};
-		case 'G':
-			return new char[]{'G'};
-		case 'T':
-			return new char[]{'T'};
-		case 'U':
-			return new char[]{'T'};
-		case 'R':
-			return new char[]{'A', 'G'};
-		case 'Y':
-			return new char[]{'C', 'T'};
-		case 'K':
-			return new char[]{'G', 'T'};
-		case 'M':
-			return new char[]{'A', 'C'};
-		case 'S':
-			return new char[]{'C', 'G'};
-		case 'W':
-			return new char[]{'A', 'T'};
-		case 'B':
-			return new char[]{'C', 'G', 'T'};
-		case 'D':
-			return new char[]{'A', 'G', 'T'};
-		case 'H':
-			return new char[]{'A', 'C', 'T'};
-		case 'V':
-			return new char[]{'A', 'C', 'G'};
-		case 'N':
-			return new char[]{'A', 'C', 'G', 'T'};
-		default:
-			throw new TranslationException(Code.UNKNOWN_NUCLEOTIDE_CHAR, Character.toString(ntChar));
-		}
-	}
 
 	public static char translate(char[] bases) {
-		return standardCodonTableTripletToAa
-				[ntCharTo16BitInteger(bases[0])]
-				[ntCharTo16BitInteger(bases[1])]
-				[ntCharTo16BitInteger(bases[2])];
+		return getAmbigNtTripletInfo(bases).translateToSingleChar();
+	}
+
+	private static AmbigNtTripletInfo getAmbigNtTripletInfo(char[] bases) {
+		return ambigNtTripletToInfo
+				[ResidueUtils.ambigNtToInt(bases[0])]
+				[ResidueUtils.ambigNtToInt(bases[1])]
+				[ResidueUtils.ambigNtToInt(bases[2])];
 	}
 	
+	// Given a triplet of concrete NTs in integer representation, 
+	// return an int (0-63) which combines them in bitwise form.
+	private static int concreteNtTripletToInt(int intConcreteNt1, int intConcreteNt2, int intConcreteNt3) {
+		return (intConcreteNt1 << 4) | (intConcreteNt2 << 2) | (intConcreteNt3);
+	}
 	
+	// Given an int (0-63) which combines 3 concrete NTs in bitwise form.
+	// return an array with separate integers, 
+	private static int[] intToConcreteNtTriplet(int concreteNtTriplet) {
+		return new int[] {
+							(concreteNtTriplet >> 4) & 3, 
+							(concreteNtTriplet >> 2) & 3, 
+							(concreteNtTriplet) & 3};
+	}
+	
+	private static class AmbigNtTripletInfo {
+		private List<Character> definiteAminoAcids;
+		private List<Character> possibleAminoAcids;
+		
+		private AmbigNtTripletInfo(List<Character> definiteAminoAcids,
+				List<Character> possibleAminoAcids) {
+			super();
+			this.definiteAminoAcids = definiteAminoAcids;
+			this.possibleAminoAcids = possibleAminoAcids;
+		}
+
+		char translateToSingleChar() {
+			if(definiteAminoAcids.size() == 1) {
+				return definiteAminoAcids.get(0);
+			}
+			return 'X';
+		}
+
+		@Override
+		public String toString() {
+			return "AmbigNtTripletInfo [definiteAminoAcids="
+					+ definiteAminoAcids + ", possibleAminoAcids="
+					+ possibleAminoAcids + "]";
+		}
+		
+		
+	}
+	
+	public static void main(String[] args) {
+		//System.out.println("ATG: "+getAmbigNtTripletInfo("ATG".toCharArray()));
+		//System.out.println("CAY: "+getAmbigNtTripletInfo("CAY".toCharArray()));
+		//System.out.println("TAY: "+getAmbigNtTripletInfo("YAY".toCharArray()));
+		System.out.println("TSR: "+getAmbigNtTripletInfo("TSR".toCharArray()));
+		//System.out.println("NNN: "+getAmbigNtTripletInfo("NNN".toCharArray()));
+	}
 	
 }
