@@ -25,10 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationException.Code;
 
 public class ResidueUtils {

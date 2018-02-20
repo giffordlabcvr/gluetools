@@ -26,7 +26,6 @@
 package uk.ac.gla.cvr.gluetools.core.bitmap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class BitmapUtils {
