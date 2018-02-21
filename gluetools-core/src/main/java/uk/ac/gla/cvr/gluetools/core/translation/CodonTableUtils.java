@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -138,9 +139,17 @@ public class CodonTableUtils {
 
 		// populate concreteNtsBitmapToAmbigNt
 		for(int ambigNt = 0 ; ambigNt < 16; ambigNt++) {
-			int[] concreteNts = ambigNtToConcreteNts[ambigNt];
-			int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
-			concreteNtsBitmapToAmbigNt[concreteNtsBitmap] = ambigNt;
+			if(ambigNt != ResidueUtils.AMBIG_NT_U) { // don't overwrite mapping for this concrete NT combination.
+				int[] concreteNts = ambigNtToConcreteNts[ambigNt];
+				int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
+				concreteNtsBitmapToAmbigNt[concreteNtsBitmap] = ambigNt;
+				//System.out.println("concreteNts: "+Arrays.stream(concreteNts).boxed().collect(Collectors.toList()));
+				//System.out.println("concreteNtsBitmap: "+Integer.toBinaryString(concreteNtsBitmap));
+				//System.out.println("concreteNtsBitmapToAmbigNt: "+ResidueUtils.intToAmbigNt(ambigNt));
+			}
+			
+
+			
 		}
 	}
 	
@@ -175,9 +184,6 @@ public class CodonTableUtils {
 		// Deleting TGA from the set gives TCA, TCG, TGG, equivalent to ambiguous triplet TSR so * is merely possible.
 		// Deleting TGG from the set gives TCA, TCG, TGA, equivalent to ambiguous triplet TSR so W is merely possible.
 		boolean log = false;
-		if(ambigNt1 == ResidueUtils.AMBIG_NT_T && ambigNt2 == ResidueUtils.AMBIG_NT_S && ambigNt3 == ResidueUtils.AMBIG_NT_R) {
-			log = true;
-		}
 		LinkedHashSet<Integer> possibleAas = new LinkedHashSet<Integer>();
 		LinkedHashSet<Integer> triplets = new LinkedHashSet<Integer>();
 		for(int concreteNt1: ambigNtToConcreteNts[ambigNt1]) {
@@ -227,12 +233,27 @@ public class CodonTableUtils {
 					pos3ConcreteNts[i] = remainingTriplet[2];
 					i++;
 				}
+				if(log) {
+					System.out.println("pos1ConcreteNts: "+Arrays.stream(pos1ConcreteNts).boxed().collect(Collectors.toList()));
+					System.out.println("pos2ConcreteNts: "+Arrays.stream(pos2ConcreteNts).boxed().collect(Collectors.toList()));
+					System.out.println("pos3ConcreteNts: "+Arrays.stream(pos3ConcreteNts).boxed().collect(Collectors.toList()));
+				}
 				int pos1Bitmap = BitmapUtils.intsToIntBitmap(pos1ConcreteNts);
-				int pos2Bitmap = BitmapUtils.intsToIntBitmap(pos2ConcreteNts);
+				int pos2Bitmap = BitmapUtils.intsToIntBitmap(pos2ConcreteNts);				
 				int pos3Bitmap = BitmapUtils.intsToIntBitmap(pos3ConcreteNts);
+				if(log) {
+					System.out.println("pos1Bitmap: "+Integer.toBinaryString(pos1Bitmap));
+					System.out.println("pos2Bitmap: "+Integer.toBinaryString(pos2Bitmap));
+					System.out.println("pos3Bitmap: "+Integer.toBinaryString(pos3Bitmap));
+				}
 				int pos1AmbigNt = concreteNtsBitmapToAmbigNt[pos1Bitmap];
 				int pos2AmbigNt = concreteNtsBitmapToAmbigNt[pos2Bitmap];
 				int pos3AmbigNt = concreteNtsBitmapToAmbigNt[pos3Bitmap];
+				if(log) {
+					System.out.println("pos1AmbigNt: "+ResidueUtils.intToAmbigNt(pos1AmbigNt));
+					System.out.println("pos2AmbigNt: "+ResidueUtils.intToAmbigNt(pos2AmbigNt));
+					System.out.println("pos3AmbigNt: "+ResidueUtils.intToAmbigNt(pos3AmbigNt));
+				}
 				if(pos1AmbigNt != ambigNt1 || pos2AmbigNt != ambigNt2 || pos3AmbigNt != ambigNt3) {
 					definiteAas.add(possibleAa);
 				}
@@ -265,7 +286,7 @@ public class CodonTableUtils {
 	
 
 	public static char translate(char[] bases) {
-		return getAmbigNtTripletInfo(bases).translateToSingleChar();
+		return getAmbigNtTripletInfo(bases).singleCharTranslation();
 	}
 
 	private static AmbigNtTripletInfo getAmbigNtTripletInfo(char[] bases) {
@@ -293,37 +314,40 @@ public class CodonTableUtils {
 	private static class AmbigNtTripletInfo {
 		private List<Character> definiteAminoAcids;
 		private List<Character> possibleAminoAcids;
+		private char singleCharTranslation;
 		
 		private AmbigNtTripletInfo(List<Character> definiteAminoAcids,
 				List<Character> possibleAminoAcids) {
 			super();
 			this.definiteAminoAcids = definiteAminoAcids;
 			this.possibleAminoAcids = possibleAminoAcids;
-		}
-
-		char translateToSingleChar() {
 			if(definiteAminoAcids.size() == 1) {
-				return definiteAminoAcids.get(0);
+				singleCharTranslation = definiteAminoAcids.get(0);
+			} else {
+				singleCharTranslation = 'X';
 			}
-			return 'X';
 		}
 
-		@Override
-		public String toString() {
-			return "AmbigNtTripletInfo [definiteAminoAcids="
-					+ definiteAminoAcids + ", possibleAminoAcids="
-					+ possibleAminoAcids + "]";
+		public char singleCharTranslation() {
+			return singleCharTranslation;
 		}
-		
+
+		public List<Character> getDefiniteAminoAcids() {
+			return definiteAminoAcids;
+		}
+
+		public List<Character> getPossibleAminoAcids() {
+			return possibleAminoAcids;
+		}
 		
 	}
 	
 	public static void main(String[] args) {
-		//System.out.println("ATG: "+getAmbigNtTripletInfo("ATG".toCharArray()));
-		//System.out.println("CAY: "+getAmbigNtTripletInfo("CAY".toCharArray()));
-		//System.out.println("TAY: "+getAmbigNtTripletInfo("YAY".toCharArray()));
+		System.out.println("ATG: "+getAmbigNtTripletInfo("ATG".toCharArray()));
+		System.out.println("CAY: "+getAmbigNtTripletInfo("CAY".toCharArray()));
+		System.out.println("TAY: "+getAmbigNtTripletInfo("YAY".toCharArray()));
 		System.out.println("TSR: "+getAmbigNtTripletInfo("TSR".toCharArray()));
-		//System.out.println("NNN: "+getAmbigNtTripletInfo("NNN".toCharArray()));
+		System.out.println("NNN: "+getAmbigNtTripletInfo("NNN".toCharArray()));
 	}
 	
 }
