@@ -141,7 +141,7 @@
 
   run file glue/exampleReferenceDisplayNames.glue
 
-  run file glue/inheritFeatureLocations.glue
+  run file glue/exampleInheritFeatureLocations.glue
   
 
   

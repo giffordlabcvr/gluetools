@@ -39,6 +39,7 @@ schema-project example
     create field genotype VARCHAR 10
     create field subtype VARCHAR 10
     exit
+  
 
   table alignment
     create field phylogeny CLOB

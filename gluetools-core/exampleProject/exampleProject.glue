@@ -23,7 +23,7 @@
 #    Rob Gifford: robert.gifford@glasgow.ac.uk
 delete project example
 
-create project example "An example GLUE project based on hepatitis E virus" --minVersion 0.1.145
+create project example "An example GLUE project based on hepatitis E virus" --minVersion 0.1.147
 
 run file glue/exampleSchemaExtensions.glue
  
@@ -36,6 +36,7 @@ project example
   # M49 regions / countries etc (UN standard)
   run file glue/m49_countries/populateM49All.glue
   
+  # This Source contains the HEV reference sequencs
   import source sources/ncbi-refseqs 
 
   # import unconstrained alignment  
@@ -50,19 +51,23 @@ project example
   run file glue/exampleReferences.glue
 
   run file glue/exampleAlignmentTree.glue
-  run file glue/importPhylogeny.glue
+  run file glue/exampleImportPhylogeny.glue
 
+  # This Source contains a set of 10 HEV example sequences, downloaded from NCBI in GenBank XML format. 
   import source sources/ncbi-hev-examples
   
-  # create custom publication objects for each pubmed ID mentioned in GenBank XML
-  module exampleGenbankXmlPopulator update custom-tables -w "source.name = 'ncbi-hev-examples'"
-  # ensure sequence is linked to publication object as appropriate
-  module exampleGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'" publication
+  # The exampleGenbankXmlPopulator contains a rule which will create custom publication objects for each 
+  # pubmed ID mentioned in the GenBank XML, when the following command is executed
+  module exampleGenbankXmlPopulator update custom-tables
 
-  # populate all other properties.
-  module exampleGenbankXmlPopulator populate -w "source.name = 'ncbi-hev-examples'"
+  # ensure the link from sequence to publication is populated at this step 
+  module exampleGenbankXmlPopulator populate -s publication
 
-  run script glue/addExampleSeqsToTree.js
+  # All other properties such as sequence length, collection year, host and publication title, 
+  # doi etc will be populated from the GenBank XML when this command is run.
+  module exampleGenbankXmlPopulator populate -s
+
+  run script glue/exampleAddSeqsToAlignmentTree.js
 
   validate
   
