@@ -111,16 +111,16 @@ Here are some where clause patterns you could use in the example project:
 	<tbody>
 		<tr>
 			<td><em>Sequence</em></td>
-			<td><code>gb_length >= 7200 and gb_length &lt; 7300</code></td>
-			<td>The field value for <code>gb_length</code> is at least 7200 and less than 7300</td>
-			<td>Numeric comparison operators may be used for INTEGER fields such as <code>gb_length</code>, DOUBLE or DATE fields</td>
+			<td><code>length >= 7200 and length &lt; 7300</code></td>
+			<td>The field value for <code>length</code> is at least 7200 and less than 7300</td>
+			<td>Numeric comparison operators may be used for INTEGER fields such as <code>length</code>, DOUBLE or DATE fields</td>
 			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
 		</tr>
 		
 		<tr>
 			<td><em>Sequence</em></td>
-			<td><code>gb_length between 7200 and 7300</code></td>
-			<td>The field value for <code>gb_length</code> is at least 7200 and at most 7300</td>
+			<td><code>length between 7200 and 7300</code></td>
+			<td>The field value for <code>length</code> is at least 7200 and at most 7300</td>
 			<td>The <code>between ... and</code> numeric comparison operator is for testing values within an inclusive range</td>
 			<td><mode-command mode="root_project" command="list_sequence"></mode-command></td>
 		</tr>

@@ -43,7 +43,7 @@
 		<propertyPopulator property="gb_taxonomy"/>
 	</gbTaxonomy>
 	<gbLength>
-		<propertyPopulator property="gb_length"/>
+		<propertyPopulator property="length"/>
 	</gbLength>
 	<gbUpdateDate>
 		<propertyPopulator property="gb_update_date"/>
@@ -118,6 +118,14 @@
 
 			</propertyPopulator>
 		</gbQualifier>
+		
+		<gbQualifier name="collection_date">
+			<propertyPopulator property="collection_year">
+				<matchPattern>(\d{4})</matchPattern>
+				<outputTemplate>${g1}</outputTemplate>
+			</propertyPopulator>
+		</gbQualifier>
+		
 		
 	</gbFeature>
 </genbankXmlPopulator>

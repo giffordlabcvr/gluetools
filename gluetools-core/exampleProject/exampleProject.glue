@@ -56,6 +56,12 @@ project example
   # This Source contains a set of 10 HEV example sequences, downloaded from NCBI in GenBank XML format. 
   import source sources/ncbi-hev-examples
   
+  # This Source contains a set of 10 HEV example sequences, in FASTA format. 
+  module exampleFastaSequenceImporter import -f sources/fasta-hev-examples.fasta
+  
+  # Populate certain metadata fields for the sequences in Source fasta-hev-examples
+  module exampleTextFilePopulator populate -w "source.name = 'fasta-hev-examples'" -f tabular/fasta-hev-examples.txt
+  
   # The exampleGenbankXmlPopulator contains a rule which will create custom publication objects for each 
   # pubmed ID mentioned in the GenBank XML, when the following command is executed
   module exampleGenbankXmlPopulator update custom-tables

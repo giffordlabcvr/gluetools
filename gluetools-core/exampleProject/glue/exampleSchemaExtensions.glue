@@ -28,12 +28,13 @@ schema-project example
     create field gb_primary_accession VARCHAR
     create field gb_accession_version VARCHAR
     create field gb_locus VARCHAR
-    create field gb_length INTEGER
     create field gb_organism VARCHAR
     create field gb_create_date DATE
     create field gb_update_date DATE
     create field gb_taxonomy VARCHAR 200
 
+    create field collection_year INTEGER
+    create field length INTEGER
     create field isolate VARCHAR
     create field host_species VARCHAR 200
     create field genotype VARCHAR 10

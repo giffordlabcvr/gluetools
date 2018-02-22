@@ -135,13 +135,13 @@ The <mode-command mode="root" command="list_project"></mode-command> command was
 Note that <code>glue.command</code> was passed an array with one element per word or argument. So for example the command:
 </p>
 <p><div hljs language="json" no-escape>
-GLUE> list sequence --whereClause "gb_length >= 500"
+GLUE> list sequence --whereClause "length >= 500"
 </div></p>
 <p>
 would be run from JavaScript using:
 <p>
 <p><div hljs language="javascript" no-escape>
-glue.command(["list", "sequence", "--whereClause", "gb_length >= 500"]);
+glue.command(["list", "sequence", "--whereClause", "length >= 500"]);
 </div></p>
 </p>
 <p>

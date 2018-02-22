@@ -21,7 +21,8 @@
 #    
 #    Josh Singer: josh.singer@glasgow.ac.uk
 #    Rob Gifford: robert.gifford@glasgow.ac.uk
-  # create modules from files
+  
+# create modules from files
   
   create module --fileName modules/exampleCompoundAligner.xml
   create module --fileName modules/exampleFastaAlignmentExporter.xml
@@ -41,6 +42,9 @@
   create module --fileName modules/exampleTabularUtilityCsv.xml
   create module --fileName modules/exampleTabularUtilityTab.xml
   create module --fileName modules/kuiken2006CodonLabeler.xml
+  create module --fileName modules/exampleFastaSequenceImporter.xml
+  create module --fileName modules/exampleTextFilePopulator.xml
+
   create module --fileName modules/ncbiHevExamplesImporter.xml
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml

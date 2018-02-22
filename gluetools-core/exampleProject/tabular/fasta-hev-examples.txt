@@ -1,0 +1,11 @@
+Isolate	Sequence length	Country	Host species	Collection year
+IND-HEV-AVH1-1991	7206	India	Homo sapiens	1991
+IND-HEV-AVH2-1998	7215	India	Homo sapiens	1998
+IND-HEV-AVH3-2000	7215	India	Homo sapiens	2000
+IND-HEV-AVH4-2006	7206	India	Homo sapiens	2006
+IND-HEV-AVH5-2010	7217	India	Homo sapiens	2010
+IND-HEV-FHF1-2003	7206	India	Homo sapiens	2003
+IND-HEV-FHF2-2004	7211	India	Homo sapiens	2004
+IND-HEV-FHF3-2005	7206	India	Homo sapiens	2005
+IND-HEV-FHF4-2006	7201	India	Homo sapiens	2006
+IND-HEV-FHF5-2007	7226	India	Homo sapiens	2007
