@@ -63,7 +63,7 @@ project example
   # ensure the link from sequence to publication is populated at this step 
   module exampleGenbankXmlPopulator populate -s publication
 
-  # All other properties such as sequence length, collection year, host and publication title, 
+  # Other properties such as sequence length, host and publication title, 
   # doi etc will be populated from the GenBank XML when this command is run.
   module exampleGenbankXmlPopulator populate -s
 
