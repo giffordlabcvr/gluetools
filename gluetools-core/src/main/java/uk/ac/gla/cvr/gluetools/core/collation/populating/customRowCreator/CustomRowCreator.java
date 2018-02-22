@@ -26,7 +26,7 @@ public interface CustomRowCreator {
 	public static void applyUpdateToDB(CommandContext cmdContext, CustomTableUpdate update) {
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
 		CustomTable customTable = project.getCustomTable(update.getTableName());
-		GlueDataObject.create(cmdContext, customTable.getRowClass(), CustomTableObject.pkMap(update.getNewRowId()), false);
-
+		CustomTableObject newCustomTableRow = GlueDataObject.create(cmdContext, customTable.getRowClass(), CustomTableObject.pkMap(update.getNewRowId()), true);
+		cmdContext.cacheUncommitted(newCustomTableRow);
 	}
 }
