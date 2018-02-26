@@ -35,7 +35,8 @@ function addToAlignment(sourceName, sequenceID, almtName) {
 var genotypingResults;
 
 glue.inMode("module/exampleMaxLikelihoodGenotyper", function() {
-	genotypingResults = glue.tableToObjects(glue.command(["genotype", "sequence", "--whereClause", "source.name = 'ncbi-hev-examples'"]));
+	genotypingResults = glue.tableToObjects(glue.command([
+	 "genotype", "sequence", "--whereClause", "source.name in ('ncbi-hev-examples', 'fasta-hev-examples')"]));
 });
 
 for(var i = 0; i < genotypingResults.length; i++) {
