@@ -65,15 +65,15 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/invokingGlueFromTheShell/page.html',
             controller: 'invokingGlueFromTheShellCtrl'
           }).
-      	when('/projectStructure', {
-            templateUrl: './pages/userGuide/projectStructure/page.html',
-            controller: 'projectStructureCtrl'
+      	when('/buildYourOwnProject', {
+            templateUrl: './pages/userGuide/buildYourOwnProject/page.html',
+            controller: 'buildYourOwnProjectCtrl'
           }).
       	when('/managingAProject', {
             templateUrl: './pages/userGuide/managingAProject/page.html',
             controller: 'managingAProjectCtrl'
           }).
-      	when('/queryingGlue', {
+    	when('/queryingGlue', {
             templateUrl: './pages/userGuide/queryingGlue/page.html',
             controller: 'queryingGlueCtrl'
           }).
@@ -93,7 +93,19 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/freemarkerTemplates/page.html',
             controller: 'freemarkerTemplatesCtrl'
           }).
-    	when('/variations', {
+    	when('/buildingAnAlignmentTree', {
+            templateUrl: './pages/userGuide/buildingAnAlignmentTree/page.html',
+            controller: 'buildingAnAlignmentTreeCtrl'
+          }).
+        when('/maximumLikelihoodCladeAssignment', {
+	        templateUrl: './pages/userGuide/maximumLikelihoodCladeAssignment/page.html',
+	        controller: 'maximumLikelihoodCladeAssignmentCtrl'
+	      }).
+    	when('/workingWithGenbankData', {
+            templateUrl: './pages/userGuide/workingWithGenbankData/page.html',
+            controller: 'workingWithGenbankDataCtrl'
+          }).
+      	when('/variations', {
             templateUrl: './pages/userGuide/variations/page.html',
             controller: 'variationsCtrl'
           }).
@@ -169,7 +181,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
   	$scope.exampleProjectMenuTitle = "Example GLUE Project";
   	$scope.interactiveCommandLineMenuTitle = "Command Line Interpreter";
     $scope.invokingGlueFromTheShellMenuTitle = "Invoking GLUE as a Unix command"
-    $scope.projectStructureMenuTitle = "Project structure";
+    $scope.buildYourOwnProjectMenuTitle = "Build your own project";
     $scope.managingAProjectMenuTitle = "Managing a project";
     $scope.queryingGlueMenuTitle = "Querying the GLUE database";
     $scope.modulesMenuTitle = "Module system";
@@ -177,7 +189,9 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.schemaExtensionsMenuTitle = "Schema Extensions";
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";
     $scope.variationsMenuTitle = "Variations";
-
+    $scope.buildingAnAlignmentTreeMenuTitle = "Building an Alignment Tree";
+    $scope.maximumLikelihoodCladeAssignmentMenuTitle = "Maximum Likelihood Clade Assignment";
+    $scope.workingWithGenbankDataMenuTitle = "Working with sequence data from GenBank";
   	$scope.referenceDocumentationMenuTitle = "Reference documentation";
   	$scope.commandModesMenuTitle = "Command mode reference";
   	$scope.nonModeCommandsMenuTitle = "Non-mode-specific command reference"
