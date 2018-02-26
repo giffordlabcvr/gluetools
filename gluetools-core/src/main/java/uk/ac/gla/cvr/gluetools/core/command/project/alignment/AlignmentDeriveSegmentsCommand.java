@@ -88,8 +88,9 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"the --suppressSkippedWarning option (constrained target only).\n"+
 		"The <whereClause> selects members from the source alignment. These members will be "+
 		"added to the current alignment if they do not exist, unless --existingMembersOnly is specified. "+
+		"The --existingMembersOnly option must be used if --recursive is used. "+
 		"The command is available for constrained and unconstrained current alignments. "+
-		"However, if the current alignment is unconstrained, an <linkingReference> must be specified, "+
+		"However, if the current alignment is unconstrained, a <linkingReference> must be specified, "+
 		"This must be a member of both source and target, and must not be one of the selected source members. "+
 		"New aligned segments will be added to the current alignment's members, derived "+
 		"from the homology in the source alignment between the selected member and the constraining or linking reference member "+
@@ -152,6 +153,10 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				.ofNullable(PluginUtils.configureEnumProperty(SegmentMergeStrategy.class, configElem, MERGE_STRATEGY, false))
 				.orElse(SegmentMergeStrategy.MERGE_PREFER_EXISTING);
 		existingMembersOnly = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXISTING_MEMBERS_ONLY, false)).orElse(false);
+		if(recursive && !existingMembersOnly) {
+			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "The --existingMembersOnly option must be used if --recursive is used.");
+		}
+		
 	}
 
 	private void usageError() {
