@@ -187,17 +187,16 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 		} else {
 			selectQuery = new SelectQuery(AlignmentMember.class, sourceAlmtMemberExp);
 		}
-		List<AlignmentMember> selectedAlmtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
-		
-		
 		ArrayList<Alignment> targetAlignments = new ArrayList<Alignment>();
 		targetAlignments.add(currentAlignment);
 		if(recursive) {
 			targetAlignments.addAll(currentAlignment.getDescendents());
 		}
+		List<String> targetAlignmentNames = targetAlignments.stream().map(al -> al.getName()).collect(Collectors.toList());
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
 
-		for(Alignment targetAlignment: targetAlignments) {
+		for(String targetAlignmentName: targetAlignmentNames) {
+			Alignment targetAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(targetAlignmentName));
 			ReferenceSequence refSequence;
 			if(targetAlignment.isConstrained()) {
 				refSequence = targetAlignment.getRefSequence();
@@ -216,12 +215,8 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				if(refSeqMemberInSourceAlmt == null) {
 					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of source alignment.");
 				}
-				List<Map<String,String>> selectedSrcAlmtMemberPkMaps = selectedAlmtMembers.stream().map(memb -> memb.pkMap()).collect(Collectors.toList());
-				if(selectedSrcAlmtMemberPkMaps.contains(refMemberPkMap)) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must not be one of the selected source members.");
-				}
 				refSeqMemberInTargetAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-						AlignmentMember.pkMap(targetAlignment.getName(), refSequenceSourceName, refSequenceSeqID), true);
+						AlignmentMember.pkMap(targetAlignmentName, refSequenceSourceName, refSequenceSeqID), true);
 				if(refSeqMemberInTargetAlmt == null) {
 					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of target alignment.");
 				}
@@ -229,7 +224,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 			
 			if(targetAlignment.isConstrained() && refSeqMemberInSourceAlmt == null) {
 				if(!suppressSkippedWarning) {
-					GlueLogger.getGlueLogger().warning("Skipping target alignment "+targetAlignment.getName()+
+					GlueLogger.getGlueLogger().warning("Skipping target alignment "+targetAlignmentName+
 							": its reference sequence "+refSequence.getName()+
 							" (source:"+refSequenceSourceName+", sequenceID:"+refSequenceSeqID+") "+
 							"is not a member of source alignment "+sourceAlignmentName);
@@ -245,101 +240,166 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 					.collect(Collectors.toList());
 
 
-			for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
-				Map<String, Object> resultRow = new LinkedHashMap<String, Object>();
-				Sequence memberSeq = sourceAlmtMember.getSequence();
-				String memberSourceName = memberSeq.getSource().getName();
-				String memberSeqID = memberSeq.getSequenceID();
+			int numberToProcess = GlueDataObject.count(cmdContext, selectQuery);
+			int batchSize = 250;
+			
+			selectQuery.setFetchLimit(batchSize);
+			selectQuery.setPageSize(batchSize);
+			int offset = 0;
+			while(offset < numberToProcess) {
+				Alignment targetAlmtForCtx = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(targetAlignmentName));
+				selectQuery.setFetchOffset(offset);
+				int lastBatchIndex = Math.min(offset+batchSize, numberToProcess);
+				GlueLogger.getGlueLogger().finest("Retrieving source alignment members "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
+				List<AlignmentMember> selectedAlmtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, selectQuery);
+				GlueLogger.getGlueLogger().finest("Processing source alignment members "+(offset+1)+" to "+lastBatchIndex+" of "+numberToProcess);
+				
+				// each batch is processed in 2 commits.
+				
+				// step 1, add new members where necessary, delete existing segments, but record delete segments in map.
+				Map<Map<String, String>, List<QueryAlignedSegment>> targetMemberPkMapToExistingQaSegs = 
+						new LinkedHashMap<Map<String,String>, List<QueryAlignedSegment>>();
+				Map<Map<String, String>, AlignmentMember> targetMemberPkMapToAlmtMember = 
+						new LinkedHashMap<Map<String,String>, AlignmentMember>();
 
-				AlignmentMember currentAlmtMember;
-				currentAlmtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-						AlignmentMember.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID), true);
-				if(existingMembersOnly) {
-					if(currentAlmtMember == null) {
+				// create an expression to retrieve the set of corresponding members of the target alignment
+				Expression sourceSeqExp = ExpressionFactory.expFalse();
+				for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
+					sourceSeqExp = sourceSeqExp.orExp(
+							ExpressionFactory
+								.matchExp(AlignmentMember.SOURCE_NAME_PATH, 
+										sourceAlmtMember.getSequence().getSource().getName())
+							.andExp(							ExpressionFactory
+								.matchExp(AlignmentMember.SEQUENCE_ID_PATH, 
+										sourceAlmtMember.getSequence().getSequenceID()))
+							);
+				}				
+				Expression targetMembersExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, targetAlignmentName)
+						.andExp(sourceSeqExp);
+				SelectQuery targetMembersQuery = new SelectQuery(AlignmentMember.class, targetMembersExp);
+				List<AlignmentMember> targetMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, targetMembersQuery);
+				for(AlignmentMember targetMember: targetMembers) {
+					targetMemberPkMapToAlmtMember.put(targetMember.pkMap(), targetMember);
+				}
+				
+				for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
+
+					if(!targetAlmtForCtx.isConstrained() && sourceAlmtMember.pkMap().equals(refMemberPkMap)) {
+						throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must not be one of the selected source members.");
+					}
+					
+					Sequence memberSeq = sourceAlmtMember.getSequence();
+					String memberSourceName = memberSeq.getSource().getName();
+					String memberSeqID = memberSeq.getSequenceID();
+
+					Map<String, String> targetMemberPkMap = AlignmentMember.pkMap(targetAlignmentName, memberSourceName, memberSeqID);
+
+					AlignmentMember targetAlmtMember = targetMemberPkMapToAlmtMember.get(targetMemberPkMap);
+					if(existingMembersOnly) {
+						if(targetAlmtMember == null) {
+							continue;
+						}
+					} else {
+						if(targetAlmtMember == null) {
+							targetAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlmtForCtx, memberSeq);
+							targetMemberPkMapToAlmtMember.put(targetMemberPkMap, targetAlmtMember);
+						}
+					}
+
+					List<AlignedSegment> targetMemberExistingSegs = new ArrayList<AlignedSegment>(targetAlmtMember.getAlignedSegments());
+
+					List<QueryAlignedSegment> targetMemberExistingQaSegs = targetMemberExistingSegs.stream()
+							.map(AlignedSegment::asQueryAlignedSegment)
+							.collect(Collectors.toList());
+
+					targetMemberPkMapToExistingQaSegs.put(targetAlmtMember.pkMap(), targetMemberExistingQaSegs);
+					
+					for(AlignedSegment existingSegment: targetMemberExistingSegs) {
+						Map<String, String> pkMap = existingSegment.pkMap();
+						GlueDataObject.delete(cmdContext, AlignedSegment.class, pkMap, false);
+					}
+
+				}
+				cmdContext.commit();
+				
+				// step 2, compute new segments, update them in the db.
+				Map<String, Object> resultRow = new LinkedHashMap<String, Object>();
+
+				for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
+
+					String targetMemberSourceName = sourceAlmtMember.getSequence().getSource().getName();
+					String targetMemberSequenceID = sourceAlmtMember.getSequence().getSequenceID();
+					Map<String, String> targetMemberPkMap = 
+						AlignmentMember.pkMap(targetAlignmentName, targetMemberSourceName, targetMemberSequenceID);
+					AlignmentMember targetAlmtMember = targetMemberPkMapToAlmtMember.get(targetMemberPkMap);
+					if(targetAlmtMember == null) {
 						continue;
 					}
-				} else {
-					if(currentAlmtMember == null) {
-						currentAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlignment, memberSeq);
+					List<QueryAlignedSegment> targetMemberExistingQaSegs = targetMemberPkMapToExistingQaSegs.get(targetMemberPkMap);
+
+					Double prevRefCoverage = targetAlmtMember.getReferenceNtCoveragePercent(cmdContext);
+
+					List<AlignedSegment> memberToSrcSegs = sourceAlmtMember.getAlignedSegments();
+					List<QueryAlignedSegment> memberToSrcAlmtQaSegs = memberToSrcSegs.stream()
+							.map(AlignedSegment::asQueryAlignedSegment)
+							.collect(Collectors.toList());
+
+					List<QueryAlignedSegment> memberToRefSegs = 
+							QueryAlignedSegment.translateSegments(memberToSrcAlmtQaSegs, srcAlmtToRefQaSegs);
+
+					List<QueryAlignedSegment> memberToTargetAlmtSegs = null;
+					if(targetAlmtForCtx.isConstrained()) {
+						memberToTargetAlmtSegs = memberToRefSegs;
+					} else {
+						List<QueryAlignedSegment> refToTargetAlmtSegs = refSeqMemberInTargetAlmt.getAlignedSegments().stream()
+						.map(AlignedSegment::asQueryAlignedSegment)
+						.collect(Collectors.toList());
+						memberToTargetAlmtSegs = QueryAlignedSegment.translateSegments(memberToRefSegs, refToTargetAlmtSegs);
+
 					}
-				}
+					
+					List<QueryAlignedSegment> qaSegsToAdd = null;
 
-				Double prevRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);
+					// sort required so that subtract works correctly.
+					targetMemberExistingQaSegs = IReferenceSegment.sortByRefStart(targetMemberExistingQaSegs, ArrayList<QueryAlignedSegment>::new);
+					memberToTargetAlmtSegs = IReferenceSegment.sortByRefStart(memberToTargetAlmtSegs, ArrayList<QueryAlignedSegment>::new);
+					
+					switch(segmentMergeStrategy) {
+					case OVERWRITE:
+						qaSegsToAdd = memberToTargetAlmtSegs;
+						break;
+					case MERGE_PREFER_EXISTING:
+						qaSegsToAdd = new ArrayList<QueryAlignedSegment>();
+						qaSegsToAdd.addAll(targetMemberExistingQaSegs);
+						qaSegsToAdd.addAll(ReferenceSegment.subtract(memberToTargetAlmtSegs, targetMemberExistingQaSegs));
+						break;
+					case MERGE_PREFER_NEW:
+						qaSegsToAdd = new ArrayList<QueryAlignedSegment>();
+						qaSegsToAdd.addAll(ReferenceSegment.subtract(targetMemberExistingQaSegs, memberToTargetAlmtSegs));
+						qaSegsToAdd.addAll(memberToTargetAlmtSegs);
+						break;
+					}
+					for(QueryAlignedSegment qaSegmentToAdd: qaSegsToAdd) {
+						Map<String, String> pkMap = AlignedSegment.pkMap(targetAlignmentName, targetMemberSourceName, targetMemberSequenceID, 
+								qaSegmentToAdd.getRefStart(), qaSegmentToAdd.getRefEnd(), 
+								qaSegmentToAdd.getQueryStart(), qaSegmentToAdd.getQueryEnd());
+						AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, pkMap, false);
+						alignedSegment.setAlignmentMember(targetAlmtMember);
+					}
+					Double newRefCoverage = targetAlmtMember.getReferenceNtCoveragePercent(cmdContext);
 
-				List<AlignedSegment> existingSegs = new ArrayList<AlignedSegment>(currentAlmtMember.getAlignedSegments());
-
-				List<QueryAlignedSegment> existingQaSegs = existingSegs.stream()
-						.map(AlignedSegment::asQueryAlignedSegment)
-						.collect(Collectors.toList());
-
-				List<AlignedSegment> memberToSrcSegs = sourceAlmtMember.getAlignedSegments();
-				List<QueryAlignedSegment> memberToSrcAlmtQaSegs = memberToSrcSegs.stream()
-						.map(AlignedSegment::asQueryAlignedSegment)
-						.collect(Collectors.toList());
-
-				List<QueryAlignedSegment> memberToRefSegs = 
-						QueryAlignedSegment.translateSegments(memberToSrcAlmtQaSegs, srcAlmtToRefQaSegs);
-
-				List<QueryAlignedSegment> memberToTargetAlmtSegs = null;
-				if(targetAlignment.isConstrained()) {
-					memberToTargetAlmtSegs = memberToRefSegs;
-				} else {
-					List<QueryAlignedSegment> refToTargetAlmtSegs = refSeqMemberInTargetAlmt.getAlignedSegments().stream()
-					.map(AlignedSegment::asQueryAlignedSegment)
-					.collect(Collectors.toList());
-					memberToTargetAlmtSegs = QueryAlignedSegment.translateSegments(memberToRefSegs, refToTargetAlmtSegs);
-
-				}
-				
-				List<QueryAlignedSegment> qaSegsToAdd = null;
-
-				// sort required so that subtract works correctly.
-				existingQaSegs = IReferenceSegment.sortByRefStart(existingQaSegs, ArrayList<QueryAlignedSegment>::new);
-				memberToTargetAlmtSegs = IReferenceSegment.sortByRefStart(memberToTargetAlmtSegs, ArrayList<QueryAlignedSegment>::new);
-				
-				switch(segmentMergeStrategy) {
-				case OVERWRITE:
-					qaSegsToAdd = memberToTargetAlmtSegs;
-					break;
-				case MERGE_PREFER_EXISTING:
-					qaSegsToAdd = new ArrayList<QueryAlignedSegment>();
-					qaSegsToAdd.addAll(existingQaSegs);
-					qaSegsToAdd.addAll(ReferenceSegment.subtract(memberToTargetAlmtSegs, existingQaSegs));
-					break;
-				case MERGE_PREFER_NEW:
-					qaSegsToAdd = new ArrayList<QueryAlignedSegment>();
-					qaSegsToAdd.addAll(ReferenceSegment.subtract(existingQaSegs, memberToTargetAlmtSegs));
-					qaSegsToAdd.addAll(memberToTargetAlmtSegs);
-					break;
-				}
-
-				for(AlignedSegment existingSegment: existingSegs) {
-					Map<String, String> pkMap = existingSegment.pkMap();
-					GlueDataObject.delete(cmdContext, AlignedSegment.class, pkMap, false);
+					resultRow.put(AlignmentDeriveSegmentsResult.TARGET_ALIGNMENT_NAME, targetAlignmentName);
+					resultRow.put(AlignmentMember.SOURCE_NAME_PATH, targetMemberSourceName);
+					resultRow.put(AlignmentMember.SEQUENCE_ID_PATH, targetMemberSequenceID);
+					resultRow.put(AlignmentDeriveSegmentsResult.PREV_REF_COVERAGE_PCT, prevRefCoverage);
+					resultRow.put(AlignmentDeriveSegmentsResult.NEW_REF_COVERAGE_PCT, newRefCoverage);
+					listOfMaps.add(resultRow);
 				}
 				cmdContext.commit();
-
-				for(QueryAlignedSegment qaSegmentToAdd: qaSegsToAdd) {
-					Map<String, String> pkMap = AlignedSegment.pkMap(targetAlignment.getName(), memberSourceName, memberSeqID, 
-							qaSegmentToAdd.getRefStart(), qaSegmentToAdd.getRefEnd(), 
-							qaSegmentToAdd.getQueryStart(), qaSegmentToAdd.getQueryEnd());
-					AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, pkMap, false);
-					alignedSegment.setAlignmentMember(currentAlmtMember);
-				}
-				cmdContext.commit();
-
-				Double newRefCoverage = currentAlmtMember.getReferenceNtCoveragePercent(cmdContext);
-
-				resultRow.put(AlignmentDeriveSegmentsResult.TARGET_ALIGNMENT_NAME, targetAlignment.getName());
-				resultRow.put(AlignmentMember.SOURCE_NAME_PATH, memberSourceName);
-				resultRow.put(AlignmentMember.SEQUENCE_ID_PATH, memberSeqID);
-				resultRow.put(AlignmentDeriveSegmentsResult.PREV_REF_COVERAGE_PCT, prevRefCoverage);
-				resultRow.put(AlignmentDeriveSegmentsResult.NEW_REF_COVERAGE_PCT, newRefCoverage);
-				listOfMaps.add(resultRow);
-
-			}
+				cmdContext.newObjectContext();
+				offset = offset+batchSize;
+			} 
 		}
-		cmdContext.commit();
 		AlignmentDeriveSegmentsResult result = new AlignmentDeriveSegmentsResult(listOfMaps);
 		return result;
 	}
