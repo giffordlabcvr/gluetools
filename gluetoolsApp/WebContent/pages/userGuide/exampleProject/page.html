@@ -8,6 +8,7 @@ to illustrate many of the key features of GLUE. </p>
 <ol>
 	<li><a ng-click="scrollTo('download')">Download and unpack</a></li>
 	<li><a ng-click="scrollTo('build')">Build the project</a></li>
+	<li><a ng-click="scrollTo('guide')">Guide to the example project</a></li>
 	<li><a ng-click="scrollTo('nextSteps')">Next steps</a></li>
 </ol>
 
@@ -58,6 +59,55 @@ OK
 Mode path: /
 GLUE></pre>
 </div>
+
+<h3 id="guide">What is in the example project?</h3>
+
+After building the example project, you have within your GLUE installation a basic resource for storing and analysing Hepatitis E virus sequences. 
+Here are the main elements within that dataset: 
+
+<h4>Reference sequences and reference alignment</h4>
+<ul>
+	<li>The example project contains a set of <a href="#coreSchema#Sequences">Sequences</a> in GenBank XML format, stored within a Source <code>ncbi-refseqs</code>.</li>
+	<li>Source <code>ncbi-refseqs</code> additionally contains GenBank sequence L08816, for the purpose of providing genome feature locations. </li>
+	<li>The <code>ncbi-refseqs</code> sequences are designated <a href="#coreSchema#ReferenceSequences">ReferenceSequences</a> as proposed by <a href="10.1099/jgv.0.000393">Smith, et al. 2016</a>.</li>
+	<li>The <code>ncbi-refseqs</code> sequences are stored in an <a href="#alignments#unconstrainedAlignments">unconstrained Alignment</a> based on the nucleotide alignment provided
+		by Smith, et al. 2016.</li>
+	<li>Ten genome <a href="#coreSchema#Features">Features</a> are defined: three ORFs plus seven sub-domains of ORF1. 
+		FeatureLocations for sequence L08816 are taken from the GenBank record. These have been transferred to the other reference sequences 
+		via the unconstrained alignment, using the <mode-command mode="root_project_reference" command="inherit_feature-location"></mode-command> command.</li>
+</ul>
+<h4>Alignment tree and genotyping</h4>
+<ul>
+	<li><a href="#alignments#constrainedAlignments">Constrained Alignments</a> have been defined for each of the genotypes and subtypes of the virus specified by 
+		<a href="10.1099/jgv.0.000393">Smith, et al. 2016</a>, using the appropriate ReferenceSequences to constrain each of these.</li>
+	<li>The constrained alignments have been linked together in an <a href="#alignments#alignmentTrees">alignment tree</a>. The homologies for the internal 
+		nodes of the tree have been derived from the unconstrained alignment using the <mode-command mode="root_project_alignment" command="derive_segments"></mode-command>
+		command.</li>
+	<li>A phylogenetic tree based on the reference sequences (the "reference phylogeny") has been computed using RAxML, via a 
+		<module-type name="raxmlPhylogenyGenerator"></module-type> module. This is imported into the alignment tree using the
+		<module-command module="phyloImporter" command="import_phylogeny"></module-command> module command. </li>
+	<li>Modules are defined for <a href="#maximumLikelihoodCladeAssignment">Maximum-likelihood Clade Assignment</a> based on the alignment tree and 
+		reference phylogeny, allowing genotype and subtype to be assigned for any Hepatitis E virus sequence.</li>
+</ul>
+<h4>Sequence database</h4>
+<ul>
+	<li>In order to serve as a sequence database, the example project also defined a set of <a href="#schemaExtensions">schema extensions</a>. 
+		These include a number of basic sequence metadata fields such as length, collection year and host species. </li>
+	<li>There is also a separate table for country of origin. Sequence objects can be linked to countries and 
+		countries are linked to geographical regions based on the UN M.49 standard. </li>
+	<li>There are also fields and tables specific to GenBank data such as the accession version and the creation 
+		date of the GenBank record. There is a separate table to store any PubMed article which is associated with a sequence.</li>
+	<li>To illustrate its function as a database, the project contains two sets of example Sequences in addition to the reference sequences. Source <code>ncbi-hev-examples</code> 
+	    is a set of 10 unrelated HEV sequences loaded in GenBank XML format. 
+	    Source <code>fasta-hev-examples</code> is a set of 10 HEV sequences loaded from a FASTA file.</li>
+	<li>The example project build populates metadata fields and links. For GenBank XML sequences in <code>ncbi-hev-refseqs</code> and <code>ncbi-hev-examples</code>,
+		metadata is extracted from the GenBank XML using a <module-type name="genbankXmlPopulator"></module-type> module. For the <code>fasta-hev-examples</code>
+		sequences, metadata is loaded from a tab-delimited text file using a <module-type name="textFilePopulator"></module-type> module.</li>
+	<li>After the nucleotide data and metadata has been loaded for the example sequences, the project build uses a <a href="#scriptingLayer">JavaScript program</a> 
+		to run the genotyping procedure on each example sequence. Based on the results of this procedure, each example sequence is aded to the appropriate
+		tip alignment in the alignment tree. The nucleotide homology within each tip alignment is then updated by running a BLAST-based codon-aware pairwise aligner
+		between the example sequence and the constraining ReferenceSequence. </li>
+</ul>
 
 <h3 id="nextSteps">Next steps</h3>
 
