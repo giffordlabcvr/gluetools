@@ -200,12 +200,49 @@ GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" seq
 	<li>The sequences are listed in ascending order of their creation date on GenBank, using <code>-s gb_create_date</code></li>
 	<li>At the end of the command we added three properties <code>sequenceID</code>, <code>host_species</code> and <code>gb_create_date</code>
 	<br/>This specifies the columns of the result table. </li>
-	<li>For more information on how queries are constructed consult the <a href="#/queryingGlue">guide to querying the GLUE database</a>.
 </ul>
 </p>
 <p>
+Many other GLUE commands use "where clause" filters and produce tabular results. 
+One such command is the <mode-command mode="root_project_alignment" command="amino-acid_frequency"></mode-command> command. 
+This command can be used to compute amino acid frequencies for particular genome locations based on a certain set of sequences within the alignment tree.
+Try this:
+<p>
+<div hljs language="bash" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> alignment AL_MASTER 
+OK
+Mode path: /project/example/alignment/AL_MASTER
+GLUE> amino-acid frequency -c -w "sequence.host_species = 'Sus scrofa' and referenceMember = false" -r REF_MASTER_M73218 -f MT -l 60 65
++=======+===========+============+============+
+| codon | aminoAcid | numMembers | pctMembers |
++=======+===========+============+============+
+| 60    | E         | 14         | 100.00     |
+| 61    | V         | 14         | 100.00     |
+| 62    | L         | 10         | 71.43      |
+| 62    | F         | 4          | 28.57      |
+| 63    | W         | 14         | 100.00     |
+| 64    | N         | 14         | 100.00     |
+| 65    | H         | 14         | 100.00     |
++=======+===========+============+============+</pre></div>
+</p>
+<p>
+This shows the frequency of different amino acid residues at codon locations 60 to 65 (<code>-l 60 65</code>) within the Methyltransferase (<code>-f MT</code>) region of ORF1 as 
+defined on the master reference sequence (<code>-r REF_MASTER_M73218</code>). 
+Alignment members within different clades are considered because
+the command recursively (<code>-c</code>) visits all descendents of the the root alignment (<code>AL_MASTER</code>). 
+Alignment members are only considered if their sequence host species is pig (<code>sequence.host_species = 'Sus scrofa'</code>). 
+Reference members, which only exist to satisfy the alignment tree invariant, are excluded (<code>referenceMember = false</code>).  
+</p>
+<p>
+For location 62 there is some variation whereas at the other locations the amino acid residues are fixed for this group. 
+</p>
+<p>For more information on how "where clause" filters are constructed consult the <a href="#/queryingGlue">guide to querying the GLUE database</a>.</p>
+
+<p>
 It is possible to save the results from a GLUE command to a tabular text file, so that we can put them in a spreadsheet or use them in another program.
-One quick way to do this is to run two <code>console</code> commands immediately before running the <mode-command mode="root_project" command="list_sequence"></mode-command> command:
+One quick way to do this is to run two <code>console</code> commands immediately before running a command such as <mode-command mode="root_project" command="list_sequence"></mode-command>:
 </p>
 <p>
 <div hljs language="json" no-escape>
