@@ -189,8 +189,10 @@ public class Alignment extends _Alignment implements HasDisplayName {
 			String relatedRefSeqID = relatedRef.getSequence().getSequenceID();
 			String relatedRefSourceName = relatedRef.getSequence().getSource().getName();
 			Map<String,String> memberPkMap = AlignmentMember.pkMap(this.getName(), relatedRefSourceName, relatedRefSeqID);
-			// this will throw if no such member exists.
-			GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+			AlignmentMember relatedRefMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap, true);
+			if(relatedRefMember == null) {
+				throw new AlignmentException(Code.REFERENCE_NOT_MEMBER_OF_ALIGNMENT, getName(), referenceName);
+			}
 			return relatedRef;
 		} else {
 			return getAncConstrainingRef(cmdContext, referenceName);

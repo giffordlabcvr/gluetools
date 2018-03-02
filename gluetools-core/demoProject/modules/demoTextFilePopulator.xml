@@ -1,0 +1,28 @@
+<textFilePopulator>
+	<columnDelimiterRegex>\t</columnDelimiterRegex>
+	<textFileColumn>
+		<identifier>true</identifier>
+		<header>Isolate</header>
+		<property>sequenceID</property>
+	</textFileColumn>
+	<textFileColumn>
+		<header>Isolate</header>
+		<property>isolate</property>
+	</textFileColumn>
+	<textFileColumn>
+		<header>Sequence length</header>
+		<property>length</property>
+	</textFileColumn>
+	<textFileColumn>
+		<header>Country</header>
+		<property>country</property>
+	</textFileColumn>
+	<textFileColumn>
+		<header>Host species</header>
+		<property>host_species</property>
+	</textFileColumn>
+	<textFileColumn>
+		<header>Collection year</header>
+		<property>collection_year</property>
+	</textFileColumn>
+</textFilePopulator>

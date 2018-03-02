@@ -32,13 +32,16 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate a member sequence to amino acids", 
-		docoptUsages = { "-r <acRefName> -f <featureName>" },
+		docoptUsages = { "-r <relRefName> -f <featureName>" },
 		docoptOptions = { 
-		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
+		"-r <relRefName>, --relRefName <relRefName>     Related reference",
 		"-f <featureName>, --featureName <featureName>  Feature to translate",
 		},
 		furtherHelp = 
-		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
+		"If this member is in a constrained alignment, the <relRefName> argument names a reference "+
+				"sequence constraining an ancestor alignment of this member's alignment. "+
+				"If this member is in an unconstrained alignment, the <relRefName> argument names a reference "+
+				"sequence which is a member of the same alignment. "+
 		"The <featureName> argument names a feature location which is defined on this reference. "+
 		"The result will be confined to this feature location",
 		metaTags = {}	
@@ -52,7 +55,7 @@ public class MemberAminoAcidCommand extends MemberBaseAminoAcidCommand<MemberAmi
 
 
 	@CompleterClass
-	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {}
+	public static final class Completer extends FeatureOfRelatedRefCompleter {}
 
 	
 }

@@ -1,0 +1,29 @@
+# create the reference sequence object based on the sequence object
+create reference REF_MASTER_L08816 ncbi-refseqs L08816
+
+# enter reference sequence mode
+reference REF_MASTER_L08816
+  
+  # add feature locations for each of ORF1, ORF2 and ORF3
+  # in each case, enter feature location mode and add a segment specifying
+  # where the feature is located on L08816
+
+  add feature-location ORF1
+  feature-location ORF1
+    add segment 4 5085
+    exit
+
+  add feature-location ORF3
+  feature-location ORF3
+    add segment 5082 5453
+    exit
+
+  add feature-location ORF2
+  feature-location ORF2
+    add segment 5123 7105
+    exit
+
+exit  
+
+
+  

@@ -57,31 +57,31 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extends MemberModeCommand<R> {
 
 
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 
-	private String referenceName;
+	private String relRefName;
 	private String featureName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.referenceName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 	}
 
 	public static List<LabeledQueryAminoAcid> memberAminoAcids(CommandContext cmdContext,
-			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc) {
-		Alignment tipAlmt = almtMember.getAlignment();
-		
-		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
-		List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
+			AlignmentMember almtMember, ReferenceSequence relatedRef, FeatureLocation featureLoc) {
+		Alignment alignment = almtMember.getAlignment();
+
+		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
+		List<QueryAlignedSegment> memberToRelatedRefSegs = alignment.translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
 
 		// trim down to the feature area.
 		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
 		
-		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
+		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToRelatedRefSegs, featureLocRefSegs,
 				ReferenceSegment.cloneLeftSegMerger());
 		
 		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
@@ -91,14 +91,14 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 
 		
 		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-		List<QueryAlignedSegment> memberToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegsMerged);
+		List<QueryAlignedSegment> memberToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegsMerged);
 
 		final Translator translator = new CommandContextTranslator(cmdContext);
 
 		Sequence memberSequence = almtMember.getSequence();
 		AbstractSequenceObject memberSeqObj = memberSequence.getSequenceObject();
 
-		if(memberToAncConstrRefSegsCodonAligned.isEmpty()) {
+		if(memberToRelatedRefSegsCodonAligned.isEmpty()) {
 			return Collections.emptyList();
 		}
 		
@@ -107,12 +107,12 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
 
 		
-		for(QueryAlignedSegment memberToAncConstrRefSeg: memberToAncConstrRefSegsCodonAligned) {
+		for(QueryAlignedSegment memberToRelatedRefSeg: memberToRelatedRefSegsCodonAligned) {
 			CharSequence nts = memberSeqObj.subSequence(cmdContext, 
-					memberToAncConstrRefSeg.getQueryStart(), memberToAncConstrRefSeg.getQueryEnd());
+					memberToRelatedRefSeg.getQueryStart(), memberToRelatedRefSeg.getQueryEnd());
 			String segAAs = translator.translate(nts);
-			int refNt = memberToAncConstrRefSeg.getRefStart();
-			int memberNt = memberToAncConstrRefSeg.getQueryStart();
+			int refNt = memberToRelatedRefSeg.getRefStart();
+			int memberNt = memberToRelatedRefSeg.getQueryStart();
 			for(int i = 0; i < segAAs.length(); i++) {
 				String segAA = segAAs.substring(i, i+1);
 				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(
@@ -129,12 +129,12 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 			CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
-		ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, referenceName);
+		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, relRefName);
 		FeatureLocation featureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), false);
+				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName), false);
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
-		List<LabeledQueryAminoAcid> memberAminoAcids = memberAminoAcids(cmdContext, almtMember, ancConstrainingRef, featureLoc);
+		List<LabeledQueryAminoAcid> memberAminoAcids = memberAminoAcids(cmdContext, almtMember, relatedRef, featureLoc);
 		return memberAminoAcids;
 	}
 

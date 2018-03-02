@@ -1,0 +1,25 @@
+# create a feature for each ORF
+# indicate that each feature is a protein coding region
+# and that each has its own codon numbering scheme.
+
+create feature ORF1
+feature ORF1
+  set field displayName "ORF 1"
+  set metatag CODES_AMINO_ACIDS true
+  set metatag OWN_CODON_NUMBERING true
+  exit
+ 
+create feature ORF2
+feature ORF2
+  set field displayName "ORF 2"
+  set metatag CODES_AMINO_ACIDS true
+  set metatag OWN_CODON_NUMBERING true
+  exit
+
+create feature ORF3
+feature ORF3
+  set field displayName "ORF 3"
+  set metatag CODES_AMINO_ACIDS true
+  set metatag OWN_CODON_NUMBERING true
+  exit
+

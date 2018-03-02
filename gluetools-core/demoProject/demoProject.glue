@@ -1,0 +1,38 @@
+# delete any previous version of the demo project which is in the database
+delete project demo
+
+# create the demo project, specifying name, description and minimum GLUE version
+create project demo "An demonstration GLUE project based on hepatitis E virus" --minVersion 0.1.147
+
+# add schema extensions to the demo project
+run file glue/demoSchemaExtensions.glue
+ 
+# enter project mode
+project demo
+
+  # set any project-wide GLUE settings
+  run file glue/demoProjectSettings.glue
+  
+  # load the project modules
+  run file glue/demoModules.glue
+
+  # define genome features for the project
+  run file glue/demoFeatures.glue
+  
+  # import the ncbi-refseqs Source containing a single sequence L08816, in GenBank XML format
+  import source sources/ncbi-refseqs 
+
+  # define reference sequence based on this sequence 
+  run file glue/demoReferenceSequences.glue
+
+  # import the fasta-hev-examples Source containing set of 10 HEV example sequences, in FASTA format. 
+  import source sources/fasta-hev-examples
+
+  # populate metadata for the sequences in Source fasta-hev-examples
+  module demoTextFilePopulator populate -w "source.name = 'fasta-hev-examples'" -f tabular/fasta-hev-examples.txt
+  
+  # import an unconstrained alignment, relating the fasta-hev-examples with the reference sequence
+  module demoAlignmentImporter import AL_UNCONSTRAINED --fileName alignments/demoAlignment.fna
+  
+  validate
+  

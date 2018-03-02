@@ -57,7 +57,7 @@ project example
   import source sources/ncbi-hev-examples
   
   # This Source contains a set of 10 HEV example sequences, in FASTA format. 
-  module exampleFastaSequenceImporter import -f sources/fasta-hev-examples.fasta
+  import source sources/fasta-hev-examples
   
   # Populate certain metadata fields for the sequences in Source fasta-hev-examples
   module exampleTextFilePopulator populate -w "source.name = 'fasta-hev-examples'" -f tabular/fasta-hev-examples.txt

@@ -42,7 +42,6 @@
   create module --fileName modules/exampleTabularUtilityCsv.xml
   create module --fileName modules/exampleTabularUtilityTab.xml
   create module --fileName modules/kuiken2006CodonLabeler.xml
-  create module --fileName modules/exampleFastaSequenceImporter.xml
   create module --fileName modules/exampleTextFilePopulator.xml
 
   create module --fileName modules/ncbiHevExamplesImporter.xml

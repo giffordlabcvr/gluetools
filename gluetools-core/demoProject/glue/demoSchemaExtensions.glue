@@ -1,0 +1,13 @@
+schema-project demo
+
+  # add some metadata columns to the sequence table
+  table sequence
+
+    create field collection_year INTEGER
+    create field length INTEGER
+    create field isolate VARCHAR
+    create field country VARCHAR
+    create field host_species VARCHAR 200
+    exit
+  
+  exit

@@ -1,0 +1,4 @@
+# create modules for the project based on XML module files
+
+create module --fileName modules/demoTextFilePopulator.xml
+create module --fileName modules/demoAlignmentImporter.xml
