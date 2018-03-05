@@ -1,46 +1,435 @@
 <h2>{{buildYourOwnProjectMenuTitle}}</h2>
 
 <p>
-In this tutorial we will show how a GLUE project can be built up from scratch. 
+In this tutorial we will show how a GLUE project can be built up from scratch. This demo project will contain:
+<ul>
+<li>A reference sequence based on a GenBank file, annotated with the locations of coding features</li>
+<li>A set of sequences imported from FASTA files</li>
+<li>Sequence metadata imported from a tab-delimited text file</li>
+<li>An alignment imported from a file</li>
+</ul>
 We will use some data from the example project, but this will be an independent project.
-Although this project will be very basic, following the tutorial should demonstrate some 
+Although the demo project will be very basic, following the tutorial should demonstrate some 
 of the patterns and conventions which can be applied to more complex projects.
 </p>
 
 <ol>
 	<li><a ng-click="scrollTo('directoryStructure')">The project directory structure</a></li>
 	<li><a ng-click="scrollTo('initialElements')">The build file, project settings and schema extensions</a></li>
+	<li><a ng-click="scrollTo('moduleDefinitions')">Module definitions</a></li>
 	<li><a ng-click="scrollTo('sequenceData')">Sequence nucleotide data and metadata</a></li>
 	<li><a ng-click="scrollTo('referenceSequence')">A reference sequence, features and feature locations</a></li>
 	<li><a ng-click="scrollTo('unconstrainedAlignment')">An unconstrained alignment</a></li>
+	<li><a ng-click="scrollTo('useTheProject')">Run a command in the project</a></li>
 </ol>
 
 <h3 id="directoryStructure">The project directory structure</h3>
-
-GLUE does not mandate any particular directory structure but you may find it useful to follow this convention.
+<p>
+GLUE does not mandate any particular directory structure but GLUE project developers find it useful to follow this convention.
 Create the directory structure outlined below:
-<pre>
-demo
-    alignments
-    glue
-    modules
-    sources
-    tabular
-    trees
-</pre>
-<p>
-The <code>demo</code> directory will contain everything required to build the project in GLUE. 
-You may consider making this directory a single repository in a version control system such as GitHub.
 </p>
-<p>
-The <p>alignments</p> directory will contain any file-based alignments
+<pre>
+demo/
+    alignments/
+    glue/
+    modules/
+    sources/
+    tabular/
+    trees/
+</pre>
+<ul>
+<li>
+The <code>demo/</code> directory will contain everything required to build the project in GLUE. 
+You may consider making this directory a single repository in a version control system such as GitHub. 
+</li>
+<li>
+The <code>demo/alignments/</code> directory will contain any files for <a href="#/alignments">Alignments</a> which are loaded into the project during the project build.
+</li>
+<li>
+The <code>demo/glue/</code> directory will contain <code>.glue</code> or <code>.js</code> scripts which are used to execute different phases of the project build.
+</li>
+<li>
+The <code>demo/modules/</code> directory will contain <code>.xml</code> files containing <a href="#/modules">module</a> configuration, and any associated resource files.
+</li>
+<li>
+The <code>demo/sources/</code> directory will contain sets of sequence data files, organised into <a href="#/coreSchema#Sequences">Sources</a>.
+</li>
+<li>
+The <code>demo/tabular/</code> directory will contain any tabular data required to build the project, for example sequence metadata.
+</li>
+<li>
+The <code>demo/trees/</code> directory will contain any phylogenetic trees to be loaded in to the project (not used in the demo project).
+</li>
+</ul>
 
 <h3 id="initialElements">The build file, project settings and schema extensions</h3>
+<p>
+In this step you should will create three files. 
+The project build file is simply a file containing GLUE commands that can be run from the GLUE command line. 
+The build file deletes any previous version of the project then builds the project from scratch.
+</p>
+<p>
+<h4><code>demo/demoProject.glue</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+# delete any previous version of the demo project which is in the database
+delete project demo
 
+# create the demo project, specifying name, description and minimum GLUE version
+create project demo "A demonstration GLUE project based on hepatitis E virus"
 
+# add schema extensions to the demo project
+run file glue/demoSchemaExtensions.glue
+ 
+# enter project mode
+project demo
+
+  # set any project-wide GLUE settings
+  run file glue/demoProjectSettings.glue
+  
+  # validate the project objects
+  validate
+  
+  exit
+</pre></div>
+</p>
+Note that at certain points, the build file uses
+<non-mode-command command="run_file"></non-mode-command> to invoke GLUE commands from another file. Generally we suggest using this
+mechanism to partition GLUE scripts into different files with different purposes. We will now add the two files which are run from the
+build file. One file defines some <a href="#/schemaExtensions">schema extensions</a>.
+<p>
+<h4><code>demo/glue/demoSchemaExtensions.glue</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+schema-project demo
+
+  # add some metadata columns to the sequence table
+  table sequence
+
+    create field collection_year INTEGER
+    create field length INTEGER
+    create field isolate VARCHAR
+    create field country VARCHAR
+    create field host_species VARCHAR
+    exit
+  
+  exit</pre></div>
+</p>
+Another file sets up some project-wide GLUE settings. 
+<p>
+<h4><code>demo/glue/demoProjectSettings.glue</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+# define any project-wide GLUE settings for this project
+
+set setting ignore-nt-sequence-hyphens true
+set setting translate-beyond-possible-stop true
+set setting translate-beyond-definite-stop true
+</pre></div>
+</p>
+<p>
+The <mode-command mode="root_project" command="validate"></mode-command> command in Project mode is the final step in the project build. 
+This is a check which ensures the consistency of many of the objects in the project. It can pick up various
+configuration problems. 
+</p>
+<p>
+After you have created the three files you can check that your project build is working by running it from the GLUE command line. 
+Launch GLUE from the <code>demo/</code> directory and run the command shown below:
+</p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /
+GLUE> run file demoProject.glue</pre>
+</div>
+</p>
+<p>
+You can re-run this project build at various points while you are developing and modifying the project definition, to check that it is 
+working as intended.
+</p>
+<h3 id="moduleDefinitions">Module definitions</h3>
+<p>
+The demo project will contain two <a href="#/modules">modules</a>. Create these two module XML configuration files in the <code>modules/</code> directory:
+</p>
+<p>
+<h4><code>demo/modules/demoAlignmentImporter.xml</code></h4>
+<div hljs language="xml" no-escape>
+<pre>
+&lt;blastFastaAlignmentImporter/&gt;
+</pre></div>
+</p>
+<p>
+<h4><code>demo/modules/demoTextFilePopulator.xml</code></h4>
+<div hljs language="xml" no-escape>
+<pre>
+&lt;textFilePopulator&gt;
+	&lt;columnDelimiterRegex&gt;\t&lt;/columnDelimiterRegex&gt;
+	&lt;textFileColumn&gt;
+		&lt;identifier&gt;true&lt;/identifier&gt;
+		&lt;header&gt;Isolate&lt;/header&gt;
+		&lt;property&gt;sequenceID&lt;/property&gt;
+	&lt;/textFileColumn&gt;
+	&lt;textFileColumn&gt;
+		&lt;header&gt;Isolate&lt;/header&gt;
+		&lt;property&gt;isolate&lt;/property&gt;
+	&lt;/textFileColumn&gt;
+	&lt;textFileColumn&gt;
+		&lt;header&gt;Sequence length&lt;/header&gt;
+		&lt;property&gt;length&lt;/property&gt;
+	&lt;/textFileColumn&gt;
+	&lt;textFileColumn&gt;
+		&lt;header&gt;Country&lt;/header&gt;
+		&lt;property&gt;country&lt;/property&gt;
+	&lt;/textFileColumn&gt;
+	&lt;textFileColumn&gt;
+		&lt;header&gt;Host species&lt;/header&gt;
+		&lt;property&gt;host_species&lt;/property&gt;
+	&lt;/textFileColumn&gt;
+	&lt;textFileColumn&gt;
+		&lt;header&gt;Collection year&lt;/header&gt;
+		&lt;property&gt;collection_year&lt;/property&gt;
+	&lt;/textFileColumn&gt;
+&lt;/textFilePopulator&gt;
+</pre></div>
+</p>
+<p>
+The project build needs to create the modules based on the above configuration files, so
+we now add this <code>.glue</code> file in the <code>demo/glue</code> directory:
+</p>
+<p>
+<h4><code>demo/glue/demoModules.glue</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+# create modules for the project based on XML module files
+
+create module --fileName modules/demoTextFilePopulator.xml
+create module --fileName modules/demoAlignmentImporter.xml</pre></div>
+</p>
+<p>
+We invoke <code>demoModules.glue</code> from the main project build, by adding this line to 
+<code>demoProject.glue</code>, just before the 
+<mode-command mode="root_project" command="validate"></mode-command> step:
+</p>
+
+<p>
+<div hljs language="python" no-escape>
+<pre>
+  # load the project modules
+  run file glue/demoModules.glue
+</pre></div>
+</p>
+<p>
+You should re-run the project build to check that the changes worked. 
+</p>
 <h3 id="sequenceData">Sequence nucleotide data and metadata</h3>
+<p>
+We will now add some sequence data and metadata to the project. Within the <code>demo/sources</code>
+directory create two new directories:
+<pre>
+demo/
+    sources/
+        ncbi-refseqs/
+        fasta-hev-examples/
+</pre>
+</p>
+<p>
+We will take nucleotide sequence data from <a href="#/exampleProject">the example project</a>:
+<ul>
+<li>Copy all <code>.fasta</code> files from <code>exampleProject/sources/fasta-hev-examples</code> into <code>demo/sources/fasta-hev-examples</code>.</li>
+<li>Copy the single file <code></code> <code>exampleProject/sources/ncbi-refseqs/L08816.xml</code> into <code>demo/sources/ncbi-refseqs</code>.</li>
+</ul>
+</p>
+<p>
+Create this tab-delimited text file in <code>demo/tabular/</code>:
+</p> 
+<p><h4><code>demo/tabular/fasta-hev-examples.txt</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+Isolate	Sequence length	Country	Host species	Collection year
+IND-HEV-AVH1-1991	7206	India	Homo sapiens	1991
+IND-HEV-AVH2-1998	7215	India	Homo sapiens	1998
+IND-HEV-AVH3-2000	7215	India	Homo sapiens	2000
+IND-HEV-AVH4-2006	7206	India	Homo sapiens	2006
+IND-HEV-AVH5-2010	7217	India	Homo sapiens	2010
+IND-HEV-FHF1-2003	7206	India	Homo sapiens	2003
+IND-HEV-FHF2-2004	7211	India	Homo sapiens	2004
+IND-HEV-FHF3-2005	7206	India	Homo sapiens	2005
+IND-HEV-FHF4-2006	7201	India	Homo sapiens	2006
+IND-HEV-FHF5-2007	7226	India	Homo sapiens	2007
+</pre></div></p>
+<p>
+We now add these three lines to <code>demoProject.glue</code>, just before the 
+<mode-command mode="root_project" command="validate"></mode-command> step:
+</p>
+<p>
+<div hljs language="python" no-escape>
+<pre>
+  # import the ncbi-refseqs Source containing a single sequence L08816, in GenBank XML format
+  import source sources/ncbi-refseqs 
 
+  # import the fasta-hev-examples Source containing set of 10 HEV example sequences, in FASTA format. 
+  import source sources/fasta-hev-examples
 
+  # populate metadata for the sequences in Source fasta-hev-examples
+  module demoTextFilePopulator populate -w "source.name = 'fasta-hev-examples'" -f tabular/fasta-hev-examples.txt
+</pre></div>
+</p>
+<p>
+Now re-run the project build to check that the data loads correctly. 
+</p>
 <h3 id="referenceSequence">A reference sequence, features and feature locations</h3>
+<p>
+In the next step we will define <a href="#/coreSchema#Features"><em>Features</em></a> for 
+the three coding regions of the virus genome, 
+and create a <a href="#/coreSchema#ReferenceSequences"><em>ReferenceSequence</em></a>
+on which these regions are annotated. 
+</p>
+<p>
+Create these two <code>.glue</code> files in the <code>demo/glue</code> directory:
+</p>
+<p>
+<h4><code>demo/glue/demoFeatures.glue</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+# create a feature for each ORF
+# indicate that each feature is a protein coding region
+# and that each has its own codon numbering scheme.
+
+create feature ORF1
+feature ORF1
+  set field displayName "ORF 1"
+  set metatag CODES_AMINO_ACIDS true
+  set metatag OWN_CODON_NUMBERING true
+  exit
+ 
+create feature ORF2
+feature ORF2
+  set field displayName "ORF 2"
+  set metatag CODES_AMINO_ACIDS true
+  set metatag OWN_CODON_NUMBERING true
+  exit
+
+create feature ORF3
+feature ORF3
+  set field displayName "ORF 3"
+  set metatag CODES_AMINO_ACIDS true
+  set metatag OWN_CODON_NUMBERING true
+  exit
+
+</pre></div>
+</p>
+
+<p>
+<h4><code>demo/glue/demoReferenceSequences.glue</code></h4>
+<div hljs language="python" no-escape>
+<pre>
+# create the reference sequence object based on the sequence object
+create reference REF_MASTER_L08816 ncbi-refseqs L08816
+
+# enter reference sequence mode
+reference REF_MASTER_L08816
+  
+  # add feature locations for each of ORF1, ORF2 and ORF3
+  # in each case, enter feature location mode and add a segment specifying
+  # where the feature is located on L08816
+
+  add feature-location ORF1
+  feature-location ORF1
+    add segment 4 5085
+    exit
+
+  add feature-location ORF3
+  feature-location ORF3
+    add segment 5082 5453
+    exit
+
+  add feature-location ORF2
+  feature-location ORF2
+    add segment 5123 7105
+    exit
+
+exit  
+</pre></div>
+</p>
+
+We now add lines to <code>demoProject.glue</code>, to invoke these GLUE files, just before the 
+<mode-command mode="root_project" command="validate"></mode-command> step:
+</p>
+<p>
+<div hljs language="python" no-escape>
+<pre>
+  # define genome features for the project
+  run file glue/demoFeatures.glue
+  
+  # define reference sequence based on this sequence 
+  run file glue/demoReferenceSequences.glue
+</pre></div>
+</p>
+<p>
+Now re-run the project build to check that these changes work correctly. 
+</p>
 
 <h3 id="unconstrainedAlignment">An unconstrained alignment</h3>
+<p>
+We will now add an alignment into the project. In this case we will add an 
+<a href="#/alignments#unconstrainedAlignments">unconstrained alignment</a> of all 
+11 sequences, using a <module-type name="blastFastaAlignmentImporter"></module-type>
+module to import the alignment from a file.
+</p>
+<p>Copy the single file <code>exampleProject/alignments/demoAlignment.fna</code> 
+into <code>demo/alignments</code>.</p>
+Now add lines to <code>demoProject.glue</code>, to import the alignment, just before the 
+<mode-command mode="root_project" command="validate"></mode-command> step:
+</p>
+<p>
+<div hljs language="python" no-escape>
+<pre>
+  # import an unconstrained alignment, relating the fasta-hev-examples with the reference sequence
+  module demoAlignmentImporter import AL_UNCONSTRAINED --fileName alignments/demoAlignment.fna
+</pre></div>
+</p>
+<p>
+Rebuild the project to check that this step works.
+</p>
+<h3 id="useTheProject">Run a command in the project</h3>
+<p>
+Here is an example command which makes use of the project data. It will translate the ORF2 coding 
+region of the IND-HEV-FHF1-2003 example sequence. 
+</p>
+<p>
+<div hljs language="javascript" no-escape>
+<pre>
+Mode path: /
+GLUE> project demo 
+OK
+Mode path: /project/demo
+GLUE> alignment AL_UNCONSTRAINED member fasta-hev-examples IND-HEV-FHF1-2003 
+OK
+Mode path: /project/demo/alignment/AL_UNCONSTRAINED/member/fasta-hev-examples/IND-HEV-FHF1-2003
+GLUE> amino-acid -r REF_MASTER_L08816 -f ORF2
++============+==========+==========+===========+
+| codonLabel | memberNt | relRefNt | aminoAcid |
++============+==========+==========+===========+
+| 1          | 5147     | 5123     | M         |
+| 2          | 5150     | 5126     | R         |
+| 3          | 5153     | 5129     | P         |
+| 4          | 5156     | 5132     | R         |
+| 5          | 5159     | 5135     | P         |
+| 6          | 5162     | 5138     | I         |
+| 7          | 5165     | 5141     | L         |
+| 8          | 5168     | 5144     | L         |
+| 9          | 5171     | 5147     | L         |
+| 10         | 5174     | 5150     | F         |
+| 11         | 5177     | 5153     | L         |
+| 12         | 5180     | 5156     | M         |
+| 13         | 5183     | 5159     | F         |
+| 14         | 5186     | 5162     | L         |
+| 15         | 5189     | 5165     | P         |
+| 16         | 5192     | 5168     | M         |
+| 17         | 5195     | 5171     | L         |
+| 18         | 5198     | 5174     | P         |
+| 19         | 5201     | 5177     | A         |
++============+==========+==========+===========+
+Rows 1 to 19 of 659 [F:first, L:last, P:prev, N:next, Q:quit]
+</pre></div>
+</p>

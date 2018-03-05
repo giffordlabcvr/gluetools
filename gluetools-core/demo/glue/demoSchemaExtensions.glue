@@ -7,7 +7,7 @@ schema-project demo
     create field length INTEGER
     create field isolate VARCHAR
     create field country VARCHAR
-    create field host_species VARCHAR 200
+    create field host_species VARCHAR
     exit
   
   exit

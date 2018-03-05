@@ -35,7 +35,7 @@ public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid
 	public static final String 
 		CODON_LABEL = "codonLabel",
 		MEMBER_NT = "memberNt",
-		AC_REF_NT = "acRefNt",
+		REL_REF_NT = "relRefNt",
 		AMINO_ACID = "aminoAcid";
 
 
@@ -44,7 +44,7 @@ public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid
 				rowData, 
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
 				column(MEMBER_NT, lqaa -> lqaa.getQueryNt()),
-				column(AC_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
+				column(REL_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
 				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()));
 	}
 
