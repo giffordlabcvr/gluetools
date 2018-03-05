@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.TraversedLinkStrategy;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;

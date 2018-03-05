@@ -28,6 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.ReturnToProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectSetSettingCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectShowSettingCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.settings.ProjectUnsetSettingCommand;
@@ -57,6 +58,8 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(FeatureCommand.class);
 		registerCommandClass(AlignmentCommand.class);
 		registerCommandClass(ExitCommand.class);
+		registerCommandClass(ReturnToProjectModeCommand.class);
+
 
 		setCmdGroup(new CommandGroup("sequences", "Commands for managing sequence objects", 5, false));
 		registerCommandClass(CreateSourceCommand.class);

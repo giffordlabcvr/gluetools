@@ -29,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.command.config.ConfigShowPropertyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.CommitCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.NewContextCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.QuitCommand;
+import uk.ac.gla.cvr.gluetools.core.command.console.RootModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.RunFileCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.RunScriptCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleAddOptionLineCommand;
@@ -51,6 +52,10 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		setCmdGroup(new CommandGroup("otherNonModeSpecific", "Other commands (non-mode specific)", 100, true));
 		registerCommandClass(HelpCommand.class);
 		registerCommandClass(QuitCommand.class);
+		
+		setCmdGroup(CommandGroup.MODE_NAVIGATION);
+		registerCommandClass(RootModeCommand.class);
+		
 		setCmdGroup(new CommandGroup("scripting", "Commands for accessing the scripting layer", 92, true));
 		registerCommandClass(RunFileCommand.class);
 		registerCommandClass(RunScriptCommand.class);

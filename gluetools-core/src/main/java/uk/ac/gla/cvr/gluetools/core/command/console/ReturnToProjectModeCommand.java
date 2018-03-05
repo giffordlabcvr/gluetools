@@ -23,33 +23,30 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.memberFLocNote;
+package uk.ac.gla.cvr.gluetools.core.command.console;
 
-import uk.ac.gla.cvr.gluetools.core.command.BaseCommandFactory;
-import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
-import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectMode;
-import uk.ac.gla.cvr.gluetools.core.command.console.ExitCommand;
-import uk.ac.gla.cvr.gluetools.core.command.console.ReturnToProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.utils.Multiton;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 
-public class MemberFLocNoteModeCommandFactory extends BaseCommandFactory {
 
-	public static Multiton.Creator<MemberFLocNoteModeCommandFactory> creator = new
-			Multiton.SuppliedCreator<>(MemberFLocNoteModeCommandFactory.class, MemberFLocNoteModeCommandFactory::new);
+@CommandClass( 
+	commandWords={"project-mode"},
+	docoptUsages={""},
+	metaTags = { CmdMeta.consoleOnly, CmdMeta.nonModeWrappable },
+	description="Exit command mode, returning to current project mode") 
+public class ReturnToProjectModeCommand extends Command<OkResult> {
 
-	private MemberFLocNoteModeCommandFactory() {
-	}	
-	
 	@Override
-	protected void populateCommandTree() {
-		super.populateCommandTree();
-
-		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
-		
-		setCmdGroup(CommandGroup.MODE_NAVIGATION);
-		registerCommandClass(ExitCommand.class);
-		registerCommandClass(ReturnToProjectModeCommand.class);
+	public OkResult execute(CommandContext cmdContext) {
+		while(!(cmdContext.peekCommandMode() instanceof ProjectMode)) {
+			cmdContext.popCommandMode();
+		}
+		return CommandResult.OK;
 	}
-	
 
 }

@@ -85,7 +85,10 @@ using the <non-mode-command command="help"></non-mode-command> command, with no 
 <p>
 The command mode hierarchy represents data object containment. The path associated with each mode 
 specifies its position in the hierarchy.  The <mode-command mode="root_project" command="exit"></mode-command> command 
-changes the current mode to the parent mode within the hiearchy.
+changes the current mode to the parent mode within the hiearchy. If you are at one of the modes inside project mode, you can 
+return to project mode using the <mode-command mode="root_project" command="project-mode"></mode-command> command. 
+Similarly, you can return to root mode from anywhere in the hierarchy using the <mode-command mode="root" 
+command="root-mode"></mode-command> command.
 </p>
 
 <h3 id="autoCompletion">Automatic command completion</h3>
