@@ -120,7 +120,8 @@ public class MafftRunner implements Plugin {
 			
 			try {
 				if(independentQueries) {
-
+					// For independent queries, (e.g. genotyping) we call mafft in separate java threads for each sequence.
+					// This uses the mafftExecutorService, which has one worker per cpu as defined in gluetools.core.programs.mafft.cpus
 					Map<String, MafftSingleSequenceCallable> fastaIDToCallable = new LinkedHashMap<String, MafftSingleSequenceCallable>();
 					final String finalCygwinShExecutable = cygwinShExecutable;
 					query.forEach( (fastaID, sequence) -> {
@@ -138,7 +139,14 @@ public class MafftRunner implements Plugin {
 					});
 					mafftResult.setResultAlignment(alignmentWithQuery);
 				} else {
-					MafftMultiSequenceCallable callable = new MafftMultiSequenceCallable(task, tempDir, cygwinShExecutable, mafftExecutable, uuid, alignmentFile, query);
+					// for non-independent queries, (e.g. compute an unconstrained alignment) we call use single mafft with its number
+					// of threads determined by gluetools.core.programs.mafft.cpus
+					int mafftCpus = Integer.parseInt(cmdContext.getGluetoolsEngine()
+							.getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_NUMBER_CPUS, "1"));
+
+					
+					MafftMultiSequenceCallable callable = new MafftMultiSequenceCallable(task, tempDir, cygwinShExecutable, mafftExecutable, 
+							uuid, alignmentFile, query, mafftCpus);
 					callable.call();
 					mafftResult.setResultAlignment(callable.getResultAlignment());
 				}
@@ -221,7 +229,7 @@ public class MafftRunner implements Plugin {
 
 			// threads / number of CPUs
 			commandWords.add("--thread");
-			commandWords.add(Integer.toString(1));
+			commandWords.add(Integer.toString(getNumCpus()));
 
 			if(MafftRunner.this.gapOpeningPenalty != null) {
 				commandWords.add("--op");
@@ -282,6 +290,8 @@ public class MafftRunner implements Plugin {
 			return alignmentWithQuery;
 		}
 
+		protected abstract int getNumCpus();
+
 	}
 	
 	private class MafftSingleSequenceCallable extends MafftCallable implements Callable<Void> {
@@ -315,6 +325,11 @@ public class MafftRunner implements Plugin {
 		public DNASequence getAlignmentRow() {
 			return alignmentRow;
 		}
+
+		@Override
+		protected int getNumCpus() {
+			return 1;
+		}
 	}
 	
 	
@@ -322,11 +337,13 @@ public class MafftRunner implements Plugin {
 
 		private Map<String, DNASequence> querySequences;
 		private Map<String, DNASequence> resultAlignment;
+		private int numCpus;
 		
 		public MafftMultiSequenceCallable(Task task, File tempDir, String cygwinShExecutable, String mafftExecutable,
-				String uuid, File alignmentFile, Map<String, DNASequence> querySequences) {
+				String uuid, File alignmentFile, Map<String, DNASequence> querySequences, int numCpus) {
 			super(task, tempDir, cygwinShExecutable, mafftExecutable, uuid, alignmentFile);
 			this.querySequences = querySequences;
+			this.numCpus = numCpus;
 		}
 
 		// returns single alignment row for query.
@@ -344,6 +361,11 @@ public class MafftRunner implements Plugin {
 
 		public Map<String, DNASequence> getResultAlignment() {
 			return this.resultAlignment;
+		}
+
+		@Override
+		protected int getNumCpus() {
+			return numCpus;
 		}
 	}
 
