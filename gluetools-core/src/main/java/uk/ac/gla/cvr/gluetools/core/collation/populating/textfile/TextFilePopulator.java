@@ -47,10 +47,8 @@ import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.Prope
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.ListSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.ProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -134,8 +132,6 @@ public class TextFilePopulator extends SequencePopulator<TextFilePopulator> {
 				populatorContext.columnToPosition.put(c, j);
 			});
 		}
-		ProjectMode projectMode = (ProjectMode) cmdContext.peekCommandMode();
-		Project project = projectMode.getProject();
 		LinesProcessedHolder holder = new LinesProcessedHolder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, Charset.forName("UTF-8")));
 		reader.lines().forEach(line -> {
