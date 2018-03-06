@@ -55,9 +55,9 @@ import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 public class Tbl2AsnRunner implements Plugin {
 
 	public static String 
-		TBL2ASN_EXECUTABLE_PROPERTY = "gluetools.core.programs.tbl2asn.executable"; 
+	TBL2ASN_EXECUTABLE_PROPERTY = "gluetools.core.programs.tbl2asn.executable"; 
 	public static String 
-		TBL2ASN_TEMP_DIR_PROPERTY = "gluetools.core.programs.tbl2asn.temp.dir"; 
+	TBL2ASN_TEMP_DIR_PROPERTY = "gluetools.core.programs.tbl2asn.temp.dir"; 
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -101,7 +101,7 @@ public class Tbl2AsnRunner implements Plugin {
 			commandWords.add(tbl2asnExecutable);
 			// input directory
 			commandWords.add("-p");
-			commandWords.add(normalisedFilePath(tempDir));
+			commandWords.add(ProcessUtils.normalisedFilePath(tempDir));
 
 			/* 
 			// batching
@@ -111,7 +111,7 @@ public class Tbl2AsnRunner implements Plugin {
 			
 			// template file
 			commandWords.add("-t");
-			commandWords.add(normalisedFilePath(templateFile));
+			commandWords.add(ProcessUtils.normalisedFilePath(templateFile));
 			
 			ProcessResult tbl2asnProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
@@ -150,15 +150,6 @@ public class Tbl2AsnRunner implements Plugin {
 		String tbl2asnTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(TBL2ASN_TEMP_DIR_PROPERTY);
 		if(tbl2asnTempDir == null) { throw new Tbl2AsnException(Code.TBL2ASN_CONFIG_EXCEPTION, "tbl2asn temp directory not defined in config property "+TBL2ASN_TEMP_DIR_PROPERTY); }
 		return tbl2asnTempDir;
-	}
-
-	
-	private String normalisedFilePath(File file) {
-		String normalizedPath = file.getAbsolutePath();
-		if(System.getProperty("os.name").toLowerCase().contains("windows")) {
-			normalizedPath = normalizedPath.replace('\\', '/');
-		}
-		return normalizedPath;
 	}
 
 	

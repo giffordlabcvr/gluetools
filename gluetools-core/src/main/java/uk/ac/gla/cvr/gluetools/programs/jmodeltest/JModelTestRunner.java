@@ -44,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.programs.java.JavaChildProcessUtils;
 import uk.ac.gla.cvr.gluetools.programs.jmodeltest.JModelTestException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
@@ -109,14 +110,7 @@ public class JModelTestRunner implements Plugin {
 		
 		checkAlignment(alignment);
 		
-		String sep = System.getProperty("file.separator");
-		String osName = System.getProperty("os.name");
-		
-		String executableExtension = "";
-		if(osName.startsWith("Windows")) {
-			executableExtension = ".exe";
-		}
-		String javaExecutable = System.getProperty("java.home") + sep + "bin" + sep + "java" + executableExtension;
+		String javaExecutable = JavaChildProcessUtils.getJavaExecutablePath();
 		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(jModelTestTempDir, uuid);

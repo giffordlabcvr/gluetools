@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.BlastSequenceRecogniser;
+import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerRunner;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
@@ -131,6 +132,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(MaxLikelihoodPlacer.class);
 		registerPluginClass(MaxLikelihoodGenotyper.class);
 		registerPluginClass(FigTreeAnnotationExporter.class);
+		registerPluginClass(ClusterPickerRunner.class);
 		
 		setModulePluginGroup(new ModulePluginGroup("scripting", "Module types for general-purpose scripting", 87));
 		registerPluginClass(EcmaFunctionInvoker.class);
