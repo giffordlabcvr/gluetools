@@ -48,7 +48,7 @@
 				</property>
 				<property>
 					<name>gluetools.core.programs.raxml.raxmlhpc.cpus</name>
-					<value>10</value>
+					<value>12</value>
 				</property>
 				<property>
 					<name>gluetools.core.programs.raxml.temp.dir</name>
@@ -62,7 +62,7 @@
 				</property>
 				<property>
 					<name>gluetools.core.programs.mafft.cpus</name>
-					<value>10</value>
+					<value>12</value>
 				</property>
 				<property>
 					<name>gluetools.core.programs.mafft.temp.dir</name>
@@ -80,7 +80,7 @@
 				</property>
 				<property>
 					<name>gluetools.core.programs.jmodeltester.cpus</name>
-					<value>10</value>
+					<value>12</value>
 				</property>
 
         </properties>
