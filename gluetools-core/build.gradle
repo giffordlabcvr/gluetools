@@ -158,7 +158,7 @@ task deployJarOmega(dependsOn: ['jar']) {
 	  println "Uploading "+jarFile.name
 	  ssh.run {
 	    session(remotes.omega) {
-	      execute 'rm /home/sing01j/gluetools/lib/*.jar'
+	      execute 'rm -f /home/sing01j/gluetools/lib/*.jar'
 	      put from: jarFile, into: '/home/sing01j/gluetools/lib/'
 	      execute 'chmod a+r /home/sing01j/gluetools/lib/*'
 	    }
@@ -179,7 +179,7 @@ task deployJarAlpha(dependsOn: ['jar']) {
 	  println "Uploading "+jarFile.name
 	  ssh.run {
 	    session(remotes.alpha) {
-	      execute 'rm /home2/sing01j/gluetools/lib/*.jar'
+	      execute 'rm -f /home2/sing01j/gluetools/lib/*.jar'
 	      put from: jarFile, into: '/home2/sing01j/gluetools/lib/'
 	      execute 'chmod a+r /home2/sing01j/gluetools/lib/*'
 	    }
