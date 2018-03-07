@@ -38,7 +38,6 @@ import java.util.Optional;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
@@ -219,10 +218,10 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 				refCodonInfo.aaToMemberCount.forEachEntry(new TCharIntProcedure() {
 					@Override
 					public boolean execute(char aa, int numMembers) {
-						LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(refCodonInfo.labeledCodon, new String(new char[]{aa}));
 						double pctMembers = 100.0 * numMembers / (double) refCodonInfo.membersAtCodon;
+						String aminoAcid = new String(new char[]{aa});
 						LabeledAminoAcidFrequency labeledAminoAcidFrequency = 
-								new LabeledAminoAcidFrequency(labeledAminoAcid, numMembers, refCodonInfo.membersAtCodon, pctMembers);
+								new LabeledAminoAcidFrequency(refCodonInfo.labeledCodon, aminoAcid, numMembers, refCodonInfo.membersAtCodon, pctMembers);
 						resultRowData.add(labeledAminoAcidFrequency);
 						return true;
 					}

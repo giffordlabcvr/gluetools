@@ -27,23 +27,29 @@ package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
 public class LabeledAminoAcidFrequency {
 
-	private LabeledAminoAcid labeledAminoAcid;
+	private LabeledCodon labeledCodon;
+	private String aminoAcid;
 	
 	private int numMembers;
 	private int totalMembers;
 	private double pctMembers;
 	
-	public LabeledAminoAcidFrequency(LabeledAminoAcid labeledAminoAcid,
+	public LabeledAminoAcidFrequency(LabeledCodon labeledCodon, String aminoAcid,
 			int numMembers, int totalMembers, double pctMembers) {
 		super();
-		this.labeledAminoAcid = labeledAminoAcid;
+		this.labeledCodon = labeledCodon;
+		this.aminoAcid = aminoAcid;
 		this.numMembers = numMembers;
 		this.totalMembers = totalMembers;
 		this.pctMembers = pctMembers;
 	}
 
-	public LabeledAminoAcid getLabeledAminoAcid() {
-		return labeledAminoAcid;
+	public LabeledCodon getLabeledCodon() {
+		return labeledCodon;
+	}
+
+	public String getAminoAcid() {
+		return aminoAcid;
 	}
 
 	public int getNumMembers() {

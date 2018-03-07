@@ -51,6 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaSequenceReporter",
@@ -144,8 +145,8 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		
 		for(QueryAlignedSegment queryToRefSeg: queryToRefSegsCodonAligned) {
 			CharSequence nts = SegmentUtils.base1SubString(queryNTs, queryToRefSeg.getQueryStart(), queryToRefSeg.getQueryEnd());
-			String segAAs = translator.translate(nts);
-			translatedQaSegs.add(new TranslatedQueryAlignedSegment(queryToRefSeg, segAAs));
+			List<TripletTranslationInfo> segTranslationInfos = translator.translate(nts);
+			translatedQaSegs.add(new TranslatedQueryAlignedSegment(queryToRefSeg, segTranslationInfos));
 		}
 		return translatedQaSegs;
 	}
@@ -165,9 +166,9 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 	public static class TranslatedQueryAlignedSegment {
 
 		private QueryAlignedSegment queryAlignedSegment;
-		private String translation;
+		private List<TripletTranslationInfo> translation;
 		
-		public TranslatedQueryAlignedSegment(QueryAlignedSegment queryAlignedSegment, String translation) {
+		public TranslatedQueryAlignedSegment(QueryAlignedSegment queryAlignedSegment, List<TripletTranslationInfo> translation) {
 			this.queryAlignedSegment = queryAlignedSegment;
 			this.translation = translation;
 		}
@@ -176,7 +177,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 			return queryAlignedSegment;
 		}
 
-		public String getTranslation() {
+		public List<TripletTranslationInfo> getTranslation() {
 			return translation;
 		}
 	}

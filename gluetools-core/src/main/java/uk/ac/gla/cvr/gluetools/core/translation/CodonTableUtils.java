@@ -157,10 +157,10 @@ public class CodonTableUtils {
 	
 	// 3-dimensional array mapping triplet of ambiguous NT (integer representation)
 	// to AmbigNtTripletInfo instance
-	private static AmbigNtTripletInfo[][][] ambigNtTripletToInfo = new AmbigNtTripletInfo[16][16][16];
+	private static TripletTranslationInfo[][][] ambigNtTripletToInfo = new TripletTranslationInfo[16][16][16];
 	
 	// return AmbigNtTripletInfo for specific triplet of ambiguous NTs (integer representation)
-	private static AmbigNtTripletInfo computeAmbigNtTripletInfo(int ambigNt1, int ambigNt2, int ambigNt3) {
+	private static TripletTranslationInfo computeAmbigNtTripletInfo(int ambigNt1, int ambigNt2, int ambigNt3) {
 		// find the set of all possible concrete NT triplets for the ambiguous NT triplet
 		// mapping each of these to AA, this gives the set of possible AAs for the ambiguous NT triplet
 		// for each AA in turn
@@ -266,7 +266,7 @@ public class CodonTableUtils {
 		List<Character> possibleAaChars = possibleAas.stream()
 				.map(intAa -> ResidueUtils.intToAa(intAa))
 				.collect(Collectors.toList());
-		return new AmbigNtTripletInfo(definiteAaChars, possibleAaChars);
+		return new TripletTranslationInfo(definiteAaChars, possibleAaChars);
 	}
 	
 	// populate ambigNtTripletToInfo for all possible ambiguous NT triplets.
@@ -285,11 +285,11 @@ public class CodonTableUtils {
 	
 	
 
-	public static char translate(char[] bases) {
-		return getAmbigNtTripletInfo(bases).singleCharTranslation();
+	public static char translateToSingleChar(char[] bases) {
+		return getTranslationInfo(bases).getSingleCharTranslation();
 	}
 
-	private static AmbigNtTripletInfo getAmbigNtTripletInfo(char[] bases) {
+	public static TripletTranslationInfo getTranslationInfo(char[] bases) {
 		return ambigNtTripletToInfo
 				[ResidueUtils.ambigNtToInt(bases[0])]
 				[ResidueUtils.ambigNtToInt(bases[1])]
@@ -311,25 +311,48 @@ public class CodonTableUtils {
 							(concreteNtTriplet) & 3};
 	}
 	
-	private static class AmbigNtTripletInfo {
+	private static String charListToString(List<Character> charList) {
+		char[] charArray = new char[charList.size()];
+		for(int i = 0; i < charList.size(); i++) {
+			charArray[i] = charList.get(i).charValue();
+		}
+		return new String(charArray);
+	}
+	
+	/**
+	 * Encapsulates possible / definite translations, based on a nucleotide triplet
+	 * which may contain ambiguity codes.
+	 *
+	 */
+	public static class TripletTranslationInfo {
 		private List<Character> definiteAminoAcids;
 		private List<Character> possibleAminoAcids;
+		private String definiteAasString;
+		private String possibleAasString;
 		private char singleCharTranslation;
+		private String singleCharTranslationString;
 		
-		private AmbigNtTripletInfo(List<Character> definiteAminoAcids,
+		private TripletTranslationInfo(List<Character> definiteAminoAcids,
 				List<Character> possibleAminoAcids) {
 			super();
 			this.definiteAminoAcids = definiteAminoAcids;
+			this.definiteAasString = charListToString(definiteAminoAcids);
 			this.possibleAminoAcids = possibleAminoAcids;
+			this.possibleAasString = charListToString(possibleAminoAcids);
 			if(definiteAminoAcids.size() == 1) {
-				singleCharTranslation = definiteAminoAcids.get(0);
+				this.singleCharTranslation = definiteAminoAcids.get(0);
 			} else {
-				singleCharTranslation = 'X';
+				this.singleCharTranslation = 'X';
 			}
+			this.singleCharTranslationString = new String(new char[]{this.singleCharTranslation});
 		}
 
-		public char singleCharTranslation() {
+		public char getSingleCharTranslation() {
 			return singleCharTranslation;
+		}
+
+		public String getSingleCharTranslationString() {
+			return singleCharTranslationString;
 		}
 
 		public List<Character> getDefiniteAminoAcids() {
@@ -339,15 +362,23 @@ public class CodonTableUtils {
 		public List<Character> getPossibleAminoAcids() {
 			return possibleAminoAcids;
 		}
+
+		public String getDefiniteAasString() {
+			return definiteAasString;
+		}
+
+		public String getPossibleAasString() {
+			return possibleAasString;
+		}
 		
 	}
 	
 	public static void main(String[] args) {
-		System.out.println("ATG: "+getAmbigNtTripletInfo("ATG".toCharArray()));
-		System.out.println("CAY: "+getAmbigNtTripletInfo("CAY".toCharArray()));
-		System.out.println("TAY: "+getAmbigNtTripletInfo("YAY".toCharArray()));
-		System.out.println("TSR: "+getAmbigNtTripletInfo("TSR".toCharArray()));
-		System.out.println("NNN: "+getAmbigNtTripletInfo("NNN".toCharArray()));
+		System.out.println("ATG: "+getTranslationInfo("ATG".toCharArray()));
+		System.out.println("CAY: "+getTranslationInfo("CAY".toCharArray()));
+		System.out.println("TAY: "+getTranslationInfo("YAY".toCharArray()));
+		System.out.println("TSR: "+getTranslationInfo("TSR".toCharArray()));
+		System.out.println("NNN: "+getTranslationInfo("NNN".toCharArray()));
 	}
 	
 }

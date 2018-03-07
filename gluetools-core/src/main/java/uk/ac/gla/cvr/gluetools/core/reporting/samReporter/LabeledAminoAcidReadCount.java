@@ -25,26 +25,32 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 
 public class LabeledAminoAcidReadCount {
 	
-	private LabeledAminoAcid labeledAminoAcid;
+	private LabeledCodon labeledCodon;
+	private String aminoAcid;
 	private int samRefNt;
 	private int readsWithAminoAcid;
 	private double percentReadsWithAminoAcid;
 	
-	public LabeledAminoAcidReadCount(LabeledAminoAcid labeledAminoAcid,
+	public LabeledAminoAcidReadCount(LabeledCodon labeledCodon, String aminoAcid,
 			int samRefNt, int readsWithAminoAcid, double percentReadsWithAminoAcid) {
 		super();
-		this.labeledAminoAcid = labeledAminoAcid;
+		this.labeledCodon = labeledCodon;
+		this.aminoAcid = aminoAcid;
 		this.samRefNt = samRefNt;
 		this.readsWithAminoAcid = readsWithAminoAcid;
 		this.percentReadsWithAminoAcid = percentReadsWithAminoAcid;
 	}
 
-	public LabeledAminoAcid getLabeledAminoAcid() {
-		return labeledAminoAcid;
+	public LabeledCodon getLabeledCodon() {
+		return labeledCodon;
+	}
+
+	public String getAminoAcid() {
+		return aminoAcid;
 	}
 
 	public int getReadsWithAminoAcid() {

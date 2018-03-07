@@ -31,6 +31,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
 public class TranslationUtils {
 
@@ -125,13 +126,13 @@ public class TranslationUtils {
 	
 	
 	/**
-	 * Translate nucleotides to amino acids. 
+	 * Translate possibly ambiguous nucleotides to list of TripletTranslationInfos. 
 	 * Assumes nucleotides are in reading frame (i.e. first 3 characters form a codon). 
 	 * If the length of input is not a multiple of 3 then trailing nucleotides are discarded.
 	 */
 	
-	public static String translate(CharSequence nts) {
-		StringBuffer aas = new StringBuffer();
+	public static List<TripletTranslationInfo> translate(CharSequence nts) {
+		List<TripletTranslationInfo> translationInfos = new ArrayList<TripletTranslationInfo>();
 		char[] codonNts = new char[3];
 		for(int ntIndex = 0; ntIndex < nts.length(); ntIndex +=3) {
 			if(ntIndex > nts.length() - 3) {
@@ -143,8 +144,21 @@ public class TranslationUtils {
 					codonNts[i] = nt;
 				}
 			}
-			char nextAA = CodonTableUtils.translate(codonNts);
-			aas.append(nextAA);
+			translationInfos.add(CodonTableUtils.getTranslationInfo(codonNts));
+		}
+		return translationInfos;
+	}
+
+	public static String translateToAaString(CharSequence nts) {
+		List<TripletTranslationInfo> translationInfos = translate(nts);
+		return translationInfosToString(translationInfos);
+	}
+
+	public static String translationInfosToString(
+			List<TripletTranslationInfo> translationInfos) {
+		StringBuffer aas = new StringBuffer();
+		for(TripletTranslationInfo translationInfo: translationInfos) {
+			aas.append(translationInfo.getSingleCharTranslation());
 		}
 		return aas.toString();
 	}

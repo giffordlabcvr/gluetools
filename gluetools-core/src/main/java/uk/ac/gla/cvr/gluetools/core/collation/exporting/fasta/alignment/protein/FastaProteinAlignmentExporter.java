@@ -126,7 +126,7 @@ public class FastaProteinAlignmentExporter extends AbstractFastaAlignmentExporte
 					ntIndex += 3;
 				}
 				String segNTs = SegmentUtils.base1SubString(memberNTs, seg.getQueryStart(), seg.getQueryEnd());
-				String segAAs = translator.translate(segNTs);
+				String segAAs = translator.translateToAaString(segNTs);
 				alignmentRow.append(segAAs);
 				ntIndex = seg.getRefEnd()+1;
 			}

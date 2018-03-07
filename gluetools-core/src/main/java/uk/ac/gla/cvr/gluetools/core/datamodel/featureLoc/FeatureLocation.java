@@ -316,7 +316,7 @@ public class FeatureLocation extends _FeatureLocation {
 				fullAminoAcidTranslation = "";
 			} else {
 				ntQaSegCdnAligned = ntQaSegsCdnAligned.get(0);
-				fullAminoAcidTranslation = translator.translate(ntQaSegCdnAligned.getNucleotides());
+				fullAminoAcidTranslation = translator.translateToAaString(ntQaSegCdnAligned.getNucleotides());
 			}
 		}
 		

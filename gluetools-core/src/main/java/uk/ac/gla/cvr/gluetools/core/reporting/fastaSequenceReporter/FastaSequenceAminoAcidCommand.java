@@ -55,6 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
@@ -154,15 +155,13 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		for(TranslatedQueryAlignedSegment translatedQaSeg: translatedQaSegs) {
 			int refNt = translatedQaSeg.getQueryAlignedSegment().getRefStart();
 			int queryNt = translatedQaSeg.getQueryAlignedSegment().getQueryStart();
-			for(int i = 0; i < translatedQaSeg.getTranslation().length(); i++) {
-				String segAA = translatedQaSeg.getTranslation().substring(i, i+1);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), segAA), queryNt));
+			for(int i = 0; i < translatedQaSeg.getTranslation().size(); i++) {
+				TripletTranslationInfo translationInfo = translatedQaSeg.getTranslation().get(i);
+				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), translationInfo), queryNt));
 				refNt = refNt+3;
 				queryNt = queryNt+3;
 			}
 		}
-
-		
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}

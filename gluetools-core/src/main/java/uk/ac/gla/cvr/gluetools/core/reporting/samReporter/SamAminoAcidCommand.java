@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -248,7 +247,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 				
 				for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
 					CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
-					String segAAs = translator.translate(nts);
+					String segAAs = translator.translateToAaString(nts);
 					Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
 					for(int i = 0; i < segAAs.length(); i++) {
 						char segAA = segAAs.charAt(i);
@@ -278,9 +277,10 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 				public boolean execute(char aminoAcid, int numReads) {
 					double percentReadsWithAminoAcid = 100.0 * numReads / (double) aminoAcidReadCount.totalReadsAtCodon;
 					rowData.add(new LabeledAminoAcidReadCount(
-							new LabeledAminoAcid(aminoAcidReadCount.labeledCodon, 
-							new String(new char[]{aminoAcid})),
-							aminoAcidReadCount.samRefNt, numReads, percentReadsWithAminoAcid));
+							aminoAcidReadCount.labeledCodon, 
+							new String(new char[]{aminoAcid}),
+							aminoAcidReadCount.samRefNt, 
+							numReads, percentReadsWithAminoAcid));
 					return true;
 				}
 			});

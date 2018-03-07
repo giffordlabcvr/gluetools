@@ -53,6 +53,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
 public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extends MemberModeCommand<R> {
 
@@ -110,13 +111,15 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		for(QueryAlignedSegment memberToRelatedRefSeg: memberToRelatedRefSegsCodonAligned) {
 			CharSequence nts = memberSeqObj.subSequence(cmdContext, 
 					memberToRelatedRefSeg.getQueryStart(), memberToRelatedRefSeg.getQueryEnd());
-			String segAAs = translator.translate(nts);
-			int refNt = memberToRelatedRefSeg.getRefStart();
 			int memberNt = memberToRelatedRefSeg.getQueryStart();
-			for(int i = 0; i < segAAs.length(); i++) {
-				String segAA = segAAs.substring(i, i+1);
+			
+			List<TripletTranslationInfo> segTranslationInfos = translator.translate(nts);
+			int refNt = memberToRelatedRefSeg.getRefStart();
+			for(int i = 0; i < segTranslationInfos.size(); i++) {
+				TripletTranslationInfo segTranslationInfo = segTranslationInfos.get(i);
+				LabeledCodon labeledCodon = ancRefNtToLabeledCodon.get(refNt);
 				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(
-						new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), segAA), memberNt));
+						new LabeledAminoAcid(labeledCodon, segTranslationInfo), memberNt));
 				refNt = refNt+3;
 				memberNt = memberNt+3;
 			}

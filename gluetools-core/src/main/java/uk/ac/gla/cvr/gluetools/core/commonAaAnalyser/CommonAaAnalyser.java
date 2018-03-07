@@ -120,11 +120,11 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 			if(almtAaFreq.getPctMembers() < minFrequencyPct) {
 				return;
 			}
-			String aa = almtAaFreq.getLabeledAminoAcid().getAminoAcid();
+			String aa = almtAaFreq.getAminoAcid();
 			if(aa.equals("X")) {
 				return;
 			}
-			String codonLabel = almtAaFreq.getLabeledAminoAcid().getLabeledCodon().getCodonLabel();
+			String codonLabel = almtAaFreq.getLabeledCodon().getCodonLabel();
 			CommonAminoAcids commonAas = codonLabelToCommonAas
 					.computeIfAbsent(codonLabel, cdnLbl -> new CommonAminoAcids(acRefName, featureName, codonLabel));
 			commonAas.getCommonAas().add(aa);

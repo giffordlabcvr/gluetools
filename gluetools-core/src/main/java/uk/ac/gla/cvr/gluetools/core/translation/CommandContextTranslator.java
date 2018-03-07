@@ -25,11 +25,18 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
+import java.util.List;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
+import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
+// Idea behind this class is to allow project wide settigs to modulate protein translation. 
+// Although, at the moment, these are basically deprecated and don't do anything.
 public class CommandContextTranslator implements Translator {
+	@SuppressWarnings("unused")
 	private boolean translateBeyondPossibleStopCodon;
+	@SuppressWarnings("unused")
 	private boolean translateBeyondDefiniteStopCodon;
 
 	public CommandContextTranslator(CommandContext cmdContext) {
@@ -37,8 +44,11 @@ public class CommandContextTranslator implements Translator {
 		translateBeyondDefiniteStopCodon = cmdContext.getProjectSettingValue(ProjectSettingOption.TRANSLATE_BEYOND_DEFINITE_STOP).equals("true");
 	}
 
-	public String translate(CharSequence nts) {
-		return TranslationUtils.translate(nts);
+	public String translateToAaString(CharSequence nts) {
+		return TranslationUtils.translateToAaString(nts);
 	}
 	
+	public List<TripletTranslationInfo> translate(CharSequence nts) {
+		return TranslationUtils.translate(nts);
+	}
 }

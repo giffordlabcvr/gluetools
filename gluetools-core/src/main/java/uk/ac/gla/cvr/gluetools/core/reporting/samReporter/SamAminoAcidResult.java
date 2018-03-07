@@ -43,10 +43,10 @@ public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCoun
 	public SamAminoAcidResult(List<LabeledAminoAcidReadCount> rows) {
 		super("samAminoAcidsResult", 
 				rows,
-				column(CODON_LABEL, laarc -> laarc.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
+				column(CODON_LABEL, laarc -> laarc.getLabeledCodon().getCodonLabel()),
 				column(SAM_REF_NT, laarc -> laarc.getSamRefNt()), 
-				column(ANC_CONSTR_REF_NT, laarc -> laarc.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
-				column(AMINO_ACID, laarc -> laarc.getLabeledAminoAcid().getAminoAcid()), 
+				column(ANC_CONSTR_REF_NT, laarc -> laarc.getLabeledCodon().getNtStart()),
+				column(AMINO_ACID, laarc -> laarc.getAminoAcid()), 
 				column(READS_WITH_AA, laarc -> laarc.getReadsWithAminoAcid()), 
 				column(PERCENT_AA_READS, laarc -> laarc.getPercentReadsWithAminoAcid()));
 	}

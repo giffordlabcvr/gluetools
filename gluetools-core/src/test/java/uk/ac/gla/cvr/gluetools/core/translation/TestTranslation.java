@@ -25,8 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
-import org.junit.Assert;
-import org.junit.Test;
 
 
 public class TestTranslation {

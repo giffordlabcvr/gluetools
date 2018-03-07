@@ -41,6 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
 public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> extends FeatureLocModeCommand<R> {
 
@@ -69,11 +70,12 @@ public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> ex
 		for(ReferenceSegment featureLocRefSeg: featureLocRefSegs) {
 			CharSequence nts = refSeqObj.subSequence(cmdContext, 
 					featureLocRefSeg.getRefStart(), featureLocRefSeg.getRefEnd());
-			String segAAs = translator.translate(nts);
+			List<TripletTranslationInfo> segTranslationInfos = translator.translate(nts);
 			int refNt = featureLocRefSeg.getRefStart();
-			for(int i = 0; i < segAAs.length(); i++) {
-				String segAA = segAAs.substring(i, i+1);
-				labeledAminoAcids.add(new LabeledAminoAcid(refNtToLabeledCodon.get(refNt), segAA));
+			for(int i = 0; i < segTranslationInfos.size(); i++) {
+				TripletTranslationInfo segTranslationInfo = segTranslationInfos.get(i);
+				LabeledCodon labeledCodon = refNtToLabeledCodon.get(refNt);
+				labeledAminoAcids.add(new LabeledAminoAcid(labeledCodon, segTranslationInfo));
 				refNt = refNt+3;
 			}
 		}

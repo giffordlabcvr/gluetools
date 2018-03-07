@@ -41,8 +41,8 @@ public class AlignmentAminoAcidFrequencyResult extends BaseTableResult<LabeledAm
 
 	public AlignmentAminoAcidFrequencyResult(List<LabeledAminoAcidFrequency> rowData) {
 		super("alignmentAminoAcidFrequencyResult", rowData,
-				column(CODON, laaf -> laaf.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
-				column(AMINO_ACID, laaf -> laaf.getLabeledAminoAcid().getAminoAcid()),
+				column(CODON, laaf -> laaf.getLabeledCodon().getCodonLabel()),
+				column(AMINO_ACID, laaf -> laaf.getAminoAcid()),
 				column(NUM_MEMBERS, laaf -> laaf.getNumMembers()),
 				column(PERCENTAGE_MEMBERS, laaf -> laaf.getPctMembers()));
 	}
