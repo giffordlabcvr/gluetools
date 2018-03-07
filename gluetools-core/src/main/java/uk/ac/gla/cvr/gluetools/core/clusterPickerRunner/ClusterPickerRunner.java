@@ -30,10 +30,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -41,12 +43,17 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility;
+import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility.TabularData;
 import uk.ac.gla.cvr.gluetools.programs.java.JavaChildProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
@@ -56,6 +63,12 @@ import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 @PluginClass(elemName="clusterPickerRunner",
 	description="Binding to software for identifying supported clusters within a tree")
 public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
+
+	private static final String INPUT_TREE_FILENAME = "input-tree";
+	public static String 
+		CLUSTER_PICKER_JAR_PATH_PROPERTY = "gluetools.core.programs.clusterPicker.jarPath"; 
+	public static String 
+		CLUSTER_PICKER_TEMP_DIR_PROPERTY = "gluetools.core.programs.clusterPicker.temp.dir"; 
 
 	public static final String INITIAL_THRESHOLD = "initialThreshold";
 	public static final String SUPPORT_THRESHOLD = "supportThreshold";
@@ -89,10 +102,12 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		// note that defaults of 95.0 and 75.0 for bootstrap thresholds match the fact
+		// that RAxML outputs trees annotated with bootstraps out of 100.
 		this.initialThreshold = Optional.ofNullable(PluginUtils
-				.configureDoubleProperty(configElem, INITIAL_THRESHOLD, 0.0, true, 1.0, true, false)).orElse(0.95);
+				.configureDoubleProperty(configElem, INITIAL_THRESHOLD, false)).orElse(95.0);
 		this.supportThreshold = Optional.ofNullable(PluginUtils
-				.configureDoubleProperty(configElem, SUPPORT_THRESHOLD, 0.0, true, 1.0, true, false)).orElse(0.75);
+				.configureDoubleProperty(configElem, SUPPORT_THRESHOLD, false)).orElse(75.0);
 		this.geneticThreshold = Optional.ofNullable(PluginUtils
 				.configureDoubleProperty(configElem, GENETIC_THRESHOLD, 0.0, true, 1.0, true, false)).orElse(0.045);
 		this.largeClusterThreshold = Optional.ofNullable(PluginUtils
@@ -101,11 +116,6 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 				.ofNullable(PluginUtils
 				.configureEnumProperty(DiffType.class, configElem, DIFF_TYPE, false)).orElse(DiffType.gap);
 	}
-
-	public static String 
-		CLUSTER_PICKER_JAR_PATH_PROPERTY = "gluetools.core.programs.clusterPicker.jarPath"; 
-	public static String 
-		CLUSTER_PICKER_TEMP_DIR_PROPERTY = "gluetools.core.programs.clusterPicker.temp.dir"; 
 
 	private String getClusterPickerJarPath(CommandContext cmdContext) {
 		String clusterPickerJarPath = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(CLUSTER_PICKER_JAR_PATH_PROPERTY);
@@ -136,7 +146,7 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 			byte[] alignmentBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.forOS());
 			writeFile(alignmentFile, alignmentBytes);
 
-			File treeFile = new File(tempDir, "input-tree.nwk");
+			File treeFile = new File(tempDir, INPUT_TREE_FILENAME+".nwk");
 			byte[] treeBytes = PhyloFormat.NEWICK_BOOTSTRAPS.generate(tree);
 			writeFile(treeFile, treeBytes);
 			
@@ -173,7 +183,38 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 	
 	
 	private List<ClusterPickerResultLine> resultListFromTempDir(File tempDir) {
+		File clusterPicksListFile = new File(tempDir, INPUT_TREE_FILENAME+"_clusterPicks_list.txt");
+		byte[] clusterPicksListBytes = readFile(clusterPicksListFile);
+		TabularData clusterPicks = TabularUtility.tabularDataFromBytes(clusterPicksListBytes, Pattern.compile("\\t"));
+		
 		List<ClusterPickerResultLine> results = new ArrayList<ClusterPickerResultLine>();
+		List<String[]> rows = clusterPicks.getRows();
+		rows.forEach(cpRow -> {
+			Map<String,String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, cpRow[0]);
+			Integer clusterIndex = Integer.parseInt(cpRow[1]);
+			if(clusterIndex == -1) {
+				clusterIndex = null; // null cluster assignment: sequence is on its own, not in any cluster.
+			}
+			results.add(new ClusterPickerResultLine(memberPkMap, clusterIndex));
+		});
+		results.sort(new Comparator<ClusterPickerResultLine>() {
+			@Override
+			public int compare(ClusterPickerResultLine o1, ClusterPickerResultLine o2) {
+				Integer ci1 = o1.getClusterIndex();
+				Integer ci2 = o2.getClusterIndex();
+				if(ci1 == null && ci2 == null) {
+					return 0;
+				}
+				if(ci1 != null && ci2 == null) {
+					return 1;
+				}
+				if(ci1 == null && ci2 != null) {
+					return -1;
+				}
+				return Integer.compare(ci1, ci2);
+			}
+		});
+		
 		return results;
 	}
 

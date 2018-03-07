@@ -101,6 +101,15 @@
 			<name>gluetools.core.programs.tbl2asn.temp.dir</name>
 			<value>/Users/joshsinger/tbl2asn/tmp</value>
 		</property>
+		<!-- ClusterPicker -->
+		<property>
+			<name>gluetools.core.programs.clusterPicker.jarPath</name>
+			<value>/Users/joshsinger/clusterPicker/ClusterPicker_1.2.5.jar</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.clusterPicker.temp.dir</name>
+			<value>/Users/joshsinger/clusterPicker/tmp</value>
+		</property>
 		<!-- Cayenne -->
 		<property>
 			<name>cayenne.querycache.size</name>

@@ -25,36 +25,25 @@
 */
 package uk.ac.gla.cvr.gluetools.core.clusterPickerRunner;
 
+import java.util.Map;
+
 public class ClusterPickerResultLine {
 	
-	private String alignmentName;
-	private String sourceName;
-	private String sequenceID;
-	private String clusterName;
+	private Integer clusterIndex;
+	private Map<String, String> memberPkMap;
 	
-	public ClusterPickerResultLine(String alignmentName, String sourceName,
-			String sequenceID, String clusterName) {
+	public ClusterPickerResultLine(Map<String, String> memberPkMap, Integer clusterIndex) {
 		super();
-		this.alignmentName = alignmentName;
-		this.sourceName = sourceName;
-		this.sequenceID = sequenceID;
-		this.clusterName = clusterName;
+		this.memberPkMap = memberPkMap;
+		this.clusterIndex = clusterIndex;
 	}
 
-	public String getAlignmentName() {
-		return alignmentName;
+	public Map<String, String> getMemberPkMap() {
+		return memberPkMap;
 	}
 
-	public String getSourceName() {
-		return sourceName;
-	}
-
-	public String getSequenceID() {
-		return sequenceID;
-	}
-
-	public String getClusterName() {
-		return clusterName;
+	public Integer getClusterIndex() {
+		return clusterIndex;
 	}
 	
 	

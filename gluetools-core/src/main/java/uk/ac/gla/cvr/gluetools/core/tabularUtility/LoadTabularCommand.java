@@ -61,7 +61,7 @@ public class LoadTabularCommand extends ModulePluginCommand<TabularResult, Tabul
 	@Override
 	protected TabularResult execute(CommandContext cmdContext, TabularUtility tabularUtility) {
 		byte[] bytes = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
-		TabularData tabularData = tabularUtility.tabularDataFromBytes(bytes);
+		TabularData tabularData = TabularUtility.tabularDataFromBytes(bytes, tabularUtility.getColumnDelimiterRegex());
 		return new TabularResult(tabularData);
 	}
 

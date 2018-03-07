@@ -90,7 +90,11 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 		return outputFormat;
 	}
 
-	public TabularData tabularDataFromBytes(byte[] bytes) {
+	public Pattern getColumnDelimiterRegex() {
+		return columnDelimiterRegex;
+	}
+
+	public static TabularData tabularDataFromBytes(byte[] bytes, Pattern columnDelimiterRegex) {
 		String inputString = new String(bytes);
 		String[] allLines = inputString.split("\\r\\n|\\r|\\n");
 		String headerLine = allLines[0];

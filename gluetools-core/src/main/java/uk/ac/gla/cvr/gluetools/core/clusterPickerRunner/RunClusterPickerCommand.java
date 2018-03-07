@@ -64,9 +64,10 @@ import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerException.C
 @CommandClass(commandWords={"run", "cluster-picker"},
 	docoptUsages="-a <alignmentName> [-w <whereClause>] -t <treeFileName> <treeFileFormat> [-d <dataDir>]",
 	docoptOptions={
-		"-t <treeFileName>, --treeFileName <treeFileName>        Phylogenetic tree file path",
-		"-a <alignmentName>, --alignmentName <alignmentName>     Stored alignment name",
-		"-w <whereClause>, --whereClause <whereClause>           Qualifier for leaf nodes",
+		"-t <treeFileName>, --treeFileName <treeFileName>     Phylogenetic tree file path",
+		"-a <alignmentName>, --alignmentName <alignmentName>  Stored alignment name",
+		"-w <whereClause>, --whereClause <whereClause>        Qualifier for leaf nodes",
+		"-d <dataDir>, --dataDir <dataDir>                    Directory to store intermediate data files",
 	},
 	description = "Run ClusterPicker based on a tree file and stored alignment", 
 	furtherHelp = "If <whereClause> is supplied, the tree leaf set must correspond to the set of alignment "+

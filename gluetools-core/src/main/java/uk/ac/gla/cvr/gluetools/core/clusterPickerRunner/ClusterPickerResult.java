@@ -28,14 +28,15 @@ package uk.ac.gla.cvr.gluetools.core.clusterPickerRunner;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 
 public class ClusterPickerResult extends BaseTableResult<ClusterPickerResultLine> {
 
 	public ClusterPickerResult(List<ClusterPickerResultLine> rowObjects) {
-		super("clusterPickerResult", rowObjects, 
-				column("almtName", cprl -> cprl.getAlignmentName()),
-				column("sourceName", cprl -> cprl.getSourceName()),
-				column("sequenceID", cprl -> cprl.getSequenceID()),
-				column("clusterName", cprl -> cprl.getClusterName()));
+		super("clusterPickerResult", rowObjects,
+				column("clusterIndex", cprl -> cprl.getClusterIndex()),
+				column("almtName", cprl -> cprl.getMemberPkMap().get(AlignmentMember.ALIGNMENT_NAME_PATH)),
+				column("sourceName", cprl -> cprl.getMemberPkMap().get(AlignmentMember.SOURCE_NAME_PATH)),
+				column("sequenceID", cprl -> cprl.getMemberPkMap().get(AlignmentMember.SEQUENCE_ID_PATH)));
 	}
 }
