@@ -253,7 +253,7 @@ public class TestNtsToAAs {
 	}
 	
 	private static void aaTest(String nts, char expectedAA) {
-		Assert.assertEquals(expectedAA, TranslationUtils.translate(nts.toCharArray()));
+		Assert.assertEquals(Character.toString(expectedAA), Character.toString(CodonTableUtils.translate(nts.toCharArray())));
 	}
 
 }

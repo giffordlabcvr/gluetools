@@ -38,7 +38,7 @@ public class CommandContextTranslator implements Translator {
 	}
 
 	public String translate(CharSequence nts) {
-		return TranslationUtils.translate(nts, false, false, translateBeyondPossibleStopCodon, translateBeyondDefiniteStopCodon);
+		return TranslationUtils.translate(nts);
 	}
 	
 }

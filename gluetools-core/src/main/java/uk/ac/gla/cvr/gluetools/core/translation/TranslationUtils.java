@@ -125,279 +125,30 @@ public class TranslationUtils {
 	
 	
 	/**
-	 * Translate nucleotides to amino acids.
-	 * 
-	 * If requireMethionineAtStart == true and
-	 * the first 3 nucleotides do not produce 'M', translation stops and the empty string is returned.
-	 * If stopAtHyphen == true and there is a gap of indeterminate length '-' in the nucleotides, translation stops at that gap, 
-	 * and includes any AAs found before the gap.
-	 * If any NTs are encountered which are definitely a stop codon, translation stops there and includes 
-	 * the stop codon.
-	 * If translateBeyondPossibleStopCodon == false and any NTs are encountered which *could* be a stop codon, 
-	 * translation stops before the possible stop codon.
-	 * If translateBeyondDefiniteStopCodon == false and any NTs are encountered which are definitely a stop codon, 
-	 * translation stops before the possible stop codon.
-	 * 
+	 * Translate nucleotides to amino acids. 
+	 * Assumes nucleotides are in reading frame (i.e. first 3 characters form a codon). 
+	 * If the length of input is not a multiple of 3 then trailing nucleotides are discarded.
 	 */
 	
-	public static String translate(CharSequence nts,
-			boolean requireMethionineAtStart, 
-			boolean stopAtHyphen,
-			boolean translateBeyondPossibleStopCodon, 
-			boolean translateBeyondDefiniteStopCodon) {
+	public static String translate(CharSequence nts) {
 		StringBuffer aas = new StringBuffer();
 		char[] codonNts = new char[3];
-		boolean stopTranscribing = false;
 		for(int ntIndex = 0; ntIndex < nts.length(); ntIndex +=3) {
-			clearCodonNts(codonNts);
+			if(ntIndex > nts.length() - 3) {
+				break;
+			}
 			for(int i = 0; i < 3; i++) {
 				if(ntIndex+i < nts.length()) {
 					char nt = nts.charAt(ntIndex+i);
-					if(stopAtHyphen && nt == '-') {
-						stopTranscribing = true;
-						break;
-					}
 					codonNts[i] = nt;
 				}
 			}
-			char nextAA = translate(codonNts);
-			if(ntIndex == 0 && requireMethionineAtStart && nextAA != 'M') {
-				stopTranscribing = true;
-			} else if(nextAA == 0) {
-				if(!translateBeyondPossibleStopCodon && couldBeStopCodon(codonNts)) {
-					stopTranscribing = true;
-				} else if(codonNts[0] != 0 && codonNts[1] != 0 && codonNts[2] != 0){
-					aas.append('X'); // unknown AA
-				}
-			} else if(!translateBeyondDefiniteStopCodon && nextAA == '*') {
-				aas.append(nextAA);
-				stopTranscribing = true;
-			} else {
-				aas.append(nextAA);
-			}
-			if(stopTranscribing) {
-				break;
-			}
+			char nextAA = CodonTableUtils.translate(codonNts);
+			aas.append(nextAA);
 		}
 		return aas.toString();
 	}
 	
-	private static void clearCodonNts(char[] codonNts) {
-		codonNts[0] = 0;
-		codonNts[1] = 0;
-		codonNts[2] = 0;
-	}
-	
-	/**
-	 * 
-	 *	Nucleic Acid Code	Meaning								Mnemonic
-	 * ---------------------------------------------------------------------------------
-	 *	A					A							 		Adenine
-	 *	C					C									Cytosine
-	 *	G					G									Guanine
-	 *	T					T									Thymine
-	 *	U					U									Uracil
-	 *	R					A or G								puRine
-	 *	Y					C, T or U							pYrimidines
-	 *	K					G, T or U							bases which are Ketones
-	 *	M					A or C								bases with aMino groups
-	 *	S					C or G								Strong interaction
-	 *	W					A, T or U							Weak interaction
-	 *	B					not A (i.e. C, G, T or U)			B comes after A
-	 *	D					not C (i.e. A, G, T or U)			D comes after C
-	 *	H					not G (i.e., A, C, T or U)			H comes after G
-	 *	V					neither T nor U (i.e. A, C or G)	V comes after U
-	 *	N					A C G T U							Nucleic acid
-	 *	X					masked	
-	 *	-					gap of indeterminate length	
- 	 *
-	 */
-
-	public static boolean A(char nt) {
-		return nt == 'A';
-	}
-	public static boolean C(char nt) {
-		return nt == 'C';
-	}
-	public static boolean T_or_U(char nt) {
-		return nt == 'T' || nt == 'U';
-	}
-	public static boolean G(char nt) {
-		return nt == 'G';
-	}
-	public static boolean not_G(char nt) {
-		return nt == 'A' || nt == 'C' || nt == 'T' || nt == 'U' || nt == 'Y' || nt == 'M' || nt == 'W' || nt == 'H';
-	}
-	public static boolean T_or_U_or_C(char nt) {
-		return nt == 'T' || nt == 'U' || nt == 'C' || nt == 'Y';
-	}
-	public static boolean A_or_G(char nt) {
-		return nt == 'A' || nt == 'G' || nt == 'R';
-	}
-	public static boolean A_or_C(char nt) {
-		return nt == 'A' || nt == 'C' || nt == 'M';
-	}
-
-	private static boolean possible_A_or_G(char nt) {
-		return nt == 0 || nt == 'A' || nt == 'G' || nt == 'R' || 
-				nt == 'K' || nt == 'M' || nt == 'S' || nt == 'W' || nt == 'B' ||
-				nt == 'D' || nt == 'H' || nt == 'V' || nt == 'N' || nt == 'X';
-	}
-
-	private static boolean possible_T_or_U(char nt) {
-		return nt == 0 || nt == 'T' || nt == 'U' || nt == 'Y' || 
-				nt == 'K' || nt == 'W' || nt == 'B' || nt == 'D' || nt == 'H' ||
-				nt == 'N' || nt == 'X';
-	}
-
-	/**
-	 * return true if the set of three characters could be a stop codon.
-	 * @param codonNTs
-	 */
-	public static boolean couldBeStopCodon(char[] codonNTs) {
-		char firstBase = codonNTs[0];
-		char secondBase = codonNTs[1];
-		char thirdBase = codonNTs[2];
-
-		if(possible_T_or_U(firstBase) &&
-				possible_A_or_G(secondBase) &&
-				possible_A_or_G(thirdBase) &&
-				!(G(secondBase) && G(thirdBase))) {
-			return true;
-		}
-		return false;
-	}
-	
-	// TODO produce ambiguous AA values: B, J or Z
-	
-	/**
-	 * codonNTs is an array of 3 nt characters, some of which may be 0, which indicates a missing base.
-	 * Returns the amino acid code if known, or 0 otherwise.
-	 * 
-	 */
-	public static char translate(char[] codonNTs) {
-		char firstBase = codonNTs[0];
-		char secondBase = codonNTs[1];
-		char thirdBase = codonNTs[2];
-		
-		if(T_or_U(firstBase)) {
-			if(T_or_U(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'F'; // Phenylalanine
-				}
-				if(A_or_G(thirdBase)) {
-					return 'L'; // Leucine
-				}
-			}
-			if(C(secondBase)) {
-				return 'S'; // Serine
-			}
-			if(A_or_G(secondBase)) {
-				if(A(thirdBase)) {
-					return '*'; // Stop codon (UAA or UGA)
-				}
-			}
-			if(A(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'Y'; // Tyrosine
-				}
-				if(A_or_G(thirdBase)) {
-					return '*'; // Stop codon (UAA or UAG)
-				}
-			}
-			if(G(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'C'; // Cysteine
-				}
-				if(G(thirdBase)) {
-					return 'W'; // Tryptophan
-				}
-			} 
-		}
-		if(C(firstBase)) {
-			if(T_or_U(secondBase)) {
-				return 'L'; // Leucine
-			}
-			if(C(secondBase)) {
-				return 'P'; // Proline
-			}
-			if(A(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'H'; // Histidine
-				}
-				if(A_or_G(thirdBase)) {
-					return 'Q'; // Glutamine
-				}
-			}
-			if(G(secondBase)) {
-				return 'R'; // Arginine
-			}
-		}
-		if(A(firstBase)) {
-			if(T_or_U(secondBase)) {
-				if(not_G(thirdBase)) {
-					return 'I'; // Isoleucine
-				} if(G(thirdBase)) {
-					return 'M'; // Methionine
-				}
-			}
-			if(C(secondBase)) {
-				return 'T'; // Threonine
-			}
-			if(A(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'N'; // Asparagine
-				}
-				if(A_or_G(thirdBase)) {
-					return 'K'; // Lysine
-				}
-			}
-			if(G(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'S'; // Serine
-				}
-				if(A_or_G(thirdBase)) {
-					return 'R'; // Arginine
-				}
-			}
-		}
-		if(G(firstBase)) {
-			if(T_or_U(secondBase)) {
-				return 'V'; // Valine
-			}
-			if(C(secondBase)) {
-				return 'A'; // Alanine
-			}
-			if(A(secondBase)) {
-				if(T_or_U_or_C(thirdBase)) {
-					return 'D'; // Aspartic Acid
-				}
-				if(A_or_G(thirdBase)) {
-					return 'E'; // Glutamic Acid
-				}
-			}
-			if(G(secondBase)) {
-				return 'G'; // Glycine
-			}
-		}
-		// additional ambiguity cases		
-		if(T_or_U_or_C(firstBase)) {
-			if(T_or_U(secondBase)) {
-				if(A_or_G(thirdBase)) {
-					return 'L'; // Leucine
-				}
-			}
-		}
-		if(A_or_C(firstBase)) {
-			if(G(secondBase)) {
-				if(A_or_G(thirdBase)) {
-					return 'R'; // Arginine
-				}
-			}
-		}
-		
-		return 0;
-	}
 	
 	public static boolean isNucleotide(char x) {
 		return "ACTG".indexOf(x) >= 0;
