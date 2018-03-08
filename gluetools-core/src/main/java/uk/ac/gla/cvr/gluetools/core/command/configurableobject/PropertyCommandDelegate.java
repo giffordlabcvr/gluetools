@@ -196,8 +196,6 @@ public class PropertyCommandDelegate {
 	public PropertyValueResult executeShowProperty(CommandContext cmdContext) {
 		ConfigurableObjectMode configurableObjectMode = (ConfigurableObjectMode) cmdContext.peekCommandMode();
 		Project project = configurableObjectMode.getProject();
-		String tableName = configurableObjectMode.getTableName();
-		project.checkListableProperties(tableName, Collections.singletonList(property));
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		Object value = ListResult.generateResultValue(cmdContext, configurableObject, property);
 		if(value == null) {
