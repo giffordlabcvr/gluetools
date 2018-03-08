@@ -36,8 +36,9 @@ public class FastaSequenceAminoAcidResult extends BaseTableResult<LabeledQueryAm
 		CODON_LABEL = "codonLabel",
 		QUERY_NT = "queryNt",
 		AC_REF_NT = "acRefNt",
+		CODON_NTS = "codonNts",
 		AMINO_ACID = "aminoAcid",
-		PRESENT_AAS = "presentAas",
+		DEFINITE_AAS = "definiteAas",
 		POSSIBLE_AAS = "possibleAas";
 
 
@@ -46,8 +47,9 @@ public class FastaSequenceAminoAcidResult extends BaseTableResult<LabeledQueryAm
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
 				column(QUERY_NT, lqaa -> lqaa.getQueryNt()),
 				column(AC_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
+				column(CODON_NTS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString()),
 				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()),
-				column(PRESENT_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getDefiniteAasString()),
+				column(DEFINITE_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getDefiniteAasString()),
 				column(POSSIBLE_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getPossibleAasString()));
 	}
 

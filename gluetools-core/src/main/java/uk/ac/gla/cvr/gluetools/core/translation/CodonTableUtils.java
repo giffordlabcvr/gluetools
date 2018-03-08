@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -266,7 +267,11 @@ public class CodonTableUtils {
 		List<Character> possibleAaChars = possibleAas.stream()
 				.map(intAa -> ResidueUtils.intToAa(intAa))
 				.collect(Collectors.toList());
-		return new TripletTranslationInfo(definiteAaChars, possibleAaChars);
+		List<Character> tripletNts = new ArrayList<Character>(3);
+		tripletNts.add(ResidueUtils.intToAmbigNt(ambigNt1));
+		tripletNts.add(ResidueUtils.intToAmbigNt(ambigNt2));
+		tripletNts.add(ResidueUtils.intToAmbigNt(ambigNt3));
+		return new TripletTranslationInfo(tripletNts, definiteAaChars, possibleAaChars);
 	}
 	
 	// populate ambigNtTripletToInfo for all possible ambiguous NT triplets.
@@ -325,16 +330,20 @@ public class CodonTableUtils {
 	 *
 	 */
 	public static class TripletTranslationInfo {
+		private List<Character> tripletNts;
 		private List<Character> definiteAminoAcids;
 		private List<Character> possibleAminoAcids;
 		private String definiteAasString;
 		private String possibleAasString;
+		private String tripletNtsString;
 		private char singleCharTranslation;
 		private String singleCharTranslationString;
 		
-		private TripletTranslationInfo(List<Character> definiteAminoAcids,
+		private TripletTranslationInfo(List<Character> tripletNts, List<Character> definiteAminoAcids,
 				List<Character> possibleAminoAcids) {
 			super();
+			this.tripletNts = tripletNts;
+			this.tripletNtsString = charListToString(tripletNts);
 			this.definiteAminoAcids = definiteAminoAcids;
 			this.definiteAasString = charListToString(definiteAminoAcids);
 			this.possibleAminoAcids = possibleAminoAcids;
@@ -370,6 +379,16 @@ public class CodonTableUtils {
 		public String getPossibleAasString() {
 			return possibleAasString;
 		}
+
+		public List<Character> getTripletNts() {
+			return tripletNts;
+		}
+
+		public String getTripletNtsString() {
+			return tripletNtsString;
+		}
+		
+		
 		
 	}
 	

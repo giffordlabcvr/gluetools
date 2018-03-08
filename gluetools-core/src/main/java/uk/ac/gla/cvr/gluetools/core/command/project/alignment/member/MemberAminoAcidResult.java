@@ -36,7 +36,10 @@ public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid
 		CODON_LABEL = "codonLabel",
 		MEMBER_NT = "memberNt",
 		REL_REF_NT = "relRefNt",
-		AMINO_ACID = "aminoAcid";
+		CODON_NTS = "codonNts",
+		AMINO_ACID = "aminoAcid",
+		DEFINITE_AAS = "definiteAas",
+		POSSIBLE_AAS = "possibleAas";
 
 
 	public MemberAminoAcidResult(List<LabeledQueryAminoAcid> rowData) {
@@ -45,7 +48,10 @@ public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
 				column(MEMBER_NT, lqaa -> lqaa.getQueryNt()),
 				column(REL_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
-				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()));
+				column(CODON_NTS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString()),
+				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()),
+				column(DEFINITE_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getDefiniteAasString()),
+				column(POSSIBLE_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getPossibleAasString()));
 	}
 
 }
