@@ -35,7 +35,10 @@ public class FeatureLocAminoAcidResult extends BaseTableResult<LabeledAminoAcid>
 	public static final String 
 		CODON_LABEL = "codonLabel",
 		REF_NT = "refNt",
-		AMINO_ACID = "aminoAcid";
+		CODON_NTS = "codonNts",
+		AMINO_ACID = "aminoAcid",
+		DEFINITE_AAS = "definiteAas",
+		POSSIBLE_AAS = "possibleAas";
 
 
 	public FeatureLocAminoAcidResult(List<LabeledAminoAcid> rowData) {
@@ -43,7 +46,10 @@ public class FeatureLocAminoAcidResult extends BaseTableResult<LabeledAminoAcid>
 				rowData, 
 				column(CODON_LABEL, laa -> laa.getLabeledCodon().getCodonLabel()),
 				column(REF_NT, laa -> laa.getLabeledCodon().getNtStart()),
-				column(AMINO_ACID, laa -> laa.getAminoAcid()));
+				column(CODON_NTS, laa -> laa.getTranslationInfo().getTripletNtsString()),
+				column(AMINO_ACID, laa -> laa.getAminoAcid()),
+				column(DEFINITE_AAS, laa -> laa.getTranslationInfo().getDefiniteAasString()),
+				column(POSSIBLE_AAS, laa -> laa.getTranslationInfo().getPossibleAasString()));
 	}
 
 }
