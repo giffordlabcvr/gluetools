@@ -89,14 +89,6 @@
 		<db-attribute name="module_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="200"/>
 	</db-entity>
-	<db-entity name="pattern_location">
-		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="pattern" type="VARCHAR" length="1000"/>
-		<db-attribute name="ref_end" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
-		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="ref_start" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
-		<db-attribute name="variation_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-	</db-entity>
 	<db-entity name="project_setting">
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="value" type="VARCHAR" length="200"/>
@@ -133,9 +125,17 @@
 		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="ref_end" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="scanner_module_name" type="VARCHAR" length="50"/>
-		<db-attribute name="translation_type" type="VARCHAR" length="50"/>
+		<db-attribute name="ref_start" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="type" type="VARCHAR" isMandatory="true" length="50"/>
+	</db-entity>
+	<db-entity name="variation_metatag">
+		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="metatag_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="metatag_value" type="VARCHAR" length="50"/>
+		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
+		<db-attribute name="variation_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 	</db-entity>
 	<obj-entity name="AlignedSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment" dbEntityName="aligned_segment" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="memberEnd" type="java.lang.Integer" db-attribute-path="member_end"/>
@@ -177,11 +177,6 @@
 		<obj-attribute name="content" type="byte[]" db-attribute-path="content"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 	</obj-entity>
-	<obj-entity name="PatternLocation" className="uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation" dbEntityName="pattern_location" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-		<obj-attribute name="pattern" type="java.lang.String" db-attribute-path="pattern"/>
-		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
-		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
-	</obj-entity>
 	<obj-entity name="ProjectSetting" className="uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting" dbEntityName="project_setting" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
 		<obj-attribute name="value" type="java.lang.String" db-attribute-path="value"/>
@@ -207,8 +202,13 @@
 		<obj-attribute name="description" type="java.lang.String" db-attribute-path="description"/>
 		<obj-attribute name="displayName" type="java.lang.String" db-attribute-path="display_name"/>
 		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
-		<obj-attribute name="scannerModuleName" type="java.lang.String" db-attribute-path="scanner_module_name"/>
-		<obj-attribute name="translationType" type="java.lang.String" db-attribute-path="translation_type"/>
+		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
+		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
+		<obj-attribute name="type" type="java.lang.String" db-attribute-path="type"/>
+	</obj-entity>
+	<obj-entity name="VariationMetatag" className="uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag" dbEntityName="variation_metatag" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject" exclude-superclass-listeners="true">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="metatag_name"/>
+		<obj-attribute name="value" type="java.lang.String" db-attribute-path="metatag_value"/>
 	</obj-entity>
 	<db-relationship name="alignment_member" source="aligned_segment" target="alignment_member" toMany="false">
 		<db-attribute-pair source="source_name" target="source_name"/>
@@ -299,11 +299,6 @@
 	<db-relationship name="module" source="module_resource" target="module" toMany="false">
 		<db-attribute-pair source="module_name" target="name"/>
 	</db-relationship>
-	<db-relationship name="variation" source="pattern_location" target="variation" toMany="false">
-		<db-attribute-pair source="variation_name" target="name"/>
-		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
-		<db-attribute-pair source="feature_name" target="feature_name"/>
-	</db-relationship>
 	<db-relationship name="alignments_where_ref_sequence" source="reference_sequence" target="alignment" toMany="true">
 		<db-attribute-pair source="name" target="ref_seq_name"/>
 	</db-relationship>
@@ -353,8 +348,13 @@
 		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
 		<db-attribute-pair source="feature_name" target="feature_name"/>
 	</db-relationship>
-	<db-relationship name="pattern_locs" source="variation" target="pattern_location" toDependentPK="true" toMany="true">
+	<db-relationship name="pattern_locs" source="variation" target="variation_metatag" toDependentPK="true" toMany="true">
 		<db-attribute-pair source="name" target="variation_name"/>
+		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
+		<db-attribute-pair source="feature_name" target="feature_name"/>
+	</db-relationship>
+	<db-relationship name="variation" source="variation_metatag" target="variation" toMany="false">
+		<db-attribute-pair source="variation_name" target="name"/>
 		<db-attribute-pair source="ref_seq_name" target="ref_seq_name"/>
 		<db-attribute-pair source="feature_name" target="feature_name"/>
 	</db-relationship>
@@ -383,7 +383,6 @@
 	<obj-relationship name="member" source="MemberFLocNote" target="AlignmentMember" deleteRule="Nullify" db-relationship-path="member"/>
 	<obj-relationship name="resources" source="Module" target="ModuleResource" deleteRule="Cascade" db-relationship-path="resources"/>
 	<obj-relationship name="module" source="ModuleResource" target="Module" deleteRule="Nullify" db-relationship-path="module"/>
-	<obj-relationship name="variation" source="PatternLocation" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="alignmentsWhereRefSequence" source="ReferenceSequence" target="Alignment" deleteRule="Deny" db-relationship-path="alignments_where_ref_sequence"/>
 	<obj-relationship name="featureLocations" source="ReferenceSequence" target="FeatureLocation" deleteRule="Cascade" db-relationship-path="feature_locations"/>
 	<obj-relationship name="sequence" source="ReferenceSequence" target="Sequence" deleteRule="Nullify" db-relationship-path="sequence"/>
@@ -396,6 +395,7 @@
 	<obj-relationship name="alignment" source="VarAlmtNote" target="Alignment" deleteRule="Nullify" db-relationship-path="alignment"/>
 	<obj-relationship name="variation" source="VarAlmtNote" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 	<obj-relationship name="featureLoc" source="Variation" target="FeatureLocation" deleteRule="Nullify" db-relationship-path="feature_loc"/>
-	<obj-relationship name="patternLocs" source="Variation" target="PatternLocation" deleteRule="Cascade" db-relationship-path="pattern_locs"/>
+	<obj-relationship name="metatags" source="Variation" target="VariationMetatag" deleteRule="Cascade" db-relationship-path="pattern_locs"/>
 	<obj-relationship name="varAlmtNotes" source="Variation" target="VarAlmtNote" deleteRule="Cascade" db-relationship-path="almt_var_notes"/>
+	<obj-relationship name="variation" source="VariationMetatag" target="Variation" deleteRule="Nullify" db-relationship-path="variation"/>
 </data-map>
