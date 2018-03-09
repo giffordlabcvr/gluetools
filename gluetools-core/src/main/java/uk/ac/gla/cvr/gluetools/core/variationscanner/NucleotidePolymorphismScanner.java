@@ -41,17 +41,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-@PluginClass(elemName="regexNucleotideVariationScanner",
-	description="Detects matches with a regular expression when used with a nucleotide Variation")
+public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanner {
 
-public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScanner<RegexNucleotideVariationScanner, VariationScanResult>{
-
-	private static RegexNucleotideVariationScanner defaultInstance = new RegexNucleotideVariationScanner();
+	private static NucleotidePolymorphismScanner defaultInstance = new NucleotidePolymorphismScanner();
 	
 	@Override
 	public void validateVariation(Variation variation) {
 		super.validateVariation(variation);
-		variation.getPatternLocs().forEach(pLoc -> {parseRegex(pLoc);});
 	}
 
 	@Override
@@ -116,7 +112,7 @@ public class RegexNucleotideVariationScanner extends BaseNucleotideVariationScan
 		}
 	}
 	
-	public static RegexNucleotideVariationScanner getDefaultInstance() {
+	public static NucleotidePolymorphismScanner getDefaultInstance() {
 		return defaultInstance;
 	}
 	

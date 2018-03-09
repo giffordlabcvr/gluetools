@@ -56,8 +56,6 @@ import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 		modifiableBuiltInProperties = { _PatternLocation.PATTERN_PROPERTY })		
 public class PatternLocation extends _PatternLocation implements IReferenceSegment {
 
-	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("^[NACGT]+$");
-	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("^[ACDEFGHIKLMNOPQRSTUVWYX*]+$");
 	
 	public static final String VARIATION_NAME_PATH = _PatternLocation.VARIATION_PROPERTY+"."+_Variation.NAME_PROPERTY;
 	public static final String FEATURE_NAME_PATH = _PatternLocation.VARIATION_PROPERTY+"."+_Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -92,28 +90,6 @@ public class PatternLocation extends _PatternLocation implements IReferenceSegme
 	public PatternLocation clone() {
 		throw new RuntimeException("PatternLocation.clone() not supported");
 	}
-	
-	public boolean isSimpleMatch() {
-		String regex = getPattern();
-		int ntLength = (getRefEnd()-getRefStart())+1;
-		TranslationFormat translationFormat = getVariation().getTranslationFormat();
-		switch(translationFormat) {
-		case NUCLEOTIDE:
-			if(ntLength == regex.length() && SIMPLE_NT_PATTERN.matcher(regex).find()) {
-				return true;
-			}
-			return false;
-		case AMINO_ACID:
-			if(ntLength/3 == regex.length() && SIMPLE_AA_PATTERN.matcher(regex).find()) {
-				return true;
-			}
-			return false;
-		default:
-			throw new RuntimeException("Unknown translation format");
-		}
-	}
-
-	
 	
 	
 	public void setScannerData(String key, Object data) {

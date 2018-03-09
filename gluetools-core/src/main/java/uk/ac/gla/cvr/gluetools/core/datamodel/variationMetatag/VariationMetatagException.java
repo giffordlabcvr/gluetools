@@ -23,28 +23,33 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.variationscanner;
+package uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag;
 
-import java.util.List;
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+@SuppressWarnings("serial")
+public class VariationMetatagException extends GlueException {
 
-public class NucleotidePLocScanResult extends PLocScanResult {
-
-	// list of matched NT values within this pattern loc;
-	private List<String> ntMatchValues;
-	
-	public NucleotidePLocScanResult(int index, List<ReferenceSegment> queryLocs, List<String> ntMatchValues) {
-		super(index, queryLocs);
-		this.ntMatchValues = ntMatchValues;
-		if(ntMatchValues.size() != queryLocs.size()) {
-			throw new RuntimeException("ntMatchValues.size() != queryLocs.size()");
+	public enum Code implements GlueErrorCode {
+		UNKNOWN_VARIATION_METATAG("unknownMetatag");
+		
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
 		}
 	}
-
-	@Override
-	public List<String> getMatchedValues() {
-		return ntMatchValues;
-	}
 	
+	public VariationMetatagException(GlueErrorCode code, Object... errorArgs) {
+		super(code, errorArgs);
+	}
+
+	public VariationMetatagException(Throwable cause, GlueErrorCode code,
+			Object... errorArgs) {
+		super(cause, code, errorArgs);
+	}
+
 }

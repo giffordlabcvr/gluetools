@@ -71,7 +71,7 @@ public abstract class FeatureModeCommand<R extends CommandResult> extends Projec
 
 		public MetatagTypeCompleter() {
 			super();
-			registerEnumLookup("metatagName", FeatureMetatag.Type.class);
+			registerEnumLookup("metatagName", FeatureMetatag.FeatureMetatagType.class);
 		}
 
 		

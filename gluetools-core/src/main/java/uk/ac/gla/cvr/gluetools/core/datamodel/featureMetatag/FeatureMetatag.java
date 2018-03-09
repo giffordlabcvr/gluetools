@@ -36,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatagExcep
 @GlueDataClass(defaultListedProperties = {FeatureMetatag.NAME_PROPERTY, FeatureMetatag.VALUE_PROPERTY})
 public class FeatureMetatag extends _FeatureMetatag {
 
-	public enum Type {
+	public enum FeatureMetatagType {
 		/** 
 		 * boolean
 		 * informational features are in place just to group other features
@@ -69,7 +69,7 @@ public class FeatureMetatag extends _FeatureMetatag {
 		CODON_LABELER_MODULE,
 	}
 
-	private Type type = null;
+	private FeatureMetatagType type = null;
 	
 	public static final String FEATURE_NAME_PATH = 
 			_FeatureMetatag.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -82,17 +82,17 @@ public class FeatureMetatag extends _FeatureMetatag {
 		return idMap;
 	}
 
-	public Type getType() {
+	public FeatureMetatagType getType() {
 		if(type == null) {
 			type = buildType();
 		}
 		return type;
 	}
 	
-	private Type buildType() {
+	private FeatureMetatagType buildType() {
 		String name = getName();
 		try {
-			return Type.valueOf(name);
+			return FeatureMetatagType.valueOf(name);
 		} catch(IllegalArgumentException iae) {
 			throw new FeatureMetatagException(Code.UNKNOWN_FEATURE_METATAG, name);
 		}

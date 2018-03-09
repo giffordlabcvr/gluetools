@@ -75,9 +75,8 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGen
 import uk.ac.gla.cvr.gluetools.core.variationscanner.ComparisonAminoAcidVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchAminoAcidVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchNucleotideVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexAminoAcidVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.RegexNucleotideVariationScanner;
-import uk.ac.gla.cvr.gluetools.custom.epitopeRasOverlap.EpitopeRasOverlap;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
@@ -147,18 +146,10 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(CommonAaAnalyser.class);
 		registerPluginClass(VariationFrequenciesGenerator.class);
 
-		setModulePluginGroup(new ModulePluginGroup("variationScanner", "Variation scanner module types", 90));
-		registerPluginClass(ComparisonAminoAcidVariationScanner.class);
-		registerPluginClass(ExactMatchAminoAcidVariationScanner.class);
-		registerPluginClass(RegexAminoAcidVariationScanner.class);
-		registerPluginClass(ExactMatchNucleotideVariationScanner.class);
-		registerPluginClass(RegexNucleotideVariationScanner.class);
-		
 		setModulePluginGroup(new ModulePluginGroup("experimentalUnsupported", "Experimental / unsupported module types", 91));
 		registerPluginClass(ModelTester.class);
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
-		registerPluginClass(EpitopeRasOverlap.class);
 		registerPluginClass(WebAnalysisTool.class);
 
 		setModulePluginGroup(null); // OTHER

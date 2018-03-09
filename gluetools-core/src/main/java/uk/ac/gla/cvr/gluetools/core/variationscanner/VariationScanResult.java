@@ -38,7 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 public class VariationScanResult {
 
 	private Map<String,String> variationPkMap;
-	private int minLocStart, maxLocEnd;
+	private int refStart, refEnd;
 	private boolean present;
 	private String variationRenderedName;
 	
@@ -48,8 +48,8 @@ public class VariationScanResult {
 	public VariationScanResult(Variation variation, List<PLocScanResult> pLocScanResults) {
 		super();
 		this.variationPkMap = variation.pkMap();
-		this.minLocStart = variation.minLocStart();
-		this.maxLocEnd = variation.maxLocEnd();
+		this.refStart = variation.getRefStart();
+		this.refEnd = variation.getRefEnd();
 		this.present = true;
 		for(PLocScanResult pLocScanResult: pLocScanResults) {
 			if(pLocScanResult.getQueryLocs().size() == 0) {
@@ -92,11 +92,11 @@ public class VariationScanResult {
 	}
 
 	public int getMinLocStart() {
-		return minLocStart;
+		return refStart;
 	}
 
 	public int getMaxLocEnd() {
-		return maxLocEnd;
+		return refEnd;
 	}
 
 	public boolean isPresent() {
@@ -139,13 +139,13 @@ public class VariationScanResult {
 				if(comp == 0) {
 					comp = o1.getVariationReferenceName().compareTo(o2.getVariationReferenceName());
 				}
-				Integer vLocStart1 = o1.minLocStart;
-				Integer vLocStart2 = o2.minLocStart;
+				Integer vLocStart1 = o1.refStart;
+				Integer vLocStart2 = o2.refStart;
 				if(comp == 0 && vLocStart1 != null && vLocStart2 != null) {
 					comp = Integer.compare(vLocStart1, vLocStart2);
 				}
-				Integer vLocEnd1 = o1.maxLocEnd;
-				Integer vLocEnd2 = o2.maxLocEnd;
+				Integer vLocEnd1 = o1.refEnd;
+				Integer vLocEnd2 = o2.refEnd;
 				if(comp == 0 && vLocEnd1 != null && vLocEnd2 != null) {
 					comp = Integer.compare(vLocEnd1, vLocEnd2);
 				}

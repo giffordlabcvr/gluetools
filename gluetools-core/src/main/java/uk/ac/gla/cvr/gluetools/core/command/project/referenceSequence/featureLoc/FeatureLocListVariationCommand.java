@@ -90,7 +90,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 		listCTableDelegate.setWhereClause(whereClause);
 		if(listCTableDelegate.getFieldNames() == null) {
 			listCTableDelegate.setFieldNames(
-					Arrays.asList(_Variation.NAME_PROPERTY, Variation.TRANSLATION_TYPE_PROPERTY, 
+					Arrays.asList(_Variation.NAME_PROPERTY, Variation.TYPE_PROPERTY, 
 					_Variation.DESCRIPTION_PROPERTY ));
 
 		}

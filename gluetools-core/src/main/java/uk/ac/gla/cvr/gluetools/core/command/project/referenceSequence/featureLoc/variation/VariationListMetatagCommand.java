@@ -25,29 +25,32 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
-import java.util.List;
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag;
+
 
 @CommandClass( 
-		commandWords={"list", "pattern-location"}, 
+		commandWords={"list", "metatag"},
 		docoptUsages={""},
 		metaTags={},
-		description="List the pattern-locations of the variation, with nucleotide coordinates") 
-
-public class VariationListPatternLocCommand extends VariationModeCommand<ListResult> {
+		description="List the metatags for this variation"
+	) 
+public class VariationListMetatagCommand extends VariationModeCommand<ListResult> {
 
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
-		Variation variation = lookupVariation(cmdContext);
-		
-		List<PatternLocation> patternLocs = variation.getPatternLocs();
-		
-		return new ListResult(cmdContext, PatternLocation.class, patternLocs);
-		
+		Expression exp = ExpressionFactory.matchExp(VariationMetatag.REF_SEQ_NAME_PATH, getFeatureName());
+		exp = exp.andExp(ExpressionFactory.matchExp(VariationMetatag.FEATURE_NAME_PATH, getFeatureName()));
+		exp = exp.andExp(ExpressionFactory.matchExp(VariationMetatag.VARIATION_NAME_PATH, getFeatureName()));
+		return CommandUtils.runListCommand(cmdContext, VariationMetatag.class, new SelectQuery(VariationMetatag.class, exp));
 	}
+	
 }

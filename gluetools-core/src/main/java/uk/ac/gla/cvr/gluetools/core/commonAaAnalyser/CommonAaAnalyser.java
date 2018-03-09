@@ -45,11 +45,12 @@ import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjec
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentAminoAcidFrequencyCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.CreateVariationCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationCreatePatternLocCommand;
+import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation.VariationSetMetatagCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -189,20 +190,21 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 				String featureName = commonAas.getFeatureName();
 				try(ModeCloser fLocMode = cmdContext.pushCommandMode("feature-location", featureName)) {
 					String variationName = generateUncommonAaVariationName(commonAas);
+					String codonLabel = commonAas.getCodonLabel();
 					cmdContext.cmdBuilder(CreateVariationCommand.class)
 					.set(CreateVariationCommand.VARIATION_NAME, variationName)
 					.set(CreateVariationCommand.NO_COMMIT, Boolean.TRUE)
-					.set(CreateVariationCommand.TRANSLATION_TYPE, TranslationFormat.AMINO_ACID.name())
+					.set(CreateVariationCommand.VTYPE, Variation.VariationType.aminoAcidPolymorphism)
+					.set(CreateVariationCommand.LC_BASED, Boolean.TRUE)
+					.set(CreateVariationCommand.LC_START, codonLabel)
+					.set(CreateVariationCommand.LC_END, codonLabel)
 					.build().execute(cmdContext);
 					variationPkMaps.add(Variation.pkMap(refName, featureName, variationName));
 					try(ModeCloser varationMode = cmdContext.pushCommandMode("variation", variationName)) {
-						String codonLabel = commonAas.getCodonLabel();
-						cmdContext.cmdBuilder(VariationCreatePatternLocCommand.class)
-						.set(VariationCreatePatternLocCommand.NO_COMMIT, Boolean.TRUE)
-						.set(VariationCreatePatternLocCommand.PATTERN, generateUncommonAaVariationRegex(commonAas))
-						.set(VariationCreatePatternLocCommand.LC_BASED, Boolean.TRUE)
-						.set(VariationCreatePatternLocCommand.LC_START, codonLabel)
-						.set(VariationCreatePatternLocCommand.LC_END, codonLabel)
+						cmdContext.cmdBuilder(VariationSetMetatagCommand.class)
+						.set(VariationSetMetatagCommand.NO_COMMIT, Boolean.TRUE)
+						.set(VariationSetMetatagCommand.METATAG_NAME, VariationMetatagType.PATTERN.name())
+						.set(VariationSetMetatagCommand.METATAG_VALUE, generateUncommonAaVariationRegex(commonAas))
 						.build().execute(cmdContext);
 						
 						cmdContext.cmdBuilder(ConfigurableObjectSetFieldCommand.class)

@@ -45,17 +45,17 @@ public class VariationModeCommandFactory extends BaseCommandFactory {
 	protected void populateCommandTree() {
 		super.populateCommandTree();
 		
-		setCmdGroup(new CommandGroup("pattern-locs", "Commands for managing pattern locations", 50, false));
-		registerCommandClass(VariationCreatePatternLocCommand.class);
-		registerCommandClass(VariationDeletePatternLocCommand.class);
-		registerCommandClass(VariationListPatternLocCommand.class);
-		registerCommandClass(VariationListPatternLocCodonCommand.class);
-
 		ConfigurableObjectMode.registerConfigurableObjectCommands(this);
 
 		setCmdGroup(CommandGroup.VALIDATION);
 		registerCommandClass(VariationValidateCommand.class);
 
+		setCmdGroup(new CommandGroup("var-metatags", "Commands for managing variation metatags", 50, false));
+		registerCommandClass(VariationSetMetatagCommand.class);
+		registerCommandClass(VariationUnsetMetatagCommand.class);
+		registerCommandClass(VariationListMetatagCommand.class);
+
+		
 		setCmdGroup(new CommandGroup("var-almt-notes", "Commands for managing variation-alignment notes", 51, false));
 		registerCommandClass(VariationCreateAlmtNoteCommand.class);
 		registerCommandClass(VariationDeleteAlmtNoteCommand.class);

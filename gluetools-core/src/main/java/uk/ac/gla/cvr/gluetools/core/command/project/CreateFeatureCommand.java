@@ -100,7 +100,7 @@ public class CreateFeatureCommand extends ProjectModeCommand<CreateResult> {
 				}
 			}
 			FeatureMetatag displayOrderMetatag = GlueDataObject.create(cmdContext, 
-					FeatureMetatag.class, FeatureMetatag.pkMap(featureName, FeatureMetatag.Type.DISPLAY_ORDER.name()), false);
+					FeatureMetatag.class, FeatureMetatag.pkMap(featureName, FeatureMetatag.FeatureMetatagType.DISPLAY_ORDER.name()), false);
 			displayOrderMetatag.setFeature(feature);
 			displayOrderMetatag.setValue(Integer.toString(maxOrderNumber+1));
 		}

@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.Type;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.FeatureMetatagType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 
 @GlueDataClass(
@@ -92,7 +92,7 @@ public class Feature extends _Feature implements HasDisplayName {
 		super.setParent(parent);
 	}
 
-	public Set<Type> getMetatagTypes() {
+	public Set<FeatureMetatagType> getMetatagTypes() {
 		return getFeatureMetatags().stream().map(m -> m.getType()).collect(Collectors.toSet());
 	}
 
@@ -123,20 +123,20 @@ public class Feature extends _Feature implements HasDisplayName {
 
 	
 	public boolean hasOwnCodonNumbering() {
-		return getMetatag(FeatureMetatag.Type.OWN_CODON_NUMBERING).map(mt -> mt.getValue().equals("true")).orElse(false);
+		return getMetatag(FeatureMetatag.FeatureMetatagType.OWN_CODON_NUMBERING).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
 	public boolean isInformational() {
-		return getMetatag(FeatureMetatag.Type.INFORMATIONAL).map(mt -> mt.getValue().equals("true")).orElse(false);
+		return getMetatag(FeatureMetatag.FeatureMetatagType.INFORMATIONAL).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
 	public boolean codesAminoAcids() {
-		return getMetatag(FeatureMetatag.Type.CODES_AMINO_ACIDS).map(mt -> mt.getValue().equals("true")).orElse(false);
+		return getMetatag(FeatureMetatag.FeatureMetatagType.CODES_AMINO_ACIDS).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
 	
 	public Integer getDisplayOrder() {
-		Optional<FeatureMetatag> displayOrderMetatag = getMetatag(FeatureMetatag.Type.DISPLAY_ORDER);
+		Optional<FeatureMetatag> displayOrderMetatag = getMetatag(FeatureMetatag.FeatureMetatagType.DISPLAY_ORDER);
 		if(displayOrderMetatag.isPresent()) {
 			return Integer.parseInt(displayOrderMetatag.get().getValue());
 		} else {
@@ -144,7 +144,7 @@ public class Feature extends _Feature implements HasDisplayName {
 		}
 	}
 
-	public Optional<FeatureMetatag> getMetatag(Type metatagType) {
+	public Optional<FeatureMetatag> getMetatag(FeatureMetatagType metatagType) {
 		return getFeatureMetatags().stream().filter(mt -> mt.getName().equals(metatagType.name())).findFirst();
 	}
 	
@@ -212,7 +212,7 @@ public class Feature extends _Feature implements HasDisplayName {
 	}
 
 	public CodonLabeler getCodonLabelerModule(CommandContext cmdContext) {
-		FeatureMetatag codonLabelerModuleName = getMetatag(Type.CODON_LABELER_MODULE).orElse(null);
+		FeatureMetatag codonLabelerModuleName = getMetatag(FeatureMetatagType.CODON_LABELER_MODULE).orElse(null);
 		if(codonLabelerModuleName != null) {
 			String labelerModuleName = codonLabelerModuleName.getValue();
 			return Module.resolveModulePlugin(cmdContext, CodonLabeler.class, labelerModuleName);

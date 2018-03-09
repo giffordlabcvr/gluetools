@@ -41,16 +41,12 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class VariationScanRenderHints implements Plugin {
 
-	public static String SHOW_PATTERN_LOCS_SEPARATELY = "showPatternLocsSeparately";
 	public static String SHOW_MATCH_VALUES_SEPARATELY = "showMatchValuesSeparately";
 	public static String SHOW_MATCH_NT_LOCATIONS = "showMatchNtLocations";
 	public static String SHOW_MATCH_LC_LOCATIONS = "showMatchLcLocations";
 	
 	
-	// add a patternLocIndex column, and add a row for each patternLoc in the variation
-	private boolean showPatternLocsSeparately;
-
-	// add a matchedValue column, add add a row for each match (implies showPatternLocsSeparately)
+	// add a matchedValue column, add add a row for each match
 	private boolean showMatchValuesSeparately;
 
 	// (implies showMatchValuesSeparately)
@@ -64,14 +60,10 @@ public class VariationScanRenderHints implements Plugin {
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		this.showPatternLocsSeparately = PluginUtils.configureBooleanProperty(configElem, SHOW_PATTERN_LOCS_SEPARATELY, true);
 		this.showMatchValuesSeparately = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCH_VALUES_SEPARATELY, true);
 		this.showMatchNtLocations = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCH_NT_LOCATIONS, true);
 		this.showMatchLcLocations = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCH_LC_LOCATIONS, true);
 		
-		if(showMatchValuesSeparately && !showPatternLocsSeparately) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "showMatchValuesSeparately implies showPatternLocsSeparately");
-		}
 		if(showMatchNtLocations && !showMatchValuesSeparately) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "showMatchNtLocations implies showMatchValuesSeparately");
 		}
@@ -87,9 +79,7 @@ public class VariationScanRenderHints implements Plugin {
 		
 		List<VariationScanResultRow> vsrrs = new ArrayList<VariationScanResultRow>();
 		for(VariationScanResult vsr: vsrs) {
-			if(!showPatternLocsSeparately) {
-				vsrrs.add(new VariationScanResultRow(vsr));
-			} else if(!showMatchValuesSeparately){
+			if(!showMatchValuesSeparately){
 				vsrrs.addAll(vsr.getPLocScanResults()
 						.stream()
 						.map(plsr -> new VariationScanResultRow(vsr, plsr))
@@ -118,31 +108,25 @@ public class VariationScanRenderHints implements Plugin {
 			columns.add(new TableColumn<VariationScanResultRow>(vsrColumn.getColumnHeader(), vsrr -> vsrColumn.populateColumn(vsrr.getVsr())));
 		}
 		columns.add(new TableColumn<VariationScanResultRow>("present", vsrr -> vsrr.getVsr().isPresent()));
-		if(showPatternLocsSeparately) {
-			columns.add(new TableColumn<VariationScanResultRow>("pLocIndex", vsrr -> {
-				PLocScanResult plsr = vsrr.getPlsr();
-				return plsr == null ? null : plsr.getIndex();
-			}));
-			if(showMatchValuesSeparately){
-				columns.add(new TableColumn<VariationScanResultRow>("matchedValue", vsrr -> vsrr.getMatchedValue()));
-				if(showMatchNtLocations) {
-					columns.add(new TableColumn<VariationScanResultRow>("queryNtStart", vsrr -> 
-					{ 
-						ReferenceSegment matchedValueSegment = vsrr.getMatchedValueSegment();
-						return matchedValueSegment == null ? null : matchedValueSegment.getRefStart(); 
-					}));
-					columns.add(new TableColumn<VariationScanResultRow>("queryNtEnd", vsrr -> 
-						{ 
-							ReferenceSegment matchedValueSegment = vsrr.getMatchedValueSegment();
-							return matchedValueSegment == null ? null : matchedValueSegment.getRefEnd(); 
-						}));
-				}
-				if(showMatchLcLocations) {
-					columns.add(new TableColumn<VariationScanResultRow>("lcStart", vsrr -> vsrr.getLcStart()));
-					columns.add(new TableColumn<VariationScanResultRow>("lcEnd", vsrr -> vsrr.getLcEnd()));
-				}
-			} 
-		}
+		if(showMatchValuesSeparately){
+			columns.add(new TableColumn<VariationScanResultRow>("matchedValue", vsrr -> vsrr.getMatchedValue()));
+			if(showMatchNtLocations) {
+				columns.add(new TableColumn<VariationScanResultRow>("queryNtStart", vsrr -> 
+				{ 
+					ReferenceSegment matchedValueSegment = vsrr.getMatchedValueSegment();
+					return matchedValueSegment == null ? null : matchedValueSegment.getRefStart(); 
+				}));
+				columns.add(new TableColumn<VariationScanResultRow>("queryNtEnd", vsrr -> 
+				{ 
+					ReferenceSegment matchedValueSegment = vsrr.getMatchedValueSegment();
+					return matchedValueSegment == null ? null : matchedValueSegment.getRefEnd(); 
+				}));
+			}
+			if(showMatchLcLocations) {
+				columns.add(new TableColumn<VariationScanResultRow>("lcStart", vsrr -> vsrr.getLcStart()));
+				columns.add(new TableColumn<VariationScanResultRow>("lcEnd", vsrr -> vsrr.getLcEnd()));
+			}
+		} 
 		return columns.toArray(new TableColumn[]{});
 	}
 }

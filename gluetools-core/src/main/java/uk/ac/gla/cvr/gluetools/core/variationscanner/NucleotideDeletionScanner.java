@@ -25,21 +25,16 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
-public abstract class BaseAminoAcidVariationScanner extends BaseVariationScanner {
-
-	public abstract VariationScanResult scanAminoAcids(CommandContext cmdContext, Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation);
+public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner {
 
 	@Override
-	public void validateVariation(Variation variation) {
-		super.validateVariation(variation);
+	public VariationScanResult scanNucleotides(Variation variation,
+			NtQueryAlignedSegment ntQaSeg) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

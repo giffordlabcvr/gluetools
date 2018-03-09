@@ -131,7 +131,7 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	}
 
 	private void featureToCommandObject(Feature feature, CommandObject commandObject) {
-		Set<FeatureMetatag.Type> metatagTypes = feature.getMetatagTypes();
+		Set<FeatureMetatag.FeatureMetatagType> metatagTypes = feature.getMetatagTypes();
 		commandObject.set("referenceName", referenceName);
 		commandObject.set("referenceRenderedName", referenceRenderedName);
 		commandObject.set("featureName", feature.getName());
@@ -226,11 +226,11 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 	}
 
 	public boolean isInformational() {
-		return getFeatureMetatags().contains(FeatureMetatag.Type.INFORMATIONAL.name());
+		return getFeatureMetatags().contains(FeatureMetatag.FeatureMetatagType.INFORMATIONAL.name());
 	}
 
 	public boolean isIncludedInSummary() {
-		return getFeatureMetatags().contains(FeatureMetatag.Type.INCLUDE_IN_SUMMARY.name());
+		return getFeatureMetatags().contains(FeatureMetatag.FeatureMetatagType.INCLUDE_IN_SUMMARY.name());
 	}
 
 }

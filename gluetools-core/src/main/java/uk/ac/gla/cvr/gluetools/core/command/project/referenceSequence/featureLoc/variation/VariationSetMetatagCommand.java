@@ -23,7 +23,9 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.command.project.feature;
+package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
+
+import java.util.Map;
 
 import org.w3c.dom.Element;
 
@@ -31,50 +33,65 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.project.feature.FeatureModeCommand.MetatagTypeCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
 @CommandClass( 
 		commandWords={"set", "metatag"},
-		docoptUsages={"<metatagName> <metatagValue>"},
+		docoptUsages={"[-C] <metatagName> <metatagValue>"},
+		docoptOptions={
+				"-C, --noCommit                                 Don't commit to the database [default: false]",
+		},
 		metaTags={CmdMeta.updatesDatabase},
 		description="Add or update a metatag with a certain name/value",
-		furtherHelp="Metatags are metadata for features."
+		furtherHelp="Metatags are metadata for variations."
 	) 
-public class FeatureSetMetatagCommand extends FeatureModeCommand<OkResult> {
+public class VariationSetMetatagCommand extends VariationModeCommand<OkResult> {
 
+	public static final String NO_COMMIT = "noCommit";
 	public static final String METATAG_NAME = "metatagName";
 	public static final String METATAG_VALUE = "metatagValue";
 
-	private FeatureMetatag.FeatureMetatagType metatagType;
+	private Boolean noCommit;
+	private VariationMetatag.VariationMetatagType metatagType;
 	private String metatagValue;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		metatagType = PluginUtils.configureEnumProperty(FeatureMetatag.FeatureMetatagType.class, configElem, METATAG_NAME, true);
+		noCommit = PluginUtils.configureBooleanProperty(configElem, NO_COMMIT, true);
+		metatagType = PluginUtils.configureEnumProperty(VariationMetatag.VariationMetatagType.class, configElem, METATAG_NAME, true);
 		metatagValue = PluginUtils.configureStringProperty(configElem, METATAG_VALUE, true);
 	}
 
 	@Override
 	public OkResult execute(CommandContext cmdContext) {
-		Feature feature = lookupFeature(cmdContext);
-		FeatureMetatag featureMetatag = 
-				GlueDataObject.lookup(cmdContext, 
-						FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), true);
-		if(featureMetatag == null) {
-			featureMetatag = GlueDataObject.create(cmdContext, 
-					FeatureMetatag.class, FeatureMetatag.pkMap(feature.getName(), metatagType.name()), false);
-			featureMetatag.setFeature(feature);
+		Variation variation = lookupVariation(cmdContext);
+		Map<String, String> metatagPkMap = VariationMetatag.pkMap(variation.getFeatureLoc().getReferenceSequence().getName(), 
+				variation.getFeatureLoc().getFeature().getName(),
+				variation.getName(),
+				metatagType.name());
+		VariationMetatag variationMetatag = 
+				GlueDataObject.lookup(cmdContext, VariationMetatag.class, metatagPkMap, true);
+		if(variationMetatag == null) {
+			variationMetatag = 
+					GlueDataObject.create(cmdContext, VariationMetatag.class, metatagPkMap, false);
+			variationMetatag.setVariation(variation);
 		}
-		featureMetatag.setValue(metatagValue);
-		cmdContext.commit();
+		variationMetatag.setValue(metatagValue);
+		if(noCommit) {
+			cmdContext.cacheUncommitted(variationMetatag);
+		} else {
+			cmdContext.commit();
+		}
 		return new OkResult();
 	}
 

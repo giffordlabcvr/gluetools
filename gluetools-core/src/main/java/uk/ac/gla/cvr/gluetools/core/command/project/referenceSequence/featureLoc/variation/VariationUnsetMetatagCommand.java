@@ -25,56 +25,56 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.variation;
 
+import java.util.Map;
+
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
+@CommandClass( 
+		commandWords={"unset", "metatag"},
+		docoptUsages={"<metatagName>"},
+		metaTags={CmdMeta.updatesDatabase},
+		description="Specify that this variation does not have a certain metatag",
+		furtherHelp="This command succeeds if the variation already does not have the metatag."
+	) 
+public class VariationUnsetMetatagCommand extends VariationModeCommand<DeleteResult> {
 
-public abstract class VariationModeCommand<R extends CommandResult> extends FeatureLocModeCommand<R> {
-
-
-	private String variationName;
+	public static final String METATAG_NAME = "metatagName";
+	private VariationMetatag.VariationMetatagType metatagType;
 	
 	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+	public void configure(PluginConfigContext pluginConfigContext,
+			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		variationName = PluginUtils.configureStringProperty(configElem, "variationName", true);
+		metatagType = PluginUtils.configureEnumProperty(VariationMetatag.VariationMetatagType.class, configElem, METATAG_NAME, true);
 	}
 
-	protected String getVariationName() {
-		return variationName;
-	}
-
-
-	protected static VariationMode getVariationMode(CommandContext cmdContext) {
-		return (VariationMode) cmdContext.peekCommandMode();
-	}
-
-
-	protected Variation lookupVariation(CommandContext cmdContext) {
-		return GlueDataObject.lookup(cmdContext, Variation.class, 
-				Variation.pkMap(getRefSeqName(), getFeatureName(), getVariationName()));
+	@Override
+	public DeleteResult execute(CommandContext cmdContext) {
+		Variation variation = lookupVariation(cmdContext);
+		Map<String, String> metatagPkMap = VariationMetatag.pkMap(variation.getFeatureLoc().getReferenceSequence().getName(), 
+				variation.getFeatureLoc().getFeature().getName(),
+				variation.getName(),
+				metatagType.name());
+		DeleteResult result = GlueDataObject.delete(cmdContext, 
+				VariationMetatag.class, metatagPkMap, true);
+		cmdContext.commit();
+		return result;
 	}
 
 	@CompleterClass
-	public static class MetatagTypeCompleter extends AdvancedCmdCompleter {
-
-		public MetatagTypeCompleter() {
-			super();
-			registerEnumLookup("metatagName", VariationMetatag.VariationMetatagType.class);
-		}
-
-		
-	}
-
-
+	public static class Completer extends MetatagTypeCompleter {}
+	
 }

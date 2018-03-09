@@ -48,13 +48,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public class FeatureUnsetMetatagCommand extends FeatureModeCommand<DeleteResult> {
 
 	public static final String METATAG_NAME = "metatagName";
-	private FeatureMetatag.Type metatagType;
+	private FeatureMetatag.FeatureMetatagType metatagType;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		metatagType = PluginUtils.configureEnumProperty(FeatureMetatag.Type.class, configElem, METATAG_NAME, true);
+		metatagType = PluginUtils.configureEnumProperty(FeatureMetatag.FeatureMetatagType.class, configElem, METATAG_NAME, true);
 	}
 
 	@Override

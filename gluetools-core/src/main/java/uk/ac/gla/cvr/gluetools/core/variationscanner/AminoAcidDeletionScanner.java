@@ -23,19 +23,21 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.custom.epitopeRasOverlap;
+package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
-@PluginClass(elemName="epitopeRasOverlap",
-		includeInWebDocs=false)
-public class EpitopeRasOverlap extends ModulePlugin<EpitopeRasOverlap> {
+public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner {
 
-	public EpitopeRasOverlap() {
-		super();
-		registerModulePluginCmdClass(ComputeOverlappingCommand.class);
-	
+	@Override
+	public VariationScanResult scanAminoAcids(CommandContext cmdContext,
+			Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned,
+			String fullAminoAcidTranslation) {
+		// TODO Auto-generated method stub
+		return null;
 	}
+
 
 }
