@@ -25,9 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
@@ -42,10 +44,12 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	}
 
 	@Override
-	public VariationScanResult scanNucleotides(Variation variation,
-			NtQueryAlignedSegment ntQaSeg) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<NucleotideInsertionMatchResult> scan(CommandContext cmdContext,
+			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		List<NucleotideInsertionMatchResult> matchResults = new ArrayList<NucleotideInsertionMatchResult>();
+		
+		return matchResults;
 	}
+
 
 }

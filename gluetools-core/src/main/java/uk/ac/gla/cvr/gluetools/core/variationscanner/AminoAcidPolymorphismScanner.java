@@ -31,12 +31,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
@@ -44,75 +46,119 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public class AminoAcidPolymorphismScanner extends BaseAminoAcidVariationScanner<AminoAcidPolymorphismMatchResult> {
 
-	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
+	private static final List<VariationMetatagType> allowedMetatagTypes = 
+			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN, 
+							VariationMetatagType.REGEX_AA_PATTERN);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
 	public AminoAcidPolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
+	
+	
 	@Override
-	public VariationScanResult scanAminoAcids(CommandContext cmdContext, Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation) {
-
-		List<PLocScanResult> pLocScanResults = new ArrayList<PLocScanResult>();
-		
-		for(int plocIdx = 0; plocIdx < variation.getPatternLocs().size(); plocIdx++) {
-			PatternLocation pLoc = variation.getPatternLocs().get(plocIdx);
-			PLocScanResult pLocScanResult;
-
-			Integer refStart = pLoc.getRefStart();
-			Integer refEnd = pLoc.getRefEnd();
-			int varLengthNt = refEnd - refStart + 1;
-			Integer aaTranslationRefNtStart = ntQaSegCdnAligned.getRefStart();
-			Integer aaTranslationRefNtEnd = ntQaSegCdnAligned.getRefEnd();
-			if(!( refStart >= aaTranslationRefNtStart && refEnd <= aaTranslationRefNtEnd )) {
-				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, Collections.emptyList(),
-						Collections.emptyList(), Collections.emptyList(), Collections.emptyList()); // no match in this pattern loc
-			} else {
-				int segToVariationStartOffset = refStart - aaTranslationRefNtStart;
-				int startAA = segToVariationStartOffset / 3;
-				int endAA = startAA + ( (varLengthNt / 3) - 1);
-				CharSequence aminoAcids = fullAminoAcidTranslation.subSequence(startAA, endAA+1);
-				int scanQueryNtStart = ntQaSegCdnAligned.getQueryStart() + segToVariationStartOffset;
-
-				// set up caching of Pattern in PatternLoc.
-				Pattern regexPattern = (Pattern) pLoc.getScannerData("AA_REGEX_PATTERN");
-				if(regexPattern == null) {
-					regexPattern = parseRegex(pLoc);
-					pLoc.setScannerData("AA_REGEX_PATTERN", regexPattern);
-				}
-				
-				List<ReferenceSegment> queryLocs = new ArrayList<ReferenceSegment>();
-				List<String> aaMatchValues = new ArrayList<String>();
-				List<String> startCodonLabels = new ArrayList<String>();
-				List<String> endCodonLabels = new ArrayList<String>();
-				Matcher matcher = regexPattern.matcher(aminoAcids);
-				
-				TIntObjectMap<LabeledCodon> refNtToLabeledCodon = variation.getFeatureLoc().getRefNtToLabeledCodon(cmdContext);
-
-				while(matcher.find()) {
-					int queryNtStart = scanQueryNtStart + ( matcher.start() * 3 );
-					int queryNtEnd = scanQueryNtStart + ( matcher.end() * 3 ) - 1;
-					int refNtStart = queryNtStart + ntQaSegCdnAligned.getQueryToReferenceOffset();
-					int refNtEnd = queryNtEnd + ntQaSegCdnAligned.getQueryToReferenceOffset();
-					String lcStart = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
-					String lcEnd = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
-
-					queryLocs.add(new ReferenceSegment(queryNtStart, queryNtEnd));
-					aaMatchValues.add(matcher.group());
-					startCodonLabels.add(lcStart);
-					endCodonLabels.add(lcEnd);
-				}
-				pLocScanResult = new AminoAcidPLocScanResult(plocIdx, queryLocs, 
-						aaMatchValues, startCodonLabels, endCodonLabels);
-			}
-			pLocScanResults.add(pLocScanResult);
+	public void validate() {
+		super.validate();
+		Map<VariationMetatagType, String> metatagsMap = getMetatagsMap();
+		if(metatagsMap.containsKey(VariationMetatagType.SIMPLE_AA_PATTERN) &&
+				metatagsMap.containsKey(VariationMetatagType.REGEX_AA_PATTERN)) {
+			throwScannerException("Only one of SIMPLE_AA_PATTERN and REGEX_AA_PATTERN may be defined");
 		}
-		return new VariationScanResult(variation, pLocScanResults);
+		if((!metatagsMap.containsKey(VariationMetatagType.SIMPLE_AA_PATTERN)) &&
+				!metatagsMap.containsKey(VariationMetatagType.REGEX_AA_PATTERN)) {
+			throwScannerException("At least one of SIMPLE_AA_PATTERN and REGEX_AA_PATTERN must be defined");
+		}
 	}
+
+
+
+	@Override
+	public List<AminoAcidPolymorphismMatchResult> scan(
+			CommandContext cmdContext,
+			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		List<AminoAcidPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidPolymorphismMatchResult>();
+		
+		Translator translator = new CommandContextTranslator(cmdContext);
+		Variation variation = getVariation();
+		FeatureLocation featureLoc = variation.getFeatureLoc();
+		TIntObjectMap<LabeledCodon> refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+		
+		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+						ReferenceSegment.cloneLeftSegMerger());
+
+		List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
+
+		Map<VariationMetatagType, String> metatagsMap = getMetatagsMap();
+		String simpleAaPattern = metatagsMap.get(VariationMetatagType.SIMPLE_AA_PATTERN);
+		String regexAaPattern = metatagsMap.get(VariationMetatagType.REGEX_AA_PATTERN);
+		if(simpleAaPattern != null) {
+			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
+				String segNts = ntQaSeg.getNucleotides().toString();
+				String segAas = translator.translateToAaString(segNts);
+				int nextIndex = -1;
+				do {
+					nextIndex = segAas.indexOf(segAas, nextIndex+1);
+					if(nextIndex >= 0) {
+						int queryNtStart = ntQaSeg.getQueryStart() + (nextIndex*3);
+						int queryNtEnd = queryNtStart + (((simpleAaPattern.length()-1)*3)+2);
+						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
+						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
+						String queryNts = segNts.substring(
+								queryNtStart - ntQaSeg.getQueryStart(), 
+								(queryNtEnd - ntQaSeg.getQueryStart())+1);
+						String queryAAs = segAas.substring(nextIndex, nextIndex+simpleAaPattern.length());
+						String firstRefCodon = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
+						String lastRefCodon = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
+						AminoAcidPolymorphismMatchResult aapmr = 
+								new AminoAcidPolymorphismMatchResult(firstRefCodon, lastRefCodon, 
+										refNtStart, refNtEnd, 
+										queryNtStart, queryNtEnd, queryAAs, queryNts);
+						matchResults.add(aapmr);
+					}
+				} while(nextIndex != -1);
+			}
+		} else if(regexAaPattern != null) {
+			Pattern pattern = parseRegex(regexAaPattern);
+
+			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
+				String segNts = ntQaSeg.getNucleotides().toString();
+				String segAas = translator.translateToAaString(segNts);
+				Matcher matcher = pattern.matcher(segAas);
+				while(matcher.find()) {
+					int matcherStart = matcher.start();
+					int matcherEnd = matcher.end();
+					int queryNtStart = ntQaSeg.getQueryStart() + (matcherStart*3);
+					int queryNtEnd = ntQaSeg.getQueryStart() + (matcherEnd*3) - 1;
+					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
+					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
+					String queryNts = segNts.substring(
+							queryNtStart - ntQaSeg.getQueryStart(), 
+							(queryNtEnd - ntQaSeg.getQueryStart())+1);
+					String queryAAs = segAas.substring(matcherStart, matcherEnd);
+					String firstRefCodon = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
+					String lastRefCodon = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
+					AminoAcidPolymorphismMatchResult aapmr = 
+							new AminoAcidPolymorphismMatchResult(firstRefCodon, lastRefCodon, 
+									refNtStart, refNtEnd, 
+									queryNtStart, queryNtEnd, queryAAs, queryNts);
+					matchResults.add(aapmr);
+				}
+			}
+		} else {
+			throwScannerException("Neither SIMPLE_AA_PATTERN nor REGEX_AA_PATTERN metatags are defined");
+		}
+		return matchResults;
+	}
+
 
 	
 	private Pattern parseRegex(PatternLocation pLoc) {

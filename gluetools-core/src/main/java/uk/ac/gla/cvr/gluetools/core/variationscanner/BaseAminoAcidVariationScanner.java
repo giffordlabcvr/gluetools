@@ -40,6 +40,4 @@ public abstract class BaseAminoAcidVariationScanner<M extends VariationScannerMa
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
-	public abstract VariationScanResult scanAminoAcids(CommandContext cmdContext, Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation);
-
 }

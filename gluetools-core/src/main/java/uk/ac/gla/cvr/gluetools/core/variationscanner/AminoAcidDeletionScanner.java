@@ -25,17 +25,20 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
+
 public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<AminoAcidDeletionMatchResult> {
 
-	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
+	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(VariationMetatagType.FLANKING_AAS, VariationMetatagType.FLANKING_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
 	public AminoAcidDeletionScanner() {
@@ -43,17 +46,25 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	}
 
 	@Override
+	public void validate() {
+		super.validate();
+		Map<VariationMetatagType, String> metatagsMap = getMetatagsMap();
+		if(metatagsMap.containsKey(VariationMetatagType.FLANKING_AAS) &&
+				metatagsMap.containsKey(VariationMetatagType.FLANKING_NTS)) {
+			throwScannerException("Only one of FLANKING_AAS and FLANKING_NTS may be defined");
+		}
+	}
+	
+	@Override
 	public void init() {
 	}
 
 	@Override
-	public VariationScanResult scanAminoAcids(CommandContext cmdContext,
-			Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned,
-			String fullAminoAcidTranslation) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<AminoAcidDeletionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		List<AminoAcidDeletionMatchResult> matchResults = new ArrayList<AminoAcidDeletionMatchResult>();
+		
+		return matchResults;
 	}
-
 
 
 }

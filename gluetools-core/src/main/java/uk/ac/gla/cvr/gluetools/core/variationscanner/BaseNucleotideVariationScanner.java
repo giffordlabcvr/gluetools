@@ -39,6 +39,5 @@ public abstract class BaseNucleotideVariationScanner<M extends VariationScannerM
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
-	public abstract VariationScanResult scanNucleotides(Variation variation, NtQueryAlignedSegment ntQaSeg);
 
 }

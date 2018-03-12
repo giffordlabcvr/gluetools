@@ -65,7 +65,12 @@ public class VariationMetatag extends _VariationMetatag {
 	
 
 	public enum VariationMetatagType {
-		PATTERN,
+		SIMPLE_NT_PATTERN,
+		REGEX_NT_PATTERN,
+		SIMPLE_AA_PATTERN,
+		REGEX_AA_PATTERN,
+		FLANKING_AAS,
+		FLANKING_NTS
 	}
 
 	private VariationMetatagType type = null;

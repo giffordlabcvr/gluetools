@@ -42,32 +42,18 @@ public class VariationScanResult {
 	private boolean present;
 	private String variationRenderedName;
 	
-	private List<PLocScanResult> pLocScanResults;
-	private List<ReferenceSegment> queryMatchLocations;
+	private List<VariationScannerMatchResult> scannerMatchResults;
 	
-	public VariationScanResult(Variation variation, List<PLocScanResult> pLocScanResults) {
+	public VariationScanResult(Variation variation, List<VariationScannerMatchResult> scannerMatchResults) {
 		super();
 		this.variationPkMap = variation.pkMap();
 		this.refStart = variation.getRefStart();
 		this.refEnd = variation.getRefEnd();
 		this.present = true;
-		for(PLocScanResult pLocScanResult: pLocScanResults) {
-			if(pLocScanResult.getQueryLocs().size() == 0) {
-				this.present = false;
-				break;
-			}
+		if(this.scannerMatchResults.isEmpty()) {
+			this.present = false;
 		}
-		this.pLocScanResults = pLocScanResults;
-		
-		// if variation is present, 
-		// queryMatchLocations is a set of segments on the query relating to a single match (the first)
-		// in each pattern location.
-		if(present) {
-			this.queryMatchLocations = pLocScanResults.stream().map(plsr -> plsr.getQueryLocs().get(0)).collect(Collectors.toList());
-		} else {
-			this.queryMatchLocations = new ArrayList<ReferenceSegment>();
-		}
-		
+		this.scannerMatchResults = scannerMatchResults;
 		this.variationRenderedName = variation.getRenderedName();
 	}
 
@@ -104,13 +90,10 @@ public class VariationScanResult {
 	}
 
 
-	public List<PLocScanResult> getPLocScanResults() {
-		return pLocScanResults;
+	public List<VariationScannerMatchResult> getVariationScannerMatchResults() {
+		return scannerMatchResults;
 	}
 	
-	public List<ReferenceSegment> getQueryMatchLocations() {
-		return queryMatchLocations;
-	}
 
 	public static void sortVariationScanResults(List<VariationScanResult> variationScanResults) {
 		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>(){
@@ -122,18 +105,11 @@ public class VariationScanResult {
 				}
 				if(comp == 0 && o1.present) {
 					
-					Integer o1qStart = ReferenceSegment.minRefStart(o1.queryMatchLocations);
-					Integer o2qStart = ReferenceSegment.minRefStart(o2.queryMatchLocations);
+					Integer o1qStart = o1.minRefStart();
+					Integer o2qStart = o2.minRefStart();
 					
 					if(comp == 0 && o1qStart != null && o2qStart != null) {
 						comp = Integer.compare(o1qStart, o2qStart);
-					}
-
-					Integer o1qEnd = ReferenceSegment.maxRefEnd(o1.queryMatchLocations);
-					Integer o2qEnd = ReferenceSegment.maxRefEnd(o2.queryMatchLocations);
-
-					if(comp == 0) {
-						comp = Integer.compare(o1qEnd, o2qEnd);
 					}
 				}
 				if(comp == 0) {
@@ -159,6 +135,17 @@ public class VariationScanResult {
 			}
 		};
 		Collections.sort(variationScanResults, comparator);
+	}
+
+	private int minRefStart() {
+		if(scannerMatchResults.isEmpty()) {
+			return 0;
+		}
+		int minRefStart = Integer.MAX_VALUE;
+		for(VariationScannerMatchResult scannerMatchResult: scannerMatchResults) {
+			minRefStart = Math.min(minRefStart, scannerMatchResult.getRefStart());
+		}
+		return minRefStart;
 	}
 	
 }

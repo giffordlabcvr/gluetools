@@ -25,13 +25,18 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
 public abstract class BaseVariationScanner<M extends VariationScannerMatchResult> {
 	
@@ -89,5 +94,17 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	public List<VariationMetatagType> getAllowedMetatagTypes() {
 		return allowedMetatagTypes;
 	}
+	
+	public abstract List<M> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs);
+
+	protected Pattern parseRegex(String stringPattern) {
+		try {
+			return Pattern.compile(stringPattern);
+		} catch(PatternSyntaxException pse) {
+			throwScannerException("Syntax error in variation regex: "+pse.getMessage());
+			return null; // unreachable!
+		}
+	}
+
 	
 }
