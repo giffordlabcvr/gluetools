@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
-public abstract class BaseAminoAcidVariationScanner extends BaseVariationScanner {
+public abstract class BaseAminoAcidVariationScanner<M extends VariationScannerMatchResult> extends BaseVariationScanner<M> {
 
 	protected BaseAminoAcidVariationScanner(
 			List<VariationMetatagType> allowedMetatagTypes,

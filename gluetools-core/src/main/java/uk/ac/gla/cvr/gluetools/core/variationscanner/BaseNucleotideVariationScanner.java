@@ -31,7 +31,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
-public abstract class BaseNucleotideVariationScanner extends BaseVariationScanner {
+public abstract class BaseNucleotideVariationScanner<M extends VariationScannerMatchResult> extends BaseVariationScanner<M> {
 
 	protected BaseNucleotideVariationScanner(
 			List<VariationMetatagType> allowedMetatagTypes,

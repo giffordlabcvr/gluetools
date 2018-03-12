@@ -41,7 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanner {
+public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanner<NucleotidePolymorphismMatchResult> {
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();

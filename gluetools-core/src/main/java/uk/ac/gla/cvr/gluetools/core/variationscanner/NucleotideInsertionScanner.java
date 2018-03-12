@@ -32,7 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
-public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner {
+public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<NucleotideInsertionMatchResult> {
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();

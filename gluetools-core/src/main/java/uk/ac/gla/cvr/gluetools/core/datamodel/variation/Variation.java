@@ -100,13 +100,13 @@ public class Variation extends _Variation implements HasDisplayName {
 		aminoAcidInsertion(AminoAcidInsertionScanner.class),
 		aminoAcidDeletion(AminoAcidDeletionScanner.class);
 		
-		private Class<? extends BaseVariationScanner> scannerClass;
+		private Class<? extends BaseVariationScanner<?>> scannerClass;
 		
-		private VariationType(Class<? extends BaseVariationScanner> scannerClass) {
+		private VariationType(Class<? extends BaseVariationScanner<?>> scannerClass) {
 			this.scannerClass = scannerClass;
 		}
 		
-		public Class<? extends BaseVariationScanner> getScannerClass() {
+		public Class<? extends BaseVariationScanner<?>> getScannerClass() {
 			return this.scannerClass;
 		}
 	}
@@ -191,16 +191,16 @@ public class Variation extends _Variation implements HasDisplayName {
 	}
 
 	
-	public BaseVariationScanner getScanner(CommandContext cmdContext) {
+	public BaseVariationScanner<?> getScanner(CommandContext cmdContext) {
 		if(this.scanner == null) {
 			this.scanner = buildScanner(cmdContext);
 		}
 		return this.scanner;
 	}
 
-	private BaseVariationScanner buildScanner(CommandContext cmdContext) {
+	private BaseVariationScanner<?> buildScanner(CommandContext cmdContext) {
 		VariationType variationType = getVariationType();
-		Class<? extends BaseVariationScanner> scannerClass = variationType.getScannerClass();
+		Class<? extends BaseVariationScanner<?>> scannerClass = variationType.getScannerClass();
 		try {
 			return scannerClass.newInstance();
 		} catch(ReflectiveOperationException roe) {

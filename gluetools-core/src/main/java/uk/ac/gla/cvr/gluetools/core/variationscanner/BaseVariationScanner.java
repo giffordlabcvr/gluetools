@@ -33,7 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 
-public abstract class BaseVariationScanner {
+public abstract class BaseVariationScanner<M extends VariationScannerMatchResult> {
 	
 	private List<VariationMetatagType> allowedMetatagTypes;
 	private List<VariationMetatagType> requiredMetatagTypes;
