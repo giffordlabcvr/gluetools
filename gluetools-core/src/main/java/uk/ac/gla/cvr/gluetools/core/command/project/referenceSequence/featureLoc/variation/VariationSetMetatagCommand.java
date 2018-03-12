@@ -33,10 +33,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.project.feature.FeatureModeCommand.MetatagTypeCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -87,6 +85,7 @@ public class VariationSetMetatagCommand extends VariationModeCommand<OkResult> {
 			variationMetatag.setVariation(variation);
 		}
 		variationMetatag.setValue(metatagValue);
+		variation.clearCachedScanner();
 		if(noCommit) {
 			cmdContext.cacheUncommitted(variationMetatag);
 		} else {

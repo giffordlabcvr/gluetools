@@ -115,12 +115,12 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 		@Override
 		public int compare(Variation o1, Variation o2) {
 			int formatCmpResult = 
-					Integer.compare(o1.getTranslationFormat().ordinal(), o2.getTranslationFormat().ordinal());
+					Integer.compare(o1.getVariationType().ordinal(), o2.getVariationType().ordinal());
 			if(formatCmpResult != 0) {
 				return formatCmpResult;
 			}
-			Integer refStart1 = o1.minLocStart();
-			Integer refStart2 = o2.minLocStart();
+			Integer refStart1 = o1.getRefStart();
+			Integer refStart2 = o2.getRefStart();
 			if(refStart1 != null && refStart2 != null) {
 				int refStartCmpResult = Integer.compare(refStart1, refStart2);
 				if(refStartCmpResult != 0) {

@@ -25,20 +25,20 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.List;
+
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
-import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 
 public abstract class BaseNucleotideVariationScanner extends BaseVariationScanner {
 
+	protected BaseNucleotideVariationScanner(
+			List<VariationMetatagType> allowedMetatagTypes,
+			List<VariationMetatagType> requiredMetatagTypes) {
+		super(allowedMetatagTypes, requiredMetatagTypes);
+	}
+
 	public abstract VariationScanResult scanNucleotides(Variation variation, NtQueryAlignedSegment ntQaSeg);
 
-	@Override
-	public void validateVariation(Variation variation) {
-		super.validateVariation(variation);
-	}
-	
 }

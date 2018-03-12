@@ -31,7 +31,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
@@ -44,21 +43,21 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseAminoAcidVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseNucleotideVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchAminoAcidVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchNucleotideVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
@@ -69,12 +68,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY })		
 public class Variation extends _Variation implements HasDisplayName {
 
-	private Boolean isSimpleMatch = null;
-	private BaseVariationScanner<?,?> scanner = null;
+	private BaseVariationScanner scanner = null;
+	private VariationType variationType = null;
 	
-	private static Pattern SIMPLE_NT_PATTERN = Pattern.compile("^[NACGT]+$");
-	private static Pattern SIMPLE_AA_PATTERN = Pattern.compile("^[ACDEFGHIKLMNOPQRSTUVWYX*]+$");
-
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
 	public static final String REF_SEQ_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.REFERENCE_SEQUENCE_PROPERTY+"."+_ReferenceSequence.NAME_PROPERTY;
 
@@ -97,35 +93,31 @@ public class Variation extends _Variation implements HasDisplayName {
 	}
 	
 	public enum VariationType {
-		nucleotidePolymorphism,
-		nucleotideInsertion,
-		nucleotideDeletion,
-		aminoAcidPolymorphism,
-		aminoAcidInsertion,
-		aminoAcidDeletion
+		nucleotidePolymorphism(NucleotidePolymorphismScanner.class),
+		nucleotideInsertion(NucleotideInsertionScanner.class),
+		nucleotideDeletion(NucleotideDeletionScanner.class),
+		aminoAcidPolymorphism(AminoAcidPolymorphismScanner.class),
+		aminoAcidInsertion(AminoAcidInsertionScanner.class),
+		aminoAcidDeletion(AminoAcidDeletionScanner.class);
+		
+		private Class<? extends BaseVariationScanner> scannerClass;
+		
+		private VariationType(Class<? extends BaseVariationScanner> scannerClass) {
+			this.scannerClass = scannerClass;
+		}
+		
+		public Class<? extends BaseVariationScanner> getScannerClass() {
+			return this.scannerClass;
+		}
 	}
 	
 	public VariationType getVariationType() {
-		return VariationType.valueOf(getType());
+		if(this.variationType == null) {
+			this.variationType = VariationType.valueOf(getType());
+		}
+		return variationType;
 	}	
 
-	public Boolean isSimpleMatch() {
-		if(isSimpleMatch == null) {
-			isSimpleMatch = buildIsSimpleMatch();
-		}
-		return isSimpleMatch;
-	}
-	
-	private Boolean buildIsSimpleMatch() {
-		for(PatternLocation patternLoc : getPatternLocs()) {
-			if(!patternLoc.isSimpleMatch()) {
-				return false;
-			}
-		}
-		return true;
-	}	
-	
-	
 	public void validate(CommandContext cmdContext) {
 		
 		FeatureLocation featureLoc = getFeatureLoc();
@@ -162,9 +154,10 @@ public class Variation extends _Variation implements HasDisplayName {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
 						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}
+		} else {
+			throw new RuntimeException("Unknown variation type");
 		}
-
-		
+		getScanner(cmdContext).validate();;
 		
 	}	
 
@@ -198,34 +191,20 @@ public class Variation extends _Variation implements HasDisplayName {
 	}
 
 	
-	private BaseVariationScanner<?, ?> getScanner(CommandContext cmdContext) {
+	public BaseVariationScanner getScanner(CommandContext cmdContext) {
 		if(this.scanner == null) {
 			this.scanner = buildScanner(cmdContext);
 		}
 		return this.scanner;
 	}
 
-	private BaseVariationScanner<?, ?> buildScanner(CommandContext cmdContext) {
-		String scannerModuleName = getScannerModuleName();
-		if(scannerModuleName != null) {
-			return Module.resolveModulePlugin(cmdContext, BaseVariationScanner.class, scannerModuleName);
-		}
-		TranslationFormat translationFormat = getTranslationFormat();
-		switch(translationFormat) {
-		case NUCLEOTIDE:
-			if(isSimpleMatch()) {
-				return ExactMatchNucleotideVariationScanner.getDefaultInstance();
-			} else {
-				return NucleotidePolymorphismScanner.getDefaultInstance();
-			}
-		case AMINO_ACID:
-			if(isSimpleMatch()) {
-				return ExactMatchAminoAcidVariationScanner.getDefaultInstance();
-			} else {
-				return AminoAcidPolymorphismScanner.getDefaultInstance();
-			}
-		default:
-			throw new RuntimeException("Unknown translation type");
+	private BaseVariationScanner buildScanner(CommandContext cmdContext) {
+		VariationType variationType = getVariationType();
+		Class<? extends BaseVariationScanner> scannerClass = variationType.getScannerClass();
+		try {
+			return scannerClass.newInstance();
+		} catch(ReflectiveOperationException roe) {
+			throw new RuntimeException("Unable to instantiate scanner class for variation type: "+variationType+": "+roe.getLocalizedMessage(), roe);
 		}
 	}
 	
@@ -251,22 +230,16 @@ public class Variation extends _Variation implements HasDisplayName {
 		return varAlmtNotes;
 	}
 	
-	public boolean isSimpleMatch(String regex) {
-		int ntLength = (getRefEnd()-getRefStart())+1;
-		VariationType variationType = getVariationType();
-		if(variationType.name().startsWith("aminoAcid")) {
-			if(ntLength/3 == regex.length() && SIMPLE_AA_PATTERN.matcher(regex).find()) {
-				return true;
-			}
-			return false;
-		} else if(variationType.name().startsWith("nucleotide")) {
-			if(ntLength == regex.length() && SIMPLE_NT_PATTERN.matcher(regex).find()) {
-				return true;
-			}
-			return false;
-		} else {
-			throw new RuntimeException("Unknown variation type");
-		}
+	public Map<VariationMetatagType, String> getMetatagsMap() {
+		Map<VariationMetatagType, String> metatagsMap = new LinkedHashMap<VariationMetatagType, String>();
+		getMetatags().forEach(metatag -> {
+			metatagsMap.put(VariationMetatagType.valueOf(metatag.getName()), metatag.getValue());
+		});
+		return metatagsMap;
 	}
 
+	public void clearCachedScanner() {
+		this.scanner = null;
+	}
+	
 }

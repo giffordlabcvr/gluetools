@@ -28,6 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.variationscanner;
 import gnu.trove.map.TIntObjectMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -40,18 +41,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class AminoAcidPolymorphismScanner extends BaseAminoAcidVariationScanner {
 
-	@Override
-	public void validateVariation(Variation variation) {
-		super.validateVariation(variation);
+	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
+	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
+
+	public AminoAcidPolymorphismScanner() {
+		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
-	
 	@Override
 	public VariationScanResult scanAminoAcids(CommandContext cmdContext, Variation variation, NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation) {
 
@@ -123,10 +125,6 @@ public class AminoAcidPolymorphismScanner extends BaseAminoAcidVariationScanner 
 					variation.getFeatureLoc().getFeature().getName(), variation.getName(), 
 					"Syntax error in variation regex: "+pse.getMessage());
 		}
-	}
-	
-	public static AminoAcidPolymorphismScanner getDefaultInstance() {
-		return defaultInstance;
 	}
 	
 }

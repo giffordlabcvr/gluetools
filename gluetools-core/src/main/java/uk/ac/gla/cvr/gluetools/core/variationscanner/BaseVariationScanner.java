@@ -25,10 +25,69 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.List;
+import java.util.Map;
+
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 
 public abstract class BaseVariationScanner {
 	
-	public void validateVariation(Variation variation) {}
+	private List<VariationMetatagType> allowedMetatagTypes;
+	private List<VariationMetatagType> requiredMetatagTypes;
+	private Variation variation;
+	private Map<VariationMetatagType, String> metatagsMap;
+	
+	protected BaseVariationScanner(List<VariationMetatagType> allowedMetatagTypes, List<VariationMetatagType> requiredMetatagTypes) {
+		super();
+		this.allowedMetatagTypes = allowedMetatagTypes;
+		this.requiredMetatagTypes = requiredMetatagTypes;
+		for(VariationMetatagType requiredMetatagType: requiredMetatagTypes) {
+			if(!allowedMetatagTypes.contains(requiredMetatagType)) {
+				throw new RuntimeException("Required metatag type must also be listed as allowed.");
+			}
+		}
+	}
+	
+	public final void init(Variation variation) {
+		this.variation = variation;
+		this.metatagsMap = variation.getMetatagsMap();
+		this.init();
+	}
+	
+	protected void init() {}
+
+	protected Variation getVariation() {
+		return variation;
+	}
+
+	protected Map<VariationMetatagType, String> getMetatagsMap() {
+		return metatagsMap;
+	}
+
+	public void validate() {
+		for(VariationMetatagType requiredMetatagType: requiredMetatagTypes) {
+			if(!metatagsMap.containsKey(requiredMetatagType)) {
+				throwScannerException("Missing required metatag with key: "+requiredMetatagType.name());
+			}
+		}
+		for(VariationMetatagType metatagType: metatagsMap.keySet()) {
+			if(!allowedMetatagTypes.contains(metatagType)) {
+				throwScannerException("Metatag key: "+metatagType.name()+" is not allowed for variation type "+variation.getVariationType().name());
+			}
+		}
+	}
+
+	public void throwScannerException(String errorTxt) {
+		throw new VariationException(Code.VARIATION_SCANNER_EXCEPTION, variation.getFeatureLoc().getReferenceSequence().getName(), 
+				variation.getFeatureLoc().getFeature().getName(), 
+				variation.getName(), errorTxt);
+	}
+
+	public List<VariationMetatagType> getAllowedMetatagTypes() {
+		return allowedMetatagTypes;
+	}
 	
 }

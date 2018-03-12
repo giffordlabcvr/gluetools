@@ -37,17 +37,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanner {
 
-	private static NucleotidePolymorphismScanner defaultInstance = new NucleotidePolymorphismScanner();
-	
-	@Override
-	public void validateVariation(Variation variation) {
-		super.validateVariation(variation);
+	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
+	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
+
+	public NucleotidePolymorphismScanner() {
+		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
 	@Override
@@ -110,10 +110,6 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 					variation.getFeatureLoc().getFeature().getName(), variation.getName(), 
 					"Syntax error in variation regex: "+pse.getMessage());
 		}
-	}
-	
-	public static NucleotidePolymorphismScanner getDefaultInstance() {
-		return defaultInstance;
 	}
 	
 }

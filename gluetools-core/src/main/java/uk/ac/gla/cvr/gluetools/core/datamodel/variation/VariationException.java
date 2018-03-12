@@ -45,9 +45,6 @@ public class VariationException extends GlueException {
 				"variationName", "refStart", "refEnd"),
 		AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE("refSeqName", "featureName", 
 				"variationName", "codonLabel", "firstLabeledCodon", "lastLabeledCodon"), 
-		VARIATION_LOCATION_UNDEFINED("refSeqName", "featureName", "variationName"), 
-		VARIATION_PATTERN_UNDEFINED("refSeqName", "featureName", "variationName"),
-		WRONG_SCANNER_TYPE("refSeqName", "featureName", "variationName", "expectedSuperclass"),
 		VARIATION_SCANNER_EXCEPTION("refSeqName", "featureName", "variationName", "errorTxt");
 
 		private String[] argNames;

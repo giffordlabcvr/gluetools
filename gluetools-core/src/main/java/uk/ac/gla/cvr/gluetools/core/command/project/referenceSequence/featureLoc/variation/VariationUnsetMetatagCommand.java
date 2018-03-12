@@ -35,8 +35,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -68,6 +66,7 @@ public class VariationUnsetMetatagCommand extends VariationModeCommand<DeleteRes
 				variation.getFeatureLoc().getFeature().getName(),
 				variation.getName(),
 				metatagType.name());
+		variation.clearCachedScanner();
 		DeleteResult result = GlueDataObject.delete(cmdContext, 
 				VariationMetatag.class, metatagPkMap, true);
 		cmdContext.commit();

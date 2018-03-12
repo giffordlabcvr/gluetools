@@ -72,11 +72,6 @@ import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.ComparisonAminoAcidVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchAminoAcidVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.ExactMatchNucleotideVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
