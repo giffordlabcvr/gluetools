@@ -41,6 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
@@ -87,7 +88,9 @@ public abstract class VariationModeCommand<R extends CommandResult> extends Feat
 					VariationMode variationMode = (VariationMode) cmdContext.peekCommandMode();
 					Variation variation = variationMode.lookupVariation(cmdContext);
 					BaseVariationScanner scanner = variation.getScanner(cmdContext);
-					return scanner.getAllowedMetatagTypes().stream()
+					@SuppressWarnings("unchecked")
+					List<VariationMetatagType> allowedMetatagTypes = (List<VariationMetatagType>) scanner.getAllowedMetatagTypes();
+					return allowedMetatagTypes.stream()
 							.map(amt -> new CompletionSuggestion(amt.name(), true))
 							.collect(Collectors.toList());
 				}

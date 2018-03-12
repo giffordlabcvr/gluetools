@@ -47,19 +47,15 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseAminoAcidVariationScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseNucleotideVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 @GlueDataClass(
 		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
@@ -68,7 +64,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY })		
 public class Variation extends _Variation implements HasDisplayName {
 
-	private BaseVariationScanner scanner = null;
+	private BaseVariationScanner<?> scanner = null;
 	private VariationType variationType = null;
 	
 	public static final String FEATURE_NAME_PATH = _Variation.FEATURE_LOC_PROPERTY+"."+_FeatureLocation.FEATURE_PROPERTY+"."+_Feature.NAME_PROPERTY;
@@ -162,35 +158,6 @@ public class Variation extends _Variation implements HasDisplayName {
 	}	
 
 
-	public VariationScanResult scanNucleotideVariation(CommandContext cmdContext, NtQueryAlignedSegment ntQaSeg) {
-		BaseVariationScanner<?, ?> scanner = this.getScanner(cmdContext);
-		BaseNucleotideVariationScanner<?, ?> nucleotideScanner;
-		try {
-			nucleotideScanner = (BaseNucleotideVariationScanner<?, ?>) scanner;
-		} catch(ClassCastException cce) {
-			throw new VariationException(Code.WRONG_SCANNER_TYPE, 
-					this.getFeatureLoc().getReferenceSequence().getName(), this.getFeatureLoc().getFeature().getName(), this.getName(), 
-					BaseNucleotideVariationScanner.class.getSimpleName());
-		}
-		return nucleotideScanner.scanNucleotides(this, ntQaSeg);
-	}
-
-
-	public VariationScanResult scanAminoAcids(CommandContext cmdContext, 
-			NtQueryAlignedSegment ntQaSegCdnAligned, String fullAminoAcidTranslation) {
-		BaseVariationScanner<?, ?> scanner = this.getScanner(cmdContext);
-		BaseAminoAcidVariationScanner<?, ?> aminoAcidScanner;
-		try {
-			aminoAcidScanner = (BaseAminoAcidVariationScanner<?, ?>) scanner;
-		} catch(ClassCastException cce) {
-			throw new VariationException(Code.WRONG_SCANNER_TYPE, 
-					this.getFeatureLoc().getReferenceSequence().getName(), this.getFeatureLoc().getFeature().getName(), this.getName(), 
-					BaseAminoAcidVariationScanner.class.getSimpleName());
-		}
-		return aminoAcidScanner.scanAminoAcids(cmdContext, this, ntQaSegCdnAligned, fullAminoAcidTranslation);
-	}
-
-	
 	public BaseVariationScanner<?> getScanner(CommandContext cmdContext) {
 		if(this.scanner == null) {
 			this.scanner = buildScanner(cmdContext);
