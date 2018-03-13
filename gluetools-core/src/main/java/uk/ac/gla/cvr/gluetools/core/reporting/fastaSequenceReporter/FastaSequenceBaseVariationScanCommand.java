@@ -104,7 +104,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 				queryToTargetRefSegs);
 
 
-		List<VariationScanResult> variationScanResults = variationScan(
+		List<VariationScanResult<?>> variationScanResults = variationScan(
 				cmdContext, getFeatureName(), fastaNTSeq, targetRef.getName(), tipAlmt,
 				ancConstrRef.getName(), queryToTipAlmtRefSegs, 
 				multiReference, descendentFeatures, excludeAbsent, whereClause);
@@ -112,7 +112,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		return new FastaSequenceVariationScanResult(variationScanRenderHints, variationScanResults);
 	}
 
-	public static List<VariationScanResult> variationScan(CommandContext cmdContext,
+	public static List<VariationScanResult<?>> variationScan(CommandContext cmdContext,
 			String featureName, DNASequence fastaNTSeq,
 			String targetRefName, Alignment tipAlmt,
 			String ancConstrRefName,
@@ -143,7 +143,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		}
 
 		
-		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
+		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		
 		for(ReferenceSequence refToScan: refsToScan) {
 

@@ -32,20 +32,24 @@ import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 
-public class VariationScanResult {
+public class VariationScanResult<M extends VariationScannerMatchResult> {
 
 	private Map<String,String> variationPkMap;
 	private int refStart, refEnd;
-	private boolean present;
+	// sufficientCoverage == true iff the query had sufficient nucleotide coverage of the 
+	// reference region to scan for the variation.
+	private boolean sufficientCoverage; 
+	private boolean present; // true iff any matches were found.
 	private String variationRenderedName;
 	
-	private List<VariationScannerMatchResult> scannerMatchResults;
+	private List<M> scannerMatchResults;
 	
-	public VariationScanResult(Variation variation, List<VariationScannerMatchResult> scannerMatchResults) {
+	public VariationScanResult(Variation variation, boolean sufficientCoverage, List<M> scannerMatchResults) {
 		super();
 		this.variationPkMap = variation.pkMap();
 		this.refStart = variation.getRefStart();
 		this.refEnd = variation.getRefEnd();
+		this.sufficientCoverage = sufficientCoverage;
 		this.present = true;
 		if(this.scannerMatchResults.isEmpty()) {
 			this.present = false;
@@ -86,16 +90,19 @@ public class VariationScanResult {
 		return present;
 	}
 
+	public boolean isSufficientCoverage() {
+		return sufficientCoverage;
+	}
 
-	public List<VariationScannerMatchResult> getVariationScannerMatchResults() {
+	public List<M> getVariationScannerMatchResults() {
 		return scannerMatchResults;
 	}
 	
 
-	public static void sortVariationScanResults(List<VariationScanResult> variationScanResults) {
-		Comparator<VariationScanResult> comparator = new Comparator<VariationScanResult>(){
+	public static void sortVariationScanResults(List<VariationScanResult<?>> variationScanResults) {
+		Comparator<VariationScanResult<?>> comparator = new Comparator<VariationScanResult<?>>(){
 			@Override
-			public int compare(VariationScanResult o1, VariationScanResult o2) {
+			public int compare(VariationScanResult<?> o1, VariationScanResult<?> o2) {
 				int comp = 0;
 				if(comp == 0) {
 					comp = Boolean.compare(o1.present, o2.present);

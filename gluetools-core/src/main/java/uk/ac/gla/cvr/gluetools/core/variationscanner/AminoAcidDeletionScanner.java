@@ -59,10 +59,11 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	}
 
 	@Override
-	public List<AminoAcidDeletionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	public VariationScanResult<AminoAcidDeletionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidDeletionMatchResult> matchResults = new ArrayList<AminoAcidDeletionMatchResult>();
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
-		return matchResults;
+		return new VariationScanResult<AminoAcidDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
 
 

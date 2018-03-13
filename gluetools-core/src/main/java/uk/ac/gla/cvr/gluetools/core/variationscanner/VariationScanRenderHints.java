@@ -31,9 +31,10 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -41,44 +42,36 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class VariationScanRenderHints implements Plugin {
 
-	public static String SHOW_MATCH_VALUES_SEPARATELY = "showMatchValuesSeparately";
-	public static String SHOW_MATCH_NT_LOCATIONS = "showMatchNtLocations";
-	public static String SHOW_MATCH_LC_LOCATIONS = "showMatchLcLocations";
+	public static String SHOW_MATCHES_SEPARATELY = "showMatchesSeparately";
 	
-	
-	// add a matchedValue column, add add a row for each match
-	private boolean showMatchValuesSeparately;
+	// add a row for each match
+	private boolean showMatchesSeparately;
 
-	// (implies showMatchValuesSeparately)
-	// add matchNtStart, matchNtEnd columns showing start / end locations for the match on the query.
-	private boolean showMatchNtLocations;
-
-	// (implies showMatchValuesSeparately)
-	// add matchLcStart, matchLcEnd columns containing the labelled codon start / end locations for the match (if an amino acid variation).
-	private boolean showMatchLcLocations;
-
-	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		this.showMatchValuesSeparately = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCH_VALUES_SEPARATELY, true);
-		this.showMatchNtLocations = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCH_NT_LOCATIONS, true);
-		this.showMatchLcLocations = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCH_LC_LOCATIONS, true);
-		
-		if(showMatchNtLocations && !showMatchValuesSeparately) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "showMatchNtLocations implies showMatchValuesSeparately");
-		}
-		if(showMatchLcLocations && !showMatchValuesSeparately) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "showMatchLcLocations implies showMatchValuesSeparately");
-		}
-		
+		this.showMatchesSeparately = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCHES_SEPARATELY, true);
 	}
 	
-	public List<VariationScanResultRow> scanResultsToResultRows(List<VariationScanResult> vsrs) {
+	public static void checkVariationsOfSameType(List<Variation> variations) {
+		Variation.VariationType type = null;
+		for(Variation variation: variations) {
+			if(type == null) {
+				type = variation.getVariationType();
+			} else {
+				if(variation.getVariationType() != type) {
+					throw new VariationException(Code.VARIATIONS_OF_DIFFERENT_TYPES);
+				}
+			}
+			
+		}
+	}
+	
+	public List<VariationScanResultRow> scanResultsToResultRows(List<VariationScanResult<?>> vsrs) {
 		
 		
 		
 		List<VariationScanResultRow> vsrrs = new ArrayList<VariationScanResultRow>();
-		for(VariationScanResult vsr: vsrs) {
+		for(VariationScanResult<?> vsr: vsrs) {
 			if(!showMatchValuesSeparately){
 				vsrrs.addAll(vsr.getPLocScanResults()
 						.stream()

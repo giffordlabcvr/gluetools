@@ -130,7 +130,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
 
-		List<VariationScanResult> scanResults = new ArrayList<VariationScanResult>();
+		List<VariationScanResult<?>> scanResults = new ArrayList<VariationScanResult<?>>();
 		for(ReferenceSequence refToScan: refsToScan) {
 			
 			for(Feature featureToScan: featuresToScan) {
@@ -151,7 +151,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		return new MemberVariationScanResult(variationScanRenderHints, scanResults);
 	}
 
-	public static List<VariationScanResult> memberVariationScan(CommandContext cmdContext,
+	public static List<VariationScanResult<?>> memberVariationScan(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc,
 			List<Variation> variationsToScan, boolean excludeAbsent) {
 		Alignment tipAlmt = almtMember.getAlignment();
@@ -176,7 +176,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 				.collect(Collectors.toList());
 		
 		
-		List<VariationScanResult> variationScanResults = featureLoc.
+		List<VariationScanResult<?>> variationScanResults = featureLoc.
 				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan, excludeAbsent);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 

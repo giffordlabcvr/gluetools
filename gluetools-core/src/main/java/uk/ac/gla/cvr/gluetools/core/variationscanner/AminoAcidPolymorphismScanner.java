@@ -33,15 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -76,13 +72,12 @@ public class AminoAcidPolymorphismScanner extends BaseAminoAcidVariationScanner<
 		}
 	}
 
-
-
 	@Override
-	public List<AminoAcidPolymorphismMatchResult> scan(
+	public VariationScanResult<AminoAcidPolymorphismMatchResult> scan(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidPolymorphismMatchResult>();
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
 		Translator translator = new CommandContextTranslator(cmdContext);
 		Variation variation = getVariation();
@@ -155,21 +150,10 @@ public class AminoAcidPolymorphismScanner extends BaseAminoAcidVariationScanner<
 		} else {
 			throwScannerException("Neither SIMPLE_AA_PATTERN nor REGEX_AA_PATTERN metatags are defined");
 		}
-		return matchResults;
+		return new VariationScanResult<AminoAcidPolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
 
 
 	
-	private Pattern parseRegex(PatternLocation pLoc) {
-		try {
-			return Pattern.compile(pLoc.getPattern());
-		} catch(PatternSyntaxException pse) {
-			Variation variation = pLoc.getVariation();
-			throw new VariationException(pse, Code.VARIATION_SCANNER_EXCEPTION, 
-					variation.getFeatureLoc().getReferenceSequence().getName(), 
-					variation.getFeatureLoc().getFeature().getName(), variation.getName(), 
-					"Syntax error in variation regex: "+pse.getMessage());
-		}
-	}
 	
 }

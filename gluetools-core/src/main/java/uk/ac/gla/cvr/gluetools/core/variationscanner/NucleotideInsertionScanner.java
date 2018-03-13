@@ -42,13 +42,16 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
+	
 	@Override
-	public List<NucleotideInsertionMatchResult> scan(CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	public VariationScanResult<NucleotideInsertionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<NucleotideInsertionMatchResult> matchResults = new ArrayList<NucleotideInsertionMatchResult>();
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
-		return matchResults;
+		return new VariationScanResult<NucleotideInsertionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
+	
+
 
 
 }

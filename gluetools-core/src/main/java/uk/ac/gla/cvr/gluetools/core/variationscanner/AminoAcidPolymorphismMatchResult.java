@@ -1,5 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+
 public class AminoAcidPolymorphismMatchResult extends VariationScannerMatchResult {
 
 	// labeled codons bookending the match
@@ -71,4 +76,17 @@ public class AminoAcidPolymorphismMatchResult extends VariationScannerMatchResul
 		return refNtStart;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static List<TableColumn<AminoAcidPolymorphismMatchResult>> getTableColumns() {
+		return Arrays.asList(
+				column("firstRefCodon", aapmr -> aapmr.getFirstRefCodon()),
+				column("lastRefCodon", aapmr -> aapmr.getLastRefCodon()),
+				column("queryAAs", aapmr -> aapmr.getQueryAAs()),
+				column("refNtStart", aapmr -> aapmr.getRefNtStart()),
+				column("refNtEnd", aapmr -> aapmr.getRefNtEnd()),
+				column("queryNtStart", aapmr -> aapmr.getQueryNtStart()),
+				column("queryNtEnd", aapmr -> aapmr.getQueryNtEnd()),
+				column("queryNts", aapmr -> aapmr.getQueryNts())
+		);
+	}
 }

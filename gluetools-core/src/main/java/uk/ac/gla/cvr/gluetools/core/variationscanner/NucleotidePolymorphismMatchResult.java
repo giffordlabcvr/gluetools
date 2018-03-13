@@ -1,5 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+
 public class NucleotidePolymorphismMatchResult extends VariationScannerMatchResult {
 
 	// reference NT locations bookending the match
@@ -48,6 +53,15 @@ public class NucleotidePolymorphismMatchResult extends VariationScannerMatchResu
 		return queryNts;
 	}
 		
-	
+	@SuppressWarnings("unchecked")
+	public static List<TableColumn<NucleotidePolymorphismMatchResult>> getTableColumns() {
+		return Arrays.asList(
+				column("refNtStart", npmr -> npmr.getRefNtStart()),
+				column("refNtEnd", npmr -> npmr.getRefNtEnd()),
+				column("queryNtStart", npmr -> npmr.getQueryNtStart()),
+				column("queryNtEnd", npmr -> npmr.getQueryNtEnd()),
+				column("queryNts", npmr -> npmr.getQueryNts())
+		);
+	}
 	
 }

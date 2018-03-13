@@ -202,7 +202,7 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 					try(ModeCloser varationMode = cmdContext.pushCommandMode("variation", variationName)) {
 						cmdContext.cmdBuilder(VariationSetMetatagCommand.class)
 						.set(VariationSetMetatagCommand.NO_COMMIT, Boolean.TRUE)
-						.set(VariationSetMetatagCommand.METATAG_NAME, VariationMetatagType.PATTERN.name())
+						.set(VariationSetMetatagCommand.METATAG_NAME, VariationMetatagType.REGEX_AA_PATTERN.name())
 						.set(VariationSetMetatagCommand.METATAG_VALUE, generateUncommonAaVariationRegex(commonAas))
 						.build().execute(cmdContext);
 						

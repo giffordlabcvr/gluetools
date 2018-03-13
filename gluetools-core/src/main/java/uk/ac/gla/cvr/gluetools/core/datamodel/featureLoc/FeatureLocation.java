@@ -269,28 +269,19 @@ public class FeatureLocation extends _FeatureLocation {
 
 	
 
-	public List<VariationScanResult> variationScan(
+	public List<VariationScanResult<?>> variationScan(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs, List<Variation> variationsToScan, boolean excludeAbsent) {
-		Translator translator = null;
-		Integer codon1Start = null;
-		if(getFeature().codesAminoAcids()) {
-			translator = new CommandContextTranslator(cmdContext);
-			codon1Start = getCodon1Start(cmdContext);
-		}
-		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
-		
-		List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegsMerged = 
-				ReferenceSegment.mergeAbutting(queryToFeatureLocRefNtSegs, 
-						NtQueryAlignedSegment.ntMergeAbuttingFunction(), 
-						QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-		
-		for(NtQueryAlignedSegment ntQaSeg: queryToFeatureLocRefNtSegsMerged) {
-			variationScanResults.addAll(variationScanSegment(cmdContext, translator, codon1Start, ntQaSeg, variationsToScan, excludeAbsent));
+			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs, List<Variation> variationsToScan) {
+		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
+		for(Variation variation: variationsToScan) {
+			VariationScanResult<?> scanResult = variation.getScanner(cmdContext).scan(cmdContext, queryToFeatureLocRefNtSegs);
+			variationScanResults.add(scanResult);
 		}
 		return variationScanResults;
 	}
 
+	
+	
 	public List<Variation> getVariationsQualified(CommandContext cmdContext, Expression variationWhereClauseExtra) {
 		Expression variationWhereClause = 
 				ExpressionFactory.matchExp(Variation.FEATURE_NAME_PATH, getFeature().getName())

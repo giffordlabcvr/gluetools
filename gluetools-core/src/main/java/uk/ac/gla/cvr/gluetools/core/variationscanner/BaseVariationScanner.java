@@ -94,7 +94,7 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		return allowedMetatagTypes;
 	}
 	
-	public abstract List<M> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs);
+	public abstract VariationScanResult<M> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs);
 
 	protected Pattern parseRegex(String stringPattern) {
 		try {
@@ -103,6 +103,10 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 			throwScannerException("Syntax error in variation regex: "+pse.getMessage());
 			return null; // unreachable!
 		}
+	}
+
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		return false;
 	}
 
 	

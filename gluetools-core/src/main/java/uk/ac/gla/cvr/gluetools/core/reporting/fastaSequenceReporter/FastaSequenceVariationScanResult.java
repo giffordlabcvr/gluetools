@@ -39,7 +39,7 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 		FEATURE_NAME = "featureName",
 		VARIATION_NAME = "variationName";
 
-	public FastaSequenceVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult> rowData) {
+	public FastaSequenceVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult<?>> rowData) {
 		super("fastaSequenceVariationScanResult", 
 				renderHints.scanResultsToResultRows(rowData), 
 				renderHints.generateResultColumns(

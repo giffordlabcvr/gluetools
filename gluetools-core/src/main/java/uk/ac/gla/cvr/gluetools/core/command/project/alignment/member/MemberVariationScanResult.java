@@ -41,7 +41,7 @@ public class MemberVariationScanResult extends BaseTableResult<VariationScanResu
 		PRESENT = "present";
 
 
-	public MemberVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult> rowData) {
+	public MemberVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult<?>> rowData) {
 		super("memberVariationScanResult", 
 				renderHints.scanResultsToResultRows(rowData), 
 				renderHints.generateResultColumns(

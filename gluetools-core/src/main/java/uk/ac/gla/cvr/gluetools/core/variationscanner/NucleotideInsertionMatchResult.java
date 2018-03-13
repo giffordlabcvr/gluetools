@@ -1,12 +1,12 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+
 public class NucleotideInsertionMatchResult extends VariationScannerMatchResult {
 
-	// two labeled codons within the reference region which flank the inserted residues
-	// these will be adjacent on the reference.
-	private String refLastCodonBeforeIns;
-	private String refFirstCodonAfterIns;
-	
 	// two locations within the reference region which flank the inserted nucleotides 
 	// these will always be 1 nt apart.
 	private int refLastNtBeforeIns;
@@ -17,32 +17,17 @@ public class NucleotideInsertionMatchResult extends VariationScannerMatchResult 
 	private int qryLastInsertedNt;
 	
 	// String of nucleotides inserted in the query.
-	private String insertedRefNts;
+	private String insertedQryNts;
 
-	// String of aminoAcids inserted in the query.
-	private String insertedRefAas;
-
-	public NucleotideInsertionMatchResult(String refLastCodonBeforeIns,
-			String refFirstCodonAfterIns, int refLastNtBeforeIns,
+	public NucleotideInsertionMatchResult(int refLastNtBeforeIns,
 			int refFirstNtAfterIns, int qryFirstInsertedNt,
-			int qryLastInsertedNt, String insertedRefNts, String insertedRefAas) {
+			int qryLastInsertedNt, String insertedQryNts) {
 		super();
-		this.refLastCodonBeforeIns = refLastCodonBeforeIns;
-		this.refFirstCodonAfterIns = refFirstCodonAfterIns;
 		this.refLastNtBeforeIns = refLastNtBeforeIns;
 		this.refFirstNtAfterIns = refFirstNtAfterIns;
 		this.qryFirstInsertedNt = qryFirstInsertedNt;
 		this.qryLastInsertedNt = qryLastInsertedNt;
-		this.insertedRefNts = insertedRefNts;
-		this.insertedRefAas = insertedRefAas;
-	}
-
-	public String getRefLastCodonBeforeIns() {
-		return refLastCodonBeforeIns;
-	}
-
-	public String getRefFirstCodonAfterIns() {
-		return refFirstCodonAfterIns;
+		this.insertedQryNts = insertedQryNts;
 	}
 
 	public int getRefLastNtBeforeIns() {
@@ -61,12 +46,8 @@ public class NucleotideInsertionMatchResult extends VariationScannerMatchResult 
 		return qryLastInsertedNt;
 	}
 
-	public String getInsertedRefNts() {
-		return insertedRefNts;
-	}
-
-	public String getInsertedRefAas() {
-		return insertedRefAas;
+	public String getInsertedQryNts() {
+		return insertedQryNts;
 	}
 
 	@Override
@@ -74,5 +55,15 @@ public class NucleotideInsertionMatchResult extends VariationScannerMatchResult 
 		return refLastNtBeforeIns;
 	}
 
-
+		
+	@SuppressWarnings("unchecked")
+	public static List<TableColumn<NucleotideInsertionMatchResult>> getTableColumns() {
+		return Arrays.asList(
+				column("refLastNtBeforeIns", nimr -> nimr.getRefLastNtBeforeIns()),
+				column("refFirstNtAfterIns", nimr -> nimr.getRefFirstNtAfterIns()),
+				column("qryFirstInsertedNt", nimr -> nimr.getQryFirstInsertedNt()),
+				column("qryLastInsertedNt", nimr -> nimr.getQryLastInsertedNt()),
+				column("insertedQryNts", nimr -> nimr.getInsertedQryNts())
+		);
+	}
 }

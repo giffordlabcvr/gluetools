@@ -1,5 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+
 public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 
 	// two labeled codons within the reference region which bookend the deleted region
@@ -72,4 +77,17 @@ public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 		return refFirstNtDeleted;
 	}
 
+	@SuppressWarnings("unchecked")
+	public static List<TableColumn<AminoAcidDeletionMatchResult>> getTableColumns() {
+		return Arrays.asList(
+				column("refFirstCodonDeleted", aadmr -> aadmr.getRefFirstCodonDeleted()),
+				column("refLastCodonDeleted", aadmr -> aadmr.getRefLastCodonDeleted()),
+				column("refFirstNtDeleted", aadmr -> aadmr.getRefFirstNtDeleted()),
+				column("refLastNtDeleted", aadmr -> aadmr.getRefLastNtDeleted()),
+				column("qryLastNtBeforeDel", aadmr -> aadmr.getQryLastNtBeforeDel()),
+				column("qryFirstNtAfterDel", aadmr -> aadmr.getQryFirstNtAfterDel()),
+				column("deletedRefNts", aadmr -> aadmr.getDeletedRefNts()),
+				column("deletedRefAas", aadmr -> aadmr.getDeletedRefAas())
+		);
+	}
 }

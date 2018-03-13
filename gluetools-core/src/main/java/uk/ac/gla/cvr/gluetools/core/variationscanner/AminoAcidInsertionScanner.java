@@ -52,11 +52,14 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 			throwScannerException("Only one of FLANKING_AAS and FLANKING_NTS may be defined");
 		}
 	}
-
-	public List<AminoAcidInsertionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	
+	@Override
+	public VariationScanResult<AminoAcidInsertionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidInsertionMatchResult> matchResults = new ArrayList<AminoAcidInsertionMatchResult>();
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
-		return matchResults;
+		return new VariationScanResult<AminoAcidInsertionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
+
 	
 }

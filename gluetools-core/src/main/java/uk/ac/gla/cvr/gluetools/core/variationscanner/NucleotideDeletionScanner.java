@@ -42,14 +42,15 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
 
+	
 	@Override
-	public List<NucleotideDeletionMatchResult> scan(CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	public VariationScanResult<NucleotideDeletionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<NucleotideDeletionMatchResult> matchResults = new ArrayList<NucleotideDeletionMatchResult>();
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
-		return matchResults;
+		return new VariationScanResult<NucleotideDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
-
+	
 
 
 }

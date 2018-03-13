@@ -1,5 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+
 public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 
 	// two labeled codons within the reference region which flank the inserted residues
@@ -17,15 +22,15 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 	private int qryLastInsertedNt;
 	
 	// String of nucleotides inserted in the query.
-	private String insertedRefNts;
+	private String insertedQryNts;
 
 	// String of aminoAcids inserted in the query.
-	private String insertedRefAas;
+	private String insertedQryAas;
 
 	public AminoAcidInsertionMatchResult(String refLastCodonBeforeIns,
 			String refFirstCodonAfterIns, int refLastNtBeforeIns,
 			int refFirstNtAfterIns, int qryFirstInsertedNt,
-			int qryLastInsertedNt, String insertedRefNts, String insertedRefAas) {
+			int qryLastInsertedNt, String insertedQryNts, String insertedQryAas) {
 		super();
 		this.refLastCodonBeforeIns = refLastCodonBeforeIns;
 		this.refFirstCodonAfterIns = refFirstCodonAfterIns;
@@ -33,8 +38,8 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 		this.refFirstNtAfterIns = refFirstNtAfterIns;
 		this.qryFirstInsertedNt = qryFirstInsertedNt;
 		this.qryLastInsertedNt = qryLastInsertedNt;
-		this.insertedRefNts = insertedRefNts;
-		this.insertedRefAas = insertedRefAas;
+		this.insertedQryNts = insertedQryNts;
+		this.insertedQryAas = insertedQryAas;
 	}
 
 	public String getRefLastCodonBeforeIns() {
@@ -61,18 +66,31 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 		return qryLastInsertedNt;
 	}
 
-	public String getInsertedRefNts() {
-		return insertedRefNts;
+	public String getInsertedQryNts() {
+		return insertedQryNts;
 	}
 
-	public String getInsertedRefAas() {
-		return insertedRefAas;
+	public String getInsertedQryAas() {
+		return insertedQryAas;
 	}
 
 	@Override
 	public int getRefStart() {
 		return refLastNtBeforeIns;
 	}
-
 	
+
+	@SuppressWarnings("unchecked")
+	public static List<TableColumn<AminoAcidInsertionMatchResult>> getTableColumns() {
+		return Arrays.asList(
+				column("refLastCodonBeforeIns", aaimr -> aaimr.getRefLastCodonBeforeIns()),
+				column("refFirstCodonAfterIns", aaimr -> aaimr.getRefFirstCodonAfterIns()),
+				column("refLastNtBeforeIns", aaimr -> aaimr.getRefLastNtBeforeIns()),
+				column("refFirstNtAfterIns", aaimr -> aaimr.getRefFirstNtAfterIns()),
+				column("qryFirstInsertedNt", aaimr -> aaimr.getQryFirstInsertedNt()),
+				column("qryLastInsertedNt", aaimr -> aaimr.getQryLastInsertedNt()),
+				column("insertedQryNts", aaimr -> aaimr.getInsertedQryNts()),
+				column("insertedQryAas", aaimr -> aaimr.getInsertedQryAas())
+		);
+	}
 }

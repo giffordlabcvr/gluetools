@@ -1,5 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+
 public class NucleotideDeletionMatchResult extends VariationScannerMatchResult {
 
 	// two locations within the reference region which bookend the deleted region
@@ -48,5 +53,15 @@ public class NucleotideDeletionMatchResult extends VariationScannerMatchResult {
 	public int getRefStart() {
 		return refFirstNtDeleted;
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	public static List<TableColumn<NucleotideDeletionMatchResult>> getTableColumns() {
+		return Arrays.asList(
+				column("refFirstNtDeleted", ndmr -> ndmr.getRefFirstNtDeleted()),
+				column("refLastNtDeleted", ndmr -> ndmr.getRefLastNtDeleted()),
+				column("qryLastNtBeforeDel", ndmr -> ndmr.getQryLastNtBeforeDel()),
+				column("qryFirstNtAfterDel", ndmr -> ndmr.getQryFirstNtAfterDel()),
+				column("deletedRefNts", ndmr -> ndmr.getDeletedRefNts())
+		);
+	}
 }

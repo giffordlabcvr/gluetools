@@ -64,11 +64,13 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 	}
 
 	
+	
+	
 	@Override
-	public List<NucleotidePolymorphismMatchResult> scan(
+	public VariationScanResult<NucleotidePolymorphismMatchResult> scan(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs) {
-
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		Variation variation = getVariation();
 		
 		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
@@ -116,7 +118,8 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 		} else {
 			throwScannerException("Neither SIMPLE_NT_PATTERN nor REGEX_NT_PATTERN metatags are defined");
 		}
-		return matchResults;
+		return new VariationScanResult<NucleotidePolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
+
 	}
 	
 }
