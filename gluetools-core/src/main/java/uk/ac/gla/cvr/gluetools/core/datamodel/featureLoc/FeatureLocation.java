@@ -29,7 +29,6 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +53,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationFormat;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 
@@ -271,17 +266,20 @@ public class FeatureLocation extends _FeatureLocation {
 
 	public List<VariationScanResult<?>> variationScan(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs, List<Variation> variationsToScan) {
+			List<NtQueryAlignedSegment> queryToFeatureLocRefNtSegs, List<Variation> variationsToScan, 
+			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		for(Variation variation: variationsToScan) {
 			VariationScanResult<?> scanResult = variation.getScanner(cmdContext).scan(cmdContext, queryToFeatureLocRefNtSegs);
-			variationScanResults.add(scanResult);
+			if(scanResult.isPresent() || !excludeAbsent) {
+				if(scanResult.isSufficientCoverage() || !excludeInsufficientCoverage) {
+					variationScanResults.add(scanResult);
+				}
+			}
 		}
 		return variationScanResults;
 	}
 
-	
-	
 	public List<Variation> getVariationsQualified(CommandContext cmdContext, Expression variationWhereClauseExtra) {
 		Expression variationWhereClause = 
 				ExpressionFactory.matchExp(Variation.FEATURE_NAME_PATH, getFeature().getName())
@@ -295,54 +293,6 @@ public class FeatureLocation extends _FeatureLocation {
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 	
-	public List<VariationScanResult> variationScanSegment(CommandContext cmdContext, Translator translator, Integer codon1Start,
-			NtQueryAlignedSegment ntQaSeg, List<Variation> variationsToScan, boolean excludeAbsent) {
-		List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
-		
-		String fullAminoAcidTranslation = null;
-		NtQueryAlignedSegment ntQaSegCdnAligned = null;
-		if(getFeature().codesAminoAcids()) {
-			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, Arrays.asList(ntQaSeg));
-			if(ntQaSegsCdnAligned.isEmpty()) {
-				fullAminoAcidTranslation = "";
-			} else {
-				ntQaSegCdnAligned = ntQaSegsCdnAligned.get(0);
-				fullAminoAcidTranslation = translator.translateToAaString(ntQaSegCdnAligned.getNucleotides());
-			}
-		}
-		
-		for(Variation variationToScan: variationsToScan) {
-			List<ReferenceSegment> variationRefSegs = variationToScan.getPatternLocs().stream().map(pl -> pl.asReferenceSegment()).collect(Collectors.toList());
-			VariationScanResult scanResult = null;
-			if(variationToScan.getTranslationFormat() == TranslationFormat.AMINO_ACID) {
-				if(fullAminoAcidTranslation.length() > 0) {
-					List<ReferenceSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSegCdnAligned), variationRefSegs, ReferenceSegment.cloneRightSegMerger());
-					if(intersection.isEmpty()) {
-						scanResult = null;
-					} else {
-						scanResult = variationToScan.scanAminoAcids(cmdContext, ntQaSegCdnAligned, fullAminoAcidTranslation);
-					}
-				}
-			} else if(variationToScan.getTranslationFormat() == TranslationFormat.NUCLEOTIDE) {
-				List<ReferenceSegment> intersection = ReferenceSegment.intersection(Arrays.asList(ntQaSeg), variationRefSegs, ReferenceSegment.cloneRightSegMerger());
-				if(intersection.isEmpty()) {
-					scanResult = null;
-				} else {
-					scanResult = variationToScan.scanNucleotideVariation(cmdContext, ntQaSeg);
-				}
-			} else {
-				throw new RuntimeException("Unknown translation format");
-			}
-			if(scanResult != null) {
-				if(scanResult.isPresent() || !excludeAbsent) {
-					variationScanResults.add(scanResult);
-				} 
-			}
-		}
-		
-		return variationScanResults;
-	}
-
 
 }
 

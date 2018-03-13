@@ -31,8 +31,8 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
 public class AlignmentVariationMemberScanResult extends BaseTableResult<MemberVariationScanResult> {
 
@@ -49,15 +49,17 @@ public class AlignmentVariationMemberScanResult extends BaseTableResult<MemberVa
 
 	@SuppressWarnings("unchecked")
 	private static TableColumn<MemberVariationScanResult>[] columns(VariationScanRenderHints variationScanRenderHints) {
-		TableColumn<VariationScanResultRow>[] vsrrColumns = variationScanRenderHints.generateResultColumns();
+		/* RESTORE_XXXX
+		TableColumn<VariationScanMatchResultRow>[] vsrrColumns = variationScanRenderHints.generateResultColumns();
 		List<TableColumn<MemberVariationScanResult>> mvsrColumns = new ArrayList<TableColumn<MemberVariationScanResult>>();
 		mvsrColumns.add(new TableColumn<MemberVariationScanResult>(ALIGNMENT_NAME, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.ALIGNMENT_NAME_PATH)));
 		mvsrColumns.add(new TableColumn<MemberVariationScanResult>(SOURCE_NAME, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.SOURCE_NAME_PATH)));
 		mvsrColumns.add(new TableColumn<MemberVariationScanResult>(SEQUENCE_ID, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.SEQUENCE_ID_PATH)));
-		for(TableColumn<VariationScanResultRow> vsrrColumn: vsrrColumns) {
+		for(TableColumn<VariationScanMatchResultRow> vsrrColumn: vsrrColumns) {
 			mvsrColumns.add(new TableColumn<MemberVariationScanResult>(vsrrColumn.getColumnHeader(), mvsr -> vsrrColumn.populateColumn(mvsr.getVariationScanResultRow())));
 		}
 		return mvsrColumns.toArray(new TableColumn[]{});
+		*/ return null;
 	}
 
 }

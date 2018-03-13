@@ -28,11 +28,11 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
-public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanResultRow> {
+public class FastaSequenceVariationScanResult extends BaseTableResult<VariationScanMatchResultRow> {
 
 	public static final String 
 		REF_SEQ_NAME = "referenceName",
@@ -40,6 +40,7 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 		VARIATION_NAME = "variationName";
 
 	public FastaSequenceVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult<?>> rowData) {
+		/* RESTORE_XXXX
 		super("fastaSequenceVariationScanResult", 
 				renderHints.scanResultsToResultRows(rowData), 
 				renderHints.generateResultColumns(
@@ -47,6 +48,7 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 					column(FEATURE_NAME, vsrr -> vsrr.getVariationFeatureName()),
 					column(VARIATION_NAME, vsrr -> vsrr.getVariationName())
 				));
+		*/ super(null, null, null);
 	}
 
 }

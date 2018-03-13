@@ -49,13 +49,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
 @GlueDataClass(
 		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
@@ -89,22 +95,30 @@ public class Variation extends _Variation implements HasDisplayName {
 	}
 	
 	public enum VariationType {
-		nucleotidePolymorphism(NucleotidePolymorphismScanner.class),
-		nucleotideInsertion(NucleotideInsertionScanner.class),
-		nucleotideDeletion(NucleotideDeletionScanner.class),
-		aminoAcidPolymorphism(AminoAcidPolymorphismScanner.class),
-		aminoAcidInsertion(AminoAcidInsertionScanner.class),
-		aminoAcidDeletion(AminoAcidDeletionScanner.class);
+		nucleotidePolymorphism(NucleotidePolymorphismScanner.class, NucleotidePolymorphismMatchResult.class),
+		nucleotideInsertion(NucleotideInsertionScanner.class, NucleotideInsertionMatchResult.class),
+		nucleotideDeletion(NucleotideDeletionScanner.class, NucleotideDeletionMatchResult.class),
+		aminoAcidPolymorphism(AminoAcidPolymorphismScanner.class, AminoAcidDeletionMatchResult.class),
+		aminoAcidInsertion(AminoAcidInsertionScanner.class, AminoAcidInsertionMatchResult.class),
+		aminoAcidDeletion(AminoAcidDeletionScanner.class, AminoAcidDeletionMatchResult.class);
 		
 		private Class<? extends BaseVariationScanner<?>> scannerClass;
+		private Class<? extends VariationScannerMatchResult> matchResultClass;
 		
-		private VariationType(Class<? extends BaseVariationScanner<?>> scannerClass) {
+		private VariationType(Class<? extends BaseVariationScanner<?>> scannerClass, 
+				Class<? extends VariationScannerMatchResult> matchResultClass) {
 			this.scannerClass = scannerClass;
+			this.matchResultClass = matchResultClass;
 		}
 		
 		public Class<? extends BaseVariationScanner<?>> getScannerClass() {
 			return this.scannerClass;
 		}
+		
+		public Class<? extends VariationScannerMatchResult> getMatchResultClass() {
+			return this.matchResultClass;
+		}
+
 	}
 	
 	public VariationType getVariationType() {

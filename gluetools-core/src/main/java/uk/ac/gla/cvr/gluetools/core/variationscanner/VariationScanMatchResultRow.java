@@ -23,32 +23,26 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
+package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import java.util.List;
+public class VariationScanMatchResultRow<M extends VariationScannerMatchResult> {
+	private VariationScanResult<M> variationScanResult;
+	private M matchResult;
+	
 
-import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
-
-public class MemberVariationScanResult extends BaseTableResult<VariationScanResultRow> {
-
-	public static final String 
-		REF_SEQ_NAME = "referenceName",
-		FEATURE_NAME = "featureName",
-		VARIATION_NAME = "variationName",
-		PRESENT = "present";
-
-
-	public MemberVariationScanResult(VariationScanRenderHints renderHints, List<VariationScanResult<?>> rowData) {
-		super("memberVariationScanResult", 
-				renderHints.scanResultsToResultRows(rowData), 
-				renderHints.generateResultColumns(
-					column(REF_SEQ_NAME, vsrr -> vsrr.getVariationReferenceName()),
-					column(FEATURE_NAME, vsrr -> vsrr.getVariationFeatureName()),
-					column(VARIATION_NAME, vsrr -> vsrr.getVariationName())
-				));
+	public VariationScanMatchResultRow(VariationScanResult<M> variationScanResult, M matchResult) {
+		super();
+		this.variationScanResult = variationScanResult;
+		this.matchResult = matchResult;
 	}
 
+
+	public VariationScanResult<M> getVariationScanResult() {
+		return variationScanResult;
+	}
+
+	public M getMatchResult() {
+		return matchResult;
+	}
+	
 }

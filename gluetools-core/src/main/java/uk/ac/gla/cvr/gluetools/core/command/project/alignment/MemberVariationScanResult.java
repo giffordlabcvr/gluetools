@@ -28,14 +28,14 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
 
 public class MemberVariationScanResult {
 
 	private Map<String,String> memberPkMap;
-	private VariationScanResultRow variationScanResultRow;
+	private VariationScanMatchResultRow variationScanResultRow;
 	
-	public MemberVariationScanResult(AlignmentMember alignmentMember, VariationScanResultRow variationScanResultRow) {
+	public MemberVariationScanResult(AlignmentMember alignmentMember, VariationScanMatchResultRow variationScanResultRow) {
 		super();
 		this.memberPkMap = alignmentMember.pkMap();
 		this.variationScanResultRow = variationScanResultRow;
@@ -45,7 +45,7 @@ public class MemberVariationScanResult {
 		return memberPkMap;
 	}
 
-	public VariationScanResultRow getVariationScanResultRow() {
+	public VariationScanMatchResultRow getVariationScanResultRow() {
 		return variationScanResultRow;
 	}
 	

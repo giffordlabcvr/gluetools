@@ -51,8 +51,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResultRow;
 
 @CommandClass(
 		commandWords={"variation", "member", "scan"}, 
@@ -142,14 +142,15 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 			List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause, offset, batchSize, batchSize);
 			GlueLogger.getGlueLogger().finest("Scanning variation for members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 
+			/* RESTORE_XXXX
 			for(AlignmentMember almtMember: almtMembers) {
-				List<VariationScanResultRow> scanResultRows = 
+				List<VariationScanMatchResultRow> scanResultRows = 
 						variationScanRenderHints.scanResultsToResultRows(MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
 								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent));
-				for(VariationScanResultRow vsrr : scanResultRows) {
+				for(VariationScanMatchResultRow vsrr : scanResultRows) {
 					membVsrList.add(new MemberVariationScanResult(almtMember, vsrr));
 				}
-			}
+			} */
 			cmdContext.newObjectContext();
 			offset = offset+batchSize;
 		}

@@ -53,7 +53,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.patternlocation.PatternLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -160,6 +159,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 	@Override
 	protected SamVariationScanResult execute(CommandContext cmdContext, SamReporter samReporter) {
+		/* RESTORE_XXXX 
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 		
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
@@ -352,9 +352,10 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				.collect(Collectors.toList());
 		VariationScanReadCount.sortVariationScanReadCounts(variationScanReadCounts);
 		return new SamVariationScanResult(variationScanReadCounts);
-		
+		*/ return null;
 	}
 
+	/* RESTORE_XXXX
 
 	private List<PatternLocation> filterPatternLocsOnReadQuality(int minQScore,
 			String qualityString, QueryAlignedSegment readToScannedRefSeg,
@@ -382,6 +383,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		}
 		return filteredPatternLocs;
 	}
+	
 	
 	private List<Variation> findVariationsFromPatternLocs(List<PatternLocation> patternLocsToScanForSegment) {
 		Map<Variation, List<PatternLocation>> variationToLocs = new LinkedHashMap<Variation, List<PatternLocation>>();
@@ -411,6 +413,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 			this.maxLocEnd = maxLocEnd;
 		}
 	}
+	*/
 	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {

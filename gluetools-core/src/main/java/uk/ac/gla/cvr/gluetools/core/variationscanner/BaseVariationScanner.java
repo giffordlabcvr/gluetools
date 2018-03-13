@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -36,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class BaseVariationScanner<M extends VariationScannerMatchResult> {
 	
@@ -105,8 +107,11 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		}
 	}
 
+	// could be overridden by specific scanner types, perhaps based on metatag settings.
 	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
-		return false;
+		Integer refStart = getVariation().getRefStart();
+		Integer refEnd = getVariation().getRefEnd();
+		return ReferenceSegment.covers(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(refStart, refEnd)));
 	}
 
 	

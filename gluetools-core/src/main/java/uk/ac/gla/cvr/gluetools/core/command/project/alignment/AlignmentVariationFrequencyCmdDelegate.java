@@ -146,6 +146,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 			boolean alignmentRecursive,
 			Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo,
 			List<AlignmentMember> memberBatch) {
+		/* RESTORE_XXXX
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 
 		List<ReferenceSequence> refsToScan;
@@ -189,6 +190,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 
 			}
 		}
+		*/ 
 	}
 
 	

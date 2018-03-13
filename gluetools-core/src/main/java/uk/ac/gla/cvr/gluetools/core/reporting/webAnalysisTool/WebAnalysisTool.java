@@ -188,7 +188,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			List<String> vCatNames,
 			List<VariationCategoryResult> variationCategoryResults) {
 
-
+		/* RESTORE_XXXX
 		fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
 			
 			Set<String> resultVariationCategoryNames = new LinkedHashSet<String>();
@@ -347,7 +347,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			variationCategoryResults.add(vCatResult);	
 		});
 		
-		
+		*/
 	}
 
 	private void checkVCatNames(List<String> vCatNames) {

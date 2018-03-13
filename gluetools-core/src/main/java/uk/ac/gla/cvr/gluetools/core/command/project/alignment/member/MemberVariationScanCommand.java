@@ -27,8 +27,10 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -37,6 +39,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -45,6 +48,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
@@ -52,11 +57,12 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]" },
+		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v]" },
 		docoptOptions = { 
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 		"-m, --multiReference                           Scan across references",
@@ -64,10 +70,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		"-d, --descendentFeatures                       Include descendent features",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify variations",
 		"-e, --excludeAbsent                            Exclude absent variations",
-		"-l, --showPatternLocsSeparately                Add row per pattern location",
-		"-v, --showMatchValuesSeparately                Add row per match value",
-		"-n, --showMatchNtLocations                     Add match NT start/end columns",
-		"-o, --showMatchLcLocations                     Add codon start/end columns",
+		"-i, --excludeInsufficientCoverage              Exclude where insufficient coverage",
+		"-v, --showMatchesSeparately                    Show one row per match",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
@@ -77,10 +81,13 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 		"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 		"The result will be confined to this feature location. "+
 		"The <whereClause>, if present, qualifies the set of variations scanned for. "+
-		"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results.",
+		"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results. "+
+		"If --excludeInsufficientCoverage is used, variations for which the query did not sufficiently cover the scanned "+
+		"area will not appear in the results. "+
+		"If --showMatchesSeparately is used, a row is returned for each individual match. ",
 		metaTags = {}	
 )
-public class MemberVariationScanCommand extends MemberModeCommand<MemberVariationScanResult> {
+public class MemberVariationScanCommand extends MemberModeCommand<CommandResult> {
 
 	public static final String AC_REF_NAME = "acRefName";
 	public static final String MULTI_REFERENCE = "multiReference";
@@ -88,6 +95,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
 	public static final String EXCLUDE_ABSENT = "excludeAbsent";
+	public static final String EXCLUDE_INSUFFICIENT_COVERAGE = "excludeInsufficientCoverage";
 
 	private String acRefName;
 	private String featureName;
@@ -95,6 +103,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 	private Expression whereClause;
 	private Boolean multiReference;
 	private Boolean excludeAbsent;
+	private Boolean excludeInsufficientCoverage;
 	private VariationScanRenderHints variationScanRenderHints = new VariationScanRenderHints();
 	
 	@Override
@@ -107,11 +116,13 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
+		this.excludeInsufficientCoverage = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_INSUFFICIENT_COVERAGE, false)).orElse(false);
 		this.variationScanRenderHints.configure(pluginConfigContext, configElem);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public MemberVariationScanResult execute(CommandContext cmdContext) {
+	public CommandResult execute(CommandContext cmdContext) {
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 
 		AlignmentMember almtMember = lookupMember(cmdContext);
@@ -129,9 +140,44 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		if(descendentFeatures) {
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
-
+		Class<? extends VariationScannerMatchResult> matchResultClass = null;
+		if(variationScanRenderHints.isShowMatchesSeparately()) {
+			Set<Class<? extends VariationScannerMatchResult>> matchResultClasses = 
+					new LinkedHashSet<Class<? extends VariationScannerMatchResult>>();
+			visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationConsumer() {
+				@Override
+				public void consumeVariations(ReferenceSequence refToScan,
+						FeatureLocation featureLoc, List<Variation> variationsToScan) {
+					matchResultClasses.add(VariationScanRenderHints.getMatchResultClass(variationsToScan));
+				}
+			});
+			if(matchResultClasses.size() > 1) {
+				throw new VariationException(Code.VARIATIONS_OF_DIFFERENT_TYPES);
+			}
+			matchResultClass = matchResultClasses.iterator().next();
+		}
+		
 		List<VariationScanResult<?>> scanResults = new ArrayList<VariationScanResult<?>>();
-		for(ReferenceSequence refToScan: refsToScan) {
+		visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationConsumer() {
+			@Override
+			public void consumeVariations(ReferenceSequence refToScan,
+					FeatureLocation featureLoc, List<Variation> variationsToScan) {
+				scanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, 
+						excludeAbsent, excludeInsufficientCoverage));
+			}
+		});
+
+		VariationScanResult.sortVariationScanResults(scanResults);
+		if(variationScanRenderHints.isShowMatchesSeparately()) {
+			return new VariationScanCommandResult(scanResults);
+		} else {
+			return new VariationScanMatchCommandResult(matchResultClass, scanResults);
+		}
+	}
+
+	private void visitVariations(CommandContext cmdContext, List<ReferenceSequence> refsToScan, 
+			List<Feature> featuresToScan, Expression whereClause, VariationConsumer variationConsumer) {
+	for(ReferenceSequence refToScan: refsToScan) {
 			
 			for(Feature featureToScan: featuresToScan) {
 				FeatureLocation featureLoc = 
@@ -144,16 +190,18 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 				if(variationsToScan == null) {
 					continue;
 				}
-				scanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, excludeAbsent));
+				variationConsumer.consumeVariations(refToScan, featureLoc, variationsToScan);
 			}
 		}
-		VariationScanResult.sortVariationScanResults(scanResults);
-		return new MemberVariationScanResult(variationScanRenderHints, scanResults);
 	}
-
+	
+	private interface VariationConsumer {
+		public void consumeVariations(ReferenceSequence refToScan, FeatureLocation featureLoc, List<Variation> variationsToScan);
+	}
+	
 	public static List<VariationScanResult<?>> memberVariationScan(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc,
-			List<Variation> variationsToScan, boolean excludeAbsent) {
+			List<Variation> variationsToScan, boolean excludeAbsent, boolean excludeInsufficientCoverage) {
 		Alignment tipAlmt = almtMember.getAlignment();
 		
 		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
@@ -177,7 +225,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<MemberVariatio
 		
 		
 		List<VariationScanResult<?>> variationScanResults = featureLoc.
-				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan, excludeAbsent);
+				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 
 		return variationScanResults;

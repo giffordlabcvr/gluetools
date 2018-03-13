@@ -178,8 +178,9 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 								SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
 								.collect(Collectors.toList());
 	
-	
+				/* RESTORE_XXXX
 				variationScanResults.addAll(featureLoc.variationScan(cmdContext, queryToScannedRefNtSegs, variationsToScan, excludeAbsent));
+				*/
 			}
 		}
 
