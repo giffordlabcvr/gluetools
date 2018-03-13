@@ -48,7 +48,7 @@ public class FastaSequenceVariationScanResult extends BaseTableResult<VariationS
 					column(FEATURE_NAME, vsrr -> vsrr.getVariationFeatureName()),
 					column(VARIATION_NAME, vsrr -> vsrr.getVariationName())
 				));
-		*/ super(null, null, null);
+		*/ super(null, null);
 	}
 
 }

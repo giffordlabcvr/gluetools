@@ -169,9 +169,9 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 
 		VariationScanResult.sortVariationScanResults(scanResults);
 		if(variationScanRenderHints.isShowMatchesSeparately()) {
-			return new VariationScanCommandResult(scanResults);
-		} else {
 			return new VariationScanMatchCommandResult(matchResultClass, scanResults);
+		} else {
+			return new VariationScanCommandResult(scanResults);
 		}
 	}
 

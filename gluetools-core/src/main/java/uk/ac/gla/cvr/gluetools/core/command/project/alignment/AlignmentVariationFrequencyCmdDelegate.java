@@ -210,6 +210,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 				varPkMapToInfo	= new LinkedHashMap<Map<String,String>, VariationInfo>();
 				almtNameToVarPkMapToInfo.put(almtToRecord.getName(), varPkMapToInfo);
 			}
+			@SuppressWarnings("unchecked")
 			Map<String,String> varPkMap = variationScanResult.getVariationPkMap();
 			VariationInfo variationInfo = varPkMapToInfo.get(varPkMap);
 			if(variationInfo == null) {

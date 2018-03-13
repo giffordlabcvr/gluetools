@@ -127,7 +127,7 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setType(vtype.name());
 		
 		if(labeledCodonBased) {
-			if(vtype.name().startsWith("nucleotide")) {
+			if(!featureLoc.getFeature().codesAminoAcids()) {
 				throw new VariationException(Code.VARIATION_CODON_LOCATION_CAN_NOT_BE_USED_FOR_NUCLEOTIDE_VARIATIONS, 
 						getRefSeqName(), getFeatureName(), variationName);
 			}

@@ -53,6 +53,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionMatchResul
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionMatchResult;
@@ -64,9 +65,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScann
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
 @GlueDataClass(
-		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY },
+		defaultListedProperties = { Variation.REF_SEQ_NAME_PATH, Variation.FEATURE_NAME_PATH, _Variation.NAME_PROPERTY, _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY},
 		listableBuiltInProperties = { _Variation.NAME_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY, Variation.TYPE_PROPERTY, Variation.FEATURE_NAME_PATH, Variation.REF_SEQ_NAME_PATH, 
-				 _Variation.DESCRIPTION_PROPERTY },
+				 _Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY },
 		modifiableBuiltInProperties = { _Variation.DESCRIPTION_PROPERTY, _Variation.DISPLAY_NAME_PROPERTY })		
 public class Variation extends _Variation implements HasDisplayName {
 
@@ -98,7 +99,7 @@ public class Variation extends _Variation implements HasDisplayName {
 		nucleotidePolymorphism(NucleotidePolymorphismScanner.class, NucleotidePolymorphismMatchResult.class),
 		nucleotideInsertion(NucleotideInsertionScanner.class, NucleotideInsertionMatchResult.class),
 		nucleotideDeletion(NucleotideDeletionScanner.class, NucleotideDeletionMatchResult.class),
-		aminoAcidPolymorphism(AminoAcidPolymorphismScanner.class, AminoAcidDeletionMatchResult.class),
+		aminoAcidPolymorphism(AminoAcidPolymorphismScanner.class, AminoAcidPolymorphismMatchResult.class),
 		aminoAcidInsertion(AminoAcidInsertionScanner.class, AminoAcidInsertionMatchResult.class),
 		aminoAcidDeletion(AminoAcidDeletionScanner.class, AminoAcidDeletionMatchResult.class);
 		
@@ -183,7 +184,9 @@ public class Variation extends _Variation implements HasDisplayName {
 		VariationType variationType = getVariationType();
 		Class<? extends BaseVariationScanner<?>> scannerClass = variationType.getScannerClass();
 		try {
-			return scannerClass.newInstance();
+			BaseVariationScanner<?> newScanner = scannerClass.newInstance();
+			newScanner.init(this);
+			return newScanner;
 		} catch(ReflectiveOperationException roe) {
 			throw new RuntimeException("Unable to instantiate scanner class for variation type: "+variationType+": "+roe.getLocalizedMessage(), roe);
 		}

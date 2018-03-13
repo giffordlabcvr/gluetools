@@ -46,9 +46,9 @@ public class VariationListMetatagCommand extends VariationModeCommand<ListResult
 
 	@Override
 	public ListResult execute(CommandContext cmdContext) {
-		Expression exp = ExpressionFactory.matchExp(VariationMetatag.REF_SEQ_NAME_PATH, getFeatureName());
+		Expression exp = ExpressionFactory.matchExp(VariationMetatag.REF_SEQ_NAME_PATH, getRefSeqName());
 		exp = exp.andExp(ExpressionFactory.matchExp(VariationMetatag.FEATURE_NAME_PATH, getFeatureName()));
-		exp = exp.andExp(ExpressionFactory.matchExp(VariationMetatag.VARIATION_NAME_PATH, getFeatureName()));
+		exp = exp.andExp(ExpressionFactory.matchExp(VariationMetatag.VARIATION_NAME_PATH, getVariationName()));
 		return CommandUtils.runListCommand(cmdContext, VariationMetatag.class, new SelectQuery(VariationMetatag.class, exp));
 	}
 	

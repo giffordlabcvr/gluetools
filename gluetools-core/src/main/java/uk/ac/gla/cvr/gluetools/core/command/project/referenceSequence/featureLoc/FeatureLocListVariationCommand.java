@@ -91,7 +91,7 @@ public class FeatureLocListVariationCommand extends FeatureLocModeCommand<ListRe
 		if(listCTableDelegate.getFieldNames() == null) {
 			listCTableDelegate.setFieldNames(
 					Arrays.asList(_Variation.NAME_PROPERTY, Variation.TYPE_PROPERTY, 
-					_Variation.DESCRIPTION_PROPERTY ));
+					_Variation.DESCRIPTION_PROPERTY, _Variation.REF_START_PROPERTY, _Variation.REF_END_PROPERTY ));
 
 		}
 		

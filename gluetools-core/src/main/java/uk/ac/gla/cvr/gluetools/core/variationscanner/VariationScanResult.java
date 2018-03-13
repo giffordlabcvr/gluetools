@@ -51,10 +51,10 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		this.refEnd = variation.getRefEnd();
 		this.sufficientCoverage = sufficientCoverage;
 		this.present = true;
+		this.scannerMatchResults = scannerMatchResults;
 		if(this.scannerMatchResults.isEmpty()) {
 			this.present = false;
 		}
-		this.scannerMatchResults = scannerMatchResults;
 		this.variationRenderedName = variation.getRenderedName();
 	}
 

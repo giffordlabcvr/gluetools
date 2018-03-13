@@ -87,7 +87,7 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 				String segNts = ntQaSeg.getNucleotides().toString();
 				int nextIndex = -1;
 				do {
-					nextIndex = segNts.indexOf(segNts, nextIndex+1);
+					nextIndex = segNts.indexOf(simpleNtPattern, nextIndex+1);
 					if(nextIndex >= 0) {
 						int queryNtStart = ntQaSeg.getQueryStart() + nextIndex;
 						int queryNtEnd = queryNtStart + (simpleNtPattern.length()-1);

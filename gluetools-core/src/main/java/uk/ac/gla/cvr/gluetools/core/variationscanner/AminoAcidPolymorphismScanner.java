@@ -100,7 +100,7 @@ public class AminoAcidPolymorphismScanner extends BaseAminoAcidVariationScanner<
 				String segAas = translator.translateToAaString(segNts);
 				int nextIndex = -1;
 				do {
-					nextIndex = segAas.indexOf(segAas, nextIndex+1);
+					nextIndex = segAas.indexOf(simpleAaPattern, nextIndex+1);
 					if(nextIndex >= 0) {
 						int queryNtStart = ntQaSeg.getQueryStart() + (nextIndex*3);
 						int queryNtEnd = queryNtStart + (((simpleAaPattern.length()-1)*3)+2);
