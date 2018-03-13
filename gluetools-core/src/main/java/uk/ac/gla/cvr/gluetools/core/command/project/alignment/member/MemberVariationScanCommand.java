@@ -27,10 +27,8 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
@@ -48,8 +46,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
-import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
@@ -142,23 +138,11 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		}
 		Class<? extends VariationScannerMatchResult> matchResultClass = null;
 		if(variationScanRenderHints.isShowMatchesSeparately()) {
-			Set<Class<? extends VariationScannerMatchResult>> matchResultClasses = 
-					new LinkedHashSet<Class<? extends VariationScannerMatchResult>>();
-			visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationConsumer() {
-				@Override
-				public void consumeVariations(ReferenceSequence refToScan,
-						FeatureLocation featureLoc, List<Variation> variationsToScan) {
-					matchResultClasses.add(VariationScanRenderHints.getMatchResultClass(variationsToScan));
-				}
-			});
-			if(matchResultClasses.size() > 1) {
-				throw new VariationException(Code.VARIATIONS_OF_DIFFERENT_TYPES);
-			}
-			matchResultClass = matchResultClasses.iterator().next();
+			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, refsToScan, featuresToScan, whereClause);
 		}
 		
 		List<VariationScanResult<?>> scanResults = new ArrayList<VariationScanResult<?>>();
-		visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationConsumer() {
+		VariationScanUtils.visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationScanUtils.VariationConsumer() {
 			@Override
 			public void consumeVariations(ReferenceSequence refToScan,
 					FeatureLocation featureLoc, List<Variation> variationsToScan) {
@@ -175,30 +159,6 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		}
 	}
 
-	private void visitVariations(CommandContext cmdContext, List<ReferenceSequence> refsToScan, 
-			List<Feature> featuresToScan, Expression whereClause, VariationConsumer variationConsumer) {
-	for(ReferenceSequence refToScan: refsToScan) {
-			
-			for(Feature featureToScan: featuresToScan) {
-				FeatureLocation featureLoc = 
-						GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-								FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
-				if(featureLoc == null) {
-					continue;
-				}
-				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
-				if(variationsToScan == null) {
-					continue;
-				}
-				variationConsumer.consumeVariations(refToScan, featureLoc, variationsToScan);
-			}
-		}
-	}
-	
-	private interface VariationConsumer {
-		public void consumeVariations(ReferenceSequence refToScan, FeatureLocation featureLoc, List<Variation> variationsToScan);
-	}
-	
 	public static List<VariationScanResult<?>> memberVariationScan(CommandContext cmdContext,
 			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc,
 			List<Variation> variationsToScan, boolean excludeAbsent, boolean excludeInsufficientCoverage) {

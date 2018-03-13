@@ -32,6 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -39,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"string", "variation", "scan"}, 
 		description = "Scan a FASTA string for variations", 
-		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-l [-v [-n] [-o]]]"+
+		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-i] [-v]"+
 		""},
 		docoptOptions = { 
 				"-s <fastaString>, --fastaString <fastaString>        FASTA input string",
@@ -51,10 +52,8 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
 				"-e, --excludeAbsent                                  Exclude absent variations",
-				"-l, --showPatternLocsSeparately                      Add row per pattern location",
-				"-v, --showMatchValuesSeparately                      Add row per match value",
-				"-n, --showMatchNtLocations                           Add match NT start/end columns",
-				"-o, --showMatchLcLocations                           Add codon start/end columns"
+				"-i, --excludeInsufficientCoverage                    Exclude where insufficient coverage",
+				"-v, --showMatchesSeparately                          Show one row per match",
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
@@ -71,7 +70,10 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 				"The variation scan will be limited to the specified features. "+
 				"If <whereClause> is used, this qualifies the set of variations which are scanned for "+
-				"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results.",
+				"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results. "+
+				"If --excludeInsufficientCoverage is used, variations for which the query did not sufficiently cover the scanned "+
+				"area will not appear in the results. "+
+				"If --showMatchesSeparately is used, a row is returned for each individual match. ",
 		metaTags = {}	
 )
 public class FastaSequenceStringVariationScanCommand extends FastaSequenceBaseVariationScanCommand 
@@ -89,7 +91,7 @@ public class FastaSequenceStringVariationScanCommand extends FastaSequenceBaseVa
 	}
 
 	@Override
-	protected FastaSequenceVariationScanResult execute(CommandContext cmdContext, FastaSequenceReporter fastaSequenceReporter) {
+	protected CommandResult execute(CommandContext cmdContext, FastaSequenceReporter fastaSequenceReporter) {
 		DNASequence fastaNTSeq = FastaUtils.ntStringToSequence(fastaString);
 		return executeAux(cmdContext, fastaSequenceReporter, "querySequence", fastaNTSeq, getTargetRefName());
 
