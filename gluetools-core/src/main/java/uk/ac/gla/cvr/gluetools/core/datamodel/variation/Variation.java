@@ -185,7 +185,7 @@ public class Variation extends _Variation implements HasDisplayName {
 		Class<? extends BaseVariationScanner<?>> scannerClass = variationType.getScannerClass();
 		try {
 			BaseVariationScanner<?> newScanner = scannerClass.newInstance();
-			newScanner.init(this);
+			newScanner.init(cmdContext, this);
 			return newScanner;
 		} catch(ReflectiveOperationException roe) {
 			throw new RuntimeException("Unable to instantiate scanner class for variation type: "+variationType+": "+roe.getLocalizedMessage(), roe);

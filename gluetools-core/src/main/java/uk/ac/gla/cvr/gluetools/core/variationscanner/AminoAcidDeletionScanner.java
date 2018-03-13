@@ -33,6 +33,7 @@ import java.util.Map;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 
 public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<AminoAcidDeletionMatchResult> {
@@ -40,6 +41,9 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(VariationMetatagType.FLANKING_AAS, VariationMetatagType.FLANKING_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
+	private int flankingNTs;
+	private String referenceNucleotides;
+	
 	public AminoAcidDeletionScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
@@ -55,14 +59,64 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	}
 	
 	@Override
-	public void init() {
+	public void init(CommandContext cmdContext) {
+		this.referenceNucleotides = getVariation().getFeatureLoc().getReferenceSequence()
+				.getSequence().getSequenceObject().getNucleotides(cmdContext);
+		Integer configuredFlankingAas = getIntMetatagValue(VariationMetatagType.FLANKING_AAS);
+		Integer configuredFlankingNts = getIntMetatagValue(VariationMetatagType.FLANKING_NTS);
+		if(configuredFlankingAas != null && configuredFlankingNts != null) {
+			throwScannerException("Only one of FLANKING_AAS and FLANKING_NTS may be defined");
+		}
+		if(configuredFlankingNts != null) {
+			this.flankingNTs = configuredFlankingNts;
+		} else if(configuredFlankingAas != null) {
+			this.flankingNTs = configuredFlankingAas*3;
+		} else {
+			this.flankingNTs = 3;
+		}
 	}
+	
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		Integer flankingStart = computeFlankingStart();
+		Integer flankingEnd = computeFlankingEnd();
+		return ReferenceSegment.covers(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd)));
+	}
+
+	private Integer computeFlankingStart() {
+		return Math.max(getVariation().getRefStart()-this.flankingNTs, 1);
+	}
+	private Integer computeFlankingEnd() {
+		return Math.min(getVariation().getRefEnd(), this.referenceNucleotides.length());
+	}
+
+
 
 	@Override
 	public VariationScanResult<AminoAcidDeletionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidDeletionMatchResult> matchResults = new ArrayList<AminoAcidDeletionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
-		
+		if(sufficientCoverage) {
+			Integer flankingStart = computeFlankingStart();
+			Integer flankingEnd = computeFlankingEnd();
+
+			List<NtQueryAlignedSegment> queryToRefNtSegsTrimmed = 
+					ReferenceSegment.intersection(queryToRefNtSegs,
+							Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd)), ReferenceSegment.cloneLeftSegMerger());
+			
+			NtQueryAlignedSegment lastSegment = null;
+			
+			for(NtQueryAlignedSegment currentSegment: queryToRefNtSegsTrimmed) {
+				if(lastSegment != null) {
+					int queryLastNtBeforeDel = lastSegment.getQueryEnd();
+					int queryFirstNtAfterDel = currentSegment.getQueryStart();
+					// query segments are abutting
+					if(queryLastNtBeforeDel == (queryFirstNtAfterDel-1)) {
+						
+					}
+				}
+				lastSegment = currentSegment;
+			}
+		}
 		return new VariationScanResult<AminoAcidDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
 

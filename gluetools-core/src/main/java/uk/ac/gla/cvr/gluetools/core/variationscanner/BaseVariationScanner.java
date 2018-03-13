@@ -57,13 +57,13 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		}
 	}
 	
-	public final void init(Variation variation) {
+	public final void init(CommandContext cmdContext, Variation variation) {
 		this.variation = variation;
 		this.metatagsMap = variation.getMetatagsMap();
-		this.init();
+		this.init(cmdContext);
 	}
 	
-	protected void init() {}
+	protected void init(CommandContext cmdContext) {}
 
 	protected Variation getVariation() {
 		return variation;
@@ -114,5 +114,15 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		return ReferenceSegment.covers(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(refStart, refEnd)));
 	}
 
-	
+	protected Integer getIntMetatagValue(VariationMetatagType type) {
+		String stringValue = getMetatagsMap().get(type);
+		if(stringValue != null) {
+			try {
+				return Integer.parseInt(stringValue);
+			} catch(NumberFormatException nfe) {
+				throwScannerException("Expected integer value for metatag: "+type.name());
+			}
+		}
+		return null;
+	}
 }

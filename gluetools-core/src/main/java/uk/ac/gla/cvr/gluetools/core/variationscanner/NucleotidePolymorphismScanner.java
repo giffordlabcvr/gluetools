@@ -64,59 +64,61 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 	}
 
 	
-	
-	
+
+
 	@Override
 	public VariationScanResult<NucleotidePolymorphismMatchResult> scan(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs) {
-		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
-		Variation variation = getVariation();
-		
-		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
-						ReferenceSegment.cloneLeftSegMerger());
-		
 		List<NucleotidePolymorphismMatchResult> matchResults = new ArrayList<NucleotidePolymorphismMatchResult>();
-		
-		Map<VariationMetatagType, String> metatagsMap = getMetatagsMap();
-		String simpleNtPattern = metatagsMap.get(VariationMetatagType.SIMPLE_NT_PATTERN);
-		String regexNtPattern = metatagsMap.get(VariationMetatagType.REGEX_NT_PATTERN);
-		if(simpleNtPattern != null) {
-			for(NtQueryAlignedSegment ntQaSeg: queryToRefNtSegsVariationRegion) {
-				String segNts = ntQaSeg.getNucleotides().toString();
-				int nextIndex = -1;
-				do {
-					nextIndex = segNts.indexOf(simpleNtPattern, nextIndex+1);
-					if(nextIndex >= 0) {
-						int queryNtStart = ntQaSeg.getQueryStart() + nextIndex;
-						int queryNtEnd = queryNtStart + (simpleNtPattern.length()-1);
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		if(sufficientCoverage) {
+			Variation variation = getVariation();
+
+			List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
+					ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+							ReferenceSegment.cloneLeftSegMerger());
+
+
+			Map<VariationMetatagType, String> metatagsMap = getMetatagsMap();
+			String simpleNtPattern = metatagsMap.get(VariationMetatagType.SIMPLE_NT_PATTERN);
+			String regexNtPattern = metatagsMap.get(VariationMetatagType.REGEX_NT_PATTERN);
+			if(simpleNtPattern != null) {
+				for(NtQueryAlignedSegment ntQaSeg: queryToRefNtSegsVariationRegion) {
+					String segNts = ntQaSeg.getNucleotides().toString();
+					int nextIndex = -1;
+					do {
+						nextIndex = segNts.indexOf(simpleNtPattern, nextIndex+1);
+						if(nextIndex >= 0) {
+							int queryNtStart = ntQaSeg.getQueryStart() + nextIndex;
+							int queryNtEnd = queryNtStart + (simpleNtPattern.length()-1);
+							int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
+							int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
+							String queryNts = segNts.substring(nextIndex, nextIndex+simpleNtPattern.length());
+							NucleotidePolymorphismMatchResult npmr = 
+									new NucleotidePolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, queryNts);
+							matchResults.add(npmr);
+						}
+					} while(nextIndex != -1);
+				}
+			} else if(regexNtPattern != null) {
+				Pattern pattern = parseRegex(regexNtPattern);
+				for(NtQueryAlignedSegment ntQaSeg: queryToRefNtSegsVariationRegion) {
+					Matcher matcher = pattern.matcher(ntQaSeg.getNucleotides());
+					while(matcher.find()) {
+						int queryNtStart = ntQaSeg.getQueryStart() + matcher.start();
+						int queryNtEnd = ntQaSeg.getQueryStart() + matcher.end()-1;
 						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-						String queryNts = segNts.substring(nextIndex, nextIndex+simpleNtPattern.length());
+						String queryNts = matcher.group();
 						NucleotidePolymorphismMatchResult npmr = 
 								new NucleotidePolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, queryNts);
 						matchResults.add(npmr);
 					}
-				} while(nextIndex != -1);
-			}
-		} else if(regexNtPattern != null) {
-			Pattern pattern = parseRegex(regexNtPattern);
-			for(NtQueryAlignedSegment ntQaSeg: queryToRefNtSegsVariationRegion) {
-				Matcher matcher = pattern.matcher(ntQaSeg.getNucleotides());
-				while(matcher.find()) {
-					int queryNtStart = ntQaSeg.getQueryStart() + matcher.start();
-					int queryNtEnd = ntQaSeg.getQueryStart() + matcher.end()-1;
-					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
-					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-					String queryNts = matcher.group();
-					NucleotidePolymorphismMatchResult npmr = 
-							new NucleotidePolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, queryNts);
-					matchResults.add(npmr);
 				}
+			} else {
+				throwScannerException("Neither SIMPLE_NT_PATTERN nor REGEX_NT_PATTERN metatags are defined");
 			}
-		} else {
-			throwScannerException("Neither SIMPLE_NT_PATTERN nor REGEX_NT_PATTERN metatags are defined");
 		}
 		return new VariationScanResult<NucleotidePolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
 
