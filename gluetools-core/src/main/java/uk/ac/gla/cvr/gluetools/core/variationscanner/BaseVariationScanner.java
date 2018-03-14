@@ -108,11 +108,7 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	}
 
 	// could be overridden by specific scanner types, perhaps based on metatag settings.
-	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
-		Integer refStart = getVariation().getRefStart();
-		Integer refEnd = getVariation().getRefEnd();
-		return ReferenceSegment.covers(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(refStart, refEnd)));
-	}
+	protected abstract boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs);
 
 	protected Integer getIntMetatagValue(VariationMetatagType type) {
 		String stringValue = getMetatagsMap().get(type);

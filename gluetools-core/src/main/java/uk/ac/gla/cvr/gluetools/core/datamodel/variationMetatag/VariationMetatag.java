@@ -70,7 +70,13 @@ public class VariationMetatag extends _VariationMetatag {
 		SIMPLE_AA_PATTERN,
 		REGEX_AA_PATTERN,
 		FLANKING_AAS,
-		FLANKING_NTS
+		FLANKING_NTS,
+		MIN_COVERAGE_NTS,
+		MIN_DELETION_LENGTH_AAS,
+		MIN_DELETION_LENGTH_NTS,
+		MAX_DELETION_LENGTH_AAS,
+		MAX_DELETION_LENGTH_NTS,
+		
 	}
 
 	private VariationMetatagType type = null;

@@ -35,7 +35,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
 public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<NucleotideInsertionMatchResult> {
 
-	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
+	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(
+			VariationMetatagType.MIN_COVERAGE_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
 	public NucleotideInsertionScanner() {
@@ -49,6 +50,13 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
 		return new VariationScanResult<NucleotideInsertionMatchResult>(getVariation(), sufficientCoverage, matchResults);
+	}
+
+
+	@Override
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 

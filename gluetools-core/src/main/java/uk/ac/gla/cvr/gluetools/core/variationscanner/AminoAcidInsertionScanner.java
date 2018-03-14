@@ -36,7 +36,9 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 
 public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<AminoAcidInsertionMatchResult> {
 
-	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(VariationMetatagType.FLANKING_AAS, VariationMetatagType.FLANKING_NTS);
+	private static final List<VariationMetatagType> allowedMetatagTypes = 
+			Arrays.asList(VariationMetatagType.FLANKING_AAS, 
+					VariationMetatagType.FLANKING_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
 	public AminoAcidInsertionScanner() {
@@ -59,6 +61,12 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		
 		return new VariationScanResult<AminoAcidInsertionMatchResult>(getVariation(), sufficientCoverage, matchResults);
+	}
+
+	@Override
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	

@@ -8,6 +8,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 
 	// two labeled codons within the reference region which bookend the deleted region
+	// null unless deletionIsCodonAligned
 	private String refFirstCodonDeleted;
 	private String refLastCodonDeleted;
 	
@@ -23,12 +24,18 @@ public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 	private String deletedRefNts;
 
 	// String of aminoAcids on the reference which were deleted in the query.
+	// null unless deletionIsCodonAligned
 	private String deletedRefAas;
+
+	// True iff the deleted region length is a multiple of 3 and is in-frame for the feature on which the variation is defined.
+	private boolean deletionIsCodonAligned;
+
 
 	public AminoAcidDeletionMatchResult(String refFirstCodonDeleted,
 			String refLastCodonDeleted, int refFirstNtDeleted,
 			int refLastNtDeleted, int qryLastNtBeforeDel,
-			int qryFirstNtAfterDel, String deletedRefNts, String deletedRefAas) {
+			int qryFirstNtAfterDel, String deletedRefNts, String deletedRefAas,
+			boolean deletionIsCodonAligned) {
 		super();
 		this.refFirstCodonDeleted = refFirstCodonDeleted;
 		this.refLastCodonDeleted = refLastCodonDeleted;
@@ -38,6 +45,7 @@ public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 		this.qryFirstNtAfterDel = qryFirstNtAfterDel;
 		this.deletedRefNts = deletedRefNts;
 		this.deletedRefAas = deletedRefAas;
+		this.deletionIsCodonAligned = deletionIsCodonAligned;
 	}
 
 	public String getRefFirstCodonDeleted() {
@@ -67,9 +75,13 @@ public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 	public String getDeletedRefNts() {
 		return deletedRefNts;
 	}
-
+	
 	public String getDeletedRefAas() {
 		return deletedRefAas;
+	}
+
+	public boolean deletionIsCodonAligned() {
+		return deletionIsCodonAligned;
 	}
 
 	@Override
@@ -80,6 +92,7 @@ public class AminoAcidDeletionMatchResult extends VariationScannerMatchResult {
 	@SuppressWarnings("unchecked")
 	public static List<TableColumn<AminoAcidDeletionMatchResult>> getTableColumns() {
 		return Arrays.asList(
+				column("deletionIsCodonAligned", aadmr -> aadmr.deletionIsCodonAligned()),
 				column("refFirstCodonDeleted", aadmr -> aadmr.getRefFirstCodonDeleted()),
 				column("refLastCodonDeleted", aadmr -> aadmr.getRefLastCodonDeleted()),
 				column("refFirstNtDeleted", aadmr -> aadmr.getRefFirstNtDeleted()),

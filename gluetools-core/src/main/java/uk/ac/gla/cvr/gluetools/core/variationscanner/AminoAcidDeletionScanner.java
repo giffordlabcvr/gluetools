@@ -25,24 +25,41 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import gnu.trove.map.TIntObjectMap;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 
 public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<AminoAcidDeletionMatchResult> {
 
-	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(VariationMetatagType.FLANKING_AAS, VariationMetatagType.FLANKING_NTS);
+	private static final List<VariationMetatagType> allowedMetatagTypes = 
+			Arrays.asList(VariationMetatagType.FLANKING_AAS, 
+							VariationMetatagType.FLANKING_NTS, 
+							VariationMetatagType.MIN_DELETION_LENGTH_AAS,
+							VariationMetatagType.MIN_DELETION_LENGTH_NTS,
+							VariationMetatagType.MAX_DELETION_LENGTH_AAS,
+							VariationMetatagType.MAX_DELETION_LENGTH_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
 	private int flankingNTs;
+	private Integer minDeletionLengthNts;
+	private Integer maxDeletionLengthNts;
 	private String referenceNucleotides;
+	private int codon1Start;
+	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	
 	
 	public AminoAcidDeletionScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -60,8 +77,11 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	
 	@Override
 	public void init(CommandContext cmdContext) {
-		this.referenceNucleotides = getVariation().getFeatureLoc().getReferenceSequence()
+		FeatureLocation featureLoc = getVariation().getFeatureLoc();
+		this.referenceNucleotides = featureLoc.getReferenceSequence()
 				.getSequence().getSequenceObject().getNucleotides(cmdContext);
+		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
+		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 		Integer configuredFlankingAas = getIntMetatagValue(VariationMetatagType.FLANKING_AAS);
 		Integer configuredFlankingNts = getIntMetatagValue(VariationMetatagType.FLANKING_NTS);
 		if(configuredFlankingAas != null && configuredFlankingNts != null) {
@@ -74,19 +94,48 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 		} else {
 			this.flankingNTs = 3;
 		}
+		Integer configuredMinDeletionLengthAas = getIntMetatagValue(VariationMetatagType.MIN_DELETION_LENGTH_AAS);
+		Integer configuredMinDeletionLengthNts = getIntMetatagValue(VariationMetatagType.MIN_DELETION_LENGTH_NTS);
+		if(configuredMinDeletionLengthAas != null && configuredMinDeletionLengthNts != null) {
+			throwScannerException("Only one of MIN_DELETION_LENGTH_AAS and MIN_DELETION_LENGTH_NTS may be defined");
+		}
+		if(configuredMinDeletionLengthNts != null) {
+			this.minDeletionLengthNts = configuredMinDeletionLengthNts;
+		} else if(configuredFlankingAas != null) {
+			this.minDeletionLengthNts = configuredMinDeletionLengthAas*3;
+		} else {
+			this.minDeletionLengthNts = null;
+		}
+		Integer configuredMaxDeletionLengthAas = getIntMetatagValue(VariationMetatagType.MAX_DELETION_LENGTH_AAS);
+		Integer configuredMaxDeletionLengthNts = getIntMetatagValue(VariationMetatagType.MAX_DELETION_LENGTH_NTS);
+		if(configuredMaxDeletionLengthAas != null && configuredMaxDeletionLengthNts != null) {
+			throwScannerException("Only one of MAX_DELETION_LENGTH_AAS and MAX_DELETION_LENGTH_NTS may be defined");
+		}
+		if(configuredMaxDeletionLengthNts != null) {
+			this.maxDeletionLengthNts = configuredMaxDeletionLengthNts;
+		} else if(configuredFlankingAas != null) {
+			this.maxDeletionLengthNts = configuredMaxDeletionLengthAas*3;
+		} else {
+			this.maxDeletionLengthNts = null;
+		}
 	}
 	
+	@Override
 	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		Integer flankingStart = computeFlankingStart();
 		Integer flankingEnd = computeFlankingEnd();
-		return ReferenceSegment.covers(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd)));
+		Integer refStart = getVariation().getRefStart();
+		Integer refEnd = getVariation().getRefEnd();
+		return ReferenceSegment.covers(queryToRefNtSegs, 
+				Arrays.asList(new ReferenceSegment(flankingStart, refStart-1),
+						new ReferenceSegment(refEnd+1, flankingEnd)));
 	}
 
 	private Integer computeFlankingStart() {
 		return Math.max(getVariation().getRefStart()-this.flankingNTs, 1);
 	}
 	private Integer computeFlankingEnd() {
-		return Math.min(getVariation().getRefEnd(), this.referenceNucleotides.length());
+		return Math.min(getVariation().getRefEnd()+this.flankingNTs, this.referenceNucleotides.length());
 	}
 
 
@@ -107,11 +156,39 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 			
 			for(NtQueryAlignedSegment currentSegment: queryToRefNtSegsTrimmed) {
 				if(lastSegment != null) {
-					int queryLastNtBeforeDel = lastSegment.getQueryEnd();
-					int queryFirstNtAfterDel = currentSegment.getQueryStart();
+					int qryLastNtBeforeDel = lastSegment.getQueryEnd();
+					int qryFirstNtAfterDel = currentSegment.getQueryStart();
 					// query segments are abutting
-					if(queryLastNtBeforeDel == (queryFirstNtAfterDel-1)) {
-						
+					if(qryLastNtBeforeDel == (qryFirstNtAfterDel-1)) {
+						int refFirstNtDeleted = lastSegment.getRefEnd() + 1;
+						int refLastNtDeleted = currentSegment.getRefStart() - 1;
+						// some reference nucleotides were deleted.
+						if(refFirstNtDeleted <= refLastNtDeleted) {
+							// the length of both segments is at least the flankingNTs
+							if(lastSegment.getCurrentLength() >= this.flankingNTs && currentSegment.getCurrentLength() >= this.flankingNTs) {
+								// deleted region is within configured min / max lengths
+								int deletedRegionLength = (refLastNtDeleted - refFirstNtDeleted) + 1;
+								if( (minDeletionLengthNts == null || deletedRegionLength >= minDeletionLengthNts) && 
+										(maxDeletionLengthNts == null || deletedRegionLength <= maxDeletionLengthNts) ) {
+									String deletedRefNts = FastaUtils.subSequence(referenceNucleotides, refFirstNtDeleted, refLastNtDeleted).toString();
+									boolean deletionIsCodonAligned = false;
+									String refFirstCodonDeleted = null;
+									String refLastCodonDeleted = null;
+									String deletedRefAas = null;
+									if(TranslationUtils.isAtStartOfCodon(codon1Start, refFirstNtDeleted) &&
+											TranslationUtils.isAtEndOfCodon(codon1Start, refLastNtDeleted)) {
+										deletionIsCodonAligned = true;
+										refFirstCodonDeleted = refNtToLabeledCodon.get(refFirstNtDeleted).getCodonLabel();
+										refLastCodonDeleted = refNtToLabeledCodon.get(refLastNtDeleted-2).getCodonLabel();
+										deletedRefAas = TranslationUtils.translateToAaString(deletedRefNts);
+										matchResults.add(new AminoAcidDeletionMatchResult(refFirstCodonDeleted, refLastCodonDeleted, 
+												refFirstNtDeleted, refLastNtDeleted, 
+												qryLastNtBeforeDel, qryFirstNtAfterDel, 
+												deletedRefNts, deletedRefAas, deletionIsCodonAligned));
+									} 
+								}
+							}
+						}
 					}
 				}
 				lastSegment = currentSegment;

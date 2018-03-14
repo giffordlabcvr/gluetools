@@ -42,11 +42,23 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_NT_PATTERN, 
-							VariationMetatagType.REGEX_NT_PATTERN);
+							VariationMetatagType.REGEX_NT_PATTERN,
+							VariationMetatagType.MIN_COVERAGE_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
+	// if defined the minimum total amount of coverage in nucleotides of the specified region
+	// to be deemed sufficient to conduct a scan.
+	private Integer minCoverageNTs;
+	
 	public NucleotidePolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
+	}
+	
+	@Override
+	protected void init(CommandContext cmdContext) {
+		super.init(cmdContext);		
+		this.minCoverageNTs = getIntMetatagValue(VariationMetatagType.MIN_COVERAGE_NTS);
+
 	}
 
 	@Override
@@ -122,6 +134,23 @@ public class NucleotidePolymorphismScanner extends BaseNucleotideVariationScanne
 		}
 		return new VariationScanResult<NucleotidePolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
 
+	}
+
+	@Override
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		Integer refStart = getVariation().getRefStart();
+		Integer refEnd = getVariation().getRefEnd();
+		List<ReferenceSegment> refSegs = Arrays.asList(new ReferenceSegment(refStart, refEnd));
+		if(minCoverageNTs == null) {
+			return ReferenceSegment.covers(queryToRefNtSegs, refSegs);
+		} else {
+			List<NtQueryAlignedSegment> intersectingQaSegs = ReferenceSegment.intersection(queryToRefNtSegs, refSegs, ReferenceSegment.cloneLeftSegMerger());
+			int totalLength = 0;
+			for(NtQueryAlignedSegment intersectingQaSeg: intersectingQaSegs) {
+				totalLength += intersectingQaSeg.getCurrentLength();
+			}
+			return totalLength >= minCoverageNTs;
+		}
 	}
 	
 }

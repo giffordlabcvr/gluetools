@@ -30,16 +30,68 @@ import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<NucleotideDeletionMatchResult> {
 
-	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList();
+	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(
+			VariationMetatagType.FLANKING_NTS, 
+			VariationMetatagType.MIN_DELETION_LENGTH_NTS,
+			VariationMetatagType.MAX_DELETION_LENGTH_NTS,
+			VariationMetatagType.MIN_COVERAGE_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
+	private int flankingNTs;
+	private String referenceNucleotides;
+	private Integer minDeletionLengthNts;
+	private Integer maxDeletionLengthNts;
+	
 	public NucleotideDeletionScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
+	}
+
+	@Override
+	public void init(CommandContext cmdContext) {
+		FeatureLocation featureLoc = getVariation().getFeatureLoc();
+		this.referenceNucleotides = featureLoc.getReferenceSequence()
+				.getSequence().getSequenceObject().getNucleotides(cmdContext);
+		Integer configuredFlankingNts = getIntMetatagValue(VariationMetatagType.FLANKING_NTS);
+		if(configuredFlankingNts != null) {
+			this.flankingNTs = configuredFlankingNts;
+		} else {
+			this.flankingNTs = 3;
+		}
+		Integer configuredMinDeletionLengthNts = getIntMetatagValue(VariationMetatagType.MIN_DELETION_LENGTH_NTS);
+		if(configuredMinDeletionLengthNts != null) {
+			this.minDeletionLengthNts = configuredMinDeletionLengthNts;
+		} else {
+			this.minDeletionLengthNts = null;
+		}
+		Integer configuredMaxDeletionLengthNts = getIntMetatagValue(VariationMetatagType.MAX_DELETION_LENGTH_NTS);
+		if(configuredMaxDeletionLengthNts != null) {
+			this.maxDeletionLengthNts = configuredMaxDeletionLengthNts;
+			this.maxDeletionLengthNts = null;
+		}
+	}
+	
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		Integer flankingStart = computeFlankingStart();
+		Integer flankingEnd = computeFlankingEnd();
+		Integer refStart = getVariation().getRefStart();
+		Integer refEnd = getVariation().getRefEnd();
+		return ReferenceSegment.covers(queryToRefNtSegs, 
+				Arrays.asList(new ReferenceSegment(flankingStart, refStart-1),
+						new ReferenceSegment(refEnd+1, flankingEnd)));
+	}
+
+	private Integer computeFlankingStart() {
+		return Math.max(getVariation().getRefStart()-this.flankingNTs, 1);
+	}
+	private Integer computeFlankingEnd() {
+		return Math.min(getVariation().getRefEnd(), this.referenceNucleotides.length());
 	}
 
 	
@@ -50,7 +102,5 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		
 		return new VariationScanResult<NucleotideDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
-	
-
 
 }
