@@ -92,27 +92,46 @@ public class CompoundAligner extends Aligner<CompoundAlignerResult, CompoundAlig
 	@Override
 	public CompoundAlignerResult computeConstrained(CommandContext cmdContext,
 			String refName, Map<String, DNASequence> queryIdToNucleotides) {
+		// run all aligners on all queries.
 		List<AlignerResult> alignerResults = new ArrayList<AlignerResult>();
-		
 		for(Aligner<?,?> aligner: aligners) {
 			alignerResults.add(aligner.computeConstrained(cmdContext, refName, queryIdToNucleotides));
 		}
 		
-		final Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
+		final Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = 
+				initFastaIdToAlignedSegments(queryIdToNucleotides.keySet());
 		for(String queryId: queryIdToNucleotides.keySet()) {
-			List<QueryAlignedSegment> finalAlignedSegs = new ArrayList<QueryAlignedSegment>();
 			Comparator<IReferenceSegment> segmentComparator = new Comparator<IReferenceSegment>() {
 				@Override
 				public int compare(IReferenceSegment seg1, IReferenceSegment seg2) {
 					return Integer.compare(seg1.getRefStart(), seg2.getRefStart());
 				}};
 			
+			// this segment list will accumulate segments from the aligner results.
+			// however, a segment from aligner result B will only appear if it
+			// does not overlap a segment from earlier aligner result A on the reference or query.
+			List<QueryAlignedSegment> finalAlignedSegs = new ArrayList<QueryAlignedSegment>();
 			for(AlignerResult alignerResult: alignerResults) {
-				List<QueryAlignedSegment> alignerSegsForQuery = alignerResult.getQueryIdToAlignedSegments().get(queryId);
-				if(alignerSegsForQuery == null) {
-					alignerSegsForQuery = new ArrayList<QueryAlignedSegment>();
+				List<QueryAlignedSegment> resultSegsForQuery = alignerResult.getQueryIdToAlignedSegments().get(queryId);
+				if(resultSegsForQuery == null) {
+					resultSegsForQuery = new ArrayList<QueryAlignedSegment>();
 				}
-				finalAlignedSegs.addAll(ReferenceSegment.subtract(alignerSegsForQuery, finalAlignedSegs));
+				// remove overlaps on the reference.
+				List<QueryAlignedSegment> resultSegsWithReferenceOverlapsRemoved = 
+						ReferenceSegment.subtract(resultSegsForQuery, finalAlignedSegs);
+
+				// remove overlaps on the query.
+				List<QueryAlignedSegment> resultSegsInverted = 
+						QueryAlignedSegment.invertList(resultSegsWithReferenceOverlapsRemoved);
+				List<QueryAlignedSegment> finalSegsInverted = 
+						QueryAlignedSegment.invertList(finalAlignedSegs);
+				List<QueryAlignedSegment> resultSegsWithQueryOverlapsRemovedInverted = 
+						ReferenceSegment.subtract(resultSegsInverted, finalSegsInverted);
+				List<QueryAlignedSegment> resultSegsWithAllOverlapsRemoved = 
+						QueryAlignedSegment.invertList(resultSegsWithQueryOverlapsRemovedInverted);
+
+				// add everything together
+				finalAlignedSegs.addAll(resultSegsWithAllOverlapsRemoved);
 				Collections.sort(finalAlignedSegs, segmentComparator);
 			}
 			queryIdToAlignedSegments.put(queryId, finalAlignedSegs);
