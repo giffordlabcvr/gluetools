@@ -165,18 +165,12 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		Alignment tipAlmt = almtMember.getAlignment();
 		
 		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
-		List<QueryAlignedSegment> memberToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
+		List<QueryAlignedSegment> memberToRelatedRefRefSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
 
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
-				ReferenceSegment.cloneLeftSegMerger());
-		
 		AbstractSequenceObject memberSeqObj = almtMember.getSequence().getSequenceObject();
 		
-		List<NtQueryAlignedSegment> memberToFeatureLocRefNtSegs = 
-				memberToFeatureLocRefSegs.stream()
+		List<NtQueryAlignedSegment> memberToRelatedRefNtSegs = 
+				memberToRelatedRefRefSegs.stream()
 				.map(seg -> new NtQueryAlignedSegment(
 						seg.getRefStart(), seg.getRefEnd(), 
 						seg.getQueryStart(), seg.getQueryEnd(), 
@@ -185,7 +179,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		
 		
 		List<VariationScanResult<?>> variationScanResults = featureLoc.
-				variationScan(cmdContext, memberToFeatureLocRefNtSegs, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
+				variationScan(cmdContext, memberToRelatedRefNtSegs, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 
 		return variationScanResults;

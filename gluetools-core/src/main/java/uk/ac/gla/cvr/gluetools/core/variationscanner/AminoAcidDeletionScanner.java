@@ -181,11 +181,11 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 										refFirstCodonDeleted = refNtToLabeledCodon.get(refFirstNtDeleted).getCodonLabel();
 										refLastCodonDeleted = refNtToLabeledCodon.get(refLastNtDeleted-2).getCodonLabel();
 										deletedRefAas = TranslationUtils.translateToAaString(deletedRefNts);
-										matchResults.add(new AminoAcidDeletionMatchResult(refFirstCodonDeleted, refLastCodonDeleted, 
-												refFirstNtDeleted, refLastNtDeleted, 
-												qryLastNtBeforeDel, qryFirstNtAfterDel, 
-												deletedRefNts, deletedRefAas, deletionIsCodonAligned));
 									} 
+									matchResults.add(new AminoAcidDeletionMatchResult(refFirstCodonDeleted, refLastCodonDeleted, 
+											refFirstNtDeleted, refLastNtDeleted, 
+											qryLastNtBeforeDel, qryFirstNtAfterDel, 
+											deletedRefNts, deletedRefAas, deletionIsCodonAligned));
 								}
 							}
 						}

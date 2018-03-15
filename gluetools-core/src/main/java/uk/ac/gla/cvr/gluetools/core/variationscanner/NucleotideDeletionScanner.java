@@ -34,6 +34,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<NucleotideDeletionMatchResult> {
 
@@ -94,13 +96,54 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		return Math.min(getVariation().getRefEnd(), this.referenceNucleotides.length());
 	}
 
+
 	
 	@Override
 	public VariationScanResult<NucleotideDeletionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<NucleotideDeletionMatchResult> matchResults = new ArrayList<NucleotideDeletionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
-		
+		if(sufficientCoverage) {
+			Integer flankingStart = computeFlankingStart();
+			Integer flankingEnd = computeFlankingEnd();
+
+			List<NtQueryAlignedSegment> queryToRefNtSegsTrimmed = 
+					ReferenceSegment.intersection(queryToRefNtSegs,
+							Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd)), ReferenceSegment.cloneLeftSegMerger());
+			
+			NtQueryAlignedSegment lastSegment = null;
+			
+			for(NtQueryAlignedSegment currentSegment: queryToRefNtSegsTrimmed) {
+				if(lastSegment != null) {
+					int qryLastNtBeforeDel = lastSegment.getQueryEnd();
+					int qryFirstNtAfterDel = currentSegment.getQueryStart();
+					// query segments are abutting
+					if(qryLastNtBeforeDel == (qryFirstNtAfterDel-1)) {
+						int refFirstNtDeleted = lastSegment.getRefEnd() + 1;
+						int refLastNtDeleted = currentSegment.getRefStart() - 1;
+						// some reference nucleotides were deleted.
+						if(refFirstNtDeleted <= refLastNtDeleted) {
+							// the length of both segments is at least the flankingNTs
+							if(lastSegment.getCurrentLength() >= this.flankingNTs && currentSegment.getCurrentLength() >= this.flankingNTs) {
+								// deleted region is within configured min / max lengths
+								int deletedRegionLength = (refLastNtDeleted - refFirstNtDeleted) + 1;
+								if( (minDeletionLengthNts == null || deletedRegionLength >= minDeletionLengthNts) && 
+										(maxDeletionLengthNts == null || deletedRegionLength <= maxDeletionLengthNts) ) {
+									String deletedRefNts = FastaUtils.subSequence(referenceNucleotides, refFirstNtDeleted, refLastNtDeleted).toString();
+									matchResults.add(new NucleotideDeletionMatchResult(
+											refFirstNtDeleted, refLastNtDeleted, 
+											qryLastNtBeforeDel, qryFirstNtAfterDel, 
+											deletedRefNts));
+								}
+							}
+						}
+					}
+				}
+				lastSegment = currentSegment;
+			}
+		}
 		return new VariationScanResult<NucleotideDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
+
+	
 
 }

@@ -141,14 +141,8 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 			public void consumeVariations(ReferenceSequence refToScan,
 					FeatureLocation featureLoc, List<Variation> variationsToScan) {
 				// translate segments to scanned reference
-				List<QueryAlignedSegment> queryToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
+				List<QueryAlignedSegment> queryToScannedRefSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
 				
-				// trim query to scanned ref segs down to the feature area.
-				List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-				List<QueryAlignedSegment> queryToScannedRefSegs = 
-						ReferenceSegment.intersection(queryToScannedRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
-		
 				String fastaNTs = fastaNTSeq.getSequenceAsString();
 		
 				List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
