@@ -98,63 +98,6 @@ public class CodonTableUtils {
 		}
 	}
 	
-	// map ambiguous NT to an array of the underlying concrete NTs
-	private static int[][] ambigNtToConcreteNts = new int[16][];
-	// map a bitmap of concrete NTs to an ambiguous NT
-	private static int[] concreteNtsBitmapToAmbigNt = new int[16];
-	
-	// populate ambigNtToConcreteNtsBitmap
-	static {
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_A] =
-			new int[]{ResidueUtils.CONCRETE_NT_A};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_C] =
-			new int[]{ResidueUtils.CONCRETE_NT_C};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_G] =
-			new int[]{ResidueUtils.CONCRETE_NT_G};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_T] =
-			new int[]{ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_U] =
-			new int[]{ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_R] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_G};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_Y] =
-			new int[]{ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_K] =
-			new int[]{ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_M] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_S] =
-			new int[]{ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_W] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_B] =
-			new int[]{ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_D] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_H] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_T};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_V] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G};
-		ambigNtToConcreteNts[ResidueUtils.AMBIG_NT_N] =
-			new int[]{ResidueUtils.CONCRETE_NT_A, ResidueUtils.CONCRETE_NT_C, ResidueUtils.CONCRETE_NT_G, ResidueUtils.CONCRETE_NT_T};
-
-		// populate concreteNtsBitmapToAmbigNt
-		for(int ambigNt = 0 ; ambigNt < 16; ambigNt++) {
-			if(ambigNt != ResidueUtils.AMBIG_NT_U) { // don't overwrite mapping for this concrete NT combination.
-				int[] concreteNts = ambigNtToConcreteNts[ambigNt];
-				int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
-				concreteNtsBitmapToAmbigNt[concreteNtsBitmap] = ambigNt;
-				//System.out.println("concreteNts: "+Arrays.stream(concreteNts).boxed().collect(Collectors.toList()));
-				//System.out.println("concreteNtsBitmap: "+Integer.toBinaryString(concreteNtsBitmap));
-				//System.out.println("concreteNtsBitmapToAmbigNt: "+ResidueUtils.intToAmbigNt(ambigNt));
-			}
-			
-
-			
-		}
-	}
-	
-	
 	
 	// 3-dimensional array mapping triplet of ambiguous NT (integer representation)
 	// to AmbigNtTripletInfo instance
@@ -187,9 +130,9 @@ public class CodonTableUtils {
 		boolean log = false;
 		LinkedHashSet<Integer> possibleAas = new LinkedHashSet<Integer>();
 		LinkedHashSet<Integer> triplets = new LinkedHashSet<Integer>();
-		for(int concreteNt1: ambigNtToConcreteNts[ambigNt1]) {
-			for(int concreteNt2: ambigNtToConcreteNts[ambigNt2]) {
-				for(int concreteNt3: ambigNtToConcreteNts[ambigNt3]) {
+		for(int concreteNt1: ResidueUtils.ambigNtToConcreteNts(ambigNt1)) {
+			for(int concreteNt2: ResidueUtils.ambigNtToConcreteNts(ambigNt2)) {
+				for(int concreteNt3: ResidueUtils.ambigNtToConcreteNts(ambigNt3)) {
 					int aa = concreteNtTripletToAa[concreteNt1][concreteNt2][concreteNt3];
 					possibleAas.add(aa);
 					triplets.add(concreteNtTripletToInt(concreteNt1, concreteNt2, concreteNt3));
@@ -247,9 +190,9 @@ public class CodonTableUtils {
 					System.out.println("pos2Bitmap: "+Integer.toBinaryString(pos2Bitmap));
 					System.out.println("pos3Bitmap: "+Integer.toBinaryString(pos3Bitmap));
 				}
-				int pos1AmbigNt = concreteNtsBitmapToAmbigNt[pos1Bitmap];
-				int pos2AmbigNt = concreteNtsBitmapToAmbigNt[pos2Bitmap];
-				int pos3AmbigNt = concreteNtsBitmapToAmbigNt[pos3Bitmap];
+				int pos1AmbigNt = ResidueUtils.concreteNtsBitmapToAmbigNt(pos1Bitmap);
+				int pos2AmbigNt = ResidueUtils.concreteNtsBitmapToAmbigNt(pos2Bitmap);
+				int pos3AmbigNt = ResidueUtils.concreteNtsBitmapToAmbigNt(pos3Bitmap);
 				if(log) {
 					System.out.println("pos1AmbigNt: "+ResidueUtils.intToAmbigNt(pos1AmbigNt));
 					System.out.println("pos2AmbigNt: "+ResidueUtils.intToAmbigNt(pos2AmbigNt));

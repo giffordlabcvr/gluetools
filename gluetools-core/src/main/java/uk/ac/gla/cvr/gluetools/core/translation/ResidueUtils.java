@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
+import uk.ac.gla.cvr.gluetools.core.bitmap.BitmapUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationException.Code;
 
 public class ResidueUtils {
@@ -221,5 +222,74 @@ public class ResidueUtils {
 		}
 	}
 	
+	// map ambiguous NT to an array of the underlying concrete NTs
+	private static int[][] ambigNtToConcreteNts = new int[16][];
+	// map a bitmap of concrete NTs to an ambiguous NT
+	private static int[] concreteNtsBitmapToAmbigNt = new int[16];
+	
+	// populate ambigNtToConcreteNtsBitmap
+	static {
+		ambigNtToConcreteNts[AMBIG_NT_A] =
+			new int[]{CONCRETE_NT_A};
+		ambigNtToConcreteNts[AMBIG_NT_C] =
+			new int[]{CONCRETE_NT_C};
+		ambigNtToConcreteNts[AMBIG_NT_G] =
+			new int[]{CONCRETE_NT_G};
+		ambigNtToConcreteNts[AMBIG_NT_T] =
+			new int[]{CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_U] =
+			new int[]{CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_R] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_G};
+		ambigNtToConcreteNts[AMBIG_NT_Y] =
+			new int[]{CONCRETE_NT_C, CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_K] =
+			new int[]{CONCRETE_NT_G, CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_M] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_C};
+		ambigNtToConcreteNts[AMBIG_NT_S] =
+			new int[]{CONCRETE_NT_C, CONCRETE_NT_G};
+		ambigNtToConcreteNts[AMBIG_NT_W] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_B] =
+			new int[]{CONCRETE_NT_C, CONCRETE_NT_G, CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_D] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_G, CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_H] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_C, CONCRETE_NT_T};
+		ambigNtToConcreteNts[AMBIG_NT_V] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_C, CONCRETE_NT_G};
+		ambigNtToConcreteNts[AMBIG_NT_N] =
+			new int[]{CONCRETE_NT_A, CONCRETE_NT_C, CONCRETE_NT_G, CONCRETE_NT_T};
+
+		// populate concreteNtsBitmapToAmbigNt
+		for(int ambigNt = 0 ; ambigNt < 16; ambigNt++) {
+			if(ambigNt != AMBIG_NT_U) { // don't overwrite mapping for this concrete NT combination.
+				int[] concreteNts = ambigNtToConcreteNts[ambigNt];
+				int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
+				concreteNtsBitmapToAmbigNt[concreteNtsBitmap] = ambigNt;
+				//System.out.println("concreteNts: "+Arrays.stream(concreteNts).boxed().collect(Collectors.toList()));
+				//System.out.println("concreteNtsBitmap: "+Integer.toBinaryString(concreteNtsBitmap));
+				//System.out.println("concreteNtsBitmapToAmbigNt: "+intToAmbigNt(ambigNt));
+			}
+			
+
+			
+		}
+	}
+	
+	public static int[] ambigNtToConcreteNts(int ambigNt) {
+		return ambigNtToConcreteNts(ambigNt);
+	}
+
+	public static int concreteNtsToAmbigNt(int[] concreteNts) {
+		int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
+		return concreteNtsBitmapToAmbigNt(concreteNtsBitmap);
+	}
+
+	public static int concreteNtsBitmapToAmbigNt(int concreteNtsBitmap) {
+		return concreteNtsBitmapToAmbigNt[concreteNtsBitmap];
+	}
+
 	
 }
