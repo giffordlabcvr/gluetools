@@ -137,30 +137,30 @@ The results of the command are displayed in an interactive table.
 <p>
 <div hljs language="json" no-escape>
 <pre>
-+===================+============+
-|    source.name    | sequenceID |
-+===================+============+
-| ncbi-hev-examples | AB481226   |
-| ncbi-hev-examples | AB591734   |
-| ncbi-hev-examples | AF444003   |
-| ncbi-hev-examples | FJ705359   |
-| ncbi-hev-examples | FJ763142   |
-| ncbi-hev-examples | FJ998015   |
-| ncbi-hev-examples | JF443717   |
-| ncbi-hev-examples | JQ013791   |
-| ncbi-hev-examples | JX855794   |
-| ncbi-hev-examples | KP294371   |
-| ncbi-refseqs      | AB074915   |
-| ncbi-refseqs      | AB108537   |
-| ncbi-refseqs      | AB197673   |
-| ncbi-refseqs      | AB220974   |
-| ncbi-refseqs      | AB248521   |
-| ncbi-refseqs      | AB290312   |
-| ncbi-refseqs      | AB290313   |
-| ncbi-refseqs      | AB369687   |
-| ncbi-refseqs      | AB369688   |
-+===================+============+
-Sequences 1 to 19 of 53 [F:first, L:last, P:prev, N:next, Q:quit]</pre></div></p>
++====================+===================+
+|    source.name     |    sequenceID     |
++====================+===================+
+| fasta-hev-examples | IND-HEV-AVH1-1991 |
+| fasta-hev-examples | IND-HEV-AVH2-1998 |
+| fasta-hev-examples | IND-HEV-AVH3-2000 |
+| fasta-hev-examples | IND-HEV-AVH4-2006 |
+| fasta-hev-examples | IND-HEV-AVH5-2010 |
+| fasta-hev-examples | IND-HEV-FHF1-2003 |
+| fasta-hev-examples | IND-HEV-FHF2-2004 |
+| fasta-hev-examples | IND-HEV-FHF3-2005 |
+| fasta-hev-examples | IND-HEV-FHF4-2006 |
+| fasta-hev-examples | IND-HEV-FHF5-2007 |
+| ncbi-hev-examples  | AB481226          |
+| ncbi-hev-examples  | AB591734          |
+| ncbi-hev-examples  | AF444003          |
+| ncbi-hev-examples  | FJ705359          |
+| ncbi-hev-examples  | FJ763142          |
+| ncbi-hev-examples  | FJ998015          |
+| ncbi-hev-examples  | JF443717          |
+| ncbi-hev-examples  | JQ013791          |
+| ncbi-hev-examples  | JX855794          |
++====================+===================+
+Sequences 1 to 19 of 63 [F:first, L:last, P:prev, N:next, Q:quit]</pre></div></p>
 <p>You can page backwards and forwards through the table using the &lt;F&gt;, &lt;L&gt;, &lt;P&gt; and &lt;N&gt; 
 keys, and return to the command line using &lt;Q&gt;.</p>
 <p>The <mode-command mode="root_project" command="list_sequence"></mode-command> command 
@@ -183,16 +183,16 @@ GLUE> list sequence -s gb_create_date -w "source.name = 'ncbi-hev-examples'" seq
 +============+=======================+================+
 | sequenceID |     host_species      | gb_create_date |
 +============+=======================+================+
-| KP294371   | Sus scrofa            | 15-Jul-2016    |
-| JX855794   | Sus scrofa            | 09-Dec-2012    |
-| JF443717   | Homo sapiens          | 21-Oct-2012    |
-| JQ013791   | Oryctolagus cuniculus | 10-Aug-2012    |
-| AB591734   | Herpestes javanicus   | 29-Mar-2011    |
-| FJ998015   | Sus scrofa            | 12-Sep-2009    |
-| FJ705359   | Sus scrofa            | 07-Jun-2009    |
-| FJ763142   | Homo sapiens          | 21-Mar-2009    |
-| AB481226   | -                     | 18-Feb-2009    |
 | AF444003   | -                     | 21-Dec-2001    |
+| AB481226   | -                     | 18-Feb-2009    |
+| FJ763142   | Homo sapiens          | 21-Mar-2009    |
+| FJ705359   | Sus scrofa            | 07-Jun-2009    |
+| FJ998015   | Sus scrofa            | 12-Sep-2009    |
+| AB591734   | Herpestes javanicus   | 29-Mar-2011    |
+| JQ013791   | Oryctolagus cuniculus | 10-Aug-2012    |
+| JF443717   | Homo sapiens          | 21-Oct-2012    |
+| JX855794   | Sus scrofa            | 09-Dec-2012    |
+| KP294371   | Sus scrofa            | 15-Jul-2016    |
 +============+=======================+================+</pre></div>
 </p>
 <p>
@@ -377,29 +377,29 @@ So we will supply the <em>ReferenceSequence</em> for subtype 4b as the target as
 <div hljs language="json" no-escape>
 <pre>
 GLUE> amino-acid --fileName sequence.fasta --acRefName REF_MASTER_M73218 --featureName ORF1 --targetRefName REF_4b_DQ279091 
-+============+=========+=========+===========+
-| codonLabel | queryNt | acRefNt | aminoAcid |
-+============+=========+=========+===========+
-| 1          | 26      | 28      | M         |
-| 2          | 29      | 31      | E         |
-| 3          | 32      | 34      | A         |
-| 4          | 35      | 37      | H         |
-| 5          | 38      | 40      | Q         |
-| 6          | 41      | 43      | F         |
-| 7          | 44      | 46      | I         |
-| 8          | 47      | 49      | K         |
-| 9          | 50      | 52      | A         |
-| 10         | 53      | 55      | P         |
-| 11         | 56      | 58      | G         |
-| 12         | 59      | 61      | V         |
-| 13         | 62      | 64      | T         |
-| 14         | 65      | 67      | T         |
-| 15         | 68      | 70      | A         |
-| 16         | 71      | 73      | I         |
-| 17         | 74      | 76      | D         |
-| 18         | 77      | 79      | Q         |
-| 19         | 80      | 82      | A         |
-+============+=========+=========+===========+
++===========+=========+=========+==========+===========+===========+===========+
+|codonLabel | queryNt | acRefNt | codonNts | aminoAcid |definiteAas|possibleAas|
++===========+=========+=========+==========+===========+===========+===========+
+|1          | 26      | 28      | ATG      | M         |M          |M          |
+|2          | 29      | 31      | GAG      | E         |E          |E          |
+|3          | 32      | 34      | GCC      | A         |A          |A          |
+|4          | 35      | 37      | CAT      | H         |H          |H          |
+|5          | 38      | 40      | CAG      | Q         |Q          |Q          |
+|6          | 41      | 43      | TTC      | F         |F          |F          |
+|7          | 44      | 46      | ATA      | I         |I          |I          |
+|8          | 47      | 49      | AAG      | K         |K          |K          |
+|9          | 50      | 52      | GCT      | A         |A          |A          |
+|10         | 53      | 55      | CCT      | P         |P          |P          |
+|11         | 56      | 58      | GGC      | G         |G          |G          |
+|12         | 59      | 61      | GTT      | V         |V          |V          |
+|13         | 62      | 64      | ACT      | T         |T          |T          |
+|14         | 65      | 67      | ACT      | T         |T          |T          |
+|15         | 68      | 70      | GCT      | A         |A          |A          |
+|16         | 71      | 73      | ATT      | I         |I          |I          |
+|17         | 74      | 76      | GAC      | D         |D          |D          |
+|18         | 77      | 79      | CAG      | Q         |Q          |Q          |
+|19         | 80      | 82      | GCT      | A         |A          |A          |
++===========+=========+=========+==========+===========+===========+===========+
 Rows 1 to 19 of 1694 [F:first, L:last, P:prev, N:next, Q:quit]</pre></div></p>
 
 <h3 id="commandHistory">Command history and other useful keystrokes</h3>
