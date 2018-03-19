@@ -279,7 +279,7 @@ public class ResidueUtils {
 	}
 	
 	public static int[] ambigNtToConcreteNts(int ambigNt) {
-		return ambigNtToConcreteNts(ambigNt);
+		return ambigNtToConcreteNts[ambigNt];
 	}
 
 	public static int concreteNtsToAmbigNt(int[] concreteNts) {

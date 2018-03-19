@@ -330,6 +330,14 @@ public class CodonTableUtils {
 		public String getTripletNtsString() {
 			return tripletNtsString;
 		}
+
+		@Override
+		public String toString() {
+			return "TripletTranslationInfo [definiteAminoAcids="
+					+ definiteAminoAcids + ", possibleAminoAcids="
+					+ possibleAminoAcids + ", singleCharTranslation="
+					+ singleCharTranslation + "]";
+		}
 		
 		
 		
@@ -338,6 +346,7 @@ public class CodonTableUtils {
 	public static void main(String[] args) {
 		System.out.println("ATG: "+getTranslationInfo("ATG".toCharArray()));
 		System.out.println("CAY: "+getTranslationInfo("CAY".toCharArray()));
+		System.out.println("YAC: "+getTranslationInfo("YAC".toCharArray()));
 		System.out.println("TAY: "+getTranslationInfo("YAY".toCharArray()));
 		System.out.println("TSR: "+getTranslationInfo("TSR".toCharArray()));
 		System.out.println("NNN: "+getTranslationInfo("NNN".toCharArray()));
