@@ -27,11 +27,9 @@ package uk.ac.gla.cvr.gluetools.core.translation;
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
-
 public interface Translator {
 
 	public String translateToAaString(CharSequence nts);
 	
-	public List<TripletTranslationInfo> translate(CharSequence nts);
+	public List<AmbigNtTripletInfo> translate(CharSequence nts);
 }

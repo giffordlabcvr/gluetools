@@ -39,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
+import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
@@ -70,10 +70,10 @@ public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> ex
 		for(ReferenceSegment featureLocRefSeg: featureLocRefSegs) {
 			CharSequence nts = refSeqObj.subSequence(cmdContext, 
 					featureLocRefSeg.getRefStart(), featureLocRefSeg.getRefEnd());
-			List<TripletTranslationInfo> segTranslationInfos = translator.translate(nts);
+			List<AmbigNtTripletInfo> segTranslationInfos = translator.translate(nts);
 			int refNt = featureLocRefSeg.getRefStart();
 			for(int i = 0; i < segTranslationInfos.size(); i++) {
-				TripletTranslationInfo segTranslationInfo = segTranslationInfos.get(i);
+				AmbigNtTripletInfo segTranslationInfo = segTranslationInfos.get(i);
 				LabeledCodon labeledCodon = refNtToLabeledCodon.get(refNt);
 				labeledAminoAcids.add(new LabeledAminoAcid(labeledCodon, segTranslationInfo));
 				refNt = refNt+3;

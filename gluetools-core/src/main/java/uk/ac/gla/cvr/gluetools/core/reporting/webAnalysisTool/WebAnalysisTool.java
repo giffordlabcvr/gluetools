@@ -77,7 +77,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
+import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPLocScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.PLocScanResult;
@@ -826,7 +826,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			QueryAlignedSegment queryAlignedSegment = translatedQaSeg.getQueryAlignedSegment();
 			int queryNt = queryAlignedSegment.getQueryStart();
 			int refNt = queryAlignedSegment.getRefStart();
-			List<TripletTranslationInfo> translationInfos = translatedQaSeg.getTranslation();
+			List<AmbigNtTripletInfo> translationInfos = translatedQaSeg.getTranslation();
 			String translationString = TranslationUtils.translationInfosToString(translationInfos);
 			for(int i = 0; i < translationString.length(); i++) {
 				C aa = supplier.get();

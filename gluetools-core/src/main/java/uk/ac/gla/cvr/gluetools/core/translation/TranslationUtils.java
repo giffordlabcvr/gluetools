@@ -31,7 +31,6 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
 public class TranslationUtils {
 
@@ -131,8 +130,8 @@ public class TranslationUtils {
 	 * If the length of input is not a multiple of 3 then trailing nucleotides are discarded.
 	 */
 	
-	public static List<TripletTranslationInfo> translate(CharSequence nts) {
-		List<TripletTranslationInfo> translationInfos = new ArrayList<TripletTranslationInfo>();
+	public static List<AmbigNtTripletInfo> translate(CharSequence nts) {
+		List<AmbigNtTripletInfo> translationInfos = new ArrayList<AmbigNtTripletInfo>();
 		char[] codonNts = new char[3];
 		for(int ntIndex = 0; ntIndex < nts.length(); ntIndex +=3) {
 			if(ntIndex > nts.length() - 3) {
@@ -144,20 +143,20 @@ public class TranslationUtils {
 					codonNts[i] = nt;
 				}
 			}
-			translationInfos.add(CodonTableUtils.getTranslationInfo(codonNts));
+			translationInfos.add(AmbigNtTripletInfo.getTranslationInfo(codonNts));
 		}
 		return translationInfos;
 	}
 
 	public static String translateToAaString(CharSequence nts) {
-		List<TripletTranslationInfo> translationInfos = translate(nts);
+		List<AmbigNtTripletInfo> translationInfos = translate(nts);
 		return translationInfosToString(translationInfos);
 	}
 
 	public static String translationInfosToString(
-			List<TripletTranslationInfo> translationInfos) {
+			List<AmbigNtTripletInfo> translationInfos) {
 		StringBuffer aas = new StringBuffer();
-		for(TripletTranslationInfo translationInfo: translationInfos) {
+		for(AmbigNtTripletInfo translationInfo: translationInfos) {
 			aas.append(translationInfo.getSingleCharTranslation());
 		}
 		return aas.toString();

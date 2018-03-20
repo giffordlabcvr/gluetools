@@ -48,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenc
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
+import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
@@ -145,7 +145,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		
 		for(QueryAlignedSegment queryToRefSeg: queryToRefSegsCodonAligned) {
 			CharSequence nts = SegmentUtils.base1SubString(queryNTs, queryToRefSeg.getQueryStart(), queryToRefSeg.getQueryEnd());
-			List<TripletTranslationInfo> segTranslationInfos = translator.translate(nts);
+			List<AmbigNtTripletInfo> segTranslationInfos = translator.translate(nts);
 			translatedQaSegs.add(new TranslatedQueryAlignedSegment(queryToRefSeg, segTranslationInfos));
 		}
 		return translatedQaSegs;
@@ -166,9 +166,9 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 	public static class TranslatedQueryAlignedSegment {
 
 		private QueryAlignedSegment queryAlignedSegment;
-		private List<TripletTranslationInfo> translation;
+		private List<AmbigNtTripletInfo> translation;
 		
-		public TranslatedQueryAlignedSegment(QueryAlignedSegment queryAlignedSegment, List<TripletTranslationInfo> translation) {
+		public TranslatedQueryAlignedSegment(QueryAlignedSegment queryAlignedSegment, List<AmbigNtTripletInfo> translation) {
 			this.queryAlignedSegment = queryAlignedSegment;
 			this.translation = translation;
 		}
@@ -177,7 +177,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 			return queryAlignedSegment;
 		}
 
-		public List<TripletTranslationInfo> getTranslation() {
+		public List<AmbigNtTripletInfo> getTranslation() {
 			return translation;
 		}
 	}

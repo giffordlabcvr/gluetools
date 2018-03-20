@@ -25,14 +25,14 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
+import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 
 public class LabeledAminoAcid {
 
 	private LabeledCodon labeledCodon;
-	private TripletTranslationInfo translationInfo;
+	private AmbigNtTripletInfo translationInfo;
 	
-	public LabeledAminoAcid(LabeledCodon labeledCodon, TripletTranslationInfo translationInfo) {
+	public LabeledAminoAcid(LabeledCodon labeledCodon, AmbigNtTripletInfo translationInfo) {
 		this.labeledCodon = labeledCodon;
 		this.translationInfo = translationInfo;
 	}
@@ -45,7 +45,7 @@ public class LabeledAminoAcid {
 		return translationInfo.getSingleCharTranslationString();
 	}
 
-	public TripletTranslationInfo getTranslationInfo() {
+	public AmbigNtTripletInfo getTranslationInfo() {
 		return translationInfo;
 	}
 	

@@ -29,7 +29,6 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
-import uk.ac.gla.cvr.gluetools.core.translation.CodonTableUtils.TripletTranslationInfo;
 
 // Idea behind this class is to allow project wide settigs to modulate protein translation. 
 // Although, at the moment, these are basically deprecated and don't do anything.
@@ -48,7 +47,7 @@ public class CommandContextTranslator implements Translator {
 		return TranslationUtils.translateToAaString(nts);
 	}
 	
-	public List<TripletTranslationInfo> translate(CharSequence nts) {
+	public List<AmbigNtTripletInfo> translate(CharSequence nts) {
 		return TranslationUtils.translate(nts);
 	}
 }
