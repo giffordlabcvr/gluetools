@@ -20,17 +20,16 @@ public class AmbigNtTripletInfo {
 	private List<Character> tripletNts;
 	private List<Character> definiteAminoAcids;
 	private List<Character> possibleAminoAcids;
-	// for each value in possibleAminoAcids, of those
+	// maps integer AA value to a double. The fraction represents, of those
 	// concrete NT triplets which are consistent with this 
 	// ambiguous NT triplet, what fraction translate to
-	// the AA residue?
-	private List<Double> possibleAminoAcidTripletsFraction;
+	// the AA residue? 0.0 for non-possible AAs.
+	private double[] aaIntToTripletsFraction;
 	private String definiteAasString;
 	private String possibleAasString;
 	private String tripletNtsString;
 	private char singleCharTranslation;
 	private String singleCharTranslationString;
-	private Set<Integer> concreteNtTripletBitmaps;
 	private List<String> concreteNtTripletStrings;
 	
 	AmbigNtTripletInfo(List<Character> tripletNts, List<Character> definiteAminoAcids,
@@ -49,8 +48,11 @@ public class AmbigNtTripletInfo {
 			this.singleCharTranslation = 'X';
 		}
 		this.singleCharTranslationString = new String(new char[]{this.singleCharTranslation});
-		this.possibleAminoAcidTripletsFraction = possibleAminoAcidTripletsFraction;
-		this.concreteNtTripletBitmaps = concreteNtTripletBitmaps;
+		this.aaIntToTripletsFraction = new double[ResidueUtils.AA_NUM_VALUES];
+		for(int i = 0; i < possibleAminoAcids.size(); i++) {
+			char possibleAa = possibleAminoAcids.get(i);
+			this.aaIntToTripletsFraction[ResidueUtils.aaToInt(possibleAa)] = possibleAminoAcidTripletsFraction.get(i);
+		}
 		this.concreteNtTripletStrings = new ArrayList<String>();
 		for(Integer concreteNtTripletBitmap: concreteNtTripletBitmaps) {
 			int[] ntInts = intToConcreteNtTriplet(concreteNtTripletBitmap);
@@ -95,33 +97,33 @@ public class AmbigNtTripletInfo {
 	}
 
 	public boolean isPossibleAa(char aa) {
-		for(Character possibleAa: possibleAminoAcids) {
-			if(possibleAa.charValue() == aa) {
-				return true;
-			}
-		}
-		return false;
+		return getPossibleAaTripletsFraction(aa) > 0.0;
 	}
 	
 	public double getPossibleAaTripletsFraction(char aa) {
-		for(int i = 0; i < possibleAminoAcids.size(); i++) {
-			if(possibleAminoAcids.get(i).charValue() == aa) {
-				return possibleAminoAcidTripletsFraction.get(i);
-			}
-		}
-		throw new RuntimeException("No triplets fraction available for amino acid: "+Character.toString(aa)+" as it is not a possible amino acid for NT triplet "+tripletNtsString);
+		return aaIntToTripletsFraction[ResidueUtils.aaToInt(aa)];
 		
 	}
 	
 	
 	@Override
 	public String toString() {
-		return "AmbigNtTripletInfo [possibleAminoAcidTripletsFraction="
-				+ possibleAminoAcidTripletsFraction + ", definiteAasString="
-				+ definiteAasString + ", possibleAasString="
-				+ possibleAasString + ", singleCharTranslation="
-				+ singleCharTranslation + ", concreteNtTripletStrings="
-				+ concreteNtTripletStrings + "]";
+		StringBuffer possibleAasBuf = new StringBuffer();
+		possibleAasBuf.append("{");
+		for(int i = 0; i < possibleAminoAcids.size(); i++) {
+			if(i > 0) { possibleAasBuf.append(", "); }
+			Character aa = possibleAminoAcids.get(i);
+			possibleAasBuf.append(aa.toString());
+			possibleAasBuf.append("=");
+			possibleAasBuf.append(Double.toString(getPossibleAaTripletsFraction(aa)));
+		}
+		possibleAasBuf.append("}");
+		return "AmbigNtTripletInfo ["+
+				"concreteNtTriplets="+ concreteNtTripletStrings + ", "+
+				"singleCharAa="+ singleCharTranslation + ", "+
+				"definiteAas="+ definiteAasString + ", "+
+				"possibleAas="+ possibleAasBuf.toString()+
+				"]";
 	}
 
 

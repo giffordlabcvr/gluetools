@@ -105,6 +105,8 @@ public class ResidueUtils {
 		AA_Y = 19,	//	Tyr	Tyrosine
 		AA_STOP = 20;	//	Stop codon
 
+	public static final int AA_NUM_VALUES = 21;
+
 	
 	public static char intToAmbigNt(int intAmbigNt) {
 		return ALL_AMBIG_NTS.charAt(intAmbigNt);
