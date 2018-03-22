@@ -38,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
@@ -46,27 +47,42 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN, 
-							VariationMetatagType.MIN_COVERAGE_NTS);
-	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN);
+							VariationMetatagType.MIN_COVERAGE_NTS, 
+							VariationMetatagType.MIN_COMBINED_TRIPLET_FRACTION);
+	private static final List<VariationMetatagType> requiredMetatagTypes = 
+			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN);
 
 	private String simpleAaPattern;
+	
+	// metatag for dealing with ambiguous nucleotide bases.
+	// for each aa residue in the simple pattern, a triplet of three
+	// possibly ambiguous nucleotide characters is scanned. 
+	// the fraction of underlying consistent triplets which code for the
+	// pattern aa is the triplet fraction. If the pattern contains 
+	// multiple residues, the triplet fractions of each are multiplied together.
+	// The combinedTripletFraction is part of the AminoAcidSimplePolymorphismMatchResult
+	// if this is greater than minCombinedTripletFraction, it is considered a match. 
+	// Default is 1.0 (no ambiguity).
+	private Double minCombinedTripletFraction;
 
 	public AminoAcidSimplePolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
-
-	
 	
 	@Override
 	protected void init(CommandContext cmdContext) {
 		super.init(cmdContext);		
 		this.simpleAaPattern = getStringMetatagValue(VariationMetatagType.SIMPLE_AA_PATTERN);
+		this.minCombinedTripletFraction = getDoubleMetatagValue(VariationMetatagType.MIN_COMBINED_TRIPLET_FRACTION);
+		if(this.minCombinedTripletFraction == null) {
+			this.minCombinedTripletFraction = 1.0;
+		}
 	}
 
 
 
 	@Override
-	public VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scan(
+	protected VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidSimplePolymorphismMatchResult> matchResults = new ArrayList<AminoAcidSimplePolymorphismMatchResult>();
@@ -86,36 +102,64 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 
 			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
 				String segNts = ntQaSeg.getNucleotides().toString();
-				String segAas = translator.translateToAaString(segNts);
-				int nextIndex = -1;
+				List<AmbigNtTripletInfo> ambigTripletInfos = translator.translate(segNts);
+				TripletInfosMatch tripletInfosMatch;
+				int nextIndex = 0;
 				do {
-					nextIndex = segAas.indexOf(simpleAaPattern, nextIndex+1);
-					if(nextIndex >= 0) {
-						int queryNtStart = ntQaSeg.getQueryStart() + (nextIndex*3);
+					tripletInfosMatch = tripletInfosMatch(ambigTripletInfos, nextIndex, simpleAaPattern, minCombinedTripletFraction);
+					if(tripletInfosMatch != null) {
+						int queryNtStart = ntQaSeg.getQueryStart() + (tripletInfosMatch.index*3);
 						int queryNtEnd = queryNtStart + (((simpleAaPattern.length()-1)*3)+2);
 						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
 						String queryNts = segNts.substring(
 								queryNtStart - ntQaSeg.getQueryStart(), 
 								(queryNtEnd - ntQaSeg.getQueryStart())+1);
-						String queryAAs = segAas.substring(nextIndex, nextIndex+simpleAaPattern.length());
+						String queryAAs = tripletInfosMatch.queryAas.toString();
 						String firstRefCodon = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
 						String lastRefCodon = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
 						AminoAcidSimplePolymorphismMatchResult aaspmr = 
 								new AminoAcidSimplePolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 										refNtStart, refNtEnd, 
-										queryNtStart, queryNtEnd, queryAAs, queryNts);
+										queryNtStart, queryNtEnd, queryAAs, queryNts, tripletInfosMatch.combinedTripletFraction);
 						matchResults.add(aaspmr);
+						nextIndex = tripletInfosMatch.index+1;
 					}
-				} while(nextIndex != -1);
+				} while(tripletInfosMatch != null);
 			}
 		}
 		return new VariationScanResult<AminoAcidSimplePolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
 	}
 
 
+	private static class TripletInfosMatch {
+		int index;
+		StringBuffer queryAas = new StringBuffer();
+		double combinedTripletFraction = 1.0;
+	}
 
-
+	private TripletInfosMatch tripletInfosMatch(List<AmbigNtTripletInfo> ambigTripletInfos, int fromIndex, String pattern, double minCombinedTripletFraction) {
+		for(int startIndex = fromIndex; startIndex < (ambigTripletInfos.size() - pattern.length()) + 1; startIndex++) {
+			TripletInfosMatch tripletInfosMatch = new TripletInfosMatch();
+			tripletInfosMatch.index = startIndex;
+			boolean match = true;
+			for(int i = 0; i < pattern.length(); i++) {
+				char aa = pattern.charAt(i);
+				AmbigNtTripletInfo ambigNtTripletInfo = ambigTripletInfos.get(startIndex+i);
+				double aaTripletsFraction = ambigNtTripletInfo.getPossibleAaTripletsFraction(aa);
+				tripletInfosMatch.combinedTripletFraction *= aaTripletsFraction;
+				tripletInfosMatch.queryAas.append(ambigNtTripletInfo.getSingleCharTranslation());
+				if(tripletInfosMatch.combinedTripletFraction < minCombinedTripletFraction) {
+					match = false;
+					break;
+				}
+			}
+			if(match) {
+				return tripletInfosMatch;
+			}
+		}
+		return null;
+	}
 	
 	
 }

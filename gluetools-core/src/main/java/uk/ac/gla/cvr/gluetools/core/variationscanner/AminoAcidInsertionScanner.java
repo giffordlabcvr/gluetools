@@ -56,7 +56,7 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 	}
 	
 	@Override
-	public VariationScanResult<AminoAcidInsertionMatchResult> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	protected VariationScanResult<AminoAcidInsertionMatchResult> scanInternal(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidInsertionMatchResult> matchResults = new ArrayList<AminoAcidInsertionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		

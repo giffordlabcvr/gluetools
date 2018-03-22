@@ -72,6 +72,8 @@ public class ResidueUtils {
 		AMBIG_NT_V = 14,
 		AMBIG_NT_N = 15;
 
+	public static final int AMBIG_NT_NUM_VALUES = 16;
+	
 	private static String ALL_CONCRETE_NTS = "ACGT";
 
 	public static final int
@@ -79,6 +81,8 @@ public class ResidueUtils {
 		CONCRETE_NT_C = 1,
 		CONCRETE_NT_G = 2,
 		CONCRETE_NT_T = 3;
+
+	public static final int CONCRETE_NT_NUM_VALUES = 4;
 
 	private static String ALL_AAS = "ACDEFGHIKLMNPQRSTVWY*";
 
@@ -228,7 +232,12 @@ public class ResidueUtils {
 	private static int[][] ambigNtToConcreteNts = new int[16][];
 	// map a bitmap of concrete NTs to an ambiguous NT
 	private static int[] concreteNtsBitmapToAmbigNt = new int[16];
-	
+
+	// maps combination of ambig NT and concrete NT to
+	// probability of concrete NT given ambig NT.
+	private static double ambigNtToConcreteNtProb[][] = 
+			new double[AMBIG_NT_NUM_VALUES][CONCRETE_NT_NUM_VALUES];
+
 	// populate ambigNtToConcreteNtsBitmap
 	static {
 		ambigNtToConcreteNts[AMBIG_NT_A] =
@@ -266,24 +275,28 @@ public class ResidueUtils {
 
 		// populate concreteNtsBitmapToAmbigNt
 		for(int ambigNt = 0 ; ambigNt < 16; ambigNt++) {
+			int[] concreteNts = ambigNtToConcreteNts[ambigNt];
 			if(ambigNt != AMBIG_NT_U) { // don't overwrite mapping for this concrete NT combination.
-				int[] concreteNts = ambigNtToConcreteNts[ambigNt];
 				int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
 				concreteNtsBitmapToAmbigNt[concreteNtsBitmap] = ambigNt;
 				//System.out.println("concreteNts: "+Arrays.stream(concreteNts).boxed().collect(Collectors.toList()));
 				//System.out.println("concreteNtsBitmap: "+Integer.toBinaryString(concreteNtsBitmap));
 				//System.out.println("concreteNtsBitmapToAmbigNt: "+intToAmbigNt(ambigNt));
 			}
-			
-
-			
+			for(int concreteNt: concreteNts) {
+				ambigNtToConcreteNtProb[ambigNt][concreteNt] = 1 / (double) concreteNts.length;
+			}
 		}
 	}
 	
 	public static int[] ambigNtToConcreteNts(int ambigNt) {
 		return ambigNtToConcreteNts[ambigNt];
 	}
-
+	
+	public static double ambigNtToConcreteNtProb(int ambigNt, int concreteNt) {
+		return ambigNtToConcreteNtProb[ambigNt][concreteNt];
+	}
+	
 	public static int concreteNtsToAmbigNt(int[] concreteNts) {
 		int concreteNtsBitmap = BitmapUtils.intsToIntBitmap(concreteNts);
 		return concreteNtsBitmapToAmbigNt(concreteNtsBitmap);

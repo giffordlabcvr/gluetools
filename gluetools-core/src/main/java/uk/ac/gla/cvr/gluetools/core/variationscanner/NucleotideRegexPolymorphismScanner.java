@@ -57,7 +57,7 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 	}
 
 	@Override
-	public VariationScanResult<NucleotideRegexPolymorphismMatchResult> scan(
+	protected VariationScanResult<NucleotideRegexPolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<NucleotideRegexPolymorphismMatchResult> matchResults = new ArrayList<NucleotideRegexPolymorphismMatchResult>();

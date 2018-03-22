@@ -18,19 +18,23 @@ public class NucleotideSimplePolymorphismMatchResult extends VariationScannerMat
 	// nucleotides underlying the matching AAs
 	private String queryNts;
 
+	// product of NT probabilities (<1 where there were ambiguous NTs).
+	private double combinedNtFraction;
+	
 	@Override
 	public int getRefStart() {
 		return refNtStart;
 	}
 
 	public NucleotideSimplePolymorphismMatchResult(int refNtStart, int refNtEnd,
-			int queryNtStart, int queryNtEnd, String queryNts) {
+			int queryNtStart, int queryNtEnd, String queryNts, double combinedNtFraction) {
 		super();
 		this.refNtStart = refNtStart;
 		this.refNtEnd = refNtEnd;
 		this.queryNtStart = queryNtStart;
 		this.queryNtEnd = queryNtEnd;
 		this.queryNts = queryNts;
+		this.combinedNtFraction = combinedNtFraction;
 	}
 
 	public int getRefNtStart() {
@@ -53,6 +57,10 @@ public class NucleotideSimplePolymorphismMatchResult extends VariationScannerMat
 		return queryNts;
 	}
 		
+	public double getCombinedNtFraction() {
+		return combinedNtFraction;
+	}
+
 	@SuppressWarnings("unchecked")
 	public static List<TableColumn<NucleotideSimplePolymorphismMatchResult>> getTableColumns() {
 		return Arrays.asList(
@@ -60,7 +68,8 @@ public class NucleotideSimplePolymorphismMatchResult extends VariationScannerMat
 				column("refNtEnd", npmr -> npmr.getRefNtEnd()),
 				column("queryNtStart", npmr -> npmr.getQueryNtStart()),
 				column("queryNtEnd", npmr -> npmr.getQueryNtEnd()),
-				column("queryNts", npmr -> npmr.getQueryNts())
+				column("queryNts", npmr -> npmr.getQueryNts()),
+				column("combinedNtFraction", npmr -> npmr.getCombinedNtFraction())
 		);
 	}
 	

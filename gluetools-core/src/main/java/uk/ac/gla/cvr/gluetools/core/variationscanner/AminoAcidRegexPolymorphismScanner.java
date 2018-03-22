@@ -67,7 +67,7 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 	}
 
 	@Override
-	public VariationScanResult<AminoAcidRegexPolymorphismMatchResult> scan(
+	protected VariationScanResult<AminoAcidRegexPolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		List<AminoAcidRegexPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidRegexPolymorphismMatchResult>();

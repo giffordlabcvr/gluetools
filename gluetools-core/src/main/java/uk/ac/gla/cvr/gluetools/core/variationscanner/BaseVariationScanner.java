@@ -43,6 +43,7 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	private List<VariationMetatagType> requiredMetatagTypes;
 	private Variation variation;
 	private Map<VariationMetatagType, String> metatagsMap;
+	private boolean validated;
 	
 	protected BaseVariationScanner(List<VariationMetatagType> allowedMetatagTypes, List<VariationMetatagType> requiredMetatagTypes) {
 		super();
@@ -62,7 +63,6 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	}
 	
 	protected void init(CommandContext cmdContext) {
-		validate();
 	}
 
 	protected Variation getVariation() {
@@ -95,8 +95,16 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	public List<VariationMetatagType> getAllowedMetatagTypes() {
 		return allowedMetatagTypes;
 	}
-	
-	public abstract VariationScanResult<M> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs);
+
+	public final VariationScanResult<M> scan(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		if(!this.validated) {
+			this.validate();
+			this.validated = true;
+		}
+		return this.scanInternal(cmdContext, queryToRefNtSegs);
+	}
+
+	protected abstract VariationScanResult<M> scanInternal(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs);
 
 	protected Pattern parseRegex(String stringPattern) {
 		try {
@@ -122,6 +130,19 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		return null;
 	}
 
+	protected Double getDoubleMetatagValue(VariationMetatagType type) {
+		String stringValue = getStringMetatagValue(type);
+		if(stringValue != null) {
+			try {
+				return Double.parseDouble(stringValue);
+			} catch(NumberFormatException nfe) {
+				throwScannerException("Expected double value for metatag: "+type.name());
+			}
+		}
+		return null;
+	}
+
+	
 	protected String getStringMetatagValue(VariationMetatagType type) {
 		return getMetatagsMap().get(type);
 	}
