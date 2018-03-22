@@ -61,7 +61,9 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		this.init(cmdContext);
 	}
 	
-	protected void init(CommandContext cmdContext) {}
+	protected void init(CommandContext cmdContext) {
+		validate();
+	}
 
 	protected Variation getVariation() {
 		return variation;
@@ -109,7 +111,7 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	protected abstract boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs);
 
 	protected Integer getIntMetatagValue(VariationMetatagType type) {
-		String stringValue = getMetatagsMap().get(type);
+		String stringValue = getStringMetatagValue(type);
 		if(stringValue != null) {
 			try {
 				return Integer.parseInt(stringValue);
@@ -118,5 +120,9 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 			}
 		}
 		return null;
+	}
+
+	protected String getStringMetatagValue(VariationMetatagType type) {
+		return getMetatagsMap().get(type);
 	}
 }

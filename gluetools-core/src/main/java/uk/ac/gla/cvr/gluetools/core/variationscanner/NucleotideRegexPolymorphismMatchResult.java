@@ -5,7 +5,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 
-public class NucleotidePolymorphismMatchResult extends VariationScannerMatchResult {
+public class NucleotideRegexPolymorphismMatchResult extends VariationScannerMatchResult {
 
 	// reference NT locations bookending the match
 	private int refNtStart;
@@ -23,7 +23,7 @@ public class NucleotidePolymorphismMatchResult extends VariationScannerMatchResu
 		return refNtStart;
 	}
 
-	public NucleotidePolymorphismMatchResult(int refNtStart, int refNtEnd,
+	public NucleotideRegexPolymorphismMatchResult(int refNtStart, int refNtEnd,
 			int queryNtStart, int queryNtEnd, String queryNts) {
 		super();
 		this.refNtStart = refNtStart;
@@ -54,7 +54,7 @@ public class NucleotidePolymorphismMatchResult extends VariationScannerMatchResu
 	}
 		
 	@SuppressWarnings("unchecked")
-	public static List<TableColumn<NucleotidePolymorphismMatchResult>> getTableColumns() {
+	public static List<TableColumn<NucleotideRegexPolymorphismMatchResult>> getTableColumns() {
 		return Arrays.asList(
 				column("refNtStart", npmr -> npmr.getRefNtStart()),
 				column("refNtEnd", npmr -> npmr.getRefNtEnd()),

@@ -25,16 +25,48 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import java.util.Arrays;
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class BaseNucleotideVariationScanner<M extends VariationScannerMatchResult> extends BaseVariationScanner<M> {
+
+	// if defined the minimum total amount of coverage in nucleotides of the specified region
+	// to be deemed sufficient to conduct a scan.
+	private Integer minCoverageNTs;
 
 	protected BaseNucleotideVariationScanner(
 			List<VariationMetatagType> allowedMetatagTypes,
 			List<VariationMetatagType> requiredMetatagTypes) {
 		super(allowedMetatagTypes, requiredMetatagTypes);
+	}
+
+	@Override
+	protected void init(CommandContext cmdContext) {
+		super.init(cmdContext);		
+		this.minCoverageNTs = getIntMetatagValue(VariationMetatagType.MIN_COVERAGE_NTS);
+	}
+
+	
+	@Override
+	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		Integer refStart = getVariation().getRefStart();
+		Integer refEnd = getVariation().getRefEnd();
+		List<ReferenceSegment> refSegs = Arrays.asList(new ReferenceSegment(refStart, refEnd));
+		if(minCoverageNTs == null) {
+			return ReferenceSegment.covers(queryToRefNtSegs, refSegs);
+		} else {
+			List<NtQueryAlignedSegment> intersectingQaSegs = ReferenceSegment.intersection(queryToRefNtSegs, refSegs, ReferenceSegment.cloneLeftSegMerger());
+			int totalLength = 0;
+			for(NtQueryAlignedSegment intersectingQaSeg: intersectingQaSegs) {
+				totalLength += intersectingQaSeg.getCurrentLength();
+			}
+			return totalLength >= minCoverageNTs;
+		}
 	}
 
 

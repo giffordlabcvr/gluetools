@@ -5,7 +5,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 
-public class AminoAcidPolymorphismMatchResult extends VariationScannerMatchResult {
+public class AminoAcidSimplePolymorphismMatchResult extends VariationScannerMatchResult {
 
 	// labeled codons bookending the match
 	private String firstRefCodon;
@@ -25,7 +25,7 @@ public class AminoAcidPolymorphismMatchResult extends VariationScannerMatchResul
 	// nucleotides underlying the matching AAs
 	private String queryNts;
 
-	public AminoAcidPolymorphismMatchResult(String firstRefCodon,
+	public AminoAcidSimplePolymorphismMatchResult(String firstRefCodon,
 			String lastRefCodon, int refNtStart, int refNtEnd,
 			int queryNtStart, int queryNtEnd, String queryAAs, String queryNts) {
 		super();
@@ -77,7 +77,7 @@ public class AminoAcidPolymorphismMatchResult extends VariationScannerMatchResul
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static List<TableColumn<AminoAcidPolymorphismMatchResult>> getTableColumns() {
+	public static List<TableColumn<AminoAcidSimplePolymorphismMatchResult>> getTableColumns() {
 		return Arrays.asList(
 				column("firstRefCodon", aapmr -> aapmr.getFirstRefCodon()),
 				column("lastRefCodon", aapmr -> aapmr.getLastRefCodon()),

@@ -53,15 +53,15 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionMatchResul
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismMatchResult;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPolymorphismScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidRegexPolymorphismMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidRegexPolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionScanner;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismMatchResult;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotidePolymorphismScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideRegexPolymorphismMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideSimplePolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
 @GlueDataClass(
@@ -96,10 +96,12 @@ public class Variation extends _Variation implements HasDisplayName {
 	}
 	
 	public enum VariationType {
-		nucleotidePolymorphism(NucleotidePolymorphismScanner.class, NucleotidePolymorphismMatchResult.class),
+		nucleotideConcretePolymorphism(NucleotideSimplePolymorphismScanner.class, NucleotideRegexPolymorphismMatchResult.class),
+		nucleotideRegexPolymorphism(NucleotideSimplePolymorphismScanner.class, NucleotideRegexPolymorphismMatchResult.class),
 		nucleotideInsertion(NucleotideInsertionScanner.class, NucleotideInsertionMatchResult.class),
 		nucleotideDeletion(NucleotideDeletionScanner.class, NucleotideDeletionMatchResult.class),
-		aminoAcidPolymorphism(AminoAcidPolymorphismScanner.class, AminoAcidPolymorphismMatchResult.class),
+		aminoAcidConcretePolymorphism(AminoAcidRegexPolymorphismScanner.class, AminoAcidRegexPolymorphismMatchResult.class),
+		aminoAcidRegexPolymorphism(AminoAcidRegexPolymorphismScanner.class, AminoAcidRegexPolymorphismMatchResult.class),
 		aminoAcidInsertion(AminoAcidInsertionScanner.class, AminoAcidInsertionMatchResult.class),
 		aminoAcidDeletion(AminoAcidDeletionScanner.class, AminoAcidDeletionMatchResult.class);
 		
