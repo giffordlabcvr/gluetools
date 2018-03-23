@@ -66,7 +66,7 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 	@Override
 	protected VariationScanResult<NucleotideSimplePolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		List<NucleotideSimplePolymorphismMatchResult> matchResults = new ArrayList<NucleotideSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -88,11 +88,11 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 						int queryNtEnd = queryNtStart + (simpleNtPattern.length()-1);
 						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-						String queryNts = ambigNtsMatch.queryNts.toString();
+						String polymorphismQueryNts = ambigNtsMatch.queryNts.toString();
 						NucleotideSimplePolymorphismMatchResult nspmr = 
 								new NucleotideSimplePolymorphismMatchResult(refNtStart, refNtEnd, 
 										queryNtStart, queryNtEnd, 
-										queryNts, ambigNtsMatch.combinedNtFraction);
+										polymorphismQueryNts, ambigNtsMatch.combinedNtFraction);
 						matchResults.add(nspmr);
 						nextIndex = ambigNtsMatch.index+1;
 					}

@@ -69,7 +69,7 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 	@Override
 	protected VariationScanResult<AminoAcidRegexPolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		List<AminoAcidRegexPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -98,7 +98,7 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 					int queryNtEnd = ntQaSeg.getQueryStart() + (matcherEnd*3) - 1;
 					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-					String queryNts = segNts.substring(
+					String polymorphismQueryNts = segNts.substring(
 							queryNtStart - ntQaSeg.getQueryStart(), 
 							(queryNtEnd - ntQaSeg.getQueryStart())+1);
 					String queryAAs = segAas.substring(matcherStart, matcherEnd);
@@ -107,7 +107,7 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 					AminoAcidRegexPolymorphismMatchResult aapmr = 
 							new AminoAcidRegexPolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 									refNtStart, refNtEnd, 
-									queryNtStart, queryNtEnd, queryAAs, queryNts);
+									queryNtStart, queryNtEnd, queryAAs, polymorphismQueryNts);
 					matchResults.add(aapmr);
 				}
 			}

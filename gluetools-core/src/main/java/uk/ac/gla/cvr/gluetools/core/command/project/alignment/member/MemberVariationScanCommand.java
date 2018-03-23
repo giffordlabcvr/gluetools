@@ -51,6 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
@@ -169,17 +170,19 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 
 		AbstractSequenceObject memberSeqObj = almtMember.getSequence().getSequenceObject();
 		
+		String memberNts = memberSeqObj.getNucleotides(cmdContext);
+		
 		List<NtQueryAlignedSegment> memberToRelatedRefNtSegs = 
 				memberToRelatedRefRefSegs.stream()
 				.map(seg -> new NtQueryAlignedSegment(
 						seg.getRefStart(), seg.getRefEnd(), 
 						seg.getQueryStart(), seg.getQueryEnd(), 
-						memberSeqObj.getNucleotides(cmdContext, seg.getQueryStart(), seg.getQueryEnd())))
+						SegmentUtils.base1SubString(memberNts, seg.getQueryStart(), seg.getQueryEnd())))
 				.collect(Collectors.toList());
 		
 		
 		List<VariationScanResult<?>> variationScanResults = featureLoc.
-				variationScan(cmdContext, memberToRelatedRefNtSegs, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
+				variationScan(cmdContext, memberToRelatedRefNtSegs, memberNts, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 
 		return variationScanResults;

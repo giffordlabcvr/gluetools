@@ -266,11 +266,11 @@ public class FeatureLocation extends _FeatureLocation {
 
 	public List<VariationScanResult<?>> variationScan(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, List<Variation> variationsToScan, 
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, List<Variation> variationsToScan, 
 			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		for(Variation variation: variationsToScan) {
-			VariationScanResult<?> scanResult = variation.getScanner(cmdContext).scan(cmdContext, queryToRefNtSegs);
+			VariationScanResult<?> scanResult = variation.getScanner(cmdContext).scan(cmdContext, queryToRefNtSegs, queryNts);
 			if(scanResult.isPresent() || !excludeAbsent) {
 				if(scanResult.isSufficientCoverage() || !excludeInsufficientCoverage) {
 					variationScanResults.add(scanResult);

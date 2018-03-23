@@ -59,7 +59,7 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 	@Override
 	protected VariationScanResult<NucleotideRegexPolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		List<NucleotideRegexPolymorphismMatchResult> matchResults = new ArrayList<NucleotideRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -77,9 +77,9 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 					int queryNtEnd = ntQaSeg.getQueryStart() + matcher.end()-1;
 					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-					String queryNts = matcher.group();
+					String polymorphismQueryNts = matcher.group();
 					NucleotideRegexPolymorphismMatchResult npmr = 
-							new NucleotideRegexPolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, queryNts);
+							new NucleotideRegexPolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, polymorphismQueryNts);
 					matchResults.add(npmr);
 				}
 			}

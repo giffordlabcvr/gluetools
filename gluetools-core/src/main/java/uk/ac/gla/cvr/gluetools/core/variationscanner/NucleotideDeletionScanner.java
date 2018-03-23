@@ -42,8 +42,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(
 			VariationMetatagType.FLANKING_NTS, 
 			VariationMetatagType.MIN_DELETION_LENGTH_NTS,
-			VariationMetatagType.MAX_DELETION_LENGTH_NTS,
-			VariationMetatagType.MIN_COVERAGE_NTS);
+			VariationMetatagType.MAX_DELETION_LENGTH_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
 
 	private int flankingNTs;
@@ -75,6 +74,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		Integer configuredMaxDeletionLengthNts = getIntMetatagValue(VariationMetatagType.MAX_DELETION_LENGTH_NTS);
 		if(configuredMaxDeletionLengthNts != null) {
 			this.maxDeletionLengthNts = configuredMaxDeletionLengthNts;
+		} else {
 			this.maxDeletionLengthNts = null;
 		}
 	}
@@ -99,7 +99,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 
 	
 	@Override
-	protected VariationScanResult<NucleotideDeletionMatchResult> scanInternal(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	protected VariationScanResult<NucleotideDeletionMatchResult> scanInternal(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		List<NucleotideDeletionMatchResult> matchResults = new ArrayList<NucleotideDeletionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {

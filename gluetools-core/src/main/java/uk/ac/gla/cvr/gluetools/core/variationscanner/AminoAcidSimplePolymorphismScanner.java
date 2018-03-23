@@ -84,7 +84,7 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 	@Override
 	protected VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scanInternal(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		List<AminoAcidSimplePolymorphismMatchResult> matchResults = new ArrayList<AminoAcidSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -112,7 +112,7 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 						int queryNtEnd = queryNtStart + (((simpleAaPattern.length()-1)*3)+2);
 						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-						String queryNts = segNts.substring(
+						String polymorphismQueryNts = segNts.substring(
 								queryNtStart - ntQaSeg.getQueryStart(), 
 								(queryNtEnd - ntQaSeg.getQueryStart())+1);
 						String queryAAs = tripletInfosMatch.queryAas.toString();
@@ -121,7 +121,7 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 						AminoAcidSimplePolymorphismMatchResult aaspmr = 
 								new AminoAcidSimplePolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 										refNtStart, refNtEnd, 
-										queryNtStart, queryNtEnd, queryAAs, queryNts, tripletInfosMatch.combinedTripletFraction);
+										queryNtStart, queryNtEnd, queryAAs, polymorphismQueryNts, tripletInfosMatch.combinedTripletFraction);
 						matchResults.add(aaspmr);
 						nextIndex = tripletInfosMatch.index+1;
 					}
