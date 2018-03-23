@@ -64,6 +64,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 
 	@Override
 	public void init(CommandContext cmdContext) {
+		super.init(cmdContext);
 		FeatureLocation featureLoc = getVariation().getFeatureLoc();
 		this.referenceNucleotides = featureLoc.getReferenceSequence()
 				.getSequence().getSequenceObject().getNucleotides(cmdContext);

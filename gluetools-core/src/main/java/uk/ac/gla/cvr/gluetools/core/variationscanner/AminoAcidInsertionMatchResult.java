@@ -27,10 +27,15 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 	// String of aminoAcids inserted in the query.
 	private String insertedQryAas;
 
+	// whether the insertion is codon aligned. If not then refLastCodonBeforeIns, 
+	// refFirstCodonAfterIns and insertedQryAas is null.
+	private boolean insertionIsCodonAligned;
+	
 	public AminoAcidInsertionMatchResult(String refLastCodonBeforeIns,
 			String refFirstCodonAfterIns, int refLastNtBeforeIns,
 			int refFirstNtAfterIns, int qryFirstInsertedNt,
-			int qryLastInsertedNt, String insertedQryNts, String insertedQryAas) {
+			int qryLastInsertedNt, String insertedQryNts, String insertedQryAas,
+			boolean insertionIsCodonAligned) {
 		super();
 		this.refLastCodonBeforeIns = refLastCodonBeforeIns;
 		this.refFirstCodonAfterIns = refFirstCodonAfterIns;
@@ -40,6 +45,7 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 		this.qryLastInsertedNt = qryLastInsertedNt;
 		this.insertedQryNts = insertedQryNts;
 		this.insertedQryAas = insertedQryAas;
+		this.insertionIsCodonAligned = insertionIsCodonAligned;
 	}
 
 	public String getRefLastCodonBeforeIns() {
@@ -74,6 +80,10 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 		return insertedQryAas;
 	}
 
+	public boolean getInsertionIsCodonAligned() {
+		return insertionIsCodonAligned;
+	}
+
 	@Override
 	public int getRefStart() {
 		return refLastNtBeforeIns;
@@ -90,7 +100,8 @@ public class AminoAcidInsertionMatchResult extends VariationScannerMatchResult {
 				column("qryFirstInsertedNt", aaimr -> aaimr.getQryFirstInsertedNt()),
 				column("qryLastInsertedNt", aaimr -> aaimr.getQryLastInsertedNt()),
 				column("insertedQryNts", aaimr -> aaimr.getInsertedQryNts()),
-				column("insertedQryAas", aaimr -> aaimr.getInsertedQryAas())
+				column("insertedQryAas", aaimr -> aaimr.getInsertedQryAas()),
+				column("insertionIsCodonAligned", aaimr -> aaimr.getInsertionIsCodonAligned())
 		);
 	}
 }
