@@ -53,11 +53,16 @@ public class VariationScanUtils {
 			@Override
 			public void consumeVariations(ReferenceSequence refToScan,
 					FeatureLocation featureLoc, List<Variation> variationsToScan) {
-				matchResultClasses.add(VariationScanRenderHints.getMatchResultClass(variationsToScan));
+				if(!variationsToScan.isEmpty()) {
+					matchResultClasses.add(VariationScanRenderHints.getMatchResultClass(variationsToScan));
+				}
 			}
 		});
 		if(matchResultClasses.size() > 1) {
 			throw new VariationException(Code.VARIATIONS_OF_DIFFERENT_TYPES);
+		}
+		if(matchResultClasses.isEmpty()) {
+			return null;
 		}
 		matchResultClass = matchResultClasses.iterator().next();
 		return matchResultClass;

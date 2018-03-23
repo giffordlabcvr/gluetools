@@ -88,7 +88,7 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 						int queryNtEnd = queryNtStart + (simpleNtPattern.length()-1);
 						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-						String queryNts = segNts.substring(nextIndex, nextIndex+simpleNtPattern.length());
+						String queryNts = ambigNtsMatch.queryNts.toString();
 						NucleotideSimplePolymorphismMatchResult nspmr = 
 								new NucleotideSimplePolymorphismMatchResult(refNtStart, refNtEnd, 
 										queryNtStart, queryNtEnd, 
@@ -116,7 +116,7 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 			boolean match = true;
 			for(int i = 0; i < pattern.length(); i++) {
 				char concreteNt = pattern.charAt(i);
-				char ambigNt = queryAmbigNts.charAt(fromIndex+i);
+				char ambigNt = queryAmbigNts.charAt(startIndex+i);
 				double ntFraction = ResidueUtils
 						.ambigNtToConcreteNtProb(ResidueUtils.ambigNtToInt(ambigNt), 
 								ResidueUtils.concreteNtToInt(concreteNt));

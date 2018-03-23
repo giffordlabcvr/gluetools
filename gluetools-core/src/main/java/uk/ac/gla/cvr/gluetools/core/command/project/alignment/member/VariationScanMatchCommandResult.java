@@ -43,23 +43,25 @@ public class VariationScanMatchCommandResult<M extends VariationScannerMatchResu
 			Class<M> matchResultClass, 
 			TableColumn<VariationScanResult<M>>... vsrColumns) {
 		List<TableColumn<VariationScanMatchResultRow<M>>> columns = new ArrayList<TableColumn<VariationScanMatchResultRow<M>>>();
-		for(TableColumn<VariationScanResult<M>> vsrColumn: vsrColumns) {
-			columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsrColumn.getColumnHeader(), vsmrr -> vsrColumn.populateColumn(vsmrr.getVariationScanResult())));
-		}
-		Method getTableColumnsMethod = null;
-		try {
-			getTableColumnsMethod = matchResultClass.getDeclaredMethod("getTableColumns");
-		} catch (ReflectiveOperationException roe) {
-			throw new RuntimeException("Could not find getTableColumns method in class "+matchResultClass.getSimpleName(), roe);
-		}
-		List<TableColumn<M>> vsmrColumns;
-		try {
-			vsmrColumns = (List<TableColumn<M>>) getTableColumnsMethod.invoke(null);
-		} catch (ReflectiveOperationException roe) {
-			throw new RuntimeException("Failed to invoke getTableColumns method in class "+matchResultClass.getSimpleName(), roe);
-		}
-		for(TableColumn<M> vsmrColumn: vsmrColumns) {
-			columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsmrColumn.getColumnHeader(), vsmrr -> vsmrColumn.populateColumn(vsmrr.getMatchResult())));
+		if(matchResultClass != null) {
+			for(TableColumn<VariationScanResult<M>> vsrColumn: vsrColumns) {
+				columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsrColumn.getColumnHeader(), vsmrr -> vsrColumn.populateColumn(vsmrr.getVariationScanResult())));
+			}
+			Method getTableColumnsMethod = null;
+			try {
+				getTableColumnsMethod = matchResultClass.getDeclaredMethod("getTableColumns");
+			} catch (ReflectiveOperationException roe) {
+				throw new RuntimeException("Could not find getTableColumns method in class "+matchResultClass.getSimpleName(), roe);
+			}
+			List<TableColumn<M>> vsmrColumns;
+			try {
+				vsmrColumns = (List<TableColumn<M>>) getTableColumnsMethod.invoke(null);
+			} catch (ReflectiveOperationException roe) {
+				throw new RuntimeException("Failed to invoke getTableColumns method in class "+matchResultClass.getSimpleName(), roe);
+			}
+			for(TableColumn<M> vsmrColumn: vsmrColumns) {
+				columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsmrColumn.getColumnHeader(), vsmrr -> vsmrColumn.populateColumn(vsmrr.getMatchResult())));
+			}
 		}
 		return columns.toArray(new TableColumn[]{});
 	}
