@@ -77,7 +77,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 			this.flankingAas = 1;
 		}
 		Integer configuredMinDeletionLengthAas = getIntMetatagValue(VariationMetatagType.MIN_DELETION_LENGTH_AAS);
-		if(configuredFlankingAas != null) {
+		if(configuredMinDeletionLengthAas != null) {
 			this.minDeletionLengthAas = configuredMinDeletionLengthAas;
 		} else {
 			this.minDeletionLengthAas = null;

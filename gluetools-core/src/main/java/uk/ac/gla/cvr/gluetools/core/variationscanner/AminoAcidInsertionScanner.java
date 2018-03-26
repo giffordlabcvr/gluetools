@@ -76,7 +76,7 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 			this.flankingAas = 1;
 		}
 		Integer configuredMinInsertionLengthAas = getIntMetatagValue(VariationMetatagType.MIN_INSERTION_LENGTH_AAS);
-		if(configuredFlankingAas != null) {
+		if(configuredMinInsertionLengthAas != null) {
 			this.minInsertionLengthAas = configuredMinInsertionLengthAas;
 		} else {
 			this.minInsertionLengthAas = null;
