@@ -42,13 +42,14 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.VariationType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"create","variation"}, 
-		docoptUsages={"[-C] <variationName> -t <vtype> [-d <description>] ( -n <ntStart> <ntEnd> | -c <lcStart> <lcEnd> )"},
+		docoptUsages={"[-C] <variationName> -t <vtype> [-d <description>] [ -n <ntStart> <ntEnd> | -c <lcStart> <lcEnd> ]"},
 		docoptOptions={
 				"-C, --noCommit                                 Don't commit to the database [default: false]",
 				"-t <vtype>, --vtype <vtype>			        Variation type",
@@ -107,10 +108,16 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
 		labeledCodonBased = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LC_BASED, false)).orElse(false);
-		if(!( 
-			(nucleotideBased && !labeledCodonBased && ntStart != null && ntEnd != null && lcStart == null && lcEnd == null) || 
-			(!nucleotideBased && labeledCodonBased && ntStart == null && ntEnd == null && lcStart != null && lcEnd != null) ) ) {
-			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Variation location must either be nucleotide or labeled-codon based.");
+		if(vtype == VariationType.conjunction) {
+			if(nucleotideBased || labeledCodonBased || ntStart != null || ntEnd != null || lcStart != null || lcEnd != null) {
+				throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Variation location is not used for conjunctions.");
+			}
+		} else {
+			if(!( 
+					(nucleotideBased && !labeledCodonBased && ntStart != null && ntEnd != null && lcStart == null && lcEnd == null) || 
+					(!nucleotideBased && labeledCodonBased && ntStart == null && ntEnd == null && lcStart != null && lcEnd != null) ) ) {
+				throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Variation location must be defined, either nucleotide or labeled-codon based.");
+			}
 		}
 
 	}
@@ -126,37 +133,39 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 		variation.setFeatureLoc(featureLoc);
 		variation.setType(vtype.name());
 		
-		if(labeledCodonBased) {
-			if(!featureLoc.getFeature().codesAminoAcids()) {
-				throw new VariationException(Code.VARIATION_CODON_LOCATION_CAN_NOT_BE_USED_FOR_NUCLEOTIDE_VARIATIONS, 
-						getRefSeqName(), getFeatureName(), variationName);
+		if(vtype != VariationType.conjunction) { // conjunction does not require a location.
+			if(labeledCodonBased) {
+				if(!featureLoc.getFeature().codesAminoAcids()) {
+					throw new VariationException(Code.VARIATION_CODON_LOCATION_CAN_NOT_BE_USED_FOR_NUCLEOTIDE_VARIATIONS, 
+							getRefSeqName(), getFeatureName(), variationName);
+				}
+
+				Map<String, LabeledCodon> labelToLabeledCodon = featureLoc.getLabelToLabeledCodon(cmdContext);
+				LabeledCodon startLabeledCodon = labelToLabeledCodon.get(lcStart);
+				if(startLabeledCodon == null) {
+					throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
+							getRefSeqName(), getFeatureName(), variationName, lcStart, 
+							featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
+							featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
+				}
+				ntStart = startLabeledCodon.getNtStart();
+				LabeledCodon endLabeledCodon = labelToLabeledCodon.get(lcEnd);
+				if(endLabeledCodon == null) {
+					throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
+							getRefSeqName(), getFeatureName(), variationName, lcEnd, 
+							featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
+							featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
+				}
+				ntEnd = endLabeledCodon.getNtStart()+2;
 			}
-			
-			Map<String, LabeledCodon> labelToLabeledCodon = featureLoc.getLabelToLabeledCodon(cmdContext);
-			LabeledCodon startLabeledCodon = labelToLabeledCodon.get(lcStart);
-			if(startLabeledCodon == null) {
-				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
-						getRefSeqName(), getFeatureName(), variationName, lcStart, 
-						featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
-						featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
+			if(ntStart > ntEnd) {
+				throw new VariationException(Code.VARIATION_LOCATION_ENDPOINTS_REVERSED, 
+						getRefSeqName(), getFeatureName(), variationName, Integer.toString(ntStart), Integer.toString(ntEnd));
 			}
-			ntStart = startLabeledCodon.getNtStart();
-			LabeledCodon endLabeledCodon = labelToLabeledCodon.get(lcEnd);
-			if(endLabeledCodon == null) {
-				throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
-						getRefSeqName(), getFeatureName(), variationName, lcEnd, 
-						featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
-						featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
-			}
-			ntEnd = endLabeledCodon.getNtStart()+2;
-		}
-		if(ntStart > ntEnd) {
-			throw new VariationException(Code.VARIATION_LOCATION_ENDPOINTS_REVERSED, 
-					getRefSeqName(), getFeatureName(), variationName, Integer.toString(ntStart), Integer.toString(ntEnd));
-		}
-		variation.setRefStart(ntStart);
-		variation.setRefEnd(ntEnd);
-		
+			variation.setRefStart(ntStart);
+			variation.setRefEnd(ntEnd);
+		}		
+
 		description.ifPresent(d -> variation.setDescription(d));
 		if(noCommit) {
 			cmdContext.cacheUncommitted(variation);

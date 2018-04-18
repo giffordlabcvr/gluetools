@@ -28,6 +28,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 
 	private List<BaseVariationScanner<?>> conjunctScanners = new ArrayList<BaseVariationScanner<?>>();
 	private int numConjuncts;
+	private Integer refStart = Integer.MAX_VALUE, refEnd = Integer.MIN_VALUE;
 	
 	public ConjunctionScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -45,7 +46,10 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 			}
 			numConjuncts = i;
 			Variation conjunctVariation_i = GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(referenceName, featureName, conjunctName_i));
-			conjunctScanners.add(conjunctVariation_i.getScanner(cmdContext));
+			BaseVariationScanner<?> conjunctScanner = conjunctVariation_i.getScanner(cmdContext);
+			this.refStart = Math.min(this.refStart, conjunctScanner.getRefStart());
+			this.refEnd = Math.max(this.refEnd, conjunctScanner.getRefEnd());
+			conjunctScanners.add(conjunctScanner);
 		}
 		
 	}
@@ -56,14 +60,16 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		int lastNonNullConjunct = 1;
 		for(int i = 2; i <= MAX_CONJUNCT_INDEX; i++) {
 			String conjunctName_i = getStringMetatagValue(VariationMetatagType.valueOf("CONJUNCT_NAME_"+i));
-			if(conjunctName_i != null && lastNonNullConjunct < i - 1) {
-				throwScannerException("Conjunction variation should use consecutive conjunct indices");
+			if(conjunctName_i != null) {
+				if(lastNonNullConjunct < i - 1) {
+					throwScannerException("Conjunction variation should use consecutive conjunct indices");
+				}
+				lastNonNullConjunct = i;
 			}
-			lastNonNullConjunct = i;
 		}
-		for(int i = 1; i <= MAX_CONJUNCT_INDEX; i++) {
+		for(int i = 1; i <= numConjuncts; i++) {
 			try {
-				conjunctScanners.get(i).validate();
+				conjunctScanners.get(i-1).validate();
 			} catch(GlueException ge) {
 				throwScannerException(ge, "Validation of conjunct "+i+" failed: "+ge.getLocalizedMessage());
 			}
@@ -77,7 +83,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 
 	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
 		for(int i = 1; i <= numConjuncts; i++) {
-			boolean conjunctResult = conjunctScanners.get(i).computeSufficientCoverage(queryToRefNtSegs);
+			boolean conjunctResult = conjunctScanners.get(i-1).computeSufficientCoverage(queryToRefNtSegs);
 			if(!conjunctResult) {
 				return false;
 			}
@@ -91,19 +97,19 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(!sufficientCoverage) {
-			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), sufficientCoverage, Collections.emptyList());
+			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Collections.emptyList());
 		}
 		ConjunctionMatchResult conjunctionMatchResult = new ConjunctionMatchResult();
 		boolean isPresent = true;
 		for(int i = 1; i <= numConjuncts; i++) {
-			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i);
+			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i-1);
 			Class<? extends VariationScannerMatchResult> conjunctMatchResultClass = conjunctScanner.getVariation().getVariationType().getMatchResultClass();
 			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, cmdContext, queryToRefNtSegs, queryNts);
 		}
 		if(isPresent) {
-			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), sufficientCoverage, Arrays.asList(conjunctionMatchResult));
+			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Arrays.asList(conjunctionMatchResult));
 		} else {
-			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), sufficientCoverage, Collections.emptyList());
+			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Collections.emptyList());
 		}
 	}
 	
@@ -116,6 +122,16 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		List<D> conjunctMatchResults = conjunctScanResult.getVariationScannerMatchResults();
 		conjunctionMatchResult.setConjunctResults(conjunctIndex, conjunctMatchResultClass, conjunctMatchResults);
 		return conjunctScanResult.isPresent();
+	}
+
+	@Override
+	public Integer getRefStart() {
+		return refStart;
+	}
+
+	@Override
+	public Integer getRefEnd() {
+		return refEnd;
 	}
 	
 }

@@ -35,7 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 public class VariationScanResult<M extends VariationScannerMatchResult> {
 
 	private Map<String,String> variationPkMap;
-	private int refStart, refEnd;
+	private Integer refStart, refEnd;
 	// sufficientCoverage == true iff the query had sufficient nucleotide coverage of the 
 	// reference region to scan for the variation.
 	private boolean sufficientCoverage; 
@@ -43,12 +43,17 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 	private String variationRenderedName;
 	
 	private List<M> scannerMatchResults;
-	
+
 	public VariationScanResult(Variation variation, boolean sufficientCoverage, List<M> scannerMatchResults) {
+		this(variation, variation.getRefStart(), variation.getRefEnd(), sufficientCoverage, scannerMatchResults);
+	}
+		
+	
+	public VariationScanResult(Variation variation, Integer refStart, Integer refEnd, boolean sufficientCoverage, List<M> scannerMatchResults) {
 		super();
 		this.variationPkMap = variation.pkMap();
-		this.refStart = variation.getRefStart();
-		this.refEnd = variation.getRefEnd();
+		this.refStart = refStart;
+		this.refEnd = refEnd;
 		this.sufficientCoverage = sufficientCoverage;
 		this.present = true;
 		this.scannerMatchResults = scannerMatchResults;
@@ -78,14 +83,6 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		return variationRenderedName;
 	}
 
-	public int getMinLocStart() {
-		return refStart;
-	}
-
-	public int getMaxLocEnd() {
-		return refEnd;
-	}
-
 	public boolean isPresent() {
 		return present;
 	}
@@ -98,7 +95,6 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		return scannerMatchResults;
 	}
 	
-
 	public static void sortVariationScanResults(List<VariationScanResult<?>> variationScanResults) {
 		Comparator<VariationScanResult<?>> comparator = new Comparator<VariationScanResult<?>>(){
 			@Override
@@ -109,8 +105,8 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 				}
 				if(comp == 0 && o1.present) {
 					
-					Integer o1qStart = o1.minRefStart();
-					Integer o2qStart = o2.minRefStart();
+					Integer o1qStart = o1.computeMinMatchStart();
+					Integer o2qStart = o2.computeMinMatchStart();
 					
 					if(comp == 0 && o1qStart != null && o2qStart != null) {
 						comp = Integer.compare(o1qStart, o2qStart);
@@ -141,15 +137,23 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		Collections.sort(variationScanResults, comparator);
 	}
 
-	private int minRefStart() {
+	private Integer computeMinMatchStart() {
 		if(scannerMatchResults.isEmpty()) {
-			return 0;
+			return null;
 		}
-		int minRefStart = Integer.MAX_VALUE;
+		int minMatchStart = Integer.MAX_VALUE;
 		for(VariationScannerMatchResult scannerMatchResult: scannerMatchResults) {
-			minRefStart = Math.min(minRefStart, scannerMatchResult.getRefStart());
+			minMatchStart = Math.min(minMatchStart, scannerMatchResult.getRefStart());
 		}
-		return minRefStart;
+		return minMatchStart;
 	}
-	
+
+	public Integer getRefStart() {
+		return refStart;
+	}
+
+	public Integer getRefEnd() {
+		return refEnd;
+	}
+
 }

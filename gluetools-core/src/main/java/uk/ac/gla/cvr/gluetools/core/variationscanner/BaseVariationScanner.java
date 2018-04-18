@@ -154,7 +154,14 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		return null;
 	}
 
-	
+	public Integer getRefStart() {
+		return getVariation().getRefStart();
+	}
+
+	public Integer getRefEnd() {
+		return getVariation().getRefEnd();
+	}
+
 	protected String getStringMetatagValue(VariationMetatagType type) {
 		return getMetatagsMap().get(type);
 	}

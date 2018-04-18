@@ -125,9 +125,9 @@
 		<db-attribute name="display_name" type="VARCHAR" length="100"/>
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="ref_end" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="ref_end" type="INTEGER"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="ref_start" type="INTEGER" isMandatory="true"/>
+		<db-attribute name="ref_start" type="INTEGER"/>
 		<db-attribute name="type" type="VARCHAR" isMandatory="true" length="50"/>
 	</db-entity>
 	<db-entity name="variation_metatag">

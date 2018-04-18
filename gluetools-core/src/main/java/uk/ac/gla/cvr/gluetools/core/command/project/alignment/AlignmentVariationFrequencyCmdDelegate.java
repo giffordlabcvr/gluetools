@@ -119,7 +119,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 						double pctWherePresent = 100.0 * membersWherePresent / (membersWherePresent + membersWhereAbsent);
 						double pctWhereAbsent = 100.0 * membersWhereAbsent / (membersWherePresent + membersWhereAbsent);
 						return new VariationScanMemberCount(vInfo.variationPkMap,
-								vInfo.minLocStart,
+								vInfo.refStart,
 								membersWherePresent, pctWherePresent, 
 								membersWhereAbsent, pctWhereAbsent);
 					})
@@ -196,7 +196,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 	
 	private void registerScanResult(Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo,
 			Alignment namedAlignment, boolean alignmentRecursive,
-			AlignmentMember almtMember, VariationScanResult variationScanResult) {
+			AlignmentMember almtMember, VariationScanResult<?> variationScanResult) {
 		
 		List<Alignment> alignmentsToRecord;
 		if(alignmentRecursive) {
@@ -214,7 +214,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 			Map<String,String> varPkMap = variationScanResult.getVariationPkMap();
 			VariationInfo variationInfo = varPkMapToInfo.get(varPkMap);
 			if(variationInfo == null) {
-				variationInfo = new VariationInfo(varPkMap, variationScanResult.getMinLocStart());
+				variationInfo = new VariationInfo(varPkMap, variationScanResult.getRefStart());
 				varPkMapToInfo.put(varPkMap, variationInfo);
 			}
 			if(variationScanResult.isPresent()) {
@@ -228,13 +228,13 @@ public class AlignmentVariationFrequencyCmdDelegate {
 
 	private class VariationInfo {
 		Map<String,String> variationPkMap;
-		int minLocStart;
+		int refStart;
 		int membersConfirmedPresent = 0;
 		int membersConfirmedAbsent = 0;
-		public VariationInfo(Map<String,String> variationPkMap, int minLocStart) {
+		public VariationInfo(Map<String,String> variationPkMap, int refStart) {
 			super();
 			this.variationPkMap = variationPkMap;
-			this.minLocStart = minLocStart;
+			this.refStart = refStart;
 		}
 	}
 

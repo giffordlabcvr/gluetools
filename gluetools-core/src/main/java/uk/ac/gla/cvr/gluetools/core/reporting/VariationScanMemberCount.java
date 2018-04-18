@@ -68,18 +68,14 @@ public class VariationScanMemberCount {
 	public double getPctWhereAbsent() {
 		return pctWhereAbsent;
 	}
-	
-	public int getMinLocStart() {
-		return minLocStart;
-	}
 
 	public static void sortVariationScanMemberCounts(List<VariationScanMemberCount> variationScanMemberCounts) {
 		Comparator<VariationScanMemberCount> comparator = new Comparator<VariationScanMemberCount>(){
 			@Override
 			public int compare(VariationScanMemberCount o1, VariationScanMemberCount o2) {
 				int comp = o1.getVariationPkMap().get(Variation.REF_SEQ_NAME_PATH).compareTo(o2.getVariationPkMap().get(Variation.REF_SEQ_NAME_PATH));
-				Integer minLocStart1 = o1.getMinLocStart();
-				Integer minLocStart2 = o2.getMinLocStart();
+				Integer minLocStart1 = o1.minLocStart;
+				Integer minLocStart2 = o2.minLocStart;
 				if(comp == 0 && minLocStart1 != null && minLocStart2 != null) {
 					comp = Integer.compare(minLocStart1, minLocStart2);
 				}

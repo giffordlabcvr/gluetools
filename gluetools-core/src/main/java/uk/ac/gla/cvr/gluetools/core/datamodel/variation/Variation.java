@@ -58,6 +58,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidRegexPolymorphismS
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidSimplePolymorphismMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidSimplePolymorphismScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ConjunctionMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ConjunctionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.NucleotideInsertionMatchResult;
@@ -107,7 +109,8 @@ public class Variation extends _Variation implements HasDisplayName {
 		aminoAcidSimplePolymorphism(AminoAcidSimplePolymorphismScanner.class, AminoAcidSimplePolymorphismMatchResult.class),
 		aminoAcidRegexPolymorphism(AminoAcidRegexPolymorphismScanner.class, AminoAcidRegexPolymorphismMatchResult.class),
 		aminoAcidInsertion(AminoAcidInsertionScanner.class, AminoAcidInsertionMatchResult.class),
-		aminoAcidDeletion(AminoAcidDeletionScanner.class, AminoAcidDeletionMatchResult.class);
+		aminoAcidDeletion(AminoAcidDeletionScanner.class, AminoAcidDeletionMatchResult.class),
+		conjunction(ConjunctionScanner.class, ConjunctionMatchResult.class);
 		
 		private Class<? extends BaseVariationScanner<?>> scannerClass;
 		private Class<? extends VariationScannerMatchResult> matchResultClass;
@@ -171,6 +174,9 @@ public class Variation extends _Variation implements HasDisplayName {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
 						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}
+		} else if(variationType.name().equals("conjunction")) {
+			// variation does not have refStart / refEnd
+			
 		} else {
 			throw new RuntimeException("Unknown variation type");
 		}
