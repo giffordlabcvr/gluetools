@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
@@ -59,7 +60,11 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	public final void init(CommandContext cmdContext, Variation variation) {
 		this.variation = variation;
 		this.metatagsMap = variation.getMetatagsMap();
-		this.init(cmdContext);
+		try {
+			this.init(cmdContext);
+		} catch(GlueException ge) {
+			throwScannerException(ge, "Unable to initialise: "+ge.getLocalizedMessage());
+		}
 	}
 	
 	protected void init(CommandContext cmdContext) {
@@ -92,6 +97,13 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 				variation.getName(), errorTxt);
 	}
 
+	public void throwScannerException(Throwable cause, String errorTxt) {
+		throw new VariationException(cause, Code.VARIATION_SCANNER_EXCEPTION, variation.getFeatureLoc().getReferenceSequence().getName(), 
+				variation.getFeatureLoc().getFeature().getName(), 
+				variation.getName(), errorTxt);
+	}
+
+	
 	public List<VariationMetatagType> getAllowedMetatagTypes() {
 		return allowedMetatagTypes;
 	}

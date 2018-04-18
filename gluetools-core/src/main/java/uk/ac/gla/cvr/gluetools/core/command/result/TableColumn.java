@@ -45,7 +45,10 @@ public class TableColumn<S> {
 	public Object populateColumn(S object) {
 		return columnPopulator.apply(object);
 	}
-	
-	
+
+	public Function<S, Object> getColumnPopulator() {
+		return columnPopulator;
+	}
+
 	
 }
