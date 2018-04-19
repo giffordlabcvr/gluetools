@@ -37,7 +37,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanCommandResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanMatchCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanMatchesAsDocumentResult;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanMatchesAsTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanUtils;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -119,7 +120,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		}
 		
 		Class<? extends VariationScannerMatchResult> matchResultClass = null;
-		if(variationScanRenderHints.isShowMatchesSeparately()) {
+		if(variationScanRenderHints.showMatchesAsTable()) {
 			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, refsToScan, featuresToScan, whereClause);
 		}
 		
@@ -158,8 +159,10 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 		
-		if(variationScanRenderHints.isShowMatchesSeparately()) {
-			return new VariationScanMatchCommandResult(matchResultClass, variationScanResults);
+		if(variationScanRenderHints.showMatchesAsTable()) {
+			return new VariationScanMatchesAsTableResult(matchResultClass, variationScanResults);
+		} else if(variationScanRenderHints.showMatchesAsDocument()) {
+			return new VariationScanMatchesAsDocumentResult(variationScanResults);
 		} else {
 			return new VariationScanCommandResult(variationScanResults);
 		}

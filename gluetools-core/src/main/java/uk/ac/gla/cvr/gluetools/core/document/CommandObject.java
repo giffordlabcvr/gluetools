@@ -91,6 +91,8 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 			return setBoolean(name, ((Boolean) value).booleanValue());
 		} else if(value instanceof String) {
 			return setString(name, ((String) value));
+		} else if(value instanceof Date) {
+			return setDate(name, ((Date) value));
 		} else {
 			throw new RuntimeException("Object of type: "+value.getClass().getCanonicalName()+" cannot be put in a GLUE document");
 		}

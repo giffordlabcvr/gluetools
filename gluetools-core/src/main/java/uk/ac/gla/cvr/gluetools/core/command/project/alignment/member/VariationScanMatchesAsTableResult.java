@@ -1,6 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +10,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
-public class VariationScanMatchCommandResult<M extends VariationScannerMatchResult> extends BaseTableResult<VariationScanMatchResultRow<M>> {
+public class VariationScanMatchesAsTableResult<M extends VariationScannerMatchResult> extends BaseTableResult<VariationScanMatchResultRow<M>> {
 
-	public VariationScanMatchCommandResult(Class<M> matchResultClass, List<VariationScanResult<M>> vsrs) {
+	public VariationScanMatchesAsTableResult(Class<M> matchResultClass, List<VariationScanResult<M>> vsrs) {
 		super("variationScanMatchCommandResult", 
 				resultRowsFromVariationScanResults(vsrs), 
 				generateResultColumns(matchResultClass, 
@@ -47,20 +46,10 @@ public class VariationScanMatchCommandResult<M extends VariationScannerMatchResu
 			for(TableColumn<VariationScanResult<M>> vsrColumn: vsrColumns) {
 				columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsrColumn.getColumnHeader(), vsmrr -> vsrColumn.populateColumn(vsmrr.getVariationScanResult())));
 			}
-			Method getTableColumnsMethod = null;
-			try {
-				getTableColumnsMethod = matchResultClass.getDeclaredMethod("getTableColumns");
-			} catch (ReflectiveOperationException roe) {
-				throw new RuntimeException("Could not find getTableColumns method in class "+matchResultClass.getSimpleName(), roe);
-			}
-			List<TableColumn<M>> vsmrColumns;
-			try {
-				vsmrColumns = (List<TableColumn<M>>) getTableColumnsMethod.invoke(null);
-			} catch (ReflectiveOperationException roe) {
-				throw new RuntimeException("Failed to invoke getTableColumns method in class "+matchResultClass.getSimpleName(), roe);
-			}
-			for(TableColumn<M> vsmrColumn: vsmrColumns) {
-				columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsmrColumn.getColumnHeader(), vsmrr -> vsmrColumn.populateColumn(vsmrr.getMatchResult())));
+			List<TableColumn<? extends VariationScannerMatchResult>> vsmrColumns = VariationScannerMatchResult.getColumnsForMatchResultClass(matchResultClass);
+			for(TableColumn<? extends VariationScannerMatchResult> vsmrColumn: vsmrColumns) {
+				TableColumn<M> castVsmrColumn = (TableColumn<M>) vsmrColumn;
+				columns.add(new TableColumn<VariationScanMatchResultRow<M>>(vsmrColumn.getColumnHeader(), vsmrr -> castVsmrColumn.populateColumn(vsmrr.getMatchResult())));
 			}
 		}
 		return columns.toArray(new TableColumn[]{});

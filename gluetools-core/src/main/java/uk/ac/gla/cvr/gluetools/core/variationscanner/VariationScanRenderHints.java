@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
@@ -38,18 +39,30 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public class VariationScanRenderHints implements Plugin {
 
-	public static String SHOW_MATCHES_SEPARATELY = "showMatchesSeparately";
+	public static String SHOW_MATCHES_AS_TABLE = "showMatchesAsTable";
+	public static String SHOW_MATCHES_AS_DOCUMENT = "showMatchesAsDocument";
 	
-	// add a row for each match
-	private boolean showMatchesSeparately;
+	// table with a row for each match
+	private boolean showMatchesAsTable;
+
+	// document with an object for each match
+	private boolean showMatchesAsDocument;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		this.showMatchesSeparately = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCHES_SEPARATELY, true);
+		this.showMatchesAsTable = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCHES_AS_TABLE, true);
+		this.showMatchesAsDocument = PluginUtils.configureBooleanProperty(configElem, SHOW_MATCHES_AS_DOCUMENT, true);
+		if(showMatchesAsTable && showMatchesAsDocument) {
+			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "Only one of --showMatchesAsTable and --showMatchesAsDocument may be used");
+		}
 	}
 	
-	public boolean isShowMatchesSeparately() {
-		return showMatchesSeparately;
+	public boolean showMatchesAsTable() {
+		return showMatchesAsTable;
+	}
+
+	public boolean showMatchesAsDocument() {
+		return showMatchesAsDocument;
 	}
 
 	public static Class<? extends VariationScannerMatchResult> getMatchResultClass(List<Variation> variations) {

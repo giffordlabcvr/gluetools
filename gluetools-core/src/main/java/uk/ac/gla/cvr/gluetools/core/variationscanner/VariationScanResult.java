@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.VariationType;
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 
 public class VariationScanResult<M extends VariationScannerMatchResult> {
 
@@ -41,6 +44,7 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 	private boolean sufficientCoverage; 
 	private boolean present; // true iff any matches were found.
 	private String variationRenderedName;
+	private VariationType variationType;
 	
 	private List<M> scannerMatchResults;
 
@@ -61,6 +65,7 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 			this.present = false;
 		}
 		this.variationRenderedName = variation.getRenderedName();
+		this.variationType = variation.getVariationType();
 	}
 
 	public Map<String,String> getVariationPkMap() {
@@ -77,6 +82,10 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 
 	public String getVariationName() {
 		return variationPkMap.get(Variation.NAME_PROPERTY);
+	}
+
+	public VariationType getVariationType() {
+		return variationType;
 	}
 
 	public String getVariationRenderedName() {
@@ -154,6 +163,19 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 
 	public Integer getRefEnd() {
 		return refEnd;
+	}
+
+
+	public static void variationScanResultAsCommandObject(CommandObject cmdObject, VariationScanResult<?> vsr) {
+		cmdObject.set("referenceName", vsr.getVariationReferenceName());
+		cmdObject.set("featureName", vsr.getVariationFeatureName());
+		cmdObject.set("variationName", vsr.getVariationName());
+		cmdObject.set("variationType", vsr.getVariationType().name());
+		CommandArray matchesArray = cmdObject.setArray("matches");
+		for(VariationScannerMatchResult vsmr: vsr.getVariationScannerMatchResults()) {
+			CommandObject matchObject = matchesArray.addObject();
+			vsmr.populateMatchObject(matchObject);
+		}
 	}
 
 }

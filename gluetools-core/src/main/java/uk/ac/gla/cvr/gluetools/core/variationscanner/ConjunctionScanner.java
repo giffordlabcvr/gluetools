@@ -119,8 +119,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		@SuppressWarnings("unchecked")
 		BaseVariationScanner<D> castConjunctScanner = (BaseVariationScanner<D>) conjunctScanner;
 		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(cmdContext, queryToRefNtSegs, queryNts);
-		List<D> conjunctMatchResults = conjunctScanResult.getVariationScannerMatchResults();
-		conjunctionMatchResult.setConjunctResults(conjunctIndex, conjunctMatchResultClass, conjunctMatchResults);
+		conjunctionMatchResult.setConjunctResults(conjunctIndex, conjunctScanResult);
 		return conjunctScanResult.isPresent();
 	}
 

@@ -59,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v]" },
+		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v | -o]" },
 		docoptOptions = { 
 		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
 		"-m, --multiReference                           Scan across references",
@@ -68,7 +68,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 		"-w <whereClause>, --whereClause <whereClause>  Qualify variations",
 		"-e, --excludeAbsent                            Exclude absent variations",
 		"-i, --excludeInsufficientCoverage              Exclude where insufficient coverage",
-		"-v, --showMatchesSeparately                    Show one row per match",
+		"-v, --showMatchesAsTable                       Table with one row per match",
+		"-o, --showMatchesAsDocument                    Document with one object per match",
 		},
 		furtherHelp = 
 		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
@@ -81,7 +82,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 		"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results. "+
 		"If --excludeInsufficientCoverage is used, variations for which the query did not sufficiently cover the scanned "+
 		"area will not appear in the results. "+
-		"If --showMatchesSeparately is used, a row is returned for each individual match. ",
+		"If --showMatchesAsTable is used, a table is returned with one row for each individual match. In this case the "+
+		"selected variations must all be of the same type. "+
+		"If --showMatchsAsDocument is used, a document is returned with an object for each individual match.",
 		metaTags = {}	
 )
 public class MemberVariationScanCommand extends MemberModeCommand<CommandResult> {
@@ -138,25 +141,27 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
 		Class<? extends VariationScannerMatchResult> matchResultClass = null;
-		if(variationScanRenderHints.isShowMatchesSeparately()) {
+		if(variationScanRenderHints.showMatchesAsTable()) {
 			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, refsToScan, featuresToScan, whereClause);
 		}
 		
-		List<VariationScanResult<?>> scanResults = new ArrayList<VariationScanResult<?>>();
+		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		VariationScanUtils.visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationScanUtils.VariationConsumer() {
 			@Override
 			public void consumeVariations(ReferenceSequence refToScan,
 					FeatureLocation featureLoc, List<Variation> variationsToScan) {
-				scanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, 
+				variationScanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, 
 						excludeAbsent, excludeInsufficientCoverage));
 			}
 		});
 
-		VariationScanResult.sortVariationScanResults(scanResults);
-		if(variationScanRenderHints.isShowMatchesSeparately()) {
-			return new VariationScanMatchCommandResult(matchResultClass, scanResults);
+		VariationScanResult.sortVariationScanResults(variationScanResults);
+		if(variationScanRenderHints.showMatchesAsTable()) {
+			return new VariationScanMatchesAsTableResult(matchResultClass, variationScanResults);
+		} else if(variationScanRenderHints.showMatchesAsDocument()) {
+			return new VariationScanMatchesAsDocumentResult(variationScanResults);
 		} else {
-			return new VariationScanCommandResult(scanResults);
+			return new VariationScanCommandResult(variationScanResults);
 		}
 	}
 

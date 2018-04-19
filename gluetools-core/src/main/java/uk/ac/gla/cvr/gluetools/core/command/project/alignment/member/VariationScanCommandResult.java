@@ -13,6 +13,7 @@ public class VariationScanCommandResult extends BaseTableResult<VariationScanRes
 				column("variationRefSeq", vsr -> vsr.getVariationPkMap().get(Variation.REF_SEQ_NAME_PATH)),
 				column("variationFeature", vsr -> vsr.getVariationPkMap().get(Variation.FEATURE_NAME_PATH)),
 				column("variationName", vsr -> vsr.getVariationPkMap().get(Variation.NAME_PROPERTY)),
+				column("variationType", vsr -> vsr.getVariationType().name()),
 				column("sufficientCoverage", vsr -> vsr.isSufficientCoverage()),
 				column("present", vsr -> vsr.isPresent())
 		);

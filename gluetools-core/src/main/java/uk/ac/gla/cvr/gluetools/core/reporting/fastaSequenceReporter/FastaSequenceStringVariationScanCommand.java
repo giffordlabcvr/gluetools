@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"string", "variation", "scan"}, 
 		description = "Scan a FASTA string for variations", 
-		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-i] [-v]"+
+		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-i] [-v | -o]"+
 		""},
 		docoptOptions = { 
 				"-s <fastaString>, --fastaString <fastaString>        FASTA input string",
@@ -53,7 +53,8 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
 				"-e, --excludeAbsent                                  Exclude absent variations",
 				"-i, --excludeInsufficientCoverage                    Exclude where insufficient coverage",
-				"-v, --showMatchesSeparately                          Show one row per match",
+				"-v, --showMatchesAsTable                             Table with one row per match",
+				"-o, --showMatchesAsDocument                          Document with one object per match",
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
@@ -73,7 +74,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"If --excludeAbsent is used, variations which were confirmed to be absent will not appear in the results. "+
 				"If --excludeInsufficientCoverage is used, variations for which the query did not sufficiently cover the scanned "+
 				"area will not appear in the results. "+
-				"If --showMatchesSeparately is used, a row is returned for each individual match. ",
+				"If --showMatchesAsTable is used, a table is returned with one row for each individual match. In this case the "+
+				"selected variations must all be of the same type. "+
+				"If --showMatchsAsDocument is used, a document is returned with an object for each individual match.",
 		metaTags = {}	
 )
 public class FastaSequenceStringVariationScanCommand extends FastaSequenceBaseVariationScanCommand 
