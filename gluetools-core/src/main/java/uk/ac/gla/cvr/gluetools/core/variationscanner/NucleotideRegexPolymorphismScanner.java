@@ -40,8 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationScanner<NucleotideRegexPolymorphismMatchResult> {
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
-			Arrays.asList(VariationMetatagType.REGEX_NT_PATTERN,
-							VariationMetatagType.MIN_COVERAGE_NTS);
+			Arrays.asList(VariationMetatagType.REGEX_NT_PATTERN);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.REGEX_NT_PATTERN);
 
 	private String regexNtPattern;

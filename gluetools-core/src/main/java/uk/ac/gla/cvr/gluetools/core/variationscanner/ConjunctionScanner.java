@@ -11,6 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchResult> {
 
@@ -81,14 +82,23 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		return numConjuncts;
 	}
 
-	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
-		for(int i = 1; i <= numConjuncts; i++) {
-			boolean conjunctResult = conjunctScanners.get(i-1).computeSufficientCoverage(queryToRefNtSegs);
-			if(!conjunctResult) {
-				return false;
-			}
+	
+	
+	@Override
+	protected List<ReferenceSegment> getSegmentsToCover() {
+		List<ReferenceSegment> segmentsToCover = new ArrayList<ReferenceSegment>(conjunctScanners.get(0).getSegmentsToCover());
+		for(int i = 2; i <= numConjuncts; i++) {
+			List<ReferenceSegment> conjuctSegmentsToCover = conjunctScanners.get(i-1).getSegmentsToCover();
+			
+			List<ReferenceSegment> intersection = ReferenceSegment.intersection(conjuctSegmentsToCover, segmentsToCover, ReferenceSegment.cloneLeftSegMerger());
+			conjuctSegmentsToCover = ReferenceSegment.subtract(conjuctSegmentsToCover, intersection);
+			segmentsToCover.addAll(conjuctSegmentsToCover);
+			ReferenceSegment.sortByRefStart(segmentsToCover);
+			
 		}
-		return true;
+		segmentsToCover = ReferenceSegment.mergeAbutting(segmentsToCover, ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), 
+				ReferenceSegment.abutsPredicateReferenceSegment());
+		return segmentsToCover;
 	}
 
 	@Override

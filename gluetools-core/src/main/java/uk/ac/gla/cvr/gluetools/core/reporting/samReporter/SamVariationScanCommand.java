@@ -159,7 +159,6 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 	@Override
 	protected SamVariationScanResult execute(CommandContext cmdContext, SamReporter samReporter) {
-		/* RESTORE_XXXX 
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 		
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
@@ -220,9 +219,12 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				if(variationsToScan.isEmpty()) {
 					continue;
 				}
-				ReferenceSegmentTree<PatternLocation> patternLocSegmentTree = new ReferenceSegmentTree<PatternLocation>();
+				ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree = new ReferenceSegmentTree<VariationCoverageSegment>();
 				for(Variation variation: variationsToScan) {
-					variation.getPatternLocs().forEach(ploc -> patternLocSegmentTree.add(ploc));
+					variation.getScanner(cmdContext).getSegmentsToCover()
+					.forEach(seg2cover -> 
+						varCovSegTree.add(
+							new VariationCoverageSegment(variation, seg2cover.getRefStart(), seg2cover.getRefEnd())));
 				}
 
 				Feature feature = featureLoc.getFeature();
@@ -280,11 +282,11 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 										QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
 										QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
-						List<VariationScanResult> variationScanResults = new ArrayList<VariationScanResult>();
+						List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 						for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
 
 							List<PatternLocation> patternLocsToScanForSegment = new LinkedList<PatternLocation>();
-							patternLocSegmentTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), patternLocsToScanForSegment);
+							varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), patternLocsToScanForSegment);
 							// remove those pattern locs where the read quality is not good enough.
 							patternLocsToScanForSegment = filterPatternLocsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, patternLocsToScanForSegment);
 							
@@ -300,7 +302,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 							}
 						}
 
-						for(VariationScanResult variationScanResult: variationScanResults) {
+						for(VariationScanResult<?> variationScanResult: variationScanResults) {
 							String variationName = variationScanResult.getVariationName();
 							VariationInfo variationInfo = variationNameToInfo.get(variationName);
 							if(variationInfo == null) {
@@ -352,10 +354,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				.collect(Collectors.toList());
 		VariationScanReadCount.sortVariationScanReadCounts(variationScanReadCounts);
 		return new SamVariationScanResult(variationScanReadCounts);
-		*/ return null;
 	}
-
-	/* RESTORE_XXXX
 
 	private List<PatternLocation> filterPatternLocsOnReadQuality(int minQScore,
 			String qualityString, QueryAlignedSegment readToScannedRefSeg,
@@ -413,7 +412,6 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 			this.maxLocEnd = maxLocEnd;
 		}
 	}
-	*/
 	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
@@ -423,6 +421,17 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		}
 	}
 
+	private class VariationCoverageSegment extends ReferenceSegment {
+		private Variation variation;
 
+		public VariationCoverageSegment(Variation variation, int refStart, int refEnd) {
+			super(refStart, refEnd);
+			this.variation = variation;
+		}
+
+		public Variation getVariation() {
+			return variation;
+		}
+	}
 	
 }

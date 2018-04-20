@@ -80,14 +80,14 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		}
 	}
 	
-	protected boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	@Override
+	protected List<ReferenceSegment> getSegmentsToCover() {
 		Integer flankingStart = computeFlankingStart();
 		Integer flankingEnd = computeFlankingEnd();
 		Integer refStart = getVariation().getRefStart();
 		Integer refEnd = getVariation().getRefEnd();
-		return ReferenceSegment.covers(queryToRefNtSegs, 
-				Arrays.asList(new ReferenceSegment(flankingStart, refStart-1),
-						new ReferenceSegment(refEnd+1, flankingEnd)));
+		return Arrays.asList(new ReferenceSegment(flankingStart, refStart-1),
+						new ReferenceSegment(refEnd+1, flankingEnd));
 	}
 
 	private Integer computeFlankingStart() {

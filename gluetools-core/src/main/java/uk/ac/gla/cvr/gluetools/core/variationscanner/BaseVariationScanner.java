@@ -37,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class BaseVariationScanner<M extends VariationScannerMatchResult> {
 	
@@ -127,8 +128,13 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		}
 	}
 
-	// could be overridden by specific scanner types, perhaps based on metatag settings.
-	protected abstract boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs);
+	protected final boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+		List<ReferenceSegment> coverageSegments = getSegmentsToCover();
+		List<ReferenceSegment> segmentsToCover = coverageSegments;
+		return ReferenceSegment.covers(queryToRefNtSegs, segmentsToCover);
+	}
+
+	public abstract List<ReferenceSegment> getSegmentsToCover();
 
 	protected Integer getIntMetatagValue(VariationMetatagType type) {
 		String stringValue = getStringMetatagValue(type);

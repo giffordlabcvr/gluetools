@@ -40,7 +40,6 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_NT_PATTERN, 
-					VariationMetatagType.MIN_COVERAGE_NTS, 
 					VariationMetatagType.MIN_COMBINED_NT_FRACTION);
 	private static final List<VariationMetatagType> requiredMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_NT_PATTERN);

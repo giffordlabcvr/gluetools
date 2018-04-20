@@ -48,8 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationScanner<AminoAcidRegexPolymorphismMatchResult> {
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
-			Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN, 
-							VariationMetatagType.MIN_COVERAGE_NTS);
+			Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
 
 	private String regexAaPattern;

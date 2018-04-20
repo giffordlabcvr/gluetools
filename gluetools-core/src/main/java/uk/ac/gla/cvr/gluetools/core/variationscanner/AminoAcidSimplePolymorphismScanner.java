@@ -47,7 +47,6 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN, 
-							VariationMetatagType.MIN_COVERAGE_NTS, 
 							VariationMetatagType.MIN_COMBINED_TRIPLET_FRACTION);
 	private static final List<VariationMetatagType> requiredMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN);
