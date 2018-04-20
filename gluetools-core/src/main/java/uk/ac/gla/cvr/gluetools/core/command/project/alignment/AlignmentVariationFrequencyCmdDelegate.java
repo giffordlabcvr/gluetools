@@ -38,6 +38,8 @@ import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberVariationScanCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -59,7 +61,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String VARIATION_WHERE_CLAUSE = "vWhereClause";
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
@@ -68,14 +70,14 @@ public class AlignmentVariationFrequencyCmdDelegate {
 	private Optional<Expression> whereClause;
 	private Optional<Expression> vWhereClause;
 
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 	private Boolean descendentFeatures;
 	private Boolean multiReference;
 	
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
@@ -86,8 +88,15 @@ public class AlignmentVariationFrequencyCmdDelegate {
 	
 	// returns alignment name to list of VariationScanMemberCount
 	public Map<String, List<VariationScanMemberCount>> execute(String namedAlignmentName, boolean alignmentRecursive, CommandContext cmdContext) {
+		int totalMembers;
+		{
+			Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(namedAlignmentName));
+			if(this.multiReference && !namedAlignment.isConstrained()) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --multiReference option can only be used with constrained alignments");
+			}
 
-		int totalMembers = countTotalMembers(cmdContext, namedAlignmentName);
+			totalMembers = countTotalMembers(cmdContext, namedAlignment);
+		}
 
 		Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo = 
 				new LinkedHashMap<String, Map<Map<String,String>,VariationInfo>>();
@@ -131,9 +140,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 		return almtNameToScanCountList;
 	}
 
-	private int countTotalMembers(CommandContext cmdContext,
-			String namedAlignmentName) {
-		Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(namedAlignmentName));
+	private int countTotalMembers(CommandContext cmdContext, Alignment namedAlignment) {
 		GlueLogger.getGlueLogger().log(Level.FINEST, "Searching for alignment members");
 		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, namedAlignment, recursive, whereClause);
 		GlueLogger.getGlueLogger().log(Level.FINEST, "Found "+totalMembers+" alignment members");
@@ -146,14 +153,13 @@ public class AlignmentVariationFrequencyCmdDelegate {
 			boolean alignmentRecursive,
 			Map<String, Map<Map<String,String>, VariationInfo>> almtNameToVarPkMapToInfo,
 			List<AlignmentMember> memberBatch) {
-		/* RESTORE_XXXX
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 
 		List<ReferenceSequence> refsToScan;
 		if(multiReference) {
-			refsToScan = namedAlignment.getAncestorPathReferences(cmdContext, acRefName);
+			refsToScan = namedAlignment.getAncestorPathReferences(cmdContext, relRefName);
 		} else {
-			refsToScan = Arrays.asList(namedAlignment.getAncConstrainingRef(cmdContext, acRefName));
+			refsToScan = Arrays.asList(namedAlignment.getRelatedRef(cmdContext, relRefName));
 		}
 
 		List<Feature> featuresToScan = new ArrayList<Feature>();
@@ -182,15 +188,15 @@ public class AlignmentVariationFrequencyCmdDelegate {
 
 				
 				for(AlignmentMember almtMember: memberBatch) {
-					List<VariationScanResult> variationScanResults = MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, false);
-					for(VariationScanResult variationScanResult: variationScanResults) {
+					List<VariationScanResult<?>> variationScanResults = MemberVariationScanCommand
+							.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, false, true);
+					for(VariationScanResult<?> variationScanResult: variationScanResults) {
 						registerScanResult(almtNameToVarPkMapToInfo, namedAlignment, alignmentRecursive, almtMember, variationScanResult);
 					}
 				}
 
 			}
 		}
-		*/ 
 	}
 
 	

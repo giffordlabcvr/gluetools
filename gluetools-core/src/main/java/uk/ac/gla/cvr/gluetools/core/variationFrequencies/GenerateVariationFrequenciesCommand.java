@@ -55,13 +55,13 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGen
 @CommandClass(
 		commandWords={"generate", "frequencies"}, 
 		description = "Generate variation frequencies as variation-alignment notes", 
-		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <acRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>] [-p]" },
+		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <relRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>] [-p]" },
 		docoptOptions = { 
 		"-q, --alignmentRecursive                          Include descendent alignments",
 		"-c, --recursive                                   Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>     Qualify members",
 		"-v <vWhereClause>, --vWhereClause <vWhereClause>  Qualify variations",
-		"-r <acRefName>, --acRefName <acRefName>           Ancestor-constraining ref",
+		"-r <relRefName>, --relRefName <relRefName>        Related reference sequence",
 		"-m, --multiReference                              Scan across references",
 		"-f <featureName>, --featureName <featureName>     Feature containing variations",
 		"-d, --descendentFeatures                          Include descendent features",
@@ -69,7 +69,8 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGen
 			
 		},
 		furtherHelp = 
-		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of the named alignment. "+
+		"The <relRefName> argument names a reference sequence constraining an ancestor alignment of this alignment (if constrained), "+
+		"or simply a reference which is a member of this alignment (if unconstrained). "+
 		"If --alignmentRecursive is used, variation-alignment notes will be generated for both this and descendent alignments. "+
 		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
 		"path between the named alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
@@ -88,7 +89,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 	public static final String RECURSIVE = AlignmentVariationFrequencyCmdDelegate.RECURSIVE;
 	public static final String WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.WHERE_CLAUSE;
 	public static final String VARIATION_WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.VARIATION_WHERE_CLAUSE;
-	public static final String AC_REF_NAME = AlignmentVariationFrequencyCmdDelegate.AC_REF_NAME;
+	public static final String REL_REF_NAME = AlignmentVariationFrequencyCmdDelegate.REL_REF_NAME;
 	public static final String MULTI_REFERENCE = AlignmentVariationFrequencyCmdDelegate.MULTI_REFERENCE;
 	public static final String FEATURE_NAME = AlignmentVariationFrequencyCmdDelegate.FEATURE_NAME;
 	public static final String DESCENDENT_FEATURES = AlignmentVariationFrequencyCmdDelegate.DESCENDENT_FEATURES;
@@ -145,7 +146,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("almtName", Alignment.class, Alignment.NAME_PROPERTY);
-			registerVariableInstantiator("acRefName", new VariableInstantiator() {
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
 				@Override
 				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
@@ -153,8 +154,8 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 						String prefix) {
 					String almtName = (String) bindings.get("almtName");
 					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName), false);
-					return alignment.getAncConstrainingRefs().stream()
-							.map(ancCR -> new CompletionSuggestion(ancCR.getName(), true))
+					return alignment.getRelatedRefs().stream()
+							.map(relRef -> new CompletionSuggestion(relRef.getName(), true))
 							.collect(Collectors.toList());
 				}
 			});
@@ -164,7 +165,7 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					String referenceName = (String) bindings.get("acRefName");
+					String referenceName = (String) bindings.get("relRefName");
 					ReferenceSequence referenceSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
 					if(referenceSequence != null) {
 						return referenceSequence.getFeatureLocations().stream()

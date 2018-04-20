@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberVariationScanCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -53,45 +54,55 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
 @CommandClass(
 		commandWords={"variation", "member", "scan"}, 
 		description = "Scan members for a specific variation", 
-		docoptUsages = { "[-c] [-w <whereClause>] -r <acRefName> -f <featureName> -v <variationName> [-e] [-l [-s [-n] [-o]]]" },
+		docoptUsages = { "[-c] [-w <whereClause>] -r <relRefName> -f <featureName> -v <variationName> [-e] [-i] [-t | -o]" },
 		docoptOptions = { 
 		"-c, --recursive                                      Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>        Qualify members",
-		"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
+		"-r <relRefName>, --relRefName <relRefName>           Related reference",
 		"-f <featureName>, --featureName <featureName>        Feature name",
 		"-v <variationName>, --variationName <variationName>  Variation name",
 		"-e, --excludeAbsent                                  Exclude members where absent",
-		"-l, --showPatternLocsSeparately                      Add row per pattern location",
-		"-s, --showMatchValuesSeparately                      Add row per match value",
-		"-n, --showMatchNtLocations                           Add match NT start/end columns",
-		"-o, --showMatchLcLocations                           Add codon start/end columns"
+		"-i, --excludeInsufficientCoverage                    Exclude where insufficient coverage",
+		"-t, --showMatchesAsTable                             Table with one row per match",
+		"-o, --showMatchesAsDocument                          Document with one object per match",
 		},
 		furtherHelp = 
-		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this alignment. "+
-		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference.",
+		"The <relRefName> argument names a reference sequence constraining an ancestor alignment of this alignment (if constrained), "+
+		"or simply a reference which is a member of this alignment (if unconstrained). "+
+		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference. "+
+		"If --excludeAbsent is used, members where the variation was confirmed to be absent will not appear in the results. "+
+		"If --excludeInsufficientCoverage is used, members which do not sufficiently cover the scanned "+
+		"area for the variation will not appear in the results. "+
+		"If --showMatchesAsTable is used, a table is returned with one row for each individual match. "+
+		"If --showMatchsAsDocument is used, a document is returned with an object for each individual match.",
 				metaTags = {}	
 )
-public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<AlignmentVariationMemberScanResult> {
+public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<CommandResult> {
 
 	
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String VARIATION_NAME = "variationName";
 	public static final String EXCLUDE_ABSENT = "excludeAbsent";
+	public static final String EXCLUDE_INSUFFICIENT_COVERAGE = "excludeInsufficientCoverage";
+
 
 	private Boolean recursive;
 	private Optional<Expression> whereClause;
 
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 	private String variationName;
 	private Boolean excludeAbsent;
+	private Boolean excludeInsufficientCoverage;
 	private VariationScanRenderHints variationScanRenderHints = new VariationScanRenderHints();
 
 	
@@ -99,27 +110,53 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.variationName = PluginUtils.configureStringProperty(configElem, VARIATION_NAME, true);
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
+		this.excludeInsufficientCoverage = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_INSUFFICIENT_COVERAGE, false)).orElse(false);
 		this.variationScanRenderHints.configure(pluginConfigContext, configElem);
 	}
 	
 	@Override
-	public AlignmentVariationMemberScanResult execute(CommandContext cmdContext) {
-		List<MemberVariationScanResult> resultRowData = alignmentMemberVariationScan(
-				cmdContext, variationScanRenderHints, getAlignmentName(), acRefName, featureName, variationName, whereClause, recursive, excludeAbsent);
-		return new AlignmentVariationMemberScanResult(variationScanRenderHints, resultRowData);
+	public CommandResult execute(CommandContext cmdContext) {
+		List<MemberVariationScanResult> membVarScanResults = alignmentMemberVariationScan(
+				cmdContext, variationScanRenderHints, getAlignmentName(), relRefName, featureName, variationName,
+				whereClause, recursive, excludeAbsent, excludeInsufficientCoverage);
+		if(variationScanRenderHints.showMatchesAsTable()) {
+			Variation variation = 
+					GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(relRefName, featureName, variationName), false);
+			Class<? extends VariationScannerMatchResult> matchResultClass = variation.getVariationType().getMatchResultClass();
+			List<MemberVariationScannerMatchResult> membVarScannerMatchResults = membVarScanResultsToMatchResults(membVarScanResults);
+			return new AlignmentVariationMemberScanMatchesAsTableResult(matchResultClass, membVarScannerMatchResults);
+		} else if(variationScanRenderHints.showMatchesAsDocument()) {
+			List<MemberVariationScanResult> mvsrsPresent = membVarScanResults.stream().filter(mvsr -> mvsr.getVariationScanResult().isPresent()).collect(Collectors.toList());
+			return new AlignmentVariationMemberScanMatchesAsDocumentResult(mvsrsPresent);
+		} else {
+			return new AlignmentVariationMemberScanResult(membVarScanResults);
+		}
+	}
+
+	public List<MemberVariationScannerMatchResult> membVarScanResultsToMatchResults(
+			List<MemberVariationScanResult> membVarScanResults) {
+		List<MemberVariationScannerMatchResult> membVarScannerMatchResults = new ArrayList<MemberVariationScannerMatchResult>();
+		for(MemberVariationScanResult mvsr : membVarScanResults) {
+			if(mvsr.getVariationScanResult().isPresent()) {
+				for(VariationScannerMatchResult vsmr: mvsr.getVariationScanResult().getVariationScannerMatchResults()) {
+					membVarScannerMatchResults.add(new MemberVariationScannerMatchResult(mvsr.getMemberPkMap(), vsmr));
+				}
+			}
+		}
+		return membVarScannerMatchResults;
 	}
 
 	public static List<MemberVariationScanResult> alignmentMemberVariationScan(
 			CommandContext cmdContext, VariationScanRenderHints variationScanRenderHints, String alignmentName, 
-			String acRefName, String featureName, String variationName,
+			String relatedRefName, String featureName, String variationName,
 			Optional<Expression> whereClause, boolean recursive,
-			boolean excludeAbsent) {
+			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
 		
 		int totalMembers = AlignmentListMemberCommand.countMembers(cmdContext, alignmentName, recursive, whereClause);
 		
@@ -132,25 +169,23 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 			int lastBatchIndex = Math.min(offset+batchSize, totalMembers);
 
 			Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), false);
-			ReferenceSequence ancConstrainingRef = alignment.getAncConstrainingRef(cmdContext, acRefName);
+			ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, relatedRefName);
 			FeatureLocation scannedFeatureLoc = 
-					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(acRefName, featureName), false);
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRefName, featureName), false);
 			Variation variation = 
-					GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(acRefName, featureName, variationName), false);
+					GlueDataObject.lookup(cmdContext, Variation.class, Variation.pkMap(relatedRefName, featureName, variationName), false);
 
 			GlueLogger.getGlueLogger().finest("Retrieving members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 			List<AlignmentMember> almtMembers = AlignmentListMemberCommand.listMembers(cmdContext, alignment, recursive, whereClause, offset, batchSize, batchSize);
 			GlueLogger.getGlueLogger().finest("Scanning variation for members "+(offset+1)+" to "+lastBatchIndex+" of "+totalMembers);
 
-			/* RESTORE_XXXX
+			
 			for(AlignmentMember almtMember: almtMembers) {
-				List<VariationScanMatchResultRow> scanResultRows = 
-						variationScanRenderHints.scanResultsToResultRows(MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, ancConstrainingRef, 
-								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent));
-				for(VariationScanMatchResultRow vsrr : scanResultRows) {
-					membVsrList.add(new MemberVariationScanResult(almtMember, vsrr));
-				}
-			} */
+				List<VariationScanResult<?>> variationScanResults = 
+						MemberVariationScanCommand.memberVariationScan(cmdContext, almtMember, relatedRef, 
+								scannedFeatureLoc, Arrays.asList(variation), excludeAbsent, excludeInsufficientCoverage);
+				variationScanResults.forEach(vsr -> membVsrList.add(new MemberVariationScanResult(almtMember, vsr)));
+			}
 			cmdContext.newObjectContext();
 			offset = offset+batchSize;
 		}
@@ -160,7 +195,7 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 	}
 
 	@CompleterClass
-	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {
+	public static final class Completer extends FeatureOfRelatedRefCompleter {
 
 		public Completer() {
 			super();
@@ -170,7 +205,7 @@ public class AlignmentVariationMemberScanCommand extends AlignmentModeCommand<Al
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					String referenceName = (String) bindings.get("acRefName");
+					String referenceName = (String) bindings.get("relRefName");
 					String featureName = (String) bindings.get("featureName");
 					FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(referenceName, featureName), true);
 					if(featureLoc != null) {

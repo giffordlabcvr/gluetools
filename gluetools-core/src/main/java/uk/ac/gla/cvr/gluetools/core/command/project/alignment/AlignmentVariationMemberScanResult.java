@@ -25,14 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 
 public class AlignmentVariationMemberScanResult extends BaseTableResult<MemberVariationScanResult> {
 
@@ -43,23 +39,16 @@ public class AlignmentVariationMemberScanResult extends BaseTableResult<MemberVa
 		SEQUENCE_ID = "sequenceID";
 
 
-	public AlignmentVariationMemberScanResult(VariationScanRenderHints variationScanRenderHints, List<MemberVariationScanResult> rowData) {
-		super("alignmentVariationMemberScanResult", rowData, columns(variationScanRenderHints));
+	public AlignmentVariationMemberScanResult(List<MemberVariationScanResult> rowData) {
+		super("alignmentVariationMemberScanResult", rowData, 
+				column(ALIGNMENT_NAME, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.ALIGNMENT_NAME_PATH)), 
+				column(SOURCE_NAME, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.SOURCE_NAME_PATH)),
+				column(SEQUENCE_ID, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.SEQUENCE_ID_PATH)),
+				column("sufficientCoverage", mvsr -> mvsr.getVariationScanResult().isSufficientCoverage()),
+				column("present", mvsr -> mvsr.getVariationScanResult().isPresent())
+			);
+		
 	}
 
-	@SuppressWarnings("unchecked")
-	private static TableColumn<MemberVariationScanResult>[] columns(VariationScanRenderHints variationScanRenderHints) {
-		/* RESTORE_XXXX
-		TableColumn<VariationScanMatchResultRow>[] vsrrColumns = variationScanRenderHints.generateResultColumns();
-		List<TableColumn<MemberVariationScanResult>> mvsrColumns = new ArrayList<TableColumn<MemberVariationScanResult>>();
-		mvsrColumns.add(new TableColumn<MemberVariationScanResult>(ALIGNMENT_NAME, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.ALIGNMENT_NAME_PATH)));
-		mvsrColumns.add(new TableColumn<MemberVariationScanResult>(SOURCE_NAME, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.SOURCE_NAME_PATH)));
-		mvsrColumns.add(new TableColumn<MemberVariationScanResult>(SEQUENCE_ID, mvsr -> mvsr.getMemberPkMap().get(AlignmentMember.SEQUENCE_ID_PATH)));
-		for(TableColumn<VariationScanMatchResultRow> vsrrColumn: vsrrColumns) {
-			mvsrColumns.add(new TableColumn<MemberVariationScanResult>(vsrrColumn.getColumnHeader(), mvsr -> vsrrColumn.populateColumn(mvsr.getVariationScanResultRow())));
-		}
-		return mvsrColumns.toArray(new TableColumn[]{});
-		*/ return null;
-	}
 
 }

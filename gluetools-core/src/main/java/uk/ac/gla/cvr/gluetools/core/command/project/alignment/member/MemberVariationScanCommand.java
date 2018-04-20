@@ -36,6 +36,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -50,7 +52,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
@@ -59,9 +60,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <acRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v | -o]" },
+		docoptUsages = { "-r <relRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v | -o]" },
 		docoptOptions = { 
-		"-r <acRefName>, --acRefName <acRefName>        Ancestor-constraining ref",
+		"-r <relRefName>, --relRefName <relRefName>     Related reference",
 		"-m, --multiReference                           Scan across references",
 		"-f <featureName>, --featureName <featureName>  Feature to scan",
 		"-d, --descendentFeatures                       Include descendent features",
@@ -72,7 +73,8 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 		"-o, --showMatchesAsDocument                    Document with one object per match",
 		},
 		furtherHelp = 
-		"The <acRefName> argument names a reference sequence constraining an ancestor alignment of this member's alignment. "+
+		"The <relRefName> argument names a reference sequence constraining an ancestor alignment of this alignment (if constrained), "+
+		"or simply a reference which is a member of this alignment (if unconstrained). "+
 		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
 		"path between the containing alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
 		"The <featureName> argument names a feature location which is defined on this reference. "+
@@ -89,7 +91,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 )
 public class MemberVariationScanCommand extends MemberModeCommand<CommandResult> {
 
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -97,7 +99,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 	public static final String EXCLUDE_ABSENT = "excludeAbsent";
 	public static final String EXCLUDE_INSUFFICIENT_COVERAGE = "excludeInsufficientCoverage";
 
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 	private Boolean descendentFeatures;
 	private Expression whereClause;
@@ -110,7 +112,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
 		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
@@ -130,9 +132,12 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 
 		List<ReferenceSequence> refsToScan;
 		if(multiReference) {
-			refsToScan = alignment.getAncestorPathReferences(cmdContext, acRefName);
+			if(!alignment.isConstrained()) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --multiReference option can only be used with constrained alignments");
+			}
+			refsToScan = alignment.getAncestorPathReferences(cmdContext, relRefName);
 		} else {
-			refsToScan = Arrays.asList(alignment.getAncConstrainingRef(cmdContext, acRefName));
+			refsToScan = Arrays.asList(alignment.getRelatedRef(cmdContext, relRefName));
 		}
 		
 		List<Feature> featuresToScan = new ArrayList<Feature>();
@@ -166,12 +171,12 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 	}
 
 	public static List<VariationScanResult<?>> memberVariationScan(CommandContext cmdContext,
-			AlignmentMember almtMember, ReferenceSequence ancConstrainingRef, FeatureLocation featureLoc,
+			AlignmentMember almtMember, ReferenceSequence relatedRef, FeatureLocation featureLoc,
 			List<Variation> variationsToScan, boolean excludeAbsent, boolean excludeInsufficientCoverage) {
-		Alignment tipAlmt = almtMember.getAlignment();
+		Alignment alignment = almtMember.getAlignment();
 		
-		List<QueryAlignedSegment> memberToConstrainingRefSegs = almtMember.segmentsAsQueryAlignedSegments();
-		List<QueryAlignedSegment> memberToRelatedRefRefSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, memberToConstrainingRefSegs, ancConstrainingRef);
+		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
+		List<QueryAlignedSegment> memberToRelatedRefRefSegs = alignment.translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
 
 		AbstractSequenceObject memberSeqObj = almtMember.getSequence().getSequenceObject();
 		
@@ -194,7 +199,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 	}
 
 	@CompleterClass
-	public static final class Completer extends FeatureOfAncConstrainingRefCompleter {}
+	public static final class Completer extends FeatureOfRelatedRefCompleter {}
 
 	
 }

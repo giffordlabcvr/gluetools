@@ -28,26 +28,25 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
 
-public class MemberVariationScanResult {
+public class MemberVariationScannerMatchResult {
 
 	private Map<String,String> memberPkMap;
-	private VariationScanResult<?> variationScanResult;
+	private VariationScannerMatchResult variationScannerMatchResult;
 	
-	public MemberVariationScanResult(AlignmentMember alignmentMember, VariationScanResult<?> variationScanResult) {
+	public MemberVariationScannerMatchResult(Map<String, String> memberPkMap, VariationScannerMatchResult variationScannerMatchResult) {
 		super();
-		this.memberPkMap = alignmentMember.pkMap();
-		this.variationScanResult = variationScanResult;
+		this.memberPkMap = memberPkMap;
+		this.variationScannerMatchResult = variationScannerMatchResult;
 	}
 
 	public Map<String,String> getMemberPkMap() {
 		return memberPkMap;
 	}
 
-	public VariationScanResult<?> getVariationScanResult() {
-		return variationScanResult;
+	public VariationScannerMatchResult getVariationScannerMatchResult() {
+		return variationScannerMatchResult;
 	}
 	
 }
