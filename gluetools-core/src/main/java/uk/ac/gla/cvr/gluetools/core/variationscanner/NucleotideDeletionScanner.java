@@ -81,7 +81,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 	}
 	
 	@Override
-	protected List<ReferenceSegment> getSegmentsToCover() {
+	public List<ReferenceSegment> getSegmentsToCover() {
 		Integer flankingStart = computeFlankingStart();
 		Integer flankingEnd = computeFlankingEnd();
 		Integer refStart = getVariation().getRefStart();

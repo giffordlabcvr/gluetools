@@ -43,7 +43,7 @@ public abstract class BaseNucleotideVariationScanner<M extends VariationScannerM
 	}
 
 	@Override
-	protected List<ReferenceSegment> getSegmentsToCover() {
+	public List<ReferenceSegment> getSegmentsToCover() {
 		Integer refStart = getVariation().getRefStart();
 		Integer refEnd = getVariation().getRefEnd();
 		return Arrays.asList(new ReferenceSegment(refStart, refEnd));

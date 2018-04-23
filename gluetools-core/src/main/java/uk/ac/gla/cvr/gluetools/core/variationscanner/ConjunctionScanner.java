@@ -85,7 +85,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 	
 	
 	@Override
-	protected List<ReferenceSegment> getSegmentsToCover() {
+	public List<ReferenceSegment> getSegmentsToCover() {
 		List<ReferenceSegment> segmentsToCover = new ArrayList<ReferenceSegment>(conjunctScanners.get(0).getSegmentsToCover());
 		for(int i = 2; i <= numConjuncts; i++) {
 			List<ReferenceSegment> conjuctSegmentsToCover = conjunctScanners.get(i-1).getSegmentsToCover();

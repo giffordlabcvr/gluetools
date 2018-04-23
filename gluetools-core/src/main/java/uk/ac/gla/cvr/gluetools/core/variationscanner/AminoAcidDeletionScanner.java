@@ -91,7 +91,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	}
 	
 	@Override
-	protected List<ReferenceSegment> getSegmentsToCover() {
+	public List<ReferenceSegment> getSegmentsToCover() {
 		Integer flankingStart = computeFlankingStart();
 		Integer flankingEnd = computeFlankingEnd();
 		Integer refStart = getVariation().getRefStart();

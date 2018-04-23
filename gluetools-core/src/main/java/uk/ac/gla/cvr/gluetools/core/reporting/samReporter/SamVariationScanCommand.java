@@ -227,13 +227,6 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 							new VariationCoverageSegment(variation, seg2cover.getRefStart(), seg2cover.getRefEnd())));
 				}
 
-				Feature feature = featureLoc.getFeature();
-
-				boolean codesAminoAcids = feature.codesAminoAcids();
-				Integer codon1Start = codesAminoAcids ? featureLoc.getCodon1Start(cmdContext) : null;
-				Translator translator = codesAminoAcids ? new CommandContextTranslator(cmdContext) : null;
-
-
 				List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef, consensusSequence);
 
 				// translate segments to tip alignment reference
@@ -282,31 +275,39 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 										QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
 										QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
-						List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
+						// find the variations for which any of their coverage segments overlap the read segments.
+						List<VariationCoverageSegment> varCovSegs = new ArrayList<VariationCoverageSegment>();
 						for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
-
-							List<PatternLocation> patternLocsToScanForSegment = new LinkedList<PatternLocation>();
-							varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), patternLocsToScanForSegment);
+							List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
+							varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
 							// remove those pattern locs where the read quality is not good enough.
-							patternLocsToScanForSegment = filterPatternLocsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, patternLocsToScanForSegment);
-							
-							if(!patternLocsToScanForSegment.isEmpty()) {
-								NtQueryAlignedSegment readToScannedRefNtSeg = 
-										new NtQueryAlignedSegment(
-												readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
-												SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()));
-								
-								List<Variation> variationsToScanForSegment = findVariationsFromPatternLocs(patternLocsToScanForSegment);
-								
-								variationScanResults.addAll(featureLoc.variationScanSegment(cmdContext, translator, codon1Start, readToScannedRefNtSeg, variationsToScanForSegment, false));
-							}
+							List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
+							varCovSegs.addAll(filteredVarCovSegs);
 						}
 
+						
+						List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
+						if(!varCovSegs.isEmpty()) {
+							// convert to ntQaSegments
+							List<NtQueryAlignedSegment> readToScannedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
+							for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
+								readToScannedRefNtSegs.add(
+										new NtQueryAlignedSegment(
+												readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
+												SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()))
+										);
+							}
+							// find the actual variations.
+							List<Variation> variationsToScanForSegment = findVariationsFromVarCovSegs(cmdContext, varCovSegs);
+							variationScanResults.addAll(featureLoc.variationScan(cmdContext, readToScannedRefNtSegs, readString, variationsToScanForSegment, false, true));
+						}
+
+						
 						for(VariationScanResult<?> variationScanResult: variationScanResults) {
 							String variationName = variationScanResult.getVariationName();
 							VariationInfo variationInfo = variationNameToInfo.get(variationName);
 							if(variationInfo == null) {
-								variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getMinLocStart(), variationScanResult.getMaxLocEnd());
+								variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
 								variationNameToInfo.put(variationName, variationInfo);
 							}
 							variationInfo.contributingReads++;
@@ -339,7 +340,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 							double pctWherePresent = 100.0 * readsWherePresent / (readsWherePresent + readsWhereAbsent);
 							double pctWhereAbsent = 100.0 * readsWhereAbsent / (readsWherePresent + readsWhereAbsent);
 							return new VariationScanReadCount(vInfo.variationPkMap,
-									vInfo.minLocStart, vInfo.maxLocEnd,
+									vInfo.refStart, vInfo.refEnd,
 									readsWherePresent, pctWherePresent, 
 									readsWhereAbsent, pctWhereAbsent);
 						})
@@ -356,13 +357,13 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		return new SamVariationScanResult(variationScanReadCounts);
 	}
 
-	private List<PatternLocation> filterPatternLocsOnReadQuality(int minQScore,
+	private List<VariationCoverageSegment> filterVarCovSegsOnReadQuality(int minQScore,
 			String qualityString, QueryAlignedSegment readToScannedRefSeg,
-			List<PatternLocation> patternLocs) {
-		List<PatternLocation> filteredPatternLocs = new ArrayList<PatternLocation>();
-		for(PatternLocation patternLoc: patternLocs) {
+			List<VariationCoverageSegment> varCovSegs) {
+		List<VariationCoverageSegment> filteredVarCovSegs = new ArrayList<VariationCoverageSegment>();
+		for(VariationCoverageSegment varCovSeg: varCovSegs) {
 			List<QueryAlignedSegment> intersection = 
-					ReferenceSegment.intersection(Arrays.asList(patternLoc.asReferenceSegment()), Arrays.asList(readToScannedRefSeg), QueryAlignedSegment.cloneRightSegMerger());
+					ReferenceSegment.intersection(Arrays.asList(varCovSeg), Arrays.asList(readToScannedRefSeg), QueryAlignedSegment.cloneRightSegMerger());
 			if(intersection.size() == 1) {
 				QueryAlignedSegment readSection = intersection.get(0);
 				String qualitySubString = 
@@ -376,23 +377,23 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 					}
 				}
 				if(qualityPass) {
-					filteredPatternLocs.add(patternLoc);
+					filteredVarCovSegs.add(varCovSeg);
 				}
 			}
 		}
-		return filteredPatternLocs;
+		return filteredVarCovSegs;
 	}
 	
-	
-	private List<Variation> findVariationsFromPatternLocs(List<PatternLocation> patternLocsToScanForSegment) {
-		Map<Variation, List<PatternLocation>> variationToLocs = new LinkedHashMap<Variation, List<PatternLocation>>();
-		patternLocsToScanForSegment.forEach(loc -> {
-			Variation variation = loc.getVariation();
-			variationToLocs.computeIfAbsent(variation, v -> new ArrayList<PatternLocation>()).add(loc);
+	// complicated by the fact that some coverage segments may have been filtered out for quality reasons.
+	private List<Variation> findVariationsFromVarCovSegs(CommandContext cmdContext, List<VariationCoverageSegment> varCovSegs) {
+		Map<Variation, List<VariationCoverageSegment>> varToCovSegs = new LinkedHashMap<Variation, List<VariationCoverageSegment>>();
+		varCovSegs.forEach(covSeg -> {
+			Variation variation = covSeg.getVariation();
+			varToCovSegs.computeIfAbsent(variation, v -> new ArrayList<VariationCoverageSegment>()).add(covSeg);
 		});
 		List<Variation> variations = new ArrayList<Variation>();
-		variationToLocs.forEach((v, pLocs) -> {
-			if(v.getPatternLocs().size() == pLocs.size()) {
+		varToCovSegs.forEach((v, pLocs) -> {
+			if(v.getScanner(cmdContext).getSegmentsToCover().size() == pLocs.size()) {
 				variations.add(v);
 			}
 		});
@@ -401,15 +402,15 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 	private class VariationInfo {
 		Map<String, String> variationPkMap;
-		int minLocStart, maxLocEnd;
+		int refStart, refEnd;
 		int contributingReads = 0;
 		int readsConfirmedPresent = 0;
 		int readsConfirmedAbsent = 0;
-		public VariationInfo(Map<String,String> variationPkMap, int minLocStart, int maxLocEnd) {
+		public VariationInfo(Map<String,String> variationPkMap, int refStart, int refEnd) {
 			super();
 			this.variationPkMap = variationPkMap;
-			this.minLocStart = minLocStart;
-			this.maxLocEnd = maxLocEnd;
+			this.refStart = refStart;
+			this.refEnd = refEnd;
 		}
 	}
 	

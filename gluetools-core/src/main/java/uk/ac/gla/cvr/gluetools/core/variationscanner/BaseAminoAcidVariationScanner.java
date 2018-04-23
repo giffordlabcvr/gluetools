@@ -28,9 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.variationscanner;
 import java.util.Arrays;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class BaseAminoAcidVariationScanner<M extends VariationScannerMatchResult> extends BaseVariationScanner<M> {
@@ -42,7 +40,7 @@ public abstract class BaseAminoAcidVariationScanner<M extends VariationScannerMa
 	}
 
 	@Override
-	protected List<ReferenceSegment> getSegmentsToCover() {
+	public List<ReferenceSegment> getSegmentsToCover() {
 		Integer refStart = getVariation().getRefStart();
 		Integer refEnd = getVariation().getRefEnd();
 		return Arrays.asList(new ReferenceSegment(refStart, refEnd));
