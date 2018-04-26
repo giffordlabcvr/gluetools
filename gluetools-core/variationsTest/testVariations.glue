@@ -1,0 +1,42 @@
+multi-delete variation -a
+
+reference REF_MASTER_M73218 feature-location ORF1
+  create variation 463L -t aminoAcidSimplePolymorphism --labeledCodon 463 463
+  variation 463L
+    set metatag SIMPLE_AA_PATTERN L
+    exit
+    
+  create variation 467A -t aminoAcidSimplePolymorphism --labeledCodon 467 467
+  variation 467A
+    set metatag SIMPLE_AA_PATTERN A
+    exit
+    
+  create variation 463I -t aminoAcidSimplePolymorphism --labeledCodon 463 463
+  variation 463I
+    set metatag SIMPLE_AA_PATTERN I
+    exit
+    
+  create variation 467L -t aminoAcidSimplePolymorphism --labeledCodon 467 467
+  variation 467L
+    set metatag SIMPLE_AA_PATTERN L
+    exit
+  
+  create variation 463I+467L -t conjunction
+  variation 463I+467L
+    set metatag CONJUNCT_NAME_1 463I
+    set metatag CONJUNCT_NAME_2 467L
+    exit
+
+  create variation 463L+467A -t conjunction
+  variation 463L+467A
+    set metatag CONJUNCT_NAME_1 463L
+    set metatag CONJUNCT_NAME_2 467A
+    exit
+
+  create variation 463I+467A -t conjunction
+  variation 463I+467A
+    set metatag CONJUNCT_NAME_1 463I
+    set metatag CONJUNCT_NAME_2 467A
+    exit
+        
+  exit
