@@ -151,7 +151,14 @@ public class NashornContext {
 			int numWordsUsed = 0;
 			while(numWordsUsed < words.size()) {
 				String[] nextWords = words.subList(numWordsUsed, words.size()).toArray(new String[]{});
-				numWordsUsed += cmdContext.pushCommandModeReturnNumWordsUsed(nextWords);
+				int nextWordsUsed = cmdContext.pushCommandModeReturnNumWordsUsed(nextWords);
+				if(nextWordsUsed == 0) {
+					break;
+				}
+				numWordsUsed += nextWordsUsed;
+			}
+			if(numWordsUsed != words.size()) {
+				throw new NashornScriptingException(Code.MALFORMED_MODE_PATH, modePath);
 			}
 		}
 		
