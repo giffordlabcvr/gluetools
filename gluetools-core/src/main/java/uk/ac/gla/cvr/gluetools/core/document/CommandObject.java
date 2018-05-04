@@ -142,6 +142,21 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 	public Object getSimpleValue(String fieldName) {
 		return ((SimpleCommandValue) getFieldValue(fieldName)).getValue();
 	}
+	
+	// this allows command objects to be correctly handled with dot-notation in freemarker.
+	// see docs for BeanModel.TemplateModel get(String key)
+	public final Object get(String key) {
+		CommandFieldValue fieldValue = getFieldValue(key);
+		if(fieldValue == null) {
+			return fieldValue;
+		} else if(fieldValue instanceof CommandArray) {
+			return ((CommandArray) fieldValue).getItems();
+		} else if(fieldValue instanceof SimpleCommandValue) {
+			return ((SimpleCommandValue) fieldValue).getValue();
+		} else {
+			throw new RuntimeException("Unknown subtype of CommandFieldValue");
+		}
+	}
 
 	public String getString(String fieldName) {
 		return (String) getSimpleValue(fieldName);

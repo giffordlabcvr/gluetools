@@ -64,6 +64,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginGroupRegistry;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
+import uk.ac.gla.cvr.gluetools.core.reporting.freemarkerDocTransformer.FreemarkerDocTransformer;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
@@ -132,6 +133,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(EcmaFunctionInvoker.class);
 		registerPluginClass(FreemarkerTextToGlueTransformer.class);
 		registerPluginClass(FreemarkerObjectRenderer.class);
+		registerPluginClass(FreemarkerDocTransformer.class);
 		registerPluginClass(TextToQueryTransformer.class);
 		
 		setModulePluginGroup(new ModulePluginGroup("deepSequencing", "Module types for working with deep sequencing data", 88));

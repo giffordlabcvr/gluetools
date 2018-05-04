@@ -30,6 +30,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.UUID;
 
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtilsException.Code;
 import freemarker.core.Environment;
 import freemarker.core.ParseException;
@@ -88,5 +89,5 @@ public class FreemarkerUtils {
 		}
 		return templateModel;
 	}
-	
+
 }
