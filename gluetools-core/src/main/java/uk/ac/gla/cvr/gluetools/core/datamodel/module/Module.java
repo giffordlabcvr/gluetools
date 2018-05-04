@@ -172,6 +172,10 @@ public class Module extends _Module {
 	public void loadConfig(ConsoleCommandContext consoleCmdContext, String fileName, boolean loadResources) {
 		File file = consoleCmdContext.fileStringToFile(fileName);
 		byte[] config = ConsoleCommandContext.loadBytesFromFile(file);
+		if(loadResources) {
+			modulePlugin = null;
+			valid = false;
+		}
 		setConfig(config);
 		if(loadResources) {
 			ModulePlugin<?> modulePlugin = getModulePlugin(consoleCmdContext, true);
