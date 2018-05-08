@@ -31,13 +31,17 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class AbstractGenotypeCommand extends ModulePluginCommand<GenotypeCommandResult, MaxLikelihoodGenotyper> {
+public abstract class AbstractGenotypeCommand extends ModulePluginCommand<CommandResult, MaxLikelihoodGenotyper> {
 
 	public static final String DETAIL_LEVEL = "detailLevel";
+	public static final String DOCUMENT_RESULT = "documentResult";
 	
 	public enum DetailLevel {
 		LOW,
@@ -46,15 +50,24 @@ public abstract class AbstractGenotypeCommand extends ModulePluginCommand<Genoty
 	}
 	
 	private DetailLevel detailLevel = DetailLevel.LOW;
+	private Boolean documentResult;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.detailLevel = Optional.ofNullable(PluginUtils.configureEnumProperty(DetailLevel.class, configElem, DETAIL_LEVEL, false)).orElse(detailLevel);
+		this.detailLevel = PluginUtils.configureEnumProperty(DetailLevel.class, configElem, DETAIL_LEVEL, false);
+		this.documentResult = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DOCUMENT_RESULT, false)).orElse(false);
+		if(detailLevel != null && documentResult) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --detailLevel or --documentResult may be specified but not both.");
+		}
 	}
 
-	protected GenotypeCommandResult formResult(MaxLikelihoodGenotyper maxLikelihoodGenotyper, Map<String, QueryGenotypingResult> genotypeResults) {
-		return new GenotypeCommandResult(maxLikelihoodGenotyper.getCladeCategories(), detailLevel, new ArrayList<QueryGenotypingResult>(genotypeResults.values()));
+	protected CommandResult formResult(MaxLikelihoodGenotyper maxLikelihoodGenotyper, Map<String, QueryGenotypingResult> genotypeResults) {
+		if(documentResult) {
+			return new GenotypingDocumentResult(maxLikelihoodGenotyper.getCladeCategories(), new ArrayList<QueryGenotypingResult>(genotypeResults.values()));
+		} else {
+			return new GenotypingTableResult(maxLikelihoodGenotyper.getCladeCategories(), detailLevel, new ArrayList<QueryGenotypingResult>(genotypeResults.values()));
+		}
 	}
 
 

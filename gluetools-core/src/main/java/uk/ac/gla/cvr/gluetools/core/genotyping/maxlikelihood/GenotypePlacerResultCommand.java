@@ -37,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentUtils;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
@@ -51,10 +52,11 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 @CommandClass(
 		commandWords={"genotype", "placer-result"}, 
 		description = "Generate genotyping results from a placer result file", 
-		docoptUsages = { "-f <fileName> [-l <detailLevel>]" },
+		docoptUsages = { "-f <fileName> [-l <detailLevel> | -c]" },
 		docoptOptions = { 
 				"-f <fileName>, --fileName <fileName>           Placer result file path",
-				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",
+				"-l <detailLevel>, --detailLevel <detailLevel>  Table result detail level",
+				"-c, --documentResult                           Output document rather than table result",
 		},
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
@@ -72,7 +74,7 @@ public class GenotypePlacerResultCommand extends AbstractGenotypeCommand {
 	}
 	
 	@Override
-	protected GenotypeCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
+	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		maxLikelihoodGenotyper.log(Level.FINEST, "Reading placer result file "+fileName);
 		byte[] placerResultBytes = consoleCommandContext.loadBytes(fileName);

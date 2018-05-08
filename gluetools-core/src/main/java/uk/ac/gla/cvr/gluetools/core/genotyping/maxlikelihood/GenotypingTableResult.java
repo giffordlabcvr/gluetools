@@ -34,11 +34,11 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.AbstractGenotypeCommand.DetailLevel;
 
-public class GenotypeCommandResult extends BaseTableResult<QueryGenotypingResult> {
+public class GenotypingTableResult extends BaseTableResult<QueryGenotypingResult> {
 
 	private static final int PERCENT_SCORE_PRECISION = 2;
 	
-	public GenotypeCommandResult(List<CladeCategory> cladeCategories, DetailLevel detailLevel, List<QueryGenotypingResult> genotypeResults) {
+	public GenotypingTableResult(List<CladeCategory> cladeCategories, DetailLevel detailLevel, List<QueryGenotypingResult> genotypeResults) {
 		super("genotypeCommandResult", genotypeResults, getColumns(cladeCategories, detailLevel));
 	}
 

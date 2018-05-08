@@ -38,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -45,10 +46,11 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"genotype", "file"}, 
 		description = "Genotype sequences in a file", 
-		docoptUsages = { "-f <fileName> [-l <detailLevel>] [-d <dataDir>]" },
+		docoptUsages = { "-f <fileName> [-l <detailLevel> | -c] [-d <dataDir>]" },
 		docoptOptions = { 
 				"-f <fileName>, --fileName <fileName>           FASTA file path",
-				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",
+				"-l <detailLevel>, --detailLevel <detailLevel>  Table result detail level",
+				"-c, --documentResult                           Output document rather than table result",
 				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory",
 		},
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
@@ -70,7 +72,7 @@ public class GenotypeFileCommand extends AbstractGenotypeCommand {
 	}
 	
 	@Override
-	protected GenotypeCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
+	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		byte[] fastaBytes = consoleCommandContext.loadBytes(fileName);
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);

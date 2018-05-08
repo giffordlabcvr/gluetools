@@ -151,10 +151,12 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 			return fieldValue;
 		} else if(fieldValue instanceof CommandArray) {
 			return ((CommandArray) fieldValue).getItems();
+		} else if(fieldValue instanceof CommandObject) {
+			return ((CommandObject) fieldValue);
 		} else if(fieldValue instanceof SimpleCommandValue) {
 			return ((SimpleCommandValue) fieldValue).getValue();
 		} else {
-			throw new RuntimeException("Unknown subtype of CommandFieldValue");
+			throw new RuntimeException("Unknown subtype "+fieldValue.getClass().getCanonicalName()+" of CommandFieldValue");
 		}
 	}
 

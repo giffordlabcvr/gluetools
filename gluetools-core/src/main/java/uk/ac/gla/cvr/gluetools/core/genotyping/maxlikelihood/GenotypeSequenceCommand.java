@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -51,11 +52,12 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"genotype", "sequence"}, 
 		description = "Genotype one or more stored sequences", 
-		docoptUsages = { "(-w <whereClause> | -a) [-l <detailLevel>] [-d <dataDir>]" },
+		docoptUsages = { "(-w <whereClause> | -a) [-l <detailLevel> | -c] [-d <dataDir>]" },
 		docoptOptions = { 
 				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be genotyped",
 				"-a, --allSequences                             Genotype all sequences in the project",
-				"-l <detailLevel>, --detailLevel <detailLevel>  Result detail level",
+				"-l <detailLevel>, --detailLevel <detailLevel>  Table result detail level",
+				"-c, --documentResult                           Output document rather than table result",
 				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory",
 		},
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
@@ -83,7 +85,7 @@ public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
 	}
 	
 	@Override
-	protected GenotypeCommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
+	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
 		SelectQuery selectQuery;
 		if(this.allSequences) {
 			selectQuery = new SelectQuery(Sequence.class);
