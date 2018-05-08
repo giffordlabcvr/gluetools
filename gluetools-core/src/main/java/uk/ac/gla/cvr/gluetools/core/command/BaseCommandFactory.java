@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleUnsetOptionCom
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilDeleteFileCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilListFilesCommand;
+import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilLoadStringCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilSaveStringCommand;
 
 public abstract class BaseCommandFactory extends CommandFactory {
@@ -67,6 +68,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(FileUtilListFilesCommand.class);
 		registerCommandClass(FileUtilDeleteFileCommand.class);
 		registerCommandClass(FileUtilSaveStringCommand.class);
+		registerCommandClass(FileUtilLoadStringCommand.class);
 
 		setCmdGroup(new CommandGroup("console", "Commands to manage console options", 95, true));
 		registerCommandClass(ConsoleChangeDirectoryCommand.class);
