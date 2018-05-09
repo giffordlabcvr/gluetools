@@ -79,6 +79,25 @@ public enum ConsoleOption {
 			}
 		}
 	},
+	MAX_COMMAND_HISTORY_LINE_LENGTH("max-cmd-history-line-length", "Maximum length of a line stored in the command history in characters", "2000", null) {
+		public void onSet(Console console, String newValue) {
+			boolean bad = false;
+			Integer maxCmdHistorySize = null;
+			try {
+				maxCmdHistorySize = Integer.parseInt(newValue);
+				if(maxCmdHistorySize <= 0) {
+					bad = true;
+				} else {
+					console.setMaxCmdHistorySize(maxCmdHistorySize);
+				}
+			} catch(NumberFormatException nfe) {
+				bad = true;
+			}
+			if(bad) {
+				throw new ConsoleOptionException(ConsoleOptionException.Code.INVALID_OPTION_VALUE, "max-cmd-history", newValue, "Not a positive integer");
+			}
+		}
+	},
 	COMPLETER_OPTIONS_DISPLAY("completer-options-display", "Configures whether long, short, or both forms of options are displayed during command completion", "short_only", new String[]{"short_only", "long_only", "both"}),
 	LOG_LEVEL("log-level", "Configures the level of detail in the GLUE logger category", null, GlueLogger.ALL_LOG_LEVELS) {
 		@Override

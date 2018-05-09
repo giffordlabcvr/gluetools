@@ -548,13 +548,18 @@ public class Console implements InteractiveCommandResultRenderingContext
 		}
 		public void save() {
 			String saveCommandHistory = commandContext.getOptionValue(ConsoleOption.SAVE_COMMAND_HISTORY);
-			// at the end of the session, save the whole command history.
-			// this enforces the max history size in the file.
-			if(historyFile != null && ( saveCommandHistory.equals("after_every_cmd") || saveCommandHistory.equals("at_end_of_session") )) {
+			if(saveCommandHistory.equals("never")) {
+				return;
+			}
+			int maxLineLength = Integer.parseInt(commandContext.getOptionValue(ConsoleOption.MAX_COMMAND_HISTORY_LINE_LENGTH));
+			if(historyFile != null) {
 				try(FileOutputStream fos = new FileOutputStream(historyFile)) {
 					Iterator<Entry> iter = iterator();
 					while(iter.hasNext()) {
-						fos.write((iter.next().value().toString()+"\n").getBytes());
+						String cmdLine = iter.next().value().toString();
+						if(cmdLine.length() <= maxLineLength) {
+							fos.write((cmdLine+"\n").getBytes());
+						}
 					}
 				} catch (IOException ioe) {
 					GlueLogger.getGlueLogger().warning("Failed to write to .glue_history: "+ioe.getLocalizedMessage());
@@ -565,12 +570,9 @@ public class Console implements InteractiveCommandResultRenderingContext
 		@Override
 		protected void internalAdd(CharSequence item) {
 			super.internalAdd(item);
-			if(historyFile != null && commandContext.getOptionValue(ConsoleOption.SAVE_COMMAND_HISTORY).equals("after_every_cmd")) {
-				try(FileOutputStream fos = new FileOutputStream(historyFile, true)) {
-					fos.write((item.toString()+"\n").getBytes());
-				} catch (IOException ioe) {
-					GlueLogger.getGlueLogger().warning("Failed to write to .glue_history: "+ioe.getLocalizedMessage());
-				}
+			String saveCommandHistory = commandContext.getOptionValue(ConsoleOption.SAVE_COMMAND_HISTORY);
+			if(saveCommandHistory.equals("after_every_cmd")) {
+				save();
 			}
 		}
 	}
