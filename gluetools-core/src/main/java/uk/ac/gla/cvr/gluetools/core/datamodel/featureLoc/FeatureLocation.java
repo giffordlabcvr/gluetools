@@ -89,7 +89,11 @@ public class FeatureLocation extends _FeatureLocation {
 		Feature feature = getFeature();
 		feature.checkCodesAminoAcids();
 		if(labeledCodons == null) {
-			CodonLabeler codonLabeler = feature.getCodonLabelerModule(cmdContext);
+			FeatureLocation codonNumberingAncestorLocation = getCodonNumberingAncestorLocation(cmdContext);
+			if(codonNumberingAncestorLocation == null) {
+				throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
+			}
+			CodonLabeler codonLabeler = codonNumberingAncestorLocation.getFeature().getCodonLabelerModule(cmdContext);
 			if(codonLabeler == null) {
 				Integer codon1Start = getCodon1Start(cmdContext);
 				Integer ntStart = ReferenceSegment.minRefStart(getSegments());
