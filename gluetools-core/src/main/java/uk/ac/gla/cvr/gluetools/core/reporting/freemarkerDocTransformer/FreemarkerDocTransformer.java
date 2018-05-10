@@ -25,6 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.freemarkerDocTransformer;
 
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -34,16 +39,22 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
+import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
 
 @PluginClass(elemName="freemarkerDocTransformer",
 		description="Transforms an input GLUE command document into an output byte array (e.g. html)")
 public class FreemarkerDocTransformer extends ModulePlugin<FreemarkerDocTransformer> {
 
 	public static String TEMPLATE_FILE_NAME = "templateFileName";
+	// can be used e.g. for inline images.
+	public static String RESOURCE_FILE_NAME = "resourceFileName";
 	
 	private String templateFileName;
+	private List<String> resourceFileNames;
 
 	private Template template = null;
 	
@@ -58,18 +69,73 @@ public class FreemarkerDocTransformer extends ModulePlugin<FreemarkerDocTransfor
 		super.configure(pluginConfigContext, configElem);
 		this.templateFileName = PluginUtils.configureStringProperty(configElem, TEMPLATE_FILE_NAME, true);
 		registerResourceName(templateFileName);
+		this.resourceFileNames = PluginUtils.configureStringsProperty(configElem, RESOURCE_FILE_NAME);
+		for(String resourceFileName: this.resourceFileNames) {
+			registerResourceName(resourceFileName);
+		}
 	}
 	
 	public byte[] renderToBytes(CommandContext cmdContext, CommandDocument commandDocument) {
 		if(template == null) {
 			byte[] templateBytes = getResource(cmdContext, templateFileName);
+			Configuration freemarkerConfiguration = cmdContext.getGluetoolsEngine().getFreemarkerConfiguration();
 			template = FreemarkerUtils.templateFromString(
 					// xml extension triggers xml escaping
 					getModuleName()+":"+templateFileName, new String(templateBytes),  
-						cmdContext.getGluetoolsEngine().getFreemarkerConfiguration());
+						freemarkerConfiguration);
 		}
-		TemplateModel templateModel = FreemarkerUtils.templateModelForObject(commandDocument);
-		return FreemarkerUtils.processTemplate(template, templateModel).getBytes();
+		TemplateModel cmdDocModel = FreemarkerUtils.templateModelForObject(commandDocument);
+		Map<String, Object> rootModel = new LinkedHashMap<String, Object>();
+		rootModel.put("getResourceAsBase64", new GetResourceAsBase64Method(cmdContext));
+		rootModel.put("getResourceAsString", new GetResourceAsStringMethod(cmdContext));
+		rootModel.put(commandDocument.getRootName(), cmdDocModel);
+		return FreemarkerUtils.processTemplate(template, rootModel).getBytes();
 	}
 
+	public abstract class GetResourceMethod implements TemplateMethodModelEx {
+		private CommandContext cmdContext;
+
+	    public GetResourceMethod(CommandContext cmdContext) {
+			super();
+			this.cmdContext = cmdContext;
+		}
+	    
+		@SuppressWarnings("rawtypes")
+		public final Object exec(List args) throws TemplateModelException {
+	        if (args.size() != 1) {
+	            throw new TemplateModelException("Wrong number of arguments");
+	        }
+	        String resourceFileName = args.get(0).toString();
+			if(!resourceFileNames.contains(resourceFileName)) {
+				throw new TemplateModelException(
+	                    "Unknown resource file \""+resourceFileName);
+			}
+	    	byte[] resourceFileBytes = getResource(cmdContext, resourceFileName);
+			return objectFromResourceFileBytes(resourceFileBytes);
+	    }
+
+		protected abstract Object objectFromResourceFileBytes(byte[] resourceFileBytes);
+		
+
+	}
+	public class GetResourceAsBase64Method extends GetResourceMethod{
+	    public GetResourceAsBase64Method(CommandContext cmdContext) {
+			super(cmdContext);
+		}
+	    @Override
+	    protected Object objectFromResourceFileBytes(byte[] resourceFileBytes) {
+	    	return new String(Base64.getEncoder().encode(resourceFileBytes));
+	    }
+	}
+	public class GetResourceAsStringMethod extends GetResourceMethod{
+	    public GetResourceAsStringMethod(CommandContext cmdContext) {
+			super(cmdContext);
+		}
+	    @Override
+	    protected Object objectFromResourceFileBytes(byte[] resourceFileBytes) {
+	    	return new String(resourceFileBytes);
+	    }
+	}
+
+	
 }

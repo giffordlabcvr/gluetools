@@ -103,8 +103,7 @@ public class GluetoolsEngine implements Plugin {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_24);
-		freemarkerConfiguration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "/freemarker");
+		freemarkerConfiguration = newFreemarkerConfiguration();
 		Document configDocument = null;
 		if(configFilePath != null) {
 			configDocument = GlueXmlUtils.documentFromBytes(ConsoleCommandContext.loadBytesFromFile(new File(configFilePath)));
@@ -117,6 +116,12 @@ public class GluetoolsEngine implements Plugin {
 			throw new GluetoolsEngineException(glueEx, GluetoolsEngineException.Code.CONFIG_ERROR, configFilePath, glueEx.getLocalizedMessage());
 		}
 		initWebFilesManager(configFilePath);
+	}
+	
+	public Configuration newFreemarkerConfiguration() {
+		Configuration configuration = new Configuration(Configuration.VERSION_2_3_24);
+		configuration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "/freemarker");
+		return configuration;
 	}
 	
 	public PluginConfigContext createPluginConfigContext() {

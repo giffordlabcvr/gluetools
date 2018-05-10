@@ -61,11 +61,10 @@ public class FreemarkerUtils {
 	}
 
 	
-	public static String processTemplate(Template template, TemplateModel templateModel) {
+	public static String processTemplate(Template template, Object templateModel) {
 		StringWriter result = new StringWriter();
 		try {
 			Environment env = template.createProcessingEnvironment(templateModel, result);
-			
 			env.process();
 		} catch (TemplateException e) {
 			throw new FreemarkerUtilsException(e, Code.FREEMARKER_TEMPLATE_FAILED, e.getLocalizedMessage());
