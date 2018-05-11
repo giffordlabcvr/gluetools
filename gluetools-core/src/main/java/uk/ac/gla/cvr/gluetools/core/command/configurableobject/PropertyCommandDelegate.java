@@ -54,6 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.Keyword;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilder.ModePathElement;
 import uk.ac.gla.cvr.gluetools.core.datamodel.customtableobject.CustomTableObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.Link;
 import uk.ac.gla.cvr.gluetools.core.datamodel.link.LinkException;
@@ -144,6 +145,9 @@ public class PropertyCommandDelegate {
 		String tableName = configurableObjectMode.getTableName();
 		GlueDataObject configurableObject = configurableObjectMode.getConfigurableObject(cmdContext);
 		FieldType fieldType = project.getModifiableFieldType(tableName, fieldName);
+		if(fieldType == null) {
+			throw new FieldException(FieldException.Code.NO_SUCH_FIELD, tableName, fieldName);
+		}
 		Object newValue = fieldType.getFieldTranslator().valueFromString(fieldValue);
 		return executeSetField(cmdContext, project, tableName, configurableObject, 
 				fieldName, newValue, noCommit);

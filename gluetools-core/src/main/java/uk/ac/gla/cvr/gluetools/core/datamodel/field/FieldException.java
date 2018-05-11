@@ -32,6 +32,7 @@ public class FieldException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		INCORRECT_VALUE_FORMAT("input", "fieldClass", "errorTxt"), 
+		NO_SUCH_FIELD("tableName", "fieldName"),
 		INVALID_FIELD("invalidField", "validFields");
 		
 		private String[] argNames;
