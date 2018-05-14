@@ -30,15 +30,15 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TCharIntHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.procedure.TCharIntProcedure;
-import htsjdk.samtools.SAMFlag;
+import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -58,11 +58,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -124,7 +122,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAminoAcidResult> 
-	implements ProvidedProjectModeCommand{
+	implements ProvidedProjectModeCommand, SamPairedParallelProcessor<SamAminoAcidCommand.SamAminoAcidContext, TIntObjectMap<SamAminoAcidCommand.AminoAcidReadCount>> {
 
 
 	public static final String MIN_AA_PCT = "minAAPct";
@@ -198,7 +196,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		TIntObjectMap<LabeledCodon> ancConstrRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 
 		// build a map from anc constr ref NT to AA read count.
-		TIntObjectMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
+		TIntObjectHashMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
 		List<Integer> mappedAncConstrRefNts = new ArrayList<Integer>();
 		for(QueryAlignedSegment qaSeg: samRefToAncConstrRefSegsCodonAligned) {
 			for(int ancConstrRefNt = qaSeg.getRefStart(); ancConstrRefNt <= qaSeg.getRefEnd(); ancConstrRefNt++) {
@@ -211,8 +209,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 	        			// we want to report results in the SAM file's own coordinates.
 	        			resultSamRefNt = ReferenceSegment.reverseLocationSense(samRefInfo.getSamRefLength(), samRefNt);
 	        		}
-
-					ancConstrRefNtToAminoAcidReadCount.put(ancConstrRefNt, new AminoAcidReadCount(labeledCodon, resultSamRefNt));
+	        		ancConstrRefNtToAminoAcidReadCount.put(ancConstrRefNt, new AminoAcidReadCount(labeledCodon, resultSamRefNt));
 				}
 			}
 		}
@@ -220,60 +217,34 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		// translate reads.
 		final Translator translator = new CommandContextTranslator(cmdContext);
 		
-		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
-				samReporter.getSamReaderValidationStringency())) {
-			
-			SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
-
-	        final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
-			
-			SamUtils.iterateOverSamReader(samReader, samRecord -> {
-				if(!samRecordFilter.recordPasses(samRecord)) {
-					return;
+		Supplier<SamAminoAcidContext> contextSupplier = () -> {
+			SamAminoAcidContext context = new SamAminoAcidContext();
+			context.samReporter = samReporter;
+			context.translator = translator;
+			context.samRefInfo = samRefInfo;
+			context.samRefSense = samRefSense;
+			context.codon1Start = codon1Start;
+			// clone these segments
+			synchronized(samRefToAncConstrRefSegs) {
+				context.samRefToAncConstrRefSegs = QueryAlignedSegment.cloneList(samRefToAncConstrRefSegs);
+			}
+			// clone the table
+			synchronized(ancConstrRefNtToAminoAcidReadCount) {
+				context.ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
+				for(int key: ancConstrRefNtToAminoAcidReadCount.keys()) {
+					AminoAcidReadCount aaReadCount = ancConstrRefNtToAminoAcidReadCount.get(key);
+					context.ancConstrRefNtToAminoAcidReadCount.put(key, new AminoAcidReadCount(aaReadCount.labeledCodon, aaReadCount.samRefNt));
 				}
-				
-				List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
-				String readString = samRecord.getReadString().toUpperCase();
-				String qualityString = samRecord.getBaseQualityString();
-        		if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-        			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), samRefInfo.getSamRefLength());
-        			readString = FastaUtils.reverseComplement(readString);
-        			qualityString = StringUtils.reverseString(qualityString);
-        		}
-
-        		
-        		
-				List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToAncConstrRefSegs);
-				
-				
-				List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, readToAncConstrRefSegs);
-
-				List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore(samReporter)); 
-				
-				for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
-					CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
-					String segAAs = translator.translateToAaString(nts);
-					Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
-					for(int i = 0; i < segAAs.length(); i++) {
-						char segAA = segAAs.charAt(i);
-						AminoAcidReadCount aminoAcidReadCount = ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
-						aminoAcidReadCount.addAaRead(segAA);
-						ancConstrRefNt += 3;
-					}
-				}
-				recordsCounter.processedRecord();
-				recordsCounter.logRecordsProcessed();
-			});
-			recordsCounter.logTotalRecordsProcessed();
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+			}
+			return context;
+		};
+		TIntObjectMap<AminoAcidReadCount> mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, getFileName(), 
+				samReporter.getSamReaderValidationStringency(), this);
 		
 		final List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
 		
 		for(Integer ancConstrRefNt: mappedAncConstrRefNts) {
-			AminoAcidReadCount aminoAcidReadCount = ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
+			AminoAcidReadCount aminoAcidReadCount = mergedResult.get(ancConstrRefNt);
 			if(aminoAcidReadCount.totalReadsAtCodon <= getMinDepth(samReporter)) {
 				continue;
 			}
@@ -297,6 +268,43 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		
 		return new SamAminoAcidResult(rowDataFiltered);
 		 
+	}
+
+
+	public void processSamRecord(SamAminoAcidContext context, SAMRecord samRecord) {
+		if(!context.samRecordFilter.recordPasses(samRecord)) {
+			return;
+		}
+		
+		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
+		String readString = samRecord.getReadString().toUpperCase();
+		String qualityString = samRecord.getBaseQualityString();
+		if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
+			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), context.samRefInfo.getSamRefLength());
+			readString = FastaUtils.reverseComplement(readString);
+			qualityString = StringUtils.reverseString(qualityString);
+		}
+
+		
+		
+		List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToAncConstrRefSegs);
+		
+		
+		List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToAncConstrRefSegs);
+
+		List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
+		
+		for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
+			CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
+			String segAAs = context.translator.translateToAaString(nts);
+			Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
+			for(int i = 0; i < segAAs.length(); i++) {
+				char segAA = segAAs.charAt(i);
+				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
+				aminoAcidReadCount.addAaRead(segAA);
+				ancConstrRefNt += 3;
+			}
+		}
 	}
 
 	private List<QueryAlignedSegment> filterByQuality(
@@ -333,17 +341,17 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		return ReferenceSegment.subtract(readToAncConstrRefSegsCodonAligned, poorQualityCodons);
 	}
 
-	private class AminoAcidReadCount {
+	public static class AminoAcidReadCount {
 		private LabeledCodon labeledCodon;
 		private int samRefNt;
+		private int totalReadsAtCodon = 0;
+		TCharIntMap aaToReadCount = new TCharIntHashMap();
 		
 		public AminoAcidReadCount(LabeledCodon labeledCodon, int samRefNt) {
 			super();
 			this.labeledCodon = labeledCodon;
 			this.samRefNt = samRefNt;
 		}
-		private int totalReadsAtCodon = 0;
-		TCharIntMap aaToReadCount = new TCharIntHashMap();
 		public void addAaRead(char aaChar) {
 			aaToReadCount.adjustOrPutValue(aaChar, 1, 1);
 			totalReadsAtCodon++;
@@ -359,6 +367,72 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		}
 	}
 
+	
+
+	@Override
+	public void processPair(SamAminoAcidContext context, SAMRecord read1,
+			SAMRecord read2) {
+		processSamRecord(context, read1);
+		processSamRecord(context, read2);
+		
+	}
+
+
+	@Override
+	public void processSingleton(SamAminoAcidContext context, SAMRecord read) {
+		processSamRecord(context, read);
+	}
+
+
+	public static class SamAminoAcidContext {
+		SamReporter samReporter;
+		SamRefInfo samRefInfo;
+		List<QueryAlignedSegment> samRefToAncConstrRefSegs;
+		Integer codon1Start;
+		SamRefSense samRefSense;
+		TIntObjectMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount;
+		Translator translator; 
+		SamRecordFilter samRecordFilter;
+	}
+
+
+
+	@Override
+	public void initContextForReader(SamAminoAcidContext context, SamReader samReader) {
+		context.samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
+	}
+
+
+	@Override
+	public TIntObjectMap<AminoAcidReadCount> contextResult(SamAminoAcidContext context) {
+		return context.ancConstrRefNtToAminoAcidReadCount;
+	}
+
+
+	@Override
+	public TIntObjectMap<AminoAcidReadCount> reduceResults(
+			TIntObjectMap<AminoAcidReadCount> result1,
+			TIntObjectMap<AminoAcidReadCount> result2) {
+		TIntObjectMap<AminoAcidReadCount> reduced = new TIntObjectHashMap<SamAminoAcidCommand.AminoAcidReadCount>();
+		for(int key : result1.keys()) {
+			AminoAcidReadCount aaReadCount1 = result1.get(key);
+			AminoAcidReadCount aaReadCount2 = result2.get(key);
+			
+			AminoAcidReadCount resultReadCount = new AminoAcidReadCount(aaReadCount1.labeledCodon, aaReadCount1.samRefNt);
+			resultReadCount.totalReadsAtCodon = aaReadCount1.totalReadsAtCodon + aaReadCount2.totalReadsAtCodon;
+			resultReadCount.aaToReadCount = new TCharIntHashMap();
+			for(char aa: aaReadCount1.aaToReadCount.keys()) {
+				int readCount1 = aaReadCount1.aaToReadCount.get(aa);
+				resultReadCount.aaToReadCount.adjustOrPutValue(aa, readCount1, readCount1);
+			}
+			for(char aa: aaReadCount2.aaToReadCount.keys()) {
+				int readCount2 = aaReadCount2.aaToReadCount.get(aa);
+				resultReadCount.aaToReadCount.adjustOrPutValue(aa, readCount2, readCount2);
+			}
+			reduced.put(key, resultReadCount);
+		}
+		return reduced;
+	}
 
 
 

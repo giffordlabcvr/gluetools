@@ -403,5 +403,9 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 		}
 		return results;
 	}
+	
+	public static List<QueryAlignedSegment> cloneList(List<QueryAlignedSegment> segs) {
+		return segs.stream().map(seg -> seg.clone()).collect(Collectors.toList());
+	}
 
 }

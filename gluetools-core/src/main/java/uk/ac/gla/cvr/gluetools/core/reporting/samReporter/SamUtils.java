@@ -45,6 +45,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
@@ -269,31 +270,33 @@ public class SamUtils {
 		}
 	}
 	
-	public static <M> M pairedParallelSamIterate(ConsoleCommandContext consoleCmdContext, 
+	public static <M, R> R pairedParallelSamIterate(Supplier<M> contextSupplier, ConsoleCommandContext consoleCmdContext, 
 			String samFileName, ValidationStringency validationStringency, 
-			SamPairedParallelProcessor<M> samPairedParallelProcessor) {
+			SamPairedParallelProcessor<M, R> samPairedParallelProcessor) {
 		SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency);
 		
-		M reducedContext = null;
+		R reducedResult = null;
 		
 		List<M> contexts = new ArrayList<M>();
-		List<PairedParallelSamWorker<M>> workers = new ArrayList<PairedParallelSamWorker<M>>();
+		List<PairedParallelSamWorker<M, R>> workers = new ArrayList<PairedParallelSamWorker<M, R>>();
 		List<SamReader> readers = new ArrayList<SamReader>();
 		ReadLogger readLogger = new ReadLogger();
 		for(int i = 0; i < samFileSession.preprocessedBamPaths.length; i++) {
-			M context = samPairedParallelProcessor.createContext();
+			M context = contextSupplier.get();;
 			contexts.add(context);
 			SamReader samReader = 
 					SamUtils.newSamReader(consoleCmdContext, samFileSession.preprocessedBamPaths[i], validationStringency);
 			readers.add(samReader);
-			workers.add(new PairedParallelSamWorker<M>(context, samReader, samPairedParallelProcessor, readLogger));
+			samPairedParallelProcessor.initContextForReader(context, samReader);
+			workers.add(new PairedParallelSamWorker<M, R>(context, samReader, samPairedParallelProcessor, readLogger));
 		}
+		List<R> results = new ArrayList<R>();
 		
 		try {
 			ExecutorService samExecutorService = consoleCmdContext.getGluetoolsEngine().getSamExecutorService();
-			List<Future<Void>> futures = samExecutorService.invokeAll(workers);
-			for(Future<Void> future: futures) { // pick up any exceptions.
-				future.get(); 
+			List<Future<R>> futures = samExecutorService.invokeAll(workers);
+			for(Future<R> future: futures) { // pick up results plus any exceptions.
+				results.add(future.get()); 
 			}
 			readLogger.printMessage();
 		} catch (Exception e) {
@@ -307,12 +310,12 @@ public class SamUtils {
 			samFileSession.cleanup();
 		}
 		
-		reducedContext = contexts.get(0);
-		for(int i = 1; i < contexts.size(); i++) {
-			reducedContext = samPairedParallelProcessor.reduceContexts(reducedContext, contexts.get(i));
+		reducedResult = results.get(0);
+		for(int i = 1; i < results.size(); i++) {
+			reducedResult = samPairedParallelProcessor.reduceResults(reducedResult, results.get(i));
 		}
 		
-		return reducedContext;
+		return reducedResult;
 		
 	}
 	
@@ -321,16 +324,16 @@ public class SamUtils {
 		return ((int) qualityChar) - 33;
 	}
 	
-	private static class PairedParallelSamWorker<M> implements Callable<Void> {
+	private static class PairedParallelSamWorker<M, R> implements Callable<R> {
 
 		private M context;
 		private SamReader samReader;
-		private SamPairedParallelProcessor<M> samPairedParallelProcessor;
+		private SamPairedParallelProcessor<M, R> samPairedParallelProcessor;
 		private SAMRecord read1;
 		private ReadLogger readLogger;
 		
 		public PairedParallelSamWorker(M context, SamReader samReader,
-				SamPairedParallelProcessor<M> samPairedParallelProcessor, 
+				SamPairedParallelProcessor<M, R> samPairedParallelProcessor, 
 				ReadLogger readLogger) {
 			super();
 			this.context = context;
@@ -340,7 +343,7 @@ public class SamUtils {
 		}
 
 		@Override
-		public Void call() throws Exception {
+		public R call() throws Exception {
 			SamUtils.iterateOverSamReader(samReader, samRecord -> {
 				if(samRecord.getFirstOfPairFlag()) {
 					if(read1 == null) {
@@ -368,7 +371,7 @@ public class SamUtils {
 			if(read1 != null) {
 				throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 1/2 to be followed by 2/2");
 			}
-			return null;
+			return samPairedParallelProcessor.contextResult(context);
 		}
 	}
 
