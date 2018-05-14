@@ -55,6 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesUtils;
@@ -93,6 +94,7 @@ public class GluetoolsEngine implements Plugin {
 	private Map<String, byte[]> classNameToBytes = new LinkedHashMap<String, byte[]>();
 	private GlueClassLoader glueClassLoader = new GlueClassLoader(GluetoolsEngine.class.getClassLoader(), this);
 	private ExecutorService mafftExecutorService;
+	private ExecutorService samExecutorService;
 	private WebFilesManager webFilesManager;
 
 	
@@ -230,6 +232,9 @@ public class GluetoolsEngine implements Plugin {
 		if(mafftExecutorService != null) {
 			mafftExecutorService.shutdown();
 		}
+		if(samExecutorService != null) {
+			samExecutorService.shutdown();
+		}
 		if(webFilesManager != null) {
 			webFilesManager.setKeepRunning(false);
 		}
@@ -280,6 +285,15 @@ public class GluetoolsEngine implements Plugin {
 			mafftExecutorService = Executors.newFixedThreadPool(mafftCpus);
 		}
 		return mafftExecutorService;
+	}
+	
+	// used to parellize SAM file processing.
+	public synchronized ExecutorService getSamExecutorService() {
+		if(samExecutorService == null) {
+			int samCpus = Integer.parseInt(getPropertiesConfiguration().getPropertyValue(SamUtils.SAM_NUMBER_CPUS, "1"));
+			samExecutorService = Executors.newFixedThreadPool(samCpus);
+		}
+		return samExecutorService;
 	}
 	
 	public WebFilesManager getWebFilesManager() {

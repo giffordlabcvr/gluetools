@@ -36,19 +36,33 @@ import htsjdk.samtools.ValidationStringency;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
+	
+	public static String 
+		SAM_TEMP_DIR_PROPERTY = "gluetools.core.sam.temp.dir";
+
+	public static String 
+		SAM_NUMBER_CPUS = "gluetools.core.sam.cpus";
+
 	
 	public static int getForwardSenseSamRefIndex(SamRefSense samRefSense, int samRefLength, int refStart, int baseIndex) {
 		switch(samRefSense) {
@@ -92,6 +106,8 @@ public class SamUtils {
         	if(samRecord.getReferenceIndex() != samReferenceIndex) {
         		return;
         	}
+        	
+        	
         	
 			String readString = samRecord.getReadString().toUpperCase();
 			String qualityString = samRecord.getBaseQualityString();
@@ -252,8 +268,146 @@ public class SamUtils {
 			throw new SamUtilsException(sfe, Code.SAM_FORMAT_ERROR, sfe.getMessage());
 		}
 	}
+	
+	public static <M> M pairedParallelSamIterate(ConsoleCommandContext consoleCmdContext, 
+			String samFileName, ValidationStringency validationStringency, 
+			SamPairedParallelProcessor<M> samPairedParallelProcessor) {
+		SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency);
+		
+		M reducedContext = null;
+		
+		List<M> contexts = new ArrayList<M>();
+		List<PairedParallelSamWorker<M>> workers = new ArrayList<PairedParallelSamWorker<M>>();
+		List<SamReader> readers = new ArrayList<SamReader>();
+		ReadLogger readLogger = new ReadLogger();
+		for(int i = 0; i < samFileSession.preprocessedBamPaths.length; i++) {
+			M context = samPairedParallelProcessor.createContext();
+			contexts.add(context);
+			SamReader samReader = 
+					SamUtils.newSamReader(consoleCmdContext, samFileSession.preprocessedBamPaths[i], validationStringency);
+			readers.add(samReader);
+			workers.add(new PairedParallelSamWorker<M>(context, samReader, samPairedParallelProcessor, readLogger));
+		}
+		
+		try {
+			ExecutorService samExecutorService = consoleCmdContext.getGluetoolsEngine().getSamExecutorService();
+			List<Future<Void>> futures = samExecutorService.invokeAll(workers);
+			for(Future<Void> future: futures) { // pick up any exceptions.
+				future.get(); 
+			}
+			readLogger.printMessage();
+		} catch (Exception e) {
+			throw new SamUtilsException(e, Code.SAM_PAIRED_READS_ERROR,  "Invocation interrupted: "+e.getLocalizedMessage());
+		} finally {
+			readers.forEach(reader -> { try {
+				reader.close();
+			} catch (Exception e) {
+				GlueLogger.getGlueLogger().warning("Unable to close SamReader: "+e.getLocalizedMessage());
+			} });
+			samFileSession.cleanup();
+		}
+		
+		reducedContext = contexts.get(0);
+		for(int i = 1; i < contexts.size(); i++) {
+			reducedContext = samPairedParallelProcessor.reduceContexts(reducedContext, contexts.get(i));
+		}
+		
+		return reducedContext;
+		
+	}
+	
 
 	public static int qualityCharToQScore(char qualityChar) {
 		return ((int) qualityChar) - 33;
 	}
+	
+	private static class PairedParallelSamWorker<M> implements Callable<Void> {
+
+		private M context;
+		private SamReader samReader;
+		private SamPairedParallelProcessor<M> samPairedParallelProcessor;
+		private SAMRecord read1;
+		private ReadLogger readLogger;
+		
+		public PairedParallelSamWorker(M context, SamReader samReader,
+				SamPairedParallelProcessor<M> samPairedParallelProcessor, 
+				ReadLogger readLogger) {
+			super();
+			this.context = context;
+			this.samReader = samReader;
+			this.samPairedParallelProcessor = samPairedParallelProcessor;
+			this.readLogger = readLogger;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			SamUtils.iterateOverSamReader(samReader, samRecord -> {
+				if(samRecord.getFirstOfPairFlag()) {
+					if(read1 == null) {
+						read1 = samRecord;
+					} else {
+						throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 1/2 to be followed by 2/2");
+					}
+				} else if(samRecord.getSecondOfPairFlag()) {
+					if(read1 == null) {
+						throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 2/2 to be preceded by 1/2");
+					} else {
+						if(samRecord.getReadName().equals(read1.getReadName())) {
+							read1 = null;
+							samPairedParallelProcessor.processPair(context, read1, samRecord);
+							readLogger.logPair();
+						} else {
+							throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Mispaired reads "+read1.getReadName()+" 1/2 with "+samRecord.getReadName()+" 2/2");
+						}
+					}
+				} else {
+					samPairedParallelProcessor.processSingleton(context, samRecord);
+					readLogger.logSingleton();
+				}
+			});
+			if(read1 != null) {
+				throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 1/2 to be followed by 2/2");
+			}
+			return null;
+		}
+	}
+
+	private static class ReadLogger {
+		private static final int INTERVAL = 30000;
+		private int pairs = 0;
+		private int singletonReads = 0;
+		private int totalReads = 0;
+		
+		public synchronized void logPair() {
+			totalReads++;
+			if(totalReads % INTERVAL == 0) {
+				printMessage();
+			}
+			totalReads++;
+			if(totalReads % INTERVAL == 0) {
+				printMessage();
+			}
+			pairs++;
+		}
+		
+		public synchronized void logSingleton() {
+			singletonReads++;
+			totalReads++;
+			if(totalReads % INTERVAL == 0) {
+				printMessage();
+			}
+		}
+		
+		public void printMessage() {
+			GlueLogger.getGlueLogger().finest("Processed "+totalReads+" reads, ("+pairs+" pairs, "+singletonReads+" singletons)");
+		}
+		
+	}
+	
+	
 }
+
+
+
+
+

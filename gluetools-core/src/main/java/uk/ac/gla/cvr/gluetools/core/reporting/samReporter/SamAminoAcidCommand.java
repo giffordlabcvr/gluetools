@@ -30,6 +30,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TCharIntHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.procedure.TCharIntProcedure;
+import htsjdk.samtools.SAMFlag;
 import htsjdk.samtools.SamReader;
 
 import java.io.IOException;
@@ -57,6 +58,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
@@ -239,7 +241,10 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
         			qualityString = StringUtils.reverseString(qualityString);
         		}
 
+        		
+        		
 				List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToAncConstrRefSegs);
+				
 				
 				List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, readToAncConstrRefSegs);
 

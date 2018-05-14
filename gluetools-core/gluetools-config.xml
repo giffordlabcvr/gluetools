@@ -110,6 +110,15 @@
 			<name>gluetools.core.programs.clusterPicker.temp.dir</name>
 			<value>/Users/joshsinger/clusterPicker/tmp</value>
 		</property>
+		<!-- SAM/BAM file processing -->
+		<property>
+			<name>gluetools.core.sam.temp.dir</name>
+			<value>/Users/joshsinger/sam/tmp</value>
+		</property>
+		<property>
+			<name>gluetools.core.sam.cpus</name>
+			<value>4</value>
+		</property>
 		<!-- Cayenne -->
 		<property>
 			<name>cayenne.querycache.size</name>
