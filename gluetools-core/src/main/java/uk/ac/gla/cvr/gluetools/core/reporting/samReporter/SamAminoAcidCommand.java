@@ -323,7 +323,58 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			}
 		}
 	}
+	
+	private TIntObjectMap<AminoAcidWithQuality> translateReadWithQualityScores(SamAminoAcidContext context, SAMRecord samRecord) {
 
+		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
+		String readString = samRecord.getReadString().toUpperCase();
+		String qualityString = samRecord.getBaseQualityString();
+		if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
+			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), context.samRefInfo.getSamRefLength());
+			readString = FastaUtils.reverseComplement(readString);
+			qualityString = StringUtils.reverseString(qualityString);
+		}
+		
+		List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToAncConstrRefSegs);
+		List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToAncConstrRefSegs);
+		List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
+		
+		TIntObjectMap<AminoAcidWithQuality> refNtToAminoAcidWithQuality = new TIntObjectHashMap<SamAminoAcidCommand.AminoAcidWithQuality>();
+		
+		for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
+			Integer queryStart = readToAncConstRefSeg.getQueryStart();
+			Integer queryEnd = readToAncConstRefSeg.getQueryEnd();
+			CharSequence nts = SegmentUtils.base1SubString(readString, queryStart, queryEnd);
+			
+			String segAAs = context.translator.translateToAaString(nts);
+			Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
+			Integer readNt = readToAncConstRefSeg.getQueryStart();
+			for(int i = 0; i < segAAs.length(); i++) {
+				CharSequence quals = SegmentUtils.base1SubString(qualityString, readNt, readNt+2);
+				int worstQual = SamUtils.qualityCharToQScore(quals.charAt(0));
+				for(int j = 1; j < quals.length(); j++) {
+					worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(quals.charAt(j)));
+				}
+				char segAA = segAAs.charAt(i);
+				refNtToAminoAcidWithQuality.put(ancConstrRefNt, new AminoAcidWithQuality(segAA, worstQual));
+				ancConstrRefNt += 3;
+				readNt += 3;
+			}
+		}
+		return refNtToAminoAcidWithQuality;
+	}
+	
+	private class AminoAcidWithQuality {
+		char aa;
+		int worstCodonQuality;
+
+		public AminoAcidWithQuality(char aa, int worstCodonQuality) {
+			super();
+			this.aa = aa;
+			this.worstCodonQuality = worstCodonQuality;
+		}
+	}
+	
 	private List<QueryAlignedSegment> filterByQuality(
 			List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned,
 			String qualityString, int minQScore) {
@@ -387,17 +438,59 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 	
 
 	@Override
-	public void processPair(SamAminoAcidContext context, SAMRecord read1,
-			SAMRecord read2) {
-		processSamRecord(context, read1);
-		processSamRecord(context, read2);
-		
-	}
+	public void processPair(SamAminoAcidContext context, SAMRecord read1, SAMRecord read2) {
+		if(!context.samRecordFilter.recordPasses(read1)) {
+			processSingleton(context, read2);
+		}
+		if(!context.samRecordFilter.recordPasses(read2)) {
+			processSingleton(context, read1);
+		}
+		TIntObjectMap<AminoAcidWithQuality> read1TranslationWithQuals = translateReadWithQualityScores(context, read1);
+		TIntObjectMap<AminoAcidWithQuality> read2TranslationWithQuals = translateReadWithQualityScores(context, read2);
 
+		int read1MapQ = read1.getMappingQuality();
+		int read2MapQ = read2.getMappingQuality();
+		int readNameHashCoinFlip = Math.abs(read1.getReadName().hashCode()) % 2;
+
+		for(int acRefNt : read1TranslationWithQuals.keys()) {
+			AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
+			AminoAcidWithQuality read1AaWithQual = read1TranslationWithQuals.get(acRefNt);
+			AminoAcidWithQuality read2AaWithQual = read2TranslationWithQuals.remove(acRefNt);
+			if(read2AaWithQual == null) {
+				aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+			} else {
+				int read1qual = read1AaWithQual.worstCodonQuality;
+				int read2qual = read2AaWithQual.worstCodonQuality;
+				if(read1qual < read2qual) {
+					aminoAcidReadCount.addAaRead(read2AaWithQual.aa);
+				} else if(read1qual > read2qual) {
+					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+				} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ < read2MapQ) {
+					aminoAcidReadCount.addAaRead(read2AaWithQual.aa);
+				} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ > read2MapQ) {
+					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+				} else if(readNameHashCoinFlip == 0) {
+					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+				} else {
+					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+				}
+			}
+		}
+		for(int acRefNt : read2TranslationWithQuals.keys()) {
+			AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
+			aminoAcidReadCount.addAaRead(read2TranslationWithQuals.get(acRefNt).aa);
+		}
+	}
 
 	@Override
 	public void processSingleton(SamAminoAcidContext context, SAMRecord read) {
-		processSamRecord(context, read);
+		if(context.samRecordFilter.recordPasses(read)) {
+			TIntObjectMap<AminoAcidWithQuality> readTranslationWithQuals = translateReadWithQualityScores(context, read);
+			for(int acRefNt : readTranslationWithQuals.keys()) {
+				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
+				aminoAcidReadCount.addAaRead(readTranslationWithQuals.get(acRefNt).aa);
+			}
+		}
 	}
 
 
