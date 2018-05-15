@@ -25,7 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import htsjdk.samtools.AlignmentBlock;
 import htsjdk.samtools.SAMFormatException;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;
@@ -37,11 +36,9 @@ import htsjdk.samtools.ValidationStringency;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -86,98 +83,6 @@ public class SamUtils {
 			throw new RuntimeException("SAM ref sense should be determined by the point of using a read base");
 		}
 	}
-	
-	public static String getNgsConsensus(SamReader samReader, String samRefName, int minQScore, int minDepth, SamRefSense samRefSense) {
-
-		if(!EnumSet.of(SamRefSense.FORWARD, SamRefSense.REVERSE_COMPLEMENT).contains(samRefSense)) {
-			throw new RuntimeException("SAM ref sense should be determined by the point of forming the consensus");
-		}
-		
-        SAMSequenceRecord samReference = samReader.getFileHeader().getSequenceDictionary().getSequence(samRefName);
-        final int samReferenceLength = samReference.getSequenceLength();
-        int samReferenceIndex = samReference.getSequenceIndex();
-        
-        final int[] depth = new int[samReferenceLength];
-        final int[] aCounts = new int[samReferenceLength];
-        final int[] cCounts = new int[samReferenceLength];
-        final int[] gCounts = new int[samReferenceLength];
-        final int[] tCounts = new int[samReferenceLength];
-        
-        samReader.forEach(samRecord -> {
-        	if(samRecord.getReferenceIndex() != samReferenceIndex) {
-        		return;
-        	}
-        	
-        	
-        	
-			String readString = samRecord.getReadString().toUpperCase();
-			String qualityString = samRecord.getBaseQualityString();
-        	List<AlignmentBlock> alignmentBlocks = samRecord.getAlignmentBlocks();
-        	alignmentBlocks.forEach(alignmentBlock -> {
-        		int blockLength = alignmentBlock.getLength();
-        		int readStart = alignmentBlock.getReadStart();
-        		int refStart = alignmentBlock.getReferenceStart();
-        		
-        		
-        		for(int baseIndex = 0; baseIndex < blockLength; baseIndex++) {
-        			char readQualityChar = qualityString.charAt((readStart+baseIndex)-1);
-        			if(SamUtils.qualityCharToQScore(readQualityChar) < minQScore) {
-        				continue;
-        			}
-        			char readBase = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
-        			char forwardSenseReadBase = getForwardSenseReadBase(samRefSense, readBase);
-        			if(forwardSenseReadBase == '=') {
-        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_EQUALS);
-        			}
-        			int index = getForwardSenseSamRefIndex(samRefSense, samReferenceLength, refStart, baseIndex);
-					if(forwardSenseReadBase == 'A') {
-						depth[index]++;
-        				aCounts[index]++;
-        			} else if(forwardSenseReadBase == 'C') {
-						depth[index]++;
-        				cCounts[index]++;
-        			} else if(forwardSenseReadBase == 'G') {
-						depth[index]++;
-        				gCounts[index]++;
-        			} else if(forwardSenseReadBase == 'T') {
-						depth[index]++;
-        				tCounts[index]++;
-        			} else if(forwardSenseReadBase == 'N') {
-        				// ambiguity character
-        			} else {
-        				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readBase), Integer.toString(readBase));
-        			}
-        		}
-        	});
-        });
-
-        StringBuffer consensus = new StringBuffer();
-        char[] bases = {'A', 'C', 'G', 'T'};
-        int[] counts = new int[4];
-		char next;
-		int best;
-        for(int i = 0; i < samReferenceLength; i++) {
-        	next = 'N';
-        	if(depth[i] >= minDepth) {
-        		best = 0;
-        		counts[0] = aCounts[i];
-        		counts[1] = cCounts[i];
-        		counts[2] = gCounts[i];
-        		counts[3] = tCounts[i];
-        		for(int j = 0; j < 4; j++) {
-        			if(counts[j] > best) {
-        				next = bases[j];
-        				best = counts[j];
-        			} else if(counts[j] == best) {
-        				next = 'N';
-        			}
-        		}
-        	}
-			consensus.append(next);
-        }
-        return consensus.toString();
-	}
-	
 	
 	public static SAMSequenceRecord findReference(SamReader samReader, String fileName, String samRefName) {
 		SAMSequenceRecord samReference = null;
@@ -226,7 +131,10 @@ public class SamUtils {
 
 			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
 
-			String ngsConsensus = SamUtils.getNgsConsensus(samReader, samReference.getSequenceName(), minQScore, minDepth, samRefSense);
+			SamConsensusGenerator samConsensusGenerator = new SamConsensusGenerator();
+			
+			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, fileName, validationStringency, 
+					samReference.getSequenceName(), minQScore, minDepth, samRefSense);
 			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
 				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
 						Integer.toString(minQScore), Integer.toString(minDepth));
@@ -275,9 +183,10 @@ public class SamUtils {
 			SamPairedParallelProcessor<M, R> samPairedParallelProcessor) {
 		R reducedResult = null;
 		List<SamReader> readers = new ArrayList<SamReader>();
-
+		GlueLogger.getGlueLogger().finest("Preprocessing "+samFileName+" into multiple BAM files");
 		SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency);
 
+		GlueLogger.getGlueLogger().finest("Running SamPairedParallelProcessor "+samPairedParallelProcessor.getClass().getSimpleName());
 		List<M> contexts = new ArrayList<M>();
 		List<PairedParallelSamWorker<M, R>> workers = new ArrayList<PairedParallelSamWorker<M, R>>();
 		ReadLogger readLogger = new ReadLogger();

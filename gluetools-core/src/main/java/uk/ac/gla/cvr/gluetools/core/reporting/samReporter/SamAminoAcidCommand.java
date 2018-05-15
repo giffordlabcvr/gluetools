@@ -439,44 +439,44 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 	public void processPair(SamAminoAcidContext context, SAMRecord read1, SAMRecord read2) {
 		if(!context.samRecordFilter.recordPasses(read1)) {
 			processSingleton(context, read2);
-		}
-		if(!context.samRecordFilter.recordPasses(read2)) {
+		} else if(!context.samRecordFilter.recordPasses(read2)) {
 			processSingleton(context, read1);
-		}
-		TIntObjectMap<AminoAcidWithQuality> read1TranslationWithQuals = translateReadWithQualityScores(context, read1);
-		TIntObjectMap<AminoAcidWithQuality> read2TranslationWithQuals = translateReadWithQualityScores(context, read2);
+		} else {
+			TIntObjectMap<AminoAcidWithQuality> read1TranslationWithQuals = translateReadWithQualityScores(context, read1);
+			TIntObjectMap<AminoAcidWithQuality> read2TranslationWithQuals = translateReadWithQualityScores(context, read2);
 
-		int read1MapQ = read1.getMappingQuality();
-		int read2MapQ = read2.getMappingQuality();
-		int readNameHashCoinFlip = Math.abs(read1.getReadName().hashCode()) % 2;
+			int read1MapQ = read1.getMappingQuality();
+			int read2MapQ = read2.getMappingQuality();
+			int readNameHashCoinFlip = Math.abs(read1.getReadName().hashCode()) % 2;
 
-		for(int acRefNt : read1TranslationWithQuals.keys()) {
-			AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
-			AminoAcidWithQuality read1AaWithQual = read1TranslationWithQuals.get(acRefNt);
-			AminoAcidWithQuality read2AaWithQual = read2TranslationWithQuals.remove(acRefNt);
-			if(read2AaWithQual == null) {
-				aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
-			} else {
-				int read1qual = read1AaWithQual.worstCodonQuality;
-				int read2qual = read2AaWithQual.worstCodonQuality;
-				if(read1qual < read2qual) {
-					aminoAcidReadCount.addAaRead(read2AaWithQual.aa);
-				} else if(read1qual > read2qual) {
-					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
-				} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ < read2MapQ) {
-					aminoAcidReadCount.addAaRead(read2AaWithQual.aa);
-				} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ > read2MapQ) {
-					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
-				} else if(readNameHashCoinFlip == 0) {
+			for(int acRefNt : read1TranslationWithQuals.keys()) {
+				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
+				AminoAcidWithQuality read1AaWithQual = read1TranslationWithQuals.get(acRefNt);
+				AminoAcidWithQuality read2AaWithQual = read2TranslationWithQuals.remove(acRefNt);
+				if(read2AaWithQual == null) {
 					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
 				} else {
-					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+					int read1qual = read1AaWithQual.worstCodonQuality;
+					int read2qual = read2AaWithQual.worstCodonQuality;
+					if(read1qual < read2qual) {
+						aminoAcidReadCount.addAaRead(read2AaWithQual.aa);
+					} else if(read1qual > read2qual) {
+						aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+					} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ < read2MapQ) {
+						aminoAcidReadCount.addAaRead(read2AaWithQual.aa);
+					} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ > read2MapQ) {
+						aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+					} else if(readNameHashCoinFlip == 0) {
+						aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+					} else {
+						aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
+					}
 				}
 			}
-		}
-		for(int acRefNt : read2TranslationWithQuals.keys()) {
-			AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
-			aminoAcidReadCount.addAaRead(read2TranslationWithQuals.get(acRefNt).aa);
+			for(int acRefNt : read2TranslationWithQuals.keys()) {
+				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
+				aminoAcidReadCount.addAaRead(read2TranslationWithQuals.get(acRefNt).aa);
+			}
 		}
 	}
 

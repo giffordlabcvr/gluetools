@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils.ReadLogger;
 
 
 
@@ -37,6 +38,8 @@ public class SamReporterPreprocessor {
 		final SAMFileWriter[] bamWriters = new SAMFileWriter[cpus];
 		SamFileSession samFileSession = new SamFileSession();
 		samFileSession.preprocessedBamPaths = new String[cpus];
+		
+		ReadLogger readLogger = new ReadLogger();
 		
 		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, fileName, validationStringency)) {
 			SAMFileHeader header = samReader.getFileHeader().clone();
@@ -72,10 +75,13 @@ public class SamReporterPreprocessor {
 							writeRead(bamWriters, readPair.read1);
 							writeRead(bamWriters, samRecord);
 						}
+						readLogger.logPair();
+
 					}
 				} else {
 					// non paired read
 					writeRead(bamWriters, samRecord);
+					readLogger.logSingleton();
 				}
 			});
 			// now write out reads which claimed to be in a pair but aren't
@@ -84,11 +90,13 @@ public class SamReporterPreprocessor {
 				if(read1 != null) {
 					read1.setFirstOfPairFlag(false);
 					writeRead(bamWriters, read1);
+					readLogger.logSingleton();
 				}
 				SAMRecord read2 = readPair.read2;
 				if(read2 != null) {
 					read1.setSecondOfPairFlag(false);
 					writeRead(bamWriters, read2);
+					readLogger.logSingleton();
 				}
 			});
 			closeBamWriters(bamWriters, samFileSession);
