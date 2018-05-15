@@ -33,6 +33,7 @@ import gnu.trove.procedure.TCharIntProcedure;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +63,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils.ReadLogger;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -240,7 +242,22 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		};
 		TIntObjectMap<AminoAcidReadCount> mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, getFileName(), 
 				samReporter.getSamReaderValidationStringency(), this);
-		
+		// DEBUG start
+			/*
+		ReadLogger readLogger = new ReadLogger();
+		SamAminoAcidContext samAminoAcidContext = contextSupplier.get();
+		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency())) {
+			initContextForReader(samAminoAcidContext, samReader);
+			SamUtils.iterateOverSamReader(samReader, (samRecord) -> {
+				processSingleton(samAminoAcidContext, samRecord);
+				readLogger.logSingleton();
+			});
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		TIntObjectMap<AminoAcidReadCount> mergedResult = samAminoAcidContext.ancConstrRefNtToAminoAcidReadCount;
+		 */
+		// DEBUG end
 		final List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
 		
 		for(Integer ancConstrRefNt: mappedAncConstrRefNts) {

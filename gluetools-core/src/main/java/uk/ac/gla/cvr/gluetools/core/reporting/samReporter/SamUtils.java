@@ -273,13 +273,13 @@ public class SamUtils {
 	public static <M, R> R pairedParallelSamIterate(Supplier<M> contextSupplier, ConsoleCommandContext consoleCmdContext, 
 			String samFileName, ValidationStringency validationStringency, 
 			SamPairedParallelProcessor<M, R> samPairedParallelProcessor) {
-		SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency);
-		
 		R reducedResult = null;
-		
+		List<SamReader> readers = new ArrayList<SamReader>();
+
+		SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency);
+
 		List<M> contexts = new ArrayList<M>();
 		List<PairedParallelSamWorker<M, R>> workers = new ArrayList<PairedParallelSamWorker<M, R>>();
-		List<SamReader> readers = new ArrayList<SamReader>();
 		ReadLogger readLogger = new ReadLogger();
 		for(int i = 0; i < samFileSession.preprocessedBamPaths.length; i++) {
 			M context = contextSupplier.get();;
@@ -291,8 +291,9 @@ public class SamUtils {
 			workers.add(new PairedParallelSamWorker<M, R>(context, samReader, samPairedParallelProcessor, readLogger));
 		}
 		List<R> results = new ArrayList<R>();
-		
+
 		try {
+
 			ExecutorService samExecutorService = consoleCmdContext.getGluetoolsEngine().getSamExecutorService();
 			List<Future<R>> futures = samExecutorService.invokeAll(workers);
 			for(Future<R> future: futures) { // pick up results plus any exceptions.
@@ -300,7 +301,7 @@ public class SamUtils {
 			}
 			readLogger.printMessage();
 		} catch (Exception e) {
-			throw new SamUtilsException(e, Code.SAM_PAIRED_READS_ERROR,  "Invocation interrupted: "+e.getLocalizedMessage());
+			throw new SamUtilsException(e, Code.SAM_PAIRED_READS_ERROR,  "Error during paired parallel SAM iteration: "+e.getLocalizedMessage());
 		} finally {
 			readers.forEach(reader -> { try {
 				reader.close();
@@ -356,8 +357,8 @@ public class SamUtils {
 						throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 2/2 to be preceded by 1/2");
 					} else {
 						if(samRecord.getReadName().equals(read1.getReadName())) {
-							read1 = null;
 							samPairedParallelProcessor.processPair(context, read1, samRecord);
+							read1 = null;
 							readLogger.logPair();
 						} else {
 							throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Mispaired reads "+read1.getReadName()+" 1/2 with "+samRecord.getReadName()+" 2/2");
@@ -375,7 +376,7 @@ public class SamUtils {
 		}
 	}
 
-	private static class ReadLogger {
+	public static class ReadLogger {
 		private static final int INTERVAL = 30000;
 		private int pairs = 0;
 		private int singletonReads = 0;
@@ -387,10 +388,10 @@ public class SamUtils {
 				printMessage();
 			}
 			totalReads++;
+			pairs++;
 			if(totalReads % INTERVAL == 0) {
 				printMessage();
 			}
-			pairs++;
 		}
 		
 		public synchronized void logSingleton() {

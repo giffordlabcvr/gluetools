@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileHeader.SortOrder;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
 import htsjdk.samtools.SAMRecord;
@@ -38,7 +39,8 @@ public class SamReporterPreprocessor {
 		samFileSession.preprocessedBamPaths = new String[cpus];
 		
 		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, fileName, validationStringency)) {
-			SAMFileHeader header = samReader.getFileHeader();
+			SAMFileHeader header = samReader.getFileHeader().clone();
+			header.setSortOrder(SortOrder.unsorted);
 			SAMFileWriterFactory samFileWriterFactory = new SAMFileWriterFactory();
 			for(int i = 0; i < cpus; i++) {
 				String uuid = UUID.randomUUID().toString();
@@ -89,30 +91,36 @@ public class SamReporterPreprocessor {
 					writeRead(bamWriters, read2);
 				}
 			});
+			closeBamWriters(bamWriters, samFileSession);
 
 		} catch (IOException e) {
+			closeBamWriters(bamWriters, samFileSession);
+			samFileSession.cleanup();
 			throw new RuntimeException(e);
 		} finally {
-			for(int i = 0 ; i < bamWriters.length; i++) {
-				SAMFileWriter bamWriter = bamWriters[i];
-				String filePath = samFileSession.preprocessedBamPaths[i];
-				if(bamWriter != null) {
-					try {
-						bamWriter.close();
-					} catch(Exception ee) {
-						GlueLogger.getGlueLogger().log(Level.WARNING, "Unable to close SamFileWriter for file "+filePath+": "+ee.getLocalizedMessage());
-					};
-				}
-			}
-			samFileSession.cleanup();
 		}
 		return samFileSession;
+	}
+
+	private static void closeBamWriters(final SAMFileWriter[] bamWriters,
+			SamFileSession samFileSession) {
+		for(int i = 0 ; i < bamWriters.length; i++) {
+			SAMFileWriter bamWriter = bamWriters[i];
+			String filePath = samFileSession.preprocessedBamPaths[i];
+			if(bamWriter != null) {
+				try {
+					bamWriter.close();
+				} catch(Exception ee) {
+					GlueLogger.getGlueLogger().log(Level.WARNING, "Unable to close SamFileWriter for file "+filePath+": "+ee.getLocalizedMessage());
+				};
+			}
+		}
 	}
 
 	// put the read in one of the writers, by arbitrarily selecting one based on the hash of the read name.
 	private static void writeRead(SAMFileWriter[] writers, SAMRecord read) {
 		int hashCode = read.getReadName().hashCode();
-		int writerIndex = hashCode % writers.length;
+		int writerIndex = Math.abs(hashCode) % writers.length;
 		SAMFileWriter samFileWriter = writers[writerIndex];
 		samFileWriter.addAlignment(read);
 	}
