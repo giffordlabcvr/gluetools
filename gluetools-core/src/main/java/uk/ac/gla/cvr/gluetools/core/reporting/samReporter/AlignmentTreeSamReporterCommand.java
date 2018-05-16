@@ -43,6 +43,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 // SAM reporter command which links the SAM reads to the GLUE alignment tree before performing
@@ -82,7 +83,7 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 	
 	
 	protected List<QueryAlignedSegment> getSamRefToTargetRefSegs(
-			CommandContext cmdContext, SamReporter samReporter,
+			CommandContext cmdContext, SamReporter samReporter, SamFileSession samFileSession, 
 			ConsoleCommandContext consoleCmdContext, ReferenceSequence targetRef, DNASequence consensusSequence) {
 		List<QueryAlignedSegment> samRefToTargetRefSegs;
 		if(autoAlign || maxLikelihoodPlacer) {
@@ -92,7 +93,7 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 			if(consensusSequence == null) {
 				// compute consensus if we don't already have it.
 				samConsensus = 
-						SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", 
+						SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samFileSession, samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", 
 								getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 			} else {
 				samConsensus = new LinkedHashMap<String, DNASequence>();

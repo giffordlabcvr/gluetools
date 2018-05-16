@@ -32,6 +32,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.procedure.TCharIntProcedure;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
+import htsjdk.samtools.ValidationStringency;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,10 +59,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -142,105 +145,108 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
 		SamRefInfo samRefInfo = getSamRefInfo(consoleCmdContext, samReporter);
+		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
+		String samFileName = getFileName();
 
-		DNASequence consensusSequence = null;
-		ReferenceSequence targetRef;
-		AlignmentMember tipAlmtMember;
-		if(useMaxLikelihoodPlacer()) {
-			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
-			consensusSequence = consensusMap.get("samConsensus");
-			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
-			targetRef = tipAlmtMember.targetReferenceFromMember();
-			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
-		} else {
-			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
-			tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
-		}
-		
-		Alignment tipAlmt = tipAlmtMember.getAlignment();
-		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
+		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
+			DNASequence consensusSequence = null;
+			ReferenceSequence targetRef;
+			AlignmentMember tipAlmtMember;
+			if(useMaxLikelihoodPlacer()) {
+				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession, 
+						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+				consensusSequence = consensusMap.get("samConsensus");
+				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+				targetRef = tipAlmtMember.targetReferenceFromMember();
+				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
+			} else {
+				targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
+						ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
+				tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
+			}
 
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
-		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
+			Alignment tipAlmt = tipAlmtMember.getAlignment();
+			ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
 
-		List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef, consensusSequence);
-		
-		// translate segments to tip alignment reference
-		List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-				samRefToTargetRefSegs);
-		
-		// translate segments to ancestor constraining reference
-		List<QueryAlignedSegment> samRefToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, ancConstrainingRef);
+			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
+			Feature feature = featureLoc.getFeature();
+			feature.checkCodesAminoAcids();
 
-		// trim down to the feature area.
-		List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
-				.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-		List<QueryAlignedSegment> samRefToAncConstrRefSegs = 
+			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
+
+			// translate segments to tip alignment reference
+			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+					samRefToTargetRefSegs);
+
+			// translate segments to ancestor constraining reference
+			List<QueryAlignedSegment> samRefToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, ancConstrainingRef);
+
+			// trim down to the feature area.
+			List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
+					.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
+			List<QueryAlignedSegment> samRefToAncConstrRefSegs = 
 					ReferenceSegment.intersection(samRefToAncConstrRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
-			
-		// truncate to codon aligned
-		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
 
-		List<QueryAlignedSegment> samRefToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToAncConstrRefSegs);
+			// truncate to codon aligned
+			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
 
-		if(samRefToAncConstrRefSegsCodonAligned.isEmpty()) {
-			return new SamAminoAcidResult(Collections.emptyList());
-		}
-		
-		SamRefSense samRefSense = getSamRefSense(samReporter);
+			List<QueryAlignedSegment> samRefToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToAncConstrRefSegs);
 
-		TIntObjectMap<LabeledCodon> ancConstrRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+			if(samRefToAncConstrRefSegsCodonAligned.isEmpty()) {
+				return new SamAminoAcidResult(Collections.emptyList());
+			}
 
-		// build a map from anc constr ref NT to AA read count.
-		TIntObjectHashMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
-		List<Integer> mappedAncConstrRefNts = new ArrayList<Integer>();
-		for(QueryAlignedSegment qaSeg: samRefToAncConstrRefSegsCodonAligned) {
-			for(int ancConstrRefNt = qaSeg.getRefStart(); ancConstrRefNt <= qaSeg.getRefEnd(); ancConstrRefNt++) {
-				if(TranslationUtils.isAtStartOfCodon(codon1Start, ancConstrRefNt)) {
-					mappedAncConstrRefNts.add(ancConstrRefNt);
-					LabeledCodon labeledCodon = ancConstrRefNtToLabeledCodon.get(ancConstrRefNt);
-					int samRefNt = ancConstrRefNt + qaSeg.getReferenceToQueryOffset();
-					int resultSamRefNt = samRefNt;
-	        		if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-	        			// we want to report results in the SAM file's own coordinates.
-	        			resultSamRefNt = ReferenceSegment.reverseLocationSense(samRefInfo.getSamRefLength(), samRefNt);
-	        		}
-	        		ancConstrRefNtToAminoAcidReadCount.put(ancConstrRefNt, new AminoAcidReadCount(labeledCodon, resultSamRefNt));
+			SamRefSense samRefSense = getSamRefSense(samReporter);
+
+			TIntObjectMap<LabeledCodon> ancConstrRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+
+			// build a map from anc constr ref NT to AA read count.
+			TIntObjectHashMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
+			List<Integer> mappedAncConstrRefNts = new ArrayList<Integer>();
+			for(QueryAlignedSegment qaSeg: samRefToAncConstrRefSegsCodonAligned) {
+				for(int ancConstrRefNt = qaSeg.getRefStart(); ancConstrRefNt <= qaSeg.getRefEnd(); ancConstrRefNt++) {
+					if(TranslationUtils.isAtStartOfCodon(codon1Start, ancConstrRefNt)) {
+						mappedAncConstrRefNts.add(ancConstrRefNt);
+						LabeledCodon labeledCodon = ancConstrRefNtToLabeledCodon.get(ancConstrRefNt);
+						int samRefNt = ancConstrRefNt + qaSeg.getReferenceToQueryOffset();
+						int resultSamRefNt = samRefNt;
+						if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
+							// we want to report results in the SAM file's own coordinates.
+							resultSamRefNt = ReferenceSegment.reverseLocationSense(samRefInfo.getSamRefLength(), samRefNt);
+						}
+						ancConstrRefNtToAminoAcidReadCount.put(ancConstrRefNt, new AminoAcidReadCount(labeledCodon, resultSamRefNt));
+					}
 				}
 			}
-		}
-		
-		// translate reads.
-		final Translator translator = new CommandContextTranslator(cmdContext);
-		
-		Supplier<SamAminoAcidContext> contextSupplier = () -> {
-			SamAminoAcidContext context = new SamAminoAcidContext();
-			context.samReporter = samReporter;
-			context.translator = translator;
-			context.samRefInfo = samRefInfo;
-			context.samRefSense = samRefSense;
-			context.codon1Start = codon1Start;
-			// clone these segments
-			synchronized(samRefToAncConstrRefSegs) {
-				context.samRefToAncConstrRefSegs = QueryAlignedSegment.cloneList(samRefToAncConstrRefSegs);
-			}
-			// clone the table
-			synchronized(ancConstrRefNtToAminoAcidReadCount) {
-				context.ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
-				for(int key: ancConstrRefNtToAminoAcidReadCount.keys()) {
-					AminoAcidReadCount aaReadCount = ancConstrRefNtToAminoAcidReadCount.get(key);
-					context.ancConstrRefNtToAminoAcidReadCount.put(key, new AminoAcidReadCount(aaReadCount.labeledCodon, aaReadCount.samRefNt));
+
+			// translate reads.
+			final Translator translator = new CommandContextTranslator(cmdContext);
+
+			Supplier<SamAminoAcidContext> contextSupplier = () -> {
+				SamAminoAcidContext context = new SamAminoAcidContext();
+				context.samReporter = samReporter;
+				context.translator = translator;
+				context.samRefInfo = samRefInfo;
+				context.samRefSense = samRefSense;
+				context.codon1Start = codon1Start;
+				// clone these segments
+				synchronized(samRefToAncConstrRefSegs) {
+					context.samRefToAncConstrRefSegs = QueryAlignedSegment.cloneList(samRefToAncConstrRefSegs);
 				}
-			}
-			return context;
-		};
-		TIntObjectMap<AminoAcidReadCount> mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, getFileName(), 
-				samReporter.getSamReaderValidationStringency(), this);
-		// DEBUG start
+				// clone the table
+				synchronized(ancConstrRefNtToAminoAcidReadCount) {
+					context.ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
+					for(int key: ancConstrRefNtToAminoAcidReadCount.keys()) {
+						AminoAcidReadCount aaReadCount = ancConstrRefNtToAminoAcidReadCount.get(key);
+						context.ancConstrRefNtToAminoAcidReadCount.put(key, new AminoAcidReadCount(aaReadCount.labeledCodon, aaReadCount.samRefNt));
+					}
+				}
+				return context;
+			};
+			TIntObjectMap<AminoAcidReadCount> mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, 
+					validationStringency, this);
+			// DEBUG start
 			/*
 		ReadLogger readLogger = new ReadLogger();
 		SamAminoAcidContext samAminoAcidContext = contextSupplier.get();
@@ -254,35 +260,38 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			throw new RuntimeException(e);
 		}
 		TIntObjectMap<AminoAcidReadCount> mergedResult = samAminoAcidContext.ancConstrRefNtToAminoAcidReadCount;
-		 */
-		// DEBUG end
-		final List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
-		
-		for(Integer ancConstrRefNt: mappedAncConstrRefNts) {
-			AminoAcidReadCount aminoAcidReadCount = mergedResult.get(ancConstrRefNt);
-			if(aminoAcidReadCount.totalReadsAtCodon <= getMinDepth(samReporter)) {
-				continue;
-			}
-			aminoAcidReadCount.aaToReadCount.forEachEntry(new TCharIntProcedure() {
-				@Override
-				public boolean execute(char aminoAcid, int numReads) {
-					double percentReadsWithAminoAcid = 100.0 * numReads / (double) aminoAcidReadCount.totalReadsAtCodon;
-					rowData.add(new LabeledAminoAcidReadCount(
-							aminoAcidReadCount.labeledCodon, 
-							new String(new char[]{aminoAcid}),
-							aminoAcidReadCount.samRefNt, 
-							numReads, percentReadsWithAminoAcid));
-					return true;
+			 */
+			// DEBUG end
+
+
+			final List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
+
+			for(Integer ancConstrRefNt: mappedAncConstrRefNts) {
+				AminoAcidReadCount aminoAcidReadCount = mergedResult.get(ancConstrRefNt);
+				if(aminoAcidReadCount.totalReadsAtCodon <= getMinDepth(samReporter)) {
+					continue;
 				}
-			});
+				aminoAcidReadCount.aaToReadCount.forEachEntry(new TCharIntProcedure() {
+					@Override
+					public boolean execute(char aminoAcid, int numReads) {
+						double percentReadsWithAminoAcid = 100.0 * numReads / (double) aminoAcidReadCount.totalReadsAtCodon;
+						rowData.add(new LabeledAminoAcidReadCount(
+								aminoAcidReadCount.labeledCodon, 
+								new String(new char[]{aminoAcid}),
+								aminoAcidReadCount.samRefNt, 
+								numReads, percentReadsWithAminoAcid));
+						return true;
+					}
+				});
+			}
+
+			List<LabeledAminoAcidReadCount> rowDataFiltered = rowData.stream()
+					.filter(row -> row.getPercentReadsWithAminoAcid() >= minAAPct)
+					.collect(Collectors.toList());
+
+			return new SamAminoAcidResult(rowDataFiltered);
 		}
-		
-		List<LabeledAminoAcidReadCount> rowDataFiltered = rowData.stream()
-				.filter(row -> row.getPercentReadsWithAminoAcid() >= minAAPct)
-				.collect(Collectors.toList());
-		
-		return new SamAminoAcidResult(rowDataFiltered);
-		 
+	 
 	}
 
 

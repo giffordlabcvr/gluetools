@@ -124,7 +124,7 @@ public class SamUtils {
 		return samReaderFactory.open(SamInputResource.of(samInputStream));
 	}
 
-	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, ValidationStringency validationStringency, String samRefName,
+	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, SamFileSession samFileSession, ValidationStringency validationStringency, String samRefName,
 			String fastaID, int minQScore, int minDepth, SamRefSense samRefSense) {
 		Map<String, DNASequence> samConsensusFastaMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
@@ -133,7 +133,7 @@ public class SamUtils {
 
 			SamConsensusGenerator samConsensusGenerator = new SamConsensusGenerator();
 			
-			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, fileName, validationStringency, 
+			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, samFileSession, validationStringency, 
 					samReference.getSequenceName(), minQScore, minDepth, samRefSense);
 			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
 				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
@@ -177,14 +177,12 @@ public class SamUtils {
 			throw new SamUtilsException(sfe, Code.SAM_FORMAT_ERROR, sfe.getMessage());
 		}
 	}
-	
+
 	public static <M, R> R pairedParallelSamIterate(Supplier<M> contextSupplier, ConsoleCommandContext consoleCmdContext, 
-			String samFileName, ValidationStringency validationStringency, 
+			SamFileSession samFileSession, ValidationStringency validationStringency, 
 			SamPairedParallelProcessor<M, R> samPairedParallelProcessor) {
 		R reducedResult = null;
 		List<SamReader> readers = new ArrayList<SamReader>();
-		GlueLogger.getGlueLogger().finest("Preprocessing "+samFileName+" into multiple BAM files");
-		SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency);
 
 		GlueLogger.getGlueLogger().finest("Running SamPairedParallelProcessor "+samPairedParallelProcessor.getClass().getSimpleName());
 		List<M> contexts = new ArrayList<M>();
@@ -217,7 +215,6 @@ public class SamUtils {
 			} catch (Exception e) {
 				GlueLogger.getGlueLogger().warning("Unable to close SamReader: "+e.getLocalizedMessage());
 			} });
-			samFileSession.cleanup();
 		}
 		
 		reducedResult = results.get(0);

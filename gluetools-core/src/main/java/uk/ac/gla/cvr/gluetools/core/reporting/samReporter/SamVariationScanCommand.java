@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import htsjdk.samtools.SamReader;
+import htsjdk.samtools.ValidationStringency;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -168,193 +170,199 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		DNASequence consensusSequence = null;
 		ReferenceSequence targetRef;
 		AlignmentMember tipAlmtMember;
-		if(useMaxLikelihoodPlacer()) {
-			Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, getFileName(), 
-					samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
-			consensusSequence = consensusMap.get("samConsensus");
-			tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
-			targetRef = tipAlmtMember.targetReferenceFromMember();
-			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
-		} else {
-			targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-					ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
-			tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
-		}
-
-		Alignment tipAlmt = tipAlmtMember.getAlignment();
-
-		List<ReferenceSequence> refsToScan;
-		if(multiReference) {
-			refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, getAcRefName());
-			if(!refsToScan.contains(targetRef)) {
-				refsToScan.add(0, targetRef);
+		String samFileName = getFileName();
+		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
+		
+		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
+			if(useMaxLikelihoodPlacer()) {
+				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
+						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+				consensusSequence = consensusMap.get("samConsensus");
+				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+				targetRef = tipAlmtMember.targetReferenceFromMember();
+				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
+			} else {
+				targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
+						ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
+				tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
 			}
-		} else {
-			refsToScan = Arrays.asList(tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName()));
-		}
 
-		List<Feature> featuresToScan = new ArrayList<Feature>();
-		featuresToScan.add(namedFeature);
-		if(descendentFeatures) {
-			featuresToScan.addAll(namedFeature.getDescendents());
-		}
-		
-		List<VariationScanReadCount> variationScanReadCounts = new ArrayList<VariationScanReadCount>();
-		
-		for(ReferenceSequence refToScan: refsToScan) {
+			Alignment tipAlmt = tipAlmtMember.getAlignment();
 
-			for(Feature featureToScan: featuresToScan) {
-
-				samReporter.log(Level.FINE, "Scanning for variations defined on reference: "+refToScan.getName()+", feature: "+featureToScan.getName());
-
-				FeatureLocation featureLoc = 
-						GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-								FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
-				if(featureLoc == null) {
-					continue;
+			List<ReferenceSequence> refsToScan;
+			if(multiReference) {
+				refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, getAcRefName());
+				if(!refsToScan.contains(targetRef)) {
+					refsToScan.add(0, targetRef);
 				}
+			} else {
+				refsToScan = Arrays.asList(tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName()));
+			}
 
-				// build a segment tree of the variations.
-				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
-				if(variationsToScan.isEmpty()) {
-					continue;
-				}
-				ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree = new ReferenceSegmentTree<VariationCoverageSegment>();
-				for(Variation variation: variationsToScan) {
-					variation.getScanner(cmdContext).getSegmentsToCover()
-					.forEach(seg2cover -> 
-						varCovSegTree.add(
-							new VariationCoverageSegment(variation, seg2cover.getRefStart(), seg2cover.getRefEnd())));
-				}
+			List<Feature> featuresToScan = new ArrayList<Feature>();
+			featuresToScan.add(namedFeature);
+			if(descendentFeatures) {
+				featuresToScan.addAll(namedFeature.getDescendents());
+			}
+			
+			List<VariationScanReadCount> variationScanReadCounts = new ArrayList<VariationScanReadCount>();
+			
+			for(ReferenceSequence refToScan: refsToScan) {
 
-				List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, consoleCmdContext, targetRef, consensusSequence);
+				for(Feature featureToScan: featuresToScan) {
 
-				// translate segments to tip alignment reference
-				List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-						tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-						samRefToTargetRefSegs);
+					samReporter.log(Level.FINE, "Scanning for variations defined on reference: "+refToScan.getName()+", feature: "+featureToScan.getName());
 
-				// translate segments to scanned reference
-				List<QueryAlignedSegment> samRefToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
+					FeatureLocation featureLoc = 
+							GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+									FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
+					if(featureLoc == null) {
+						continue;
+					}
 
-				// trim down to the feature area.
-				List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
-						.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-				List<QueryAlignedSegment> samRefToScannedRefSegs = 
-						ReferenceSegment.intersection(samRefToScannedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+					// build a segment tree of the variations.
+					List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+					if(variationsToScan.isEmpty()) {
+						continue;
+					}
+					ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree = new ReferenceSegmentTree<VariationCoverageSegment>();
+					for(Variation variation: variationsToScan) {
+						variation.getScanner(cmdContext).getSegmentsToCover()
+						.forEach(seg2cover -> 
+							varCovSegTree.add(
+								new VariationCoverageSegment(variation, seg2cover.getRefStart(), seg2cover.getRefEnd())));
+					}
 
-				Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
+					List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
 
-				SamRefSense samRefSense = getSamRefSense(samReporter);
+					// translate segments to tip alignment reference
+					List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+							tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+							samRefToTargetRefSegs);
 
-				try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), 
-						samReporter.getSamReaderValidationStringency())) {
+					// translate segments to scanned reference
+					List<QueryAlignedSegment> samRefToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
 
-					SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
+					// trim down to the feature area.
+					List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
+							.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
+					List<QueryAlignedSegment> samRefToScannedRefSegs = 
+							ReferenceSegment.intersection(samRefToScannedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
-					final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
+					Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
+
+					SamRefSense samRefSense = getSamRefSense(samReporter);
+
+					try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, samFileName, 
+							validationStringency)) {
+
+						SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, samFileName, getSuppliedSamRefName());
+
+						final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
 
 
-					SamUtils.iterateOverSamReader(samReader, samRecord -> {
-						if(!samRecordFilter.recordPasses(samRecord)) {
-							return;
-						}
+						SamUtils.iterateOverSamReader(samReader, samRecord -> {
+							if(!samRecordFilter.recordPasses(samRecord)) {
+								return;
+							}
 
-						List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
-						String readString = samRecord.getReadString().toUpperCase();
-						String qualityString = samRecord.getBaseQualityString();
-		        		if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-		        			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), samRefInfo.getSamRefLength());
-		        			readString = FastaUtils.reverseComplement(readString);
-		        			qualityString = StringUtils.reverseString(qualityString);
-		        		}
+							List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
+							String readString = samRecord.getReadString().toUpperCase();
+							String qualityString = samRecord.getBaseQualityString();
+			        		if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
+			        			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), samRefInfo.getSamRefLength());
+			        			readString = FastaUtils.reverseComplement(readString);
+			        			qualityString = StringUtils.reverseString(qualityString);
+			        		}
 
-						List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToScannedRefSegs);
-						List<QueryAlignedSegment> readToScannedRefSegsMerged = 
-								ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
-										QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-										QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
+							List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToScannedRefSegs);
+							List<QueryAlignedSegment> readToScannedRefSegsMerged = 
+									ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
+											QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+											QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
-						// find the variations for which any of their coverage segments overlap the read segments.
-						List<VariationCoverageSegment> varCovSegs = new ArrayList<VariationCoverageSegment>();
-						for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
-							List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
-							varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
-							// remove those pattern locs where the read quality is not good enough.
-							List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
-							varCovSegs.addAll(filteredVarCovSegs);
-						}
-
-						
-						List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
-						if(!varCovSegs.isEmpty()) {
-							// convert to ntQaSegments
-							List<NtQueryAlignedSegment> readToScannedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
+							// find the variations for which any of their coverage segments overlap the read segments.
+							List<VariationCoverageSegment> varCovSegs = new ArrayList<VariationCoverageSegment>();
 							for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
-								readToScannedRefNtSegs.add(
-										new NtQueryAlignedSegment(
-												readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
-												SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()))
-										);
+								List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
+								varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
+								// remove those pattern locs where the read quality is not good enough.
+								List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
+								varCovSegs.addAll(filteredVarCovSegs);
 							}
-							// find the actual variations.
-							List<Variation> variationsToScanForSegment = findVariationsFromVarCovSegs(cmdContext, varCovSegs);
-							variationScanResults.addAll(featureLoc.variationScan(cmdContext, readToScannedRefNtSegs, readString, variationsToScanForSegment, false, true));
-						}
 
-						
-						for(VariationScanResult<?> variationScanResult: variationScanResults) {
-							String variationName = variationScanResult.getVariationName();
-							VariationInfo variationInfo = variationNameToInfo.get(variationName);
-							if(variationInfo == null) {
-								variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
-								variationNameToInfo.put(variationName, variationInfo);
+							
+							List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
+							if(!varCovSegs.isEmpty()) {
+								// convert to ntQaSegments
+								List<NtQueryAlignedSegment> readToScannedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
+								for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
+									readToScannedRefNtSegs.add(
+											new NtQueryAlignedSegment(
+													readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
+													SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()))
+											);
+								}
+								// find the actual variations.
+								List<Variation> variationsToScanForSegment = findVariationsFromVarCovSegs(cmdContext, varCovSegs);
+								variationScanResults.addAll(featureLoc.variationScan(cmdContext, readToScannedRefNtSegs, readString, variationsToScanForSegment, false, true));
 							}
-							variationInfo.contributingReads++;
-							if(variationScanResult.isPresent()) {
-								variationInfo.readsConfirmedPresent++;
-							} else {
-								variationInfo.readsConfirmedAbsent++;
-							} 
-						}
 
-						recordsCounter.processedRecord();
-						recordsCounter.logRecordsProcessed();
-					});
-					recordsCounter.logTotalRecordsProcessed();
+							
+							for(VariationScanResult<?> variationScanResult: variationScanResults) {
+								String variationName = variationScanResult.getVariationName();
+								VariationInfo variationInfo = variationNameToInfo.get(variationName);
+								if(variationInfo == null) {
+									variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
+									variationNameToInfo.put(variationName, variationInfo);
+								}
+								variationInfo.contributingReads++;
+								if(variationScanResult.isPresent()) {
+									variationInfo.readsConfirmedPresent++;
+								} else {
+									variationInfo.readsConfirmedAbsent++;
+								} 
+							}
 
-				} catch (IOException e) {
-					throw new RuntimeException(e);
+							recordsCounter.processedRecord();
+							recordsCounter.logRecordsProcessed();
+						});
+						recordsCounter.logTotalRecordsProcessed();
+
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+
+					List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(variationNameToInfo.values());
+
+					final int minDepth = getMinDepth(samReporter);
+					
+					variationScanReadCounts.addAll(
+							variationInfos.stream()
+							.filter(vInfo -> vInfo.contributingReads >= minDepth)
+							.map(vInfo -> {
+								int readsWherePresent = vInfo.readsConfirmedPresent;
+								int readsWhereAbsent = vInfo.readsConfirmedAbsent;
+								double pctWherePresent = 100.0 * readsWherePresent / (readsWherePresent + readsWhereAbsent);
+								double pctWhereAbsent = 100.0 * readsWhereAbsent / (readsWherePresent + readsWhereAbsent);
+								return new VariationScanReadCount(vInfo.variationPkMap,
+										vInfo.refStart, vInfo.refEnd,
+										readsWherePresent, pctWherePresent, 
+										readsWhereAbsent, pctWhereAbsent);
+							})
+							.collect(Collectors.toList())
+							);
 				}
-
-				List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(variationNameToInfo.values());
-
-				final int minDepth = getMinDepth(samReporter);
-				
-				variationScanReadCounts.addAll(
-						variationInfos.stream()
-						.filter(vInfo -> vInfo.contributingReads >= minDepth)
-						.map(vInfo -> {
-							int readsWherePresent = vInfo.readsConfirmedPresent;
-							int readsWhereAbsent = vInfo.readsConfirmedAbsent;
-							double pctWherePresent = 100.0 * readsWherePresent / (readsWherePresent + readsWhereAbsent);
-							double pctWhereAbsent = 100.0 * readsWhereAbsent / (readsWherePresent + readsWhereAbsent);
-							return new VariationScanReadCount(vInfo.variationPkMap,
-									vInfo.refStart, vInfo.refEnd,
-									readsWherePresent, pctWherePresent, 
-									readsWhereAbsent, pctWhereAbsent);
-						})
-						.collect(Collectors.toList())
-						);
 			}
+			variationScanReadCounts = variationScanReadCounts
+					.stream()
+					.filter(vsrc -> vsrc.getPctWherePresent() >= minPresentPct)
+					.filter(vsrc -> vsrc.getPctWhereAbsent() >= minAbsentPct)
+					.collect(Collectors.toList());
+			VariationScanReadCount.sortVariationScanReadCounts(variationScanReadCounts);
+			return new SamVariationScanResult(variationScanReadCounts);
 		}
-		variationScanReadCounts = variationScanReadCounts
-				.stream()
-				.filter(vsrc -> vsrc.getPctWherePresent() >= minPresentPct)
-				.filter(vsrc -> vsrc.getPctWhereAbsent() >= minAbsentPct)
-				.collect(Collectors.toList());
-		VariationScanReadCount.sortVariationScanReadCounts(variationScanReadCounts);
-		return new SamVariationScanResult(variationScanReadCounts);
+		
 	}
 
 	private List<VariationCoverageSegment> filterVarCovSegsOnReadQuality(int minQScore,

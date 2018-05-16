@@ -25,6 +25,8 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import htsjdk.samtools.ValidationStringency;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,6 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -104,17 +107,21 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 	protected CommandResult execute(CommandContext cmdContext, SamReporter samReporter) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
-		Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
-				consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),
-				this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+		String samFileName = getFileName();
+		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
+		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
+			Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
+					consoleCmdContext, samFileName, samFileSession, validationStringency, getSuppliedSamRefName(),
+					this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 
 
-		if(this.preview) {
-			return new NucleotideFastaCommandResult(samNtConsensusMap);
-		} else {
-			byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
-			consoleCmdContext.saveBytes(outputFileName, fastaBytes);
-			return new OkResult();
+			if(this.preview) {
+				return new NucleotideFastaCommandResult(samNtConsensusMap);
+			} else {
+				byte[] fastaBytes = FastaUtils.mapToFasta(samNtConsensusMap, lineFeedStyle);
+				consoleCmdContext.saveBytes(outputFileName, fastaBytes);
+				return new OkResult();
+			}
 		}
 	}
 

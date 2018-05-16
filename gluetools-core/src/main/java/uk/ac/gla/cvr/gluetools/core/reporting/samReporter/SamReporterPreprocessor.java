@@ -32,6 +32,7 @@ public class SamReporterPreprocessor {
 	 * (c) first of pair / second of pair flags are always correct.
 	 */
 	public static SamFileSession preprocessSam(ConsoleCommandContext consoleCmdContext, String fileName, ValidationStringency validationStringency) {
+		GlueLogger.getGlueLogger().finest("Preprocessing "+fileName+" into multiple BAM files");
 		PropertiesConfiguration propertiesConfiguration = consoleCmdContext.getGluetoolsEngine().getPropertiesConfiguration();
 		String tmpDirPath = propertiesConfiguration.getPropertyValue(SamUtils.SAM_TEMP_DIR_PROPERTY);
 		int cpus = Integer.parseInt(propertiesConfiguration.getPropertyValue(SamUtils.SAM_NUMBER_CPUS, "4"));
@@ -138,7 +139,7 @@ public class SamReporterPreprocessor {
 		SAMRecord read2;
 	}
 	
-	public static class SamFileSession {
+	public static class SamFileSession implements AutoCloseable {
 		String[] preprocessedBamPaths;
 
 		public void cleanup() {
@@ -155,6 +156,11 @@ public class SamReporterPreprocessor {
 					}
 				}
 			}
+		}
+
+		@Override
+		public void close() {
+			cleanup();
 		}
 	}
 

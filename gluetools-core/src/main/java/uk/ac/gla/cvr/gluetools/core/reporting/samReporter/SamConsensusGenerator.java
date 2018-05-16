@@ -14,11 +14,12 @@ import java.util.function.Supplier;
 
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
 
 public class SamConsensusGenerator implements SamPairedParallelProcessor<SamConsensusGenerator.ConsensusContext, SamConsensusGenerator.ConsensusResult>{
 
-	public String getNgsConsensus(ConsoleCommandContext cmdContext, String fileName, ValidationStringency validationStringency, 
+	public String getNgsConsensus(ConsoleCommandContext cmdContext, SamFileSession samFileSession, ValidationStringency validationStringency, 
 			String samRefName, int minQScore, int minDepth, SamRefSense samRefSense) {
 	
 		if(!EnumSet.of(SamRefSense.FORWARD, SamRefSense.REVERSE_COMPLEMENT).contains(samRefSense)) {
@@ -33,7 +34,7 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 			consensusContext.samRefSense = samRefSense;
 			return consensusContext;
 		};
-		ConsensusResult mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, cmdContext, fileName, validationStringency, this);
+		ConsensusResult mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, cmdContext, samFileSession, validationStringency, this);
 		
 	    StringBuffer consensus = new StringBuffer();
 	    char[] bases = {'A', 'C', 'G', 'T'};
