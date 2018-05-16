@@ -205,6 +205,13 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				featuresToScan.addAll(namedFeature.getDescendents());
 			}
 			
+			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
+
+			// translate segments to tip alignment reference
+			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+					samRefToTargetRefSegs);
+			
 			List<VariationScanReadCount> variationScanReadCounts = new ArrayList<VariationScanReadCount>();
 			
 			for(ReferenceSequence refToScan: refsToScan) {
@@ -233,13 +240,6 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 								new VariationCoverageSegment(variation, seg2cover.getRefStart(), seg2cover.getRefEnd())));
 					}
 
-					List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
-
-					// translate segments to tip alignment reference
-					List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-							tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
-							samRefToTargetRefSegs);
-
 					// translate segments to scanned reference
 					List<QueryAlignedSegment> samRefToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
 
@@ -253,13 +253,9 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 					SamRefSense samRefSense = getSamRefSense(samReporter);
 
-					try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, samFileName, 
-							validationStringency)) {
+					try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, samFileName, validationStringency)) {
 
 						SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, samFileName, getSuppliedSamRefName());
-
-						final RecordsCounter recordsCounter = samReporter.new RecordsCounter();
-
 
 						SamUtils.iterateOverSamReader(samReader, samRecord -> {
 							if(!samRecordFilter.recordPasses(samRecord)) {
@@ -324,10 +320,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 								} 
 							}
 
-							recordsCounter.processedRecord();
-							recordsCounter.logRecordsProcessed();
 						});
-						recordsCounter.logTotalRecordsProcessed();
 
 					} catch (IOException e) {
 						throw new RuntimeException(e);
