@@ -109,15 +109,15 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		return allowedMetatagTypes;
 	}
 
-	public final VariationScanResult<M> scan(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+	public final VariationScanResult<M> scan(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString) {
 		if(!this.validated) {
 			this.validate();
 			this.validated = true;
 		}
-		return this.scanInternal(queryToRefNtSegs, queryNts);
+		return this.scanInternal(queryToRefNtSegs, queryNts, qualityString);
 	}
 
-	protected abstract VariationScanResult<M> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts);
+	protected abstract VariationScanResult<M> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString);
 
 	protected Pattern parseRegex(String stringPattern) {
 		try {

@@ -145,6 +145,21 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		};
 		Collections.sort(variationScanResults, comparator);
 	}
+	
+	public Integer getLeastBadMatchQScore() {
+		Integer leastBadMatchQScore = null;
+		for(M matchResult: scannerMatchResults) {
+			Integer matchWorstQScore = matchResult.getWorstContributingQScore();
+			if(matchWorstQScore != null) {
+				if(leastBadMatchQScore == null) {
+					leastBadMatchQScore = matchWorstQScore;
+				} else {
+					leastBadMatchQScore = Math.max(leastBadMatchQScore, matchWorstQScore);
+				}
+			}
+		}
+		return leastBadMatchQScore;
+	}
 
 	private Integer computeMinMatchStart() {
 		if(scannerMatchResults.isEmpty()) {

@@ -192,7 +192,7 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		
 		
 		List<VariationScanResult<?>> variationScanResults = FeatureLocation.
-				variationScan(cmdContext, memberToRelatedRefNtSegs, memberNts, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
+				variationScan(cmdContext, memberToRelatedRefNtSegs, memberNts, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 
 		return variationScanResults;

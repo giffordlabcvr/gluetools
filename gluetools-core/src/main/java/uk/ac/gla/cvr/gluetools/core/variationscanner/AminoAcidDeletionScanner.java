@@ -111,7 +111,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 
 
 	@Override
-	protected VariationScanResult<AminoAcidDeletionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+	protected VariationScanResult<AminoAcidDeletionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString) {
 		List<AminoAcidDeletionMatchResult> matchResults = new ArrayList<AminoAcidDeletionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {

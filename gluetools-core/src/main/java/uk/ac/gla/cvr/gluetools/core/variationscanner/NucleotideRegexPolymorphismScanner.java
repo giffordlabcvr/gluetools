@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
@@ -58,7 +59,7 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 	@Override
 	protected VariationScanResult<NucleotideRegexPolymorphismMatchResult> scanInternal(
 			List<NtQueryAlignedSegment> queryToRefNtSegs,
-			String queryNts) {
+			String queryNts, String qualityString) {
 		List<NucleotideRegexPolymorphismMatchResult> matchResults = new ArrayList<NucleotideRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -77,9 +78,12 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
 					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
 					String polymorphismQueryNts = matcher.group();
-					NucleotideRegexPolymorphismMatchResult npmr = 
+					NucleotideRegexPolymorphismMatchResult nrpmr = 
 							new NucleotideRegexPolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, polymorphismQueryNts);
-					matchResults.add(npmr);
+					if(qualityString != null) {
+						nrpmr.setWorstContributingQScore(SamUtils.worstQScore(qualityString, queryNtStart, queryNtEnd));
+					}
+					matchResults.add(nrpmr);
 				}
 			}
 		}

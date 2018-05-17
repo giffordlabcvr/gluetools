@@ -325,7 +325,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
 			List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
 			context.varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
-			// remove those pattern locs where the read quality is not good enough.
+			// remove those variations where the read quality is not good enough.
 			List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(context.samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
 			varCovSegs.addAll(filteredVarCovSegs);
 		}
@@ -345,7 +345,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 			// find the scanners.
 			List<BaseVariationScanner<?>> scannersForSegment = findScannersFromVarCovSegs(varCovSegs);
 			// do the scan
-			variationScanResults.addAll(FeatureLocation.variationScan(readToScannedRefNtSegs, readString, scannersForSegment, false, true));
+			variationScanResults.addAll(FeatureLocation.variationScan(readToScannedRefNtSegs, readString, qualityString, scannersForSegment, false, true));
 		}
 
 		// record the presence / absence

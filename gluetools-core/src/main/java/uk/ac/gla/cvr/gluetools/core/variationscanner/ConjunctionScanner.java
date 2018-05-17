@@ -104,7 +104,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 	@Override
 	protected VariationScanResult<ConjunctionMatchResult> scanInternal(
 			List<NtQueryAlignedSegment> queryToRefNtSegs,
-			String queryNts) {
+			String queryNts, String qualityString) {
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(!sufficientCoverage) {
 			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Collections.emptyList());
@@ -114,7 +114,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		for(int i = 1; i <= numConjuncts; i++) {
 			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i-1);
 			Class<? extends VariationScannerMatchResult> conjunctMatchResultClass = conjunctScanner.getVariation().getVariationType().getMatchResultClass();
-			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, queryToRefNtSegs, queryNts);
+			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, queryToRefNtSegs, queryNts, qualityString);
 		}
 		if(isPresent) {
 			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Arrays.asList(conjunctionMatchResult));
@@ -125,11 +125,21 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 	
 	private <D extends VariationScannerMatchResult> boolean updateConjunctionMatchResult(Class<D> conjunctMatchResultClass, 
 			ConjunctionMatchResult conjunctionMatchResult, BaseVariationScanner<?> conjunctScanner, int conjunctIndex,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString) {
 		@SuppressWarnings("unchecked")
 		BaseVariationScanner<D> castConjunctScanner = (BaseVariationScanner<D>) conjunctScanner;
-		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(queryToRefNtSegs, queryNts);
+		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(queryToRefNtSegs, queryNts, qualityString);
 		conjunctionMatchResult.setConjunctResults(conjunctIndex, conjunctScanResult);
+		Integer currentWorstQScore = conjunctionMatchResult.getWorstContributingQScore();
+		Integer conjunctLeastBadQScore = conjunctScanResult.getLeastBadMatchQScore();
+		if(currentWorstQScore == null) {
+			conjunctionMatchResult.setWorstContributingQScore(conjunctLeastBadQScore);
+		} else {
+			if(conjunctLeastBadQScore != null) {
+				conjunctionMatchResult.setWorstContributingQScore(Math.min(currentWorstQScore, conjunctLeastBadQScore));
+			}
+		}
+		
 		return conjunctScanResult.isPresent();
 	}
 

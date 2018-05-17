@@ -101,7 +101,7 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	
 	@Override
 	protected VariationScanResult<NucleotideInsertionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, 
-			String queryNts) {
+			String queryNts, String qualityString) {
 		List<NucleotideInsertionMatchResult> matchResults = new ArrayList<NucleotideInsertionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {

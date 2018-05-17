@@ -11,7 +11,14 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 
 public abstract class VariationScannerMatchResult {
 
+	protected VariationScannerMatchResult() {
+		super();
+	}
+
 	public abstract int getRefStart();
+	// used when scanning NGS data, the worst qscore of any base contributing to the match.
+	private Integer worstContributingQScore;
+
 	
 	// we don't want to do too much reflection!
 	private static Map<Class<? extends VariationScannerMatchResult>, List<TableColumn<? extends VariationScannerMatchResult>>> columnCache
@@ -56,6 +63,14 @@ public abstract class VariationScannerMatchResult {
 		}
 		columnCache.put(matchResultClass, vsmrColumns);
 		return vsmrColumns;
+	}
+
+	public Integer getWorstContributingQScore() {
+		return worstContributingQScore;
+	}
+
+	public void setWorstContributingQScore(Integer worstContributingQScore) {
+		this.worstContributingQScore = worstContributingQScore;
 	}
 
 }

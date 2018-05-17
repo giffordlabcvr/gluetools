@@ -36,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
@@ -92,7 +93,7 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 	@Override
 	protected VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scanInternal(
 			List<NtQueryAlignedSegment> queryToRefNtSegs,
-			String queryNts) {
+			String queryNts, String qualityString) {
 		List<AminoAcidSimplePolymorphismMatchResult> matchResults = new ArrayList<AminoAcidSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -126,6 +127,9 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 								new AminoAcidSimplePolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 										refNtStart, refNtEnd, 
 										queryNtStart, queryNtEnd, queryAAs, polymorphismQueryNts, tripletInfosMatch.combinedTripletFraction);
+						if(qualityString != null) {
+							aaspmr.setWorstContributingQScore(SamUtils.worstQScore(qualityString, queryNtStart, queryNtEnd));
+						}
 						matchResults.add(aaspmr);
 						nextIndex = tripletInfosMatch.index+1;
 					}

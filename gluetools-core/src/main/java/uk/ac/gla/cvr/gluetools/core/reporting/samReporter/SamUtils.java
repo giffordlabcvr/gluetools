@@ -51,6 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
@@ -312,6 +313,14 @@ public class SamUtils {
 			GlueLogger.getGlueLogger().finest("Processed "+totalReads+" reads, ("+pairs+" pairs, "+singletonReads+" singletons)");
 		}
 		
+	}
+
+	public static int worstQScore(String qualityString, int queryStart, int queryEnd) {
+		int worstQScore = qualityCharToQScore(SegmentUtils.base1Char(qualityString, queryStart));
+		for(int i = queryStart+1; i <= queryEnd; i++) {
+			worstQScore = Math.min(worstQScore, qualityCharToQScore(SegmentUtils.base1Char(qualityString, queryStart)));
+		}
+		return worstQScore;
 	}
 	
 	

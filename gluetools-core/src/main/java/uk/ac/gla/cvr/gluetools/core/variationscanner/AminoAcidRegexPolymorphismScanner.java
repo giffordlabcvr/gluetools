@@ -30,7 +30,6 @@ import gnu.trove.map.TIntObjectMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
@@ -77,7 +77,7 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 	@Override
 	protected VariationScanResult<AminoAcidRegexPolymorphismMatchResult> scanInternal(
 			List<NtQueryAlignedSegment> queryToRefNtSegs,
-			String queryNts) {
+			String queryNts, String qualityString) {
 		List<AminoAcidRegexPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -112,6 +112,9 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 							new AminoAcidRegexPolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 									refNtStart, refNtEnd, 
 									queryNtStart, queryNtEnd, queryAAs, polymorphismQueryNts);
+					if(qualityString != null) {
+						aapmr.setWorstContributingQScore(SamUtils.worstQScore(qualityString, queryNtStart, queryNtEnd));
+					}
 					matchResults.add(aapmr);
 				}
 			}

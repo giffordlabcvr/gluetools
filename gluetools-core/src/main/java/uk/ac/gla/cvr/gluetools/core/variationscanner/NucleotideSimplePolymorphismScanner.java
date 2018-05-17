@@ -32,6 +32,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
@@ -65,7 +66,7 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 	@Override
 	protected VariationScanResult<NucleotideSimplePolymorphismMatchResult> scanInternal(
 			List<NtQueryAlignedSegment> queryToRefNtSegs,
-			String queryNts) {
+			String queryNts, String qualityString) {
 		List<NucleotideSimplePolymorphismMatchResult> matchResults = new ArrayList<NucleotideSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
@@ -92,6 +93,9 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 								new NucleotideSimplePolymorphismMatchResult(refNtStart, refNtEnd, 
 										queryNtStart, queryNtEnd, 
 										polymorphismQueryNts, ambigNtsMatch.combinedNtFraction);
+						if(qualityString != null) {
+							nspmr.setWorstContributingQScore(SamUtils.worstQScore(qualityString, queryNtStart, queryNtEnd));
+						}
 						matchResults.add(nspmr);
 						nextIndex = ambigNtsMatch.index+1;
 					}
