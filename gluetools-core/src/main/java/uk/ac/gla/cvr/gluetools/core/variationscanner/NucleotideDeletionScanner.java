@@ -100,7 +100,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 
 	
 	@Override
-	protected VariationScanResult<NucleotideDeletionMatchResult> scanInternal(CommandContext cmdContext, List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+	protected VariationScanResult<NucleotideDeletionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		List<NucleotideDeletionMatchResult> matchResults = new ArrayList<NucleotideDeletionMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {

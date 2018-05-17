@@ -63,6 +63,10 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 	// if this is greater than minCombinedTripletFraction, it is considered a match. 
 	// Default is 1.0 (no ambiguity).
 	private Double minCombinedTripletFraction;
+	private Translator translator;
+	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	private Integer codon1Start;
+
 
 	public AminoAcidSimplePolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -76,22 +80,23 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 		if(this.minCombinedTripletFraction == null) {
 			this.minCombinedTripletFraction = 1.0;
 		}
+		this.translator = new CommandContextTranslator(cmdContext);
+		Variation variation = getVariation();
+		FeatureLocation featureLoc = variation.getFeatureLoc();
+		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
 	}
 
 
 
 	@Override
 	protected VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scanInternal(
-			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			String queryNts) {
 		List<AminoAcidSimplePolymorphismMatchResult> matchResults = new ArrayList<AminoAcidSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
-			Translator translator = new CommandContextTranslator(cmdContext);
 			Variation variation = getVariation();
-			FeatureLocation featureLoc = variation.getFeatureLoc();
-			TIntObjectMap<LabeledCodon> refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
 
 			List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
 					ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 

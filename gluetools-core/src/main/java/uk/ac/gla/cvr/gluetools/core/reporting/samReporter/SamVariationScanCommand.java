@@ -25,10 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.ValidationStringency;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -59,16 +60,17 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.RecordsCounter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils.ReferenceBasedRecordFilter;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationContext;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationResult;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.StringUtils;
@@ -131,7 +133,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<SamVariationScanResult> 
-	implements ProvidedProjectModeCommand{
+	implements ProvidedProjectModeCommand, SamPairedParallelProcessor<VariationContext, VariationResult>{
 
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String MULTI_REFERENCE = "multiReference";
@@ -227,19 +229,10 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 						continue;
 					}
 
-					// build a segment tree of the variations.
 					List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
 					if(variationsToScan.isEmpty()) {
 						continue;
 					}
-					ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree = new ReferenceSegmentTree<VariationCoverageSegment>();
-					for(Variation variation: variationsToScan) {
-						variation.getScanner(cmdContext).getSegmentsToCover()
-						.forEach(seg2cover -> 
-							varCovSegTree.add(
-								new VariationCoverageSegment(variation, seg2cover.getRefStart(), seg2cover.getRefEnd())));
-					}
-
 					// translate segments to scanned reference
 					List<QueryAlignedSegment> samRefToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
 
@@ -249,84 +242,36 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 					List<QueryAlignedSegment> samRefToScannedRefSegs = 
 							ReferenceSegment.intersection(samRefToScannedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
-					Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
-
 					SamRefSense samRefSense = getSamRefSense(samReporter);
 
-					try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, samFileName, validationStringency)) {
-
-						SamRecordFilter samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, samFileName, getSuppliedSamRefName());
-
-						SamUtils.iterateOverSamReader(samReader, samRecord -> {
-							if(!samRecordFilter.recordPasses(samRecord)) {
-								return;
+					Supplier<VariationContext> contextSupplier = () -> {
+						VariationContext context = new VariationContext();
+						context.samRefInfo = samRefInfo;
+						context.samRefSense = samRefSense;
+						context.varCovSegTree = new ReferenceSegmentTree<VariationCoverageSegment>();
+						synchronized(variationsToScan) {
+							// build a segment tree of the variations.
+							for(Variation variation: variationsToScan) {
+								BaseVariationScanner<?> scanner = variation.getScanner(cmdContext);
+								scanner.getSegmentsToCover()
+								.forEach(seg2cover -> 
+									context.varCovSegTree.add(
+										new VariationCoverageSegment(scanner, seg2cover.getRefStart(), seg2cover.getRefEnd())));
 							}
-
-							List<QueryAlignedSegment> readToSamRefSegs = samReporter.getReadToSamRefSegs(samRecord);
-							String readString = samRecord.getReadString().toUpperCase();
-							String qualityString = samRecord.getBaseQualityString();
-			        		if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-			        			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), samRefInfo.getSamRefLength());
-			        			readString = FastaUtils.reverseComplement(readString);
-			        			qualityString = StringUtils.reverseString(qualityString);
-			        		}
-
-							List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, samRefToScannedRefSegs);
-							List<QueryAlignedSegment> readToScannedRefSegsMerged = 
-									ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
-											QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-											QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-
-							// find the variations for which any of their coverage segments overlap the read segments.
-							List<VariationCoverageSegment> varCovSegs = new ArrayList<VariationCoverageSegment>();
-							for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
-								List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
-								varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
-								// remove those pattern locs where the read quality is not good enough.
-								List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
-								varCovSegs.addAll(filteredVarCovSegs);
-							}
-
-							
-							List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
-							if(!varCovSegs.isEmpty()) {
-								// convert to ntQaSegments
-								List<NtQueryAlignedSegment> readToScannedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
-								for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
-									readToScannedRefNtSegs.add(
-											new NtQueryAlignedSegment(
-													readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
-													SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()))
-											);
-								}
-								// find the actual variations.
-								List<Variation> variationsToScanForSegment = findVariationsFromVarCovSegs(cmdContext, varCovSegs);
-								variationScanResults.addAll(featureLoc.variationScan(cmdContext, readToScannedRefNtSegs, readString, variationsToScanForSegment, false, true));
-							}
-
-							
-							for(VariationScanResult<?> variationScanResult: variationScanResults) {
-								String variationName = variationScanResult.getVariationName();
-								VariationInfo variationInfo = variationNameToInfo.get(variationName);
-								if(variationInfo == null) {
-									variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
-									variationNameToInfo.put(variationName, variationInfo);
-								}
-								variationInfo.contributingReads++;
-								if(variationScanResult.isPresent()) {
-									variationInfo.readsConfirmedPresent++;
-								} else {
-									variationInfo.readsConfirmedAbsent++;
-								} 
-							}
-
-						});
-
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-
-					List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(variationNameToInfo.values());
+						}
+						synchronized(samRefToScannedRefSegs) {
+							context.samRefToScannedRefSegs = QueryAlignedSegment.cloneList(samRefToScannedRefSegs);
+						}
+						context.suppliedSamRefName = getSuppliedSamRefName();
+						context.samFileName = samFileName;
+						context.samReporter = samReporter;
+						return context;
+					};
+					
+					VariationResult reducedResult = 
+							SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
+					
+					List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(reducedResult.variationNameToInfo.values());
 
 					final int minDepth = getMinDepth(samReporter);
 					
@@ -358,6 +303,68 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		
 	}
 
+
+	public void processRead(VariationContext context, SAMRecord samRecord) {
+		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
+		String readString = samRecord.getReadString().toUpperCase();
+		String qualityString = samRecord.getBaseQualityString();
+		if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
+			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), context.samRefInfo.getSamRefLength());
+			readString = FastaUtils.reverseComplement(readString);
+			qualityString = StringUtils.reverseString(qualityString);
+		}
+
+		List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToScannedRefSegs);
+		List<QueryAlignedSegment> readToScannedRefSegsMerged = 
+				ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
+						QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+						QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
+
+		// find the variations for which any of their coverage segments overlap the read segments.
+		List<VariationCoverageSegment> varCovSegs = new ArrayList<VariationCoverageSegment>();
+		for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
+			List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
+			context.varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
+			// remove those pattern locs where the read quality is not good enough.
+			List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(context.samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
+			varCovSegs.addAll(filteredVarCovSegs);
+		}
+
+		
+		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
+		if(!varCovSegs.isEmpty()) {
+			// convert to ntQaSegments
+			List<NtQueryAlignedSegment> readToScannedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
+			for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
+				readToScannedRefNtSegs.add(
+						new NtQueryAlignedSegment(
+								readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
+								SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()))
+						);
+			}
+			// find the scanners.
+			List<BaseVariationScanner<?>> scannersForSegment = findScannersFromVarCovSegs(varCovSegs);
+			// do the scan
+			variationScanResults.addAll(FeatureLocation.variationScan(readToScannedRefNtSegs, readString, scannersForSegment, false, true));
+		}
+
+		// record the presence / absence
+		for(VariationScanResult<?> variationScanResult: variationScanResults) {
+			String variationName = variationScanResult.getVariationName();
+			VariationInfo variationInfo = context.variationNameToInfo.get(variationName);
+			if(variationInfo == null) {
+				variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
+				context.variationNameToInfo.put(variationName, variationInfo);
+			}
+			variationInfo.contributingReads++;
+			if(variationScanResult.isPresent()) {
+				variationInfo.readsConfirmedPresent++;
+			} else {
+				variationInfo.readsConfirmedAbsent++;
+			} 
+		}
+	}
+
 	private List<VariationCoverageSegment> filterVarCovSegsOnReadQuality(int minQScore,
 			String qualityString, QueryAlignedSegment readToScannedRefSeg,
 			List<VariationCoverageSegment> varCovSegs) {
@@ -386,19 +393,19 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	}
 	
 	// complicated by the fact that some coverage segments may have been filtered out for quality reasons.
-	private List<Variation> findVariationsFromVarCovSegs(CommandContext cmdContext, List<VariationCoverageSegment> varCovSegs) {
-		Map<Variation, List<VariationCoverageSegment>> varToCovSegs = new LinkedHashMap<Variation, List<VariationCoverageSegment>>();
+	private List<BaseVariationScanner<?>> findScannersFromVarCovSegs(List<VariationCoverageSegment> varCovSegs) {
+		Map<BaseVariationScanner<?>, List<VariationCoverageSegment>> scannerToCovSegs = new LinkedHashMap<BaseVariationScanner<?>, List<VariationCoverageSegment>>();
 		varCovSegs.forEach(covSeg -> {
-			Variation variation = covSeg.getVariation();
-			varToCovSegs.computeIfAbsent(variation, v -> new ArrayList<VariationCoverageSegment>()).add(covSeg);
+			BaseVariationScanner<?> scanner = covSeg.variationScanner;
+			scannerToCovSegs.computeIfAbsent(scanner, s -> new ArrayList<VariationCoverageSegment>()).add(covSeg);
 		});
-		List<Variation> variations = new ArrayList<Variation>();
-		varToCovSegs.forEach((v, pLocs) -> {
-			if(v.getScanner(cmdContext).getSegmentsToCover().size() == pLocs.size()) {
-				variations.add(v);
+		List<BaseVariationScanner<?>> scanners = new ArrayList<BaseVariationScanner<?>>();
+		scannerToCovSegs.forEach((s, pLocs) -> {
+			if(s.getSegmentsToCover().size() == pLocs.size()) {
+				scanners.add(s);
 			}
 		});
-		return variations;
+		return scanners;
 	}
 
 	private class VariationInfo {
@@ -415,6 +422,26 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		}
 	}
 	
+	public static class VariationContext {
+		public SamRefInfo samRefInfo;
+		public String samFileName;
+		public String suppliedSamRefName;
+		public List<QueryAlignedSegment> samRefToScannedRefSegs;
+		public SamReporter samReporter;
+		public SamRefSense samRefSense;
+		public ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree;
+		Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
+		public ReferenceBasedRecordFilter samRecordFilter;
+
+	}
+
+	public static class VariationResult {
+		Map<String, VariationInfo> variationNameToInfo;
+
+	}
+
+	
+	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
 		public Completer() {
@@ -424,16 +451,61 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	}
 
 	private class VariationCoverageSegment extends ReferenceSegment {
-		private Variation variation;
+		private BaseVariationScanner<?> variationScanner;
 
-		public VariationCoverageSegment(Variation variation, int refStart, int refEnd) {
+		public VariationCoverageSegment(BaseVariationScanner<?> variationScanner, int refStart, int refEnd) {
 			super(refStart, refEnd);
-			this.variation = variation;
+			this.variationScanner = variationScanner;
 		}
+	}
 
-		public Variation getVariation() {
-			return variation;
+	@Override
+	public void initContextForReader(VariationContext context, SamReader samReader) {
+		context.samRecordFilter = new SamUtils
+					.ReferenceBasedRecordFilter(samReader, context.samFileName, context.suppliedSamRefName);
+	}
+
+
+	@Override
+	public void processPair(VariationContext context, SAMRecord samRecord1, SAMRecord samRecord2) {
+		processSingleton(context, samRecord1);
+		processSingleton(context, samRecord2);
+	}
+
+
+	@Override
+	public void processSingleton(VariationContext context, SAMRecord samRecord) {
+		if(context.samRecordFilter.recordPasses(samRecord)) {
+			processRead(context, samRecord);
 		}
+		
+	}
+
+
+	@Override
+	public VariationResult contextResult(VariationContext context) {
+		VariationResult variationResult = new VariationResult();
+		variationResult.variationNameToInfo = context.variationNameToInfo;
+		return variationResult;
+	}
+
+
+	@Override
+	public VariationResult reduceResults(VariationResult result1, VariationResult result2) {
+		VariationResult reducedResult = new VariationResult();
+		reducedResult.variationNameToInfo = result1.variationNameToInfo;
+		result2.variationNameToInfo.forEach((name, info) -> {
+			VariationInfo existingVInfo = reducedResult.variationNameToInfo.get(name);
+			if(existingVInfo == null) {
+				reducedResult.variationNameToInfo.put(name, info);
+			} else {
+				existingVInfo.contributingReads += info.contributingReads;
+				existingVInfo.readsConfirmedAbsent += info.readsConfirmedAbsent;
+				existingVInfo.readsConfirmedPresent += info.readsConfirmedPresent;
+			}
+		});
+		return reducedResult;
+
 	}
 	
 }

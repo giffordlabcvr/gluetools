@@ -55,6 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 
@@ -267,14 +268,23 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 	
-
-	public List<VariationScanResult<?>> variationScan(
+	public static List<VariationScanResult<?>> variationScan(
 			CommandContext cmdContext,
 			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, List<Variation> variationsToScan, 
 			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
+		List<BaseVariationScanner<?>> scanners = variationsToScan
+				.stream()
+				.map(variation -> variation.getScanner(cmdContext))
+				.collect(Collectors.toList());
+		return variationScan(queryToRefNtSegs, queryNts, scanners, excludeAbsent, excludeInsufficientCoverage);
+	}
+	
+	public static List<VariationScanResult<?>> variationScan(
+			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, List<BaseVariationScanner<?>> scanners, 
+			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
-		for(Variation variation: variationsToScan) {
-			VariationScanResult<?> scanResult = variation.getScanner(cmdContext).scan(cmdContext, queryToRefNtSegs, queryNts);
+		for(BaseVariationScanner<?> scanner: scanners) {
+			VariationScanResult<?> scanResult = scanner.scan(queryToRefNtSegs, queryNts);
 			if(scanResult.isPresent() || !excludeAbsent) {
 				if(scanResult.isSufficientCoverage() || !excludeInsufficientCoverage) {
 					variationScanResults.add(scanResult);

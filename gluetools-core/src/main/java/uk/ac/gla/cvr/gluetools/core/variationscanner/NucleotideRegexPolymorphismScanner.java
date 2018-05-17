@@ -57,8 +57,8 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 
 	@Override
 	protected VariationScanResult<NucleotideRegexPolymorphismMatchResult> scanInternal(
-			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			String queryNts) {
 		List<NucleotideRegexPolymorphismMatchResult> matchResults = new ArrayList<NucleotideRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {

@@ -64,8 +64,8 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 
 	@Override
 	protected VariationScanResult<NucleotideSimplePolymorphismMatchResult> scanInternal(
-			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			String queryNts) {
 		List<NucleotideSimplePolymorphismMatchResult> matchResults = new ArrayList<NucleotideSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {

@@ -103,8 +103,8 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 
 	@Override
 	protected VariationScanResult<ConjunctionMatchResult> scanInternal(
-			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			String queryNts) {
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(!sufficientCoverage) {
 			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Collections.emptyList());
@@ -114,7 +114,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		for(int i = 1; i <= numConjuncts; i++) {
 			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i-1);
 			Class<? extends VariationScannerMatchResult> conjunctMatchResultClass = conjunctScanner.getVariation().getVariationType().getMatchResultClass();
-			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, cmdContext, queryToRefNtSegs, queryNts);
+			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, queryToRefNtSegs, queryNts);
 		}
 		if(isPresent) {
 			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Arrays.asList(conjunctionMatchResult));
@@ -124,11 +124,11 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 	}
 	
 	private <D extends VariationScannerMatchResult> boolean updateConjunctionMatchResult(Class<D> conjunctMatchResultClass, 
-			ConjunctionMatchResult conjunctionMatchResult, BaseVariationScanner<?> conjunctScanner, int conjunctIndex, CommandContext cmdContext,
+			ConjunctionMatchResult conjunctionMatchResult, BaseVariationScanner<?> conjunctScanner, int conjunctIndex,
 			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
 		@SuppressWarnings("unchecked")
 		BaseVariationScanner<D> castConjunctScanner = (BaseVariationScanner<D>) conjunctScanner;
-		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(cmdContext, queryToRefNtSegs, queryNts);
+		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(queryToRefNtSegs, queryNts);
 		conjunctionMatchResult.setConjunctResults(conjunctIndex, conjunctScanResult);
 		return conjunctScanResult.isPresent();
 	}

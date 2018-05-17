@@ -52,6 +52,9 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
 
 	private String regexAaPattern;
+	private Translator translator;
+	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	private Integer codon1Start;
 
 	public AminoAcidRegexPolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -63,20 +66,22 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 	protected void init(CommandContext cmdContext) {
 		super.init(cmdContext);		
 		this.regexAaPattern = getStringMetatagValue(VariationMetatagType.REGEX_AA_PATTERN);
+		this.translator = new CommandContextTranslator(cmdContext);
+		Variation variation = getVariation();
+		FeatureLocation featureLoc = variation.getFeatureLoc();
+		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
+
 	}
 
 	@Override
 	protected VariationScanResult<AminoAcidRegexPolymorphismMatchResult> scanInternal(
-			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts) {
+			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			String queryNts) {
 		List<AminoAcidRegexPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		if(sufficientCoverage) {
-			Translator translator = new CommandContextTranslator(cmdContext);
 			Variation variation = getVariation();
-			FeatureLocation featureLoc = variation.getFeatureLoc();
-			TIntObjectMap<LabeledCodon> refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
 
 			List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
 					ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
