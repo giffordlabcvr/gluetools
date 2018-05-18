@@ -69,14 +69,15 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 			String queryNts, String qualityString) {
 		List<NucleotideSimplePolymorphismMatchResult> matchResults = new ArrayList<NucleotideSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+
+		Variation variation = getVariation();
+
+		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+						ReferenceSegment.cloneLeftSegMerger());
+
+
 		if(sufficientCoverage) {
-			Variation variation = getVariation();
-
-			List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-					ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
-							ReferenceSegment.cloneLeftSegMerger());
-
-
 			for(NtQueryAlignedSegment ntQaSeg: queryToRefNtSegsVariationRegion) {
 				String segNts = ntQaSeg.getNucleotides().toString();
 				int nextIndex = 0;
@@ -102,7 +103,15 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 				} while(ambigNtsMatch != null);
 			}
 		}
-		return new VariationScanResult<NucleotideSimplePolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		VariationScanResult<NucleotideSimplePolymorphismMatchResult> variationScanResult = new VariationScanResult<NucleotideSimplePolymorphismMatchResult>(this, sufficientCoverage, matchResults);
+		if(sufficientCoverage && qualityString != null) {
+			if(matchResults.isEmpty()) {
+				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, queryToRefNtSegsVariationRegion));
+			} else {
+				variationScanResult.setQScore(bestQScoreOfMatchResults(matchResults));
+			}
+		}
+		return variationScanResult;
 
 	}
 	

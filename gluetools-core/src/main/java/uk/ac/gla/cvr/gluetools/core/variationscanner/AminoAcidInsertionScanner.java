@@ -166,7 +166,7 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 				lastSegment = currentSegment;
 			}
 		}
-		return new VariationScanResult<AminoAcidInsertionMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		return new VariationScanResult<AminoAcidInsertionMatchResult>(this, sufficientCoverage, matchResults);
 	}
 
 

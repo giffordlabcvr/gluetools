@@ -304,7 +304,28 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	}
 
 
-	public void processRead(VariationContext context, SAMRecord samRecord) {
+	private void recordScanResults(VariationContext context,
+			List<VariationScanResult<?>> variationScanResults) {
+		// record the presence / absence
+		for(VariationScanResult<?> variationScanResult: variationScanResults) {
+			String variationName = variationScanResult.getVariationName();
+			VariationInfo variationInfo = context.variationNameToInfo.get(variationName);
+			if(variationInfo == null) {
+				variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
+				context.variationNameToInfo.put(variationName, variationInfo);
+			}
+			variationInfo.contributingReads++;
+			if(variationScanResult.isPresent()) {
+				variationInfo.readsConfirmedPresent++;
+			} else {
+				variationInfo.readsConfirmedAbsent++;
+			} 
+		}
+	}
+
+
+	public List<VariationScanResult<?>> scanResultsForRead(
+			VariationContext context, SAMRecord samRecord) {
 		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
 		String readString = samRecord.getReadString().toUpperCase();
 		String qualityString = samRecord.getBaseQualityString();
@@ -345,24 +366,9 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 			// find the scanners.
 			List<BaseVariationScanner<?>> scannersForSegment = findScannersFromVarCovSegs(varCovSegs);
 			// do the scan
-			variationScanResults.addAll(FeatureLocation.variationScan(readToScannedRefNtSegs, readString, qualityString, scannersForSegment, false, true));
+			variationScanResults.addAll(FeatureLocation.variationScan(readToScannedRefNtSegs, readString, qualityString, scannersForSegment, false, false));
 		}
-
-		// record the presence / absence
-		for(VariationScanResult<?> variationScanResult: variationScanResults) {
-			String variationName = variationScanResult.getVariationName();
-			VariationInfo variationInfo = context.variationNameToInfo.get(variationName);
-			if(variationInfo == null) {
-				variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
-				context.variationNameToInfo.put(variationName, variationInfo);
-			}
-			variationInfo.contributingReads++;
-			if(variationScanResult.isPresent()) {
-				variationInfo.readsConfirmedPresent++;
-			} else {
-				variationInfo.readsConfirmedAbsent++;
-			} 
-		}
+		return variationScanResults;
 	}
 
 	private List<VariationCoverageSegment> filterVarCovSegsOnReadQuality(int minQScore,
@@ -468,15 +474,39 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 	@Override
 	public void processPair(VariationContext context, SAMRecord samRecord1, SAMRecord samRecord2) {
-		processSingleton(context, samRecord1);
-		processSingleton(context, samRecord2);
+		if(!context.samRecordFilter.recordPasses(samRecord1)) {
+			processSingleton(context, samRecord2);
+		}
+		if(!context.samRecordFilter.recordPasses(samRecord2)) {
+			processSingleton(context, samRecord1);
+		}
+		List<VariationScanResult<?>> scanResults1 = scanResultsForRead(context, samRecord1);
+		List<VariationScanResult<?>> scanResults2 = scanResultsForRead(context, samRecord2);
+		List<VariationScanResult<?>> mergedScanResults = new ArrayList<VariationScanResult<?>>();
+		
+		Map<Map<String, String>, VariationScanResult<?>> variationPkMapToScanResult = new LinkedHashMap<Map<String,String>, VariationScanResult<?>>();
+		for(VariationScanResult<?> scanResult1: scanResults1) {
+			variationPkMapToScanResult.put(scanResult1.getVariationPkMap(), scanResult1);
+		}
+		for(VariationScanResult<?> scanResult2: scanResults2) {
+			VariationScanResult<?> scanResult1 = variationPkMapToScanResult.remove(scanResult2.getVariationPkMap());
+			if(scanResult1 != null) {
+				BaseVariationScanner<?> scanner = scanResult1.getScanner();
+				mergedScanResults.add(scanner.resolvePairedReadResults(samRecord1, scanResult1, samRecord2, scanResult2));
+			} else {
+				mergedScanResults.add(scanResult2);
+			}
+		}
+		mergedScanResults.addAll(variationPkMapToScanResult.values());
+		recordScanResults(context, mergedScanResults);
 	}
 
 
 	@Override
 	public void processSingleton(VariationContext context, SAMRecord samRecord) {
 		if(context.samRecordFilter.recordPasses(samRecord)) {
-			processRead(context, samRecord);
+			List<VariationScanResult<?>> variationScanResults = scanResultsForRead(context, samRecord);
+			recordScanResults(context, variationScanResults);
 		}
 		
 	}

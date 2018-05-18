@@ -80,17 +80,18 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 			String queryNts, String qualityString) {
 		List<AminoAcidRegexPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidRegexPolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		Variation variation = getVariation();
+
+		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+						ReferenceSegment.cloneLeftSegMerger());
+
+		List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
 		if(sufficientCoverage) {
-			Variation variation = getVariation();
-
-			List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-					ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
-							ReferenceSegment.cloneLeftSegMerger());
-
-			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
 
 			Pattern pattern = parseRegex(regexAaPattern);
 
+			
 			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
 				String segNts = ntQaSeg.getNucleotides().toString();
 				String segAas = translator.translateToAaString(segNts);
@@ -119,7 +120,15 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 				}
 			}
 		}
-		return new VariationScanResult<AminoAcidRegexPolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		VariationScanResult<AminoAcidRegexPolymorphismMatchResult> variationScanResult = new VariationScanResult<AminoAcidRegexPolymorphismMatchResult>(this, sufficientCoverage, matchResults);
+		if(sufficientCoverage && qualityString != null) {
+			if(matchResults.isEmpty()) {
+				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, ntQaSegsCdnAligned));
+			} else {
+				variationScanResult.setQScore(bestQScoreOfMatchResults(matchResults));
+			}
+		}
+		return variationScanResult;
 	}
 
 

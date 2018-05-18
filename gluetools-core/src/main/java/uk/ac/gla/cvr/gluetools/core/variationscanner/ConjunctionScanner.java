@@ -1,5 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import htsjdk.samtools.SAMRecord;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -106,21 +108,14 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 			List<NtQueryAlignedSegment> queryToRefNtSegs,
 			String queryNts, String qualityString) {
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
-		if(!sufficientCoverage) {
-			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Collections.emptyList());
-		}
 		ConjunctionMatchResult conjunctionMatchResult = new ConjunctionMatchResult();
-		boolean isPresent = true;
+		boolean isPresent = sufficientCoverage;
 		for(int i = 1; i <= numConjuncts; i++) {
 			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i-1);
 			Class<? extends VariationScannerMatchResult> conjunctMatchResultClass = conjunctScanner.getVariation().getVariationType().getMatchResultClass();
 			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, queryToRefNtSegs, queryNts, qualityString);
 		}
-		if(isPresent) {
-			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Arrays.asList(conjunctionMatchResult));
-		} else {
-			return new VariationScanResult<ConjunctionMatchResult>(getVariation(), refStart, refEnd, sufficientCoverage, Collections.emptyList());
-		}
+		return new VariationScanResult<ConjunctionMatchResult>(this, refStart, refEnd, sufficientCoverage, Arrays.asList(conjunctionMatchResult), isPresent);
 	}
 	
 	private <D extends VariationScannerMatchResult> boolean updateConjunctionMatchResult(Class<D> conjunctMatchResultClass, 
@@ -129,14 +124,12 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 		@SuppressWarnings("unchecked")
 		BaseVariationScanner<D> castConjunctScanner = (BaseVariationScanner<D>) conjunctScanner;
 		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(queryToRefNtSegs, queryNts, qualityString);
-		conjunctionMatchResult.setConjunctResults(conjunctIndex, conjunctScanResult);
+		conjunctionMatchResult.setConjunctResult(conjunctIndex, conjunctScanResult);
 		Integer currentWorstQScore = conjunctionMatchResult.getWorstContributingQScore();
-		Integer conjunctLeastBadQScore = conjunctScanResult.getLeastBadMatchQScore();
-		if(currentWorstQScore == null) {
-			conjunctionMatchResult.setWorstContributingQScore(conjunctLeastBadQScore);
-		} else {
-			if(conjunctLeastBadQScore != null) {
-				conjunctionMatchResult.setWorstContributingQScore(Math.min(currentWorstQScore, conjunctLeastBadQScore));
+		Integer conjunctQScore = conjunctScanResult.getQScore();
+		if(conjunctQScore != null) {
+			if(currentWorstQScore == null || conjunctQScore < currentWorstQScore) {
+				conjunctionMatchResult.setWorstContributingQScore(conjunctQScore);
 			}
 		}
 		
@@ -152,5 +145,72 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 	public Integer getRefEnd() {
 		return refEnd;
 	}
+
+	@Override
+	public VariationScanResult<ConjunctionMatchResult> resolvePairedReadResults(
+			SAMRecord record1,
+			VariationScanResult<?> uncastVsr1,
+			SAMRecord record2,
+			VariationScanResult<?> uncastVsr2) {
+
+		
+		@SuppressWarnings("unchecked")
+		VariationScanResult<ConjunctionMatchResult> vsr1 = (VariationScanResult<ConjunctionMatchResult>) uncastVsr1;
+		@SuppressWarnings("unchecked")
+		VariationScanResult<ConjunctionMatchResult> vsr2 = (VariationScanResult<ConjunctionMatchResult>) uncastVsr2;
+		
+		ConjunctionMatchResult result1 = vsr1.getVariationScannerMatchResults().get(0);
+		ConjunctionMatchResult result2 = vsr2.getVariationScannerMatchResults().get(0);
+
+		int readNameHashCoinFlip = Math.abs(record1.getReadName().hashCode()) % 2;
+		ConjunctionMatchResult pairMatchResult = new ConjunctionMatchResult();
+		
+		boolean sufficientCoverage = true;
+		boolean isPresent = true;
+		
+		for(int i = 1; i <= numConjuncts; i++) {
+			VariationScanResult<?> conjunctResult1 = result1.getConjunctResult(i);
+			VariationScanResult<?> conjunctResult2 = result2.getConjunctResult(i);
+			Integer qScore1 = result1.getWorstContributingQScore();
+			Integer qScore2 = result2.getWorstContributingQScore();
+			Boolean sufficientCoverage1 = conjunctResult1.isSufficientCoverage();
+			Boolean sufficientCoverage2 = conjunctResult2.isSufficientCoverage();
+			if(sufficientCoverage1 && !sufficientCoverage2) {
+				pairMatchResult.setConjunctResult(i, conjunctResult1);
+			} else if(!sufficientCoverage1 && sufficientCoverage2) {
+				pairMatchResult.setConjunctResult(i, conjunctResult2);
+			} else if(qScore1 != null && qScore2 != null && qScore1 != qScore2) {
+				if(qScore1 > qScore2) {
+					pairMatchResult.setConjunctResult(i, conjunctResult1);
+				} else {
+					pairMatchResult.setConjunctResult(i, conjunctResult2);
+				}
+			} else if(record1.getMappingQuality() > record2.getMappingQuality()) {
+				pairMatchResult.setConjunctResult(i, conjunctResult1);
+			} else if(record1.getMappingQuality() < record2.getMappingQuality()) {
+				pairMatchResult.setConjunctResult(i, conjunctResult2);
+			} else if(readNameHashCoinFlip == 0) {
+				pairMatchResult.setConjunctResult(i, conjunctResult1);
+			} else {
+				pairMatchResult.setConjunctResult(i, conjunctResult2);
+			}
+			
+			Integer currentWorstQScore = pairMatchResult.getWorstContributingQScore();
+			Integer conjunctQScore = pairMatchResult.getConjunctResult(i).getQScore();
+			if(conjunctQScore != null) {
+				if(currentWorstQScore == null || conjunctQScore < currentWorstQScore) {
+					pairMatchResult.setWorstContributingQScore(conjunctQScore);
+				}
+			}
+			sufficientCoverage &= pairMatchResult.getConjunctResult(i).isSufficientCoverage();
+			isPresent &= pairMatchResult.getConjunctResult(i).isPresent();
+		}
+
+		return new VariationScanResult<ConjunctionMatchResult>(this,
+				vsr1.getRefStart(), vsr1.getRefEnd(), 
+				sufficientCoverage, Arrays.asList(pairMatchResult), isPresent);
+		
+	}
+
 	
 }

@@ -46,26 +46,36 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 	private String variationRenderedName;
 	private VariationType variationType;
 	
+	private Integer qScore;
+	
 	private List<M> scannerMatchResults;
+	private BaseVariationScanner<M> scanner;
 
-	public VariationScanResult(Variation variation, boolean sufficientCoverage, List<M> scannerMatchResults) {
-		this(variation, variation.getRefStart(), variation.getRefEnd(), sufficientCoverage, scannerMatchResults);
+	public VariationScanResult(BaseVariationScanner<M> scanner, boolean sufficientCoverage, List<M> scannerMatchResults) {
+		this(scanner, scanner.getVariation().getRefStart(), scanner.getVariation().getRefEnd(), sufficientCoverage, scannerMatchResults);
 	}
 		
-	
-	public VariationScanResult(Variation variation, Integer refStart, Integer refEnd, boolean sufficientCoverage, List<M> scannerMatchResults) {
+
+	public VariationScanResult(BaseVariationScanner<M> scanner, Integer refStart, Integer refEnd, boolean sufficientCoverage, 
+			List<M> scannerMatchResults) {
+		// by default "is present" true iff there are matches.
+		// counterexample is conjunctions, where we record a match result containing partial match.
+		this(scanner, refStart, refEnd, sufficientCoverage, scannerMatchResults, !scannerMatchResults.isEmpty());
+	}
+		
+	public VariationScanResult(BaseVariationScanner<M> scanner, Integer refStart, Integer refEnd, boolean sufficientCoverage, 
+			List<M> scannerMatchResults, boolean isPresent) {
 		super();
-		this.variationPkMap = variation.pkMap();
+		this.scanner = scanner;
+		this.variationPkMap = scanner.getVariation().pkMap();
 		this.refStart = refStart;
 		this.refEnd = refEnd;
 		this.sufficientCoverage = sufficientCoverage;
 		this.present = true;
 		this.scannerMatchResults = scannerMatchResults;
-		if(this.scannerMatchResults.isEmpty()) {
-			this.present = false;
-		}
-		this.variationRenderedName = variation.getRenderedName();
-		this.variationType = variation.getVariationType();
+		this.present = isPresent;
+		this.variationRenderedName = scanner.getVariation().getRenderedName();
+		this.variationType = scanner.getVariation().getVariationType();
 	}
 
 	public Map<String,String> getVariationPkMap() {
@@ -146,9 +156,21 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		Collections.sort(variationScanResults, comparator);
 	}
 	
-	public Integer getLeastBadMatchQScore() {
+
+
+	public Integer getQScore() {
+		return qScore;
+	}
+
+
+	public void setQScore(Integer qScore) {
+		this.qScore = qScore;
+	}
+
+
+	protected Integer leastBadQScoreOfMatches(List<M> matchResults) {
 		Integer leastBadMatchQScore = null;
-		for(M matchResult: scannerMatchResults) {
+		for(M matchResult: matchResults) {
 			Integer matchWorstQScore = matchResult.getWorstContributingQScore();
 			if(matchWorstQScore != null) {
 				if(leastBadMatchQScore == null) {
@@ -178,6 +200,11 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 
 	public Integer getRefEnd() {
 		return refEnd;
+	}
+
+
+	public BaseVariationScanner<M> getScanner() {
+		return scanner;
 	}
 
 

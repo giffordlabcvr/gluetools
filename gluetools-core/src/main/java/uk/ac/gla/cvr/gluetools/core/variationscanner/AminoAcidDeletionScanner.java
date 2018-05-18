@@ -165,7 +165,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 				lastSegment = currentSegment;
 			}
 		}
-		return new VariationScanResult<AminoAcidDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		return new VariationScanResult<AminoAcidDeletionMatchResult>(this, sufficientCoverage, matchResults);
 	}
 
 

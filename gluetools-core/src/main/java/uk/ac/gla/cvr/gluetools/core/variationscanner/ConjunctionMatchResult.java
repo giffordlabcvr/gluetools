@@ -27,10 +27,14 @@ public class ConjunctionMatchResult extends VariationScannerMatchResult {
 		return refStart;
 	}
 
-	public <M extends VariationScannerMatchResult> void setConjunctResults(int conjunctIndex, VariationScanResult<?> result) {
+	public <M extends VariationScannerMatchResult> void setConjunctResult(int conjunctIndex, VariationScanResult<?> result) {
 		conjunctIndexToResult.put(conjunctIndex, result);
 	}
-	
+
+	public <M extends VariationScannerMatchResult> VariationScanResult<?> getConjunctResult(int conjunctIndex) {
+		return conjunctIndexToResult.get(conjunctIndex);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static List<TableColumn<ConjunctionMatchResult>> getTableColumns() {
 		return Collections.emptyList();

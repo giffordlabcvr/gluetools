@@ -142,7 +142,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 				lastSegment = currentSegment;
 			}
 		}
-		return new VariationScanResult<NucleotideDeletionMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		return new VariationScanResult<NucleotideDeletionMatchResult>(this, sufficientCoverage, matchResults);
 	}
 
 	

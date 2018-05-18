@@ -29,6 +29,7 @@ import gnu.trove.map.TIntObjectMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -96,14 +97,14 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 			String queryNts, String qualityString) {
 		List<AminoAcidSimplePolymorphismMatchResult> matchResults = new ArrayList<AminoAcidSimplePolymorphismMatchResult>();
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		Variation variation = getVariation();
+
+		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+						ReferenceSegment.cloneLeftSegMerger());
+
+		List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
 		if(sufficientCoverage) {
-			Variation variation = getVariation();
-
-			List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-					ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
-							ReferenceSegment.cloneLeftSegMerger());
-
-			List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
 
 			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
 				String segNts = ntQaSeg.getNucleotides().toString();
@@ -136,7 +137,15 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 				} while(tripletInfosMatch != null);
 			}
 		}
-		return new VariationScanResult<AminoAcidSimplePolymorphismMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		VariationScanResult<AminoAcidSimplePolymorphismMatchResult> variationScanResult = new VariationScanResult<AminoAcidSimplePolymorphismMatchResult>(this, sufficientCoverage, matchResults);
+		if(sufficientCoverage && qualityString != null) {
+			if(matchResults.isEmpty()) {
+				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, ntQaSegsCdnAligned));
+			} else {
+				variationScanResult.setQScore(bestQScoreOfMatchResults(matchResults));
+			}
+		}
+		return variationScanResult;
 	}
 
 

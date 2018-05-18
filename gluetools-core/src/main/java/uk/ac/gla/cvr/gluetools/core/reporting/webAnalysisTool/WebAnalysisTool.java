@@ -79,8 +79,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidPLocScanResult;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.PLocScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;

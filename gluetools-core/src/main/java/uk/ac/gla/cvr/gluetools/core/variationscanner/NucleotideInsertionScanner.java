@@ -143,7 +143,7 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 				lastSegment = currentSegment;
 			}
 		}
-		return new VariationScanResult<NucleotideInsertionMatchResult>(getVariation(), sufficientCoverage, matchResults);
+		return new VariationScanResult<NucleotideInsertionMatchResult>(this, sufficientCoverage, matchResults);
 	}
 
 	

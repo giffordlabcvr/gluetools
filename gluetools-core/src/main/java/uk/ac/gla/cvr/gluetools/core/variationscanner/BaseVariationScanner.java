@@ -25,6 +25,8 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
+import htsjdk.samtools.SAMRecord;
+
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -36,7 +38,9 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class BaseVariationScanner<M extends VariationScannerMatchResult> {
@@ -171,4 +175,64 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 	protected String getStringMetatagValue(VariationMetatagType type) {
 		return getMetatagsMap().get(type);
 	}
+	
+	public VariationScanResult<M> resolvePairedReadResults(
+			SAMRecord record1, VariationScanResult<?> uncastResult1, 
+			SAMRecord record2, VariationScanResult<?> uncastResult2) {
+		int readNameHashCoinFlip = Math.abs(record1.getReadName().hashCode()) % 2;
+
+		@SuppressWarnings("unchecked")
+		VariationScanResult<M> result1 = (VariationScanResult<M>) uncastResult1;
+		@SuppressWarnings("unchecked")
+		VariationScanResult<M> result2 = (VariationScanResult<M>) uncastResult2;
+		
+		Integer qScore1 = result1.getQScore();
+		Integer qScore2 = result2.getQScore();
+		if(qScore1 != null && qScore2 != null) {
+			if(qScore1 > qScore2) {
+				return result1;
+			} else if(qScore1 < qScore2) {
+				return result2;
+			}
+		}
+		int mappingQuality1 = record1.getMappingQuality();
+		int mappingQuality2 = record2.getMappingQuality();
+		if(mappingQuality1 > mappingQuality2) {
+			return result1;
+		} else if(mappingQuality1 < mappingQuality2) {
+			return result2;
+		}
+		if(readNameHashCoinFlip == 0) {
+			return result1;
+		} else {
+			return result2;
+		}
+	}
+
+	protected Integer bestQScoreOfMatchResults(List<? extends VariationScannerMatchResult> matchResults) {
+		Integer bestQScore = null;
+		for(VariationScannerMatchResult matchResult: matchResults) {
+			Integer matchResultQScore = matchResult.getWorstContributingQScore();
+			if(matchResultQScore != null) {
+				if(bestQScore == null || matchResultQScore > bestQScore){
+					bestQScore = matchResultQScore;
+				}
+			}
+		}
+		return bestQScore;
+	}
+
+	protected Integer worstQScoreOfSegments(String qualityString, List<? extends QueryAlignedSegment> qaSegs) {
+		Integer worstQScore = null;
+		for(QueryAlignedSegment qaSeg: qaSegs) {
+			Integer segQScore = SamUtils.worstQScore(qualityString, qaSeg.getQueryStart(), qaSeg.getQueryEnd());
+			if(segQScore != null) {
+				if(worstQScore == null || segQScore < worstQScore){
+					worstQScore = segQScore;
+				}
+			}
+		}
+		return worstQScore;
+	}
+	
 }
