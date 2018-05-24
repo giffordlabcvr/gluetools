@@ -41,7 +41,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.InsideAlignmentMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFeatureLocationCommand.InheritFeatureLocationResult;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.InheritFeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
@@ -114,7 +116,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		ReferenceSequence thisRefSeq = lookupRefSeq(cmdContext);
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
 		Sequence thisRefSeqSeq = thisRefSeq.getSequence();
-		// find this reference sequence's membership of the parent alignment.
+		// find this reference sequence's membership of the named alignment.
 		AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(alignment.getName(), thisRefSeqSeq.getSource().getName(), thisRefSeqSeq.getSequenceID()), true);
 		if(almtMember == null) {
@@ -239,26 +241,50 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
-			registerVariableInstantiator("featureName", 
-					new VariableInstantiator() {
-						@Override
-						@SuppressWarnings("rawtypes")
-						public List<CompletionSuggestion> instantiate(
-								ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
-								Map<String, Object> bindings, String prefix) {
-							String alignmentName = (String) bindings.get("alignmentName");
-							Alignment almt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), true);
-							if(almt != null) {
-								ReferenceSequence refSequence = almt.getRefSequence();
-								if(refSequence != null) {
-									return refSequence.getFeatureLocations().stream()
-											.map(fl -> new CompletionSuggestion(fl.getFeature().getName(), true))
-											.collect(Collectors.toList());
-								}
-							}
-							return null;
+			
+			
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String alignmentName = (String) bindings.get("alignmentName");
+					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), false);
+					if(alignment != null) {
+						return alignment.getRelatedRefs().stream()
+								.map(ancCR -> new CompletionSuggestion(ancCR.getName(), true))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String referenceName = (String) bindings.get("relRefName");
+					ReferenceSequence referenceSequence = null;
+					if(referenceName != null) {
+						referenceSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(referenceName), true);
+					} else {
+						String alignmentName = (String) bindings.get("alignmentName");
+						Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), false);
+						if(alignment != null && alignment.isConstrained()) {
+							referenceSequence = alignment.getConstrainingRef();
 						}
-					});
+					}
+					if(referenceSequence != null) {
+						return referenceSequence.getFeatureLocations().stream()
+								.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
+			
 		}
 	}
 	
