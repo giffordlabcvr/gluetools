@@ -231,6 +231,11 @@ public class SamUtils {
 	public static int qualityCharToQScore(char qualityChar) {
 		return ((int) qualityChar) - 33;
 	}
+
+	public static char qScoreToQualityChar(int qScore) {
+		return (char) (qScore+33);
+	}
+
 	
 	private static class PairedParallelSamWorker<M, R> implements Callable<R> {
 

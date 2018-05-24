@@ -68,6 +68,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.freemarkerDocTransformer.Freemarke
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
+import uk.ac.gla.cvr.gluetools.core.samFileGenerator.SamFileGenerator;
 import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
@@ -138,6 +139,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		
 		setModulePluginGroup(new ModulePluginGroup("deepSequencing", "Module types for working with deep sequencing data", 88));
 		registerPluginClass(SamReporter.class);
+		registerPluginClass(SamFileGenerator.class);
+		
 		
 		setModulePluginGroup(new ModulePluginGroup("variations", "Module types for working with variations", 89));
 		registerPluginClass(CommonAaAnalyser.class);
