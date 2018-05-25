@@ -93,7 +93,6 @@ public class SamFileGenerator extends ModulePlugin<SamFileGenerator> {
 		for(BaseSamReadSet samReadSet: samReadSets) {
 			samReadSet.writeReads(cmdContext, samFileHeader, this, samFileWriter);
 		}
-		
 	}
 	
 	
