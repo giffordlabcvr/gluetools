@@ -101,7 +101,7 @@ public class SteppedReadSet extends BaseSamReadSet {
 			SAMRecord read1 = new SAMRecord(samFileHeader);
 			read1.setReferenceName(mainReference);
 			read1.setReadName(readName);
-			read1.setReadString(SegmentUtils.base1SubString(refNTs, read1StartNt, read1EndNt));
+			read1.setReadString(deAmbiguizeNts(SegmentUtils.base1SubString(refNTs, read1StartNt, read1EndNt)));
 			read1.setBaseQualityString(formQualityString(read1Length));
 			read1.setFirstOfPairFlag(true);
 			read1.setProperPairFlag(true);
@@ -114,7 +114,7 @@ public class SteppedReadSet extends BaseSamReadSet {
 			SAMRecord read2 = new SAMRecord(samFileHeader);
 			read2.setReferenceName(mainReference);
 			read2.setReadName(readName);
-			read2.setReadString(SegmentUtils.base1SubString(refNTs, read2StartNt, read2EndNt));
+			read2.setReadString(deAmbiguizeNts(SegmentUtils.base1SubString(refNTs, read2StartNt, read2EndNt)));
 			read2.setBaseQualityString(formQualityString(read2Length));
 			read2.setSecondOfPairFlag(true);
 			read2.setProperPairFlag(true);

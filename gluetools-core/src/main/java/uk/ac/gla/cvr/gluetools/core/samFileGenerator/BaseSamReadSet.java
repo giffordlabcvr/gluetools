@@ -29,9 +29,20 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 
 public abstract class BaseSamReadSet implements Plugin {
 
 	public abstract void writeReads(CommandContext cmdContext, SAMFileHeader samFileHeader, SamFileGenerator samFileGenerator, SAMFileWriter samFileWriter);
 
+	protected String deAmbiguizeNts(String nts) {
+		StringBuffer buf = new StringBuffer();
+		for(int i = 0; i < nts.length(); i++) {
+			int ambigNtInt = ResidueUtils.ambigNtToInt(nts.charAt(i));
+			int[] concreteNtInts = ResidueUtils.ambigNtToConcreteNts(ambigNtInt);
+			buf.append(ResidueUtils.intToConcreteNt(concreteNtInts[0]));
+		}
+		return buf.toString();
+	}
+	
 }
