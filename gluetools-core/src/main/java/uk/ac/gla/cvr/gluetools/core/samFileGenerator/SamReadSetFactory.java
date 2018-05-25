@@ -36,6 +36,7 @@ public class SamReadSetFactory extends PluginFactory<BaseSamReadSet> {
 	private SamReadSetFactory() {
 		super();
 		registerPluginClass(SteppedReadSet.class);
+		registerPluginClass(FixedLocationReadSet.class);
 	}
 	
 }

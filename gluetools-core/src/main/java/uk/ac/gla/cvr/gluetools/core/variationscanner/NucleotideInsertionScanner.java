@@ -35,7 +35,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<NucleotideInsertionMatchResult> {
 

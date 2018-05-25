@@ -6,7 +6,8 @@ public class SamFileGeneratorException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		IO_ERROR("errorTxt");
+		IO_ERROR("errorTxt"),
+		CONFIG_ERROR("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

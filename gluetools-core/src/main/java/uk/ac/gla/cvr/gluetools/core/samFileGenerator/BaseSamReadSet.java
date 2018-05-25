@@ -29,7 +29,6 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
 public abstract class BaseSamReadSet implements Plugin {
 

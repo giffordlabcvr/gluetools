@@ -29,7 +29,6 @@ import gnu.trove.map.TIntObjectMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;

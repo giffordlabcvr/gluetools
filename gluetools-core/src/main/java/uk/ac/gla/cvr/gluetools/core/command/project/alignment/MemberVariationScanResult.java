@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanMatchResultRow;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 public class MemberVariationScanResult {

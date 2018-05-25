@@ -28,9 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.variationscanner;
 import java.util.Arrays;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class BaseNucleotideVariationScanner<M extends VariationScannerMatchResult> extends BaseVariationScanner<M> {

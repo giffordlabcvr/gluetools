@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
-import htsjdk.samtools.SAMTextWriter;
 
 import java.io.OutputStream;
 

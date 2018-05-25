@@ -23,29 +23,20 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
+package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
-import java.util.Map;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
+public class ReadPolymorphismFactory extends PluginFactory<BaseReadPolymorphism> {
 
-public class MemberVariationScannerMatchResult {
-
-	private Map<String,String> memberPkMap;
-	private VariationScannerMatchResult variationScannerMatchResult;
+	public static Multiton.Creator<ReadPolymorphismFactory> creator = new
+			Multiton.SuppliedCreator<>(ReadPolymorphismFactory.class, ReadPolymorphismFactory::new);
 	
-	public MemberVariationScannerMatchResult(Map<String, String> memberPkMap, VariationScannerMatchResult variationScannerMatchResult) {
+	private ReadPolymorphismFactory() {
 		super();
-		this.memberPkMap = memberPkMap;
-		this.variationScannerMatchResult = variationScannerMatchResult;
-	}
-
-	public Map<String,String> getMemberPkMap() {
-		return memberPkMap;
-	}
-
-	public VariationScannerMatchResult getVariationScannerMatchResult() {
-		return variationScannerMatchResult;
+		registerPluginClass(ReadAminoAcidSubstitution.class);
+		registerPluginClass(ReadAminoAcidDeletion.class);
 	}
 	
 }
