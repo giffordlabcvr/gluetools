@@ -314,12 +314,14 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
 				context.variationNameToInfo.put(variationName, variationInfo);
 			}
-			variationInfo.contributingReads++;
-			if(variationScanResult.isPresent()) {
-				variationInfo.readsConfirmedPresent++;
-			} else {
-				variationInfo.readsConfirmedAbsent++;
-			} 
+			if(variationScanResult.isSufficientCoverage()) {
+				variationInfo.contributingReads++;
+				if(variationScanResult.isPresent()) {
+					variationInfo.readsConfirmedPresent++;
+				} else {
+					variationInfo.readsConfirmedAbsent++;
+				} 
+			}
 		}
 	}
 
