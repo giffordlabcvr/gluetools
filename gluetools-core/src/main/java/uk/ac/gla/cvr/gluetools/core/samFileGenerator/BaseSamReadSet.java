@@ -27,11 +27,32 @@ package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
+import htsjdk.samtools.SAMRecord;
+
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 
 public abstract class BaseSamReadSet implements Plugin {
+
+	private Integer read1BaseQuality; 
+	private Integer read1MappingQuality; 
+	private Integer read2BaseQuality; 
+	private Integer read2MappingQuality; 
+
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		Plugin.super.configure(pluginConfigContext, configElem);
+		this.read1BaseQuality = PluginUtils.configureIntProperty(configElem, "read1BaseQuality", false);
+		this.read1MappingQuality = PluginUtils.configureIntProperty(configElem, "read1MappingQuality", false);
+		this.read2BaseQuality = PluginUtils.configureIntProperty(configElem, "read2BaseQuality", false);
+		this.read2MappingQuality = PluginUtils.configureIntProperty(configElem, "read2MappingQuality", false);
+	}
 
 	public abstract void writeReads(CommandContext cmdContext, SAMFileHeader samFileHeader, SamFileGenerator samFileGenerator, SAMFileWriter samFileWriter);
 
@@ -43,6 +64,45 @@ public abstract class BaseSamReadSet implements Plugin {
 			buf.append(ResidueUtils.intToConcreteNt(concreteNtInts[0]));
 		}
 		return buf.toString();
+	}
+	
+	protected void applyRead1BaseQuality(SamFileGenerator samFileGenerator, SAMRecord read1) {
+		if(read1BaseQuality != null) {
+			read1.setBaseQualityString(formQualityString(read1.getReadLength(), read1BaseQuality));
+		} else {
+			read1.setBaseQualityString(formQualityString(read1.getReadLength(), samFileGenerator.getDefaultBaseQuality()));
+		}
+	}
+	
+	protected void applyRead2BaseQuality(SamFileGenerator samFileGenerator, SAMRecord read2) {
+		if(read2BaseQuality != null) {
+			read2.setBaseQualityString(formQualityString(read2.getReadLength(), read2BaseQuality));
+		} else {
+			read2.setBaseQualityString(formQualityString(read2.getReadLength(), samFileGenerator.getDefaultBaseQuality()));
+		}
+	}
+	protected void applyRead1MappingQuality(SamFileGenerator samFileGenerator, SAMRecord read1) {
+		if(read1MappingQuality != null) {
+			read1.setMappingQuality(read1MappingQuality);
+		} else {
+			read1.setMappingQuality(samFileGenerator.getDefaultMappingQuality());
+		}
+	}
+	protected void applyRead2MappingQuality(SamFileGenerator samFileGenerator, SAMRecord read2) {
+		if(read2MappingQuality != null) {
+			read2.setMappingQuality(read2MappingQuality);
+		} else {
+			read2.setMappingQuality(samFileGenerator.getDefaultMappingQuality());
+		}
+	}
+
+	private String formQualityString(int readLength, int baseQuality) {
+		StringBuffer qualityStringBuf = new StringBuffer(readLength);
+		for(int i = 0; i < readLength; i++) {
+			qualityStringBuf.append(SamUtils.qScoreToQualityChar(baseQuality));
+		}
+		String qualityString = qualityStringBuf.toString();
+		return qualityString;
 	}
 	
 }

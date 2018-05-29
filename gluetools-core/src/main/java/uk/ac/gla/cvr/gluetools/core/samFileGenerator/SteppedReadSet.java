@@ -55,11 +55,8 @@ public class SteppedReadSet extends BaseSamReadSet {
 	private int stepSize;
 	private Integer refStartNt; // first pair will start at this reference NT -- defaults to 1
 	private Integer numSteps; // if null then reads will be generated up to the end of the sequence.
+
 	private String readNamePrefix;
-	
-	private int defaultBaseQuality = 50;
-	private int mappingQuality = 38;
-	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -71,6 +68,7 @@ public class SteppedReadSet extends BaseSamReadSet {
 		this.refStartNt = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "refStartNt", false)).orElse(1);
 		this.numSteps = PluginUtils.configureIntProperty(configElem, "numSteps", false);
 		this.readNamePrefix = PluginUtils.configureStringProperty(configElem, "readNamePrefix", true);
+
 	}
 
 
@@ -102,12 +100,12 @@ public class SteppedReadSet extends BaseSamReadSet {
 			read1.setReferenceName(mainReference);
 			read1.setReadName(readName);
 			read1.setReadString(deAmbiguizeNts(SegmentUtils.base1SubString(refNTs, read1StartNt, read1EndNt)));
-			read1.setBaseQualityString(formQualityString(read1Length));
 			read1.setFirstOfPairFlag(true);
 			read1.setProperPairFlag(true);
 			read1.setReadPairedFlag(true);
 			read1.setAlignmentStart(read1StartNt);
-			read1.setMappingQuality(mappingQuality);
+			applyRead1BaseQuality(samFileGenerator, read1);
+			applyRead1MappingQuality(samFileGenerator, read1);
 			read1.setCigar(new Cigar(Arrays.asList(new CigarElement(read1Length, CigarOperator.M))));
 			samFileWriter.addAlignment(read1);
 
@@ -115,12 +113,12 @@ public class SteppedReadSet extends BaseSamReadSet {
 			read2.setReferenceName(mainReference);
 			read2.setReadName(readName);
 			read2.setReadString(deAmbiguizeNts(SegmentUtils.base1SubString(refNTs, read2StartNt, read2EndNt)));
-			read2.setBaseQualityString(formQualityString(read2Length));
 			read2.setSecondOfPairFlag(true);
 			read2.setProperPairFlag(true);
 			read2.setReadPairedFlag(true);
 			read2.setAlignmentStart(read2StartNt);
-			read2.setMappingQuality(mappingQuality);
+			applyRead2BaseQuality(samFileGenerator, read2);
+			applyRead2MappingQuality(samFileGenerator, read2);
 			read2.setCigar(new Cigar(Arrays.asList(new CigarElement(read2Length, CigarOperator.M))));
 			samFileWriter.addAlignment(read2);
 
@@ -128,15 +126,6 @@ public class SteppedReadSet extends BaseSamReadSet {
 			steps ++;
 			readNameSuffix ++;
 		}
-	}
-
-	private String formQualityString(int readLength) {
-		StringBuffer qualityStringBuf = new StringBuffer(readLength);
-		for(int i = 0; i < readLength; i++) {
-			qualityStringBuf.append(SamUtils.qScoreToQualityChar(defaultBaseQuality));
-		}
-		String qualityString = qualityStringBuf.toString();
-		return qualityString;
 	}
 	
 	

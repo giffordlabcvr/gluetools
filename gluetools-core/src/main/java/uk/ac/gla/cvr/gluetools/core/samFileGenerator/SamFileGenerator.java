@@ -30,6 +30,7 @@ import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMSequenceRecord;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.w3c.dom.Element;
 
@@ -48,11 +49,15 @@ description="Generates a SAM/BAM file with known characteristics, for validation
 public class SamFileGenerator extends ModulePlugin<SamFileGenerator> {
 
 	public final static String MAIN_REFERENCE = "mainReference";
+	public final static String DEFAULT_BASE_QUALITY = "defaultBaseQuality";
+	public final static String DEFAULT_MAPPING_QUALITY = "defaultMappingQuality";
 	
 	private String mainReference;
 	private List<BaseSamReadSet> samReadSets;
 
-	
+	private int defaultBaseQuality;
+	private int defaultMappingQuality;
+
 	
 	public SamFileGenerator() {
 		super();
@@ -66,6 +71,8 @@ public class SamFileGenerator extends ModulePlugin<SamFileGenerator> {
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.mainReference = PluginUtils.configureStringProperty(configElem, MAIN_REFERENCE, true);
+		this.defaultBaseQuality = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_BASE_QUALITY, false)).orElse(50);
+		this.defaultMappingQuality = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MAPPING_QUALITY, false)).orElse(38);
 		
 		SamReadSetFactory samReadSetFactory = PluginFactory.get(SamReadSetFactory.creator);
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(samReadSetFactory.getElementNames());
@@ -94,8 +101,12 @@ public class SamFileGenerator extends ModulePlugin<SamFileGenerator> {
 			samReadSet.writeReads(cmdContext, samFileHeader, this, samFileWriter);
 		}
 	}
-	
-	
-	
-	
+
+	public int getDefaultBaseQuality() {
+		return defaultBaseQuality;
+	}
+
+	public int getDefaultMappingQuality() {
+		return defaultMappingQuality;
+	}
 }
