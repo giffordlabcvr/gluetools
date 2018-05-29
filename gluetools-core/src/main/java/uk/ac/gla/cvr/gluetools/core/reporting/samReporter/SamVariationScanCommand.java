@@ -398,20 +398,8 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		return filteredVarCovSegs;
 	}
 	
-	// complicated by the fact that some coverage segments may have been filtered out for quality reasons.
 	private List<BaseVariationScanner<?>> findScannersFromVarCovSegs(List<VariationCoverageSegment> varCovSegs) {
-		Map<BaseVariationScanner<?>, List<VariationCoverageSegment>> scannerToCovSegs = new LinkedHashMap<BaseVariationScanner<?>, List<VariationCoverageSegment>>();
-		varCovSegs.forEach(covSeg -> {
-			BaseVariationScanner<?> scanner = covSeg.variationScanner;
-			scannerToCovSegs.computeIfAbsent(scanner, s -> new ArrayList<VariationCoverageSegment>()).add(covSeg);
-		});
-		List<BaseVariationScanner<?>> scanners = new ArrayList<BaseVariationScanner<?>>();
-		scannerToCovSegs.forEach((s, pLocs) -> {
-			if(s.getSegmentsToCover().size() == pLocs.size()) {
-				scanners.add(s);
-			}
-		});
-		return scanners;
+		return varCovSegs.stream().map(vcs -> vcs.getVariationScanner()).collect(Collectors.toList());
 	}
 
 	private class VariationInfo {
@@ -462,6 +450,10 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		public VariationCoverageSegment(BaseVariationScanner<?> variationScanner, int refStart, int refEnd) {
 			super(refStart, refEnd);
 			this.variationScanner = variationScanner;
+		}
+
+		public BaseVariationScanner<?> getVariationScanner() {
+			return variationScanner;
 		}
 	}
 
