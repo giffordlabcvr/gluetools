@@ -42,7 +42,7 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 	// sufficientCoverage == true iff the query had sufficient nucleotide coverage of the 
 	// reference region to scan for the variation.
 	private boolean sufficientCoverage; 
-	private boolean present; // true iff any matches were found.
+	private boolean present; 
 	private String variationRenderedName;
 	private VariationType variationType;
 	
@@ -71,7 +71,6 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		this.refStart = refStart;
 		this.refEnd = refEnd;
 		this.sufficientCoverage = sufficientCoverage;
-		this.present = true;
 		this.scannerMatchResults = scannerMatchResults;
 		this.present = isPresent;
 		this.variationRenderedName = scanner.getVariation().getRenderedName();

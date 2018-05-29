@@ -399,7 +399,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	}
 	
 	private List<BaseVariationScanner<?>> findScannersFromVarCovSegs(List<VariationCoverageSegment> varCovSegs) {
-		return varCovSegs.stream().map(vcs -> vcs.getVariationScanner()).collect(Collectors.toList());
+		return new ArrayList<BaseVariationScanner<?>>(varCovSegs.stream().map(vcs -> vcs.getVariationScanner()).collect(Collectors.toSet()));
 	}
 
 	private class VariationInfo {
