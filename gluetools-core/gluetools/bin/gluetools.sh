@@ -7,9 +7,9 @@ if [ -z ${GLUE_HOME+x} ]; then
 fi
 
 if [ -z ${GLUE_JAVA_HOME+x} ]; then
-	JAVA=${GLUE_JAVA_HOME}/bin/java
-else 
 	JAVA=java
+else 
+	JAVA=${GLUE_JAVA_HOME}/bin/java
 fi
 
 export GLUEJARS=(`ls ${GLUE_HOME}/lib/*.jar`)
