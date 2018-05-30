@@ -32,13 +32,13 @@ if [[ $UNAME == CYGWIN* ]]; then
     # this should always execute even if glue exits abnormally
     trap 'stty icanon echo' EXIT
     stty -icanon min 1 -echo
-    java -Djline.terminal=jline.UnixTerminal \
+    ${JAVA} -Djline.terminal=jline.UnixTerminal \
 	 -Dlog4j.skipJansi=true \
 	 -jar "${GLUEJAR_WIN}" \
 	 -c "${GLUECONF_WIN}" \
 	 ${@}
 else 
-    java -jar $GLUEJAR \
+    ${JAVA} -jar $GLUEJAR \
 	 -c $GLUECONF \
 	 ${@}
 fi
