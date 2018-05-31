@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.w3c.dom.Element;
 
@@ -56,13 +57,14 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"import", "source"}, 
 	docoptUsages={
-		"[ ( -i | -u ) ] [-s] [-b <batchSize>] <sourcePath>"
+		"[ ( -i | -u ) ] [-s] [-b <batchSize>] [-m <maxImports>] <sourcePath>"
 	}, 
 	docoptOptions={
-			"-i, --incremental                        Add to source, don't overwrite",
-			"-u, --update                             Add to source, overwrite",
-			"-s, --suppressSkipWarning                Don't warn when a file is skipped",
-			"-b <batchSize>, --batchSize <batchSize>  Commit batch size [default: 250]"},
+			"-i, --incremental                            Add to source, don't overwrite",
+			"-u, --update                                 Add to source, overwrite",
+			"-s, --suppressSkipWarning                    Don't warn when a file is skipped",
+			"-m <maxImports>, --maxImports  <maxImports>  Set maximum on number imported",
+			"-b <batchSize>, --batchSize <batchSize>      Commit batch size [default: 250]"},
 	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
 	furtherHelp=
 		"The argument <sourcePath> names a directory, which may be relative to the current load-save-path. "+
@@ -81,12 +83,14 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 
 	public static final String SOURCE_PATH = "sourcePath";
 	public static final String BATCH_SIZE = "batchSize";
+	public static final String MAX_IMPORTS = "maxImports";
 	public static final String INCREMENTAL = "incremental";
 	public static final String UPDATE = "update";
 	public static final String SUPPRESS_SKIP_WARNING = "suppressSkipWarning";
 
 	private String sourcePath;
 	private Integer batchSize;
+	private Integer maxImports;
 	private Boolean incremental;
 	private Boolean update;
 	private Boolean suppressSkipWarning;
@@ -97,6 +101,7 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 		sourcePath = PluginUtils.configureStringProperty(configElem, SOURCE_PATH, true);
 		batchSize = PluginUtils.configureIntProperty(configElem, BATCH_SIZE, true);
 		incremental = PluginUtils.configureBooleanProperty(configElem, INCREMENTAL, true);
+		maxImports = PluginUtils.configureIntProperty(configElem, MAX_IMPORTS, false);
 		update = PluginUtils.configureBooleanProperty(configElem, UPDATE, true);
 		if(incremental && update) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "May not specify both --incremental and --update");
@@ -189,6 +194,9 @@ public class ImportSourceCommand extends ProjectModeCommand<ImportSourceResult> 
 				}
 				GlueLogger.getGlueLogger().fine("Sequences imported: "+sequencesAdded+", skipped: "+skipped);
 				lastCommitSequencesAdded = sequencesAdded;
+			}
+			if(maxImports != null && sequencesAdded >= maxImports) {
+				break;
 			}
 		}
 		if(sequencesAdded != lastCommitSequencesAdded) {
