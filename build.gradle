@@ -72,7 +72,10 @@ scmVersion {
     scmVersion {
         versionCreator 'versionWithBranch'
 	    repository {
-	        customKey = file(scmCustomKey)
+	        def scmCustomKeyFile = new File( scmCustomKey )
+	    	if(scmCustomKeyFile.exists()) {
+	        	customKey = scmCustomKeyFile
+	        }
 	    }
 	    tag {
 	        prefix = 'gluetools'

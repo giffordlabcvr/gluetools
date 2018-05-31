@@ -3,8 +3,14 @@
 if [ -z ${GLUE_HOME+x} ]; then
     echo "Error: GLUE_HOME is not set."
     echo "Please set GLUE_HOME to the path of the GLUE home directory, e.g. in your .bash_profile"
+    exit 1
 fi
 
+if [ -z ${GLUE_JAVA_HOME+x} ]; then
+	JAVA=java
+else 
+	JAVA=${GLUE_JAVA_HOME}/bin/java
+fi
 
 export GLUEJARS=(`ls ${GLUE_HOME}/lib/*.jar`)
 
@@ -26,13 +32,13 @@ if [[ $UNAME == CYGWIN* ]]; then
     # this should always execute even if glue exits abnormally
     trap 'stty icanon echo' EXIT
     stty -icanon min 1 -echo
-    java -Djline.terminal=jline.UnixTerminal \
+    ${JAVA} -Djline.terminal=jline.UnixTerminal \
 	 -Dlog4j.skipJansi=true \
 	 -jar "${GLUEJAR_WIN}" \
 	 -c "${GLUECONF_WIN}" \
 	 ${@}
 else 
-    java -jar $GLUEJAR \
+    ${JAVA} -jar $GLUEJAR \
 	 -c $GLUECONF \
 	 ${@}
 fi
