@@ -193,7 +193,7 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 					cmdContext.cmdBuilder(CreateVariationCommand.class)
 					.set(CreateVariationCommand.VARIATION_NAME, variationName)
 					.set(CreateVariationCommand.NO_COMMIT, Boolean.TRUE)
-					.set(CreateVariationCommand.VTYPE, Variation.VariationType.aminoAcidRegexPolymorphism)
+					.set(CreateVariationCommand.VTYPE, Variation.VariationType.aminoAcidRegexPolymorphism.name())
 					.set(CreateVariationCommand.LC_BASED, Boolean.TRUE)
 					.set(CreateVariationCommand.LC_START, codonLabel)
 					.set(CreateVariationCommand.LC_END, codonLabel)
