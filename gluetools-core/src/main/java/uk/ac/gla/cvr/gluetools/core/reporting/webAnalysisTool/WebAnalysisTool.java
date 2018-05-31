@@ -29,6 +29,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,15 +38,19 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanUtils;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -55,6 +60,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation.VariationType;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.CladeCategory;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryCladeCategoryResult;
@@ -69,11 +76,17 @@ import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenc
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.ObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
+import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidRegexPolymorphismMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidSimplePolymorphismMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.ConjunctionMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -180,7 +193,6 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			List<String> vCatNames,
 			List<VariationCategoryResult> variationCategoryResults) {
 
-		/* RESTORE_XXXX
 		fastaIdToQueryAnalysis.forEach((fastaId, queryAnalysis) -> {
 			
 			Set<String> resultVariationCategoryNames = new LinkedHashSet<String>();
@@ -228,12 +240,13 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 							}
 							
 							boolean excludeAbsent = !variationCategory.getReportAbsence();
+							boolean excludeInsufficientCoverage = true;
 							
-							List<VariationScanResult> variationScanResults = 
-									FastaSequenceVariationScanCommand.variationScan(
-									cmdContext, featureName, dnaSequence, queryAnalysis.targetRefName, tipAlignment,
-									acRefName, queryToTipAlmtRefSegs, 
-									multiReference, descendentFeatures, excludeAbsent, variationWhereClause);
+							List<VariationScanResult<?>> variationScanResults = 
+									variationScan(
+										cmdContext, featureName, dnaSequence, queryAnalysis.targetRefName, tipAlignment.getName(),
+										acRefName, queryToTipAlmtRefSegs, 
+										multiReference, descendentFeatures, excludeAbsent, excludeInsufficientCoverage, variationWhereClause);
 							
 							if(!variationScanResults.isEmpty()) {
 								if(!resultVariationCategoryNames.contains(vCatName)) {
@@ -270,12 +283,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 								variationMatch.variationRenderedName = vsr.getVariationRenderedName();
 								variationMatchGroup.variationMatch.add(variationMatch);
 								if(vsr.isPresent()) {
-									List<QueryAlignedSegment> vsrQaSegs = vsr.getQueryMatchLocations()
-										.stream()
-										.map(seg -> 
-											new QueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), 
-																	seg.getRefStart(), seg.getRefEnd()))
-										.collect(Collectors.toList());
+									List<QueryAlignedSegment> vsrQaSegs = variationScanResultToQaSegs(vsr);
 									
 									List<QueryAlignedSegment> vsrUSegs = 
 											QueryAlignedSegment.translateSegments(vsrQaSegs, queryToUSegs);
@@ -302,23 +310,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 									}
 									trackSegTree.add(varSeg);
 									variationMatch.track = varSeg.track;
-									for(PLocScanResult pLocScanResult: vsr.getPLocScanResults()) {
-										int pLocIndex = pLocScanResult.getIndex();
-										for(int i = 0; i < pLocScanResult.getQueryLocs().size(); i++) {
-											PLocMatch pLocMatch = new PLocMatch();
-											pLocMatch.pLocIndex = pLocIndex;
-											pLocMatch.ntStart = pLocScanResult.getQueryLocs().get(i).getRefStart();
-											pLocMatch.ntEnd = pLocScanResult.getQueryLocs().get(i).getRefEnd();
-											pLocMatch.matchedValue = pLocScanResult.getMatchedValues().get(i);
-											if(pLocScanResult instanceof AminoAcidPLocScanResult) {
-												pLocMatch.lcStart = ((AminoAcidPLocScanResult) pLocScanResult).getAaStartCodons().get(i);
-												pLocMatch.lcEnd = ((AminoAcidPLocScanResult) pLocScanResult).getAaEndCodons().get(i);
-											}
-											variationMatch.pLocMatches.add(pLocMatch); 
-										}
-										
-									}
-									
+									variationMatch.pLocMatches = variationScanResultToPLocMatches(vsr);
 								}
 							});
 							
@@ -338,8 +330,136 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			vCatResult.reportAbsence = vcat.getReportAbsence();
 			variationCategoryResults.add(vCatResult);	
 		});
+	}
+
+	private List<PLocMatch> variationScanResultToPLocMatches(VariationScanResult<?> vsr) {
+		List<PLocMatch> pLocMatches = new ArrayList<PLocMatch>();
+
+		VariationType variationType = vsr.getVariationType();
+		if(variationType == VariationType.aminoAcidSimplePolymorphism) {
+			List<?> variationScannerMatchResults = vsr.getVariationScannerMatchResults();
+			if(variationScannerMatchResults.size() != 1) {
+				throw new WebAnalysisException(Code.TOOL_ERROR, "Expected exactly 1 match result");
+			}
+			AminoAcidSimplePolymorphismMatchResult aaspmr = (AminoAcidSimplePolymorphismMatchResult) variationScannerMatchResults.get(0);
+			PLocMatch pLocMatch = new PLocMatch();
+			pLocMatch.pLocIndex = 0;
+			pLocMatch.ntStart = aaspmr.getRefNtStart();
+			pLocMatch.ntEnd = aaspmr.getRefNtEnd();
+			pLocMatch.matchedValue = aaspmr.getQueryAAs();
+			pLocMatch.lcStart = aaspmr.getFirstRefCodon();
+			pLocMatch.lcEnd = aaspmr.getLastRefCodon();
+			pLocMatches.add(pLocMatch); 
+		} else if(variationType == VariationType.aminoAcidRegexPolymorphism) {
+			List<?> variationScannerMatchResults = vsr.getVariationScannerMatchResults();
+			if(variationScannerMatchResults.size() != 1) {
+				throw new WebAnalysisException(Code.TOOL_ERROR, "Expected exactly 1 match result");
+			}
+			AminoAcidRegexPolymorphismMatchResult aaspmr = (AminoAcidRegexPolymorphismMatchResult) variationScannerMatchResults.get(0);
+			PLocMatch pLocMatch = new PLocMatch();
+			pLocMatch.pLocIndex = 0;
+			pLocMatch.ntStart = aaspmr.getRefNtStart();
+			pLocMatch.ntEnd = aaspmr.getRefNtEnd();
+			pLocMatch.matchedValue = aaspmr.getQueryAAs();
+			pLocMatch.lcStart = aaspmr.getFirstRefCodon();
+			pLocMatch.lcEnd = aaspmr.getLastRefCodon();
+			pLocMatches.add(pLocMatch); 
+		} else if(variationType == VariationType.conjunction) {
+			List<?> variationScannerMatchResults = vsr.getVariationScannerMatchResults();
+			if(variationScannerMatchResults.size() != 1) {
+				throw new WebAnalysisException(Code.TOOL_ERROR, "Expected exactly 1 match result");
+			}
+			ConjunctionMatchResult cmr = (ConjunctionMatchResult) variationScannerMatchResults.get(0);
+			for(int i = 1; i <= cmr.getNumConjuncts(); i++) {
+				VariationScanResult<?> conjunctVsr = cmr.getConjunctResult(i);
+				List<PLocMatch> conjunctPLocMatches = variationScanResultToPLocMatches(conjunctVsr);
+				conjunctPLocMatches.get(0).pLocIndex = i - 1;
+				pLocMatches.addAll(conjunctPLocMatches);
+			}
+		} else {
+			throw new WebAnalysisException(Code.TOOL_ERROR, "Unhandled variation type "+variationType.name());
+		}
+		return pLocMatches;
+	}
+
+	private List<QueryAlignedSegment> variationScanResultToQaSegs(
+			VariationScanResult<?> vsr) {
+		List<QueryAlignedSegment> vsrQaSegs;
+		VariationType variationType = vsr.getVariationType();
+		if(variationType == VariationType.aminoAcidSimplePolymorphism) {
+			List<?> variationScannerMatchResults = vsr.getVariationScannerMatchResults();
+			if(variationScannerMatchResults.size() != 1) {
+				throw new WebAnalysisException(Code.TOOL_ERROR, "Expected exactly 1 match result");
+			}
+			AminoAcidSimplePolymorphismMatchResult aaspmr = (AminoAcidSimplePolymorphismMatchResult) variationScannerMatchResults.get(0);
+			vsrQaSegs = Arrays.asList(new QueryAlignedSegment(aaspmr.getQueryNtStart(), aaspmr.getQueryNtEnd(), 
+					aaspmr.getQueryNtStart(), aaspmr.getQueryNtEnd()));
+			
+		} else if(variationType == VariationType.aminoAcidRegexPolymorphism) {
+			List<?> variationScannerMatchResults = vsr.getVariationScannerMatchResults();
+			if(variationScannerMatchResults.size() != 1) {
+				throw new WebAnalysisException(Code.TOOL_ERROR, "Expected exactly 1 match result");
+			}
+			AminoAcidRegexPolymorphismMatchResult aarpmr = (AminoAcidRegexPolymorphismMatchResult) variationScannerMatchResults.get(0);
+			vsrQaSegs = Arrays.asList(new QueryAlignedSegment(aarpmr.getQueryNtStart(), aarpmr.getQueryNtEnd(), 
+					aarpmr.getQueryNtStart(), aarpmr.getQueryNtEnd()));
+		} else if(variationType == VariationType.conjunction) {
+			List<?> variationScannerMatchResults = vsr.getVariationScannerMatchResults();
+			if(variationScannerMatchResults.size() != 1) {
+				throw new WebAnalysisException(Code.TOOL_ERROR, "Expected exactly 1 match result");
+			}
+			ConjunctionMatchResult cmr = (ConjunctionMatchResult) variationScannerMatchResults.get(0);
+			vsrQaSegs = new ArrayList<QueryAlignedSegment>();
+			for(int i = 1; i <= cmr.getNumConjuncts(); i++) {
+				VariationScanResult<?> conjunctVsr = cmr.getConjunctResult(i);
+				vsrQaSegs.addAll(variationScanResultToQaSegs(conjunctVsr));
+			}
+		} else {
+			throw new WebAnalysisException(Code.TOOL_ERROR, "Unhandled variation type "+variationType.name());
+		}
+		return vsrQaSegs;
+	}
+
+	private List<VariationScanResult<?>> variationScan(
+			CommandContext cmdContext, String featureName,
+			DNASequence dnaSequence, String targetRefName,
+			String tipAlignmentName, String acRefName,
+			List<QueryAlignedSegment> queryToTipAlmtRefSegs,
+			Boolean multiReference, Boolean descendentFeatures,
+			boolean excludeAbsent, boolean excludeInsufficientCoverage, Expression variationWhereClause) {
+
+	
+		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		
-		*/
+		ReferenceSequence acRefSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(acRefName));
+		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		String fastaNTs = dnaSequence.getSequenceAsString();
+		
+		ArrayList<Feature> featuresToScan = new ArrayList<Feature>();
+		featuresToScan.add(feature);
+		featuresToScan.addAll(feature.getDescendents());
+		
+		VariationScanUtils.visitVariations(cmdContext, Arrays.asList(acRefSequence), featuresToScan, variationWhereClause, new VariationScanUtils.VariationConsumer() {
+			@Override
+			public void consumeVariations(ReferenceSequence refToScan,
+					FeatureLocation featureLoc, List<Variation> variationsToScan) {
+				Alignment tipAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(tipAlignmentName));
+				// translate segments to scanned reference
+				List<QueryAlignedSegment> queryToScannedRefSegs = tipAlignment.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
+				
+				List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
+						queryToScannedRefSegs.stream()
+						.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
+								SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
+								.collect(Collectors.toList());
+		
+				variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToScannedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
+		
+			}
+		});
+		
+		return variationScanResults;
+		
 	}
 
 	private void checkVCatNames(List<String> vCatNames) {

@@ -33,7 +33,8 @@ public class WebAnalysisException extends GlueException {
 
 		UNKNOWN_VARIATION_CATEGORY("vCatName"),
 		GENOTYPING_FAILED("fastaID"),
-		INVALID_CONFIG("errorTxt"),;
+		INVALID_CONFIG("errorTxt"),
+		TOOL_ERROR("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

@@ -108,6 +108,7 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 			String queryNts, String qualityString) {
 		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
 		ConjunctionMatchResult conjunctionMatchResult = new ConjunctionMatchResult();
+		conjunctionMatchResult.setNumConjuncts(numConjuncts);
 		boolean isPresent = sufficientCoverage;
 		for(int i = 1; i <= numConjuncts; i++) {
 			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i-1);

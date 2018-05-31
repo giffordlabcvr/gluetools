@@ -43,7 +43,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
 @PluginClass(elemName="steppedReadSet")

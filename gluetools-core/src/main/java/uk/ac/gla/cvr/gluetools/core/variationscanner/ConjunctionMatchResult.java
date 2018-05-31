@@ -11,6 +11,8 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 
 public class ConjunctionMatchResult extends VariationScannerMatchResult {
 
+	private int numConjuncts;
+	
 	private Map<Integer, VariationScanResult<?>> conjunctIndexToResult = new LinkedHashMap<Integer, VariationScanResult<?>>();
 
 	@Override
@@ -25,6 +27,14 @@ public class ConjunctionMatchResult extends VariationScannerMatchResult {
 			}
 		}
 		return refStart;
+	}
+
+	public int getNumConjuncts() {
+		return numConjuncts;
+	}
+
+	public void setNumConjuncts(int numConjuncts) {
+		this.numConjuncts = numConjuncts;
 	}
 
 	public <M extends VariationScannerMatchResult> void setConjunctResult(int conjunctIndex, VariationScanResult<?> result) {
