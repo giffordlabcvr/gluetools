@@ -238,4 +238,8 @@ public class Variation extends _Variation implements HasDisplayName {
 		this.scanner = null;
 	}
 	
+	public String getMetatagValueByName(String metatagName) {
+		return getMetatagsMap().get(VariationMetatagType.valueOf(metatagName));
+	}
+	
 }
