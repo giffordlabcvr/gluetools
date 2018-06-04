@@ -214,6 +214,16 @@ task initGluetoolsAppDBGlueHomeAWS {
   }
 }
 
+task recreateGluetoolsAppDBGlueHomeAWS {
+  doLast {
+	  ssh.run {
+	    session(remotes.gluehome_aws) {
+			// create GLUETOOLS_APP database
+			execute "echo 'drop database GLUETOOLS_APP; create database GLUETOOLS_APP character set UTF8;' | mysql -u gluetoolsapp --password=gluetoolsapp" 
+	    }
+	  }
+  }
+}
 
 
 
