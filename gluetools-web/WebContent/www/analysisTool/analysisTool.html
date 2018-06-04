@@ -4,7 +4,7 @@
 <div>
 	<div nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
 		<h2>Automated genotyping and interpretation</h2>
-		<p>Submit your sequence files in FASTA nucleotide format for automated analysis of the genotype / subtype and interpretation of the nucleotide content.
+		<p>Submit your sequence files in FASTA nucleotide format for automated analysis of the clade membership and interpretation of the nucleotide content.
 		<small ng-if="analysisToolExampleSequenceURL"><br/>For testing, download this <a ng-click="downloadExampleSequence()">example sequence file</a> and submit it for analysis.</small>
 		</p>
 		<div>
@@ -256,14 +256,14 @@
 					</table>
 					<div class="container">
 						<div class="row" ng-controller='analysisSvg'>
-					        <div class="col-xs-2">
+					        <div class="col-xs-1">
 								<svg ng-attr-height="{{svgHeight()}}">
-									 <sequence-label sequence-label="selectedRefName" svg-params="svgParams" sequence-index="0"> </sequence-label>
+									 <sequence-label sequence-label="selectedReferenceAnalysis.sequenceID" svg-params="svgParams" sequence-index="0"> </sequence-label>
 									 <sequence-label sequence-label="'Query'" svg-params="svgParams" sequence-index="1"> </sequence-label>
 									 <sequence-label ng-show="svgParams.svgVariations()" sequence-label="'Variations'" svg-params="svgParams" sequence-index="2"> </sequence-label>
 								</svg>
 					        </div>
-					        <div class="col-xs-9">
+					        <div class="col-xs-10">
 					        	<div style="overflow: auto">
 									<svg 
 										ng-attr-height="{{svgHeight()}}" 
