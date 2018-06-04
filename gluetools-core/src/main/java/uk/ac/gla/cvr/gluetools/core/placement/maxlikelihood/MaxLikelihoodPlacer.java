@@ -30,9 +30,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
@@ -82,6 +87,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		description="Runs the alignment and placement phases of the maximum-likelihood clade assignment methods")
 public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 
+	
 	// the root alignment which will provide the phylogeny
 	public static final String PHYLO_ALIGNMENT_NAME = "phyloAlignmentName";
 	// the field of the alignment table where the phylogeny is stored.
@@ -92,6 +98,12 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	public static final String ALIGNMENT_RELATED_REF_NAME = "alignmentRelatedRefName";
 	public static final String ALIGNMENT_FEATURE_NAME = "alignmentFeatureName";
 	public static final String SELECTOR_NAME = "selectorName";
+
+	// key we will use in phylo leaf to indicate boolean valid target value.
+	public static final String PLACER_VALID_TARGET_USER_DATA_KEY = "placerValidTarget";
+	
+	public static final String VALID_TARGET_WHERE_CLAUSE = "validTargetWhereClause";
+
 	
 	private String phyloAlignmentName;
 	private String phyloFieldName;
@@ -99,7 +111,11 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	private String alignmentRelatedRefName;
 	private String alignmentFeatureName;
 	private String selectorName;
-	
+
+	// neighbour may only be returned as "validTarget" if the corresponding member of 
+	// phyloAlignment (or one of its descendent alignments) passes this where clause.
+	// if undefined, all neighbours are valid targets
+	private Expression validTargetWhereClause;
 	
 	private MafftRunner mafftRunner = new MafftRunner();
 	private RaxmlEpaRunner raxmlEpaRunner = new RaxmlEpaRunner();
@@ -128,7 +144,8 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		this.alignmentRelatedRefName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_RELATED_REF_NAME, false);
 		this.alignmentFeatureName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_FEATURE_NAME, false);
 		this.selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
-		
+		this.validTargetWhereClause = PluginUtils.configureCayenneExpressionProperty(configElem, VALID_TARGET_WHERE_CLAUSE, false);
+
 		Element mafftRunnerElem = PluginUtils.findConfigElement(configElem, "mafftRunner");
 		if(mafftRunnerElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, mafftRunnerElem, mafftRunner);
@@ -316,6 +333,48 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 	public PhyloTree constructGlueProjectPhyloTree(CommandContext cmdContext) {
 		Alignment phyloAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(phyloAlignmentName));
 		PhyloTree glueAlmtPhyloTree = PhyloExporter.exportAlignmentPhyloTree(cmdContext, phyloAlignment, phyloFieldName, true);
+		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
+		
+		if(validTargetWhereClause == null) {
+			glueAlmtPhyloTree.accept(new PhyloTreeVisitor() {
+				@Override
+				public void visitLeaf(PhyloLeaf phyloLeaf) {
+					phyloLeaf.getUserData().put(PLACER_VALID_TARGET_USER_DATA_KEY, true);
+				}
+			});
+		} else {
+			List<Map<String,String>> phyloMemberPkMaps = new ArrayList<Map<String,String>>();
+			glueAlmtPhyloTree.accept(new PhyloTreeVisitor() {
+				@Override
+				public void visitLeaf(PhyloLeaf phyloLeaf) {
+					phyloMemberPkMaps.add(Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeaf.getName()));
+				}
+			});
+			Expression anyLeafMember = ExpressionFactory.expFalse();
+			for(Map<String, String> phyloMemberPkMap: phyloMemberPkMaps) {
+				Expression leafMember = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, phyloMemberPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH));
+				leafMember = leafMember.andExp(ExpressionFactory.matchExp(AlignmentMember.SOURCE_NAME_PATH, phyloMemberPkMap.get(AlignmentMember.SOURCE_NAME_PATH)));
+				leafMember = leafMember.andExp(ExpressionFactory.matchExp(AlignmentMember.SEQUENCE_ID_PATH, phyloMemberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH)));
+				anyLeafMember = anyLeafMember.orExp(leafMember);
+			}
+			Expression expression = validTargetWhereClause.andExp(anyLeafMember);
+			List<AlignmentMember> validTargetMembers = 
+					GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, expression));
+			Set<String> validLeafNames = new LinkedHashSet<String>();
+			validTargetMembers.forEach(vtm -> 
+				validLeafNames.add(project.pkMapToTargetPath(ConfigurableTable.alignment_member.name(), vtm.pkMap()))
+			);
+			glueAlmtPhyloTree.accept(new PhyloTreeVisitor() {
+				@Override
+				public void visitLeaf(PhyloLeaf phyloLeaf) {
+					if(validLeafNames.contains(phyloLeaf.getName())) {
+						phyloLeaf.getUserData().put(PLACER_VALID_TARGET_USER_DATA_KEY, true);
+					} else {
+						phyloLeaf.getUserData().put(PLACER_VALID_TARGET_USER_DATA_KEY, false);
+					}
+				}
+			});
+		}
 		return glueAlmtPhyloTree;
 	}
 

@@ -83,6 +83,8 @@ public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbour
 					resultRow.sourceName = memberPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
 					resultRow.sequenceID = memberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
 					resultRow.distance = plcmtNeighbour.getDistance().doubleValue();
+					resultRow.validTarget = (Boolean) 
+							plcmtNeighbour.getPhyloLeaf().getUserData().get(MaxLikelihoodPlacer.PLACER_VALID_TARGET_USER_DATA_KEY);
 					return resultRow;
 				})
 				.collect(Collectors.toList());
@@ -94,6 +96,7 @@ public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbour
 		String sourceName;
 		String sequenceID;
 		Double distance;
+		Boolean validTarget;
 	}
 	
 	public static class Result extends BaseTableResult<ResultRow> {
@@ -103,7 +106,8 @@ public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbour
 					column("alignmentName", plNe -> plNe.alignmentName), 
 					column("sourceName", plNe -> plNe.sourceName), 
 					column("sequenceID", plNe -> plNe.sequenceID), 
-					column("distance", plNe -> plNe.distance));
+					column("distance", plNe -> plNe.distance), 
+					column("validTarget", plNe -> plNe.validTarget));
 		}
 		
 	}

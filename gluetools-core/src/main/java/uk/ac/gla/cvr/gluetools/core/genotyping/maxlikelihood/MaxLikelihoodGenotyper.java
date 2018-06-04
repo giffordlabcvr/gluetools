@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
@@ -70,6 +71,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 	public static final String MAX_LIKELIHOOD_PLACER_MODULE_NAME = "maxLikelihoodPlacerModuleName";
 	
 	private String maxLikelihoodPlacerModuleName;
+	
 	private List<CladeCategory> cladeCategories;
 	
 	public MaxLikelihoodGenotyper() {
@@ -152,6 +154,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 				Double allNeighboursScaledDistanceTotal = 0.0;
 				
 				Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
+				PlacementNeighbour closestTarget = null;
 				
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
 					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
@@ -168,6 +171,11 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 								PlacementNeighbour cladeClosestNeighbour = cladeToClosestNeighbour.get(neighbourAncestorAlmtName);
 								if(cladeClosestNeighbour == null || neighbour.getDistance().compareTo(cladeClosestNeighbour.getDistance()) < 0) {
 									cladeToClosestNeighbour.put(neighbourAncestorAlmtName, neighbour);
+								}
+								if((boolean) (neighbour.getPhyloLeaf().getUserData().get(MaxLikelihoodPlacer.PLACER_VALID_TARGET_USER_DATA_KEY))) {
+									if(closestTarget == null || neighbour.getDistance().compareTo(closestTarget.getDistance()) < 0) {
+										closestTarget = neighbour;
+									}
 								}
 								allNeighboursScaledDistanceTotal = allNeighboursScaledDistanceTotal + scaledDistance;
 								Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourAncestorAlmtName);
@@ -206,6 +214,14 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 							queryCladeCategoryResult.closestMemberSourceName = closestMemberPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
 							queryCladeCategoryResult.closestMemberSequenceID = closestMemberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
 						}
+					}
+					if(closestTarget != null) {
+						Map<String,String> closestTargetPkMap = 
+								Project.targetPathToPkMap(ConfigurableTable.alignment_member, 
+										closestTarget.getPhyloLeaf().getName());
+						queryCladeCategoryResult.closestTargetAlignmentName = closestTargetPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
+						queryCladeCategoryResult.closestTargetSourceName = closestTargetPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
+						queryCladeCategoryResult.closestTargetSequenceID = closestTargetPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
 					}
 				}
 			}

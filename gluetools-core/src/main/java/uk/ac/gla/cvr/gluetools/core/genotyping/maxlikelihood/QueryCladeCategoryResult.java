@@ -59,4 +59,16 @@ public class QueryCladeCategoryResult {
 
 	@PojoDocumentField
 	public String closestMemberSequenceID;
+
+	// closest phylo leaf which also passes the "valid target" where clause
+	@PojoDocumentField
+	public String closestTargetAlignmentName;
+	
+	@PojoDocumentField
+	public String closestTargetSourceName;
+
+	@PojoDocumentField
+	public String closestTargetSequenceID;
+
+
 }

@@ -497,26 +497,26 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		fastaIdToSequence.forEach((fastaId, sequence) -> {
 			QueryGenotypingResult queryGenotypeResult = fastaIdToGenotypeResult.get(fastaId);
 			// the final clade of the latest clade category provides the analysis starting point reference.
-			AlignmentMember closestMember = null;
+			AlignmentMember closestTarget = null;
 			for(int i = cladeCategories.size() - 1; i >= 0; i--) {
 				CladeCategory cladeCategory = cladeCategories.get(i);
 				QueryCladeCategoryResult cladeCategoryResult = queryGenotypeResult.getCladeCategoryResult(cladeCategory.getName());
-				if(cladeCategoryResult.finalClade != null && cladeCategoryResult.closestMemberAlignmentName != null) {
-					closestMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-							AlignmentMember.pkMap(cladeCategoryResult.closestMemberAlignmentName,
-							cladeCategoryResult.closestMemberSourceName,
-							cladeCategoryResult.closestMemberSequenceID));
+				if(cladeCategoryResult.finalClade != null && cladeCategoryResult.closestTargetAlignmentName != null) {
+					closestTarget = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+							AlignmentMember.pkMap(cladeCategoryResult.closestTargetAlignmentName,
+							cladeCategoryResult.closestTargetSourceName,
+							cladeCategoryResult.closestTargetSequenceID));
 					break;
 				}
 			}
 			
-			if(closestMember == null) {
+			if(closestTarget == null) {
 				throw new WebAnalysisException(Code.GENOTYPING_FAILED, fastaId);
 			}
 			
-			ReferenceSequence targetRef = closestMember.targetReferenceFromMember();
+			ReferenceSequence targetRef = closestTarget.targetReferenceFromMember();
 
-			Alignment tipAlmt = closestMember.getAlignment();
+			Alignment tipAlmt = closestTarget.getAlignment();
 
 			String targetRefName = targetRef.getName();
 			List<Alignment> ancestors = tipAlmt.getAncestors();
@@ -546,7 +546,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				ancestorAlmtNames.add(tipAlmt.getName());
 				if(!refNameToAnalysis.containsKey(targetRefName)) {
 					refNameToAnalysis.put(targetRefName, 
-						new ReferenceAnalysis(targetRef, tipAlmt, closestMember));
+						new ReferenceAnalysis(targetRef, tipAlmt, closestTarget));
 				}
 			}
 			
@@ -620,7 +620,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 
 				if(featureAnalysisHint.getIncludesSequenceContent()) {
 					FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-							FeatureLocation.pkMap(queryAnalysis.targetRefName, featureName));
+							FeatureLocation.pkMap(queryAnalysis.targetRefName, featureName), true);
+					if(featureLoc == null) {
+						continue;
+					}
 					String queryNTs = queryAnalysis.getSequenceObj().getNucleotides(cmdContext);
 					List<QueryAlignedSegment> queryToTargetRefSegs = queryAnalysis.getQueryToTargetRefSegs();
 					List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
@@ -654,7 +657,10 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 				sequenceFeatureAnalysis.featureName = featureName;
 				if(featureAnalysisHint.getIncludesSequenceContent()) {
 					FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-							FeatureLocation.pkMap(refAnalysis.refName, featureName));
+							FeatureLocation.pkMap(refAnalysis.refName, featureName), true);
+					if(featureLoc == null) {
+						continue;
+					}
 					List<QueryAlignedSegment> refToRefSegs = new ArrayList<QueryAlignedSegment>();
 					String refNTs = refAnalysis.getRefSeq().getSequence().getSequenceObject().getNucleotides(cmdContext);
 					refToRefSegs.add(new QueryAlignedSegment(1, refNTs.length(), 1, refNTs.length()));

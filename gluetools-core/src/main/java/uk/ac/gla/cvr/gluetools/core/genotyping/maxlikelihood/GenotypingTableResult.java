@@ -80,6 +80,10 @@ public class GenotypingTableResult extends BaseTableResult<QueryGenotypingResult
 				columnsList.add(column(categoryName+"ClosestMemberAlignmentName", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestMemberAlignmentName));
 				columnsList.add(column(categoryName+"ClosestMemberSourceName", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestMemberSourceName));
 				columnsList.add(column(categoryName+"ClosestMemberSequenceID", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestMemberSequenceID));
+
+				columnsList.add(column(categoryName+"ClosestTargetAlignmentName", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestTargetAlignmentName));
+				columnsList.add(column(categoryName+"ClosestTargetSourceName", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestTargetSourceName));
+				columnsList.add(column(categoryName+"ClosestTargetSequenceID", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).closestTargetSequenceID));
 			}
 		}
 		return (TableColumn<QueryGenotypingResult>[]) columnsList.toArray(new TableColumn<?>[0]);
