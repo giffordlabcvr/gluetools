@@ -29,8 +29,10 @@ import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastRunner;
@@ -64,7 +67,12 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 		description="Derives pairwise homologies using codon-aware BLAST")
 public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlastAlignerResult, CodonAwareBlastAligner> implements SupportsComputeConstrained {
 
+	
+	public static final String ALLOW_FEATURE_TO_BE_MISSING = "allowFeatureToBeMissing";
 
+	// if true, feature may be missing on reference, in which case return an empty result.
+	private boolean allowFeatureToBeMissing;
+	
 	public CodonAwareBlastAligner() {
 		super();
 		registerModulePluginCmdClass(CodonAwareBlastAlignerAlignCommand.class);
@@ -75,6 +83,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		this.allowFeatureToBeMissing = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, ALLOW_FEATURE_TO_BE_MISSING, false)).orElse(false);
 		if(getFeatureName() == null) {
 			throw new AlignerException(AlignerException.Code.FEATURE_NAME_REQUIRED);
 		}
@@ -87,7 +96,11 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 	public CodonAwareBlastAlignerResult computeConstrained(CommandContext cmdContext,
 			String refName, Map<String, DNASequence> queryIdToNucleotides) {
 		String featureName = getFeatureName();
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName));
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName), true);
+		
+		if(featureLoc == null && allowFeatureToBeMissing) {
+			return new CodonAwareBlastAlignerResult(Collections.emptyMap());
+		}
 		
 		List<LabeledAminoAcid> featureLocAminoAcids = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
 		StringBuffer buf = new StringBuffer();
