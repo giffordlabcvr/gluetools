@@ -203,6 +203,7 @@ public enum IsoCountry {
 	NF("NFK", "Norfolk Island", "NF", "574"),
 	MP("MNP", "Northern Mariana Islands", "MP", "580"),
 	NO("NOR", "Norway", "NO", "578"),
+	RO("ROU", "Romania", "RO", "642"), // before Oman
 	OM("OMN", "Oman", "OM", "512"),
 	PK("PAK", "Pakistan", "PK", "586"),
 	PW("PLW", "Palau", "PW", "585"),
@@ -218,7 +219,6 @@ public enum IsoCountry {
 	PR("PRI", "Puerto Rico", "PR", "630"),
 	QA("QAT", "Qatar", "QA", "634"),
 	RE("REU", "Réunion", "Réunion", "RE", "638", "R[ée]union"),
-	RO("ROU", "Romania", "RO", "642"),
 	RU("RUS", "Russia", "Russian Federation", "RU", "643", "Russia"),
 	RW("RWA", "Rwanda", "RW", "646"),
 	BL("BLM", "Saint-Barthélemy", "Saint-Barthélemy", "BL", "652", "Saint-Barth[ée]lemy"),
