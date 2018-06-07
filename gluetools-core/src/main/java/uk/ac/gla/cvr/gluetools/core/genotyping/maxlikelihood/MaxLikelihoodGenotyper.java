@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;

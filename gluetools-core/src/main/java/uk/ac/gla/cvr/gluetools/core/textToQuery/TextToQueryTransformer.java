@@ -31,6 +31,7 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
@@ -115,7 +116,7 @@ public class TextToQueryTransformer extends ModulePlugin<TextToQueryTransformer>
 
 	@SuppressWarnings("unchecked")
 	public ListResult textToQuery(CommandContext cmdContext, String text) {
-		String expressionString = RegexExtractorFormatter.extractAndConvert(text, mainExtractor, valueConverters);
+		String expressionString = ValueExtractor.extractAndConvert(text, mainExtractor, valueConverters);
 		if(expressionString == null) {
 			throw new TextToQueryException(TextToQueryException.Code.EXTRACTOR_FORMATTER_FAILED, description, text);
 		}

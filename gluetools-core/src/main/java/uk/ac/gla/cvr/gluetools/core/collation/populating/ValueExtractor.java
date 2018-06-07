@@ -28,21 +28,42 @@ package uk.ac.gla.cvr.gluetools.core.collation.populating;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.MatcherConverter;
 
 public interface ValueExtractor {
 
 	public static final String DEFAULT_NULL_REGEX = " *";
 
-	public RegexExtractorFormatter getMainExtractor();
+	public MatcherConverter getMainExtractor();
 
-	public List<RegexExtractorFormatter> getValueConverters();
+	public List<? extends MatcherConverter> getValueConverters();
 
 	public Pattern getNullRegex();
 
+	public static String extractAndConvert(String input, MatcherConverter mainExtractor, 
+			List<? extends MatcherConverter> valueConverters) {
+		if(mainExtractor != null) {
+			String mainExtractorResult = mainExtractor.matchAndConvert(input);
+			if(mainExtractorResult == null) {
+				return null;
+			} else {
+				input = mainExtractorResult;
+			}
+		}
+		if(valueConverters != null) {
+			for(MatcherConverter valueConverter: valueConverters) {
+				String valueConverterResult = valueConverter.matchAndConvert(input);
+				if(valueConverterResult != null) {
+					return valueConverterResult;
+				}
+			}
+		}
+		return input;
+	}
+
 	public static String extractValue(ValueExtractor valueExtractor, String inputText) {
 		String extractAndConvertResult = 
-				RegexExtractorFormatter.extractAndConvert(inputText, valueExtractor.getMainExtractor(), valueExtractor.getValueConverters());
+				ValueExtractor.extractAndConvert(inputText, valueExtractor.getMainExtractor(), valueExtractor.getValueConverters());
 		if(extractAndConvertResult != null) {
 			Pattern nullRegex = valueExtractor.getNullRegex();
 			if(nullRegex == null || !nullRegex.matcher(extractAndConvertResult).matches()) {

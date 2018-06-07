@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator.PropertyUpdate;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.MatcherConverter;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
@@ -50,8 +51,8 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 		
 		private String property;
 		private Pattern nullRegex;
-		private RegexExtractorFormatter mainExtractor = null;
-		private List<RegexExtractorFormatter> valueConverters;
+		private MatcherConverter mainExtractor = null;
+		private List<? extends MatcherConverter> valueConverters;
 		private Boolean overwriteExistingNonNull;
 		private Boolean overwriteWithNewNull;
 		private TraversedLinkStrategy traversedLinkStrategy;
@@ -76,7 +77,7 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 			this.mainExtractor = mainExtractor;
 		}
 
-		protected void setValueConverters(List<RegexExtractorFormatter> valueConverters) {
+		protected void setValueConverters(List<? extends MatcherConverter> valueConverters) {
 			this.valueConverters = valueConverters;
 		}
 
@@ -114,12 +115,12 @@ public abstract class BaseXmlPropertyPopulatorRule extends XmlPopulatorRule impl
 		}
 
 		@Override
-		public RegexExtractorFormatter getMainExtractor() {
+		public MatcherConverter getMainExtractor() {
 			return mainExtractor;
 		}
 
 		@Override
-		public List<RegexExtractorFormatter> getValueConverters() {
+		public List<? extends MatcherConverter> getValueConverters() {
 			return valueConverters;
 		}
 

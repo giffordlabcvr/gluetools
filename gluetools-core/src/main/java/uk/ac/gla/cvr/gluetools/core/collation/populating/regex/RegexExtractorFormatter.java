@@ -36,7 +36,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
@@ -55,7 +54,7 @@ import freemarker.template.TemplateModel;
  * By default returns the whole match.
  */
 @PluginClass(elemName="regexExtractorFormatter")
-public class RegexExtractorFormatter implements Plugin {
+public class RegexExtractorFormatter implements MatcherConverter {
 
 	
 	private List<Pattern> matchPatterns = new ArrayList<Pattern>();
@@ -151,27 +150,6 @@ public class RegexExtractorFormatter implements Plugin {
 	}
 
 	
-	public static String extractAndConvert(String input, RegexExtractorFormatter mainExtractor, 
-			List<RegexExtractorFormatter> valueConverters) {
-		if(mainExtractor != null) {
-			String mainExtractorResult = mainExtractor.matchAndConvert(input);
-			if(mainExtractorResult == null) {
-				return null;
-			} else {
-				input = mainExtractorResult;
-			}
-		}
-		if(valueConverters != null) {
-			for(RegexExtractorFormatter valueConverter: valueConverters) {
-				String valueConverterResult = valueConverter.matchAndConvert(input);
-				if(valueConverterResult != null) {
-					return valueConverterResult;
-				}
-			}
-		}
-		return input;
-	}
-
 	public List<Pattern> getMatchPatterns() {
 		return matchPatterns;
 	}

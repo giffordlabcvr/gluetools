@@ -5,7 +5,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public abstract class FeatureProvider implements Plugin {
 

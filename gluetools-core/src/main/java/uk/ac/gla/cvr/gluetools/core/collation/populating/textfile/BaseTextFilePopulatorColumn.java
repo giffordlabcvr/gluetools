@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.MatcherConverter;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -48,8 +48,8 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, ValueExtrac
 	private Optional<Integer> number;
 	private String property;
 	private Pattern nullRegex;
-	private RegexExtractorFormatter mainExtractor = null;
-	private List<RegexExtractorFormatter> valueConverters;
+	private MatcherConverter mainExtractor = null;
+	private List<? extends MatcherConverter> valueConverters;
 	private Boolean overwriteExistingNonNull;
 	private Boolean overwriteWithNewNull;
 	private TraversedLinkStrategy traversedLinkStrategy;
@@ -99,19 +99,19 @@ public abstract class BaseTextFilePopulatorColumn implements Plugin, ValueExtrac
 		return number;
 	}
 
-	public RegexExtractorFormatter getMainExtractor() {
+	public MatcherConverter getMainExtractor() {
 		return mainExtractor;
 	}
 
-	public List<RegexExtractorFormatter> getValueConverters() {
+	public List<? extends MatcherConverter> getValueConverters() {
 		return valueConverters;
 	}
 	
-	public void setMainExtractor(RegexExtractorFormatter mainExtractor) {
+	public void setMainExtractor(MatcherConverter mainExtractor) {
 		this.mainExtractor = mainExtractor;
 	}
 
-	public void setValueConverters(List<RegexExtractorFormatter> valueConverters) {
+	public void setValueConverters(List<? extends MatcherConverter> valueConverters) {
 		this.valueConverters = valueConverters;
 	}
 
