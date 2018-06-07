@@ -94,19 +94,25 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 		Integer flankingEnd = computeFlankingEnd();
 		Integer refStart = getVariation().getRefStart();
 		Integer refEnd = getVariation().getRefEnd();
-		return Arrays.asList(new ReferenceSegment(flankingStart, refStart-1),
-						new ReferenceSegment(refEnd+1, flankingEnd));
+		return Arrays.asList(new ReferenceSegment(flankingStart, refStart),
+						new ReferenceSegment(refEnd, flankingEnd));
 	}
 
 	private Integer computeFlankingStart() {
-		return Math.max(getVariation().getRefStart()-(this.flankingAas*3), 1);
+		Integer refStart = getVariation().getRefStart();
+		return Math.max((refStart+1)-(this.flankingAas*3), 1);
 	}
 	private Integer computeFlankingEnd() {
-		return Math.min(getVariation().getRefEnd()+(this.flankingAas*3), this.referenceNucleotides.length());
+		Integer refEnd = getVariation().getRefEnd();
+		return Math.min((refEnd-1)+(this.flankingAas*3), this.referenceNucleotides.length());
 	}
 
-
-
+	// this variation scanner picks up insertions strictly *between* the start and end NTs
+	// Example: Assume codon labels 220 and 221 are adjacent opn the reference. 
+	// If the variation is defined by --labeledCodon 220 221, then the query sequence
+	// must have segments homologous to 220 and to 221 on the reference, and have some insertion between
+	// these segments.
+	
 	@Override
 	protected VariationScanResult<AminoAcidInsertionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString) {
 		List<AminoAcidInsertionMatchResult> matchResults = new ArrayList<AminoAcidInsertionMatchResult>();
@@ -166,6 +172,21 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 			}
 		}
 		return new VariationScanResult<AminoAcidInsertionMatchResult>(this, sufficientCoverage, matchResults);
+	}
+
+	@Override
+	public void validate() {
+		super.validate();
+		int ntStart = getVariation().getRefStart();
+		int ntEnd = getVariation().getRefEnd();
+		
+		// ntStart must be in a codon before ntEnd.
+		int codonStart = TranslationUtils.getCodon(codon1Start, ntStart);
+		int codonEnd = TranslationUtils.getCodon(codon1Start, ntEnd);
+		
+		if(codonEnd <= codonStart) {
+			throwScannerException("For amino acid insertions start codon must be before end codon");
+		}
 	}
 
 

@@ -158,29 +158,34 @@ public class Variation extends _Variation implements HasDisplayName {
 		}
 		Integer refStart = getRefStart();
 		Integer refEnd = getRefEnd();
-		if(variationType.name().startsWith("nucleotide")) {
-			List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
-			if(!ReferenceSegment.covers(featureLocSegments, 
-					Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
-				throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
-						refSeq.getName(), feature.getName(), getName(), 
-						Integer.toString(refStart), Integer.toString(refEnd));
-			}
-		} else if(variationType.name().startsWith("aminoAcid")) {
+		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
+		if(!ReferenceSegment.covers(featureLocSegments, 
+				Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
+			throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
+					refSeq.getName(), feature.getName(), getName(), 
+					Integer.toString(refStart), Integer.toString(refEnd));
+		}
+		if(variationType.name().startsWith("aminoAcid")) {
 			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-			if(! ( 
+			if(variationType == VariationType.aminoAcidInsertion) {
+				if(! ( 
+						TranslationUtils.isAtStartOfCodon(codon1Start, refEnd) && 
+						TranslationUtils.isAtEndOfCodon(codon1Start, refStart))) {
+					throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
+							refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
+				}				
+			} else if(! ( 
 					TranslationUtils.isAtEndOfCodon(codon1Start, refEnd) && 
 					TranslationUtils.isAtStartOfCodon(codon1Start, refStart))) {
 				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
 						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}
+		
 		} else if(variationType.name().equals("conjunction")) {
 			// variation does not have refStart / refEnd
 			
-		} else {
-			throw new RuntimeException("Unknown variation type");
 		}
-		getScanner(cmdContext).validate();;
+		getScanner(cmdContext).validate();
 		
 	}	
 

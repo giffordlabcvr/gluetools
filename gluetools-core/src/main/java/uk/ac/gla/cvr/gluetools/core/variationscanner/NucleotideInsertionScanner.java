@@ -35,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<NucleotideInsertionMatchResult> {
 
@@ -90,13 +91,20 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	}
 
 	private Integer computeFlankingStart() {
-		return Math.max(getVariation().getRefStart()-this.flankingNTs, 1);
+		Integer refStart = getVariation().getRefStart();
+		return Math.max((refStart+1)-(this.flankingNTs), 1);
 	}
 	private Integer computeFlankingEnd() {
-		return Math.min(getVariation().getRefEnd(), this.referenceNucleotides.length());
+		Integer refEnd = getVariation().getRefEnd();
+		return Math.min((refEnd-1)+(this.flankingNTs), this.referenceNucleotides.length());
 	}
 
-
+	
+	// this variation scanner picks up insertions strictly *between* the start and end NTs
+	// Example: 
+	// If the variation is defined by --nucleotide 6917 6918, then the query sequence
+	// must have segments homologous to 6917 6918 on the reference, and have some insertion between
+	// these segments.
 	
 	@Override
 	protected VariationScanResult<NucleotideInsertionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, 
@@ -145,5 +153,14 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 		return new VariationScanResult<NucleotideInsertionMatchResult>(this, sufficientCoverage, matchResults);
 	}
 
+	@Override
+	public void validate() {
+		super.validate();
+		int ntStart = getVariation().getRefStart();
+		int ntEnd = getVariation().getRefEnd();
+		if(ntEnd <= ntStart) {
+			throwScannerException("For nucleotide insertions start NT must be before end NT");
+		}
+	}
 	
 }

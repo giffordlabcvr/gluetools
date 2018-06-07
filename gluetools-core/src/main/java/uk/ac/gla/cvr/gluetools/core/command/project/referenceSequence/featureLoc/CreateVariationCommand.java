@@ -148,7 +148,6 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 							featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
 							featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
 				}
-				ntStart = startLabeledCodon.getNtStart();
 				LabeledCodon endLabeledCodon = labelToLabeledCodon.get(lcEnd);
 				if(endLabeledCodon == null) {
 					throw new VariationException(Code.AMINO_ACID_VARIATION_LOCATION_OUT_OF_RANGE, 
@@ -156,7 +155,13 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 							featureLoc.getFirstLabeledCodon(cmdContext).getCodonLabel(), 
 							featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
 				}
-				ntEnd = endLabeledCodon.getNtStart()+2;
+				if(vtype == VariationType.aminoAcidInsertion || vtype == VariationType.nucleotideInsertion) {
+					ntStart = startLabeledCodon.getNtStart()+2;
+					ntEnd = endLabeledCodon.getNtStart();
+				} else {
+					ntStart = startLabeledCodon.getNtStart();
+					ntEnd = endLabeledCodon.getNtStart()+2;
+				}
 			}
 			if(ntStart > ntEnd) {
 				throw new VariationException(Code.VARIATION_LOCATION_ENDPOINTS_REVERSED, 
