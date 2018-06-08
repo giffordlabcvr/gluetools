@@ -159,11 +159,13 @@ public class Variation extends _Variation implements HasDisplayName {
 		Integer refStart = getRefStart();
 		Integer refEnd = getRefEnd();
 		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
-		if(!ReferenceSegment.covers(featureLocSegments, 
+		if(variationType != VariationType.conjunction) {
+			if(!ReferenceSegment.covers(featureLocSegments, 
 				Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
-			throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
-					refSeq.getName(), feature.getName(), getName(), 
-					Integer.toString(refStart), Integer.toString(refEnd));
+				throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
+						refSeq.getName(), feature.getName(), getName(), 
+						Integer.toString(refStart), Integer.toString(refEnd));
+			}
 		}
 		if(variationType.name().startsWith("aminoAcid")) {
 			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
@@ -181,10 +183,7 @@ public class Variation extends _Variation implements HasDisplayName {
 						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}
 		
-		} else if(variationType.name().equals("conjunction")) {
-			// variation does not have refStart / refEnd
-			
-		}
+		} 
 		getScanner(cmdContext).validate();
 		
 	}	
