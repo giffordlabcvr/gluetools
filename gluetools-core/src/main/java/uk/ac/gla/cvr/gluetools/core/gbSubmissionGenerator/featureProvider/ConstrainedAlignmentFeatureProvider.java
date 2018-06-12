@@ -28,6 +28,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 // FeatureProvider which generates a feature in a GenBank submission, based on the Sequence's membership of a 
 // constrained alignment. 
@@ -133,17 +134,39 @@ public class ConstrainedAlignmentFeatureProvider extends AlignmentFeatureProvide
 				boolean incompleteStart = false;
 				int endNt = memberFLocSegment.getQueryEnd();
 				boolean incompleteEnd = false; 
+				int refStartNt = memberFLocSegment.getRefStart();
 				
 				if(i == 0 && j == 0 && 
-						memberFLocSegment.getRefStart() < fLocSegment.getRefStart()) {
+						memberFLocSegment.getRefStart() > fLocSegment.getRefStart()) {
 					incompleteStart = true;
 				}
 				if(i == fLocSegments.size() - 1 && j == memberFLocSegments.size() - 1 && 
-						memberFLocSegment.getRefEnd() > fLocSegment.getRefEnd()) {
+						memberFLocSegment.getRefEnd() < fLocSegment.getRefEnd()) {
 					incompleteEnd = true;
 				}
-				gbFeatureIntervals.add(new GbFeatureInterval(startNt, incompleteStart, endNt, incompleteEnd));
+				gbFeatureIntervals.add(new GbFeatureInterval(startNt, refStartNt, incompleteStart, endNt, incompleteEnd));
 			}
+			if(gbFeatureIntervals.size() == 0) {
+				throw new FeatureProviderException(Code.NO_INTERVALS_GENERATED, sequence.getSource().getName()+"/"+sequence.getSequenceID(), featureKey);
+			}
+			// for incomplete starts of coding features, correct the reading frame as necessary.
+			if(featureLocation.getFeature().codesAminoAcids() && featureKey.equals("CDS")) {
+				GbFeatureInterval firstInterval = gbFeatureIntervals.get(0);
+				
+				if(firstInterval.isIncompleteStart()) {
+					// location on reference where reading frame starts.
+					Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
+					Integer refStartNt = firstInterval.getRefStartNt();
+					if(!TranslationUtils.isAtStartOfCodon(codon1Start, refStartNt)) {
+						if(TranslationUtils.isAtEndOfCodon(codon1Start, refStartNt)) {
+							qualifierKeyValues.put("codon_start", "2");
+						} else {
+							qualifierKeyValues.put("codon_start", "3");
+						}
+					}
+				}
+			}
+
 		}
 
 		return new GbFeatureSpecification(gbFeatureIntervals, featureKey, qualifierKeyValues);

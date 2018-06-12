@@ -49,9 +49,6 @@ public class GbFeatureSpecification {
 			for(GbFeatureSpecification gbFeatureSpecification: gbFeatureSpecifications) {
 				String featureKey = gbFeatureSpecification.getFeatureKey();
 				List<GbFeatureInterval> intervals = gbFeatureSpecification.getIntervals();
-				if(intervals.size() == 0) {
-					throw new FeatureProviderException(Code.NO_INTERVALS_GENERATED, sequenceID, featureKey);
-				}
 				for(int i = 0; i < intervals.size(); i++) {
 					GbFeatureInterval interval = intervals.get(i);
 					writer.write(interval.getStartString());
