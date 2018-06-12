@@ -21,6 +21,10 @@ public abstract class SourceInfoProvider implements Plugin {
 	}
 	
 	
+	public void setSourceModifier(String sourceModifier) {
+		this.sourceModifier = sourceModifier;
+	}
+
 	public abstract String provideSourceInfo(Sequence sequence);
 	
 }

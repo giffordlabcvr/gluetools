@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRend
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.Tbl2AsnException.Code;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.GbFeatureSpecification;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -54,6 +56,14 @@ import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class Tbl2AsnRunner implements Plugin {
 
+	// HACK
+	// For some reason tbl2asn requires that some source qualifiers are supplied in the FASTA header rather than the .src file
+	// This is a list of source qualifiers which must be processed in this way.
+	private static String[] SOURCE_QUALIFIERS_IN_FASTA_HEADER = {
+		"moltype",
+		"molecule"
+	};
+	
 	public static String 
 	TBL2ASN_EXECUTABLE_PROPERTY = "gluetools.core.programs.tbl2asn.executable"; 
 	public static String 
@@ -64,12 +74,14 @@ public class Tbl2AsnRunner implements Plugin {
 	}
 
 	
-	public List<Tbl2AsnResult> generateSqnFiles(CommandContext cmdContext, List<String> sourceColumnHeaders, 
-			List<Tbl2AsnInput> inputs, byte[] templateBytes, File dataDirFile, boolean sourceInfo) {
+	public List<Tbl2AsnResult> generateSqnFiles(CommandContext cmdContext, List<String> sourceColumnHeaders0, 
+			List<Tbl2AsnInput> inputs, byte[] templateBytes, File dataDirFile) {
 		
 		String tbl2asnTempDir = getTbl2AsnTempDir(cmdContext);
 		String tbl2asnExecutable = getTbl2AsnExecutable(cmdContext);
 
+		List<String> sourceColumnHeaders = new ArrayList<String>(sourceColumnHeaders0);
+		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(tbl2asnTempDir, uuid);
 		try {
@@ -82,19 +94,37 @@ public class Tbl2AsnRunner implements Plugin {
 			writeFile(templateFile, templateBytes);
 			
 			for(Tbl2AsnInput input: inputs) {
-				byte[] fastaBytes = FastaUtils.seqIdCompoundsPairToFasta(input.getId(), 
+				Map<String, String> sourceInfoMap = new LinkedHashMap<String,String>(input.getSourceInfoMap());
+
+				String fastaID = input.getId();
+				
+				for(String sourceQualifier : SOURCE_QUALIFIERS_IN_FASTA_HEADER) {
+					String qualifierVal = sourceInfoMap.remove(sourceQualifier);
+					if(qualifierVal != null) {
+						fastaID = fastaID +" ["+sourceQualifier+"="+qualifierVal+"]";
+					}
+					sourceColumnHeaders.remove(sourceQualifier);
+				}
+				
+				byte[] fastaBytes = FastaUtils.seqIdCompoundsPairToFasta(fastaID, 
 						input.getFastaSequence().getSequenceAsString(), LineFeedStyle.forOS()).getBytes();
 				writeFile(new File(tempDir, input.getId()+".fsa"), fastaBytes);
 				
-				if(sourceInfo) {
+				if(!sourceInfoMap.isEmpty()) {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					OutputStreamCommandResultRenderingContext renderingContext = 
 							new OutputStreamCommandResultRenderingContext(baos, ResultOutputFormat.TAB, LineFeedStyle.forOS(), true);
-					SourceInfoTableResult sourceInfoTableResult = new SourceInfoTableResult(sourceColumnHeaders, Arrays.asList(input.getSourceInfoMap()));
+					SourceInfoTableResult sourceInfoTableResult = new SourceInfoTableResult(sourceColumnHeaders, Arrays.asList(sourceInfoMap));
 					sourceInfoTableResult.renderResult(renderingContext);
 					writeFile(new File(tempDir, input.getId()+".src"), baos.toByteArray());
 				}
 				
+				List<GbFeatureSpecification> gbFeatureSpecifications = input.getGbFeatureSpecifications();
+				if(!gbFeatureSpecifications.isEmpty()) {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					GbFeatureSpecification.writeFeatureTableToStream(baos, input.getId(), gbFeatureSpecifications);
+					writeFile(new File(tempDir, input.getId()+".tbl"), baos.toByteArray());
+				}
 			}
 			
 			List<String> commandWords = new ArrayList<String>();

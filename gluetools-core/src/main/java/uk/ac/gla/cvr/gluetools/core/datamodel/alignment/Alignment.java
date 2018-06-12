@@ -83,6 +83,10 @@ public class Alignment extends _Alignment implements HasDisplayName {
 		return getAncestorsUpTo(null);
 	}
 
+	public List<String> getAncestorNames() {
+		return getAncestors().stream().map(a -> a.getName()).collect(Collectors.toList());
+	}
+
 	
 	// get a list of ancestors up to and including rootAlmt.
 	// or all of them, if rootAlmt == null;

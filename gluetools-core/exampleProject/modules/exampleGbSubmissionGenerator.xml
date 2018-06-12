@@ -1,17 +1,78 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <gbSubmisisonGenerator>
 	<sourceInfoProviders>
-		<freemarkerSourceInfoProvider>
+		<staticSourceInfoProvider>
 			<sourceModifier>organism</sourceModifier>
-			<template>Hepatitis E virus</template>
+			<value>Hepatitis E virus</value>
+		</staticSourceInfoProvider>
+		<staticSourceInfoProvider>
+			<sourceModifier>moltype</sourceModifier>
+			<value>genomic</value>
+		</staticSourceInfoProvider>
+		<staticSourceInfoProvider>
+			<sourceModifier>molecule</sourceModifier>
+			<value>rna</value>
+		</staticSourceInfoProvider>
+		<freemarkerSourceInfoProvider>
+			<sourceModifier>genotype</sourceModifier>
+			<template>${genotype!""}${subtype!""}</template>
 		</freemarkerSourceInfoProvider>
 		<freemarkerSourceInfoProvider>
-			<sourceModifier>mol_type</sourceModifier>
-			<template>viral cRNA</template>
+			<sourceModifier>host</sourceModifier>
+			<template>${host_species!""}</template>
+		</freemarkerSourceInfoProvider>
+		<freemarkerSourceInfoProvider>
+			<sourceModifier>isolate</sourceModifier>
+			<template>${isolate!""}</template>
+		</freemarkerSourceInfoProvider>
+		<freemarkerSourceInfoProvider>
+			<sourceModifier>collection-date</sourceModifier>
+			<template>${(collection_year?c)!""}</template>
 		</freemarkerSourceInfoProvider>
 		<seqPropertySourceInfoProvider>
 			<sourceModifier>country</sourceModifier>
 			<propertyPath>m49_country.display_name</propertyPath>
 		</seqPropertySourceInfoProvider>
 	</sourceInfoProviders>
+	<featureProviders>
+		<constrainedAlignmentFeatureProvider>
+			<ancestorAlignmentName>AL_MASTER</ancestorAlignmentName>
+			<glueFeatureName>ORF1</glueFeatureName>
+			<featureKey>CDS</featureKey>
+			<qualifier>
+				<key>product</key>
+				<valueTemplate>non-structural polyprotein</valueTemplate>
+			</qualifier>
+			<qualifier>
+				<key>gene</key>
+				<valueTemplate>${feature.name}</valueTemplate>
+			</qualifier>
+		</constrainedAlignmentFeatureProvider>
+		<constrainedAlignmentFeatureProvider>
+			<ancestorAlignmentName>AL_MASTER</ancestorAlignmentName>
+			<glueFeatureName>ORF2</glueFeatureName>
+			<featureKey>CDS</featureKey>
+			<qualifier>
+				<key>product</key>
+				<valueTemplate>capsid protein</valueTemplate>
+			</qualifier>
+			<qualifier>
+				<key>gene</key>
+				<valueTemplate>${feature.name}</valueTemplate>
+			</qualifier>
+		</constrainedAlignmentFeatureProvider>
+		<constrainedAlignmentFeatureProvider>
+			<ancestorAlignmentName>AL_MASTER</ancestorAlignmentName>
+			<glueFeatureName>ORF3</glueFeatureName>
+			<featureKey>CDS</featureKey>
+			<qualifier>
+				<key>product</key>
+				<valueTemplate>ORF3</valueTemplate>
+			</qualifier>
+			<qualifier>
+				<key>gene</key>
+				<valueTemplate>${feature.name}</valueTemplate>
+			</qualifier>
+		</constrainedAlignmentFeatureProvider>
+	</featureProviders>
 </gbSubmisisonGenerator>

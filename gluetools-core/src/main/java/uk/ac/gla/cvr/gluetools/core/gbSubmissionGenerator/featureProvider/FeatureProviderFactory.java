@@ -35,7 +35,7 @@ public class FeatureProviderFactory extends PluginFactory<FeatureProvider> {
 	
 	private FeatureProviderFactory() {
 		super();
-		registerPluginClass(AlignmentFeatureProvider.class);
+		registerPluginClass(ConstrainedAlignmentFeatureProvider.class);
 	}
 	
 }

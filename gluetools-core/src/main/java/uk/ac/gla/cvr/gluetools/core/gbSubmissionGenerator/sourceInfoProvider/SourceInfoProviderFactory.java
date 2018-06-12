@@ -37,6 +37,7 @@ public class SourceInfoProviderFactory extends PluginFactory<SourceInfoProvider>
 		super();
 		registerPluginClass(SeqPropertySourceInfoProvider.class);
 		registerPluginClass(FreemarkerSourceInfoProvider.class);
+		registerPluginClass(StaticSourceInfoProvider.class);
 	}
 	
 }

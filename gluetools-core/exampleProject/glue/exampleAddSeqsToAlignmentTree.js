@@ -48,11 +48,30 @@ for(var i = 0; i < genotypingResults.length; i++) {
 	var genotypeAlmt = result.genotypeFinalClade;
 	var subtypeAlmt = result.subtypeFinalClade;
 	if(genotypeAlmt != null) {
+		
 		if(subtypeAlmt != null) {
 			addToAlignment(sourceName, sequenceID, subtypeAlmt);
 		} else {
 			addToAlignment(sourceName, sequenceID, genotypeAlmt);
 		}
 	}
+
+	glue.inMode("sequence/"+sourceName+"/"+sequenceID, function() {
+
+		if(genotypeAlmt != null) {
+			var gtRegex = /AL_([\d])/;
+			var gtMatch = gtRegex.exec(genotypeAlmt);
+			if(gtMatch) {
+				glue.command(["set", "field", "genotype", gtMatch[1]]);
+			}
+			if(subtypeAlmt != null) {
+				var stRegex = /AL_[\d](.+)/;
+				var stMatch = stRegex.exec(subtypeAlmt);
+				if(stMatch) {
+					glue.command(["set", "field", "subtype", stMatch[1]]);
+				}
+			}
+		}
+	});
 	
 }

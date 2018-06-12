@@ -2,6 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -13,6 +14,6 @@ public abstract class FeatureProvider implements Plugin {
 	}
 
 	
-	public abstract String provideFeature(Sequence sequence);
+	public abstract GbFeatureSpecification provideFeature(CommandContext cmdContext, Sequence sequence);
 	
 }

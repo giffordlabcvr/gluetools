@@ -32,8 +32,11 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProvider;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProviderFactory;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProvider;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProviderFactory;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.StaticSourceInfoProvider;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -41,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.VersionUtils;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 
@@ -50,16 +54,20 @@ description="Generates .sqn Genbank submission files from stored GLUE sequences"
 public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 
 	public static final String TBL2ASN_RUNNER = "tbl2AsnRunner";
+	public static final String FEATURE_PROVIDERS = "featureProviders";
 	public static final String SOURCE_INFO_PROVIDERS = "sourceInfoProviders";
+	public static final String SUPPRESS_GLUE_NOTE = "suppressGlueNote";
 	public static final String ID_TEMPLATE = "idTemplate";
 
 	
 	private Tbl2AsnRunner tbl2AsnRunner = new Tbl2AsnRunner();
 	
-	private List<SourceInfoProvider> sourceInfoProviders;
+	private List<SourceInfoProvider> sourceInfoProviders = new ArrayList<SourceInfoProvider>();
+	private List<FeatureProvider> featureProviders = new ArrayList<FeatureProvider>();
 	
 	private Template idTemplate;
-
+	private boolean suppressGlueNote;
+	
 	public static final String DEFAULT_ID_TEMPLATE = "${sequenceID}";
 	
 	
@@ -67,15 +75,19 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 		super();
 		registerModulePluginCmdClass(GenerateSqnCommand.class);
 		addSimplePropertyName(ID_TEMPLATE);
+		addSimplePropertyName(SUPPRESS_GLUE_NOTE);
 
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		idTemplate = Optional.ofNullable(
+		this.idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
 				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));
+		this.suppressGlueNote = Optional.ofNullable(PluginUtils
+				.configureBooleanProperty(configElem, SUPPRESS_GLUE_NOTE, false)).orElse(false);
+
 		Element tbl2AsnRunnerElem = PluginUtils.findConfigElement(configElem, TBL2ASN_RUNNER);
 		if(tbl2AsnRunnerElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, tbl2AsnRunnerElem, tbl2AsnRunner);
@@ -85,9 +97,14 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 			SourceInfoProviderFactory sourceInfoProviderFactory = PluginFactory.get(SourceInfoProviderFactory.creator);
 			String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(sourceInfoProviderFactory.getElementNames());
 			List<Element> sourceInfoProviderElems = PluginUtils.findConfigElements(sourceInfoProvidersElem, alternateElemsXPath);
-			this.sourceInfoProviders = sourceInfoProviderFactory.createFromElements(pluginConfigContext, sourceInfoProviderElems);
-		} else {
-			this.sourceInfoProviders = new ArrayList<SourceInfoProvider>();
+			this.sourceInfoProviders.addAll(sourceInfoProviderFactory.createFromElements(pluginConfigContext, sourceInfoProviderElems));
+		}
+		Element featureProvidersElem = PluginUtils.findConfigElement(configElem, FEATURE_PROVIDERS);
+		if(featureProvidersElem != null) {
+			FeatureProviderFactory featureProviderFactory = PluginFactory.get(FeatureProviderFactory.creator);
+			String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(featureProviderFactory.getElementNames());
+			List<Element> featureProviderElems = PluginUtils.findConfigElements(featureProvidersElem, alternateElemsXPath);
+			this.featureProviders.addAll(featureProviderFactory.createFromElements(pluginConfigContext, featureProviderElems));
 		}
 	}
 	
@@ -100,8 +117,17 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 		return tbl2AsnRunner;
 	}
 
+	
+	public boolean getSuppressGlueNote() {
+		return suppressGlueNote;
+	}
+
 	public List<SourceInfoProvider> getSourceInfoProviders() {
 		return sourceInfoProviders;
+	}
+
+	public List<FeatureProvider> getFeatureProviders() {
+		return featureProviders;
 	}
 
 }

@@ -25,9 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 
+import java.util.List;
 import java.util.Map;
 
 import org.biojava.nbio.core.sequence.DNASequence;
+
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.GbFeatureSpecification;
 
 public class Tbl2AsnInput {
 
@@ -36,14 +39,17 @@ public class Tbl2AsnInput {
 	private String id;
 	private DNASequence fastaSequence;
 	private Map<String, String> sourceInfoMap;
+	private List<GbFeatureSpecification> gbFeatureSpecifications;
 	
-	public Tbl2AsnInput(String sourceName, String sequenceID, String id, DNASequence fastaSequence, Map<String, String> sourceInfoMap) {
+	public Tbl2AsnInput(String sourceName, String sequenceID, String id, DNASequence fastaSequence, Map<String, String> sourceInfoMap, 
+			List<GbFeatureSpecification> gbFeatureSpecifications) {
 		super();
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;
 		this.id = id;
 		this.fastaSequence = fastaSequence;
 		this.sourceInfoMap = sourceInfoMap;
+		this.gbFeatureSpecifications = gbFeatureSpecifications;
 	}
 
 	public String getSourceName() {
@@ -65,7 +71,8 @@ public class Tbl2AsnInput {
 	public Map<String, String> getSourceInfoMap() {
 		return sourceInfoMap;
 	}
-	
-	
-	
+
+	public List<GbFeatureSpecification> getGbFeatureSpecifications() {
+		return gbFeatureSpecifications;
+	}
 }
