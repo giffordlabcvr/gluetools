@@ -36,7 +36,6 @@ import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.Featur
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProviderFactory;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProvider;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProviderFactory;
-import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.StaticSourceInfoProvider;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -44,7 +43,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.VersionUtils;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 

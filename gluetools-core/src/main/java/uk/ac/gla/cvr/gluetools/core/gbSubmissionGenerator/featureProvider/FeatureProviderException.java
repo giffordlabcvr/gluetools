@@ -9,8 +9,8 @@ public class FeatureProviderException extends GlueException {
 			UNABLE_TO_ESTABLISH_ALIGNMENT_MEMBER("sourceName", "sequenceID", "errorTxt"),
 			CONFIG_ERROR("errorTxt"),
 			NO_INTERVALS_GENERATED("sequenceID", "featureKey"),
-			FEATURE_LOCATION_NOT_FOUND_ON_CONSTRAINING_REFERENCE("featureName", "referenceName"),
-			FEATURE_LOCATION_EMPTY_ON_CONSTRAINING_REFERENCE("featureName", "referenceName");
+			FEATURE_LOCATION_NOT_FOUND_ON_REFERENCE("featureName", "referenceName"),
+			FEATURE_LOCATION_EMPTY_ON_REFERENCE("featureName", "referenceName");
 
 			private String[] argNames;
 			private Code(String... argNames) {
