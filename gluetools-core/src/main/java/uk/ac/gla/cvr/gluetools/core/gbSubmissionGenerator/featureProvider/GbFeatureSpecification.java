@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.List;|
+import java.util.List;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
