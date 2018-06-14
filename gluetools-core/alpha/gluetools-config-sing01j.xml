@@ -83,5 +83,14 @@
 					<value>12</value>
 				</property>
 
+				<!-- tbl2asn -->
+				<property>
+					<name>gluetools.core.programs.tbl2asn.executable</name>
+					<value>/home2/sing01j/tbl2asn/bin/tbl2asn</value>
+				</property>
+				<property>
+					<name>gluetools.core.programs.tbl2asn.temp.dir</name>
+					<value>/home2/sing01j/tbl2asn/tmp</value>
+				</property>
         </properties>
 </gluetools>
