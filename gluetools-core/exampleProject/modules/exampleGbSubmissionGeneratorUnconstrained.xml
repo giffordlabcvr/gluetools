@@ -36,7 +36,7 @@
 	</sourceInfoProviders>
 	<featureProviders>
 		<unconstrainedAlignmentFeatureProvider>
-			<alignmentName>AL_UNC_TEST</alignmentName>
+			<alignmentName>AL_UNCONSTRAINED_1f</alignmentName>
 			<referenceSequenceName>REF_1f_JF443721</referenceSequenceName>
 			<glueFeatureName>ORF1</glueFeatureName>
 			<featureKey>CDS</featureKey>
@@ -50,7 +50,7 @@
 			</qualifier>
 		</unconstrainedAlignmentFeatureProvider>
 		<unconstrainedAlignmentFeatureProvider>
-			<alignmentName>AL_UNC_TEST</alignmentName>
+			<alignmentName>AL_UNCONSTRAINED_1f</alignmentName>
 			<referenceSequenceName>REF_1f_JF443721</referenceSequenceName>
 			<glueFeatureName>ORF2</glueFeatureName>
 			<featureKey>CDS</featureKey>
@@ -64,7 +64,7 @@
 			</qualifier>
 		</unconstrainedAlignmentFeatureProvider>
 		<unconstrainedAlignmentFeatureProvider>
-			<alignmentName>AL_UNC_TEST</alignmentName>
+			<alignmentName>AL_UNCONSTRAINED_1f</alignmentName>
 			<referenceSequenceName>REF_1f_JF443721</referenceSequenceName>
 			<glueFeatureName>ORF3</glueFeatureName>
 			<featureKey>CDS</featureKey>

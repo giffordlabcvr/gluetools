@@ -48,7 +48,11 @@
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml
   create module --fileName modules/exampleGbSubmissionGenerator.xml  
+  create module --fileName modules/exampleGbSubmissionGeneratorUnconstrained.xml  
   create module --fileName modules/exampleEcmaProteinAlignmentExporter.xml
   create module --fileName modules/exampleEcmaNtAlignmentExporter.xml  
   create module --fileName modules/exampleEcmaFunctionInvoker.xml --loadResources
+
+  create module --fileName modules/exampleBlastFastaAlignmentImporter.xml
+  create module --fileName modules/exampleMafftAligner.xml
   

@@ -23,7 +23,7 @@
 #    Rob Gifford: robert.gifford@glasgow.ac.uk
 delete project example
 
-create project example "An example GLUE project based on hepatitis E virus" --minVersion 0.1.147
+create project example "An example GLUE project based on hepatitis E virus" --minVersion 1.0.5
 
 run file glue/exampleSchemaExtensions.glue
  
@@ -73,7 +73,23 @@ project example
   # doi etc will be populated from the GenBank XML when this command is run.
   module exampleGenbankXmlPopulator populate -s
 
+  # Genotype the ncbi-hev-examples and fasta-hev-examples sequences.
+  # Use the results of this to set the genotype / subtype metadata. 
+  # Then add each sequence to the appropriate alignment tree constrained alignment
+  # node, and recompute segments for that node.
   run script glue/exampleAddSeqsToAlignmentTree.js
+
+  # Example unconstrained alignment containing sequences from subtype 1f.
+  # Add and the subtype 1f reference and some subtype 1f sequences 
+  # from fasta-hev-examples to a new unconstrained alignment.
+  # Use MAFFT to generate the alignment homology.
+  create alignment AL_UNCONSTRAINED_1f
+  alignment AL_UNCONSTRAINED_1f
+    add member -w "referenceSequences.name like 'REF_1f%'"
+    add member -w "source.name = 'fasta-hev-examples' and genotype = '1' and subtype = 'f'"
+    exit
+  compute alignment AL_UNCONSTRAINED_1f exampleMafftAligner
+
 
   validate
   
