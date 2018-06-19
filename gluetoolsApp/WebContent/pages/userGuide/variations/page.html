@@ -1,3 +1,568 @@
 <h2>{{variationsMenuTitle}}</h2>
 
-Under construction
+<p>Patterns of residues within virus sequences, at both the
+	nucleotide and amino acid levels, are associated with specific
+	functions or phenotypes. Knowledge about such residue patterns is
+	typically derived from testing specific virus strains in the laboratory
+	or observing their specific phenotypes. As these patterns emerge from
+	research, it is often of interest to quickly scan sets of sequences to
+	investigate which sequences contain the pattern, and if so, in what
+	form.</p>
+<p>
+	A <em>Variation</em> is a named nucleotide or amino-acid residue
+	pattern, captured as an object in the GLUE database. Variations are
+	created and configured using GLUE commands. Once they exist within a
+	project, a range of GLUE commands can be used to quickly scan for their 
+	presence in different forms of sequence data.
+</p>
+
+<ol>
+	
+	<li><a ng-click="scrollTo('variationConcepts')"><em>Variation</em> concepts</a></li>
+	<li><a
+	ng-click="scrollTo('nucleotideSimplePolymorphism')"><em>Variation</em>
+	type: <tt>nucleotideSimplePolymorphism</tt></a></li>
+	<li><a
+	ng-click="scrollTo('nucleotideRegexPolymorphism')"><em>Variation</em>
+	type: <tt>nucleotideRegexPolymorphism</tt></a></li>
+	<li><a
+	ng-click="scrollTo('nucleotideInsertion')"><em>Variation</em>
+	type: <tt>nucleotideInsertion</tt></a></li>
+	<li><a
+	ng-click="scrollTo('nucleotideDeletion')"><em>Variation</em>
+	type: <tt>nucleotideDeletion</tt></a></li>
+	<li><a
+	ng-click="scrollTo('aminoAcidSimplePolymorphism')"><em>Variation</em>
+	type: <tt>aminoAcidSimplePolymorphism</tt></a></li>
+	<li><a
+	ng-click="scrollTo('aminoAcidRegexPolymorphism')"><em>Variation</em>
+	type: <tt>aminoAcidRegexPolymorphism</tt></a></li>
+	<li><a
+	ng-click="scrollTo('aminoAcidInsertion')"><em>Variation</em>
+	type: <tt>aminoAcidInsertion</tt></a></li>
+	<li><a
+	ng-click="scrollTo('aminoAcidDeletion')"><em>Variation</em>
+	type: <tt>aminoAcidDeletion</tt></a></li>
+	<li><a ng-click="scrollTo('conjunction')"><em>Variation</em>
+	type: <tt>conjunction</tt></a></li>
+	<li><a ng-click="scrollTo('examples')">Examples of
+	<em>Variation</em> creation commands</a></li>
+	<li><a ng-click="scrollTo('variationGlueCommands')">Commands
+	for <em>Variation</em>-scanning</a></li>
+</ol>
+
+<h3 id="variationConcepts"><em>Variation</em> concepts</h3>
+
+	<p>
+		A <em>Variation</em> must be created within an existing <em>FeatureLocation</em>
+		object belonging to a specific <em>ReferenceSequence</em>. This is in
+		order to anchor it to a specific genomic location. This design allows
+		documented residue patterns from the research literature to be quickly
+		incorporated into a GLUE project using standardised reference
+		coordinates.
+	</p>
+
+
+	<p>
+		To create a <em>Variation</em> you need to follow these steps:
+		<ol>
+			<li>Choose a <em>ReferenceSequence</em> on which the <em>Variation</em>
+			will be defined, enter the command mode for that <em>ReferenceSequence</em>. 
+			If your project uses an alignment tree this would often be the constraining 
+			<em>ReferenceSequence</em> of the root alignment tree node.</li>
+
+			<li>Choose a <em>FeatureLocation</em> within the <em>ReferenceSequence</em>.
+			This would often be the gene where the <em>Variation</em> pattern might be 
+			located. Enter the command mode for that <em>FeatureLocation</em>.</li>
+
+			<li>Choose a name for the <em>Variation</em>. This identifier has to be 
+			unique amongst the <em>Variations</em> within the selected <em>FeatureLocation</em>.</li>
+
+			<li>Choose a type for the variation. This will depend on the kind of pattern you want to scan for. 
+			There are nine types available, each type is described below.</li>
+
+			<li>Use the <mode-command mode="root_project_reference_feature-location" 
+			command="create_variation"></mode-command> command. For most types of variation, you
+			must also supply start/end coordinates within the <em>FeatureLocation</em>; these can be expressed 
+			in terms of the <em>ReferenceSequence</em> nucleotide position. Alternatively, for protein-coding 
+			<em>Features</em>, they can be expressed using codon labels.</li>
+		
+		</ol>
+		<p>
+		Once the <em>Variation</em> has been created, a command mode for that variation becomes available. 
+		Within this command mode you can use <mode-command mode="root_project_reference_feature-location_variation" 
+			command="set_metatag"></mode-command> to configure values for the metatags of the <em>Variation</em>. 
+			These configure how scanning for the <em>Variation</em> will operate. The specific metatags for each 
+			variation type are explained in the relevant section below. 
+		</p>
+		<p>Concrete examples for how <em>Variations</em> may
+		be created are given <a ng-click="scrollTo('examples')">here</a>.
+		</p>
+
+		<p>Finally, you can use various <a ng-click="scrollTo('variationGlueCommands')"><em>Variation</em>-scanning commands</a>
+		to use your <em>Variations</em> to analyse sequence data.</p> 
+		
+	</p>
+
+
+<h3 id="nucleotideSimplePolymorphism"><em>Variation</em> type: <tt>nucleotideSimplePolymorphism</tt></h3>
+
+Scan for is a fixed, contiguous string of unambiguous nucleotides anywhere between the start and end locations of the <em>Variation</em> (inclusive).
+
+<h5>Required metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>SIMPLE_NT_PATTERN</tt></td>
+			<td>The nucleotide pattern: a string of <tt>A</tt>, <tt>C</tt>, <tt>G</tt> or <tt>T</tt> characters.</td>
+		</tr>
+	</tbody>
+</table>
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>MIN_COMBINED_NT_FRACTION</tt></td>
+			<td>Floating-point number between 0.0 and 1.0, default 1.0. Setting this to less than 1.0 allows the 
+			pattern to be detected in cases where the sequence data contains ambiguous nucleotide characters.
+			Ambiguous FASTA characters allow alternative unambiguous options. For example the ambiguous <tt>Y</tt>
+			allows two options: <tt>C</tt> or <tt>T</tt>. <br/>
+			
+			A fraction is computed for each possible match between the sequence and pattern. 
+			Initially the fraction is 1.0. Each time an ambiguous character is encountered which 
+			allows the relevant pattern character, the fraction is divided by the number of alternative options.
+			So if for example a <tt>C</tt> is required by the pattern but in the potential match location the sequence 
+			contains <tt>Y</tt>, the fraction for that match would be halved. The metatag value specifies the minimum 
+			combined fraction which is allowed for the <em>Variation</em> to be considered present.</td>
+		</tr>
+	</tbody>
+</table>
+
+
+<h3 id="nucleotideRegexPolymorphism"><em>Variation</em> type: <tt>nucleotideRegexPolymorphism</tt></h3>
+
+A nucleotide pattern match which allows for greater expressive flexibility. A nucleotide regular expression 
+is defined; this may match anywhere between the start and end locations of the <em>Variation</em> (inclusive).
+
+<h5>Required metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>REGEX_NT_PATTERN</tt></td>
+			<td>The regular expression to be matched. This may use any metacharacter or mechanism in the Java 8 
+			<a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">
+			<tt>java.util.regex.Pattern</tt></a> documentation. 
+			Example: the regular expression <tt>C[GT]{3,7}AA</tt> calls for a <tt>C</tt>, followed by between 3 and 7 
+			<tt>G</tt>s or <tt>T</tt>s in any combination, followed by two <tt>A</tt>s</td>.
+		</tr>
+	</tbody>
+</table>
+
+
+<h3 id="nucleotideInsertion"><em>Variation</em> type: <tt>nucleotideInsertion</tt></h3>
+
+An insertion of nucleotides relative to the <em>ReferenceSequence</em> within 
+which the <em>Variation</em> is defined. The insertion must start after the start nucleotide 
+and finish before the end nucleotide of the <em>Variation</em>.
+
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>FLANKING_NTS</tt></td>
+			<td>Optional integer, default 3. The inserted nucleotides must be flanked on either side by 
+			blocks of nucleotides which are homologous to adjacent blocks on the <em>ReferenceSequence</em>.
+			This metatag dictates the minimum length of these blocks.</td>
+		</tr>
+		<tr>
+			<td><tt>MIN_INSERTION_LENGTH_NTS</tt></td>
+			<td>Optional integer, default null. The minumum number of inserted nucleotides.</td>
+		</tr>
+		<tr>
+			<td><tt>MAX_INSERTION_LENGTH_NTS</tt></td>
+			<td>Optional integer, default null. The maximum number of inserted nucleotides.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 id="nucleotideDeletion"><em>Variation</em> type: <tt>nucleotideDeletion</tt></h3>
+
+A deletion of nucleotides relative to the <em>ReferenceSequence</em> within 
+which the <em>Variation</em> is defined. The deletion must start at or after the start nucleotide 
+and finish at or before the end nucleotide of the <em>Variation</em>.
+
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>FLANKING_NTS</tt></td>
+			<td>Optional integer, default 3. The deleted nucleotides on the <em>ReferenceSequence</em> must be 
+			flanked on either side by blocks of nucleotides which are homologous to adjacent blocks on the 
+			query sequence. This metatag dictates the minimum length of these blocks.</td>
+		</tr>
+		<tr>
+			<td><tt>MIN_DELETION_LENGTH_NTS</tt></td>
+			<td>Optional integer, default null. The minumum number of deleted nucleotides.</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td><tt>MAX_DELETION_LENGTH_NTS</tt></td>
+			<td>Optional integer, default null. The maximum number of deleted nucleotides.</td>
+		</tr>
+	</tbody>
+</table>
+<h3 id="aminoAcidSimplePolymorphism"><em>Variation</em> type: <tt>aminoAcidSimplePolymorphism</tt></h3>
+
+Scan for is a fixed, contiguous string of amino acid residues within the protein translation, anywhere between the start and end locations of the <em>Variation</em> (inclusive).
+
+<h5>Required metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>SIMPLE_AA_PATTERN</tt></td>
+			<td>The amino acid pattern: a string of amino acid FASTA characters.</td>
+		</tr>
+	</tbody>
+</table>
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>MIN_COMBINED_TRIPLET_FRACTION</tt></td>
+			<td>Floating-point number between 0.0 and 1.0, default 1.0. Allows for
+			matching of amino acid patterns in the presence of ambiguous nucleotide bases.
+			For each amino acid residue in the pattern, a triplet of three
+			possibly ambiguous nucleotide characters is scanned. 
+			If the triplet contains ambiguous characters then there may be multiple 
+			unambiguous nucleotide triplets which are consistent. 
+			The fraction of unambiguous consistent triplets which code for the
+			required amino acid residue is the triplet fraction. If the pattern contains 
+			multiple amino acid residues, the triplet fractions of each are multiplied together to 
+			produce a fraction for the possible match.
+			The metatag provides the minimum value for the possible match.
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 id="aminoAcidRegexPolymorphism"><em>Variation</em> type: <tt>aminoAcidRegexPolymorphism</tt></h3>
+
+An amino acid pattern match which allows for greater expressive flexibility. An amino acid regular expression 
+is defined; this may match anywhere in the protein translation between the start and end locations of the <em>Variation</em> (inclusive).
+
+<h5>Required metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>REGEX_AA_PATTERN</tt></td>
+			<td>The regular expression to be matched. This may use any metacharacter or mechanism in the Java 8 
+			<a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">
+			<tt>java.util.regex.Pattern</tt></a> documentation. </td>.
+		</tr>
+	</tbody>
+</table>
+
+<h3 id="aminoAcidInsertion"><em>Variation</em> type: <tt>aminoAcidInsertion</tt></h3>
+
+An insertion of amino acids relative to the <em>ReferenceSequence</em> within 
+which the <em>Variation</em> is defined. The insertion must start after the start location 
+and finish before the end location of the <em>Variation</em>.
+
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>FLANKING_AAS</tt></td>
+			<td>Optional integer, default 1. The inserted amino acids must be flanked on either side by 
+			blocks of amino acids which are homologous to adjacent blocks on the <em>ReferenceSequence</em>.
+			This metatag dictates the minimum length of these blocks (in amino acids).</td>
+		</tr>
+		<tr>
+			<td><tt>MIN_INSERTION_LENGTH_AAS</tt></td>
+			<td>Optional integer, default null. The minimum number of inserted amino acids.</td>
+		</tr>
+		<tr>
+			<td><tt>MAX_INSERTION_LENGTH_AAS</tt></td>
+			<td>Optional integer, default null. The maximum number of inserted amino acids.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 id="aminoAcidDeletion"><em>Variation</em> type: <tt>aminoAcidDeletion</tt></h3>
+
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>FLANKING_AAS</tt></td>
+			<td>Optional integer, default 1. The deleted amino acids on the <em>ReferenceSequence</em> must be 
+			flanked on either side by blocks of amino acids which are homologous to adjacent blocks on the 
+			query sequence. This metatag dictates the minimum length of these blocks (in amino acids).</td>
+		</tr>
+		<tr>
+			<td><tt>MIN_DELETION_LENGTH_AAS</tt></td>
+			<td>Optional integer, default null. The minimum number of deleted amino acids.</td>
+		</tr>
+		<tr>
+			<td><tt>MAX_DELETION_LENGTH_AAS</tt></td>
+			<td>Optional integer, default null. The maximum number of deleted amino acids.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 id="conjunction"><em>Variation</em> type: <tt>conjunction</tt></h3>
+
+Scan for the conjunction of multiple <em>Variations</em>. A set of up to 5 "conjunct"  
+<em>Variations</em> 
+is specified using metatags. The conjunction <em>Variation</em> is considered to have matched if and only if all the
+conjunct <em>Variations</em> have matched. <br/>
+
+Note that start / end locations are not required for this <em>Variation</em> type.
+
+<h5>Required metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>CONJUNCT_NAME_1</tt></td>
+			<td>Names the first conjunct <em>Variation</em>. 
+			This must be defined on the same <em>ReferenceSequence</em> and <em>FeatureLocation</em> as the conjunction.</td>
+		</tr>
+	</tbody>
+</table>
+<h5>Optional metatags</h5>
+<table class="table table-bordered">
+	<thead>
+		<colgroup>
+			<col span="1" style="width: 20%;">
+			<col span="1" style="width: 80%;">
+		</colgroup>
+	</thead>
+	<tbody>
+		<tr>
+			<td><tt>CONJUNCT_NAME_2</tt>
+			<tt>CONJUNCT_NAME_3</tt>
+			<tt>CONJUNCT_NAME_4</tt> 
+			<tt>CONJUNCT_NAME_5</tt></td>
+			<td>Names the second, third, fourth, fifth conjunct <em>Variations</em> as necessary. 
+			These must be defined on the same <em>ReferenceSequence</em> and <em>FeatureLocation</em> as the conjunction.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 id="examples">Examples of <em>Variation</em> creation commands</h3>
+
+<ol>
+<li>
+<p>
+This example is from hepatitis C research. A nucleotide binding motif (NBM) was
+suggested in the NS4B protein 
+<a href="https://doi.org/10.1128/JVI.78.20.11288-11295.2004">Einav et al., 2004</a>. 
+The most conserved element of
+the NBM is the "A" motif consisting of a Glycine (G) at codon position 129
+followed by four amino acids of any type, followed by a Glycine (G) at position
+134 and a Lysine (K) at position 135. The research showed that Arginine (R) or
+Serine (S) could be substituted for the Lysine with only a small reduction in
+the binding activity, so one formulation of the "A" motif might allow either of
+these substitutions.</p>
+<p>We could create this as a GLUE <em>Variation</em> within the HCV-GLUE project:
+<pre>
+reference REF_MASTER_NC_004102
+  feature-location NS4B
+    create variation NBM_A --vtype aminoAcidRegexPolymorphism --labeledCodon 129 135
+    variation NBM_A
+      set metatag REGEX_AA_PATTERN "G.{4}G[KRS]" 
+      exit
+    exit
+  exit
+</pre>
+</p>
+</li>
+<li>
+<p>This example is from hepatitis E virus (HEV) research. The ORF3 protein of HEV contains one or two 
+Proline-Serine-Alanine-Proline (PSAP) 
+amino acid motifs, which may play a role as a functional domain for virion release 
+(<a href="https://doi.org/10.1099/vir.0.025791-0">Nagashima et al. 2011</a>). </p> 
+<p>
+We could create this as a <em>Variation</em> within the HEV-GLUE project, or in the 
+example project which is based on HEV:
+<pre>
+reference REF_MASTER_M73218
+  feature-location ORF3 
+    create variation PSAP -t aminoAcidSimplePolymorphism --labeledCodon 80 120
+    variation PSAP
+      set metatag SIMPLE_AA_PATTERN PSAP
+      exit
+    exit
+  exit
+</pre>
+Here we will scan for the PSAP motif anywhere between locations 80 and 120 on our master 
+reference M73218, so this will detect where sequences have two copies of the motif in this genome region.
+Note that the coordinates will be slightly different from those mentioned in Nagashima et al. as a different reference
+sequence was used.
+</p>
+</li>
+</ol>
+
+<h3 id="variationGlueCommands">Commands for <em>Variation</em>-scanning</h3>
+<p>
+	There are three broad categories of data which we can scan for GLUE <em>Variations</em>. 
+	In each 
+	of these areas, there are GLUE commands and/or module types associated with <em>Variation</em>-scanning.
+	<ol>
+		<li><b>Sequences stored in GLUE alignments</b>
+		<br/>
+		The <mode-command mode="root_project_alignment" command="variation_frequency"></mode-command> 
+		command in alignment mode computes summary figures for the presence of many variations over 
+		a set of member sequences.
+		<br/>	
+		The <mode-command mode="root_project_alignment" 
+			command="variation_member_scan"></mode-command> command, also in alignment mode, scans a set of member sequences 
+			for a single specified variation, providing detailed results on any matches.
+		<br/>
+		The <mode-command mode="root_project_alignment_member" 
+			command="variation_scan"></mode-command> command in member mode scans a single alignment member for multiple 
+			variations and may also provide detailed match results.
+		</li>
+		<li><b>Consensus sequences stored in FASTA files</b>
+		<br/>
+		The <module-command module="fastaSequenceReporter" 
+			command="variation_scan"></module-command> command in the <module-type name="fastaSequenceReporter"></module-type> 
+			module type will scan sequences in a FASTA file for multiple variations, providing detailed match results.
+		</li>	
+		<li><b>Deep sequencing data stored in SAM/BAM files</b>
+		<br/>
+		The <module-command module="samReporter" 
+			command="variation_scan"></module-command> command in the <module-type name="samReporter"></module-type> 
+			module type will scan individual reads in a SAM/BAM file for multiple variations, providing summaries 
+			of how many reads contained each <em>Variation</em>.
+		
+		</li>	
+	</ol>
+</p>
+<p>
+	Scanning for a <em>Variation</em> within a piece of sequence data
+	requires a homology to be established
+	between the sequence data and the <em>ReferenceSequence</em> where the
+	<em>Variation</em> is defined. In the case of sequences stored in GLUE alignments 
+	the homology is already in place; the other two cases are slightly more complicated as the 
+	homology must be computed as a preliminary step.
+</p>
+<p>
+	Here is an example usage of the <mode-command mode="root_project_alignment" 
+			command="variation_member_scan"></mode-command> command. We ran this in the example project, after adding the PSAP motif <em>Variation</em> suggested above. 
+			
+<pre style="font-size:x-small;white-space:pre-wrap;background-color:#000000;color:#ffffff">
+Mode path: /
+GLUE> project example
+OK
+Mode path: /project/example
+GLUE> alignment AL_3
+OK
+Mode path: /project/example/alignment/AL_3
+GLUE> variation member scan -c -w "sequence.source.name = 'ncbi-refseqs' and referenceMember = false" -r REF_MASTER_M73218 -f ORF3 -v PSAP -t
++=============+=============+============+=============+=============+==========+============+==========+=============+============+=============+=============+
+|alignmentName| sourceName  | sequenceID |firstRefCodon|lastRefCodon | queryAAs | refNtStart | refNtEnd |queryNtStart | queryNtEnd |  queryNts   |combinedTripl|
+|             |             |            |             |             |          |            |          |             |            |             | etFraction  |
++=============+=============+============+=============+=============+==========+============+==========+=============+============+=============+=============+
+|AL_3e        |ncbi-refseqs | AB248521   |96           |99           | PSAP     | 5391       | 5402     |5419         | 5430       |CCCTCGGCTCCT |1.00         |
+|AL_3e        |ncbi-refseqs | AB248521   |105          |108          | PSAP     | 5418       | 5429     |5446         | 5457       |CCCAGCGCCCCC |1.00         |
+|AL_3_AB290312|ncbi-refseqs | AB290312   |96           |99           | PSAP     | 5391       | 5402     |5416         | 5427       |CCCTCGGCTCCA |1.00         |
+|AL_3_AB290312|ncbi-refseqs | AB290312   |105          |108          | PSAP     | 5418       | 5429     |5443         | 5454       |CCCAGCGCCCCT |1.00         |
+|AL_3_AB290313|ncbi-refseqs | AB290313   |105          |108          | PSAP     | 5418       | 5429     |5443         | 5454       |CCCAGCGCCCCT |1.00         |
+|AL_3f        |ncbi-refseqs | AB369687   |96           |99           | PSAP     | 5391       | 5402     |5399         | 5410       |CCCTCGGCTCCT |1.00         |
+|AL_3f        |ncbi-refseqs | AB369687   |105          |108          | PSAP     | 5418       | 5429     |5426         | 5437       |CCCAGCGCCCCT |1.00         |
+|AL_3_AB369689|ncbi-refseqs | AB369689   |105          |108          | PSAP     | 5418       | 5429     |5423         | 5434       |CCCAGCGCCCCT |1.00         |
+|AL_3a        |ncbi-refseqs | AF082843   |105          |108          | PSAP     | 5418       | 5429     |5442         | 5453       |CCCAGCGCCCCT |1.00         |
+|AL_3g        |ncbi-refseqs | AF455784   |96           |99           | PSAP     | 5391       | 5402     |5401         | 5412       |CCCTCGGCTCCT |1.00         |
+|AL_3g        |ncbi-refseqs | AF455784   |105          |108          | PSAP     | 5418       | 5429     |5428         | 5439       |CCCAGCGCCCCT |1.00         |
+|AL_3b        |ncbi-refseqs | AP003430   |105          |108          | PSAP     | 5418       | 5429     |5444         | 5455       |CCCAGCGCCCCA |1.00         |
+|AL_3j        |ncbi-refseqs | AY115488   |105          |108          | PSAP     | 5418       | 5429     |5459         | 5470       |CCCAGCGCCCCC |1.00         |
+|AL_3_EU360977|ncbi-refseqs | EU360977   |96           |99           | PSAP     | 5391       | 5402     |5423         | 5434       |CCCTCGGCTCCT |1.00         |
+|AL_3_EU360977|ncbi-refseqs | EU360977   |105          |108          | PSAP     | 5418       | 5429     |5450         | 5461       |CCCAGCGCCCCC |1.00         |
+|AL_3f        |ncbi-refseqs | EU723513   |96           |99           | PSAP     | 5391       | 5402     |5394         | 5405       |CCCTCGGCTCCT |1.00         |
+|AL_3f        |ncbi-refseqs | EU723513   |105          |108          | PSAP     | 5418       | 5429     |5421         | 5432       |CCCAGCGCCCCC |1.00         |
+|AL_3c        |ncbi-refseqs | FJ705359   |96           |99           | PSAP     | 5391       | 5402     |5416         | 5427       |CCCTCGGCTCCT |1.00         |
+|AL_3c        |ncbi-refseqs | FJ705359   |105          |108          | PSAP     | 5418       | 5429     |5443         | 5454       |CCCAGCGCCCCT |1.00         |
+|AL_3ra       |ncbi-refseqs | FJ906895   |105          |108          | PSAP     | 5418       | 5429     |5501         | 5512       |CCCAGCGCCCCC |1.00         |
+|AL_3i        |ncbi-refseqs | FJ998008   |105          |108          | PSAP     | 5418       | 5429     |5418         | 5429       |CCCAGCGCCCCT |1.00         |
+|AL_3ra       |ncbi-refseqs | JQ013791   |105          |108          | PSAP     | 5418       | 5429     |5481         | 5492       |CCCAGCGCCCCC |1.00         |
+|AL_3h        |ncbi-refseqs | JQ013794   |96           |99           | PSAP     | 5391       | 5402     |5357         | 5368       |CCCTCGGCTCCA |1.00         |
+|AL_3h        |ncbi-refseqs | JQ013794   |105          |108          | PSAP     | 5418       | 5429     |5384         | 5395       |CCCAGCGCCCCT |1.00         |
+|AL_3_JQ953664|ncbi-refseqs | JQ953664   |105          |108          | PSAP     | 5418       | 5429     |5444         | 5455       |CCCAGCGCCCCC |1.00         |
+|AL_3ra       |ncbi-refseqs | KJ013415   |105          |108          | PSAP     | 5418       | 5429     |5503         | 5514       |CCCAGCGCCCCC |1.00         |
++=============+=============+============+=============+=============+==========+============+==========+=============+============+=============+=============+
+
+Mode path: /project/example/alignment/AL_MASTER
+GLUE> 
+</pre>
+In this case we have scanned all reference sequences in HEV genotype 3 or any of its subtypes. 
+We find that all the sequences have the PSAP motif at location 105-108, some also contain the motif at location 96-99. 
+For each match the start / end locations on the member sequence are given, as well as the underlying nucleotides.
+
+
