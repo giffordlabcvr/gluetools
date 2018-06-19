@@ -2,7 +2,7 @@ gluetoolsApp.directive('modeCommand', function() {
   return {
     template: function(elem, attr) {
       var url = "#/commandModes/commandMode/" + attr.mode + "/command/" + attr.command;
-      var commandWords = attr.command.replace("_", " ");
+      var commandWords = attr.command.replace(/_/g, " ");
       if(attr.args != null) {
     	  commandWords = commandWords + " " + attr.args;
       }
@@ -17,7 +17,7 @@ gluetoolsApp.directive('nonModeCommand', function() {
 	  return {
 	    template: function(elem, attr) {
 	      var url = "#/nonModeCommands/command/" + attr.command;
-	      var commandWords = attr.command.replace("_", " ");
+	      var commandWords = attr.command.replace(/_/g, " ");
 	      if(attr.args != null) {
 	    	  commandWords = commandWords + " " + attr.args;
 	      }
@@ -33,7 +33,7 @@ gluetoolsApp.directive('moduleCommand', function() {
 	  return {
 		    template: function(elem, attr) {
 		      var url = "#/moduleReference/moduleType/" + attr.module + "/command/" + attr.command;
-		      var commandWords = attr.command.replace("_", " ");
+		      var commandWords = attr.command.replace(/_/g, " ");
 		      if(attr.args != null) {
 		    	  commandWords = commandWords + " " + attr.args;
 		      }
