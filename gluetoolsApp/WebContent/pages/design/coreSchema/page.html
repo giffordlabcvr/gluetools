@@ -224,8 +224,8 @@ linked together, read the <a href="#alignments">Alignments and Alignment Trees</
 		<p>
 			GLUE addresses this type of question via the <em>Variation</em>
 			object class. A <em>Variation</em> is a named nucleotide or
-			amino-acid residue pattern. GLUE contains commands which use these <em>Variation</em>
-			patterns to analyse sequence data.
+			amino-acid residue pattern. GLUE contains commands which use <em>Variation</em>
+			objects to analyse sequence data.
 		</p>
 		<p>
 			In order to anchor the genomic location in which the pattern may be
@@ -234,14 +234,11 @@ linked together, read the <a href="#alignments">Alignments and Alignment Trees</
 			<em>FeatureLocation</em> provides a coordinate space in which the <em>Variation</em>
 			is located. This allows documented patterns from the literature to be
 			quickly incorporated into a GLUE project using standardised
-			coordinates. Each <em>Variation</em> specifies one or more 
-			<em>PatternLocation</em>. These are sub-regions within the 
-			<em>FeatureLocation</em> and where specific patterns
-			should be analysed. The patterns associated with a <em>Variation</em>
-			may be simply exact matches against concrete strings of
-			nucleotides or amino acids. Alternatively 
-			<a target="_blank" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">Java regular expressions</a>
-			may be used for greater expressive flexibility.
+			coordinates. 
+		</p>
+		<p>
+			The <a href="#/variations">Variations section of the User Guide</a> gives details on how
+			they can be constructed and utilised.
 		</p>
 	</div>
 	<div class="col-md-6">
