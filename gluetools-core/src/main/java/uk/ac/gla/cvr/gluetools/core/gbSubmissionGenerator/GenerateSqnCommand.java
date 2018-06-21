@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
@@ -59,34 +60,36 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"generate-sqn"}, 
-		description = "Generate a .sqn submission file from a set of stored GLUE sequences", 
-		docoptUsages = { "(-w <whereClause> | -a) -t <templateFile> [-o <outputDir>] [-d <dataDir>]" },
+		description = "Generate .sqn submission files from a set of stored GLUE sequences", 
+		docoptUsages = { "(-w <whereClause> | -a) -t <templateFile> [-g] [-o <outputDir>] [-d <dataDir>]" },
 		docoptOptions = { 
 				"-w <whereClause>, --whereClause <whereClause>     Qualify the sequence set",
 				"-a, --allSequences                                All sequences in the project",
+				"-g, --generateGbf                                 Also generate GenBank flat files",
 				"-t <templateFile>, --templateFile <templateFile>  Template .sbt file",
 				"-o <outputDir>, --outputDir <outputDir>           Directory for .sqn files",
 				"-d <dataDir>, --dataDir <dataDir>                 Directory for intermediate files",
 		},
-		furtherHelp = "This command uses tbl2asn as a subroutine to generate .sqn files for GenBank submssion. "+
-		"If <outputDir> is omitted, the .sqn files are written to the current load/save path. If <outputDir> does not "+
+		furtherHelp = "This command uses tbl2asn as a subroutine to generate .sqn files, for GenBank submssion, "+
+		"and optionally the equivalent .gbf (GenBank flat) files. "+
+		"If <outputDir> is omitted, the files are written to the current load/save path. If <outputDir> does not "+
 		"exist, it is created. If <dataDir> is supplied, it is created if it does not exist and the the intermediate "+
 		"files which were supplied to tbl2asn are retained in that directory.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class GenerateSqnCommand extends ModulePluginCommand<GenerateSqnResult, GbSubmisisonGenerator> {
-
-	
 	
 	
 	public final static String WHERE_CLAUSE = "whereClause";
 	public final static String ALL_SEQUENCES = "allSequences";
+	public final static String GENERATE_GBF = "generateGbf";
 	public final static String TEMPLATE_FILE = "templateFile";
 	public final static String OUTPUT_DIR = "outputDir";
 	public final static String DATA_DIR = "dataDir";
 	
 	private Expression whereClause;
 	private Boolean allSequences;
+	private Boolean generateGbf;
 
 	private String templateFile;
 	private String outputDir;
@@ -101,6 +104,7 @@ public class GenerateSqnCommand extends ModulePluginCommand<GenerateSqnResult, G
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or --allSequences must be specified");
 		}
 		this.templateFile = PluginUtils.configureStringProperty(configElem, TEMPLATE_FILE, true);
+		this.generateGbf = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, GENERATE_GBF, false)).orElse(false);
 		this.outputDir = PluginUtils.configureStringProperty(configElem, OUTPUT_DIR, false);
 		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
 	}
@@ -204,12 +208,17 @@ public class GenerateSqnCommand extends ModulePluginCommand<GenerateSqnResult, G
 			});
 
 			List<Tbl2AsnResult> batchResults = gbSubmisisonGenerator.getTbl2AsnRunner().
-					generateSqnFiles(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, dataDirFile);
+					runTbl2Asn(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, generateGbf, dataDirFile);
 			
 			batchResults.forEach(result -> {
-				File resultFile = new File(outputDirFile, result.getId()+".sqn");
-				ConsoleCommandContext.saveBytesToFile(resultFile, result.getSqnFileContent());
-				sequenceSqnResults.add(new SequenceSqnResult(result.getSourceName(), result.getSequenceID(), resultFile.getAbsolutePath()));
+				File sqnFile = new File(outputDirFile, result.getId()+".sqn");
+				ConsoleCommandContext.saveBytesToFile(sqnFile, result.getSqnFileContent());
+				sequenceSqnResults.add(new SequenceSqnResult(result.getSourceName(), result.getSequenceID(), sqnFile.getAbsolutePath()));
+				
+				if(generateGbf) {
+					File gbfFile = new File(outputDirFile, result.getId()+".gbf");
+					ConsoleCommandContext.saveBytesToFile(gbfFile, result.getGbfFileContent());
+				}
 			});
 			
 			

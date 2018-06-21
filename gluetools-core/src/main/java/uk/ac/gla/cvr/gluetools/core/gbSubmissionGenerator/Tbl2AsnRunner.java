@@ -74,8 +74,8 @@ public class Tbl2AsnRunner implements Plugin {
 	}
 
 	
-	public List<Tbl2AsnResult> generateSqnFiles(CommandContext cmdContext, List<String> sourceColumnHeaders0, 
-			List<Tbl2AsnInput> inputs, byte[] templateBytes, File dataDirFile) {
+	public List<Tbl2AsnResult> runTbl2Asn(CommandContext cmdContext, List<String> sourceColumnHeaders0, 
+			List<Tbl2AsnInput> inputs, byte[] templateBytes, boolean generateGbf, File dataDirFile) {
 		
 		String tbl2asnTempDir = getTbl2AsnTempDir(cmdContext);
 		String tbl2asnExecutable = getTbl2AsnExecutable(cmdContext);
@@ -143,18 +143,23 @@ public class Tbl2AsnRunner implements Plugin {
 			commandWords.add("-t");
 			commandWords.add(ProcessUtils.normalisedFilePath(templateFile));
 			
+			if(generateGbf) {
+				commandWords.add("-V");
+				commandWords.add("b");
+			}
+			
 			ProcessResult tbl2asnProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
 			ProcessUtils.checkExitCode(commandWords, tbl2asnProcessResult);
 
-			return resultListFromTempDir(inputs, tempDir);
+			return resultListFromTempDir(inputs, tempDir, generateGbf);
 		} finally {
 			ProcessUtils.cleanUpTempDir(dataDirFile, tempDir);
 		}
 	}
 	
 	
-	private List<Tbl2AsnResult> resultListFromTempDir(List<Tbl2AsnInput> inputs, File tempDir) {
+	private List<Tbl2AsnResult> resultListFromTempDir(List<Tbl2AsnInput> inputs, File tempDir, boolean generateGbf) {
 		List<Tbl2AsnResult> results = new ArrayList<Tbl2AsnResult>();
 		
 		for(Tbl2AsnInput input: inputs) {
@@ -164,7 +169,17 @@ public class Tbl2AsnRunner implements Plugin {
 				throw new Tbl2AsnException(Code.TBL2ASN_FILE_EXCEPTION, "Expected file was not generated: "+id+".sqn");
 			}
 			byte[] sqnFileContent = readFile(sqnFile);
-			results.add(new Tbl2AsnResult(input.getSourceName(), input.getSequenceID(), id, sqnFileContent));
+			
+			byte[] gbfFileContent = null;
+			if(generateGbf) {
+				File gbfFile = new File(tempDir, id+".gbf");
+				if(!gbfFile.exists()) {
+					throw new Tbl2AsnException(Code.TBL2ASN_FILE_EXCEPTION, "Expected file was not generated: "+id+".gbf");
+				}
+				gbfFileContent = readFile(gbfFile);
+			}
+			
+			results.add(new Tbl2AsnResult(input.getSourceName(), input.getSequenceID(), id, sqnFileContent, gbfFileContent));
 		}
 		return results;
 	}

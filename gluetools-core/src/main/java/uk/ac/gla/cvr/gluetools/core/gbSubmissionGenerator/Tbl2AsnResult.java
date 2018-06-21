@@ -31,13 +31,15 @@ public class Tbl2AsnResult {
 	private String sequenceID;
 	private String id;
 	private byte[] sqnFileContent;
+	private byte[] gbfFileContent;
 	
-	public Tbl2AsnResult(String sourceName, String sequenceID, String id, byte[] sqnFileContent) {
+	public Tbl2AsnResult(String sourceName, String sequenceID, String id, byte[] sqnFileContent, byte[] gbfFileContent) {
 		super();
 		this.sourceName = sourceName;
 		this.sequenceID = sequenceID;
 		this.id = id;
 		this.sqnFileContent = sqnFileContent;
+		this.gbfFileContent = gbfFileContent;
 	}
 
 	public String getSourceName() {
@@ -54,5 +56,9 @@ public class Tbl2AsnResult {
 
 	public byte[] getSqnFileContent() {
 		return sqnFileContent;
+	}
+
+	public byte[] getGbfFileContent() {
+		return gbfFileContent;
 	}
 }
