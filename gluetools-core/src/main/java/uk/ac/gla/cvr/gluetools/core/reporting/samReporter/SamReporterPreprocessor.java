@@ -95,7 +95,7 @@ public class SamReporterPreprocessor {
 				}
 				SAMRecord read2 = readPair.read2;
 				if(read2 != null) {
-					read1.setSecondOfPairFlag(false);
+					read2.setSecondOfPairFlag(false);
 					writeRead(bamWriters, read2);
 					readLogger.logSingleton();
 				}

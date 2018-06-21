@@ -44,6 +44,8 @@
   create module --fileName modules/kuiken2006CodonLabeler.xml
   create module --fileName modules/exampleTextFilePopulator.xml
 
+  create module --fileName modules/exampleSamReporter.xml
+
   create module --fileName modules/ncbiHevExamplesImporter.xml
   create module --fileName modules/ncbiHevImporter.xml
   create module --fileName modules/unconstrainedAlignmentImporter.xml
