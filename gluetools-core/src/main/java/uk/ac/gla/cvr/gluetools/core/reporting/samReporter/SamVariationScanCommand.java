@@ -473,29 +473,29 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 	public void processPair(VariationContext context, SAMRecord samRecord1, SAMRecord samRecord2) {
 		if(!context.samRecordFilter.recordPasses(samRecord1)) {
 			processSingleton(context, samRecord2);
-		}
-		if(!context.samRecordFilter.recordPasses(samRecord2)) {
+		} else if(!context.samRecordFilter.recordPasses(samRecord2)) {
 			processSingleton(context, samRecord1);
-		}
-		List<VariationScanResult<?>> scanResults1 = scanResultsForRead(context, samRecord1);
-		List<VariationScanResult<?>> scanResults2 = scanResultsForRead(context, samRecord2);
-		List<VariationScanResult<?>> mergedScanResults = new ArrayList<VariationScanResult<?>>();
-		
-		Map<Map<String, String>, VariationScanResult<?>> variationPkMapToScanResult = new LinkedHashMap<Map<String,String>, VariationScanResult<?>>();
-		for(VariationScanResult<?> scanResult1: scanResults1) {
-			variationPkMapToScanResult.put(scanResult1.getVariationPkMap(), scanResult1);
-		}
-		for(VariationScanResult<?> scanResult2: scanResults2) {
-			VariationScanResult<?> scanResult1 = variationPkMapToScanResult.remove(scanResult2.getVariationPkMap());
-			if(scanResult1 != null) {
-				BaseVariationScanner<?> scanner = scanResult1.getScanner();
-				mergedScanResults.add(scanner.resolvePairedReadResults(samRecord1, scanResult1, samRecord2, scanResult2));
-			} else {
-				mergedScanResults.add(scanResult2);
+		} else {
+			List<VariationScanResult<?>> scanResults1 = scanResultsForRead(context, samRecord1);
+			List<VariationScanResult<?>> scanResults2 = scanResultsForRead(context, samRecord2);
+			List<VariationScanResult<?>> mergedScanResults = new ArrayList<VariationScanResult<?>>();
+
+			Map<Map<String, String>, VariationScanResult<?>> variationPkMapToScanResult = new LinkedHashMap<Map<String,String>, VariationScanResult<?>>();
+			for(VariationScanResult<?> scanResult1: scanResults1) {
+				variationPkMapToScanResult.put(scanResult1.getVariationPkMap(), scanResult1);
 			}
+			for(VariationScanResult<?> scanResult2: scanResults2) {
+				VariationScanResult<?> scanResult1 = variationPkMapToScanResult.remove(scanResult2.getVariationPkMap());
+				if(scanResult1 != null) {
+					BaseVariationScanner<?> scanner = scanResult1.getScanner();
+					mergedScanResults.add(scanner.resolvePairedReadResults(samRecord1, scanResult1, samRecord2, scanResult2));
+				} else {
+					mergedScanResults.add(scanResult2);
+				}
+			}
+			mergedScanResults.addAll(variationPkMapToScanResult.values());
+			recordScanResults(context, mergedScanResults);
 		}
-		mergedScanResults.addAll(variationPkMapToScanResult.values());
-		recordScanResults(context, mergedScanResults);
 	}
 
 
