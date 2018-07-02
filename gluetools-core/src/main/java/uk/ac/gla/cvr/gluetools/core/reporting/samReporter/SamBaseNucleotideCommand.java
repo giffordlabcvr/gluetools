@@ -79,7 +79,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 			AlignmentMember tipAlmtMember;
 			if(useMaxLikelihoodPlacer()) {
 				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
-						validationStringency, getSuppliedSamRefName(), "samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+						validationStringency, getSuppliedSamRefName(), "samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 				consensusSequence = consensusMap.get("samConsensus");
 				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 				targetRef = tipAlmtMember.targetReferenceFromMember();
@@ -116,7 +116,13 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 
 			SamRecordFilter samRecordFilter;
 			try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, samFileName, validationStringency)) {
-				samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, samFileName, getSuppliedSamRefName());
+				samRecordFilter = new SamUtils.ConjunctionBasedRecordFilter(
+						new SamUtils.ReferenceBasedRecordFilter(samReader, samFileName, getSuppliedSamRefName()), 
+						new SamUtils.MappingQualityRecordFilter(getMinMapQ(samReporter))
+				);
+
+				
+				
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

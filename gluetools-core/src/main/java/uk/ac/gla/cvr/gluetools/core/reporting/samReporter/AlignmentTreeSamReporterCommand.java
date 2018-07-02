@@ -94,7 +94,7 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 				// compute consensus if we don't already have it.
 				samConsensus = 
 						SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samFileSession, samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", 
-								getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+								getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 			} else {
 				samConsensus = new LinkedHashMap<String, DNASequence>();
 				samConsensus.put("samConsensus", consensusSequence);

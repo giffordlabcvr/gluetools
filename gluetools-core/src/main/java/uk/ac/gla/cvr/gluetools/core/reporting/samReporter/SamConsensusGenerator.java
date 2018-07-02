@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code
 public class SamConsensusGenerator implements SamPairedParallelProcessor<SamConsensusGenerator.ConsensusContext, SamConsensusGenerator.ConsensusResult>{
 
 	public String getNgsConsensus(ConsoleCommandContext cmdContext, SamFileSession samFileSession, ValidationStringency validationStringency, 
-			String samRefName, int minQScore, int minDepth, SamRefSense samRefSense) {
+			String samRefName, int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense) {
 	
 		if(!EnumSet.of(SamRefSense.FORWARD, SamRefSense.REVERSE_COMPLEMENT).contains(samRefSense)) {
 			throw new RuntimeException("SAM ref sense should be determined by the point of forming the consensus");
@@ -30,7 +30,6 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 			ConsensusContext consensusContext = new ConsensusContext();
 			consensusContext.samRefName = samRefName;
 			consensusContext.minQScore = minQScore;
-			consensusContext.minDepth = minDepth;
 			consensusContext.samRefSense = samRefSense;
 			return consensusContext;
 		};
@@ -65,10 +64,10 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 
 	public static class ConsensusContext {
 		public SamRefSense samRefSense;
-		public int minDepth;
+		private int minQScore;
+		private int minMapQ;
 		private int samReferenceIndex;
 		private String samRefName; 
-		private int minQScore;
 	    private int[] depth;
 	    private int[] aCounts;
 	    private int[] cCounts;
@@ -129,7 +128,7 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 	public void processPair(ConsensusContext context, SAMRecord record1, SAMRecord record2) {
     	if(record1.getReferenceIndex() != context.samReferenceIndex) {
     		processSingleton(context, record2);
-    	} else if(record1.getReferenceIndex() != context.samReferenceIndex) {
+    	} else if(record2.getReferenceIndex() != context.samReferenceIndex) {
     		processSingleton(context, record2);
     	} else {
     		TIntObjectMap<BaseWithQuality> samRefNtToBaseWithQuality1 = getSamRefNtToBaseWithQuality(context, record1);
@@ -209,41 +208,43 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 
 	private TIntObjectMap<BaseWithQuality> getSamRefNtToBaseWithQuality(ConsensusContext context, SAMRecord samRecord) {
 		TIntObjectMap<BaseWithQuality> samRefNtToBaseWithQuality = new TIntObjectHashMap<SamConsensusGenerator.BaseWithQuality>();
-		
-		String readString = samRecord.getReadString().toUpperCase();
-		String qualityString = samRecord.getBaseQualityString();
-    	List<AlignmentBlock> alignmentBlocks = samRecord.getAlignmentBlocks();
-    	alignmentBlocks.forEach(alignmentBlock -> {
-    		int blockLength = alignmentBlock.getLength();
-    		int readStart = alignmentBlock.getReadStart();
-    		int refStart = alignmentBlock.getReferenceStart();
-    		
-    		for(int baseIndex = 0; baseIndex < blockLength; baseIndex++) {
-    			char readQualityChar = qualityString.charAt((readStart+baseIndex)-1);
-    			int qScore = SamUtils.qualityCharToQScore(readQualityChar);
-				if(qScore < context.minQScore) {
-    				continue;
-    			}
-    			char readBase = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
-    			char forwardSenseReadBase = SamUtils.getForwardSenseReadBase(context.samRefSense, readBase);
-    			if(forwardSenseReadBase == '=') {
-    				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_EQUALS);
-    			}
-    			int index = SamUtils.getForwardSenseSamRefIndex(context.samRefSense, context.samReferenceLength, refStart, baseIndex);
-    			switch(forwardSenseReadBase) {
-    			case 'A':
-    			case 'C':
-    			case 'G':
-    			case 'T':
-    			case 'N':
-    				samRefNtToBaseWithQuality.put(index, new BaseWithQuality(forwardSenseReadBase, qScore));
-    				break;
-    			default:
-    				throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readBase), Integer.toString(readBase));
-    			}
-    		}
-    	});
 
+		if(samRecord.getMappingQuality() >= context.minMapQ) {
+
+			String readString = samRecord.getReadString().toUpperCase();
+			String qualityString = samRecord.getBaseQualityString();
+			List<AlignmentBlock> alignmentBlocks = samRecord.getAlignmentBlocks();
+			alignmentBlocks.forEach(alignmentBlock -> {
+				int blockLength = alignmentBlock.getLength();
+				int readStart = alignmentBlock.getReadStart();
+				int refStart = alignmentBlock.getReferenceStart();
+
+				for(int baseIndex = 0; baseIndex < blockLength; baseIndex++) {
+					char readQualityChar = qualityString.charAt((readStart+baseIndex)-1);
+					int qScore = SamUtils.qualityCharToQScore(readQualityChar);
+					if(qScore < context.minQScore) {
+						continue;
+					}
+					char readBase = Character.toUpperCase(readString.charAt((readStart+baseIndex)-1));
+					char forwardSenseReadBase = SamUtils.getForwardSenseReadBase(context.samRefSense, readBase);
+					if(forwardSenseReadBase == '=') {
+						throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_EQUALS);
+					}
+					int index = SamUtils.getForwardSenseSamRefIndex(context.samRefSense, context.samReferenceLength, refStart, baseIndex);
+					switch(forwardSenseReadBase) {
+					case 'A':
+					case 'C':
+					case 'G':
+					case 'T':
+					case 'N':
+						samRefNtToBaseWithQuality.put(index, new BaseWithQuality(forwardSenseReadBase, qScore));
+						break;
+					default:
+						throw new SamUtilsException(SamUtilsException.Code.ALIGNMENT_LINE_USES_UNKNOWN_CHARACTER, Character.toString(readBase), Integer.toString(readBase));
+					}
+				}
+			});
+		}
 		
 		return samRefNtToBaseWithQuality;
 	}

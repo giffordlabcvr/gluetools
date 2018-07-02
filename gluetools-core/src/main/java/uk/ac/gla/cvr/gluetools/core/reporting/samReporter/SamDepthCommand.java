@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 @CommandClass(
 		commandWords={"depth"}, 
 		description = "Summarise depth in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-d <minDepth>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-g <minMapQ>][-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 						"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
@@ -52,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 						"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 						"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 						"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
+						"-g <minMapQ>, --minMapQ <minMapQ>                    Minimum mapping quality score",
 						"-d <minDepth>, --minDepth <minDepth>                 Minimum depth"
 				},
 				furtherHelp = 

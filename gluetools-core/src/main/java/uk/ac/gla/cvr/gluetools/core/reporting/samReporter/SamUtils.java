@@ -125,8 +125,9 @@ public class SamUtils {
 		return samReaderFactory.open(SamInputResource.of(samInputStream));
 	}
 
-	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, SamFileSession samFileSession, ValidationStringency validationStringency, String samRefName,
-			String fastaID, int minQScore, int minDepth, SamRefSense samRefSense) {
+	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, 
+			SamFileSession samFileSession, ValidationStringency validationStringency, String samRefName,
+			String fastaID, int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense) {
 		Map<String, DNASequence> samConsensusFastaMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 
@@ -135,10 +136,10 @@ public class SamUtils {
 			SamConsensusGenerator samConsensusGenerator = new SamConsensusGenerator();
 			
 			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, samFileSession, validationStringency, 
-					samReference.getSequenceName(), minQScore, minDepth, samRefSense);
+					samReference.getSequenceName(), minQScore, minMapQ, minDepth, samRefSense);
 			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
 				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
-						Integer.toString(minQScore), Integer.toString(minDepth));
+						Integer.toString(minQScore), Integer.toString(minMapQ), Integer.toString(minDepth));
 			}
 			
 			String ngsConsensusFastaString = ">"+fastaID+"\n"+
@@ -170,7 +171,46 @@ public class SamUtils {
 		}
 		
 	}
+	
+	public static class ConjunctionBasedRecordFilter implements SamRecordFilter {
+		private SamRecordFilter[] conjuncts;
 
+		public ConjunctionBasedRecordFilter(SamRecordFilter... conjuncts) {
+			super();
+			this.conjuncts = conjuncts;
+		}
+		
+		@Override
+		public boolean recordPasses(SAMRecord samRecord) {
+			for(SamRecordFilter conjunct: conjuncts) {
+				if(!conjunct.recordPasses(samRecord)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		
+	}
+	
+	public static class MappingQualityRecordFilter implements SamRecordFilter {
+		private int minMapQ;
+
+		public MappingQualityRecordFilter(int minMapQ) {
+			super();
+			this.minMapQ = minMapQ;
+		}
+		
+		@Override
+		public boolean recordPasses(SAMRecord samRecord) {
+			return samRecord.getMappingQuality() >= minMapQ;
+		}
+		
+		
+	}
+
+	
+	
 	public static void iterateOverSamReader(SamReader samReader, Consumer<SAMRecord> recordConsumer) {
 		try {
 			samReader.forEach(recordConsumer);

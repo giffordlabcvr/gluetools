@@ -78,7 +78,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
@@ -93,6 +93,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
 				"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
+				"-g <minMapQ>, --minMapQ <minMapQ>                    Minimum mapping quality score",
 				"-e <minDepth>, --minDepth <minDepth>                 Minimum depth",
 				"-P <minPresentPct>, --minPresentPct <minPresentPct>  Show present at minimum percentage",
 				"-A <minAbsentPct>, --minAbsentPct <minAbsentPct>     Show absent at minimum percentage",
@@ -178,7 +179,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
 			if(useMaxLikelihoodPlacer()) {
 				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
-						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 				consensusSequence = consensusMap.get("samConsensus");
 				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 				targetRef = tipAlmtMember.targetReferenceFromMember();
@@ -427,7 +428,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		public SamRefSense samRefSense;
 		public ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree;
 		Map<String, VariationInfo> variationNameToInfo = new LinkedHashMap<String, VariationInfo>();
-		public ReferenceBasedRecordFilter samRecordFilter;
+		public SamRecordFilter samRecordFilter;
 
 	}
 
@@ -461,8 +462,10 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 
 	@Override
 	public void initContextForReader(VariationContext context, SamReader samReader) {
-		context.samRecordFilter = new SamUtils
-					.ReferenceBasedRecordFilter(samReader, context.samFileName, context.suppliedSamRefName);
+		context.samRecordFilter = new SamUtils.ConjunctionBasedRecordFilter(
+				new SamUtils.ReferenceBasedRecordFilter(samReader, context.samFileName, context.suppliedSamRefName), 
+				new SamUtils.MappingQualityRecordFilter(getMinMapQ(context.samReporter))
+		);
 	}
 
 

@@ -76,7 +76,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-e <minDepth>] [-P <minAAPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
 				"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
@@ -88,6 +88,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 				"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
 				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
 				"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
+				"-g <minMapQ>, --minMapQ <minMapQ>                    Minimum mapping quality score",
 				"-e <minDepth>, --minDepth <minDepth>                 Minimum depth",
 				"-P <minAAPct>, --minAAPct <minAAPct>                 Minimum AA percentage",
 
@@ -153,7 +154,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			AlignmentMember tipAlmtMember;
 			if(useMaxLikelihoodPlacer()) {
 				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession, 
-						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 				consensusSequence = consensusMap.get("samConsensus");
 				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 				targetRef = tipAlmtMember.targetReferenceFromMember();
@@ -515,7 +516,11 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 
 	@Override
 	public void initContextForReader(SamAminoAcidContext context, SamReader samReader) {
-		context.samRecordFilter = new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName());
+		context.samRecordFilter = 
+				new SamUtils.ConjunctionBasedRecordFilter(
+						new SamUtils.ReferenceBasedRecordFilter(samReader, getFileName(), getSuppliedSamRefName()), 
+						new SamUtils.MappingQualityRecordFilter(getMinMapQ(context.samReporter))
+				);
 	}
 
 

@@ -55,7 +55,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass(
 		commandWords={"nucleotide-consensus"}, 
 		description = "Generate FASTA nucleotide consensus from a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-d <minDepth>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] [-c <consensusID>] [-y <lineFeedStyle>] (-o <outputFileName> | -p)  [-q <minQScore>] [-g <minMapQ>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                    SAM/BAM input file",
 						"-n <samRefSense>, --samRefSense <samRefSense>           SAM ref seq sense",
@@ -65,6 +65,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 						"-o <outputFileName>, --outputFileName <outputFileName>  FASTA output file",
 						"-p, --preview                                           Preview output on console",
 						"-q <minQScore>, --minQScore <minQScore>                 Minimum Phred quality score",
+						"-g <minMapQ>, --minMapQ <minMapQ>                       Minimum mapping quality score",
 						"-d <minDepth>, --minDepth <minDepth>                    Minimum depth"
 				},
 				furtherHelp = 
@@ -112,7 +113,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
 			Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
 					consoleCmdContext, samFileName, samFileSession, validationStringency, getSuppliedSamRefName(),
-					this.consensusID, getMinQScore(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+					this.consensusID, getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 
 
 			if(this.preview) {

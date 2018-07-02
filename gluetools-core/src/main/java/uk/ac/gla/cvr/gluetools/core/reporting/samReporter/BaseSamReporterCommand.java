@@ -46,6 +46,7 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 	public static final String SAM_REF_NAME = "samRefName";
 
 	public static final String MIN_Q_SCORE = "minQScore";
+	public static final String MIN_MAP_Q = "minMapQ";
 	public static final String MIN_DEPTH = "minDepth";
 	
 	public static final String SAM_REF_SENSE = "samRefSense";
@@ -55,6 +56,7 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 	
 	private Optional<Integer> minQScore;
 	private Optional<Integer> minDepth;
+	private Optional<Integer> minMapQ;
 	
 	private Optional<SamRefSense> samRefSense;
 	
@@ -64,6 +66,7 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.samRefName = PluginUtils.configureStringProperty(configElem, SAM_REF_NAME, false);
 		this.minQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_Q_SCORE, 0, true, 99, true, false));
+		this.minMapQ = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_MAP_Q, 0, true, 99, true, false));
 		this.minDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_DEPTH, 0, true, null, false, false));
 		this.samRefSense = Optional.ofNullable(PluginUtils.configureEnumProperty(SamRefSense.class, configElem, SAM_REF_SENSE, false));
 	}
@@ -82,6 +85,10 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 
 	protected int getMinDepth(SamReporter samReporter) {
 		return minDepth.orElse(samReporter.getDefaultMinDepth());
+	}
+
+	protected int getMinMapQ(SamReporter samReporter) {
+		return minMapQ.orElse(samReporter.getDefaultMinMapQ());
 	}
 
 	protected SamRefSense getSamRefSense(SamReporter samReporter) {
