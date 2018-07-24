@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -157,6 +158,8 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 					List<BlastHsp> forwardHsps = hit.getHsps().stream().filter(forwardHspFilter::allowBlastHsp).collect(Collectors.toList());
 					int totalAlignLen = 0;
 					for(BlastHsp forwardHsp: forwardHsps) {
+						log(Level.FINEST, "Category "+forwardResult.getCategoryId()+ " (forward): allowed HSP on query ["+forwardHsp.getQueryFrom()+", "+forwardHsp.getQueryTo()+"] with score: "+
+								forwardHsp.getScore()+", bit score: "+forwardHsp.getBitScore());
 						totalAlignLen += forwardHsp.getAlignLen();
 					}
 					if(totalAlignLen >= category.getMinimumTotalAlignLength()) {
@@ -169,6 +172,8 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 					List<BlastHsp> reverseHsps = hit.getHsps().stream().filter(reverseHspFilter::allowBlastHsp).collect(Collectors.toList());
 					int totalAlignLen = 0;
 					for(BlastHsp reverseHsp: reverseHsps) {
+						log(Level.FINEST, "Category "+reverseResult.getCategoryId()+ " (reverse): allowed HSP on query ["+reverseHsp.getQueryFrom()+", "+reverseHsp.getQueryTo()+"] with score: "+
+								reverseHsp.getScore()+", bit score: "+reverseHsp.getBitScore());
 						totalAlignLen += reverseHsp.getAlignLen();
 					}
 					if(totalAlignLen >= category.getMinimumTotalAlignLength()) {
