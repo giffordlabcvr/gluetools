@@ -1,8 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.collation.populating.regex;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import uk.ac.gla.cvr.gluetools.utils.IsoCountry;
 import uk.ac.gla.cvr.gluetools.utils.IsoCountryUtils.CodeStyle;
 
@@ -17,29 +14,7 @@ public class IsoCountryMatcherConverter implements MatcherConverter {
 
 	@Override
 	public String matchAndConvert(String input) {
-		IsoCountry bestCountry = null;
-		Integer bestMatchPosition = null;
-		Integer bestMatchLength = null;
-		for(IsoCountry isoCountry: IsoCountry.values()) {
-			for(Pattern pattern: isoCountry.getPatterns()) {
-				Matcher matcher = pattern.matcher(input);
-				boolean found = matcher.find();
-				if(found) {
-					int matchStart = matcher.start();
-					int matchLength = matcher.end() - matchStart;
-					if(bestCountry == null || 
-							matchStart < bestMatchPosition ||
-							(matchStart == bestMatchPosition && matchLength > bestMatchLength)) {
-						bestCountry = isoCountry;
-						bestMatchPosition = matchStart;
-						bestMatchLength = matchLength;
-					}
-				} 
-			}
-		}
-		if(bestCountry == null) {
-			return null;
-		}
+		IsoCountry bestCountry = IsoCountry.parseCountry(input);
 		String output;
 		switch(codeStyle) {
 		case OFFICIAL:
@@ -62,5 +37,6 @@ public class IsoCountryMatcherConverter implements MatcherConverter {
 		}
 		return output;
 	}
+
 
 }

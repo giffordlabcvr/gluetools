@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.utils;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum IsoCountry {
@@ -327,4 +328,34 @@ public enum IsoCountry {
 	public String getNumeric() {
 		return numeric;
 	}
+	
+	public static IsoCountry parseCountry(String input) {
+		IsoCountry bestCountry = null;
+		Integer bestMatchPosition = null;
+		Integer bestMatchLength = null;
+		for(IsoCountry isoCountry: IsoCountry.values()) {
+			for(Pattern pattern: isoCountry.getPatterns()) {
+				Matcher matcher = pattern.matcher(input);
+				boolean found = matcher.find();
+				if(found) {
+					int matchStart = matcher.start();
+					int matchLength = matcher.end() - matchStart;
+					if(bestCountry == null || 
+							matchStart < bestMatchPosition ||
+							(matchStart == bestMatchPosition && matchLength > bestMatchLength)) {
+						bestCountry = isoCountry;
+						bestMatchPosition = matchStart;
+						bestMatchLength = matchLength;
+					}
+				} 
+			}
+		}
+		if(bestCountry == null) {
+			return null;
+		}
+		return bestCountry;
+	}
+
+	
+	
 }

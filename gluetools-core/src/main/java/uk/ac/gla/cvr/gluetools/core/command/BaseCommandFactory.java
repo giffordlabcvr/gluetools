@@ -40,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleSetOptionComma
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleShowOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleUnsetOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpCommand;
+import uk.ac.gla.cvr.gluetools.core.command.dataUtils.DataUtilParseCountryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilDeleteFileCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilListFilesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilLoadStringCommand;
@@ -70,7 +71,11 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(FileUtilSaveStringCommand.class);
 		registerCommandClass(FileUtilLoadStringCommand.class);
 
-		setCmdGroup(new CommandGroup("console", "Commands to manage console options", 95, true));
+		setCmdGroup(new CommandGroup("data-utils", "Data utility commands", 95, true));
+		registerCommandClass(DataUtilParseCountryCommand.class);
+
+		
+		setCmdGroup(new CommandGroup("console", "Commands to manage console options", 96, true));
 		registerCommandClass(ConsoleChangeDirectoryCommand.class);
 		registerCommandClass(ConsoleShowOptionCommand.class);
 		registerCommandClass(ConsoleSetOptionCommand.class);
@@ -79,7 +84,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(ConsoleAddOptionLineCommand.class);
 		registerCommandClass(ConsoleRemoveOptionLineCommand.class);
 
-		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine version/configuration", 96, true));
+		setCmdGroup(new CommandGroup("config", "Commands to manage GLUE engine version/configuration", 97, true));
 		registerCommandClass(ConfigShowPropertyCommand.class);
 		registerCommandClass(GlueEngineShowVersionCommand.class);
 		
