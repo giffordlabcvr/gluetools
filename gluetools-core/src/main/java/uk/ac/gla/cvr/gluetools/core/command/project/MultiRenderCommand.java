@@ -52,31 +52,43 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.IObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.ObjectRenderer;
+import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 
 @CommandClass( 
 		commandWords={"multi-render"}, 
-		docoptUsages={"<tableName> (-w <whereClause> | -a) [-b <batchSize>] [<rendererModuleName>]"},
+		docoptUsages={"<tableName> (-w <whereClause> | -a) [-p <pageSize>] [-l <fetchLimit>] [-o <fetchOffset>] [-s <sortProperties>] [<rendererModuleName>]"},
 		metaTags={},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify rendered objects", 
 				"-a, --allObjects                               Render all objects",
-				"-b <batchSize>, --batchSize <batchSize>        Render batch size" },
+				"-p <pageSize>, --pageSize <pageSize>                    Tune ORM page size",
+				"-l <fetchLimit>, --fetchLimit <fetchLimit>              Limit max number of records",
+				"-o <fetchOffset>, --fetchOffset <fetchOffset>           Record number offset",
+				"-s <sortProperties>, --sortProperties <sortProperties>  Comma-separated sort properties" },
 		description="Render multiple objects", 
 		furtherHelp="Renders are done in batches, the default batch size is 250.\n"+
 				"The supplied <rendererModuleName> refers to a module implementing the IObjectRenderer interface.\n"+
 				"If no <rendererModuleName> is supplied, a default renderer is used.") 
 public class MultiRenderCommand extends ProjectModeCommand<MultiRenderResult> {
 
-	public static final String BATCH_SIZE = "batchSize";
+	private static final int BATCH_SIZE = 250;
+
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_OBJECTS = "allObjects";
 	public static final String TABLE_NAME = "tableName";
 	public static final String RENDERER_MODULE_NAME = "rendererModuleName";
-	
+	public static final String PAGE_SIZE = "pageSize";
+	public static final String FETCH_LIMIT = "fetchLimit";
+	public static final String FETCH_OFFSET = "fetchOffset";
+	public static final String SORT_PROPERTIES = "sortProperties";
+
 	private Boolean allObjects;
 	private String tableName;
 	private Optional<Expression> whereClause;
-	private int batchSize;
+	private int pageSize;
+	private Optional<Integer> fetchLimit;
+	private Optional<Integer> fetchOffset;
+	private String sortProperties;
 	private String rendererModuleName;
 	
 	
@@ -86,7 +98,10 @@ public class MultiRenderCommand extends ProjectModeCommand<MultiRenderResult> {
 		tableName = PluginUtils.configureStringProperty(configElem, TABLE_NAME, true);
 		allObjects = PluginUtils.configureBooleanProperty(configElem, ALL_OBJECTS, true);
 		whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
-		batchSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, BATCH_SIZE, false)).orElse(250);
+		sortProperties = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SORT_PROPERTIES, false)).orElse(null);
+		pageSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, PAGE_SIZE, false)).orElse(250);
+		fetchLimit = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_LIMIT, false));
+		fetchOffset = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_OFFSET, false));
 		rendererModuleName = PluginUtils.configureStringProperty(configElem, RENDERER_MODULE_NAME, false);
 		if( !allObjects && !whereClause.isPresent() ) {
 			usageError();
@@ -117,11 +132,19 @@ public class MultiRenderCommand extends ProjectModeCommand<MultiRenderResult> {
 		} else {
 			selectQuery = new SelectQuery(dataObjectClass);
 		}
+		final SelectQuery finalSelectQuery = selectQuery;
+		finalSelectQuery.setPageSize(pageSize);
+		fetchLimit.ifPresent(limit -> finalSelectQuery.setFetchLimit(limit));
+		fetchOffset.ifPresent(offset -> finalSelectQuery.setFetchOffset(offset));
+		if(sortProperties != null) {
+			selectQuery.addOrderings(CayenneUtils.sortPropertiesToOrderings(sortProperties));
+		}
+
 		String objectWord = dataObjectClass.getSimpleName()+"s";
 		GlueLogger.getGlueLogger().fine("Finding "+objectWord+" to render");
 
 		List<? extends GlueDataObject> objectsToRender = 
-				GlueDataObject.query(cmdContext, dataObjectClass, selectQuery);
+				GlueDataObject.query(cmdContext, dataObjectClass, finalSelectQuery);
 		
 		
 		if(tableName.equals(ConfigurableTable.sequence.name())) {
@@ -140,7 +163,7 @@ public class MultiRenderCommand extends ProjectModeCommand<MultiRenderResult> {
 			GlueDataObject dataObject = GlueDataObject.lookup(cmdContext, dataObjectClass, pkMap, false);
 			renderResults.add(renderer.render(cmdContext, dataObject).getCommandDocument());
 			numRendered++;
-			if(numRendered % batchSize == 0) {
+			if(numRendered % BATCH_SIZE == 0) {
 				cmdContext.newObjectContext();
 				GlueLogger.getGlueLogger().finest("Rendered "+numRendered+" "+objectWord);
 			}
