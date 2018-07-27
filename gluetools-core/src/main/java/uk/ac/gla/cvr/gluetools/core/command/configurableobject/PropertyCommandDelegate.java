@@ -133,9 +133,6 @@ public class PropertyCommandDelegate {
 		linkName = PluginUtils.configureStringProperty(configElem, LINK_NAME, true);
 		
 		propertyNames = PluginUtils.configureStringsProperty(configElem, PROPERTY_NAME);
-		if(propertyNames.isEmpty()) {
-			propertyNames = Arrays.asList(CustomTableObject.ID_PROPERTY); // default fields
-		}
 	}
 
 	
@@ -241,7 +238,18 @@ public class PropertyCommandDelegate {
 		Class<D> theClass = (Class<D>) project.getDataObjectClass(otherTableName);
 		Collection<D> targets = (Collection<D>) configurableObject.readNestedProperty(linkName);
 		
-		return new ListResult(cmdContext, theClass, new LinkedList<D>(targets), propertyNames);
+		if(propertyNames == null || propertyNames.isEmpty()) {
+			if(CustomTableObject.class.isAssignableFrom(theClass)) {
+				return new ListResult(cmdContext, theClass, new LinkedList<D>(targets), Arrays.asList(CustomTableObject.ID_PROPERTY));
+			} else {
+				return new ListResult(cmdContext, theClass, new LinkedList<D>(targets));
+			}
+		} else {
+			return new ListResult(cmdContext, theClass, new LinkedList<D>(targets), propertyNames);
+		}
+		
+		
+		
 	}
 
 	private Link resolveLink(Project project, String tableName, String linkName) {
