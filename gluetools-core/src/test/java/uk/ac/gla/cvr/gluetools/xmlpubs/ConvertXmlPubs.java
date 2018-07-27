@@ -15,9 +15,11 @@ public class ConvertXmlPubs {
 	
 	public static void main(String[] args) throws Exception {
 		
-		try(InputStream is = new FileInputStream(new File("/Users/joshsinger/gitrepos_ssh/PHE-HCV-DRUG-RESISTANCE/tabular/pubs.xml"))) {
+		try(InputStream is = new FileInputStream(new File("/Users/joshsinger/gitrepos_ssh/BTV-GLUE/pubs.xml"))) {
 			Document doc = GlueXmlUtils.documentFromStream(is);
 			List<String> pmids = GlueXmlUtils.getXPathStrings(doc, "/Publications/PubmedArticle/MedlineCitation/PMID/text()");
+			System.out.println("id\ttitle\tauthors_short\tauthors_full\tyear\tjournal\tvolume\tissue\tpages\turl\tdoi");
+			
 			for(String pmid: pmids) {
 				System.out.print(pmid);
 				String title = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/ArticleTitle/text()");
@@ -41,28 +43,54 @@ public class ConvertXmlPubs {
 						authorsFull.append(collectiveName);
 					} else {
 						String initials = GlueXmlUtils.getXPathString(authorNode, "Initials/text()");
-						for(char c : initials.toCharArray()) {
-							authorsFull.append(c);
-							authorsFull.append(". ");
+						if(initials != null) {
+							for(char c : initials.toCharArray()) {
+								authorsFull.append(c);
+								authorsFull.append(". ");
+							}
 						}
 						String surname = GlueXmlUtils.getXPathString(authorNode, "LastName/text()");
-						authorsFull.append(surname);
+						if(surname != null) {
+							authorsFull.append(surname);
+						}
 					}
 				}
 				System.out.print("\t"+authorsFull.toString());
 				String year = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/Journal/JournalIssue/PubDate/Year/text()");
+				if(year == null) {
+					year = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/Journal/JournalIssue/PubDate/MedlineDate/text()");					
+					if(year != null && year.length() >=4) {
+						year = year.substring(0, 4);
+					}
+				}
+				
 				System.out.print("\t"+year);
 				String journal = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/Journal/ISOAbbreviation/text()");
 				System.out.print("\t"+journal);
+				String volumeText = null;
+				String issueText = null;
 				Node volumeNode = GlueXmlUtils.getXPathNode(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/Journal/JournalIssue/Volume");
 				if(volumeNode != null) {
-					System.out.print("\t"+GlueXmlUtils.getXPathString(volumeNode, "text()"));
-				} else {
-					System.out.print("\t");
+					volumeText = GlueXmlUtils.getXPathString(volumeNode, "text()");
 				}
 				Node issueNode = GlueXmlUtils.getXPathNode(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/Journal/JournalIssue/Issue");
 				if(issueNode != null) {
-					System.out.print("\t"+GlueXmlUtils.getXPathString(issueNode, "text()"));
+					issueText = GlueXmlUtils.getXPathString(issueNode, "text()");
+				}
+				if(issueText == null && volumeText != null && volumeText.matches("\\d+ \\( Pt \\d+\\)")) {
+					issueText = volumeText.substring(volumeText.indexOf("Pt")+3, volumeText.indexOf(")"));
+					volumeText = volumeText.substring(0, volumeText.indexOf(" "));
+				}
+				if(volumeText != null) {
+					System.out.print("\t"+volumeText);
+				} else {
+					System.out.print("\t");
+				}
+				if(issueText != null) {
+					if(issueText.startsWith("Pt ")) {
+						issueText = issueText.replace("Pt ", "");
+					}
+					System.out.print("\t"+issueText);
 				} else {
 					System.out.print("\t");
 				}
@@ -74,7 +102,14 @@ public class ConvertXmlPubs {
 				}
 				System.out.print("\t"); // "url"
 				String doi = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/ELocationID[@EIdType='doi']/text()");
-				System.out.print("\thttps://doi.org/"+doi);
+				if(doi == null) {
+					doi = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle[MedlineCitation/PMID/text() = '"+pmid+"']/PubmedData/ArticleIdList/ArticleId[@IdType='doi']/text()");				
+				}
+				if(doi != null) {
+					System.out.print("\thttps://doi.org/"+doi);
+				} else {
+					System.out.print("\t");
+				}
 				System.out.print("\n");
 			
 			}
