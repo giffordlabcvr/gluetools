@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -56,12 +57,16 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.MultiReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="blastSequenceRecogniser",
 		description="Classifies sequences based on a nucleotide BLAST against a set of ReferenceSequences")
 public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecogniser> {
 
 	
+
+
+
 	private static final String REFERENCE_SEQUENCE = "referenceSequence";
 	private static final String RECOGNITION_CATEGORY = "recognitionCategory";
 	private static final String BLAST_RUNNER = "blastRunner";
@@ -69,6 +74,10 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 	private BlastRunner blastRunner = new BlastRunner();
 	private List<String> refSeqNames;
 	private List<RecognitionCategory> recognitionCategories;
+	// multiple categories may be returned for each sequence.
+	// alternate categories are resolved using the resolvers in turn, with earlier resolvers
+	// taking precedence. If a category resolver prefers one category result over another, the non-preferred result is discarded
+	private List<CategoryResultResolver> categoryResolvers;
 	
 	public BlastSequenceRecogniser() {
 		super();
@@ -88,6 +97,10 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 				PluginUtils.findConfigElements(configElem, RECOGNITION_CATEGORY));
 		this.refSeqNames = PluginUtils.configureStringsProperty(configElem, REFERENCE_SEQUENCE, 1, null);
 
+		CategoryResultResolverFactory categoryResolverFactory = PluginFactory.get(CategoryResultResolverFactory.creator);
+		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(categoryResolverFactory.getElementNames());
+		List<Element> categoryResolverElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
+		categoryResolvers = categoryResolverFactory.createFromElements(pluginConfigContext, categoryResolverElems);
 	}
 
 	@Override
@@ -147,50 +160,90 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 
 		for(BlastResult blastResult: blastResults) {
 			String queryId = blastResult.getQueryFastaId();
-			Set<RecognitionCategoryResult> categoryResults = new LinkedHashSet<RecognitionCategoryResult>();
+			GlueLogger.getGlueLogger().finest("Applying recognition categories for "+queryId);
+			Map<RecognitionCategoryResult, List<BlastHsp>> categoryResultToValidHsps = new LinkedHashMap<RecognitionCategoryResult, List<BlastHsp>>();
 			List<BlastHit> hits = blastResult.getHits();
 			for(BlastHit hit: hits) {
 				String referenceName = hit.getReferenceName();
 				RecognitionCategory category = refToCategory.get(referenceName);
-				RecognitionCategoryResult forwardResult = new RecognitionCategoryResult(category.getId(), Direction.FORWARD);
-				if(!categoryResults.contains(forwardResult)) {
-					BlastHspFilter forwardHspFilter = category.getForwardHspFilter();
-					List<BlastHsp> forwardHsps = hit.getHsps().stream().filter(forwardHspFilter::allowBlastHsp).collect(Collectors.toList());
-					int totalAlignLen = 0;
-					for(BlastHsp forwardHsp: forwardHsps) {
-						log(Level.FINEST, "Category "+forwardResult.getCategoryId()+ " (forward): allowed HSP on query ["+forwardHsp.getQueryFrom()+", "+forwardHsp.getQueryTo()+"] with score: "+
-								forwardHsp.getScore()+", bit score: "+forwardHsp.getBitScore());
-						totalAlignLen += forwardHsp.getAlignLen();
-					}
-					if(totalAlignLen >= category.getMinimumTotalAlignLength()) {
-						categoryResults.add(forwardResult);
-					}
-				}
-				RecognitionCategoryResult reverseResult = new RecognitionCategoryResult(category.getId(), Direction.REVERSE);
-				if(!categoryResults.contains(reverseResult)) {
-					BlastHspFilter reverseHspFilter = category.getReverseHspFilter();
-					List<BlastHsp> reverseHsps = hit.getHsps().stream().filter(reverseHspFilter::allowBlastHsp).collect(Collectors.toList());
-					int totalAlignLen = 0;
-					for(BlastHsp reverseHsp: reverseHsps) {
-						log(Level.FINEST, "Category "+reverseResult.getCategoryId()+ " (reverse): allowed HSP on query ["+reverseHsp.getQueryFrom()+", "+reverseHsp.getQueryTo()+"] with score: "+
-								reverseHsp.getScore()+", bit score: "+reverseHsp.getBitScore());
-						totalAlignLen += reverseHsp.getAlignLen();
-					}
-					if(totalAlignLen >= category.getMinimumTotalAlignLength()) {
-						categoryResults.add(reverseResult);
+				for(Direction direction: new Direction[]{Direction.FORWARD, Direction.REVERSE}) {
+					RecognitionCategoryResult recCatResult = new RecognitionCategoryResult(category.getId(), direction);
+					BlastHspFilter hspFilter = direction == Direction.FORWARD ? category.getForwardHspFilter() : category.getReverseHspFilter();
+					// HSPs get filtered out by various thresholds defined on the rec category.
+					List<BlastHsp> hsps = hit.getHsps().stream().filter(hspFilter::allowBlastHsp).collect(Collectors.toList());
+					if(!hsps.isEmpty()) {
+						int totalAlignLen = 0;
+						for(BlastHsp hsp: hsps) {
+							log(Level.FINEST, "Category "+recCatResult.getCategoryId()+
+									" ("+direction.name().toLowerCase()+")"+
+									": allowed HSP on query ["+hsp.getQueryFrom()+", "+
+									hsp.getQueryTo()+"] with identity: "+
+									(hsp.getIdentity()/ (double) hsp.getAlignLen())*100.0+"%, score: "+
+									hsp.getScore()+", bit score: "+hsp.getBitScore());
+							totalAlignLen += hsp.getAlignLen();
+						}
+						// rec category may also define a minimum total align length of the hsps which pass the filter.
+						if(totalAlignLen >= category.getMinimumTotalAlignLength()) {
+							List<BlastHsp> validHsps = categoryResultToValidHsps.get(recCatResult);
+							if(validHsps == null) {
+								validHsps = new ArrayList<BlastHsp>();
+								categoryResultToValidHsps.put(recCatResult, validHsps);
+							}
+							validHsps.addAll(hsps);
+						}
 					}
 				}
 			}
-			queryIdToCategoryResults.put(queryId, new ArrayList<RecognitionCategoryResult>(categoryResults));
+			List<RecognitionCategoryResult> finalCatResults;
+			if(this.categoryResolvers.isEmpty() || categoryResultToValidHsps.isEmpty()) {
+				finalCatResults = new ArrayList<RecognitionCategoryResult>(categoryResultToValidHsps.keySet());
+			} else {
+				Set<RecognitionCategoryResult> discarded = new LinkedHashSet<RecognitionCategoryResult>();
+				Set<RecognitionCategoryResult> retained = new LinkedHashSet<RecognitionCategoryResult>(categoryResultToValidHsps.keySet());
+				List<Entry<RecognitionCategoryResult, List<BlastHsp>>> entryList = 
+						new ArrayList<Entry<RecognitionCategoryResult, List<BlastHsp>>>(categoryResultToValidHsps.entrySet());
+				for(int i = 0; i < entryList.size()-1; i++) {
+					Entry<RecognitionCategoryResult, List<BlastHsp>> o1 = entryList.get(i);
+					for(int j = i+1; j < entryList.size(); j++) {
+						Entry<RecognitionCategoryResult, List<BlastHsp>> o2 = entryList.get(j);
+						for(CategoryResultResolver categoryResolver: categoryResolvers) {
+							RecognitionCategoryResult catResult1 = o1.getKey();
+							List<BlastHsp> hsps1 = o1.getValue();
+							RecognitionCategoryResult catResult2 = o2.getKey();
+							List<BlastHsp> hsps2 = o2.getValue();
+							int comp = categoryResolver.compare(catResult1, hsps1, catResult2, hsps2);
+							if(comp == -1) {
+								retained.remove(catResult1);
+								discarded.add(catResult1);
+								break;
+							} else if(comp == 1) {
+								retained.remove(catResult2);
+								discarded.add(catResult2);
+								break;
+							}
+						}
+					}
+				}
+				finalCatResults = new ArrayList<RecognitionCategoryResult>(retained);
+				discarded.forEach(recCatResult ->{
+					log(Level.FINEST, "Category "+recCatResult.getCategoryId()+
+							" ("+recCatResult.getDirection().name().toLowerCase()+")"+
+							": discarded by category resolvers");
+
+				});
+			}
+			queryIdToCategoryResults.put(queryId, finalCatResults);
 		}
 		
 		return queryIdToCategoryResults;
 	}
 
+	
+	
 	private String dbName() {
 		return "blastSequenceRecogniser_"+getModuleName();
 	}
 	
-	
+		
 	
 }
