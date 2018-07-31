@@ -25,8 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.populating.genbank;
 
-import java.util.Optional;
-
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
@@ -46,7 +44,7 @@ public class GenbankReferenceRule extends NodeSelectorRule {
 	@Override
 	public void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {
 		String refNumberXPath = "@refNumber";
-		String refNumberString = Optional.ofNullable(PluginUtils.configureString(configElem, refNumberXPath, false)).orElse("1");
+		String refNumberString = PluginUtils.configureString(configElem, refNumberXPath, "1");
 		String xPathString = "/GBSeq/GBSeq_references/GBReference[GBReference_reference='"+refNumberString+"']";
 		try {
 			setXPathExpression(GlueXmlUtils.createXPathEngine().compile(xPathString));

@@ -47,6 +47,11 @@ public interface NewickGenerator extends Plugin {
 		return (String) phyloInternal.ensureUserData().get("name");
 	}
 
+	/* comment string associated with internal nodes. Appears after internal name, in [] */
+	public default String generateInternalComment(PhyloInternal phyloInternal) {
+		return (String) phyloInternal.ensureUserData().get("comment");
+	}
+
 	/* optional string within [] associated with branches */
 	public default String generateBranchComment(PhyloBranch phyloBranch) {
 		return (String) phyloBranch.ensureUserData().get("comment");

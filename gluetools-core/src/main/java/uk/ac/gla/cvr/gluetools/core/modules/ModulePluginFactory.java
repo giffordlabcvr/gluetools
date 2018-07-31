@@ -65,6 +65,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentC
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.freemarkerDocTransformer.FreemarkerDocTransformer;
+import uk.ac.gla.cvr.gluetools.core.reporting.nexusExporter.NexusExporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
@@ -124,6 +125,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(PhyloImporter.class);
 		registerPluginClass(PhyloUtility.class);
 		registerPluginClass(PhyloExporter.class);
+		registerPluginClass(NexusExporter.class);
 		registerPluginClass(TreeTransformer.class);
 		registerPluginClass(MaxLikelihoodPlacer.class);
 		registerPluginClass(MaxLikelihoodGenotyper.class);

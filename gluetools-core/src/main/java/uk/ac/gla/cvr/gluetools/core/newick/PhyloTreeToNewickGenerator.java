@@ -70,6 +70,7 @@ public class PhyloTreeToNewickGenerator implements PhyloTreeVisitor {
 	public void postVisitInternal(PhyloInternal phyloInternal) {
 		buf.append(")");
 		Optional.ofNullable(newickGenerator.generateInternalName(phyloInternal)).ifPresent(name -> buf.append(name));
+		Optional.ofNullable(newickGenerator.generateInternalComment(phyloInternal)).ifPresent(comment -> buf.append("[").append(comment).append("]"));
 	}
 
 	@Override

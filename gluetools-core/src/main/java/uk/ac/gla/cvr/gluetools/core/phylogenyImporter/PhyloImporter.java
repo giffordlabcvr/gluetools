@@ -75,8 +75,8 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 	public List<AlignmentPhylogeny> previewImportPhylogeny(CommandContext cmdContext, PhyloTree phyloTree,
 			String rootAlmtName, Boolean recursive, Boolean anyAlignment, Optional<Expression> whereClause) {
 		Alignment rootAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(rootAlmtName));
-		if(!rootAlmt.isConstrained()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Phylogeny can only be imported for constrained alignments.");
+		if(recursive && !rootAlmt.isConstrained()) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Recursive option can only be used for constrained alignments.");
 		}
 		List<AlignmentMember> almtMembers = 
 				AlignmentListMemberCommand.listMembers(cmdContext, rootAlmt, recursive, whereClause);
