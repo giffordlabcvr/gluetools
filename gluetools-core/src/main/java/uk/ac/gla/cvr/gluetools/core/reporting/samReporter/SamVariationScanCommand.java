@@ -62,7 +62,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils.ReferenceBasedRecordFilter;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationResult;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
