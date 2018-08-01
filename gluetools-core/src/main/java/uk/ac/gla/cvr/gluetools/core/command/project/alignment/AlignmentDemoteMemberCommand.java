@@ -136,7 +136,7 @@ public class AlignmentDemoteMemberCommand extends AlignmentModeCommand<OkResult>
 		List<AlignmentMember> membersToDemote = lookupMembers(cmdContext, whereClause, allMembers, sourceName, sequenceID);
 		membersToDemote.forEach(memberToDemote -> {
 			Sequence sequence = memberToDemote.getSequence();
-			AlignmentMember memberOfChild = AlignmentAddMemberCommand.addMember(cmdContext, childAlignment, sequence);
+			AlignmentMember memberOfChild = AlignmentAddMemberCommand.addMember(cmdContext, childAlignment, sequence, false);
 			cmdContext.cacheUncommitted(memberOfChild);
 			/*
 			// idea here was to recreate segments for the demoted member.

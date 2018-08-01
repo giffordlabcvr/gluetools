@@ -149,7 +149,7 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 				return existing;
 			}
 		} 
-		return AlignmentAddMemberCommand.addMember(cmdContext, alignment, foundSequence);
+		return AlignmentAddMemberCommand.addMember(cmdContext, alignment, foundSequence, false);
 	}
 
 

@@ -82,6 +82,10 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(AlignmentShowFeaturePresenceCommand.class);
 		registerCommandClass(AlignmentScoreCoverageCommand.class);
 		
+		
+		setCmdGroup(new CommandGroup("fileExport", "File export commands", 52, false));
+		registerCommandClass(ExportCommandDocumentCommand.class);
+
 		setCmdGroup(CommandGroup.RENDERING);
 		registerCommandClass(RenderObjectCommand.class);
 
@@ -89,6 +93,8 @@ public class AlignmentModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(MemberCommand.class);
 		registerCommandClass(ExitCommand.class);
 		registerCommandClass(ReturnToProjectModeCommand.class);
+		
+		
 
 	}
 	

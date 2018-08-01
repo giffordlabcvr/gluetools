@@ -419,7 +419,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 				}
 			} else {
 				if(targetAlmtMember == null) {
-					targetAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlmtForCtx, memberSeq);
+					targetAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlmtForCtx, memberSeq, false);
 					targetMemberPkMapToAlmtMember.put(targetMemberPkMap, targetAlmtMember);
 				}
 			}

@@ -140,7 +140,11 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 	}
 
 	public Object getSimpleValue(String fieldName) {
-		return ((SimpleCommandValue) getFieldValue(fieldName)).getValue();
+		SimpleCommandValue simpleCommandValue = (SimpleCommandValue) getFieldValue(fieldName);
+		if(simpleCommandValue != null) {
+			return simpleCommandValue.getValue();
+		}
+		return null;
 	}
 	
 	// this allows command objects to be correctly handled with dot-notation in freemarker.

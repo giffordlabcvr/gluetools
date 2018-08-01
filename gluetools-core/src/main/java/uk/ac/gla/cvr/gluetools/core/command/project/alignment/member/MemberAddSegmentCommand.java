@@ -88,13 +88,21 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		
-		if(refStart > refEnd) {
-			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_ENDPOINTS_REVERSED, 
-					getAlignmentName(), getSourceName(), getSequenceID(), Integer.toString(refStart), Integer.toString(refEnd));
-		}
 		AlignmentMember almtMemb = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
+		addSegment(cmdContext, almtMemb, refStart, refEnd, memberStart, memberEnd);
+		return new CreateResult(AlignedSegment.class, 1);
+	}
+
+	public static void addSegment(CommandContext cmdContext, AlignmentMember almtMemb, 
+			int refStart, int refEnd, int memberStart, int memberEnd) {
+		String alignmentName = almtMemb.getAlignment().getName();
+		String sourceName = almtMemb.getSequence().getSource().getName();
+		String sequenceID = almtMemb.getSequence().getSequenceID();
+		if(refStart > refEnd) {
+			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_ENDPOINTS_REVERSED, 
+					alignmentName, sourceName, sequenceID, Integer.toString(refStart), Integer.toString(refEnd));
+		}
 		Alignment alignment = almtMemb.getAlignment();
 		ReferenceSequence refSeq = alignment.getRefSequence();
 		if(refSeq != null) {
@@ -102,7 +110,7 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 			int refSeqLength = refSeqSequence.getSequenceObject().getNucleotides(cmdContext).length();
 			if(refStart < 1 || refEnd > refSeqLength) {
 				throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REF_REGION_OUT_OF_RANGE, 
-						getAlignmentName(), getSourceName(), getSequenceID(), 
+						alignmentName, sourceName, sequenceID, 
 						Integer.toString(refSeqLength), Integer.toString(refStart), Integer.toString(refEnd));
 			}
 		}
@@ -111,14 +119,14 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 		if(memberStart < 1 || memberEnd > membSeqLength || 
 				memberEnd < 1 || memberStart > membSeqLength) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_MEMBER_REGION_OUT_OF_RANGE, 
-					getAlignmentName(), getSourceName(), getSequenceID(), 
+					alignmentName, sourceName, sequenceID, 
 					Integer.toString(membSeqLength), Integer.toString(memberStart), Integer.toString(memberEnd));
 		}
 		int refRegionLength = (refEnd - refStart)+1;
 		int membRegionLength = Math.abs(memberEnd - memberStart)+1;
 		if(membRegionLength != refRegionLength) {
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_REGION_LENGTHS_NOT_EQUAL, 
-					getAlignmentName(), getSourceName(), getSequenceID(), 
+					alignmentName, sourceName, sequenceID, 
 					Integer.toString(membRegionLength), Integer.toString(refRegionLength));
 		}
 		List<QueryAlignedSegment> existingSegments = almtMemb
@@ -126,7 +134,7 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 		
 		// TODO specify and enforce further constraints as necessary. 
 		AlignedSegment alignedSegment = GlueDataObject.create(cmdContext, AlignedSegment.class, 
-				AlignedSegment.pkMap(getAlignmentName(), getSourceName(), getSequenceID(), refStart, refEnd, memberStart, memberEnd), false);
+				AlignedSegment.pkMap(alignmentName, sourceName, sequenceID, refStart, refEnd, memberStart, memberEnd), false);
 
 		List<QueryAlignedSegment> intersection = ReferenceSegment.intersection(existingSegments, 
 				Collections.singletonList(alignedSegment.asQueryAlignedSegment()), 
@@ -135,13 +143,12 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 		if(!intersection.isEmpty()) {
 			QueryAlignedSegment firstOverlap = intersection.get(0);
 			throw new AlignedSegmentException(Code.ALIGNED_SEGMENT_OVERLAPS_EXISTING, 
-					getAlignmentName(), getSourceName(), getSequenceID(), 
+					alignmentName, sourceName, sequenceID, 
 					Integer.toString(firstOverlap.getRefStart()), Integer.toString(firstOverlap.getRefEnd()));
 		}
 		
 		alignedSegment.setAlignmentMember(almtMemb);
 		cmdContext.commit();
-		return new CreateResult(AlignedSegment.class, 1);
 	}
 
 	@CompleterClass
