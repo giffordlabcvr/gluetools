@@ -139,6 +139,7 @@ public class ImportAlignmentCommand extends ProjectModeCommand<CreateResult> {
 				}
 			}
 		}
+		cmdContext.commit();
 		return new CreateResult(Alignment.class, 1);
 	}
 

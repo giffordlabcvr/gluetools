@@ -91,6 +91,7 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 		AlignmentMember almtMemb = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(getAlignmentName(), getSourceName(), getSequenceID()));
 		addSegment(cmdContext, almtMemb, refStart, refEnd, memberStart, memberEnd);
+		cmdContext.commit();
 		return new CreateResult(AlignedSegment.class, 1);
 	}
 
@@ -148,7 +149,6 @@ public class MemberAddSegmentCommand extends MemberModeCommand<CreateResult> {
 		}
 		
 		alignedSegment.setAlignmentMember(almtMemb);
-		cmdContext.commit();
 	}
 
 	@CompleterClass
