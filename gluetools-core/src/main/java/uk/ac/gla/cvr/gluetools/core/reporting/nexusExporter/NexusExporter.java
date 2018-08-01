@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.nexusExporter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 		figtreeProperties.put("legend.isShown", false);
 		figtreeProperties.put("legend.significantDigits", 4);
 		figtreeProperties.put("nodeBars.barWidth", 4.0);
-		figtreeProperties.put("nodeBars.displayAttribute", null);
+		figtreeProperties.put("nodeBars.displayAttribute", new UnquotedValue("null"));
 		figtreeProperties.put("nodeBars.isShown", false);
 		figtreeProperties.put("nodeLabels.colorAttribute", "User selection");
 		figtreeProperties.put("nodeLabels.fontName", "Abadi MT Condensed Extra Bold");
@@ -209,6 +210,19 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 				almtMembers.add(almtMember);
 			}
 		});
+		almtMembers.sort(new Comparator<AlignmentMember>() {
+			@Override
+			public int compare(AlignmentMember o1, AlignmentMember o2) {
+				int comp;
+				comp = o1.getAlignment().getName().compareTo(o2.getAlignment().getName());
+				if(comp != 0) return comp;
+				comp = o1.getSequence().getSource().getName().compareTo(o2.getSequence().getSource().getName());
+				if(comp != 0) return comp;
+				comp = o1.getSequence().getSequenceID().compareTo(o2.getSequence().getSequenceID());
+				if(comp != 0) return comp;
+				return 0;
+			}
+		});
 		StringBuffer buf = new StringBuffer();
 		buf.append("#NEXUS\n");
 		buf.append("begin taxa;\n");
@@ -221,7 +235,7 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 				if(i > 0) { buf.append(","); }
 				MemberAnnotationGenerator annotationGenerator = memberAnnotationGenerators.get(i);
 				buf.append(annotationGenerator.getAnnotationName()).append("=");
-				buf.append(annotationGenerator.renderAnnotation(almtMember).replace(",", "_"));
+				buf.append("\"").append(StringEscapeUtils.escapeJava(annotationGenerator.renderAnnotation(almtMember))).append("\"");
 			}
 			buf.append("]\n");
 		}
@@ -238,7 +252,7 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 						String leafName = phyloLeaf.getName();
 						Map<String,String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, leafName);
 						AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
-						return templateMemberName(almtMember);
+						return "'"+templateMemberName(almtMember)+"'";
 					}
 					@Override
 					public String generateInternalComment(PhyloInternal phyloInternal) {
