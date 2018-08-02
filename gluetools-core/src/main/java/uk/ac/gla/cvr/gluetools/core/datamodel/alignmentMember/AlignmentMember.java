@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @GlueDataClass(
 		defaultObjectRendererFtlFile = "defaultRenderers/alignmentMember.ftlx",
@@ -52,7 +53,11 @@ public class AlignmentMember extends _AlignmentMember {
 	
 	public enum MemberStatistic {
 		referenceNtCoveragePercent,
-		memberNtCoveragePercent
+		memberNtCoveragePercent, 
+		minRefNt, 
+		maxRefNt,
+		minMemberNt, 
+		maxMemberNt
 	}
 
 	public static final String ALIGNMENT_NAME_PATH = 
@@ -95,8 +100,40 @@ public class AlignmentMember extends _AlignmentMember {
 		if(statistics.contains(AlignmentMember.MemberStatistic.memberNtCoveragePercent)) {
 			results.put(AlignmentMember.MemberStatistic.memberNtCoveragePercent.name(), getMemberNtCoveragePercent(cmdContext));
 		}
+		if(statistics.contains(AlignmentMember.MemberStatistic.minRefNt)) {
+			results.put(AlignmentMember.MemberStatistic.minRefNt.name(), getMinRefNt(cmdContext));
+		}
+		if(statistics.contains(AlignmentMember.MemberStatistic.maxRefNt)) {
+			results.put(AlignmentMember.MemberStatistic.maxRefNt.name(), getMaxRefNt(cmdContext));
+		}
+		if(statistics.contains(AlignmentMember.MemberStatistic.minMemberNt)) {
+			results.put(AlignmentMember.MemberStatistic.minMemberNt.name(), getMinMemberNt(cmdContext));
+		}
+		if(statistics.contains(AlignmentMember.MemberStatistic.maxMemberNt)) {
+			results.put(AlignmentMember.MemberStatistic.maxMemberNt.name(), getMaxMemberNt(cmdContext));
+		}
 
 		return results;
+	}
+
+	public int getMinRefNt(CommandContext cmdContext) {
+		List<AlignedSegment> alignedSegments = getAlignedSegments();
+		return ReferenceSegment.minRefStart(alignedSegments);
+	}
+
+	public int getMaxRefNt(CommandContext cmdContext) {
+		List<AlignedSegment> alignedSegments = getAlignedSegments();
+		return ReferenceSegment.maxRefEnd(alignedSegments);
+	}
+
+	public int getMinMemberNt(CommandContext cmdContext) {
+		List<AlignedSegment> alignedSegments = getAlignedSegments();
+		return QueryAlignedSegment.minQueryStart(alignedSegments);
+	}
+
+	public int getMaxMemberNt(CommandContext cmdContext) {
+		List<AlignedSegment> alignedSegments = getAlignedSegments();
+		return QueryAlignedSegment.maxQueryEnd(alignedSegments);
 	}
 
 	public Double getMemberNtCoveragePercent(CommandContext cmdContext) {
