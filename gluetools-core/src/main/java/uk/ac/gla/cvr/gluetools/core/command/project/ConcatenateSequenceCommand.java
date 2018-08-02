@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +38,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -53,21 +56,26 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass( 
 		commandWords={"concatenate", "sequence"}, 
 		docoptUsages={
-			"[-g <gapChars>] <newSourceName> <newSequenceID> <sourceName1> <sequenceID1> <sourceName2> <sequenceID2>"
+			"[-g <gapChars>] <newSourceName> <newSequenceID> <sourceName1> <sequenceID1> <sourceName2> <sequenceID2> "+
+					"[<sourceName3> <sequenceID3>] "+ 
+					"[<sourceName4> <sequenceID4>] "+ 
+					"[<sourceName5> <sequenceID5>] "+ 
+					"[<sourceName6> <sequenceID6>] "+ 
+					"[<sourceName7> <sequenceID7>] "+ 
+					"[<sourceName8> <sequenceID8>] "+ 
+					"[<sourceName9> <sequenceID9>] "+ 
+					"[<sourceName10> <sequenceID10>]"
 		}, 
 		metaTags={CmdMeta.updatesDatabase},
 		docoptOptions={
 			"-g <gapChars>, --gapChars <gapChars>  Integer, number of N characters to insert between sequences"},
-		description="Create a new sequence by concatenating the nucleotides of two existing sequences") 
+		description="Create a new sequence by concatenating the nucleotides of two or more existing sequences") 
 public class ConcatenateSequenceCommand extends ProjectModeCommand<CreateResult> {
 
 	private Integer gapChars; 
 	private String newSourceName; 
 	private String newSequenceID; 
-	private String sourceName1; 
-	private String sequenceID1; 
-	private String sourceName2; 
-	private String sequenceID2;
+	private List<Map<String, String>> inputSequencePkMaps;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -75,26 +83,52 @@ public class ConcatenateSequenceCommand extends ProjectModeCommand<CreateResult>
 		this.gapChars = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "gapChars", false)).orElse(0);
 		this.newSourceName = PluginUtils.configureStringProperty(configElem, "newSourceName", true);
 		this.newSequenceID = PluginUtils.configureStringProperty(configElem, "newSequenceID", true);
-		this.sourceName1 = PluginUtils.configureStringProperty(configElem, "sourceName1", true);
-		this.sequenceID1 = PluginUtils.configureStringProperty(configElem, "sequenceID1", true);
-		this.sourceName2 = PluginUtils.configureStringProperty(configElem, "sourceName2", true);
-		this.sequenceID2 = PluginUtils.configureStringProperty(configElem, "sequenceID2", true);
+		String sourceName1 = PluginUtils.configureStringProperty(configElem, "sourceName1", true);
+		String sequenceID1 = PluginUtils.configureStringProperty(configElem, "sequenceID1", true);
+		String sourceName2 = PluginUtils.configureStringProperty(configElem, "sourceName2", true);
+		String sequenceID2 = PluginUtils.configureStringProperty(configElem, "sequenceID2", true);
+		
+		this.inputSequencePkMaps = new ArrayList<Map<String, String>>();
+		this.inputSequencePkMaps.add(Sequence.pkMap(sourceName1, sequenceID1));
+		this.inputSequencePkMaps.add(Sequence.pkMap(sourceName2, sequenceID2));
+		
+		boolean populated = true;
+		
+		for(int i = 3; i <= 10; i++) {
+			String sourceName_i = PluginUtils.configureStringProperty(configElem, "sourceName"+i, false);
+			String sequenceID_i = PluginUtils.configureStringProperty(configElem, "sequenceID"+i, false);
+			if(sourceName_i == null || sequenceID_i == null) {
+				populated = false;
+			}
+			if(populated == false) {
+				if(sourceName_i != null || sequenceID_i != null) {
+					throw new CommandException(Code.COMMAND_USAGE_ERROR, "Non-consecutive or missing sourceName / sequenceID arguments");
+				}
+			}
+			if(sourceName_i != null && sequenceID_i != null) {
+				this.inputSequencePkMaps.add(Sequence.pkMap(sourceName_i, sequenceID_i));
+			}
+		}
 	}
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		Sequence sequence1 = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName1, sequenceID1));
-		Sequence sequence2 = GlueDataObject.lookup(cmdContext, Sequence.class, Sequence.pkMap(sourceName2, sequenceID2));
-		
-		String nucleotides1 = sequence1.getSequenceObject().getNucleotides(cmdContext);
-		String nucleotides2 = sequence2.getSequenceObject().getNucleotides(cmdContext);
 		
 		StringBuffer nts = new StringBuffer();
-		nts.append(nucleotides1);
-		for(int i = 0; i < gapChars; i++) {
-			nts.append('N');
+
+		boolean first = true;
+		for(Map<String, String> pkMap: inputSequencePkMaps) {
+			if(!first) {
+				for(int i = 0; i < gapChars; i++) {
+					nts.append('N');
+				}
+			}
+			Sequence sequence = GlueDataObject.lookup(cmdContext, Sequence.class, pkMap);
+			String nucleotides = sequence.getSequenceObject().getNucleotides(cmdContext);
+			nts.append(nucleotides);
+			first = false;
 		}
-		nts.append(nucleotides2);
+
 		Sequence sequence = CreateSequenceCommand.createSequence(cmdContext, newSourceName, newSequenceID, false);
 		Source source = GlueDataObject.lookup(cmdContext, Source.class, Source.pkMap(newSourceName));
 		sequence.setSource(source);
@@ -111,6 +145,14 @@ public class ConcatenateSequenceCommand extends ProjectModeCommand<CreateResult>
 			registerSourceSeqPair("newSourceName", "newSequenceID");
 			registerSourceSeqPair("sourceName1", "sequenceID1");
 			registerSourceSeqPair("sourceName2", "sequenceID2");
+			registerSourceSeqPair("sourceName3", "sequenceID3");
+			registerSourceSeqPair("sourceName4", "sequenceID4");
+			registerSourceSeqPair("sourceName5", "sequenceID5");
+			registerSourceSeqPair("sourceName6", "sequenceID6");
+			registerSourceSeqPair("sourceName7", "sequenceID7");
+			registerSourceSeqPair("sourceName8", "sequenceID8");
+			registerSourceSeqPair("sourceName9", "sequenceID9");
+			registerSourceSeqPair("sourceName10", "sequenceID10");
 		}
 
 		private void registerSourceSeqPair(String sourceNameKey, String seqIdKey) {
