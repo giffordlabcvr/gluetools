@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
+package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.fastaExporter;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 

@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
+package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.fastaExporter;
 
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
@@ -32,8 +32,9 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.BaseExportSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.MemberQuerySequenceSupplier;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.QuerySequenceSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -46,17 +47,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 
 @CommandClass( 
-		commandWords={"web-export-member"}, 
-		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] -o <fileName>"},
+		commandWords={"web-export"}, 
+		docoptUsages={"(-w <whereClause> | -a) -f <fileName>"},
 		docoptOptions={
-				"-c, --recursive                                      Include members of descendent alignments",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
-				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
-			    "-o <fileName>, --fileName <fileName>                 File name"
-		},
+			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
+			"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
+		    "-a, --allSequences                                   Export all project sequences",
+			"-f <fileName>, --fileName <fileName>                 FASTA output file"},
 		metaTags = { CmdMeta.webApiOnly },
-		description="Export the sequences of alignment members to a FASTA file") 
-public class WebExportMemberCommand extends BaseExportMemberCommand<CommandWebFileResult> implements ProvidedProjectModeCommand {
+		description="Export sequences to a FASTA file") 
+public class WebExportCommand extends BaseExportSequenceCommand<CommandWebFileResult> implements ProvidedProjectModeCommand {
 
 	public static final String FILE_NAME = "fileName";
 	
@@ -75,7 +75,7 @@ public class WebExportMemberCommand extends BaseExportMemberCommand<CommandWebFi
 		webFilesManager.createWebFileResource(subDirUuid, fileName);
 
 		AbstractSequenceSupplier sequenceSupplier = 
-				new MemberQuerySequenceSupplier(getAlignmentName(), getRecursive(), Optional.ofNullable(getWhereClause()));
+				new QuerySequenceSupplier(Optional.ofNullable(getWhereClause()));
 		try(OutputStream outputStream = webFilesManager.appendToWebFileResource(subDirUuid, fileName)) {
 			PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
 			super.export(cmdContext, sequenceSupplier, fastaExporter, printWriter);
@@ -84,7 +84,7 @@ public class WebExportMemberCommand extends BaseExportMemberCommand<CommandWebFi
 		}
 		String webFileSizeString = webFilesManager.getSizeString(subDirUuid, fileName);
 		
-		return new CommandWebFileResult("fastaWebExportMemberResult", subDirUuid, fileName, webFileSizeString);
+		return new CommandWebFileResult("fastaWebExportResult", subDirUuid, fileName, webFileSizeString);
 	}
 	
 }

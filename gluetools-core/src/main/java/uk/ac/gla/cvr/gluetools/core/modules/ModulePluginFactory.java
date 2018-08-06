@@ -28,11 +28,12 @@ package uk.ac.gla.cvr.gluetools.core.modules;
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.BlastSequenceRecogniser;
 import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerRunner;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.NucleotideConsensusGenerator;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.protein.AminoAcidConsensusGenerator;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.fastaExporter.FastaExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fastaProteinExporter.FastaProteinExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.freemarker.FreemarkerTextToGlueTransformer;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BlastFastaAlignmentImporter;
@@ -90,6 +91,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		setModulePluginGroup(new ModulePluginGroup("sequenceFasta", "Module types for working with sequences in FASTA format", 80));
 		registerPluginClass(FastaImporter.class);
 		registerPluginClass(FastaExporter.class);
+		registerPluginClass(FastaProteinExporter.class);
 		registerPluginClass(FastaSequenceReporter.class);		
 		registerPluginClass(FastaUtility.class);
 		

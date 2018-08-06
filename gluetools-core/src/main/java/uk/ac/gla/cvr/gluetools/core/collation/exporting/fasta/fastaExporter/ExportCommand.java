@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
+package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.fastaExporter;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -35,8 +35,9 @@ import java.util.Optional;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.BaseExportSequenceCommand;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.MemberQuerySequenceSupplier;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.QuerySequenceSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -49,33 +50,30 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass( 
-		commandWords={"export-member"}, 
-		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] (-p | -f <fileName>)"},
+		commandWords={"export"}, 
+		docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] (-p | -f <fileName>)"},
 		docoptOptions={
-				"-c, --recursive                                      Include members of descendent alignments",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 				"-f <fileName>, --fileName <fileName>                 FASTA file",
-				"-p, --preview                                        Preview output"
-},
+				"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
+			    "-a, --allSequences                                   Export all project sequences",
+				"-p, --preview                                        Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
-		description="Export the sequences of alignment members to a FASTA file", 
+		description="Export sequences to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-public class ExportMemberCommand extends BaseExportMemberCommand<CommandResult> implements ProvidedProjectModeCommand {
+public class ExportCommand extends BaseExportSequenceCommand<CommandResult> implements ProvidedProjectModeCommand {
 
 	public static final String PREVIEW = "preview";
 	public static final String FILE_NAME = "fileName";
-	
-	private String fileName;
-	private boolean preview;
 
-	@Override
+	private Boolean preview;
+	private String fileName;
+
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
@@ -84,12 +82,12 @@ public class ExportMemberCommand extends BaseExportMemberCommand<CommandResult> 
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
 		}
 	}
-
+	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaExporter fastaExporter) {
 		
 		AbstractSequenceSupplier sequenceSupplier = 
-				new MemberQuerySequenceSupplier(getAlignmentName(), getRecursive(), Optional.ofNullable(getWhereClause()));
+				new QuerySequenceSupplier(Optional.ofNullable(getWhereClause()));
 
 		if(preview) {
 			Map<String, DNASequence> ntFastaMap = super.export(cmdContext, sequenceSupplier, fastaExporter);
@@ -110,7 +108,6 @@ public class ExportMemberCommand extends BaseExportMemberCommand<CommandResult> 
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
 			registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
 			registerPathLookup("fileName", false);
 		}

@@ -23,10 +23,12 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta;
+package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.fastaExporter;
 
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.AbstractFastaExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.AbstractSequenceConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
