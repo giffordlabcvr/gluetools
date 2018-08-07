@@ -39,6 +39,8 @@ public class FastaUtility extends ModulePlugin<FastaUtility>{
 		setCmdGroup(new CommandGroup("file-operations", "Commands to operate on FASTA files", 90, false));
 		registerModulePluginCmdClass(LoadNucleotideFastaCommand.class);
 		registerModulePluginCmdClass(SaveNucleotideFastaCommand.class);
+		registerModulePluginCmdClass(LoadAminoAcidFastaCommand.class);
+		registerModulePluginCmdClass(SaveAminoAcidFastaCommand.class);
 		setCmdGroup(new CommandGroup("string-operations", "Operations on FASTA strings", 91, false));
 		registerModulePluginCmdClass(ReverseComplementFastaStringCommand.class);
 	}
