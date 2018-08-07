@@ -35,18 +35,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-
-
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
 
-
-
-
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -57,58 +50,75 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentBaseListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.AminoAcidFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass( 
-		commandWords={"export"}, 
-		docoptUsages={"-f <featureName> (-w <whereClause> | -a) [-y <lineFeedStyle>] (-p | -o <fileName>)"},
+		commandWords={"export", "member"}, 
+		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> (-w <whereClause> | -a) [-y <lineFeedStyle>] (-p | -o <fileName>)"},
 		docoptOptions={
+				"-r <relRefName>, --relRefName <relRefName>           Related reference",
 				"-f <featureName>, --featureName <featureName>        Protein-coding feature",
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 				"-o <fileName>, --fileName <fileName>                 Output FASTA file",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify exported references",
-			    "-a, --allReferences                                  Export all project references",
+				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
+			    "-a, --allMembers                                     Export all alignment members",
 				"-p, --preview                                        Preview output"},
 		metaTags = { CmdMeta.consoleOnly },
-		description="Export reference sequence coding feature(s) to a FASTA file", 
+		description="Export alignment member coding feature(s) to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.") 
-public class ExportCommand extends ModulePluginCommand<CommandResult, FastaProteinExporter> implements ProvidedProjectModeCommand {
+public class ExportMemberCommand extends ModulePluginCommand<CommandResult, FastaProteinExporter> implements ProvidedProjectModeCommand {
 
+	public static final String ALIGNMENT_NAME = "alignmentName";
+	public static final String REL_REF_NAME = "relRefName";
+	public static final String FEATURE_NAME = "featureName";
+	public static final String WHERE_CLAUSE = "whereClause";
+	public static final String ALL_MEMBERS = "allMembers";
+	public static final String LINE_FEED_STYLE = "lineFeedStyle";
 	public static final String PREVIEW = "preview";
 	public static final String FILE_NAME = "fileName";
-	public static final String FEATURE_NAME = "featureName";
-	public static final String LINE_FEED_STYLE = "lineFeedStyle";
 
 
+	private String alignmentName;
+	private String relRefName;
 	private String featureName;
 	private Expression whereClause;
-	private Boolean allReferences;
+	private Boolean allMembers;
 	private LineFeedStyle lineFeedStyle;
 	private Boolean preview;
 	private String fileName;
 
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		alignmentName = PluginUtils.configureStringProperty(configElem, ALIGNMENT_NAME, true);
+		relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, "whereClause", false);
-		allReferences = PluginUtils.configureBooleanProperty(configElem, "allReferences", false);
-		if(whereClause == null && !allReferences) {
+		whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
+		allMembers = PluginUtils.configureBooleanProperty(configElem, ALL_MEMBERS, false);
+		if(whereClause == null && !allMembers) {
 			usageError();
 		}
-		if(whereClause != null && allReferences) {
+		if(whereClause != null && allMembers) {
 			usageError();
 		}
 		lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
@@ -120,24 +130,21 @@ public class ExportCommand extends ModulePluginCommand<CommandResult, FastaProte
 	}
 
 	private void usageError() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allReferences> must be specified, but not both");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
 	}
 
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaProteinExporter fastaProteinExporter) {
+		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
+		ReferenceSequence relRefSeq = alignment.getRelatedRef(cmdContext, relRefName);
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
+		featureLoc.getFeature().checkCodesAminoAcids();
 		
-		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-		SelectQuery refSelect;
-		if(whereClause != null) {
-			refSelect = new SelectQuery(ReferenceSequence.class, whereClause);
-		} else {
-			refSelect = new SelectQuery(ReferenceSequence.class);
-		}
-		
-		List<ReferenceSequence> refSeqs = GlueDataObject.query(cmdContext, ReferenceSequence.class, refSelect);
-		
-		Map<String, ProteinSequence> aaFastaMap = aaFastaMap(cmdContext, refSeqs, feature, fastaProteinExporter);
+		Expression memberExp = AlignmentBaseListMemberCommand.getMatchExpression(alignment, false, Optional.ofNullable(whereClause));
+		SelectQuery memberSelect = new SelectQuery(AlignmentMember.class, memberExp);
+		List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, memberSelect);
+		Map<String, ProteinSequence> aaFastaMap = aaFastaMap(cmdContext, relRefSeq, featureLoc, alignment, almtMembers, fastaProteinExporter);
 
 		if(preview) {
 			return new AminoAcidFastaCommandResult(aaFastaMap);
@@ -156,28 +163,59 @@ public class ExportCommand extends ModulePluginCommand<CommandResult, FastaProte
 		}
 	}
 	
-	private Map<String, ProteinSequence> aaFastaMap(CommandContext cmdContext, List<ReferenceSequence> refSeqs, 
-			Feature feature, FastaProteinExporter fastaProteinExporter) {
+	private Map<String, ProteinSequence> aaFastaMap(CommandContext cmdContext,
+			ReferenceSequence relRefSeq, FeatureLocation featureLoc,
+			Alignment alignment, List<AlignmentMember> almtMembers,
+			FastaProteinExporter fastaProteinExporter) {
+		
+		List<ReferenceSegment> featureRefSegs = featureLoc.segmentsAsReferenceSegments();
+		int codon1Start = featureLoc.getCodon1Start(cmdContext);
+		Translator translator = new CommandContextTranslator(cmdContext);
+
 		Map<String, ProteinSequence> idToProtSeq = new LinkedHashMap<String, ProteinSequence>();
-		refSeqs.forEach(refSeq -> {
-			StringBuffer proteinStringBuf = new StringBuffer();
-			FeatureLocation featureLoc = 
-					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refSeq.getName(), feature.getName()), true);
-			if(featureLoc != null) {
-				List<LabeledAminoAcid> labeledAAs = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
-				labeledAAs.forEach(laa -> proteinStringBuf.append(laa.getAminoAcid()));
-			}
-			ProteinSequence proteinSeq = FastaUtils.proteinStringToSequence(proteinStringBuf.toString());
-			String fastaId = fastaProteinExporter.generateFastaId(refSeq);
+		almtMembers.forEach(almtMember -> {
+			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
+			Alignment tipAlmt = almtMember.getAlignment();
+			memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relRefSeq);
+			memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			memberQaSegs = TranslationUtils.truncateToCodonAligned(codon1Start, memberQaSegs);
+			AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
+			String memberNTs = seqObj.getNucleotides(cmdContext);
+			String featureNTs = SegmentUtils.base1SubString(memberNTs, 
+					QueryAlignedSegment.minQueryStart(memberQaSegs), 
+					QueryAlignedSegment.maxQueryEnd(memberQaSegs)); 
+			String featureAAs = translator.translateToAaString(featureNTs);
+			ProteinSequence proteinSeq = FastaUtils.proteinStringToSequence(featureAAs);
+			String fastaId = fastaProteinExporter.generateMemberFastaId(almtMember);
 			idToProtSeq.put(fastaId, proteinSeq);
 		});
+
 		return idToProtSeq;
 	}
-	
+
 	@CompleterClass
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
+			registerDataObjectNameLookup("alignmentName", Alignment.class, Alignment.NAME_PROPERTY);
+			registerVariableInstantiator("relRefName", new VariableInstantiator() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String alignmentName = (String) bindings.get("alignmentName");
+					Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName), true);
+					if(alignment != null) {
+						return(alignment.getRelatedRefs()
+								.stream()
+								.map(ref -> new CompletionSuggestion(ref.getName(), true)))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
 			registerVariableInstantiator("featureName", new VariableInstantiator() {
 				@SuppressWarnings("rawtypes")
 				@Override
@@ -185,12 +223,16 @@ public class ExportCommand extends ModulePluginCommand<CommandResult, FastaProte
 						ConsoleCommandContext cmdContext,
 						Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					List<Feature> features = GlueDataObject.query(cmdContext, Feature.class, new SelectQuery(Feature.class));
-					return(features
-							.stream()
-							.filter(f -> f.codesAminoAcids())
-							.map(f -> new CompletionSuggestion(f.getName(), true)))
-							.collect(Collectors.toList());
+					String relRefName = (String) bindings.get("relRefName");
+					ReferenceSequence relRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), true);
+					if(relRef != null) {
+						return(relRef.getFeatureLocations()
+								.stream()
+								.filter(fLoc -> fLoc.getFeature().codesAminoAcids())
+								.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true)))
+								.collect(Collectors.toList());
+					}
+					return null;
 				}
 			});
 			registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
