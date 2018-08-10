@@ -26,10 +26,35 @@
 package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
+import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.exp.ExpressionFactory;
+import org.apache.cayenne.query.SelectQuery;
+
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 
 @PluginClass(elemName="phyloUtility",
@@ -39,11 +64,84 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 	public PhyloUtility() {
 		super();
 		registerModulePluginCmdClass(RerootPhylogenyCommand.class);
+		registerModulePluginCmdClass(RerootAlignmentPhylogenyCommand.class);
 		registerModulePluginCmdClass(ReformatPhylogenyCommand.class);
 	}
 	
 	public PhyloTree rerootPhylogeny(PhyloBranch rerootBranch, BigDecimal rerootDistance) {
 		return PhyloRerooting.rerootPhylogeny(rerootBranch, rerootDistance);
+	}
+
+	public PhyloBranch findOutgroupBranch(CommandContext cmdContext,
+			Alignment alignment, Expression outgroupWhereClause,
+			PhyloTree phyloTree) {
+		Expression memberExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName()).andExp(outgroupWhereClause);
+		List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, memberExp));
+		Set<Map<String, String>> almtMemberPkMaps = new LinkedHashSet<Map<String, String>>();
+		almtMembers.forEach(memb -> almtMemberPkMaps.add(memb.pkMap()));
+		
+		Map<Map<String, String>, PhyloLeaf> memberPkMapToLeaf = new LinkedHashMap<Map<String, String>, PhyloLeaf>();
+		
+		phyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void visitLeaf(PhyloLeaf phyloLeaf) {
+				Map<String, String> leafPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeaf.getName());
+				if(almtMemberPkMaps.remove(leafPkMap)) {
+					memberPkMapToLeaf.put(leafPkMap, phyloLeaf);
+				}
+			}
+		});
+		if(!almtMemberPkMaps.isEmpty()) {
+			almtMemberPkMaps.forEach(pkmap -> {
+				GlueLogger.getGlueLogger().log(Level.SEVERE, "No leaf found for outgroup alignment member "+pkmap.toString());
+			});
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaves representing "+almtMemberPkMaps.size()+" outgroup alignment member(s) were not found in the tree. See log for details.");
+		}
+		
+		LinkedHashSet<PhyloSubtree<?>> frontier = new LinkedHashSet<PhyloSubtree<?>>();
+		frontier.addAll(memberPkMapToLeaf.values());
+		
+		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
+		
+		while(true) {
+			LinkedHashSet<PhyloSubtree<?>> newFrontier = new LinkedHashSet<PhyloSubtree<?>>();
+			for(PhyloSubtree<?> subtree: frontier) {
+				List<PhyloSubtree<?>> unvisitedNeighbours = unvisitedNeighbours(visited, subtree);
+				if(unvisitedNeighbours.size() == 1) {
+					visited.add(subtree);
+					newFrontier.add(unvisitedNeighbours.get(0)); // single unvisited neighbour replaces subtree.
+				} else if(unvisitedNeighbours.size() > 1) {
+					newFrontier.add(subtree);
+				}
+			}
+			if(newFrontier.equals(frontier)) {
+				break;
+			}
+			frontier = newFrontier;
+			if(frontier.size() == 1) {
+				break;
+			}
+			//GlueLogger.getGlueLogger().log(Level.FINEST, "Visited size "+visited.size());
+			//GlueLogger.getGlueLogger().log(Level.FINEST, "Frontier size "+frontier.size());
+		}
+		if(frontier.size() == 0) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Outgroup rerooting impossible as outgroup covers whole tree");
+		}
+		if(frontier.size() > 1) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Outgroup rerooting impossible as outgroup does not have unique ancestor");
+		}
+		PhyloSubtree<?> finalNode = frontier.iterator().next();
+		Optional<PhyloBranch> rerootBranch = finalNode.getNeighbourBranches().stream().filter(branch -> !visited.contains(branch.otherSubtree(finalNode))).findFirst();
+		if(rerootBranch.isPresent()) {
+			return rerootBranch.get();
+		} else {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Outgroup rerooting impossible as outgroup covers whole tree");
+		}
+	}
+	
+	
+	private List<PhyloSubtree<?>> unvisitedNeighbours(Set<PhyloSubtree<?>> visited, PhyloSubtree<?> subtree) {
+		return subtree.getNeighbours().stream().filter(n -> !visited.contains(n)).collect(Collectors.toList());
 	}
 	
 }

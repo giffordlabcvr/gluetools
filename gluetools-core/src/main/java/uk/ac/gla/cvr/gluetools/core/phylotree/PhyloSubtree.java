@@ -25,6 +25,9 @@
 */
 package uk.ac.gla.cvr.gluetools.core.phylotree;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObject<C> {
 
 	private PhyloBranch parentPhyloBranch;
@@ -59,6 +62,21 @@ public abstract class PhyloSubtree<C extends PhyloSubtree<?>> extends PhyloObjec
 	
 	public abstract void accept(PhyloTreeVisitor visitor);
 
+	public List<PhyloSubtree<?>> getNeighbours() {
+		List<PhyloSubtree<?>> neighbours = new ArrayList<PhyloSubtree<?>>();
+		PhyloBranch parentPhyloBranch = getParentPhyloBranch();
+		if(parentPhyloBranch != null) {
+			neighbours.add(parentPhyloBranch.getParentPhyloInternal());
+		}
+		return neighbours;
+	}
 
-	
+	public List<PhyloBranch> getNeighbourBranches() {
+		List<PhyloBranch> neighbourBranches = new ArrayList<PhyloBranch>();
+		PhyloBranch parentPhyloBranch = getParentPhyloBranch();
+		if(parentPhyloBranch != null) {
+			neighbourBranches.add(parentPhyloBranch);
+		}
+		return neighbourBranches;
+	}
 }

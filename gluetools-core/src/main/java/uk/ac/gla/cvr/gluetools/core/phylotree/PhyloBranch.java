@@ -102,7 +102,14 @@ public class PhyloBranch extends PhyloObject<PhyloBranch> {
 		return getParentPhyloInternal().getTree();
 	}
 
-	
+	public PhyloSubtree<?> otherSubtree(PhyloSubtree<?> thisSubtree) {
+		if(thisSubtree == parentPhyloInternal) {
+			return subtree;
+		} else if(thisSubtree == subtree) {
+			return parentPhyloInternal;
+		}
+		throw new RuntimeException("invalid use of PhyloBranch.otherSubtree");
+	}
 	
 	
 }

@@ -101,5 +101,17 @@ public class PhyloInternal extends PhyloSubtree<PhyloInternal> {
 		return phyloInternal;
 	}
 
+	@Override
+	public List<PhyloSubtree<?>> getNeighbours() {
+		List<PhyloSubtree<?>> neighbours = super.getNeighbours();
+		getBranches().stream().forEach(branch -> neighbours.add(branch.getSubtree()));
+		return neighbours;
+	}
 	
+	@Override
+	public List<PhyloBranch> getNeighbourBranches() {
+		List<PhyloBranch> neighbourBranches = super.getNeighbourBranches();
+		neighbourBranches.addAll(getBranches());
+		return neighbourBranches;
+	}
 }

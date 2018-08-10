@@ -59,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"reroot-phylogeny"}, 
-		description = "Reroot a phylogenetic tree", 
+		description = "Reroot a phylogenetic tree within a file.", 
 		docoptUsages = { "-i <inputFile> <inputFormat> (-g <outgroup> [-r] | -m) -o <outputFile> <outputFormat>"},
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>     Input file",
@@ -71,23 +71,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class RerootPhylogenyCommand extends PhyloUtilityCommand<OkResult> {
+public class RerootPhylogenyCommand extends BaseRerootCommand {
 
 	public static final String OUTGROUP = "outgroup";
 	public static final String INPUT_FILE = "inputFile";
-	public static final String OUTPUT_FILE = "outputFile";
 	public static final String INPUT_FORMAT = "inputFormat";
-	public static final String OUTPUT_FORMAT = "outputFormat";
 	public static final String REMOVE_OUTGROUP = "removeOutgroup";
 	public static final String MIDPOINT = "midpoint";
 	
 	private String outgroup;
 	private String inputFile;
-	private String outputFile;
+	private PhyloFormat inputFormat;
 	private Boolean removeOutgroup;
 	private Boolean midpoint;
-	private PhyloFormat inputFormat;
-	private PhyloFormat outputFormat;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -97,8 +93,6 @@ public class RerootPhylogenyCommand extends PhyloUtilityCommand<OkResult> {
 		this.outgroup = PluginUtils.configureStringProperty(configElem, OUTGROUP, false);
 		this.removeOutgroup = PluginUtils.configureBooleanProperty(configElem, REMOVE_OUTGROUP, false);
 		this.midpoint = PluginUtils.configureBooleanProperty(configElem, MIDPOINT, false);
-		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
-		this.outputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, OUTPUT_FORMAT, true);
 		if( (outgroup == null && (midpoint == null || !midpoint)) ||
 				(outgroup != null && (midpoint != null && midpoint))) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <outgroup> or --midpoint must be specified, but not both");
@@ -109,7 +103,7 @@ public class RerootPhylogenyCommand extends PhyloUtilityCommand<OkResult> {
 	}
 
 	@Override
-	protected OkResult execute(CommandContext cmdContext, PhyloUtility treeRerooter) {
+	protected OkResult execute(CommandContext cmdContext, PhyloUtility phyloUtility) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 		PhyloTree phyloTree = loadTree(consoleCmdContext, inputFile, inputFormat);
 		PhyloBranch rerootBranch = null;
@@ -130,7 +124,7 @@ public class RerootPhylogenyCommand extends PhyloUtilityCommand<OkResult> {
 			rerootBranch = midPointResult.getBranch();
 			rerootDistance = midPointResult.getRootDistance();
 		}
-		PhyloTree rerootedTree = treeRerooter.rerootPhylogeny(rerootBranch, rerootDistance);
+		PhyloTree rerootedTree = phyloUtility.rerootPhylogeny(rerootBranch, rerootDistance);
 		if(outgroup != null && removeOutgroup) {
 			PhyloObject<?> root = rerootedTree.getRoot();
 			if(!(root instanceof PhyloInternal)) {
@@ -162,7 +156,7 @@ public class RerootPhylogenyCommand extends PhyloUtilityCommand<OkResult> {
 			PhyloSubtree<?> remainingSubtree = remainingTreeBranch.getSubtree();
 			rerootedTree.setRoot(remainingSubtree);
 		}
-		consoleCmdContext.saveBytes(outputFile, outputFormat.generate(rerootedTree));
+		saveRerootedTree(consoleCmdContext, rerootedTree);
 		return new OkResult();
 	}
 
