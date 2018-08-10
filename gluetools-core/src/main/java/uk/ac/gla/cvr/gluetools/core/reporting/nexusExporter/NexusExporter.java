@@ -55,7 +55,7 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.phyloFieldName = Optional.ofNullable(PluginUtils.configureString(configElem, PHYLO_FIELD_NAME, false)).orElse("phylogeny");
+		this.phyloFieldName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, PHYLO_FIELD_NAME, false)).orElse("phylogeny");
 		this.memberNameTemplate = 
 				Optional.ofNullable(PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, MEMBER_NAME_TEMPLATE, false))
 				.orElse(defaultTemplate(pluginConfigContext.getFreemarkerConfiguration()));
