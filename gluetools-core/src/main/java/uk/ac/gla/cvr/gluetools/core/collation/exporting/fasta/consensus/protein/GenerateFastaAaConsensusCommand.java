@@ -28,7 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.protein
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -89,7 +89,7 @@ public class GenerateFastaAaConsensusCommand extends ModulePluginCommand<Command
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
 				fileName, delegate.getAlignmentName(), delegate.getWhereClause(), 
 				delegate.getFeatureName(),
-				(SimpleAlignmentColumnsSelector) delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview,
+				(SimpleAminoAcidColumnsSelector) delegate.getAminoAcidAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview,
 				consensusID, delegate.getLineFeedStyle());
 	}
 	

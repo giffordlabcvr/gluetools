@@ -82,7 +82,7 @@ public class GenerateRaxmlNucleotidePhylogenyCommand extends GenerateNucleotideP
 
 
 	@Override
-	protected PhyloTree generatePhylogeny(CommandContext cmdContext,
+	protected PhyloTree generateNucleotidePhylogeny(CommandContext cmdContext,
 			RaxmlPhylogenyGenerator modulePlugin, 
 			Map<Map<String, String>, DNASequence> memberPkMapToAlignmentRow) {
 		RaxmlPhylogenyRunner raxmlPhylogenyRunner = modulePlugin.getRaxmlPhylogenyRunner();
@@ -93,7 +93,7 @@ public class GenerateRaxmlNucleotidePhylogenyCommand extends GenerateNucleotideP
 		Map<String, DNASequence> alignment = FastaUtils.remapFasta(
 				memberPkMapToAlignmentRow, rowNameToMemberPkMap, memberPkMapToRowName, "M");
 
-		RaxmlPhylogenyResult raxmlPhylogenyResult = raxmlPhylogenyRunner.executeRaxmlPhylogeny(cmdContext, alignment, dataDirFile);
+		RaxmlPhylogenyResult raxmlPhylogenyResult = raxmlPhylogenyRunner.executeRaxmlNucleotidePhylogeny(cmdContext, alignment, dataDirFile);
 		PhyloTree phyloTree = raxmlPhylogenyResult.getPhyloTree();
 		
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();

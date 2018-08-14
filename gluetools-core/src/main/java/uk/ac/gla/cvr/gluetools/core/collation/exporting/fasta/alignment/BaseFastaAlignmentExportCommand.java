@@ -62,7 +62,7 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 			}
 		};
 		FastaAlignmentExporter.exportAlignment(cmdContext, 
-				delegate.getAlignmentColumnsSelector(cmdContext), 
+				delegate.getNucleotideAlignmentColumnsSelector(cmdContext), 
 				delegate.getExcludeEmptyRows(), memberSupplier, almtRowConsumer);
 	}
 	
@@ -77,7 +77,7 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 			}
 		};
 		FastaAlignmentExporter.exportAlignment(cmdContext, 
-				delegate.getAlignmentColumnsSelector(cmdContext), 
+				delegate.getNucleotideAlignmentColumnsSelector(cmdContext), 
 				delegate.getExcludeEmptyRows(), memberSupplier, almtRowConsumer);
 		return ntFastaMap;
 	}

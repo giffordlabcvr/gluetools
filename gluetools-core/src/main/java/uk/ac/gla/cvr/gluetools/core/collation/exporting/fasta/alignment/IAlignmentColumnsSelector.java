@@ -36,4 +36,9 @@ public interface IAlignmentColumnsSelector {
 	
 	public String getRelatedRefName();
 	
+	/**
+	 * Checks that any features referred to code amino acids.
+	 */
+	public void checkCoding(CommandContext cmdContext);
+	
 }

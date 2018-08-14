@@ -78,11 +78,16 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 	}
 
 	
-	public RaxmlPhylogenyResult executeRaxmlPhylogeny(CommandContext cmdContext, Map<String, DNASequence> alignment, File dataDirFile) {
+	public RaxmlPhylogenyResult executeRaxmlNucleotidePhylogeny(CommandContext cmdContext, Map<String, DNASequence> alignment, File dataDirFile) {
 
 		String raxmlTempDir = getRaxmlTempDir(cmdContext);
 		String raxmlExecutable = getRaxmlExecutable(cmdContext);
 		int raxmlCpus = getRaxmlCpus(cmdContext);
+		
+		SubstitutionModel substitutionModel = this.getSubstitutionModel();
+		if(!substitutionModel.isNucleotide()) {
+			throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML nucleotide phylogeny cannot run on non-nucleotide substitution model: "+substitutionModel.name());
+		}
 		
 		checkAlignment(alignment);
 		
@@ -111,7 +116,7 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 			commandWords.add(normalisedFilePath(alignmentFile));
 			// substitution model
 			commandWords.add("-m");
-			commandWords.add(this.getSubstitutionModel());
+			commandWords.add(substitutionModel.name());
 			// random number seed 1
 			commandWords.add("-p");
 			commandWords.add(Integer.toString(this.getRandomNumberSeed1()));

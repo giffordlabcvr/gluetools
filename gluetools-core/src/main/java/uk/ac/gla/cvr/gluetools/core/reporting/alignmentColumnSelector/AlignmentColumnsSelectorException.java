@@ -31,7 +31,7 @@ public class AlignmentColumnsSelectorException extends GlueException {
 
 public enum Code implements GlueErrorCode {
 		
-		SELECTOR_NOT_WITHIN_CODING_FEATURE("codingFeatureName", "errorTxt");
+		INVALID_SELECTOR("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

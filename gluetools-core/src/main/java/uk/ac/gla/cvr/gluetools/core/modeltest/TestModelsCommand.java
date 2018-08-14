@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleNucleotideColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -132,7 +132,7 @@ public class TestModelsCommand extends ModulePluginCommand<TestModelsResult, Mod
 		if(selectorName != null) {
 			alignmentColumnsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
 		} else if(relRefName != null && featureName != null) {
-			alignmentColumnsSelector = new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, null, null);
+			alignmentColumnsSelector = new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
 		} else {
 			alignmentColumnsSelector = null;
 		}

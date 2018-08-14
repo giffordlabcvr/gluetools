@@ -29,10 +29,11 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.SimpleDataObjectNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -41,11 +42,13 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @PluginClass(elemName="alignmentColumnsSelector",
 	description="Filter applied to an alignment which selects columns based on feature locations or specific coordinates")
-public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelector> implements IAlignmentColumnsSelector {
+public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelector> implements IAminoAcidAlignmentColumnsSelector {
 
 	private String relRefName;
 	
@@ -95,14 +98,28 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		return relRefName;
 	}
 
-	/**
-	 * Checks that only amino acid selectors are used, and that any features referred to are descendents
-	 * of the named parent feature.
-	 */
-	public void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature) {
+	@Override
+	public void checkCoding(CommandContext cmdContext) {
 		for(RegionSelector regionSelector: this.regionSelectors) {
-			regionSelector.checkWithinCodingParentFeature(cmdContext, parentFeature);
+			regionSelector.checkCoding(cmdContext);
 		}
 	}
+
+	@Override
+	public String generateAminoAcidAlmtRowString(CommandContext cmdContext, 
+			List<ReferenceSegment> featureRefSegs, ReferenceSegment minMaxSeg, 
+			Alignment alignment, AlignmentMember almtMember) {
+		StringBuffer fullAlmtRowBuf = new StringBuffer();
+		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, getRelatedRefName());
+		Translator translator = new CommandContextTranslator(cmdContext);
+		for(RegionSelector regionSelector: this.regionSelectors) {
+			AminoAcidRegionSelector aaRegionSelector = (AminoAcidRegionSelector) regionSelector;
+			String regionSelectorRowString = aaRegionSelector
+					.generateAminoAcidAlmtRowString(cmdContext, relatedRef, translator, featureRefSegs, minMaxSeg, almtMember);
+			fullAlmtRowBuf.append(regionSelectorRowString);
+		}
+		return fullAlmtRowBuf.toString();
+	}
+
 	
 }

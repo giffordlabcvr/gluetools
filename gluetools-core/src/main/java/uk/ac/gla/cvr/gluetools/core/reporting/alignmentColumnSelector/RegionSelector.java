@@ -30,6 +30,7 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -41,6 +42,8 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 public abstract class RegionSelector implements Plugin {
 
 	private List<RegionSelector> excludeRegionSelectors;
+	private String featureName;
+
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -51,6 +54,7 @@ public abstract class RegionSelector implements Plugin {
 			List<Element> ruleElems = PluginUtils.findConfigElements(excludeRegionsElem, alternateElemsXPath);
 			this.excludeRegionSelectors = regionSelectorFactory.createFromElements(pluginConfigContext, ruleElems);
 		}
+		this.featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
 	}
 
 	public final List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName) {
@@ -70,6 +74,36 @@ public abstract class RegionSelector implements Plugin {
 
 	protected abstract List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName);
 
-	public abstract void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature);
+
+	public void checkWithinParentFeature(CommandContext cmdContext, Feature parentFeature) {
+		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.featureName));
+		if((!referredToFeature.getName().equals(parentFeature.getName())) && !referredToFeature.isDescendentOf(parentFeature)) {
+			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
+					"Region selector refers to feature "+referredToFeature.getName()+" which is not the same feature, or a descendent of "+parentFeature.getName());
+		}
+		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
+		if(excludeRegionSelectors != null) {
+			excludeRegionSelectors.forEach(ers -> ers.checkWithinParentFeature(cmdContext, parentFeature));
+		}
+	}
+
+	public void checkCoding(CommandContext cmdContext) {
+		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.featureName));
+		if(!referredToFeature.codesAminoAcids()) {
+			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
+					"Region selector refers to feature "+referredToFeature.getName()+" which is not an amino acid coding feature");
+		}
+		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
+		if(excludeRegionSelectors != null) {
+			excludeRegionSelectors.forEach(ers -> ers.checkCoding(cmdContext));
+		}
+	}
+	public String getFeatureName() {
+		return featureName;
+	}
+
+	public void setFeatureName(String featureName) {
+		this.featureName = featureName;
+	}
 
 }

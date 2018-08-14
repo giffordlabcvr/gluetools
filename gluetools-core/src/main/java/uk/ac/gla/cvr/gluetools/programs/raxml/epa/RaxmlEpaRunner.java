@@ -89,6 +89,11 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 		String raxmlExecutable = getRaxmlExecutable(cmdContext);
 		int raxmlCpus = getRaxmlCpus(cmdContext);
 		
+		SubstitutionModel substitutionModel = this.getSubstitutionModel();
+		if(!substitutionModel.isNucleotide()) {
+			throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML EPA cannot run on non-nucleotide substitution model: "+substitutionModel.name());
+		}
+		
 		checkPhyloTree(phyloTree);
 		checkAlignment(alignment);
 		
@@ -126,7 +131,7 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			commandWords.add(normalisedFilePath(phyloTreeFile));
 			// substitution model
 			commandWords.add("-m");
-			commandWords.add(this.getSubstitutionModel());
+			commandWords.add(substitutionModel.name());
 			// random number seed
 			commandWords.add("-p");
 			commandWords.add(Integer.toString(this.getRandomNumberSeed1()));

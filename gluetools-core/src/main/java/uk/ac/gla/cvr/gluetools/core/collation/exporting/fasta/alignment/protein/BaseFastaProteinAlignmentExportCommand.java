@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
@@ -67,10 +68,8 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 				printWriter.flush();
 			}
 		};
-		FastaProteinAlignmentExporter.exportAlignment(cmdContext,
-					delegate.getFeatureName(), delegate.getAlignmentColumnsSelector(cmdContext), delegate.getExcludeEmptyRows(), 
-					queryMemberSupplier, 
-					almtRowConsumer);
+		IAminoAcidAlignmentColumnsSelector alignmentColumnsSelector = delegate.getAminoAcidAlignmentColumnsSelector(cmdContext);
+		alignmentColumnsSelector.generateAlignmentRows(cmdContext, delegate.getExcludeEmptyRows(), queryMemberSupplier, almtRowConsumer);
 	}
 	
 	
@@ -85,10 +84,9 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 				proteinFastaMap.put(fastaId, FastaUtils.proteinStringToSequence(alignmentRowString));
 			}
 		};
-		FastaProteinAlignmentExporter.exportAlignment(cmdContext,
-					delegate.getFeatureName(), delegate.getAlignmentColumnsSelector(cmdContext), delegate.getExcludeEmptyRows(), 
-					queryMemberSupplier, 
-					almtRowConsumer);
+		IAminoAcidAlignmentColumnsSelector aminoAcidAlignmentColumnsSelector = delegate.getAminoAcidAlignmentColumnsSelector(cmdContext);
+		aminoAcidAlignmentColumnsSelector.generateAlignmentRows(cmdContext, delegate.getExcludeEmptyRows(),
+				queryMemberSupplier, almtRowConsumer);
 		return proteinFastaMap;
 	}
 

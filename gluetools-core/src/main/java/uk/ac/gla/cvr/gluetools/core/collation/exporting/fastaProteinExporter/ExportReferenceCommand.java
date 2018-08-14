@@ -35,16 +35,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-
-
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
-
-
-
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;

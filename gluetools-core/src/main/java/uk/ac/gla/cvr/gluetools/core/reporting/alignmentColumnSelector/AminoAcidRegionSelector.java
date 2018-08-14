@@ -35,31 +35,36 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @PluginClass(elemName="aminoAcidRegionSelector")
 public class AminoAcidRegionSelector extends RegionSelector {
 
-	private String featureName;
 	private String startCodon;
 	private String endCodon;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
 		this.startCodon = PluginUtils.configureStringProperty(configElem, "startCodon", false);
 		this.endCodon = PluginUtils.configureStringProperty(configElem, "endCodon", false);
 	}
 
 	@Override
 	protected List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
-		return selectAlignmentColumns(cmdContext, relRefName, featureName, startCodon, endCodon);
+		return selectAlignmentColumns(cmdContext, relRefName, getFeatureName(), startCodon, endCodon);
 	}
 
 	public static List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName, String featureName, String startCodon, String endCodon) {
@@ -89,18 +94,55 @@ public class AminoAcidRegionSelector extends RegionSelector {
 
 	}
 
-	@Override
-	public void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature) {
-		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.featureName));
-		if((!referredToFeature.getName().equals(parentFeature.getName())) && !referredToFeature.isDescendentOf(parentFeature)) {
-			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.SELECTOR_NOT_WITHIN_CODING_FEATURE, 
-					parentFeature.getName(), "Amino acid region selector refers to feature "+referredToFeature.getName()+" which is not the same feature, or a descendent.");
+	public String generateAminoAcidAlmtRowString(CommandContext cmdContext, ReferenceSequence relatedRef,
+			Translator translator, List<ReferenceSegment> featureRefSegs, 
+			ReferenceSegment minMaxSeg, AlignmentMember almtMember) {
+		
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), getFeatureName()));
+		int codon1Start = featureLoc.getCodon1Start(cmdContext);
+
+
+		List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
+		Alignment tipAlmt = almtMember.getAlignment();
+		memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
+		memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+		
+		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
+		memberQaSegs = QueryAlignedSegment.mergeAbutting(memberQaSegs, 
+				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
+
+		
+		memberQaSegs = TranslationUtils.truncateToCodonAligned(codon1Start, memberQaSegs);
+		AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
+		String memberNTs = seqObj.getNucleotides(cmdContext);
+		StringBuffer alignmentRow = new StringBuffer();
+		int ntIndex = minMaxSeg.getRefStart();
+		for(QueryAlignedSegment seg: memberQaSegs) {
+			while(ntIndex < seg.getRefStart()) {
+				alignmentRow.append("-");
+				ntIndex += 3;
+			}
+			String segNTs = SegmentUtils.base1SubString(memberNTs, seg.getQueryStart(), seg.getQueryEnd());
+			String segAAs = translator.translateToAaString(segNTs);
+			alignmentRow.append(segAAs);
+			ntIndex = seg.getRefEnd()+1;
 		}
-		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
-		if(excludeRegionSelectors != null) {
-			excludeRegionSelectors.forEach(ers -> ers.checkWithinCodingParentFeature(cmdContext, parentFeature));
+		while(ntIndex <= minMaxSeg.getRefEnd()) {
+			alignmentRow.append("-");
+			ntIndex += 3;
 		}
+		return alignmentRow.toString();
 	}
+	
+	public void setStartCodon(String startCodon) {
+		this.startCodon = startCodon;
+	}
+
+	public void setEndCodon(String endCodon) {
+		this.endCodon = endCodon;
+	}
+
 	
 	
 }

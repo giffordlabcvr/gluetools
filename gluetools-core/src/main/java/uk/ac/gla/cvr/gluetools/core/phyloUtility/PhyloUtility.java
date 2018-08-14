@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,6 +103,9 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
 		
 		while(true) {
+			if(frontier.size() == 1) {
+				break;
+			}
 			LinkedHashSet<PhyloSubtree<?>> newFrontier = new LinkedHashSet<PhyloSubtree<?>>();
 			for(PhyloSubtree<?> subtree: frontier) {
 				List<PhyloSubtree<?>> unvisitedNeighbours = unvisitedNeighbours(visited, subtree);
@@ -118,9 +120,6 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 				break;
 			}
 			frontier = newFrontier;
-			if(frontier.size() == 1) {
-				break;
-			}
 			//GlueLogger.getGlueLogger().log(Level.FINEST, "Visited size "+visited.size());
 			//GlueLogger.getGlueLogger().log(Level.FINEST, "Frontier size "+frontier.size());
 		}

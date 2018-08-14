@@ -36,8 +36,7 @@ import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.AbstractConsensusGenerator;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -63,12 +62,12 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 
 	public CommandResult doGenerate(ConsoleCommandContext cmdContext,
 			String fileName, String alignmentName,
-			Optional<Expression> whereClause, String featureName, SimpleAlignmentColumnsSelector alignmentColumnsSelector, 
+			Optional<Expression> whereClause, String featureName, SimpleAminoAcidColumnsSelector alignmentColumnsSelector, 
 			Boolean recursive, Boolean preview,
 			String consensusID, LineFeedStyle lineFeedStyle) {
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(alignmentName, recursive, whereClause);
 		Map<Map<String,String>, String> memberPkMapToAlmtRow = new LinkedHashMap<Map<String, String>, String>();
-		FastaProteinAlignmentExporter.exportAlignment(cmdContext, featureName, alignmentColumnsSelector, false, queryMemberSupplier, 
+		alignmentColumnsSelector.generateAlignmentRows(cmdContext, false, queryMemberSupplier,  
 				new AbstractAlmtRowConsumer() {
 					@Override
 					public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember,

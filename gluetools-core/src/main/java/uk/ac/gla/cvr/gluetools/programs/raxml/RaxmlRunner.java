@@ -49,13 +49,36 @@ public abstract class RaxmlRunner implements Plugin {
 	public static final String SUBSTITUTION_MODEL = "substitutionModel";
 	public static final String RANDOM_NUMBER_SEED_1 = "randomNumberSeed1";
 	
-	private String substitutionModel = "GTRCAT";
+	public enum SubstitutionModel {
+		GTRCAT(true, false),
+		GTRGAMMA(true, false),
+		GTRGAMMAI(true, false),
+		PROTCATGTR(false, true),
+		PROTGAMMAGTR(false, true),
+		PROTGAMMAIGTR(false, true);
+		
+		private boolean nucleotide;
+		private boolean protein;
+		
+		private SubstitutionModel(boolean nucleotide, boolean protein) {
+			this.nucleotide = nucleotide;
+			this.protein = protein;
+		}
+		public boolean isNucleotide() {
+			return nucleotide;
+		}
+		public boolean isProtein() {
+			return protein;
+		}
+	}
+	
+	private SubstitutionModel substitutionModel = SubstitutionModel.GTRCAT;
 	private Integer randomNumberSeed1 = 12345;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		Plugin.super.configure(pluginConfigContext, configElem);
-		substitutionModel = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, SUBSTITUTION_MODEL, false)).orElse(substitutionModel);
+		substitutionModel = PluginUtils.configureEnumProperty(SubstitutionModel.class, configElem, SUBSTITUTION_MODEL, substitutionModel);
 		randomNumberSeed1 = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, RANDOM_NUMBER_SEED_1, false)).orElse(randomNumberSeed1);
 	}
 
@@ -67,7 +90,7 @@ public abstract class RaxmlRunner implements Plugin {
 			.addPropertyName(RANDOM_NUMBER_SEED_1);
 	}
 
-	protected String getSubstitutionModel() {
+	protected SubstitutionModel getSubstitutionModel() {
 		return substitutionModel;
 	}
 

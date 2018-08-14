@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -258,15 +259,34 @@ public class FastaAlignmentExportCommandDelegate {
 		}
 	}
 
-	public IAlignmentColumnsSelector getAlignmentColumnsSelector(CommandContext cmdContext) {
+	public IAlignmentColumnsSelector getNucleotideAlignmentColumnsSelector(CommandContext cmdContext) {
 		if(selectorName != null) {
 			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null && ntStart != null && ntEnd != null) {
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
+		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
+			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
+			Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
+			int refStart = labelToLabeledCodon.get(lcStart).getNtStart();
+			int refEnd = labelToLabeledCodon.get(lcEnd).getNtStart()+2;
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
 		} else if(relRefName != null && featureName != null) {
-			return new SimpleAlignmentColumnsSelector(relRefName, featureName, ntStart, ntEnd, lcStart, lcEnd);
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
 		} else {
 			return null;
 		}
 	}
+
+	public IAminoAcidAlignmentColumnsSelector getAminoAcidAlignmentColumnsSelector(CommandContext cmdContext) {
+		if(selectorName != null) {
+			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null) {
+			return new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
+		} else {
+			return null;
+		}
+	}
+
 	
 	
 }

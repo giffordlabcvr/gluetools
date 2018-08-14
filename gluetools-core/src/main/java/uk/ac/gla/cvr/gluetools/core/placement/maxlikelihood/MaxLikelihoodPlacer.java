@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleNucleotideColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.ExplicitMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
@@ -227,7 +227,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		if(selectorName != null) {
 			alignmentColumnsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
 		} else if(alignmentRelatedRefName != null && alignmentFeatureName != null) {
-			alignmentColumnsSelector = new SimpleAlignmentColumnsSelector(alignmentRelatedRefName, alignmentFeatureName, null, null, null, null);
+			alignmentColumnsSelector = new SimpleNucleotideColumnsSelector(alignmentRelatedRefName, alignmentFeatureName, null, null);
 		} else {
 			alignmentColumnsSelector = null;
 		}

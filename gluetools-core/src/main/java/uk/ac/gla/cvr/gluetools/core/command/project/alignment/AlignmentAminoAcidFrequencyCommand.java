@@ -41,8 +41,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -134,8 +133,8 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			Optional<Expression> whereClause, Boolean recursive, 
 			String lcStart, String lcEnd) {
 
-		SimpleAlignmentColumnsSelector almtColsSelector = 
-					new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, lcStart, lcEnd);
+		SimpleAminoAcidColumnsSelector almtColsSelector = 
+					new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
 		
 		LinkedHashMap<String, RefCodonInfo> codonToRefCodonInfo = 
 				initCodonToRefInfoMap(cmdContext, relRefName, featureName, lcStart, lcEnd);
@@ -156,8 +155,8 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 				}
 			}
 		};
-		FastaProteinAlignmentExporter.exportAlignment(cmdContext,
-				featureName, almtColsSelector, true, queryMemberSupplier, almtRowConsumer);
+		almtColsSelector.generateAlignmentRows(cmdContext,
+				true, queryMemberSupplier, almtRowConsumer);
 		
 		return formLabeledAminoAcidFrequencies(codonToRefCodonInfo);
 	}

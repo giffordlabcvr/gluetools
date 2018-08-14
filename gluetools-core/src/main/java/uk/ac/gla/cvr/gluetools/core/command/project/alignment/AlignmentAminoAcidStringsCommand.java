@@ -39,9 +39,8 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.AminoAcidStringFrequency;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein.FastaProteinAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -67,7 +66,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"amino-acid", "strings"}, 
 		description = "Compute the amino acid strings and their frequencies within a genome region", 
-		docoptUsages = { "[-c] [-w <whereClause>] [ -x | -g ] (-a <almtColsSelector> -f <featureName> [-s] | -r <relRefName> -f <featureName> <lcStart> <lcEnd>)" },
+		docoptUsages = { "[-c] [-w <whereClause>] [ -x | -g ] (-a <almtColsSelector> [-s] | -r <relRefName> -f <featureName> <lcStart> <lcEnd>)" },
 		docoptOptions = { 
 		"-c, --recursive                                               Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>                 Qualify members",
@@ -80,9 +79,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		},
 		furtherHelp = 
 		"The command may be run in two alternative modes. The first possibility is to use an alignment columns selector module. "+
-		"This allows discontiguous regions to be selected. In this case the module may only use amino acid region selectors, and may " +
-		"only refer to descendent features of the named feature. If the --shortForm option is used, then any unselected regions are "+
-		"elided in the output using '/'. "+
+		"This allows discontiguous regions to be selected. In this case the module may only use amino acid region selectors. "+
+		"If the --shortForm option is used, then any unselected regions are elided in the output using '/'. "+
 		"The second possibility is to specifically identify a single contiguous genome region. In this case, "+
 		"if this alignment is constrained, <relRefName> names a reference sequence constraining an ancestor alignment "
 		+ "of this alignment. If unconstrained, <relRefName> names a reference sequence which is a member of this alignment. "+
@@ -124,7 +122,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		this.almtColsSelectorModuleName = PluginUtils.configureStringProperty(configElem, ALMT_COLS_SELECTOR, false);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
 		this.shortForm = PluginUtils.configureBooleanProperty(configElem, SHORT_FORM, true);
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
@@ -141,7 +139,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "All the arguments for a specific contiguous genome region must be supplied");
 			}
 		} else {
-			if(this.relRefName != null || this.lcStart != null || this.lcEnd != null) {
+			if(this.relRefName != null || this.featureName != null || this.lcStart != null || this.lcEnd != null) {
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "If a columns selector module is specified, arguments for a specific contiguous genome region may not be used");
 			}
 		}
@@ -152,16 +150,11 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 
 		List<AminoAcidStringFrequency> resultRowData;
 
-		IAlignmentColumnsSelector iAlmtColsSelector;
+		IAminoAcidAlignmentColumnsSelector iAlmtColsSelector;
 		
 		if(almtColsSelectorModuleName != null) {
 			AlignmentColumnsSelector almtColsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, almtColsSelectorModuleName);
-			Feature parentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-			parentFeature.checkCodesAminoAcids();
-			almtColsSelector.checkWithinCodingParentFeature(cmdContext, parentFeature);
-			String selectorRelRefName = almtColsSelector.getRelatedRefName();
-			// check feature location exists on selectorRelRef
-			GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(selectorRelRefName, featureName));
+			almtColsSelector.checkCoding(cmdContext);
 			iAlmtColsSelector = almtColsSelector;
 		} else {
 			alignment.getRelatedRef(cmdContext, relRefName); // check related Ref.
@@ -170,10 +163,10 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 			.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName), false)
 			.getFeature().checkCodesAminoAcids();
 			iAlmtColsSelector = 
-					new SimpleAlignmentColumnsSelector(relRefName, featureName, null, null, lcStart, lcEnd);
+					new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
 		}
 		resultRowData = alignmentAminoAcidStrings(cmdContext, getAlignmentName(), whereClause,
-				recursive, featureName, shortForm, 
+				recursive, shortForm, 
 				excludeAnyGap, excludeAllGap, iAlmtColsSelector);
 		return new AlignmentAminoAcidStringsResult(resultRowData);
 	}
@@ -181,8 +174,8 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	private static List<AminoAcidStringFrequency> alignmentAminoAcidStrings(
 			CommandContext cmdContext, String almtName,
 			Optional<Expression> whereClause, Boolean recursive,
-			String featureName, Boolean shortForm, Boolean excludeAnyGap, Boolean excludeAllGap, 
-			IAlignmentColumnsSelector almtColsSelector) {
+			Boolean shortForm, Boolean excludeAnyGap, Boolean excludeAllGap, 
+			IAminoAcidAlignmentColumnsSelector almtColsSelector) {
 		AAStringInfo aaStringInfo = new AAStringInfo();
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
 
@@ -219,8 +212,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 				aaStringInfo.registerString(alignmentRowString);
 			}
 		};
-		FastaProteinAlignmentExporter.exportAlignment(cmdContext,
-				featureName, almtColsSelector, false, queryMemberSupplier, almtRowConsumer);
+		almtColsSelector.generateAlignmentRows(cmdContext, false, queryMemberSupplier, almtRowConsumer);
 		
 		ArrayList<AminoAcidStringFrequency> aasfList = aaStringInfo.toAASFList();
 		

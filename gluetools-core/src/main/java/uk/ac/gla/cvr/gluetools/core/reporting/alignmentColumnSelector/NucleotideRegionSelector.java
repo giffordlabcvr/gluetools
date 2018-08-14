@@ -32,32 +32,28 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelectorException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @PluginClass(elemName="nucleotideRegionSelector")
 public class NucleotideRegionSelector extends RegionSelector {
 
-	private String featureName;
 	private Integer startNt;
 	private Integer endNt;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
 		this.startNt = PluginUtils.configureIntProperty(configElem, "startNt", false);
 		this.endNt = PluginUtils.configureIntProperty(configElem, "endNt", false);
 	}
 
 	@Override
 	protected List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
-		return selectAlignmentColumns(cmdContext, relRefName, featureName, startNt, endNt);
+		return selectAlignmentColumns(cmdContext, relRefName, getFeatureName(), startNt, endNt);
 	}
 
 	public static List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName, String featureName, Integer startNt, Integer endNt) {
@@ -82,10 +78,18 @@ public class NucleotideRegionSelector extends RegionSelector {
 				.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(startNtToUse, endNtToUse)), ReferenceSegment.cloneLeftSegMerger());
 	}
 
-	@Override
-	public void checkWithinCodingParentFeature(CommandContext cmdContext, Feature parentFeature) {
-		throw new AlignmentColumnsSelectorException(Code.SELECTOR_NOT_WITHIN_CODING_FEATURE, parentFeature.getName(), "Nucleotide region selectors may not be used in this context.");
+	public void checkCoding(CommandContext cmdContext) {
+		throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, "Nucleotide selectors may not be used in this context.");
 	}
 
+	public void setStartNt(Integer startNt) {
+		this.startNt = startNt;
+	}
 
+	public void setEndNt(Integer endNt) {
+		this.endNt = endNt;
+	}
+
+	
+	
 }

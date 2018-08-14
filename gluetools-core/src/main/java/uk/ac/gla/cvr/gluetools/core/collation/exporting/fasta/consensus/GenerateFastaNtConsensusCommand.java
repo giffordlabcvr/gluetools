@@ -89,7 +89,7 @@ public class GenerateFastaNtConsensusCommand extends ModulePluginCommand<Command
 	protected CommandResult execute(CommandContext cmdContext, NucleotideConsensusGenerator generatorPlugin) {
 		return generatorPlugin.doGenerate((ConsoleCommandContext) cmdContext, 
 				fileName, delegate.getAlignmentName(), delegate.getWhereClause(), 
-				delegate.getAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview, 
+				delegate.getNucleotideAlignmentColumnsSelector(cmdContext), delegate.getRecursive(), preview, 
 				consensusID, delegate.getLineFeedStyle());
 	}
 	
