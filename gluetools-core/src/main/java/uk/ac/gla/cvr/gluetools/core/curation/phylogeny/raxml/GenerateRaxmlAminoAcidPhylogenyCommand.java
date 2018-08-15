@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
 
@@ -40,7 +39,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.GenerateAminoAcidPhylogenyCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.GeneratePhylogenyCommand.PhylogenyCommandCompleter;
 import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;

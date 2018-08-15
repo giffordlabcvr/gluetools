@@ -57,9 +57,9 @@ import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlRunner;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class RaxmlEpaRunner extends RaxmlRunner {
