@@ -207,19 +207,19 @@ public class FastaUtils {
 	 * @return a multi-FASTA using simple string keys based on the prefix plus an integer, 
 	 * populating two maps to map the keys between each other.
 	 */
-	public static <D> Map<String, DNASequence> remapFasta(
-			Map<D, DNASequence> inputKeyToFasta,
+	public static <D, X extends AbstractSequence<?>> Map<String, X> remapFasta(
+			Map<D, X> inputKeyToFasta,
 			Map<String, D> simpleKeyToInputKey, Map<D, String> inputKeyToSimpleKey, String prefix) {
 		int simpleKeyIndex = 0;
-		Map<String, DNASequence> remappedFasta = new LinkedHashMap<String, DNASequence>();
-		for(Map.Entry<D, DNASequence> entry: inputKeyToFasta.entrySet()) {
+		Map<String, X> remappedFasta = new LinkedHashMap<String, X>();
+		for(Map.Entry<D, X> entry: inputKeyToFasta.entrySet()) {
 			String simpleKey = prefix+simpleKeyIndex;
 			D inputKey = entry.getKey();
 			GlueLogger.log(Level.FINEST, "Mapped sequence "+inputKey+" as "+simpleKey);
 			simpleKeyToInputKey.put(simpleKey, inputKey);
 			inputKeyToSimpleKey.put(inputKey, simpleKey);
-			DNASequence fasta = entry.getValue();
-			remappedFasta.put(simpleKey, fasta);
+			X sequence = entry.getValue();
+			remappedFasta.put(simpleKey, sequence);
 			simpleKeyIndex++;
 		}
 		return remappedFasta;

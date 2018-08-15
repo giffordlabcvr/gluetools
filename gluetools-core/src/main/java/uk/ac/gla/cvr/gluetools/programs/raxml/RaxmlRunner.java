@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.biojava.nbio.core.sequence.DNASequence;
+import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -58,17 +59,17 @@ public abstract class RaxmlRunner implements Plugin {
 		PROTGAMMAIGTR(false, true);
 		
 		private boolean nucleotide;
-		private boolean protein;
+		private boolean aminoAcid;
 		
-		private SubstitutionModel(boolean nucleotide, boolean protein) {
+		private SubstitutionModel(boolean nucleotide, boolean aminoAcid) {
 			this.nucleotide = nucleotide;
-			this.protein = protein;
+			this.aminoAcid = aminoAcid;
 		}
 		public boolean isNucleotide() {
 			return nucleotide;
 		}
-		public boolean isProtein() {
-			return protein;
+		public boolean isAminoAcid() {
+			return aminoAcid;
 		}
 	}
 	
@@ -98,10 +99,11 @@ public abstract class RaxmlRunner implements Plugin {
 		return randomNumberSeed1;
 	}
 
-	protected void writeAlignmentFile(File tempDir, File alignmentFile, Map<String, DNASequence> alignment) {
-		byte[] fastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
+	
+	
+	protected void writeAlignmentFile(File tempDir, File alignmentFile, byte[] alignmentFastaBytes) {
 		try(FileOutputStream fileOutputStream = new FileOutputStream(alignmentFile)) {
-			IOUtils.write(fastaBytes, fileOutputStream);
+			IOUtils.write(alignmentFastaBytes, fileOutputStream);
 		} catch (IOException e) {
 			throw new RaxmlException(e, Code.RAXML_FILE_EXCEPTION, "Failed to write "+alignmentFile.getAbsolutePath()+": "+e.getLocalizedMessage());
 		}
@@ -123,7 +125,7 @@ public abstract class RaxmlRunner implements Plugin {
 		return raxmlTempDir;
 	}
 
-	protected void checkAlignment(Map<String, DNASequence> alignment) {
+	protected void checkAlignment(Map<String, ? extends AbstractSequence<?>> alignment) {
 		for(String string: alignment.keySet()) {
 			if(!RaxmlUtils.validRaxmlName(string)) {
 				throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Alignment contains row name \""+string+"\" which is invalid in RAxML");

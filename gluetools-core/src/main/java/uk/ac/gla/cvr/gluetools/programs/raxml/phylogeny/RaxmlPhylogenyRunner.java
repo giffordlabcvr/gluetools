@@ -36,6 +36,8 @@ import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.biojava.nbio.core.sequence.DNASequence;
+import org.biojava.nbio.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -47,6 +49,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlRunner;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
@@ -79,18 +83,30 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 
 	
 	public RaxmlPhylogenyResult executeRaxmlNucleotidePhylogeny(CommandContext cmdContext, Map<String, DNASequence> alignment, File dataDirFile) {
-
-		String raxmlTempDir = getRaxmlTempDir(cmdContext);
-		String raxmlExecutable = getRaxmlExecutable(cmdContext);
-		int raxmlCpus = getRaxmlCpus(cmdContext);
-		
 		SubstitutionModel substitutionModel = this.getSubstitutionModel();
 		if(!substitutionModel.isNucleotide()) {
 			throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML nucleotide phylogeny cannot run on non-nucleotide substitution model: "+substitutionModel.name());
 		}
-		
+		return runRaxml(cmdContext, dataDirFile, alignment);
+	}
+
+	public RaxmlPhylogenyResult executeRaxmlAminoAcidPhylogeny(CommandContext cmdContext, Map<String, ProteinSequence> alignment, File dataDirFile) {
+		SubstitutionModel substitutionModel = this.getSubstitutionModel();
+		if(!substitutionModel.isAminoAcid()) {
+			throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "RAxML amino-acid phylogeny cannot run on non-amino-acid substitution model: "+substitutionModel.name());
+		}
+		return runRaxml(cmdContext, dataDirFile, alignment);
+	}
+
+	
+	
+	private RaxmlPhylogenyResult runRaxml(CommandContext cmdContext,
+			File dataDirFile, Map<String, ? extends AbstractSequence<?>> alignment) {
 		checkAlignment(alignment);
-		
+		byte[] alignmentFastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
+		String raxmlTempDir = getRaxmlTempDir(cmdContext);
+		String raxmlExecutable = getRaxmlExecutable(cmdContext);
+		int raxmlCpus = getRaxmlCpus(cmdContext);
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(raxmlTempDir, uuid);
 		try {
@@ -99,7 +115,7 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 				throw new RaxmlException(Code.RAXML_FILE_EXCEPTION, "Failed to create RAxML temporary directory: "+tempDir.getAbsolutePath());
 			}
 			File alignmentFile = new File(tempDir, "alignment.fasta");
-			writeAlignmentFile(tempDir, alignmentFile, alignment);
+			writeAlignmentFile(tempDir, alignmentFile, alignmentFastaBytes);
 			
 			String runSpecifier = "GLUE";
 			
@@ -116,7 +132,7 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 			commandWords.add(normalisedFilePath(alignmentFile));
 			// substitution model
 			commandWords.add("-m");
-			commandWords.add(substitutionModel.name());
+			commandWords.add(this.getSubstitutionModel().name());
 			// random number seed 1
 			commandWords.add("-p");
 			commandWords.add(Integer.toString(this.getRandomNumberSeed1()));

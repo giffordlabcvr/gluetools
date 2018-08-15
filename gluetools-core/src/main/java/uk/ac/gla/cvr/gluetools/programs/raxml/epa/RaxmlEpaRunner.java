@@ -56,8 +56,10 @@ import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlRunner;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
 
 public class RaxmlEpaRunner extends RaxmlRunner {
@@ -96,6 +98,8 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 		
 		checkPhyloTree(phyloTree);
 		checkAlignment(alignment);
+		byte[] alignmentFastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
+
 		
 		String uuid = UUID.randomUUID().toString();
 		File tempDir = new File(raxmlTempDir, uuid);
@@ -108,7 +112,7 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			writePhyloTreeFile(tempDir, phyloTreeFile, phyloTree);
 
 			File alignmentFile = new File(tempDir, "alignment.fasta");
-			writeAlignmentFile(tempDir, alignmentFile, alignment);
+			writeAlignmentFile(tempDir, alignmentFile, alignmentFastaBytes);
 			
 			String runSpecifier = "GLUE";
 			
