@@ -93,7 +93,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 	protected CommandResult executeAux(
 			CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter, String fastaID,
-			DNASequence fastaNTSeq, String targetRefName) {
+			DNASequence fastaNTSeq, String targetRefName, List<QueryAlignedSegment> establishedQueryToTargetRefSegs) {
 		
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
@@ -123,13 +123,19 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, refsToScan, featuresToScan, whereClause);
 		}
 		
-		// align query to target reference
-		Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
-		AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
+		List<QueryAlignedSegment> queryToTargetRefSegs;
+		if(establishedQueryToTargetRefSegs == null) {
+			// align query to target reference
+			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, fastaSequenceReporter.getAlignerModuleName());
+			AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), fastaID, fastaNTSeq);
 
-		// extract segments from aligner result
-		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
-
+			// extract segments from aligner result
+			queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
+		} else {
+			queryToTargetRefSegs = establishedQueryToTargetRefSegs;
+		}
+		
+		
 		// translate segments to tip alignment reference
 		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
 				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 

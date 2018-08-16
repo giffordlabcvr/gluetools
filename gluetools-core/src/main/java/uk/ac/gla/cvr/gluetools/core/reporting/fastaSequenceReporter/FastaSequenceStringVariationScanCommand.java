@@ -96,7 +96,7 @@ public class FastaSequenceStringVariationScanCommand extends FastaSequenceBaseVa
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, FastaSequenceReporter fastaSequenceReporter) {
 		DNASequence fastaNTSeq = FastaUtils.ntStringToSequence(fastaString);
-		return executeAux(cmdContext, fastaSequenceReporter, "querySequence", fastaNTSeq, getTargetRefName());
+		return executeAux(cmdContext, fastaSequenceReporter, "querySequence", fastaNTSeq, getTargetRefName(), null);
 
 		
 	}

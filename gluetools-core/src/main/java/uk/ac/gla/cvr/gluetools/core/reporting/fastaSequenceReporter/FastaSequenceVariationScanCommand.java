@@ -109,7 +109,7 @@ public class FastaSequenceVariationScanCommand extends FastaSequenceBaseVariatio
 			targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID);
 		}
 
-		return executeAux(cmdContext, fastaSequenceReporter, fastaID, fastaNTSeq, targetRefName);
+		return executeAux(cmdContext, fastaSequenceReporter, fastaID, fastaNTSeq, targetRefName, null);
 	}
 
 

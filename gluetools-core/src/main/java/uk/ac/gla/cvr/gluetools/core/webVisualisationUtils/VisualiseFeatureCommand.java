@@ -1,5 +1,6 @@
 package uk.ac.gla.cvr.gluetools.core.webVisualisationUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +17,8 @@ import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -52,14 +55,16 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 
 	private String referenceName;
 	private String featureName;
-	private List<QueryAlignedSegment> queryToRefSegments;
+	private List<QueryAlignedSegment> queryToRefSegments = new ArrayList<QueryAlignedSegment>();
 	private String queryNucleotides;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		List<Element> qaSegElems = PluginUtils.findConfigElements(configElem, QUERY_TO_REF_SEGMENTS, null, null);
-		this.queryToRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, qaSegElems);
+		CommandDocument qaSegsCmdDoc = PluginUtils.configureCommandDocumentProperty(configElem, QUERY_TO_REF_SEGMENTS, true);
+		qaSegsCmdDoc.getArray("alignedSegment").getItems().forEach(item -> {
+			queryToRefSegments.add(new QueryAlignedSegment((CommandObject) item));
+		});
 		this.referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.queryNucleotides = PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true);
@@ -75,15 +80,18 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		int minRefStart = ReferenceSegment.minRefStart(featureLocRefSegs);
 		int maxRefEnd = ReferenceSegment.maxRefEnd(featureLocRefSegs);
 		
+		// initial alignment includes just the ref, up to the end of the specified feature.
 		AllColumnsAlignment<String> allColumnsAlmt = new AllColumnsAlignment<String>("reference", maxRefEnd);
 
 		// trim qa segs down to the feature area.
 		List<QueryAlignedSegment> queryToFeatureLocRefSegs = ReferenceSegment.intersection(queryToRefSegments, featureLocRefSegs,
 				ReferenceSegment.cloneLeftSegMerger());
+		// add the query sequence.
 		allColumnsAlmt.addRow("query", "reference", queryToFeatureLocRefSegs, QueryAlignedSegment.maxQueryEnd(queryToFeatureLocRefSegs));
 		
 		allColumnsAlmt.rationalise();
 		
+		// the utNt positions start from the minRef start on the reference, going up to the width of the all columns alignment.
 		int utNtWidth = allColumnsAlmt.getMaxIndex() - (minRefStart - 1);
 		List<ReferenceSegment> uFeatureSegs = Arrays.asList(new ReferenceSegment(minRefStart, allColumnsAlmt.getMaxIndex()));
 
