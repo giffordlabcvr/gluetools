@@ -40,7 +40,7 @@ import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -159,8 +159,8 @@ public class ExportReferenceCommand extends ModulePluginCommand<CommandResult, F
 			FeatureLocation featureLoc = 
 					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refSeq.getName(), feature.getName()), true);
 			if(featureLoc != null) {
-				List<LabeledAminoAcid> labeledAAs = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
-				labeledAAs.forEach(laa -> proteinStringBuf.append(laa.getAminoAcid()));
+				List<LabeledQueryAminoAcid> labeledQAAs = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
+				labeledQAAs.forEach(lqaa -> proteinStringBuf.append(lqaa.getLabeledAminoAcid().getAminoAcid()));
 			}
 			ProteinSequence proteinSeq = FastaUtils.proteinStringToSequence(proteinStringBuf.toString());
 			String fastaId = fastaProteinExporter.generateReferenceFastaId(refSeq);

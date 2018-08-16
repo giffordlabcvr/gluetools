@@ -157,7 +157,8 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 			int queryNt = translatedQaSeg.getQueryAlignedSegment().getQueryStart();
 			for(int i = 0; i < translatedQaSeg.getTranslation().size(); i++) {
 				AmbigNtTripletInfo translationInfo = translatedQaSeg.getTranslation().get(i);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), translationInfo), queryNt));
+				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), translationInfo);
+				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, queryNt));
 				refNt = refNt+3;
 				queryNt = queryNt+3;
 			}

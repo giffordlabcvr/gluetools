@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
+
 public class LabeledQueryAminoAcid {
 
 	private LabeledAminoAcid labeledAminoAcid;
@@ -42,4 +43,5 @@ public class LabeledQueryAminoAcid {
 	public int getQueryNt() {
 		return queryNt;
 	}
+	
 }

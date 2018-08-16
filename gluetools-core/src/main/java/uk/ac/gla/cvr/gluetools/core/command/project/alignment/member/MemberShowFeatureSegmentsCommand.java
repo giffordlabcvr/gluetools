@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -45,10 +46,11 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"show", "feature-segments"}, 
 		description = "Show the homology for a specific feature", 
-		docoptUsages = { "-r <relRefName> -f <featureName>" },
-		docoptOptions = { 
-		"-r <relRefName>, --relRefName <relRefName>     Related reference",
-		"-f <featureName>, --featureName <featureName>  Feature to translate",
+		docoptUsages = { "-r <relRefName> -f <featureName> [-q]"},
+		docoptOptions={
+				"-r <relRefName>, --relRefName <relRefName>     Related reference",
+				"-f <featureName>, --featureName <featureName>  Feature to translate",
+				"-q, --queryAlignedSegments                     Return list of queryAlignedSegment objects",
 		},
 		furtherHelp = 
 		"If this member is in a constrained alignment, the <relRefName> argument names a reference "+
@@ -60,14 +62,16 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"homologous to this feature-location, according to the alignment",
 		metaTags = {}	
 )
-public class MemberShowFeatureSegmentsCommand extends MemberModeCommand<MemberShowFeatureSegmentsResult> {
+public class MemberShowFeatureSegmentsCommand extends MemberModeCommand<CommandResult> {
 
 
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
-
+	private static final String QUERY_ALIGNED_SEGMENTS = "queryAlignedSegments";
+	
 	private String relRefName;
 	private String featureName;
+	private boolean queryAlignedSegments;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -75,10 +79,11 @@ public class MemberShowFeatureSegmentsCommand extends MemberModeCommand<MemberSh
 		super.configure(pluginConfigContext, configElem);
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.queryAlignedSegments = PluginUtils.configureBooleanProperty(configElem, QUERY_ALIGNED_SEGMENTS, true);
 	}
 	
 	@Override
-	public MemberShowFeatureSegmentsResult execute(CommandContext cmdContext) {
+	public CommandResult execute(CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
 		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, relRefName);
@@ -98,10 +103,12 @@ public class MemberShowFeatureSegmentsCommand extends MemberModeCommand<MemberSh
 				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
 				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
-		
-		return new MemberShowFeatureSegmentsResult(memberToFeatureLocRefSegsMerged);
+		if(queryAlignedSegments) {
+			return new QueryAlignedSegment.QueryAlignedSegmentsResult(memberToFeatureLocRefSegsMerged);
+		} else {
+			return new MemberShowFeatureSegmentsResult(memberToFeatureLocRefSegsMerged);
+		}
 	}
-
 
 	@CompleterClass
 	public static final class Completer extends FeatureOfRelatedRefCompleter {}

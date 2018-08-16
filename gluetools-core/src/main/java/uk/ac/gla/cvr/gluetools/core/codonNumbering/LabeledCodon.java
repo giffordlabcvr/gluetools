@@ -45,4 +45,8 @@ public class LabeledCodon {
 		return ntStart;
 	}
 	
+	public int getNtLength() {
+		return 3;
+	}
+	
 }

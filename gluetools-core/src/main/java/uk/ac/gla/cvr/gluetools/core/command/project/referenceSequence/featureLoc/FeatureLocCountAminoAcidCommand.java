@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -67,10 +67,10 @@ public class FeatureLocCountAminoAcidCommand extends FeatureLocBaseAminoAcidComm
 	@Override
 	public FeatureLocCountAminoAcidResult execute(CommandContext cmdContext) {
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		List<LabeledAminoAcid> labeledAminoAcids = featureLocAminoAcids(cmdContext, featureLoc);
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = featureLocAminoAcids(cmdContext, featureLoc);
 		int count = 0;
-		for(LabeledAminoAcid laa : labeledAminoAcids) {
-			if(laa.getAminoAcid().charAt(0) == aminoAcid) {
+		for(LabeledQueryAminoAcid lqaa : labeledQueryAminoAcids) {
+			if(lqaa.getLabeledAminoAcid().getAminoAcid().charAt(0) == aminoAcid) {
 				count++;
 			}
 		}

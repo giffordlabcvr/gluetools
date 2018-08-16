@@ -106,7 +106,6 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-
 		
 		for(QueryAlignedSegment memberToRelatedRefSeg: memberToRelatedRefSegsCodonAligned) {
 			CharSequence nts = memberSeqObj.subSequence(cmdContext, 
@@ -118,8 +117,8 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 			for(int i = 0; i < segTranslationInfos.size(); i++) {
 				AmbigNtTripletInfo segTranslationInfo = segTranslationInfos.get(i);
 				LabeledCodon labeledCodon = ancRefNtToLabeledCodon.get(refNt);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(
-						new LabeledAminoAcid(labeledCodon, segTranslationInfo), memberNt));
+				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, segTranslationInfo);
+				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, memberNt));
 				refNt = refNt+3;
 				memberNt = memberNt+3;
 			}

@@ -23,33 +23,45 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
+package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class FeatureLocAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid> {
+public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid> {
 
 	public static final String 
 		CODON_LABEL = "codonLabel",
-		REF_NT = "refNt",
+		MEMBER_NT = "memberNt",
+<<<<<<< HEAD
+		REL_REF_NT = "relRefNt",
 		CODON_NTS = "codonNts",
 		AMINO_ACID = "aminoAcid",
 		DEFINITE_AAS = "definiteAas",
 		POSSIBLE_AAS = "possibleAas";
+=======
+		MEMBER_CODON_NTS = "memberCodonNts",
+		AMINO_ACID = "aminoAcid";
+>>>>>>> web_reform_1
 
 
-	public FeatureLocAminoAcidResult(List<LabeledQueryAminoAcid> rowData) {
-		super("featureLocAminoAcidResult", 
+	public MemberAminoAcidResult(List<LabeledQueryAminoAcid> rowData) {
+		super("memberAminoAcidsResult", 
 				rowData, 
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
-				column(REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
+				column(MEMBER_NT, lqaa -> lqaa.getQueryNt()),
+<<<<<<< HEAD
+				column(REL_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
 				column(CODON_NTS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString()),
 				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()),
 				column(DEFINITE_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getDefiniteAasString()),
 				column(POSSIBLE_AAS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getPossibleAasString()));
+=======
+				column(MEMBER_CODON_NTS, lqaa -> lqaa.getCodonNts()),
+				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()));
+>>>>>>> web_reform_1
 	}
 
 }

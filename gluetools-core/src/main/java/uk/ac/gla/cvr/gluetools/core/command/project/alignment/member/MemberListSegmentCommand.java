@@ -34,24 +34,40 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
+import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignedSegment.AlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 
 @CommandClass(
 		commandWords={"list", "segment"}, 
-		docoptUsages={""},
+		docoptUsages={"[-q]"},
+		docoptOptions={"-q, --queryAlignedSegments  Return list of queryAlignedSegment objects"},
 		description="List the aligned segments") 
-public class MemberListSegmentCommand extends MemberModeCommand<MemberListSegmentCommand.ListAlignedSegmentResult> {
+public class MemberListSegmentCommand extends MemberModeCommand<CommandResult> {
+
+	private static final String QUERY_ALIGNED_SEGMENTS = "queryAlignedSegments";
+	private boolean queryAlignedSegments;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.queryAlignedSegments = PluginUtils.configureBooleanProperty(configElem, QUERY_ALIGNED_SEGMENTS, true);
+	}
 
 	@Override
-	public ListAlignedSegmentResult execute(CommandContext cmdContext) {
+	public CommandResult execute(CommandContext cmdContext) {
 		Expression exp = ExpressionFactory.matchExp(AlignedSegment.ALIGNMENT_NAME_PATH, getAlignmentName());
 		exp = exp.andExp(ExpressionFactory.matchExp(AlignedSegment.MEMBER_SOURCE_NAME_PATH, getSourceName()));
 		exp = exp.andExp(ExpressionFactory.matchExp(AlignedSegment.MEMBER_SEQUENCE_ID_PATH, getSequenceID()));
@@ -61,7 +77,12 @@ public class MemberListSegmentCommand extends MemberModeCommand<MemberListSegmen
 						new SelectQuery(AlignedSegment.class, exp));
 		segments = IReferenceSegment.sortByRefStart(segments, ArrayList::new);
 		
-		return new ListAlignedSegmentResult(cmdContext, segments);
+		if(queryAlignedSegments) {
+			return new QueryAlignedSegment.QueryAlignedSegmentsResult(segments.stream()
+					.map(AlignedSegment::asQueryAlignedSegment).collect(Collectors.toList()));
+		} else {
+			return new ListAlignedSegmentResult(cmdContext, segments);
+		}
 	}
 
 	public static class ListAlignedSegmentResult extends ListResult {
@@ -87,5 +108,9 @@ public class MemberListSegmentCommand extends MemberModeCommand<MemberListSegmen
 			return queryAlignedSegments;
 		}
 	}
+	
+	
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {}
 	
 }

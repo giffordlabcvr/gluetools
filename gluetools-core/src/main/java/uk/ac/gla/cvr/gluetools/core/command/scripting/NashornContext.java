@@ -182,14 +182,14 @@ public class NashornContext {
 			Element cmdDocElem = cmdXmlDocument.getDocumentElement();
 			@SuppressWarnings("unused")
 			Class<? extends Command> cmdClass = cmdContext.commandClassFromElement(cmdDocElem);
-			cmdContext.checkCommmandIsExecutable(cmdClass);
-			Command command = cmdContext.commandFromElement(cmdDocElem);
-			if(command == null) {
+			if(cmdClass == null) {
 				// Nashorn-friendly exception
 				JsonObject jsonObject = CommandDocumentJsonUtils.commandDocumentToJsonObject(commandDocument);
 				String modePath = cmdContext.getModePath();
 				throw new NashornScriptingException(Code.UNKNOWN_COMMAND, JsonUtils.print(jsonObject, false), modePath);
 			}
+			cmdContext.checkCommmandIsExecutable(cmdClass);
+			Command command = cmdContext.commandFromElement(cmdDocElem);
 			return runCommand(command);
 		}
 
