@@ -72,6 +72,11 @@ public class BlastHsp {
 	public int getIdentity() {
 		return identity;
 	}
+
+	public double getIdentityPct() {
+		return (identity/ (double) alignLen)*100.0;
+	}
+
 	public void setIdentity(int identity) {
 		this.identity = identity;
 	}
