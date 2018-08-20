@@ -178,7 +178,7 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 									" ("+direction.name().toLowerCase()+")"+
 									": allowed HSP on query ["+hsp.getQueryFrom()+", "+
 									hsp.getQueryTo()+"] with identity: "+
-									(hsp.getIdentity()/ (double) hsp.getAlignLen())*100.0+"%, score: "+
+									hsp.getIdentityPct()+"%, score: "+
 									hsp.getScore()+", bit score: "+hsp.getBitScore());
 							totalAlignLen += hsp.getAlignLen();
 						}

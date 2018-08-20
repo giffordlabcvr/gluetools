@@ -44,6 +44,7 @@ public class RecognitionCategory implements Plugin {
 	private static final String MINIMUM_SCORE = "minimumScore";
 	private static final String MAXIMUM_E_VALUE = "maximumEValue";
 	private static final String MINIMUM_BIT_SCORE = "minimumBitScore";
+	private static final String MINIMUM_IDENTITY_PCT = "minimumIdentityPct";
 	private static final String MINIMUM_TOTAL_ALIGN_LENGTH = "minimumTotalAlignLength";
 	private static final String REFERENCE_SEQUENCE = "referenceSequence";
 	
@@ -52,6 +53,7 @@ public class RecognitionCategory implements Plugin {
 	private String displayName;
 	private Optional<Double> maximumEValue;
 	private Optional<Double> minimumBitScore;
+	private Optional<Double> minimumIdentityPct;
 	private Optional<Integer> minimumScore;
 	private Integer minimumTotalAlignLength;
 	
@@ -65,6 +67,7 @@ public class RecognitionCategory implements Plugin {
 		this.refSeqNames = PluginUtils.configureStringsProperty(configElem, REFERENCE_SEQUENCE, 1, null);
 		this.displayName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, DISPLAY_NAME, false)).orElse(this.id);
 		this.minimumBitScore = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MINIMUM_BIT_SCORE, false));
+		this.minimumIdentityPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MINIMUM_IDENTITY_PCT, false));
 		this.maximumEValue = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MAXIMUM_E_VALUE, false));
 		this.minimumScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MINIMUM_SCORE, false));
 		this.minimumTotalAlignLength = Optional.ofNullable(
@@ -91,6 +94,10 @@ public class RecognitionCategory implements Plugin {
 		return minimumBitScore;
 	}
 
+	public Optional<Double> getMinimumIdentityPct() {
+		return minimumIdentityPct;
+	}
+
 	public Optional<Integer> getMinimumScore() {
 		return minimumScore;
 	}
@@ -108,7 +115,8 @@ public class RecognitionCategory implements Plugin {
 					blastHsp.getHitTo() >= blastHsp.getHitFrom() &&
 							getMaximumEValue().map(maxEValue -> (maxEValue >= blastHsp.getEvalue())).orElse(true)&&
 					getMinimumBitScore().map(minBitScore -> (minBitScore <= blastHsp.getBitScore())).orElse(true)&&
-					getMinimumScore().map(minScore -> (minScore <= blastHsp.getScore())).orElse(true);
+					getMinimumScore().map(minScore -> (minScore <= blastHsp.getScore())).orElse(true)&&
+					getMinimumIdentityPct().map(minIdentityPct -> (minIdentityPct <= blastHsp.getIdentityPct())).orElse(true);
 			}
 		};
 	}
@@ -121,7 +129,8 @@ public class RecognitionCategory implements Plugin {
 						(blastHsp.getHitTo() < blastHsp.getHitFrom()) &&
 						getMaximumEValue().map(maxEValue -> (maxEValue >= blastHsp.getEvalue())).orElse(true)&&
 						getMinimumBitScore().map(minBitScore -> (minBitScore <= blastHsp.getBitScore())).orElse(true)&&
-						getMinimumScore().map(minScore -> (minScore <= blastHsp.getScore())).orElse(true);
+						getMinimumScore().map(minScore -> (minScore <= blastHsp.getScore())).orElse(true)&&
+						getMinimumIdentityPct().map(minIdentityPct -> (minIdentityPct <= blastHsp.getIdentityPct())).orElse(true);
 			}
 		};
 	}
