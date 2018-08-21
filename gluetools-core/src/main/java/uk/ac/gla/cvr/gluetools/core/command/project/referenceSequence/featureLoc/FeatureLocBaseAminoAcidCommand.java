@@ -38,10 +38,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> extends FeatureLocModeCommand<R> {
@@ -61,24 +63,34 @@ public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> ex
 			return Collections.emptyList();
 		}
 		
-		TIntObjectMap<LabeledCodon> refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-
 		featureLocRefSegs = ReferenceSegment.mergeAbutting(featureLocRefSegs, 
 				ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
-		
-		for(ReferenceSegment featureLocRefSeg: featureLocRefSegs) {
-			CharSequence nts = refSeqObj.subSequence(cmdContext, 
-					featureLocRefSeg.getRefStart(), featureLocRefSeg.getRefEnd());
-			List<AmbigNtTripletInfo> segTranslationInfos = translator.translate(nts);
-			int refNt = featureLocRefSeg.getRefStart();
-			for(int i = 0; i < segTranslationInfos.size(); i++) {
-				AmbigNtTripletInfo segTranslationInfo = segTranslationInfos.get(i);
-				LabeledCodon labeledCodon = refNtToLabeledCodon.get(refNt);
-				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, segTranslationInfo);
+
+
+		TIntObjectMap<LabeledCodon> refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
+
+		int segIndex = 0;
+		ReferenceSegment currentSegment = featureLocRefSegs.get(segIndex);
+		int refNt = currentSegment.getRefStart();
+		while(segIndex < featureLocRefSegs.size() && refNt <= currentSegment.getRefEnd()) {
+			LabeledCodon labeledCodon = refNtToLabeledCodon.get(refNt);
+			if(labeledCodon != null) {
+				char[] nts = new char[3];
+				nts[0] = refSeqObj.nt(cmdContext, labeledCodon.getNtStart());
+				nts[1] = refSeqObj.nt(cmdContext, labeledCodon.getNtMiddle());
+				nts[2] = refSeqObj.nt(cmdContext, labeledCodon.getNtEnd());
+				AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nts)).get(0);
+				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
 				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, refNt));
-				refNt = refNt+3;
+			}
+			refNt++;
+			if(refNt > currentSegment.getRefEnd()) {
+				segIndex++;
+				if(segIndex < featureLocRefSegs.size()) {
+					currentSegment = featureLocRefSegs.get(segIndex);
+					refNt = currentSegment.getRefStart();
+				}
 			}
 		}
 		return labeledQueryAminoAcids;

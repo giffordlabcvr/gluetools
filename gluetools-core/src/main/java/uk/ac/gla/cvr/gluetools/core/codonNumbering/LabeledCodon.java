@@ -25,16 +25,26 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+
 public class LabeledCodon {
 
 	private String codonLabel;
 	private int ntStart;
+	private int ntMiddle;
+	private int ntEnd;
+	private List<LabeledCodonReferenceSegment> lcRefSegs;
 	
 	
-	public LabeledCodon(String codonLabel, int ntStart) {
+	public LabeledCodon(String codonLabel, int ntStart, int ntMiddle, int ntEnd) {
 		super();
 		this.codonLabel = codonLabel;
 		this.ntStart = ntStart;
+		this.ntMiddle = ntMiddle;
+		this.ntEnd = ntEnd;
 	}
 
 	public String getCodonLabel() {
@@ -45,8 +55,29 @@ public class LabeledCodon {
 		return ntStart;
 	}
 	
+	public int getNtMiddle() {
+		return ntMiddle;
+	}
+
+	public int getNtEnd() {
+		return ntEnd;
+	}
+
 	public int getNtLength() {
 		return 3;
 	}
 	
+	public List<LabeledCodonReferenceSegment> getLcRefSegments() {
+		if(lcRefSegs == null) {
+			lcRefSegs = new ArrayList<LabeledCodonReferenceSegment>();
+			lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntStart, ntStart));
+			lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntMiddle, ntMiddle));
+			lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntEnd, ntEnd));
+			
+			lcRefSegs = ReferenceSegment.mergeAbutting(lcRefSegs,
+				LabeledCodonReferenceSegment.mergeAbuttingFunctionLabeledCodonReferenceSegment(), 
+				ReferenceSegment.abutsPredicateReferenceSegment());
+		}
+		return lcRefSegs;
+	}
 }

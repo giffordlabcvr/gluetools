@@ -25,16 +25,19 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
-import gnu.trove.map.TIntObjectMap;
-
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -52,7 +55,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extends MemberModeCommand<R> {
@@ -79,51 +81,69 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
 		List<QueryAlignedSegment> memberToRelatedRefSegs = alignment.translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
 
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToRelatedRefSegs, featureLocRefSegs,
-				ReferenceSegment.cloneLeftSegMerger());
-		
-		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
-		List<QueryAlignedSegment> memberToFeatureLocRefSegsMerged = QueryAlignedSegment.mergeAbutting(memberToFeatureLocRefSegs, 
-				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-
-		
-		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-		List<QueryAlignedSegment> memberToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, memberToFeatureLocRefSegsMerged);
-
-		final Translator translator = new CommandContextTranslator(cmdContext);
-
 		Sequence memberSequence = almtMember.getSequence();
 		AbstractSequenceObject memberSeqObj = memberSequence.getSequenceObject();
 
-		if(memberToRelatedRefSegsCodonAligned.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
 
+		List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
+				ReferenceSegment.intersection(memberToRelatedRefSegs, labeledCodonReferenceSegments,
+				new BiFunction<QueryAlignedSegment, LabeledCodonReferenceSegment, LabeledCodonQueryAlignedSegment>() {
+					@Override
+					public LabeledCodonQueryAlignedSegment apply(
+							QueryAlignedSegment qaSeg,
+							LabeledCodonReferenceSegment lcRefSeg) {
+							LabeledCodonQueryAlignedSegment lcQaSeg = new LabeledCodonQueryAlignedSegment(lcRefSeg.getLabeledCodon(), 
+											qaSeg.getRefStart(), qaSeg.getRefEnd(), 
+											qaSeg.getQueryStart(), qaSeg.getQueryEnd());
+							int leftOverhang = lcRefSeg.getRefStart() - qaSeg.getRefStart();
+							if(leftOverhang > 0) {
+								lcQaSeg.truncateLeft(leftOverhang);
+							}
+							int rightOverhang = qaSeg.getRefEnd() - lcRefSeg.getRefEnd() ;
+							if(rightOverhang > 0) {
+								lcQaSeg.truncateRight(rightOverhang);
+							}
+							
+						return lcQaSeg;
+					}
+				});
+		
+
+		Map<LabeledCodon, List<LabeledCodonQueryAlignedSegment>> labeledCodonToLcQaSegs = 
+				lcQaSegs.stream().collect(Collectors.groupingBy(LabeledCodonQueryAlignedSegment::getLabeledCodon));
+		
+		final Translator translator = new CommandContextTranslator(cmdContext);
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-		
-		for(QueryAlignedSegment memberToRelatedRefSeg: memberToRelatedRefSegsCodonAligned) {
-			CharSequence nts = memberSeqObj.subSequence(cmdContext, 
-					memberToRelatedRefSeg.getQueryStart(), memberToRelatedRefSeg.getQueryEnd());
-			int memberNt = memberToRelatedRefSeg.getQueryStart();
-			
-			List<AmbigNtTripletInfo> segTranslationInfos = translator.translate(nts);
-			int refNt = memberToRelatedRefSeg.getRefStart();
-			for(int i = 0; i < segTranslationInfos.size(); i++) {
-				AmbigNtTripletInfo segTranslationInfo = segTranslationInfos.get(i);
-				LabeledCodon labeledCodon = ancRefNtToLabeledCodon.get(refNt);
-				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, segTranslationInfo);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, memberNt));
-				refNt = refNt+3;
-				memberNt = memberNt+3;
-			}
-		}
 
+		ArrayList<LabeledCodon> labeledCodons = new ArrayList<LabeledCodon>(labeledCodonToLcQaSegs.keySet());
+		labeledCodons.sort(new Comparator<LabeledCodon>() {
+			@Override
+			public int compare(LabeledCodon o1, LabeledCodon o2) {
+				return Integer.compare(o1.getNtStart(), o2.getNtStart());
+			}
+		});
+		
+		labeledCodons.forEach(labeledCodon -> {
+			List<LabeledCodonQueryAlignedSegment> codonLcQaSegs = labeledCodonToLcQaSegs.get(labeledCodon);
+			if(ReferenceSegment.covers(codonLcQaSegs, labeledCodon.getLcRefSegments())) {
+				final char[] nts = new char[3];
+				codonLcQaSegs.forEach(lcQaSeg -> {
+					for(int i = 0; i < lcQaSeg.getCurrentLength(); i++) {
+						if(lcQaSeg.getRefStart()+i == labeledCodon.getNtStart()) {
+							nts[0] = memberSeqObj.nt(cmdContext, lcQaSeg.getQueryStart()+i);
+						} else if(lcQaSeg.getRefStart()+i == labeledCodon.getNtMiddle()) {
+							nts[1] = memberSeqObj.nt(cmdContext, lcQaSeg.getQueryStart()+i);
+						} else if(lcQaSeg.getRefStart()+i == labeledCodon.getNtEnd()) {
+							nts[2] = memberSeqObj.nt(cmdContext, lcQaSeg.getQueryStart()+i);
+						} 
+					}
+				});
+				AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nts)).get(0);
+				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
+				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, QueryAlignedSegment.minQueryStart(codonLcQaSegs)));
+			};
+		});
 		return labeledQueryAminoAcids;
 	}
 	

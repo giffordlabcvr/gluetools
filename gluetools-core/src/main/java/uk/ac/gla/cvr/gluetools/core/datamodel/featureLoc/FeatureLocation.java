@@ -41,6 +41,7 @@ import org.apache.cayenne.query.SortOrder;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -79,6 +80,7 @@ public class FeatureLocation extends _FeatureLocation {
 	private List<LabeledCodon> labeledCodons;
 	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
 	private Map<String, LabeledCodon> labelToLabeledCodon;
+	private List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments;
 	
 	
 	@Override
@@ -97,13 +99,32 @@ public class FeatureLocation extends _FeatureLocation {
 			CodonLabeler codonLabeler = codonNumberingAncestorLocation.getFeature().getCodonLabelerModule(cmdContext);
 			if(codonLabeler == null) {
 				Integer codon1Start = getCodon1Start(cmdContext);
-				Integer ntStart = ReferenceSegment.minRefStart(getSegments());
-				Integer ntEnd = ReferenceSegment.maxRefEnd(getSegments());
-				// default case: no labeler module.
+				List<FeatureSegment> segments = getSegments();
 				labeledCodons = new ArrayList<LabeledCodon>();
-				for(int i = ntStart; i <= ntEnd; i++) {
-					if(TranslationUtils.isAtStartOfCodon(codon1Start, i)) {
-						labeledCodons.add(new LabeledCodon(Integer.toString(TranslationUtils.getCodon(codon1Start, i)), i));
+				if(segments.isEmpty()) { return labeledCodons; }
+				int segIndex = 0;
+				FeatureSegment currentSegment = segments.get(segIndex);
+				int refNt = currentSegment.getRefStart();
+				int refNtMinus1 = -1;
+				int refNtMinus2 = -1;
+				int startRefNt = refNt;
+				int normalisedCodon1Start = (codon1Start - startRefNt) + 1;
+				int featureNt = 1; // number of nucleotides through the feature.
+				while(segIndex < segments.size() && refNt <= currentSegment.getRefEnd()) {
+					if(TranslationUtils.isAtEndOfCodon(normalisedCodon1Start, featureNt)) {
+						String codonLabel = Integer.toString(TranslationUtils.getCodon(normalisedCodon1Start, featureNt-2));
+						labeledCodons.add(new LabeledCodon(codonLabel, refNtMinus2, refNtMinus1, refNt));
+					}
+					refNtMinus2 = refNtMinus1;
+					refNtMinus1 = refNt;
+					refNt++;
+					featureNt++;
+					if(refNt > currentSegment.getRefEnd()) {
+						segIndex++;
+						if(segIndex < segments.size()) {
+							currentSegment = segments.get(segIndex);
+							refNt = currentSegment.getRefStart();
+						}
 					}
 				}
 			} else {
@@ -111,6 +132,15 @@ public class FeatureLocation extends _FeatureLocation {
 			}
 		}
 		return labeledCodons;
+	}
+	
+	public List<LabeledCodonReferenceSegment> getLabeledCodonReferenceSegments(CommandContext cmdContext) {
+		if(labeledCodonReferenceSegments == null) {
+			labeledCodonReferenceSegments = getLabeledCodons(cmdContext).stream()
+					.flatMap(lc -> lc.getLcRefSegments().stream())
+					.collect(Collectors.toList());
+		}
+		return labeledCodonReferenceSegments;
 	}
 	
 	public TIntObjectMap<LabeledCodon> getRefNtToLabeledCodon(CommandContext cmdContext) {
