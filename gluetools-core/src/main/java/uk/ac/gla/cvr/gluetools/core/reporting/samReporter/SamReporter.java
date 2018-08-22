@@ -43,7 +43,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
@@ -60,7 +59,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
 
 @PluginClass(elemName="samReporter",
 		description="Provides various commands for analysing deep sequencing data in SAM/BAM files")
@@ -70,8 +68,6 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF = "maxLikelihoodPlacerDistanceCutoff";
 	public static final String ALIGNER_MODULE_NAME = "alignerModuleName";
 	public static final String READ_LOG_INTERVAL = "readLogInterval";
-	public static final String SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME = "samRefTextToReferenceQueryModuleName";
-	public static final String SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME = "samRefTextToTipAlignmentQueryModuleName";
 	public static final String SAM_READER_VALIDATION_STRINGENCY = "samReaderValidationStringency";
 	public static final String DEFAULT_MIN_Q_SCORE = "defaultMinQScore";
 	public static final String DEFAULT_MIN_DEPTH = "defaultMinDepth";
@@ -92,12 +88,6 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	
 	// Aligner module: generates pairwise alignment between sam reference and target ref.
 	private String alignerModuleName;
-	// optional -- Module of type textToQueryTransformer.
-	// Transforms SAM reference name to a where clause identifying the target reference.
-	private String samRefTextToReferenceQueryModuleName;
-	// optional -- Module of type textToQueryTransformer.
-	// Transforms SAM reference name to a where clause identifying the tip alignment.
-	private String samRefTextToTipAlmtQueryModuleName;
 	private Integer readLogInterval;
 	// STRICT (default), LENIENT, or SILENT
 	private ValidationStringency samReaderValidationStringency;
@@ -127,8 +117,6 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 		addSimplePropertyName(READ_LOG_INTERVAL);
-		addSimplePropertyName(SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME);
-		addSimplePropertyName(SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME);
 		addSimplePropertyName(SAM_READER_VALIDATION_STRINGENCY);
 		addSimplePropertyName(DEFAULT_MIN_DEPTH);
 		addSimplePropertyName(DEFAULT_MIN_Q_SCORE);
@@ -146,8 +134,6 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.maxLikelihoodPlacerDistanceCutoff = PluginUtils.configureDoubleProperty(configElem, MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF, 0.75);
 		this.readLogInterval = Optional.ofNullable(
 				PluginUtils.configureIntProperty(configElem, READ_LOG_INTERVAL, false)).orElse(20000);
-		this.samRefTextToReferenceQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_REFERENCE_QUERY_MODULE_NAME, false);
-		this.samRefTextToTipAlmtQueryModuleName = PluginUtils.configureStringProperty(configElem, SAM_REF_TEXT_TO_TIP_ALMT_QUERY_MODULE_NAME, false);
 		this.samReaderValidationStringency = PluginUtils.configureEnumProperty(ValidationStringency.class, configElem, SAM_READER_VALIDATION_STRINGENCY, null);
 		this.defaultMinQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
 		this.defaultMinMapQ = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_MAP_Q, 0, true, 99, true, false)).orElse(0);
@@ -171,21 +157,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		if(definedTargetRefName != null) {
 			return definedTargetRefName;
 		}
-		if(samRefTextToReferenceQueryModuleName == null) {
-			throw new SamReporterCommandException(Code.NO_TARGET_REFERENCE_DEFINED);
-		}
-		TextToQueryTransformer samRefTextToReferenceQueryTransformer = 
-				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, samRefTextToReferenceQueryModuleName,
-						TextToQueryTransformer.DataClassEnum.ReferenceSequence);
-		List<String> referenceSeqNames = samRefTextToReferenceQueryTransformer.textToQuery(cmdContext, samRefName).
-				getColumnValues(ReferenceSequence.NAME_PROPERTY);
-		if(referenceSeqNames.size() == 0) {
-			throw new SamReporterCommandException(Code.TARGET_REFERENCE_NOT_FOUND, samRefName);
-		}
-		if(referenceSeqNames.size() > 1) {
-			throw new SamReporterCommandException(Code.TARGET_REFERENCE_AMBIGUOUS, samRefName, referenceSeqNames.toString());
-		}
-		return referenceSeqNames.get(0);
+		throw new SamReporterCommandException(Code.NO_TARGET_REFERENCE_DEFINED);
 	}
 	
 	public AlignmentMember establishTargetRefMemberUsingPlacer(CommandContext cmdContext, DNASequence consensusSequence) {
@@ -218,27 +190,6 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		String neighbourLeafName = nearestNeighbour.getPhyloLeaf().getName();
 		Map<String,String> neighbourMemberPkMap = PhyloImporter.memberLeafNodeNameToPkMap(neighbourLeafName);
 		return GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap);
-	}
-
-	public String tipAlignmentNameFromSamRefName(CommandContext cmdContext, String samRefName, String definedTipAlignmentName) {
-		if(definedTipAlignmentName != null) {
-			return definedTipAlignmentName;
-		}
-		if(samRefTextToTipAlmtQueryModuleName == null) {
-			return null;
-		}
-		TextToQueryTransformer samRefTextToTipAlmtQueryTransformer = 
-				TextToQueryTransformer.lookupTextToQueryTransformer(cmdContext, samRefTextToTipAlmtQueryModuleName,
-						TextToQueryTransformer.DataClassEnum.Alignment);
-		List<String> tipAlmtNames = samRefTextToTipAlmtQueryTransformer.textToQuery(cmdContext, samRefName).
-				getColumnValues(ReferenceSequence.NAME_PROPERTY);
-		if(tipAlmtNames.size() == 0) {
-			throw new SamReporterCommandException(Code.TIP_ALIGNMENT_NOT_FOUND, samRefName);
-		}
-		if(tipAlmtNames.size() > 1) {
-			throw new SamReporterCommandException(Code.TIP_ALIGNMENT_AMBIGUOUS, samRefName, tipAlmtNames.toString());
-		}
-		return tipAlmtNames.get(0);
 	}
 	
 	

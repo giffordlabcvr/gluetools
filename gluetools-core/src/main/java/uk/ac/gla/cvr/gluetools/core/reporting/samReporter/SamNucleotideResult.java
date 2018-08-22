@@ -44,7 +44,7 @@ public class SamNucleotideResult extends BaseTableResult<NucleotideReadCount> {
 		super("samNucleotidesResult", 
 				rowData,
 				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),
-				column(AC_REFERENCE_NT, nrc -> nrc.getAcRefNt()), 
+				column(AC_REFERENCE_NT, nrc -> nrc.getRelatedRefNt()), 
 				column(READS_WITH_A, nrc -> nrc.getReadsWithA()),
 				column(READS_WITH_C, nrc -> nrc.getReadsWithC()), 
 				column(READS_WITH_G, nrc -> nrc.getReadsWithG()), 

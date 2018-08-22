@@ -41,7 +41,7 @@ public class SamDepthResult extends BaseTableResult<NucleotideReadCount> {
 		super("samDepthResult", 
 				rowData,
 				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),
-				column(AC_REFERENCE_NT, nrc -> nrc.getAcRefNt()), 
+				column(AC_REFERENCE_NT, nrc -> nrc.getRelatedRefNt()), 
 				column(DEPTH, nrc -> nrc.getTotalContributingReads()));
 	}
 

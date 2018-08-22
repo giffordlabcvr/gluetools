@@ -40,43 +40,43 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 @CommandClass(
 		commandWords={"depth"}, 
 		description = "Summarise depth in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-g <minMapQ>][-d <minDepth>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> -f <featureName> (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>][-d <minDepth>]" },
 				docoptOptions = { 
-						"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
-						"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
-						"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
-						"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
-						"-f <featureName>, --featureName <featureName>        Feature",
-						"-p, --maxLikelihoodPlacer                            Use ML placer module",
-						"-l, --autoAlign                                      Auto-align consensus",
-						"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
-						"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
-						"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
-						"-g <minMapQ>, --minMapQ <minMapQ>                    Minimum mapping quality score",
-						"-d <minDepth>, --minDepth <minDepth>                 Minimum depth"
+						"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
+						"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
+						"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
+						"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
+						"-f <featureName>, --featureName <featureName>              Feature",
+						"-p, --maxLikelihoodPlacer                                  Use ML placer module",
+						"-l, --autoAlign                                            Auto-align consensus",
+						"-t <targetRefName>, --targetRefName <targetRefName>        Target GLUE reference",
+						"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
+						"-q <minQScore>, --minQScore <minQScore>                    Minimum Phred quality score",
+						"-g <minMapQ>, --minMapQ <minMapQ>                          Minimum mapping quality score",
+						"-d <minDepth>, --minDepth <minDepth>                       Minimum depth"
 				},
 				furtherHelp = 
 					"This command summarises read depth in a SAM/BAM file. "+
 					"If <samRefName> is supplied, the reads are limited to those which are aligned to the "+
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
-					"The summarized depths are based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+					"The summarized depths are based on a 'target' GLUE reference sequence. "+
 					"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 					"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
 					"identified as the closest according to this placement. "+
-					"The target reference may alternatively be specified using <targetRefName>."+
-					"Or, inferred from the SAM reference name, if <targetRefName> is not supplied and the module is appropriately configured. "+
+					"Otherwise, the target reference must be specified using <targetRefName>."+
 					"By default, the SAM file is assumed to align reads against this target reference, i.e. the target GLUE reference "+
 					"is the reference sequence  mentioned in the SAM file. "+
 					"Alternatively the --autoAlign option may be used; this will generate a pairwise alignment between the SAM file "+
 					"consensus and the target GLUE reference. \n"+
 					"The --autoAlign option is implicit if --maxLikelihoodPlacer is used. "+
-					"The target reference sequence must be a member of a constrained "+
-					"'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
-					"inferred from the target reference if possible. "+
-					"The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
-					"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
-					"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
+					"The target reference sequence must be a member of the "+
+					"'linking alignment', specified by <linkingAlmtName>. "+
+			        "The <relRefName> argument specifies the related reference sequence, on which the feature is defined. "+
+					"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
+			        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
+					"linking alignment with the target reference. "+
+					"The <featureName> arguments specifies a feature location on the related reference. "+
 					"The depth results will be limited to this feature location.\n"+
 					"Reads will not contribute to the depth if their reported quality score at the relevant position is less than "+
 					"<minQScore> (default value is derived from the module config). \n"+
@@ -98,7 +98,7 @@ public class SamDepthCommand extends SamBaseNucleotideCommand<SamDepthResult> im
         Comparator<NucleotideReadCount> comparator = new Comparator<NucleotideReadCount>() {
 			@Override
 			public int compare(NucleotideReadCount nrc1, NucleotideReadCount nrc2) {
-				return Integer.compare(nrc1.getAcRefNt(), nrc2.getAcRefNt());
+				return Integer.compare(nrc1.getRelatedRefNt(), nrc2.getRelatedRefNt());
 			}};
 		Collections.sort(nucleotideReadCounts, comparator);
  		return new SamDepthResult(nucleotideReadCounts);

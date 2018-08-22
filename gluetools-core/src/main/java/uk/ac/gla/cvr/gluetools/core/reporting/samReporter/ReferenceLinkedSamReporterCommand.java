@@ -35,6 +35,8 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
@@ -46,38 +48,45 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-// SAM reporter command which links the SAM reads to the GLUE alignment tree before performing
+// SAM reporter command which links the SAM reads to a GLUE reference before performing
 // some kind of analysis.
-public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> extends BaseSamReporterCommand<R> {
+public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult> extends BaseSamReporterCommand<R> {
 
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 
 	public static final String MAX_LIKELIHOOD_PLACER = "maxLikelihoodPlacer";
 	
 	public static final String AUTO_ALIGN = "autoAlign";
 	public static final String TARGET_REF_NAME = "targetRefName";
-	public static final String TIP_ALMT_NAME = "tipAlmtName";
+	public static final String LINKING_ALMT_NAME = "linkingAlmtName";
 	
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
 
 	private boolean maxLikelihoodPlacer;
 
 	private boolean autoAlign;
 	private String targetRefName;
-	private String tipAlmtName;
+	private String linkingAlmtName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.maxLikelihoodPlacer = PluginUtils.configureBooleanProperty(configElem, MAX_LIKELIHOOD_PLACER, false);
 		this.autoAlign = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, AUTO_ALIGN, false)).orElse(false);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
-		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
+		this.linkingAlmtName = PluginUtils.configureStringProperty(configElem, LINKING_ALMT_NAME, true);
+		
+		if(targetRefName == null && !maxLikelihoodPlacer) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --maxLikelihoodPlacer or <targetRefName> must be specified");
+		}
+		if(targetRefName != null && maxLikelihoodPlacer) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Cannot specify both --maxLikelihoodPlacer and <targetRefName>");
+		}
 	}
 
 	
@@ -115,8 +124,8 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 		return samRefToTargetRefSegs;
 	}
 
-	protected String getAcRefName() {
-		return acRefName;
+	protected String getRelatedRefName() {
+		return relRefName;
 	}
 
 	protected String getFeatureName() {
@@ -127,15 +136,12 @@ public abstract class AlignmentTreeSamReporterCommand<R extends CommandResult> e
 		return maxLikelihoodPlacer;
 	}
 
-	protected String establishTargetRefName(CommandContext cmdContext, SamReporter samReporter, String samRefName, DNASequence consensusSequence) {
-		return samReporter.establishTargetRefName(cmdContext, samRefName, targetRefName);
+	protected String getTargetRefName() {
+		return targetRefName;
 	}
 
-	protected String getTipAlmtName(CommandContext cmdContext, SamReporter samReporter, String samRefName) {
-		return samReporter.tipAlignmentNameFromSamRefName(cmdContext, samRefName, tipAlmtName);
+	protected String getLinkingAlmtName() {
+		return linkingAlmtName;
 	}
-
-
-
 	
 }

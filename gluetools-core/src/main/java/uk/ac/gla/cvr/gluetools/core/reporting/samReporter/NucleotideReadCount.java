@@ -27,7 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 public class NucleotideReadCount {
 	private int samRefNt;
-	private int acRefNt;
+	private int relatedRefNt;
 	
 	int readsWithA;
 	int readsWithC;
@@ -38,7 +38,7 @@ public class NucleotideReadCount {
 	public NucleotideReadCount(int samRefNt, int acRefNt) {
 		super();
 		this.samRefNt = samRefNt;
-		this.acRefNt = acRefNt;
+		this.relatedRefNt = acRefNt;
 	}
 
 	public int getTotalContributingReads() {
@@ -49,8 +49,8 @@ public class NucleotideReadCount {
 		return samRefNt;
 	}
 
-	public int getAcRefNt() {
-		return acRefNt;
+	public int getRelatedRefNt() {
+		return relatedRefNt;
 	}
 
 	public int getReadsWithA() {

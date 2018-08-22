@@ -77,50 +77,51 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> [-m] -f <featureName> [-d] (-p | [-l][-t <targetRefName>] [-a <tipAlmtName>] ) [-w <whereClause>] [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> [-m] -f <featureName> [-d] (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-w <whereClause>] [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
-				"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
-				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
-				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
-				"-m, --multiReference                                 Scan across references",
-				"-f <featureName>, --featureName <featureName>        Feature to translate",
-				"-d, --descendentFeatures                             Include descendent features",
-				"-p, --maxLikelihoodPlacer                            Use ML placer module",
-				"-l, --autoAlign                                      Auto-align consensus",
-				"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
-				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
-				"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
-				"-g <minMapQ>, --minMapQ <minMapQ>                    Minimum mapping quality score",
-				"-e <minDepth>, --minDepth <minDepth>                 Minimum depth",
-				"-P <minPresentPct>, --minPresentPct <minPresentPct>  Show present at minimum percentage",
-				"-A <minAbsentPct>, --minAbsentPct <minAbsentPct>     Show absent at minimum percentage",
+				"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
+				"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
+				"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
+				"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
+				"-m, --multiReference                                       Scan across references",
+				"-f <featureName>, --featureName <featureName>              Feature to translate",
+				"-d, --descendentFeatures                                   Include descendent features",
+				"-p, --maxLikelihoodPlacer                                  Use ML placer module",
+				"-l, --autoAlign                                            Auto-align consensus",
+				"-t <targetRefName>, --targetRefName <targetRefName>        Target GLUE reference",
+				"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
+				"-w <whereClause>, --whereClause <whereClause>              Qualify variations",
+				"-q <minQScore>, --minQScore <minQScore>                    Minimum Phred quality score",
+				"-g <minMapQ>, --minMapQ <minMapQ>                          Minimum mapping quality score",
+				"-e <minDepth>, --minDepth <minDepth>                       Minimum depth",
+				"-P <minPresentPct>, --minPresentPct <minPresentPct>        Show present at minimum percentage",
+				"-A <minAbsentPct>, --minAbsentPct <minAbsentPct>           Show absent at minimum percentage",
 		},
 		furtherHelp = 
 			"This command scans a SAM/BAM file for variations. "+
 			"If <samRefName> is supplied, the scan limited to those reads which are aligned to the "+
 			"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 			"file only names a single reference sequence.\n"+
-			"The translation is based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+			"The translation is based on a 'target' GLUE reference sequence. "+
 			"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 			"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
 			"identified as the closest according to this placement. "+
-			"The target reference may alternatively be specified using <targetRefName>."+
-			"Or, inferred from the SAM reference name, if <targetRefName> is not supplied and the module is appropriately configured. "+
+			"Otherwise, the target reference must be specified using <targetRefName>."+
 			"By default, the SAM file is assumed to align reads against this target reference, i.e. the target GLUE reference "+
-			"is the reference sequence  mentioned in the SAM file. "+
+			"is the reference sequence mentioned in the SAM file. "+
 			"Alternatively the --autoAlign option may be used; this will generate a pairwise alignment between the SAM file "+
 			"consensus and the target GLUE reference. \n"+
 			"The --autoAlign option is implicit if --maxLikelihoodPlacer is used. "+
-			"The target reference sequence must be a member of a constrained "+
-			"'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
-			"inferred from the target reference if possible. "+
-			"The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
-			"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
-			"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
+			"The target reference sequence must be a member of the "+
+			"'linking alignment', specified by <linkingAlmtName>. "+
+	        "The <relRefName> argument specifies the related reference sequence, on which the feature is defined. "+
+			"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
+	        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
+			"linking alignment with the target reference. "+
+			"If the linking alignment is constrained, --multiReference may be used. If so, "+
+			"the set of possible variations includes those defined on any reference located on the "+
 			"path between the target reference and the ancestor-constraining reference, in the alignment tree. "+
-			"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
+			"The <featureName> arguments specifies a feature location on the related reference. "+
 			"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 			"The variation scan will be limited to the specified features. "+
 			"The <whereClause> may be used to qualify which variations are scanned for. "+
@@ -132,7 +133,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 			"if the percentage of reads where it is absent is at least <minAbsentPct> (default 0).",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<SamVariationScanResult> 
+public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<SamVariationScanResult> 
 	implements ProvidedProjectModeCommand, SamPairedParallelProcessor<VariationContext, VariationResult>{
 
 	public static final String WHERE_CLAUSE = "whereClause";
@@ -171,7 +172,6 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 		
 		DNASequence consensusSequence = null;
 		ReferenceSequence targetRef;
-		AlignmentMember tipAlmtMember;
 		String samFileName = getFileName();
 		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
 		
@@ -180,25 +180,26 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
 						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 				consensusSequence = consensusMap.get("samConsensus");
-				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
-				targetRef = tipAlmtMember.targetReferenceFromMember();
+				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+				targetRef = targetRefAlmtMember.targetReferenceFromMember();
 				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 			} else {
 				targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-						ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
-				tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
+						ReferenceSequence.pkMap(getTargetRefName()));
 			}
 
-			Alignment tipAlmt = tipAlmtMember.getAlignment();
+			Alignment linkingAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, 
+					Alignment.pkMap(getLinkingAlmtName()));
+			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelatedRefName());
 
 			List<ReferenceSequence> refsToScan;
 			if(multiReference) {
-				refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, getAcRefName());
+				refsToScan = linkingAlmt.getAncestorPathReferences(cmdContext, getRelatedRefName());
 				if(!refsToScan.contains(targetRef)) {
 					refsToScan.add(0, targetRef);
 				}
 			} else {
-				refsToScan = Arrays.asList(tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName()));
+				refsToScan = Arrays.asList(relatedRef);
 			}
 
 			List<Feature> featuresToScan = new ArrayList<Feature>();
@@ -209,9 +210,11 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 			
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
 
-			// translate segments to tip alignment reference
-			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToAlmt(cmdContext, 
-					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
+
+			// translate segments to linking alignment coords
+			List<QueryAlignedSegment> samRefToLinkingAlmtSegs = linkingAlmt.translateToAlmt(cmdContext, 
+					linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
 					samRefToTargetRefSegs);
 			
 			List<VariationScanReadCount> variationScanReadCounts = new ArrayList<VariationScanReadCount>();
@@ -234,7 +237,7 @@ public class SamVariationScanCommand extends AlignmentTreeSamReporterCommand<Sam
 						continue;
 					}
 					// translate segments to scanned reference
-					List<QueryAlignedSegment> samRefToScannedRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, refToScan);
+					List<QueryAlignedSegment> samRefToScannedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, refToScan);
 
 					// trim down to the feature area.
 					List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()

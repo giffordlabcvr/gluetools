@@ -76,21 +76,21 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <acRefName> -f <featureName> (-p | [-l] [-t <targetRefName>] [-a <tipAlmtName>]) [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> -f <featureName> (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 SAM/BAM input file",
-				"-n <samRefSense>, --samRefSense <samRefSense>        SAM ref seq sense",
-				"-s <samRefName>, --samRefName <samRefName>           Specific SAM ref seq",
-				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
-				"-f <featureName>, --featureName <featureName>        Feature to translate",
-				"-p, --maxLikelihoodPlacer                            Use ML placer module",
-				"-l, --autoAlign                                      Auto-align consensus",
-				"-t <targetRefName>, --targetRefName <targetRefName>  Target GLUE reference",
-				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
-				"-q <minQScore>, --minQScore <minQScore>              Minimum Phred quality score",
-				"-g <minMapQ>, --minMapQ <minMapQ>                    Minimum mapping quality score",
-				"-e <minDepth>, --minDepth <minDepth>                 Minimum depth",
-				"-P <minAAPct>, --minAAPct <minAAPct>                 Minimum AA percentage",
+				"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
+				"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
+				"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
+				"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
+				"-f <featureName>, --featureName <featureName>              Feature to translate",
+				"-p, --maxLikelihoodPlacer                                  Use ML placer module",
+				"-l, --autoAlign                                            Auto-align consensus",
+				"-t <targetRefName>, --targetRefName <targetRefName>        Target GLUE reference",
+				"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
+				"-q <minQScore>, --minQScore <minQScore>                    Minimum Phred quality score",
+				"-g <minMapQ>, --minMapQ <minMapQ>                          Minimum mapping quality score",
+				"-e <minDepth>, --minDepth <minDepth>                       Minimum depth",
+				"-P <minAAPct>, --minAAPct <minAAPct>                       Minimum AA percentage",
 
 		},
 		furtherHelp = 
@@ -98,23 +98,23 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 			"If <samRefName> is supplied, the translated reads are limited to those which are aligned to the "+
 			"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 			"file only names a single reference sequence.\n"+
-			"The translation is based on a 'target' GLUE reference sequence's place in the alignment tree. "+
+			"The translation is based on a 'target' GLUE reference sequence. "+
 			"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references."+
 			"If the --maxLikelihoodPlacer option is used, an ML placement is performed, and the target reference is "+
 			"identified as the closest according to this placement. "+
-			"The target reference may alternatively be specified using <targetRefName>."+
-			"Or, inferred from the SAM reference name, if <targetRefName> is not supplied and the module is appropriately configured. "+
+			"Otherwise, the target reference must be specified using <targetRefName>."+
 			"By default, the SAM file is assumed to align reads against this target reference, i.e. the target GLUE reference "+
 			"is the reference sequence  mentioned in the SAM file. "+
 			"Alternatively the --autoAlign option may be used; this will generate a pairwise alignment between the SAM file "+
 			"consensus and the target GLUE reference. \n"+
 			"The --autoAlign option is implicit if --maxLikelihoodPlacer is used. "+
-			"The target reference sequence must be a member of a constrained "+
-			"'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
-			"inferred from the target reference if possible. "+
-			"The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
-			"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
-			"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
+			"The target reference sequence must be a member of the "+
+			"'linking alignment', specified by <linkingAlmtName>. "+
+	        "The <relRefName> argument specifies the related reference sequence, on which the feature is defined. "+
+			"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
+	        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
+			"linking alignment with the target reference. "+
+			"The <featureName> arguments specifies a feature location on the related reference. "+
 			"The translated amino acids will be limited to the specified feature location.\n"+
 			"Reads will not contribute to the translation at a given codon location if any reported nucleotide quality score at that location is less than "+
 			"<minQScore> (default value is derived from the module config). \n"+
@@ -124,7 +124,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAminoAcidResult> 
+public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAminoAcidResult> 
 	implements ProvidedProjectModeCommand, SamPairedParallelProcessor<SamAminoAcidCommand.SamAminoAcidContext, TIntObjectMap<SamAminoAcidCommand.AminoAcidReadCount>> {
 
 
@@ -151,71 +151,71 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
 			DNASequence consensusSequence = null;
 			ReferenceSequence targetRef;
-			AlignmentMember tipAlmtMember;
 			if(useMaxLikelihoodPlacer()) {
 				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession, 
 						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 				consensusSequence = consensusMap.get("samConsensus");
-				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
-				targetRef = tipAlmtMember.targetReferenceFromMember();
+				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+				targetRef = targetRefAlmtMember.targetReferenceFromMember();
 				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 			} else {
 				targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-						ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
-				tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
+						ReferenceSequence.pkMap(getTargetRefName()));
 			}
+			Alignment linkingAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, 
+					Alignment.pkMap(getLinkingAlmtName()));
+			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelatedRefName());
 
-			Alignment tipAlmt = tipAlmtMember.getAlignment();
-			ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
-
-			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
+			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRelatedRefName(), getFeatureName()), false);
 			Feature feature = featureLoc.getFeature();
 			feature.checkCodesAminoAcids();
 
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
 
-			// translate segments to tip alignment reference
-			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToAlmt(cmdContext, 
-					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
+
+			// translate segments to linking alignment coords
+			List<QueryAlignedSegment> samRefToLinkingAlmtSegs = linkingAlmt.translateToAlmt(cmdContext, 
+					linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
 					samRefToTargetRefSegs);
 
-			// translate segments to ancestor constraining reference
-			List<QueryAlignedSegment> samRefToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, ancConstrainingRef);
+			// translate segments to related reference
+			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
 			// trim down to the feature area.
 			List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
 					.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-			List<QueryAlignedSegment> samRefToAncConstrRefSegs = 
-					ReferenceSegment.intersection(samRefToAncConstrRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<QueryAlignedSegment> samRefToRelatedRefSegs = 
+					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
 			// truncate to codon aligned
 			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
 
-			List<QueryAlignedSegment> samRefToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToAncConstrRefSegs);
+			List<QueryAlignedSegment> samRefToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToRelatedRefSegs);
 
-			if(samRefToAncConstrRefSegsCodonAligned.isEmpty()) {
+			if(samRefToRelatedRefSegsCodonAligned.isEmpty()) {
 				return new SamAminoAcidResult(Collections.emptyList());
 			}
 
 			SamRefSense samRefSense = getSamRefSense(samReporter);
 
-			TIntObjectMap<LabeledCodon> ancConstrRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+			TIntObjectMap<LabeledCodon> relatedRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
 
-			// build a map from anc constr ref NT to AA read count.
-			TIntObjectHashMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
-			List<Integer> mappedAncConstrRefNts = new ArrayList<Integer>();
-			for(QueryAlignedSegment qaSeg: samRefToAncConstrRefSegsCodonAligned) {
-				for(int ancConstrRefNt = qaSeg.getRefStart(); ancConstrRefNt <= qaSeg.getRefEnd(); ancConstrRefNt++) {
-					if(TranslationUtils.isAtStartOfCodon(codon1Start, ancConstrRefNt)) {
-						mappedAncConstrRefNts.add(ancConstrRefNt);
-						LabeledCodon labeledCodon = ancConstrRefNtToLabeledCodon.get(ancConstrRefNt);
-						int samRefNt = ancConstrRefNt + qaSeg.getReferenceToQueryOffset();
+			// build a map from related ref NT to AA read count.
+			TIntObjectHashMap<AminoAcidReadCount> relatedRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
+			List<Integer> mappedRelatedRefNts = new ArrayList<Integer>();
+			for(QueryAlignedSegment qaSeg: samRefToRelatedRefSegsCodonAligned) {
+				for(int relatedRefNt = qaSeg.getRefStart(); relatedRefNt <= qaSeg.getRefEnd(); relatedRefNt++) {
+					if(TranslationUtils.isAtStartOfCodon(codon1Start, relatedRefNt)) {
+						mappedRelatedRefNts.add(relatedRefNt);
+						LabeledCodon labeledCodon = relatedRefNtToLabeledCodon.get(relatedRefNt);
+						int samRefNt = relatedRefNt + qaSeg.getReferenceToQueryOffset();
 						int resultSamRefNt = samRefNt;
 						if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
 							// we want to report results in the SAM file's own coordinates.
 							resultSamRefNt = ReferenceSegment.reverseLocationSense(samRefInfo.getSamRefLength(), samRefNt);
 						}
-						ancConstrRefNtToAminoAcidReadCount.put(ancConstrRefNt, new AminoAcidReadCount(labeledCodon, resultSamRefNt));
+						relatedRefNtToAminoAcidReadCount.put(relatedRefNt, new AminoAcidReadCount(labeledCodon, resultSamRefNt));
 					}
 				}
 			}
@@ -231,43 +231,27 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 				context.samRefSense = samRefSense;
 				context.codon1Start = codon1Start;
 				// clone these segments
-				synchronized(samRefToAncConstrRefSegs) {
-					context.samRefToAncConstrRefSegs = QueryAlignedSegment.cloneList(samRefToAncConstrRefSegs);
+				synchronized(samRefToRelatedRefSegs) {
+					context.samRefToRelatedRefSegs = QueryAlignedSegment.cloneList(samRefToRelatedRefSegs);
 				}
 				// clone the table
-				synchronized(ancConstrRefNtToAminoAcidReadCount) {
-					context.ancConstrRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
-					for(int key: ancConstrRefNtToAminoAcidReadCount.keys()) {
-						AminoAcidReadCount aaReadCount = ancConstrRefNtToAminoAcidReadCount.get(key);
-						context.ancConstrRefNtToAminoAcidReadCount.put(key, new AminoAcidReadCount(aaReadCount.labeledCodon, aaReadCount.samRefNt));
+				synchronized(relatedRefNtToAminoAcidReadCount) {
+					context.relatedRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
+					for(int key: relatedRefNtToAminoAcidReadCount.keys()) {
+						AminoAcidReadCount aaReadCount = relatedRefNtToAminoAcidReadCount.get(key);
+						context.relatedRefNtToAminoAcidReadCount.put(key, new AminoAcidReadCount(aaReadCount.labeledCodon, aaReadCount.samRefNt));
 					}
 				}
 				return context;
 			};
 			TIntObjectMap<AminoAcidReadCount> mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, 
 					validationStringency, this);
-			// DEBUG start
-			/*
-		ReadLogger readLogger = new ReadLogger();
-		SamAminoAcidContext samAminoAcidContext = contextSupplier.get();
-		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, getFileName(), samReporter.getSamReaderValidationStringency())) {
-			initContextForReader(samAminoAcidContext, samReader);
-			SamUtils.iterateOverSamReader(samReader, (samRecord) -> {
-				processSingleton(samAminoAcidContext, samRecord);
-				readLogger.logSingleton();
-			});
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		TIntObjectMap<AminoAcidReadCount> mergedResult = samAminoAcidContext.ancConstrRefNtToAminoAcidReadCount;
-			 */
-			// DEBUG end
 
 
 			final List<LabeledAminoAcidReadCount> rowData = new ArrayList<LabeledAminoAcidReadCount>();
 
-			for(Integer ancConstrRefNt: mappedAncConstrRefNts) {
-				AminoAcidReadCount aminoAcidReadCount = mergedResult.get(ancConstrRefNt);
+			for(Integer relatedRefNt: mappedRelatedRefNts) {
+				AminoAcidReadCount aminoAcidReadCount = mergedResult.get(relatedRefNt);
 				if(aminoAcidReadCount.totalReadsAtCodon <= getMinDepth(samReporter)) {
 					continue;
 				}
@@ -311,22 +295,22 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 
 		
 		
-		List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToAncConstrRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
 		
 		
-		List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToAncConstrRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToRelatedRefSegs);
 
-		List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
+		List<QueryAlignedSegment> readToRelatedRefSegsFiltered = filterByQuality(readToRelatedRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
 		
-		for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
-			CharSequence nts = SegmentUtils.base1SubString(readString, readToAncConstRefSeg.getQueryStart(), readToAncConstRefSeg.getQueryEnd());
+		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsFiltered) {
+			CharSequence nts = SegmentUtils.base1SubString(readString, readToRelatedRefSeg.getQueryStart(), readToRelatedRefSeg.getQueryEnd());
 			String segAAs = context.translator.translateToAaString(nts);
-			Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
+			Integer relatedRefNt = readToRelatedRefSeg.getRefStart();
 			for(int i = 0; i < segAAs.length(); i++) {
 				char segAA = segAAs.charAt(i);
-				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(ancConstrRefNt);
+				AminoAcidReadCount aminoAcidReadCount = context.relatedRefNtToAminoAcidReadCount.get(relatedRefNt);
 				aminoAcidReadCount.addAaRead(segAA);
-				ancConstrRefNt += 3;
+				relatedRefNt += 3;
 			}
 		}
 	}
@@ -342,20 +326,20 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			qualityString = StringUtils.reverseString(qualityString);
 		}
 		
-		List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToAncConstrRefSegs);
-		List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToAncConstrRefSegs);
-		List<QueryAlignedSegment> readToAncConstrRefSegsFiltered = filterByQuality(readToAncConstrRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
+		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToRelatedRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegsFiltered = filterByQuality(readToRelatedRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
 		
 		TIntObjectMap<AminoAcidWithQuality> refNtToAminoAcidWithQuality = new TIntObjectHashMap<SamAminoAcidCommand.AminoAcidWithQuality>();
 		
-		for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegsFiltered) {
-			Integer queryStart = readToAncConstRefSeg.getQueryStart();
-			Integer queryEnd = readToAncConstRefSeg.getQueryEnd();
+		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsFiltered) {
+			Integer queryStart = readToRelatedRefSeg.getQueryStart();
+			Integer queryEnd = readToRelatedRefSeg.getQueryEnd();
 			CharSequence nts = SegmentUtils.base1SubString(readString, queryStart, queryEnd);
 			
 			String segAAs = context.translator.translateToAaString(nts);
-			Integer ancConstrRefNt = readToAncConstRefSeg.getRefStart();
-			Integer readNt = readToAncConstRefSeg.getQueryStart();
+			Integer relatedRefNt = readToRelatedRefSeg.getRefStart();
+			Integer readNt = readToRelatedRefSeg.getQueryStart();
 			for(int i = 0; i < segAAs.length(); i++) {
 				CharSequence quals = SegmentUtils.base1SubString(qualityString, readNt, readNt+2);
 				int worstQual = SamUtils.qualityCharToQScore(quals.charAt(0));
@@ -363,8 +347,8 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 					worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(quals.charAt(j)));
 				}
 				char segAA = segAAs.charAt(i);
-				refNtToAminoAcidWithQuality.put(ancConstrRefNt, new AminoAcidWithQuality(segAA, worstQual));
-				ancConstrRefNt += 3;
+				refNtToAminoAcidWithQuality.put(relatedRefNt, new AminoAcidWithQuality(segAA, worstQual));
+				relatedRefNt += 3;
 				readNt += 3;
 			}
 		}
@@ -383,24 +367,24 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 	}
 	
 	private List<QueryAlignedSegment> filterByQuality(
-			List<QueryAlignedSegment> readToAncConstrRefSegsCodonAligned,
+			List<QueryAlignedSegment> readToRelatedRefSegsCodonAligned,
 			String qualityString, int minQScore) {
 		List<ReferenceSegment> poorQualityCodons = new ArrayList<ReferenceSegment>();
-		for(QueryAlignedSegment readToAncConstrRefSeg: readToAncConstrRefSegsCodonAligned) {
-			for(int r = readToAncConstrRefSeg.getRefStart(); r <= readToAncConstrRefSeg.getRefEnd(); r += 3) {
-				int q = r+readToAncConstrRefSeg.getReferenceToQueryOffset();
+		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsCodonAligned) {
+			for(int r = readToRelatedRefSeg.getRefStart(); r <= readToRelatedRefSeg.getRefEnd(); r += 3) {
+				int q = r+readToRelatedRefSeg.getReferenceToQueryOffset();
 				boolean poorQuality = false;
 				char qualityChar1 = SegmentUtils.base1Char(qualityString, q);
 				if(SamUtils.qualityCharToQScore(qualityChar1) < minQScore) {
 					poorQuality = true;
 				} else {
-					if(q+1 <= readToAncConstrRefSeg.getQueryEnd()) {
+					if(q+1 <= readToRelatedRefSeg.getQueryEnd()) {
 						char qualityChar2 = SegmentUtils.base1Char(qualityString, q+1);
 						if(SamUtils.qualityCharToQScore(qualityChar2) < minQScore) {
 							poorQuality = true;
 						}
 					} else {
-						if(q+2 <= readToAncConstrRefSeg.getQueryEnd()) {
+						if(q+2 <= readToRelatedRefSeg.getQueryEnd()) {
 							char qualityChar3 = SegmentUtils.base1Char(qualityString, q+2);
 							if(SamUtils.qualityCharToQScore(qualityChar3) < minQScore) {
 								poorQuality = true;
@@ -413,7 +397,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 				}
 			}
 		}
-		return ReferenceSegment.subtract(readToAncConstrRefSegsCodonAligned, poorQualityCodons);
+		return ReferenceSegment.subtract(readToRelatedRefSegsCodonAligned, poorQualityCodons);
 	}
 
 	public static class AminoAcidReadCount {
@@ -458,10 +442,10 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 			int read2MapQ = read2.getMappingQuality();
 			int readNameHashCoinFlip = Math.abs(read1.getReadName().hashCode()) % 2;
 
-			for(int acRefNt : read1TranslationWithQuals.keys()) {
-				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
-				AminoAcidWithQuality read1AaWithQual = read1TranslationWithQuals.get(acRefNt);
-				AminoAcidWithQuality read2AaWithQual = read2TranslationWithQuals.remove(acRefNt);
+			for(int relatedRefNt : read1TranslationWithQuals.keys()) {
+				AminoAcidReadCount aminoAcidReadCount = context.relatedRefNtToAminoAcidReadCount.get(relatedRefNt);
+				AminoAcidWithQuality read1AaWithQual = read1TranslationWithQuals.get(relatedRefNt);
+				AminoAcidWithQuality read2AaWithQual = read2TranslationWithQuals.remove(relatedRefNt);
 				if(read2AaWithQual == null) {
 					aminoAcidReadCount.addAaRead(read1AaWithQual.aa);
 				} else {
@@ -482,9 +466,9 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 					}
 				}
 			}
-			for(int acRefNt : read2TranslationWithQuals.keys()) {
-				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
-				aminoAcidReadCount.addAaRead(read2TranslationWithQuals.get(acRefNt).aa);
+			for(int relatedRefNt : read2TranslationWithQuals.keys()) {
+				AminoAcidReadCount aminoAcidReadCount = context.relatedRefNtToAminoAcidReadCount.get(relatedRefNt);
+				aminoAcidReadCount.addAaRead(read2TranslationWithQuals.get(relatedRefNt).aa);
 			}
 		}
 	}
@@ -493,9 +477,9 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 	public void processSingleton(SamAminoAcidContext context, SAMRecord read) {
 		if(context.samRecordFilter.recordPasses(read)) {
 			TIntObjectMap<AminoAcidWithQuality> readTranslationWithQuals = translateReadWithQualityScores(context, read);
-			for(int acRefNt : readTranslationWithQuals.keys()) {
-				AminoAcidReadCount aminoAcidReadCount = context.ancConstrRefNtToAminoAcidReadCount.get(acRefNt);
-				aminoAcidReadCount.addAaRead(readTranslationWithQuals.get(acRefNt).aa);
+			for(int relatedRefNt : readTranslationWithQuals.keys()) {
+				AminoAcidReadCount aminoAcidReadCount = context.relatedRefNtToAminoAcidReadCount.get(relatedRefNt);
+				aminoAcidReadCount.addAaRead(readTranslationWithQuals.get(relatedRefNt).aa);
 			}
 		}
 	}
@@ -504,10 +488,10 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 	public static class SamAminoAcidContext {
 		SamReporter samReporter;
 		SamRefInfo samRefInfo;
-		List<QueryAlignedSegment> samRefToAncConstrRefSegs;
+		List<QueryAlignedSegment> samRefToRelatedRefSegs;
 		Integer codon1Start;
 		SamRefSense samRefSense;
-		TIntObjectMap<AminoAcidReadCount> ancConstrRefNtToAminoAcidReadCount;
+		TIntObjectMap<AminoAcidReadCount> relatedRefNtToAminoAcidReadCount;
 		Translator translator; 
 		SamRecordFilter samRecordFilter;
 	}
@@ -526,7 +510,7 @@ public class SamAminoAcidCommand extends AlignmentTreeSamReporterCommand<SamAmin
 
 	@Override
 	public TIntObjectMap<AminoAcidReadCount> contextResult(SamAminoAcidContext context) {
-		return context.ancConstrRefNtToAminoAcidReadCount;
+		return context.relatedRefNtToAminoAcidReadCount;
 	}
 
 

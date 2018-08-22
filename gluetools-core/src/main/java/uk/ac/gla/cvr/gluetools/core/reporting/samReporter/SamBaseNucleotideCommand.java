@@ -60,7 +60,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 
-public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends AlignmentTreeSamReporterCommand<R> 
+public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends ReferenceLinkedSamReporterCommand<R> 
 	implements ProvidedProjectModeCommand, 
 	SamPairedParallelProcessor<SamBaseNucleotideCommand.BaseNucleotideContext, SamBaseNucleotideCommand.BaseNucleotideResult>{
 
@@ -76,40 +76,42 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
 			DNASequence consensusSequence = null;
 			ReferenceSequence targetRef;
-			AlignmentMember tipAlmtMember;
 			if(useMaxLikelihoodPlacer()) {
 				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
 						validationStringency, getSuppliedSamRefName(), "samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
 				consensusSequence = consensusMap.get("samConsensus");
-				tipAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
-				targetRef = tipAlmtMember.targetReferenceFromMember();
+				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
+				targetRef = targetRefAlmtMember.targetReferenceFromMember();
 				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 			} else {
 				targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
-						ReferenceSequence.pkMap(establishTargetRefName(consoleCmdContext, samReporter, samRefInfo.getSamRefName(), consensusSequence)));
-				tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName(consoleCmdContext, samReporter, samRefInfo.getSamRefName()));
+						ReferenceSequence.pkMap(getTargetRefName()));
 			}
 
-			Alignment tipAlmt = tipAlmtMember.getAlignment();
-			ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
+			Alignment linkingAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, 
+					Alignment.pkMap(getLinkingAlmtName()));
+			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelatedRefName());
 
-			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
+			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRelatedRefName(), getFeatureName()), false);
 
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
 
-			// translate segments to tip alignment reference
-			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToAlmt(cmdContext, 
-					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
+
+			
+			// translate segments to linking alignment coords
+			List<QueryAlignedSegment> samRefToLinkingAlmtSegs = linkingAlmt.translateToAlmt(cmdContext, 
+					linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
 					samRefToTargetRefSegs);
 
-			// translate segments to ancestor constraining reference
-			List<QueryAlignedSegment> samRefToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, samRefToTipAlmtRefSegs, ancConstrainingRef);
+			// translate segments to related reference
+			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
 			// trim down to the feature area.
 			List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
 					.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-			List<QueryAlignedSegment> samRefToAncConstrRefSegs = 
-					ReferenceSegment.intersection(samRefToAncConstrRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<QueryAlignedSegment> samRefToRelatedRefSegs = 
+					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
 			SamRefSense samRefSense = getSamRefSense(samReporter);
 
@@ -131,25 +133,25 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 				context.samRecordFilter = samRecordFilter;
 				context.samRefInfo = samRefInfo;
 				context.samRefSense = samRefSense;
-				context.samRefToAncConstrRefSegs = QueryAlignedSegment.cloneList(samRefToAncConstrRefSegs);
+				context.samRefToRelatedRefSegs = QueryAlignedSegment.cloneList(samRefToRelatedRefSegs);
 				context.samReporter = samReporter;
-				context.acRefNtToInfo = new TIntObjectHashMap<NucleotideReadCount>();
-				for(QueryAlignedSegment samRefToAncConstrRefSeg: context.samRefToAncConstrRefSegs) {
-					for(int samRefNt = samRefToAncConstrRefSeg.getQueryStart(); samRefNt <= samRefToAncConstrRefSeg.getQueryEnd(); samRefNt++) {
-						int acRefNt = samRefNt+samRefToAncConstrRefSeg.getQueryToReferenceOffset();
+				context.relatedRefNtToInfo = new TIntObjectHashMap<NucleotideReadCount>();
+				for(QueryAlignedSegment samRefToRelatedRefSeg: context.samRefToRelatedRefSegs) {
+					for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
+						int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();
 						int resultSamRefNt = samRefNt;
 						if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
 							// we want to report results in the SAM file's own coordinates.
 							resultSamRefNt = ReferenceSegment.reverseLocationSense(context.samRefInfo.getSamRefLength(), samRefNt);
 						}
-						context.acRefNtToInfo.put(acRefNt, new NucleotideReadCount(resultSamRefNt, acRefNt));
+						context.relatedRefNtToInfo.put(relatedRefNt, new NucleotideReadCount(resultSamRefNt, relatedRefNt));
 					}
 				}
 				return context;
 			};
 			BaseNucleotideResult mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
 			
-			List<NucleotideReadCount> nucleotideReadCounts = new ArrayList<NucleotideReadCount>(mergedResult.acRefNtToInfo.valueCollection());
+			List<NucleotideReadCount> nucleotideReadCounts = new ArrayList<NucleotideReadCount>(mergedResult.relatedRefNtToInfo.valueCollection());
 
 			return formResult(nucleotideReadCounts, samReporter);
 		}
@@ -157,8 +159,8 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 
 	
 	
-	private TIntObjectMap<BaseWithQuality> getAcRefNtToBaseWithQuality(BaseNucleotideContext context, SAMRecord samRecord) {
-		TIntObjectMap<BaseWithQuality> acRefNtToBaseWithQuality = new TIntObjectHashMap<BaseWithQuality>();
+	private TIntObjectMap<BaseWithQuality> getRelatedRefNtToBaseWithQuality(BaseNucleotideContext context, SAMRecord samRecord) {
+		TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality = new TIntObjectHashMap<BaseWithQuality>();
 		
 		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
 		String readString = samRecord.getReadString().toUpperCase();
@@ -169,15 +171,15 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 			qualityString = StringUtils.reverseString(qualityString);
 		}
 
-		List<QueryAlignedSegment> readToAncConstrRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToAncConstrRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
 
 
-		for(QueryAlignedSegment readToAncConstRefSeg: readToAncConstrRefSegs) {
-			Integer queryStart = readToAncConstRefSeg.getQueryStart();
-			Integer queryEnd = readToAncConstRefSeg.getQueryEnd();
+		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegs) {
+			Integer queryStart = readToRelatedRefSeg.getQueryStart();
+			Integer queryEnd = readToRelatedRefSeg.getQueryEnd();
 			CharSequence readNts = SegmentUtils.base1SubString(readString, queryStart, queryEnd);
 			CharSequence readQuality = SegmentUtils.base1SubString(qualityString, queryStart, queryEnd);
-			Integer acRefNt = readToAncConstRefSeg.getRefStart();
+			Integer relatedRefNt = readToRelatedRefSeg.getRefStart();
 			for(int i = 0; i < readNts.length(); i++) {
 				char qualityChar = readQuality.charAt(i);
 				int qScore = SamUtils.qualityCharToQScore(qualityChar);
@@ -185,10 +187,10 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 					continue;
 				}
 				char readChar = readNts.charAt(i);
-				acRefNtToBaseWithQuality.put(acRefNt+i, new BaseWithQuality(readChar, qScore));
+				relatedRefNtToBaseWithQuality.put(relatedRefNt+i, new BaseWithQuality(readChar, qScore));
 			}
 		}
-		return acRefNtToBaseWithQuality;
+		return relatedRefNtToBaseWithQuality;
 	}
 	
 	private class BaseWithQuality {
@@ -214,16 +216,16 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 		} else if(!context.samRecordFilter.recordPasses(record2)) {
     		processSingleton(context, record1);
     	} else {
-    		TIntObjectMap<BaseWithQuality> acRefNtToBaseWithQuality1 = getAcRefNtToBaseWithQuality(context, record1);
-    		TIntObjectMap<BaseWithQuality> acRefNtToBaseWithQuality2 = getAcRefNtToBaseWithQuality(context, record2);
+    		TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality1 = getRelatedRefNtToBaseWithQuality(context, record1);
+    		TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality2 = getRelatedRefNtToBaseWithQuality(context, record2);
     		int read1MapQ = record1.getMappingQuality();
     		int read2MapQ = record2.getMappingQuality();
 			int readNameHashCoinFlip = Math.abs(record1.getReadName().hashCode()) % 2;
 
-    		for(int acRefNt: acRefNtToBaseWithQuality1.keys()) {
-    			BaseWithQuality baseWithQuality1 = acRefNtToBaseWithQuality1.get(acRefNt);
-    			BaseWithQuality baseWithQuality2 = acRefNtToBaseWithQuality2.remove(acRefNt);
-				NucleotideReadCount refNtInfo = context.acRefNtToInfo.get(acRefNt);
+    		for(int relatedRefNt: relatedRefNtToBaseWithQuality1.keys()) {
+    			BaseWithQuality baseWithQuality1 = relatedRefNtToBaseWithQuality1.get(relatedRefNt);
+    			BaseWithQuality baseWithQuality2 = relatedRefNtToBaseWithQuality2.remove(relatedRefNt);
+				NucleotideReadCount refNtInfo = context.relatedRefNtToInfo.get(relatedRefNt);
     			if(baseWithQuality2 == null) {
     				updateRefNtInfo(refNtInfo, baseWithQuality1.base);
     			} else {
@@ -244,9 +246,9 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
     				}
     			}
     		}
-    		for(int acRefNt: acRefNtToBaseWithQuality2.keys()) {
-				NucleotideReadCount refNtInfo = context.acRefNtToInfo.get(acRefNt);
-				updateRefNtInfo(refNtInfo, acRefNtToBaseWithQuality2.get(acRefNt).base);
+    		for(int relatedRefNt: relatedRefNtToBaseWithQuality2.keys()) {
+				NucleotideReadCount refNtInfo = context.relatedRefNtToInfo.get(relatedRefNt);
+				updateRefNtInfo(refNtInfo, relatedRefNtToBaseWithQuality2.get(relatedRefNt).base);
     		}
     	}
 	}
@@ -256,36 +258,36 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 		if(!context.samRecordFilter.recordPasses(samRecord)) {
 			return;
 		}
-    	TIntObjectMap<BaseWithQuality> acRefNtToBaseWithQuality = getAcRefNtToBaseWithQuality(context, samRecord);
-		for(int acRefNt: acRefNtToBaseWithQuality.keys()) {
-			NucleotideReadCount refNtInfo = context.acRefNtToInfo.get(acRefNt);
-			updateRefNtInfo(refNtInfo, acRefNtToBaseWithQuality.get(acRefNt).base);
+    	TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality = getRelatedRefNtToBaseWithQuality(context, samRecord);
+		for(int relatedRefNt: relatedRefNtToBaseWithQuality.keys()) {
+			NucleotideReadCount refNtInfo = context.relatedRefNtToInfo.get(relatedRefNt);
+			updateRefNtInfo(refNtInfo, relatedRefNtToBaseWithQuality.get(relatedRefNt).base);
 		}
 	}
 
 	@Override
 	public BaseNucleotideResult contextResult(BaseNucleotideContext context) {
 		BaseNucleotideResult result = new BaseNucleotideResult();
-		result.acRefNtToInfo = context.acRefNtToInfo;
+		result.relatedRefNtToInfo = context.relatedRefNtToInfo;
 		return result;
 	}
 
 	@Override
 	public BaseNucleotideResult reduceResults(BaseNucleotideResult result1, BaseNucleotideResult result2) {
 		BaseNucleotideResult mergedResult = new BaseNucleotideResult();
-		mergedResult.acRefNtToInfo = new TIntObjectHashMap<NucleotideReadCount>();
+		mergedResult.relatedRefNtToInfo = new TIntObjectHashMap<NucleotideReadCount>();
 		
-		for(int key: result1.acRefNtToInfo.keys()) {
-			NucleotideReadCount count1 = result1.acRefNtToInfo.get(key);
-			NucleotideReadCount count2 = result2.acRefNtToInfo.get(key);
+		for(int key: result1.relatedRefNtToInfo.keys()) {
+			NucleotideReadCount count1 = result1.relatedRefNtToInfo.get(key);
+			NucleotideReadCount count2 = result2.relatedRefNtToInfo.get(key);
 			
-			NucleotideReadCount mergedCount = new NucleotideReadCount(count1.getSamRefNt(), count1.getAcRefNt());
+			NucleotideReadCount mergedCount = new NucleotideReadCount(count1.getSamRefNt(), count1.getRelatedRefNt());
 			mergedCount.readsWithA = count1.readsWithA + count2.readsWithA;
 			mergedCount.readsWithC = count1.readsWithC + count2.readsWithC;
 			mergedCount.readsWithG = count1.readsWithG + count2.readsWithG;
 			mergedCount.readsWithT = count1.readsWithT + count2.readsWithT;
 			mergedCount.totalContributingReads = count1.totalContributingReads + count2.totalContributingReads;
-			mergedResult.acRefNtToInfo.put(key, mergedCount);
+			mergedResult.relatedRefNtToInfo.put(key, mergedCount);
 		}
 		return mergedResult;
 	}
@@ -296,14 +298,14 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 	public static class BaseNucleotideContext {
 		SamReporter samReporter;
 		SamRefInfo samRefInfo;
-		List<QueryAlignedSegment> samRefToAncConstrRefSegs;
+		List<QueryAlignedSegment> samRefToRelatedRefSegs;
 		SamRefSense samRefSense;
 		SamRecordFilter samRecordFilter;
-		TIntObjectMap<NucleotideReadCount> acRefNtToInfo;
+		TIntObjectMap<NucleotideReadCount> relatedRefNtToInfo;
 	}
 
 	public static class BaseNucleotideResult {
-		TIntObjectMap<NucleotideReadCount> acRefNtToInfo;
+		TIntObjectMap<NucleotideReadCount> relatedRefNtToInfo;
 	}
 
 	protected abstract R formResult(List<NucleotideReadCount> nucleotideReadCounts, SamReporter samReporter);
