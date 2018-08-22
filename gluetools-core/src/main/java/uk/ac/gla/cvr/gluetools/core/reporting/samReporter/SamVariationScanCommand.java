@@ -77,13 +77,12 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a SAM/BAM file for variations", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> [-m] -f <featureName> [-d] (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-w <whereClause>] [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> -f <featureName> [-d] (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-w <whereClause>] [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minPresentPct>] [-A <minAbsentPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
 				"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
 				"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
 				"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
-				"-m, --multiReference                                       Scan across references",
 				"-f <featureName>, --featureName <featureName>              Feature to translate",
 				"-d, --descendentFeatures                                   Include descendent features",
 				"-p, --maxLikelihoodPlacer                                  Use ML placer module",
@@ -118,9 +117,6 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 			"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
 	        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
 			"linking alignment with the target reference. "+
-			"If the linking alignment is constrained, --multiReference may be used. If so, "+
-			"the set of possible variations includes those defined on any reference located on the "+
-			"path between the target reference and the ancestor-constraining reference, in the alignment tree. "+
 			"The <featureName> arguments specifies a feature location on the related reference. "+
 			"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 			"The variation scan will be limited to the specified features. "+
@@ -137,14 +133,12 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 	implements ProvidedProjectModeCommand, SamPairedParallelProcessor<VariationContext, VariationResult>{
 
 	public static final String WHERE_CLAUSE = "whereClause";
-	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
 	
 	public static final String MIN_PRESENT_PCT = "minPresentPct";
 	public static final String MIN_ABSENT_PCT = "minAbsentPct";
 	
 	private Expression whereClause;
-	private Boolean multiReference;
 	private Boolean descendentFeatures;
 	private Double minPresentPct;
 	private Double minAbsentPct;
@@ -154,7 +148,6 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
-		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 	
 		this.minPresentPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_PRESENT_PCT, 0.0, true, 100.0, true, false)).orElse(0.0);
@@ -192,16 +185,6 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 					Alignment.pkMap(getLinkingAlmtName()));
 			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelatedRefName());
 
-			List<ReferenceSequence> refsToScan;
-			if(multiReference) {
-				refsToScan = linkingAlmt.getAncestorPathReferences(cmdContext, getRelatedRefName());
-				if(!refsToScan.contains(targetRef)) {
-					refsToScan.add(0, targetRef);
-				}
-			} else {
-				refsToScan = Arrays.asList(relatedRef);
-			}
-
 			List<Feature> featuresToScan = new ArrayList<Feature>();
 			featuresToScan.add(namedFeature);
 			if(descendentFeatures) {
@@ -219,15 +202,13 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 			
 			List<VariationScanReadCount> variationScanReadCounts = new ArrayList<VariationScanReadCount>();
 			
-			for(ReferenceSequence refToScan: refsToScan) {
-
 				for(Feature featureToScan: featuresToScan) {
 
-					samReporter.log(Level.FINE, "Scanning for variations defined on reference: "+refToScan.getName()+", feature: "+featureToScan.getName());
+					samReporter.log(Level.FINE, "Scanning for variations defined on reference: "+relatedRef.getName()+", feature: "+featureToScan.getName());
 
 					FeatureLocation featureLoc = 
 							GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-									FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
+									FeatureLocation.pkMap(relatedRef.getName(), featureToScan.getName()), true);
 					if(featureLoc == null) {
 						continue;
 					}
@@ -236,14 +217,14 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 					if(variationsToScan.isEmpty()) {
 						continue;
 					}
-					// translate segments to scanned reference
-					List<QueryAlignedSegment> samRefToScannedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, refToScan);
+					// translate segments to related reference
+					List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
 					// trim down to the feature area.
 					List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
 							.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-					List<QueryAlignedSegment> samRefToScannedRefSegs = 
-							ReferenceSegment.intersection(samRefToScannedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+					List<QueryAlignedSegment> samRefToRelatedRefSegs = 
+							ReferenceSegment.intersection(samRefToRelatedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
 					SamRefSense samRefSense = getSamRefSense(samReporter);
 
@@ -262,8 +243,8 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 										new VariationCoverageSegment(scanner, seg2cover.getRefStart(), seg2cover.getRefEnd())));
 							}
 						}
-						synchronized(samRefToScannedRefSegs) {
-							context.samRefToScannedRefSegs = QueryAlignedSegment.cloneList(samRefToScannedRefSegs);
+						synchronized(samRefToRelatedRefSegs) {
+							context.samRefToRelatedRefSegs = QueryAlignedSegment.cloneList(samRefToRelatedRefSegs);
 						}
 						context.suppliedSamRefName = getSuppliedSamRefName();
 						context.samFileName = samFileName;
@@ -294,7 +275,6 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 							.collect(Collectors.toList())
 							);
 				}
-			}
 			variationScanReadCounts = variationScanReadCounts
 					.stream()
 					.filter(vsrc -> vsrc.getPctWherePresent() >= minPresentPct)
@@ -340,19 +320,19 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 			qualityString = StringUtils.reverseString(qualityString);
 		}
 
-		List<QueryAlignedSegment> readToScannedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToScannedRefSegs);
-		List<QueryAlignedSegment> readToScannedRefSegsMerged = 
-				ReferenceSegment.mergeAbutting(readToScannedRefSegs, 
+		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegsMerged = 
+				ReferenceSegment.mergeAbutting(readToRelatedRefSegs, 
 						QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
 						QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
 		// find the variations for which any of their coverage segments overlap the read segments.
 		List<VariationCoverageSegment> varCovSegs = new ArrayList<VariationCoverageSegment>();
-		for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
+		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsMerged) {
 			List<VariationCoverageSegment> overlappingVarCovSegs = new LinkedList<VariationCoverageSegment>();
-			context.varCovSegTree.findOverlapping(readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), overlappingVarCovSegs);
+			context.varCovSegTree.findOverlapping(readToRelatedRefSeg.getRefStart(), readToRelatedRefSeg.getRefEnd(), overlappingVarCovSegs);
 			// remove those variations where the read quality is not good enough.
-			List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(context.samReporter), qualityString, readToScannedRefSeg, overlappingVarCovSegs);
+			List<VariationCoverageSegment> filteredVarCovSegs = filterVarCovSegsOnReadQuality(getMinQScore(context.samReporter), qualityString, readToRelatedRefSeg, overlappingVarCovSegs);
 			varCovSegs.addAll(filteredVarCovSegs);
 		}
 
@@ -360,29 +340,29 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		if(!varCovSegs.isEmpty()) {
 			// convert to ntQaSegments
-			List<NtQueryAlignedSegment> readToScannedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
-			for(QueryAlignedSegment readToScannedRefSeg: readToScannedRefSegsMerged) {
-				readToScannedRefNtSegs.add(
+			List<NtQueryAlignedSegment> readToRelatedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
+			for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsMerged) {
+				readToRelatedRefNtSegs.add(
 						new NtQueryAlignedSegment(
-								readToScannedRefSeg.getRefStart(), readToScannedRefSeg.getRefEnd(), readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd(),
-								SegmentUtils.base1SubString(readString, readToScannedRefSeg.getQueryStart(), readToScannedRefSeg.getQueryEnd()))
+								readToRelatedRefSeg.getRefStart(), readToRelatedRefSeg.getRefEnd(), readToRelatedRefSeg.getQueryStart(), readToRelatedRefSeg.getQueryEnd(),
+								SegmentUtils.base1SubString(readString, readToRelatedRefSeg.getQueryStart(), readToRelatedRefSeg.getQueryEnd()))
 						);
 			}
 			// find the scanners.
 			List<BaseVariationScanner<?>> scannersForSegment = findScannersFromVarCovSegs(varCovSegs);
 			// do the scan
-			variationScanResults.addAll(FeatureLocation.variationScan(readToScannedRefNtSegs, readString, qualityString, scannersForSegment, false, false));
+			variationScanResults.addAll(FeatureLocation.variationScan(readToRelatedRefNtSegs, readString, qualityString, scannersForSegment, false, false));
 		}
 		return variationScanResults;
 	}
 
 	private List<VariationCoverageSegment> filterVarCovSegsOnReadQuality(int minQScore,
-			String qualityString, QueryAlignedSegment readToScannedRefSeg,
+			String qualityString, QueryAlignedSegment readToRelatedRefSeg,
 			List<VariationCoverageSegment> varCovSegs) {
 		List<VariationCoverageSegment> filteredVarCovSegs = new ArrayList<VariationCoverageSegment>();
 		for(VariationCoverageSegment varCovSeg: varCovSegs) {
 			List<QueryAlignedSegment> intersection = 
-					ReferenceSegment.intersection(Arrays.asList(varCovSeg), Arrays.asList(readToScannedRefSeg), QueryAlignedSegment.cloneRightSegMerger());
+					ReferenceSegment.intersection(Arrays.asList(varCovSeg), Arrays.asList(readToRelatedRefSeg), QueryAlignedSegment.cloneRightSegMerger());
 			if(intersection.size() == 1) {
 				QueryAlignedSegment readSection = intersection.get(0);
 				String qualitySubString = 
@@ -425,7 +405,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		public SamRefInfo samRefInfo;
 		public String samFileName;
 		public String suppliedSamRefName;
-		public List<QueryAlignedSegment> samRefToScannedRefSegs;
+		public List<QueryAlignedSegment> samRefToRelatedRefSegs;
 		public SamReporter samReporter;
 		public SamRefSense samRefSense;
 		public ReferenceSegmentTree<VariationCoverageSegment> varCovSegTree;

@@ -42,12 +42,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> -a <linkingAlmtName> [-w <whereClause>] [-e] [-c] [-v | -o]"+
+		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-d] -t <targetRefName> -a <linkingAlmtName> [-w <whereClause>] [-e] [-c] [-v | -o]"+
 		""},
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                       FASTA input file",
 				"-r <relRefName>, --relRefName <relRefName>                 Related reference",
-				"-m, --multiReference                                       Scan across references",
 				"-f <featureName>, --featureName <featureName>              Feature to scan",
 				"-d, --descendentFeatures                                   Include descendent features",
 				"-t <targetRefName>, --targetRefName <targetRefName>        Target reference",
@@ -67,8 +66,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
 		        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
 				"linking alignment with the target reference. "+
-				"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
-				"path between the target reference and the ancestor-constraining reference, in the alignment tree. "+
 				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
 				"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 				"The variation scan will be limited to the specified features. "+

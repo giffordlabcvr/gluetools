@@ -26,7 +26,6 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,8 +35,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -60,10 +57,9 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a member sequence for variations", 
-		docoptUsages = { "-r <relRefName> [-m] -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v | -o]" },
+		docoptUsages = { "-r <relRefName> -f <featureName> [-d] [-w <whereClause>] [-e] [-i] [-v | -o]" },
 		docoptOptions = { 
 		"-r <relRefName>, --relRefName <relRefName>     Related reference",
-		"-m, --multiReference                           Scan across references",
 		"-f <featureName>, --featureName <featureName>  Feature to scan",
 		"-d, --descendentFeatures                       Include descendent features",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify variations",
@@ -75,8 +71,6 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 		furtherHelp = 
 		"The <relRefName> argument names a reference sequence constraining an ancestor alignment of this alignment (if constrained), "+
 		"or simply a reference which is a member of this alignment (if unconstrained). "+
-		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
-		"path between the containing alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
 		"The <featureName> argument names a feature location which is defined on this reference. "+
 		"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. "+
 		"The result will be confined to this feature location. "+
@@ -92,7 +86,6 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 public class MemberVariationScanCommand extends MemberModeCommand<CommandResult> {
 
 	public static final String REL_REF_NAME = "relRefName";
-	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
@@ -103,7 +96,6 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 	private String featureName;
 	private Boolean descendentFeatures;
 	private Expression whereClause;
-	private Boolean multiReference;
 	private Boolean excludeAbsent;
 	private Boolean excludeInsufficientCoverage;
 	private VariationScanRenderHints variationScanRenderHints = new VariationScanRenderHints();
@@ -115,7 +107,6 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
-		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
 		this.excludeInsufficientCoverage = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_INSUFFICIENT_COVERAGE, false)).orElse(false);
@@ -130,16 +121,8 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
 
-		List<ReferenceSequence> refsToScan;
-		if(multiReference) {
-			if(!alignment.isConstrained()) {
-				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --multiReference option can only be used with constrained alignments");
-			}
-			refsToScan = alignment.getAncestorPathReferences(cmdContext, relRefName);
-		} else {
-			refsToScan = Arrays.asList(alignment.getRelatedRef(cmdContext, relRefName));
-		}
-		
+		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, relRefName);
+
 		List<Feature> featuresToScan = new ArrayList<Feature>();
 		featuresToScan.add(namedFeature);
 		if(descendentFeatures) {
@@ -147,18 +130,22 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		}
 		Class<? extends VariationScannerMatchResult> matchResultClass = null;
 		if(variationScanRenderHints.showMatchesAsTable()) {
-			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, refsToScan, featuresToScan, whereClause);
+			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, relatedRef, featuresToScan, whereClause);
 		}
 		
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
-		VariationScanUtils.visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationScanUtils.VariationConsumer() {
-			@Override
-			public void consumeVariations(ReferenceSequence refToScan,
-					FeatureLocation featureLoc, List<Variation> variationsToScan) {
-				variationScanResults.addAll(memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, 
-						excludeAbsent, excludeInsufficientCoverage));
+		
+		for(Feature featureToScan: featuresToScan) {
+			FeatureLocation featureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+							FeatureLocation.pkMap(relatedRef.getName(), featureToScan.getName()), true);
+			if(featureLoc == null) {
+				continue;
 			}
-		});
+			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+			variationScanResults.addAll(memberVariationScan(cmdContext, almtMember, relatedRef, featureLoc, variationsToScan, 
+					excludeAbsent, excludeInsufficientCoverage));
+		}
 
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 		if(variationScanRenderHints.showMatchesAsTable()) {

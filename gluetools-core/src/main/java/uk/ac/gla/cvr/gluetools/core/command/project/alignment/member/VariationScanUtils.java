@@ -44,20 +44,24 @@ public class VariationScanUtils {
 	}
 
 	public static Class<? extends VariationScannerMatchResult> getMatchResultClass(
-			CommandContext cmdContext, List<ReferenceSequence> refsToScan,
+			CommandContext cmdContext, ReferenceSequence relatedRef,
 			List<Feature> featuresToScan, Expression whereClause) {
 		Class<? extends VariationScannerMatchResult> matchResultClass;
 		Set<Class<? extends VariationScannerMatchResult>> matchResultClasses = 
 				new LinkedHashSet<Class<? extends VariationScannerMatchResult>>();
-		visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationConsumer() {
-			@Override
-			public void consumeVariations(ReferenceSequence refToScan,
-					FeatureLocation featureLoc, List<Variation> variationsToScan) {
-				if(!variationsToScan.isEmpty()) {
-					matchResultClasses.add(VariationScanRenderHints.getMatchResultClass(variationsToScan));
-				}
+		
+		for(Feature featureToScan: featuresToScan) {
+			FeatureLocation featureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+							FeatureLocation.pkMap(relatedRef.getName(), featureToScan.getName()), true);
+			if(featureLoc == null) {
+				continue;
 			}
-		});
+			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+			if(!variationsToScan.isEmpty()) {
+				matchResultClasses.add(VariationScanRenderHints.getMatchResultClass(variationsToScan));
+			}
+		}
 		if(matchResultClasses.size() > 1) {
 			throw new VariationException(Code.VARIATIONS_OF_DIFFERENT_TYPES);
 		}

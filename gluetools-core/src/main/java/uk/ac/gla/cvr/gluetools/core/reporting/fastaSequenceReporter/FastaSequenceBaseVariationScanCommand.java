@@ -26,7 +26,6 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,14 +63,12 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 	implements ProvidedProjectModeCommand{
 
 	public static final String WHERE_CLAUSE = "whereClause";
-	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
 	public static final String EXCLUDE_ABSENT = "excludeAbsent";
 	public static final String EXCLUDE_INSUFFICIENT_COVERAGE = "excludeInsufficientCoverage";
 
 
 	private Expression whereClause;
-	private Boolean multiReference;
 	private Boolean descendentFeatures;
 	private Boolean excludeAbsent;
 	private Boolean excludeInsufficientCoverage;
@@ -82,7 +79,6 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
-		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 		this.excludeAbsent = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ABSENT, false)).orElse(false);
 		this.excludeInsufficientCoverage = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_INSUFFICIENT_COVERAGE, false)).orElse(false);
@@ -100,17 +96,8 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
 		Alignment linkingAlmt = linkingAlmtMember.getAlignment();
 
-		ReferenceSequence getRelatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelRefName());
+		ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelRefName());
 
-		List<ReferenceSequence> refsToScan;
-		if(multiReference) {
-			refsToScan = linkingAlmt.getAncestorPathReferences(cmdContext, getRelRefName());
-			if(!refsToScan.contains(targetRef)) {
-				refsToScan.add(0, targetRef);
-			}
-		} else {
-			refsToScan = Arrays.asList(getRelatedRef);
-		}
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 		List<Feature> featuresToScan = new ArrayList<Feature>();
 		featuresToScan.add(namedFeature);
@@ -120,7 +107,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		
 		Class<? extends VariationScannerMatchResult> matchResultClass = null;
 		if(variationScanRenderHints.showMatchesAsTable()) {
-			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, refsToScan, featuresToScan, whereClause);
+			matchResultClass = VariationScanUtils.getMatchResultClass(cmdContext, relatedRef, featuresToScan, whereClause);
 		}
 		
 		List<QueryAlignedSegment> queryToTargetRefSegs;
@@ -142,25 +129,28 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 				queryToTargetRefSegs);
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		
-		VariationScanUtils.visitVariations(cmdContext, refsToScan, featuresToScan, whereClause, new VariationScanUtils.VariationConsumer() {
-			@Override
-			public void consumeVariations(ReferenceSequence refToScan,
-					FeatureLocation featureLoc, List<Variation> variationsToScan) {
-				// translate segments to scanned reference
-				List<QueryAlignedSegment> queryToScannedRefSegs = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, refToScan);
-				
-				String fastaNTs = fastaNTSeq.getSequenceAsString();
 		
-				List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
-						queryToScannedRefSegs.stream()
-						.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
-								SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
-								.collect(Collectors.toList());
-		
-				variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToScannedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
-		
+		for(Feature featureToScan: featuresToScan) {
+			FeatureLocation featureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+							FeatureLocation.pkMap(relatedRef.getName(), featureToScan.getName()), true);
+			if(featureLoc == null) {
+				continue;
 			}
-		});
+			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
+			List<QueryAlignedSegment> queryToRelatedRefSegs = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, relatedRef);
+
+			String fastaNTs = fastaNTSeq.getSequenceAsString();
+
+			List<NtQueryAlignedSegment> queryToRelatedRefNtSegs =
+					queryToRelatedRefSegs.stream()
+					.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
+							SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
+							.collect(Collectors.toList());
+
+			variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToRelatedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
+
+		}
 		
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 		
