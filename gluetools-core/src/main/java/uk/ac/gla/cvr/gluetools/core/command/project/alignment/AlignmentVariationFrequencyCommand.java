@@ -40,22 +40,19 @@ import uk.ac.gla.cvr.gluetools.core.reporting.VariationScanMemberCount;
 @CommandClass(
 		commandWords={"variation", "frequency"}, 
 		description = "Compute variation frequencies within the alignment", 
-		docoptUsages = { "[-c] [-w <whereClause>] -r <relRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>]" },
+		docoptUsages = { "[-c] [-w <whereClause>] -r <relRefName> -f <featureName> [-d] [-v <vWhereClause>]" },
 		docoptOptions = { 
 		"-c, --recursive                                   Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>     Qualify members",
 		"-v <vWhereClause>, --vWhereClause <vWhereClause>  Qualify variations",
 		"-r <relRefName>, --relRefName <relRefName>        Related reference",
-		"-m, --multiReference                              Scan across references",
 		"-f <featureName>, --featureName <featureName>     Feature containing variations",
 		"-d, --descendentFeatures                          Include descendent features",
 		},
 		furtherHelp = 
 		"The <relRefName> argument names a reference sequence constraining an ancestor alignment of this alignment (if constrained), "+
 		"or simply a reference which is a member of this alignment (if unconstrained). "+
-		"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
-		"path between this alignment's reference and the ancestor-constraining reference, in the alignment tree. "+
-		"The <featureName> arguments names a feature which has a location defined on this ancestor-constraining reference. "+
+		"The <featureName> arguments names a feature which has a location defined on the related reference. "+
 		"If --descendentFeatures is used, variations will also be scanned on the descendent features of the named feature. ",
 		metaTags = {}	
 )
@@ -66,7 +63,6 @@ public class AlignmentVariationFrequencyCommand extends AlignmentModeCommand<Ali
 	public static final String WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.WHERE_CLAUSE;
 	public static final String VARIATION_WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.VARIATION_WHERE_CLAUSE;
 	public static final String REL_REF_NAME = AlignmentVariationFrequencyCmdDelegate.REL_REF_NAME;
-	public static final String MULTI_REFERENCE = AlignmentVariationFrequencyCmdDelegate.MULTI_REFERENCE;
 	public static final String FEATURE_NAME = AlignmentVariationFrequencyCmdDelegate.FEATURE_NAME;
 	public static final String DESCENDENT_FEATURES = AlignmentVariationFrequencyCmdDelegate.DESCENDENT_FEATURES;
 	

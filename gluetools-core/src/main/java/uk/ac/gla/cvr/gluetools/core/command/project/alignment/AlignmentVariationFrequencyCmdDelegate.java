@@ -38,8 +38,6 @@ import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberVariationScanCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -62,7 +60,6 @@ public class AlignmentVariationFrequencyCmdDelegate {
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String VARIATION_WHERE_CLAUSE = "vWhereClause";
 	public static final String REL_REF_NAME = "relRefName";
-	public static final String MULTI_REFERENCE = "multiReference";
 	public static final String FEATURE_NAME = "featureName";
 	public static final String DESCENDENT_FEATURES = "descendentFeatures";
 	
@@ -73,7 +70,6 @@ public class AlignmentVariationFrequencyCmdDelegate {
 	private String relRefName;
 	private String featureName;
 	private Boolean descendentFeatures;
-	private Boolean multiReference;
 	
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
@@ -82,7 +78,6 @@ public class AlignmentVariationFrequencyCmdDelegate {
 		this.recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		this.vWhereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, VARIATION_WHERE_CLAUSE, false));
-		this.multiReference = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, MULTI_REFERENCE, false)).orElse(false);
 		this.descendentFeatures = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, false)).orElse(false);
 	}
 	
@@ -91,10 +86,6 @@ public class AlignmentVariationFrequencyCmdDelegate {
 		int totalMembers;
 		{
 			Alignment namedAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(namedAlignmentName));
-			if(this.multiReference && !namedAlignment.isConstrained()) {
-				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --multiReference option can only be used with constrained alignments");
-			}
-
 			totalMembers = countTotalMembers(cmdContext, namedAlignment);
 		}
 
@@ -155,12 +146,7 @@ public class AlignmentVariationFrequencyCmdDelegate {
 			List<AlignmentMember> memberBatch) {
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 
-		List<ReferenceSequence> refsToScan;
-		if(multiReference) {
-			refsToScan = namedAlignment.getAncestorPathReferences(cmdContext, relRefName);
-		} else {
-			refsToScan = Arrays.asList(namedAlignment.getRelatedRef(cmdContext, relRefName));
-		}
+		ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName));
 
 		List<Feature> featuresToScan = new ArrayList<Feature>();
 		featuresToScan.add(namedFeature);
@@ -168,34 +154,32 @@ public class AlignmentVariationFrequencyCmdDelegate {
 			featuresToScan.addAll(namedFeature.getDescendents());
 		}
 
-		for(ReferenceSequence refToScan : refsToScan) {
-			GlueLogger.getGlueLogger().log(Level.FINEST, "Scanning for variations defined on Reference"+refToScan.pkMap());
+		GlueLogger.getGlueLogger().log(Level.FINEST, "Scanning for variations defined on reference "+relatedRef.getName());
 
-			for(Feature featureToScan: featuresToScan) {
+		for(Feature featureToScan: featuresToScan) {
 
-				FeatureLocation featureLoc = 
-						GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-								FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
-				if(featureLoc == null) {
-					continue; // reference did not have that feature.
-				}
-
-				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, vWhereClause.orElse(null));
-				if(variationsToScan.isEmpty()) {
-					continue;
-				}
-				GlueLogger.getGlueLogger().log(Level.FINEST, "Scanning for "+variationsToScan.size()+" variations defined on FeatureLoc"+featureLoc.pkMap());
-
-				
-				for(AlignmentMember almtMember: memberBatch) {
-					List<VariationScanResult<?>> variationScanResults = MemberVariationScanCommand
-							.memberVariationScan(cmdContext, almtMember, refToScan, featureLoc, variationsToScan, false, true);
-					for(VariationScanResult<?> variationScanResult: variationScanResults) {
-						registerScanResult(almtNameToVarPkMapToInfo, namedAlignment, alignmentRecursive, almtMember, variationScanResult);
-					}
-				}
-
+			FeatureLocation featureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+							FeatureLocation.pkMap(relatedRef.getName(), featureToScan.getName()), true);
+			if(featureLoc == null) {
+				continue; // reference did not have that feature.
 			}
+
+			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, vWhereClause.orElse(null));
+			if(variationsToScan.isEmpty()) {
+				continue;
+			}
+			GlueLogger.getGlueLogger().log(Level.FINEST, "Scanning for "+variationsToScan.size()+" variations defined on FeatureLoc"+featureLoc.pkMap());
+
+
+			for(AlignmentMember almtMember: memberBatch) {
+				List<VariationScanResult<?>> variationScanResults = MemberVariationScanCommand
+						.memberVariationScan(cmdContext, almtMember, relatedRef, featureLoc, variationsToScan, false, true);
+				for(VariationScanResult<?> variationScanResult: variationScanResults) {
+					registerScanResult(almtNameToVarPkMapToInfo, namedAlignment, alignmentRecursive, almtMember, variationScanResult);
+				}
+			}
+
 		}
 	}
 

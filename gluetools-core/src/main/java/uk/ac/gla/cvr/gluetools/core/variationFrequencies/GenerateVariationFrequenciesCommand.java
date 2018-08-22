@@ -55,14 +55,13 @@ import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGen
 @CommandClass(
 		commandWords={"generate", "frequencies"}, 
 		description = "Generate variation frequencies as variation-alignment notes", 
-		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <relRefName> [-m] -f <featureName> [-d] [-v <vWhereClause>] [-p]" },
+		docoptUsages = { "<almtName> [-q] [-c] [-w <whereClause>] -r <relRefName> -f <featureName> [-d] [-v <vWhereClause>] [-p]" },
 		docoptOptions = { 
 		"-q, --alignmentRecursive                          Include descendent alignments",
 		"-c, --recursive                                   Include descendent members",
 		"-w <whereClause>, --whereClause <whereClause>     Qualify members",
 		"-v <vWhereClause>, --vWhereClause <vWhereClause>  Qualify variations",
 		"-r <relRefName>, --relRefName <relRefName>        Related reference sequence",
-		"-m, --multiReference                              Scan across references",
 		"-f <featureName>, --featureName <featureName>     Feature containing variations",
 		"-d, --descendentFeatures                          Include descendent features",
 		"-p, --previewOnly                                 Preview only",
@@ -90,7 +89,6 @@ public class GenerateVariationFrequenciesCommand extends ModulePluginCommand<Gen
 	public static final String WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.WHERE_CLAUSE;
 	public static final String VARIATION_WHERE_CLAUSE = AlignmentVariationFrequencyCmdDelegate.VARIATION_WHERE_CLAUSE;
 	public static final String REL_REF_NAME = AlignmentVariationFrequencyCmdDelegate.REL_REF_NAME;
-	public static final String MULTI_REFERENCE = AlignmentVariationFrequencyCmdDelegate.MULTI_REFERENCE;
 	public static final String FEATURE_NAME = AlignmentVariationFrequencyCmdDelegate.FEATURE_NAME;
 	public static final String DESCENDENT_FEATURES = AlignmentVariationFrequencyCmdDelegate.DESCENDENT_FEATURES;
 	
