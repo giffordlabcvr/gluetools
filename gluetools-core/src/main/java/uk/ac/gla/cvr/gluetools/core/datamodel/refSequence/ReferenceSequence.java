@@ -209,7 +209,7 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 	}
 
 
-	// get memberhsip of a specific constrained alignment
+	// get membership of a specific constrained alignment
 	// if no alignment is specified, assume there is a unique such alignment membership and return that.
 	public AlignmentMember getTipAlignmentMembership(String tipAlmtName) {
 		if(tipAlmtName == null) {
@@ -223,5 +223,15 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 		}
 	}
 	
+
+	// get membership of a specific linking alignment
+	public AlignmentMember getLinkingAlignmentMembership(String linkingAlmtName) {
+		return getSequence().getAlignmentMemberships().stream()
+				.filter(am -> am.getAlignment().getName().equals(linkingAlmtName))
+				.findFirst()
+				.orElseThrow(() -> new ReferenceSequenceException(
+						Code.REFERENCE_SEQUENCE_NOT_MEMBER_OF_ALIGNMENT, getName(), linkingAlmtName));
+	}
+
 	
 }

@@ -98,7 +98,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
 
 			// translate segments to tip alignment reference
-			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
+			List<QueryAlignedSegment> samRefToTipAlmtRefSegs = tipAlmt.translateToAlmt(cmdContext, 
 					tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
 					samRefToTargetRefSegs);
 

@@ -46,37 +46,37 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public abstract class FastaSequenceReporterCommand<R extends CommandResult> extends ModulePluginCommand<R, FastaSequenceReporter> {
 
-	public static final String AC_REF_NAME = "acRefName";
+	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	
 	public static final String TARGET_REF_NAME = "targetRefName";
-	public static final String TIP_ALMT_NAME = "tipAlmtName";
+	public static final String LINKING_ALMT_NAME = "linkingAlmtName";
 
 
-	private String acRefName;
+	private String relRefName;
 	private String featureName;
-	private String tipAlmtName;
+	private String linkingAlmtName;
 	private String targetRefName;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.acRefName = PluginUtils.configureStringProperty(configElem, AC_REF_NAME, true);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
-		this.tipAlmtName = PluginUtils.configureStringProperty(configElem, TIP_ALMT_NAME, false);
+		this.linkingAlmtName = PluginUtils.configureStringProperty(configElem, LINKING_ALMT_NAME, true);
 	}
 
-	protected String getAcRefName() {
-		return acRefName;
+	protected String getRelRefName() {
+		return relRefName;
 	}
 
 	protected String getFeatureName() {
 		return featureName;
 	}
 
-	protected String getTipAlmtName() {
-		return tipAlmtName;
+	protected String getLinkingAlmtName() {
+		return linkingAlmtName;
 	}
 
 	protected String getTargetRefName() {
@@ -86,18 +86,18 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerDataObjectNameLookup("acRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
+			registerDataObjectNameLookup("relRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("featureName", new VariableInstantiator() {
 				@Override
 				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
 						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
 						String prefix) {
-					String acRefName = (String) bindings.get("acRefName");
-					if(acRefName != null) {
-						ReferenceSequence acRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(acRefName), true);
-						if(acRef != null) {
-							return acRef.getFeatureLocations().stream()
+					String relRefName = (String) bindings.get("relRefName");
+					if(relRefName != null) {
+						ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), true);
+						if(relatedRef != null) {
+							return relatedRef.getFeatureLocations().stream()
 									.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
 									.collect(Collectors.toList());
 						}
@@ -106,7 +106,7 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 				}
 			});
 			registerDataObjectNameLookup("targetRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
-			registerVariableInstantiator("tipAlmtName", new VariableInstantiator() {
+			registerVariableInstantiator("linkingAlmtName", new VariableInstantiator() {
 				@Override
 				public List<CompletionSuggestion> instantiate(
 						ConsoleCommandContext cmdContext,
@@ -118,7 +118,6 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 						if(targetRef != null) {
 							return targetRef.getSequence().getAlignmentMemberships().stream()
 									.map(am -> am.getAlignment())
-									.filter(a -> a.isConstrained())
 									.map(a -> new CompletionSuggestion(a.getName(), true))
 									.collect(Collectors.toList());
 						}
@@ -126,7 +125,6 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 						List<Alignment> almts = GlueDataObject
 								.query(cmdContext, Alignment.class, new SelectQuery(Alignment.class));
 						return almts.stream()
-								.filter(a -> a.isConstrained())
 								.map(a -> new CompletionSuggestion(a.getName(), true))
 								.collect(Collectors.toList());
 					}

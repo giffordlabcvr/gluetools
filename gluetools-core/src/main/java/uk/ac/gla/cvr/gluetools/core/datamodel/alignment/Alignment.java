@@ -170,20 +170,16 @@ public class Alignment extends _Alignment implements HasDisplayName {
 	}
 
 	// given segments aligning a sequence to a specific member of this alignment, translate them to
-	// be aligned to the constraining reference of this alignment.
-	public List<QueryAlignedSegment> translateToRef(
+	// be aligned to the coordinate space of this alignment.
+	public List<QueryAlignedSegment> translateToAlmt(
 			CommandContext cmdContext, String memberSourceName, String memberSequenceID,
 			List<QueryAlignedSegment> seqToMemberSegs) {
-		ReferenceSequence refSequence = this.getRefSequence();
-		if(refSequence == null) {
-			throw new AlignmentException(Code.ALIGNMENT_IS_UNCONSTRAINED, this.getName());
-		}
 		AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
 				AlignmentMember.pkMap(getName(), memberSourceName, memberSequenceID));
-		List<QueryAlignedSegment> memberToRefSegs = almtMember.getAlignedSegments().stream()
+		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.getAlignedSegments().stream()
 			.map(seg -> seg.asQueryAlignedSegment())
 			.collect(Collectors.toList());
-		return QueryAlignedSegment.translateSegments(seqToMemberSegs, memberToRefSegs);
+		return QueryAlignedSegment.translateSegments(seqToMemberSegs, memberToAlmtSegs);
 	}
 
 	public ReferenceSequence getRelatedRef(CommandContext cmdContext, String referenceName) {
@@ -269,7 +265,7 @@ public class Alignment extends _Alignment implements HasDisplayName {
 		while(!constrainingRef.getName().equals(ancConstrainingRef.getName())) {
 			Sequence refSeqSeq = constrainingRef.getSequence();
 			Alignment parentAlmt = currentAlignment.getParent();
-			queryToConstrainingRefSegs = parentAlmt.translateToRef(cmdContext, 
+			queryToConstrainingRefSegs = parentAlmt.translateToAlmt(cmdContext, 
 					refSeqSeq.getSource().getName(), refSeqSeq.getSequenceID(), queryToConstrainingRefSegs);
 			currentAlignment = parentAlmt;
 			constrainingRef = currentAlignment.getConstrainingRef();

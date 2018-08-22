@@ -40,31 +40,31 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 @CommandClass(
 		commandWords={"string", "variation", "scan"}, 
 		description = "Scan a FASTA string for variations", 
-		docoptUsages = { "-s <fastaString> -r <acRefName> [-m] -f <featureName> [-d] -t <targetRefName> [-a <tipAlmtName>] [-w <whereClause>] [-e] [-i] [-v | -o]"+
+		docoptUsages = { "-s <fastaString> -r <relRefName> [-m] -f <featureName> [-d] -t <targetRefName> -a <linkingAlmtName> [-w <whereClause>] [-e] [-i] [-v | -o]"+
 		""},
 		docoptOptions = { 
-				"-s <fastaString>, --fastaString <fastaString>        FASTA input string",
-				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
-				"-m, --multiReference                                 Scan across references",
-				"-f <featureName>, --featureName <featureName>        Feature to scan",
-				"-d, --descendentFeatures                             Include descendent features",
-				"-t <targetRefName>, --targetRefName <targetRefName>  Target reference",
-				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
-				"-w <whereClause>, --whereClause <whereClause>        Qualify variations",
-				"-e, --excludeAbsent                                  Exclude absent variations",
-				"-i, --excludeInsufficientCoverage                    Exclude where insufficient coverage",
-				"-v, --showMatchesAsTable                             Table with one row per match",
-				"-o, --showMatchesAsDocument                          Document with one object per match",
+				"-s <fastaString>, --fastaString <fastaString>              FASTA input string",
+				"-r <relRefName>, --relRefName <relRefName>                 Related reference",
+				"-m, --multiReference                                       Scan across references",
+				"-f <featureName>, --featureName <featureName>              Feature to scan",
+				"-d, --descendentFeatures                                   Include descendent features",
+				"-t <targetRefName>, --targetRefName <targetRefName>        Target reference",
+				"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
+				"-w <whereClause>, --whereClause <whereClause>              Qualify variations",
+				"-e, --excludeAbsent                                        Exclude absent variations",
+				"-i, --excludeInsufficientCoverage                          Exclude where insufficient coverage",
+				"-v, --showMatchesAsTable                                   Table with one row per match",
+				"-o, --showMatchesAsDocument                                Document with one object per match",
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
-		        "scans a section of the query "+
-				"sequence for variations based on the target reference sequence's "+
-				"place in the alignment tree. The target reference sequence must be a member of a constrained "+
-		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
-		        "inferred from the target reference if possible. "+
-		        "The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
-				"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
+		        "scans a section of the query sequence for variations based on an alignment between the target reference "+
+		        "and the related reference, where the variations are defined. "+
+				"The target reference sequence must be a member of the specified linking alignment."+
+		        "The <relRefName> argument specifies a 'related' reference sequence. "+
+				"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
+		        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
+				"linking alignment with the target reference. "+
 				"If --multiReference is used, the set of possible variations includes those defined on any reference located on the "+
 				"path between the target reference and the ancestor-constraining reference, in the alignment tree. "+
 				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+

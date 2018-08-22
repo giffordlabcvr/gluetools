@@ -97,19 +97,19 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
-		Alignment tipAlmt = tipAlmtMember.getAlignment();
+		AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
+		Alignment linkingAlmt = linkingAlmtMember.getAlignment();
 
-		ReferenceSequence ancConstrRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
+		ReferenceSequence getRelatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelRefName());
 
 		List<ReferenceSequence> refsToScan;
 		if(multiReference) {
-			refsToScan = tipAlmt.getAncestorPathReferences(cmdContext, getAcRefName());
+			refsToScan = linkingAlmt.getAncestorPathReferences(cmdContext, getRelRefName());
 			if(!refsToScan.contains(targetRef)) {
 				refsToScan.add(0, targetRef);
 			}
 		} else {
-			refsToScan = Arrays.asList(ancConstrRef);
+			refsToScan = Arrays.asList(getRelatedRef);
 		}
 		Feature namedFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 		List<Feature> featuresToScan = new ArrayList<Feature>();
@@ -136,9 +136,9 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 		}
 		
 		
-		// translate segments to tip alignment reference
-		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+		// translate segments to linking alignment coordinate space
+		List<QueryAlignedSegment> queryToLinkingAlmtSegs = linkingAlmt.translateToAlmt(cmdContext, 
+				linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
 				queryToTargetRefSegs);
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		
@@ -147,7 +147,7 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 			public void consumeVariations(ReferenceSequence refToScan,
 					FeatureLocation featureLoc, List<Variation> variationsToScan) {
 				// translate segments to scanned reference
-				List<QueryAlignedSegment> queryToScannedRefSegs = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
+				List<QueryAlignedSegment> queryToScannedRefSegs = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, refToScan);
 				
 				String fastaNTs = fastaNTSeq.getSequenceAsString();
 		

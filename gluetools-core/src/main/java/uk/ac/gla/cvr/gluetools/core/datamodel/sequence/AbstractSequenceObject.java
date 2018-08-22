@@ -36,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-public abstract class AbstractSequenceObject {
+public abstract class AbstractSequenceObject implements NucleotideContentProvider {
 
 	private SequenceFormat seqFormat;
 	private String processedNucleotides = null;

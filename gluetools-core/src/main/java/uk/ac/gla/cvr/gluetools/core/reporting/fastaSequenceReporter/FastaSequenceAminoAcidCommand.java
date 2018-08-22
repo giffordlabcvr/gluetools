@@ -25,17 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
-import gnu.trove.map.TIntObjectMap;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -50,35 +45,32 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a FASTA file", 
-		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-t <targetRefName>] [-a <tipAlmtName>]" },
+		docoptUsages = { "-i <fileName> -r <relRefName> -f <featureName> -t <targetRefName> -a <linkingAlmtName>" },
 		docoptOptions = { 
-				"-i <fileName>, --fileName <fileName>                 FASTA input file",
-				"-r <acRefName>, --acRefName <acRefName>              Ancestor-constraining ref",
-				"-f <featureName>, --featureName <featureName>        Feature to translate",
-				"-t <targetRefName>, --targetRefName <targetRefName>  Target reference",
-				"-a <tipAlmtName>, --tipAlmtName <tipAlmtName>        Tip alignment",
+				"-i <fileName>, --fileName <fileName>                       FASTA input file",
+				"-r <relRefName>, --relRefName <relRefName>                 Related reference",
+				"-f <featureName>, --featureName <featureName>              Feature to translate",
+				"-t <targetRefName>, --targetRefName <targetRefName>        Target reference",
+				"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
 		},
 		furtherHelp = 
 		        "This command aligns a FASTA query sequence to a 'target' reference sequence, and "+
-		        "translates a section of the query sequence to amino acids based on the target reference sequence's "+
-				"place in the alignment tree. "+
-				"If <targetRefName> is not supplied, it may be inferred from the FASTA sequence ID, if the module is appropriately configured. "+
-				"The target reference sequence must be a member of a constrained "+
-		        "'tip alignment'. The tip alignment may be specified by <tipAlmtName>. If unspecified, it will be "+
-		        "inferred from the target reference if possible. "+
-		        "The <acRefName> argument specifies an 'ancestor-constraining' reference sequence. "+
-				"This must be the constraining reference of an ancestor alignment of the tip alignment. "+
-				"The <featureName> arguments specifies a feature location on the ancestor-constraining reference. "+
+		        "translates a section of the query sequence to amino acids based on an alignment between the target reference "+
+		        "and the related reference, where the coding feature is defined. "+
+				"The target reference sequence must be a member of the specified linking alignment."+
+		        "The <relRefName> argument specifies the related reference sequence, on which the feature is defined. "+
+				"If the linking alignment is constrained, the related reference must constrain an ancestor alignment "+
+		        "of the linking alignment. Otherwise, it may be any reference sequence which shares membership of the "+
+				"linking alignment with the target reference. "+
+				"The <featureName> arguments specifies a feature location on the related reference. "+
 				"The translated amino acids will be limited to the specified feature location. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
@@ -109,60 +101,34 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 
 		String targetRefName = getTargetRefName();
 		
-		if(targetRefName == null) {
-			targetRefName = fastaSequenceReporter.targetRefNameFromFastaId(consoleCmdContext, fastaID);
-		}
-		
 		AlignerResult alignerResult = fastaSequenceReporter
 				.alignToTargetReference(consoleCmdContext, targetRefName, fastaID, fastaNTSeq);
 		
 		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
 
-		AlignmentMember tipAlmtMember = targetRef.getTipAlignmentMembership(getTipAlmtName());
-		Alignment tipAlmt = tipAlmtMember.getAlignment();
+		AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
+		Alignment linkingAlmt = linkingAlmtMember.getAlignment();
 
-		ReferenceSequence ancConstrainingRef = tipAlmt.getAncConstrainingRef(cmdContext, getAcRefName());
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getAcRefName(), getFeatureName()), false);
+		ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelRefName());
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRelRefName(), getFeatureName()), false);
 		Feature feature = featureLoc.getFeature();
 		feature.checkCodesAminoAcids();
 		
 		// extract segments from aligner result
 		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
 
-		// translate segments to tip alignment reference
-		List<QueryAlignedSegment> queryToTipAlmtRefSegs = tipAlmt.translateToRef(cmdContext, 
-				tipAlmtMember.getSequence().getSource().getName(), tipAlmtMember.getSequence().getSequenceID(), 
+		// translate segments to linking alignment coordinate space
+		List<QueryAlignedSegment> queryToLinkingAlmtSegs = linkingAlmt.translateToAlmt(cmdContext, 
+				linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
 				queryToTargetRefSegs);
 		
-		// translate segments to ancestor constraining reference
-		List<QueryAlignedSegment> queryToAncConstrRefSegsFull = tipAlmt.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, ancConstrainingRef);
+		// translate segments to related reference
+		List<QueryAlignedSegment> queryToRelatedRef = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, relatedRef);
 
 		String fastaNTs = fastaNTSeq.getSequenceAsString();
 
-		
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> queryToAncConstrRefSegsFeatureArea = 
-					ReferenceSegment.intersection(queryToAncConstrRefSegsFull, featureLocRefSegs, ReferenceSegment.cloneLeftSegMerger());
-		
-		List<TranslatedQueryAlignedSegment> translatedQaSegs = fastaSequenceReporter.translateNucleotides(
-				cmdContext, featureLoc, queryToAncConstrRefSegsFeatureArea, fastaNTs);
-
-		TIntObjectMap<LabeledCodon> ancRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-
-		for(TranslatedQueryAlignedSegment translatedQaSeg: translatedQaSegs) {
-			int refNt = translatedQaSeg.getQueryAlignedSegment().getRefStart();
-			int queryNt = translatedQaSeg.getQueryAlignedSegment().getQueryStart();
-			for(int i = 0; i < translatedQaSeg.getTranslation().size(); i++) {
-				AmbigNtTripletInfo translationInfo = translatedQaSeg.getTranslation().get(i);
-				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(ancRefNtToLabeledCodon.get(refNt), translationInfo);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, queryNt));
-				refNt = refNt+3;
-				queryNt = queryNt+3;
-			}
-		}
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
+				FeatureLocation.translateNtContent(consoleCmdContext, featureLoc, queryToRelatedRef, new SimpleNucleotideContentProvider(fastaNTs));
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}

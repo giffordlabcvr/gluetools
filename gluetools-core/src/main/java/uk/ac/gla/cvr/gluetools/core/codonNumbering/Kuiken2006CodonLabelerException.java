@@ -31,7 +31,8 @@ public class Kuiken2006CodonLabelerException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 
-		GAP_AT_START("refName", "ntLocation");
+		GAP_AT_START("refName", "ntLocation"),
+		LINKING_ALIGNMENT_MUST_BE_UNCONSTRAINED("almtName");
 
 		private String[] argNames;
 		private Code(String... argNames) {
