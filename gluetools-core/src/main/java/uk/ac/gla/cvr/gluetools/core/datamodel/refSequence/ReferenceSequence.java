@@ -29,17 +29,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueConfigContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
@@ -156,70 +152,6 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 				}
 			}
 			
-		}
-	}
-	
-	public Alignment getUniqueAlignmentThisConstrains() {
-		List<Alignment> alignmentsThisConstrains = getAlignmentsWhereRefSequence();
-		if(alignmentsThisConstrains.size() == 0) {
-			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_DOES_NOT_CONSTRAIN_ANY_ALIGNMENT, getName());
-		}
-		if(alignmentsThisConstrains.size() > 1) {
-			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_CONSTRAINS_MULTIPLE_ALIGNMENTS, getName());
-		}
-		return alignmentsThisConstrains.get(0);
-	}
-	
-
-	public AlignmentMember getUniqueTipAlignmentMembership() {
-		List<AlignmentMember> constrainedAlignmentMemberships = getConstrainedAlignmentMemberships();
-		if(constrainedAlignmentMemberships.size() == 0) {
-			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_MEMBER_OF_NO_TIP_ALIGNMENTS, getName());
-		}
-		if(constrainedAlignmentMemberships.size() > 1) {
-			// amongst multiple memberships, it's not a problem if there is just one which is the descendent of
-			// all the others. See if this is the case.
-			for(AlignmentMember almtMember: constrainedAlignmentMemberships) {
-				Set<Alignment> ancestors = new LinkedHashSet<Alignment>(almtMember.getAlignment().getAncestors());
-				ancestors.remove(almtMember.getAlignment());
-				boolean allOtherMembersAreInAncestors = true;
-				List<AlignmentMember> otherMembers = new ArrayList<AlignmentMember>(constrainedAlignmentMemberships);
-				otherMembers.remove(almtMember);
-				for(AlignmentMember otherMember: otherMembers) {
-					if(ancestors.contains(otherMember.getAlignment())) {
-						continue;
-					}
-					allOtherMembersAreInAncestors = false;
-					break;
-				}
-				if(allOtherMembersAreInAncestors) {
-					return almtMember;
-				}
-			}
-			throw new ReferenceSequenceException(Code.REFERENCE_SEQUENCE_MEMBER_OF_MULTIPLE_TIP_ALIGNMENTS, getName());
-		}
-		return constrainedAlignmentMemberships.get(0);
-	}
-
-	public List<AlignmentMember> getConstrainedAlignmentMemberships() {
-		return getSequence().getAlignmentMemberships()
-				.stream()
-				.filter(am -> am.getAlignment().isConstrained())
-				.collect(Collectors.toList());
-	}
-
-
-	// get membership of a specific constrained alignment
-	// if no alignment is specified, assume there is a unique such alignment membership and return that.
-	public AlignmentMember getTipAlignmentMembership(String tipAlmtName) {
-		if(tipAlmtName == null) {
-			return getUniqueTipAlignmentMembership();
-		} else {
-			return getConstrainedAlignmentMemberships().stream()
-					.filter(am -> am.getAlignment().getName().equals(tipAlmtName))
-					.findFirst()
-					.orElseThrow(() -> new ReferenceSequenceException(
-							Code.REFERENCE_SEQUENCE_NOT_MEMBER_OF_CONSTRAINED_ALIGNMENT, getName(), tipAlmtName));
 		}
 	}
 	

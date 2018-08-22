@@ -19,30 +19,6 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult
 
 public class VariationScanUtils {
 
-	public interface VariationConsumer {
-		public void consumeVariations(ReferenceSequence refToScan, FeatureLocation featureLoc, List<Variation> variationsToScan);
-	}
-
-	public static void visitVariations(CommandContext cmdContext, List<ReferenceSequence> refsToScan, 
-			List<Feature> featuresToScan, Expression whereClause, VariationScanUtils.VariationConsumer variationConsumer) {
-	for(ReferenceSequence refToScan: refsToScan) {
-			
-			for(Feature featureToScan: featuresToScan) {
-				FeatureLocation featureLoc = 
-						GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
-								FeatureLocation.pkMap(refToScan.getName(), featureToScan.getName()), true);
-				if(featureLoc == null) {
-					continue;
-				}
-				List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, whereClause);
-				if(variationsToScan == null) {
-					continue;
-				}
-				variationConsumer.consumeVariations(refToScan, featureLoc, variationsToScan);
-			}
-		}
-	}
-
 	public static Class<? extends VariationScannerMatchResult> getMatchResultClass(
 			CommandContext cmdContext, ReferenceSequence relatedRef,
 			List<Feature> featuresToScan, Expression whereClause) {

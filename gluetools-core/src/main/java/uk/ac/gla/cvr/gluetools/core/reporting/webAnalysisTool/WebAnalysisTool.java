@@ -50,7 +50,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanUtils;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -439,24 +438,30 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		featuresToScan.add(feature);
 		featuresToScan.addAll(feature.getDescendents());
 		
-		VariationScanUtils.visitVariations(cmdContext, Arrays.asList(acRefSequence), featuresToScan, variationWhereClause, new VariationScanUtils.VariationConsumer() {
-			@Override
-			public void consumeVariations(ReferenceSequence refToScan,
-					FeatureLocation featureLoc, List<Variation> variationsToScan) {
-				Alignment tipAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(tipAlignmentName));
-				// translate segments to scanned reference
-				List<QueryAlignedSegment> queryToScannedRefSegs = tipAlignment.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, refToScan);
-				
-				List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
-						queryToScannedRefSegs.stream()
-						.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
-								SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
-								.collect(Collectors.toList());
 		
-				variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToScannedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
-		
+		for(Feature featureToScan: featuresToScan) {
+			FeatureLocation featureLoc = 
+					GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+							FeatureLocation.pkMap(acRefSequence.getName(), featureToScan.getName()), true);
+			if(featureLoc == null) {
+				continue;
 			}
-		});
+			List<Variation> variationsToScan = featureLoc.getVariationsQualified(cmdContext, variationWhereClause);
+			if(variationsToScan == null) {
+				continue;
+			}
+			Alignment tipAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(tipAlignmentName));
+			// translate segments to scanned reference
+			List<QueryAlignedSegment> queryToScannedRefSegs = tipAlignment.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, acRefSequence);
+			
+			List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
+					queryToScannedRefSegs.stream()
+					.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
+							SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
+							.collect(Collectors.toList());
+	
+			variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToScannedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
+		}
 		
 		return variationScanResults;
 		
