@@ -5,5 +5,5 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 public abstract class VisualisationAnnotation {
 
 	@PojoDocumentField 
-	public Integer uNtPos;
+	public Integer displayNtPos;
 }

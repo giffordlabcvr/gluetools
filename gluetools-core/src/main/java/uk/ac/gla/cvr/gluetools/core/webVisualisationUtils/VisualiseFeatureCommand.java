@@ -20,15 +20,12 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.CodonLabelAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.FeatureVisualisation;
-import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryAaContentAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryNtContentAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryNtIndexAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.RefAaContentAnnotation;
@@ -75,76 +72,87 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	protected PojoCommandResult<FeatureVisualisation> execute(CommandContext cmdContext, VisualisationUtility modulePlugin) {
 		
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(this.referenceName, this.featureName));
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		int minRefStart = ReferenceSegment.minRefStart(featureLocRefSegs);
-		int maxRefEnd = ReferenceSegment.maxRefEnd(featureLocRefSegs);
-		
-		// initial alignment includes just the ref, up to the end of the specified feature.
-		AllColumnsAlignment<String> allColumnsAlmt = new AllColumnsAlignment<String>("reference", maxRefEnd);
+		String referenceNucleotides = 
+				featureLoc.getReferenceSequence().getSequence().getSequenceObject().getNucleotides(cmdContext);
 
-		// trim qa segs down to the feature area.
-		List<QueryAlignedSegment> queryToFeatureLocRefSegs = ReferenceSegment.intersection(queryToRefSegments, featureLocRefSegs,
-				ReferenceSegment.cloneLeftSegMerger());
-		// add the query sequence.
-		allColumnsAlmt.addRow("query", "reference", queryToFeatureLocRefSegs, QueryAlignedSegment.maxQueryEnd(queryToFeatureLocRefSegs));
-		
+		// initial alignment uspace includes just the reference sequence.
+		int refLength = referenceNucleotides.length();
+		AllColumnsAlignment<String> allColumnsAlmt = new AllColumnsAlignment<String>("reference", refLength);
+
+		allColumnsAlmt.addRow("query", "reference", queryToRefSegments, queryNucleotides.length());
+
 		allColumnsAlmt.rationalise();
-		
-		// the utNt positions start from the minRef start on the reference, going up to the width of the all columns alignment.
-		int utNtWidth = allColumnsAlmt.getMaxIndex() - (minRefStart - 1);
-		List<ReferenceSegment> uFeatureSegs = Arrays.asList(new ReferenceSegment(minRefStart, allColumnsAlmt.getMaxIndex()));
 
-		String referenceNucleotides = featureLoc.getReferenceSequence().getSequence().getSequenceObject().getNucleotides(cmdContext);
+		// "display" alignment will be region corresponding to the named feature location.
+		List<QueryAlignedSegment> refToUSegs = allColumnsAlmt.getSegments("reference");
+		List<QueryAlignedSegment> uToRefSegs = QueryAlignedSegment.invertList(refToUSegs);
 		
-		List<QueryAlignedSegment> refToUFeatureSegs = allColumnsAlmt.getSegments("reference");
-		refToUFeatureSegs = ReferenceSegment.intersection(refToUFeatureSegs, uFeatureSegs, ReferenceSegment.cloneLeftSegMerger());
-		refToUFeatureSegs.forEach(seg -> seg.translateRef(- (minRefStart - 1)));
+		List<ReferenceSegment> featureLocSegs = featureLoc.segmentsAsReferenceSegments();
+		List<QueryAlignedSegment> uToRefFeatureLocSegs = ReferenceSegment.intersection(uToRefSegs, featureLocSegs,
+				ReferenceSegment.cloneLeftSegMerger());
+
+		// offset required to shift "U" NT coordinates to display coordinates so that the named feature starts at display location 1.
+		int displayNtOffset = QueryAlignedSegment.minQueryStart(uToRefFeatureLocSegs)-1;
+
+		// calculate width of display alignment
+		int displayNtWidth = QueryAlignedSegment.maxQueryEnd(uToRefFeatureLocSegs)-displayNtOffset;
+
 		VisualisationAnnotationRow refNtContentRow = new VisualisationAnnotationRow();
 		refNtContentRow.annotationType = "refNtContent";
 		VisualisationAnnotationRow refNtIndexRow = new VisualisationAnnotationRow();
 		refNtIndexRow.annotationType = "refNtIndex";
-		refToUFeatureSegs.forEach(seg -> {
+
+		List<QueryAlignedSegment> refToUFeatureLocSegs = QueryAlignedSegment.invertList(uToRefFeatureLocSegs);
+
+		refToUFeatureLocSegs.forEach(seg -> {
 			RefNtContentAnnotation refNtContent = new RefNtContentAnnotation();
-			refNtContent.uNtPos = seg.getRefStart();
+			refNtContent.displayNtPos = seg.getRefStart()-displayNtOffset;
 			refNtContent.ntContent = FastaUtils.subSequence(referenceNucleotides, seg.getQueryStart(), seg.getQueryEnd()).toString();
 			refNtContentRow.annotations.add(refNtContent);
 			RefNtIndexAnnotation refStartAnnotation = new RefNtIndexAnnotation();
-			refStartAnnotation.uNtPos = seg.getRefStart();
+			refStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
 			refStartAnnotation.ntIndex = seg.getQueryStart();
 			refNtIndexRow.annotations.add(refStartAnnotation);
 			RefNtIndexAnnotation refEndAnnotation = new RefNtIndexAnnotation();
-			refEndAnnotation.uNtPos = seg.getRefEnd();
+			refEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
 			refEndAnnotation.ntIndex = seg.getQueryEnd();
 			refNtIndexRow.annotations.add(refEndAnnotation);
 		});
+
+
+		int uFeatureStart = ReferenceSegment.minRefStart(refToUFeatureLocSegs);
+		int uFeatureEnd = ReferenceSegment.maxRefEnd(refToUFeatureLocSegs);
 		
-		List<QueryAlignedSegment> queryToUFeatureSegs = allColumnsAlmt.getSegments("query");
-		queryToUFeatureSegs = ReferenceSegment.intersection(queryToUFeatureSegs, uFeatureSegs, ReferenceSegment.cloneLeftSegMerger());
-		queryToUFeatureSegs.forEach(seg -> seg.translateRef(- (minRefStart - 1)));
+		List<QueryAlignedSegment> queryToUSegs = allColumnsAlmt.getSegments("query");
+
+		List<QueryAlignedSegment> queryToUFeatureLocSegs = 
+				ReferenceSegment.intersection(queryToUSegs, Arrays.asList(new ReferenceSegment(uFeatureStart, uFeatureEnd)), 
+						ReferenceSegment.cloneLeftSegMerger());
+
 		VisualisationAnnotationRow queryNtContentRow = new VisualisationAnnotationRow();
 		queryNtContentRow.annotationType = "queryNtContent";
 		VisualisationAnnotationRow queryNtIndexRow = new VisualisationAnnotationRow();
 		queryNtIndexRow.annotationType = "queryNtIndex";
-		queryToUFeatureSegs.forEach(seg -> {
+		queryToUFeatureLocSegs.forEach(seg -> {
 			QueryNtContentAnnotation queryNtContent = new QueryNtContentAnnotation();
-			queryNtContent.uNtPos = seg.getRefStart();
+			queryNtContent.displayNtPos = seg.getRefStart()-displayNtOffset;
 			queryNtContent.ntContent = FastaUtils.subSequence(queryNucleotides, seg.getQueryStart(), seg.getQueryEnd()).toString();
 			queryNtContentRow.annotations.add(queryNtContent);
 			QueryNtIndexAnnotation queryStartAnnotation = new QueryNtIndexAnnotation();
-			queryStartAnnotation.uNtPos = seg.getRefStart();
+			queryStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
 			queryStartAnnotation.ntIndex = seg.getQueryStart();
 			queryNtIndexRow.annotations.add(queryStartAnnotation);
 			QueryNtIndexAnnotation queryEndAnnotation = new QueryNtIndexAnnotation();
-			queryEndAnnotation.uNtPos = seg.getRefEnd();
+			queryEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
 			queryEndAnnotation.ntIndex = seg.getQueryEnd();
 			queryNtIndexRow.annotations.add(queryEndAnnotation);
 		});
-		
 
 		VisualisationAnnotationRow codonLabelRow = null;
 		VisualisationAnnotationRow refAaRow = null;
+		/*
 		VisualisationAnnotationRow queryAaRow = null;
+		*/
 		
 		if(featureLoc.getFeature().codesAminoAcids()) {
 			codonLabelRow = new VisualisationAnnotationRow();
@@ -159,22 +167,22 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 
 				int refNt = refLqaa.getQueryNt();
 				QueryAlignedSegment qaSeg = new QueryAlignedSegment(refNt, refNt, refNt, refNt);
-				int uNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), refToUFeatureSegs).get(0).getRefStart();
+				int displayNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), refToUSegs).get(0).getRefStart()-displayNtOffset;
 				
 				LabeledCodon labeledCodon = labeledAminoAcid.getLabeledCodon();
 				CodonLabelAnnotation codonLabelAnnotation = new CodonLabelAnnotation();
 				codonLabelAnnotation.label = labeledCodon.getCodonLabel();
 				codonLabelAnnotation.ntWidth = labeledCodon.getNtLength();
-				codonLabelAnnotation.uNtPos = uNtPos;
+				codonLabelAnnotation.displayNtPos = displayNtPos;
 				codonLabelRow.annotations.add(codonLabelAnnotation);
 
 				RefAaContentAnnotation refAaContentAnnotation = new RefAaContentAnnotation();
 				refAaContentAnnotation.aa = labeledAminoAcid.getAminoAcid();
 				refAaContentAnnotation.ntWidth = labeledCodon.getNtLength();
-				refAaContentAnnotation.uNtPos = uNtPos;
+				refAaContentAnnotation.displayNtPos = displayNtPos;
 				refAaRow.annotations.add(refAaContentAnnotation);
 			}
-			
+			/*
 			queryAaRow = new VisualisationAnnotationRow();
 			queryAaRow.annotationType = "queryAa";
 
@@ -194,6 +202,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				queryAaContentAnnotation.uNtPos = uNtPos;
 				queryAaRow.annotations.add(queryAaContentAnnotation);
 			}
+			*/
 		
 		}
 
@@ -202,7 +211,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		featureVisualisation.referenceDisplayName = featureLoc.getReferenceSequence().getRenderedName();
 		featureVisualisation.featureName = featureLoc.getFeature().getName();
 		featureVisualisation.featureDisplayName = featureLoc.getFeature().getRenderedName();
-		featureVisualisation.uNtWidth = utNtWidth;
+		featureVisualisation.displayNtWidth = displayNtWidth;
 		if(codonLabelRow != null) {
 			featureVisualisation.annotationRows.add(codonLabelRow);
 		}
@@ -211,12 +220,13 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		}
 		featureVisualisation.annotationRows.add(refNtContentRow);
 		featureVisualisation.annotationRows.add(refNtIndexRow);
+		/*
 		if(queryAaRow != null) {
 			featureVisualisation.annotationRows.add(queryAaRow);
 		}
+		 */
 		featureVisualisation.annotationRows.add(queryNtContentRow);
 		featureVisualisation.annotationRows.add(queryNtIndexRow);
-
 		
 		return new PojoCommandResult<FeatureVisualisation>(featureVisualisation);
 		
