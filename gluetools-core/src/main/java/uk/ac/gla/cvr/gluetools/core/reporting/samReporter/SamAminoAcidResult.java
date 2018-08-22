@@ -34,7 +34,7 @@ public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCoun
 	public static final String 
 		CODON_LABEL = "codonLabel",
 		SAM_REF_NT = "samRefNt",
-		ANC_CONSTR_REF_NT = "ancConstrRefNt",
+		REL_REF_NT = "relRefNt",
 		AMINO_ACID = "aminoAcid",
 		READS_WITH_AA = "readsWithAA",
 		PERCENT_AA_READS = "pctAaReads";
@@ -45,7 +45,7 @@ public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCoun
 				rows,
 				column(CODON_LABEL, laarc -> laarc.getLabeledCodon().getCodonLabel()),
 				column(SAM_REF_NT, laarc -> laarc.getSamRefNt()), 
-				column(ANC_CONSTR_REF_NT, laarc -> laarc.getLabeledCodon().getNtStart()),
+				column(REL_REF_NT, laarc -> laarc.getLabeledCodon().getNtStart()),
 				column(AMINO_ACID, laarc -> laarc.getAminoAcid()), 
 				column(READS_WITH_AA, laarc -> laarc.getReadsWithAminoAcid()), 
 				column(PERCENT_AA_READS, laarc -> laarc.getPercentReadsWithAminoAcid()));
