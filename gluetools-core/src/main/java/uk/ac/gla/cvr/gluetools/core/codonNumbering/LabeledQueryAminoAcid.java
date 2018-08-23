@@ -29,19 +29,31 @@ package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 public class LabeledQueryAminoAcid {
 
 	private LabeledAminoAcid labeledAminoAcid;
-	private int queryNt;
+	private int queryNtStart;
+	private int queryNtMiddle;
+	private int queryNtEnd;
 	
-	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, int queryNt) {
+	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, int queryNtStart, int queryNtMiddle, int queryNtEnd) {
 		this.labeledAminoAcid = labeledAminoAcid;
-		this.queryNt = queryNt;
+		this.queryNtStart = queryNtStart;
+		this.queryNtMiddle = queryNtMiddle;
+		this.queryNtEnd = queryNtEnd;
 	}
 
 	public LabeledAminoAcid getLabeledAminoAcid() {
 		return labeledAminoAcid;
 	}
 
-	public int getQueryNt() {
-		return queryNt;
+	public int getQueryNtStart() {
+		return queryNtStart;
 	}
-	
+
+	public int getQueryNtMiddle() {
+		return queryNtMiddle;
+	}
+
+	public int getQueryNtEnd() {
+		return queryNtEnd;
+	}
+
 }

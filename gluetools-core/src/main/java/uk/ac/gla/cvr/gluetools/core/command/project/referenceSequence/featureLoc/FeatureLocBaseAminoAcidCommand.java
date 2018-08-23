@@ -25,73 +25,8 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
-import gnu.trove.map.TIntObjectMap;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
-import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public abstract class FeatureLocBaseAminoAcidCommand<R extends CommandResult> extends FeatureLocModeCommand<R> {
-
-	public static List<LabeledQueryAminoAcid> featureLocAminoAcids(CommandContext cmdContext, FeatureLocation featureLoc) {
-		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
-
-		// feature area coordinates.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		final Translator translator = new CommandContextTranslator(cmdContext);
-
-		AbstractSequenceObject refSeqObj = featureLoc.getReferenceSequence().getSequence().getSequenceObject();
-
-		if(featureLocRefSegs.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		featureLocRefSegs = ReferenceSegment.mergeAbutting(featureLocRefSegs, 
-				ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
-
-
-		TIntObjectMap<LabeledCodon> refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-
-		int segIndex = 0;
-		ReferenceSegment currentSegment = featureLocRefSegs.get(segIndex);
-		int refNt = currentSegment.getRefStart();
-		while(segIndex < featureLocRefSegs.size() && refNt <= currentSegment.getRefEnd()) {
-			LabeledCodon labeledCodon = refNtToLabeledCodon.get(refNt);
-			if(labeledCodon != null) {
-				char[] nts = new char[3];
-				nts[0] = refSeqObj.nt(cmdContext, labeledCodon.getNtStart());
-				nts[1] = refSeqObj.nt(cmdContext, labeledCodon.getNtMiddle());
-				nts[2] = refSeqObj.nt(cmdContext, labeledCodon.getNtEnd());
-				AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nts)).get(0);
-				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, refNt));
-			}
-			refNt++;
-			if(refNt > currentSegment.getRefEnd()) {
-				segIndex++;
-				if(segIndex < featureLocRefSegs.size()) {
-					currentSegment = featureLocRefSegs.get(segIndex);
-					refNt = currentSegment.getRefStart();
-				}
-			}
-		}
-		return labeledQueryAminoAcids;
-	}
 
 }

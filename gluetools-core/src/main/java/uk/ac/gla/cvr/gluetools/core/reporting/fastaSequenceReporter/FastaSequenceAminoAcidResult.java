@@ -45,7 +45,7 @@ public class FastaSequenceAminoAcidResult extends BaseTableResult<LabeledQueryAm
 	public FastaSequenceAminoAcidResult(List<LabeledQueryAminoAcid> labeledQueryAminoAcids) {
 		super("fastaSequenceAminoAcidsResult", labeledQueryAminoAcids,
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
-				column(QUERY_NT, lqaa -> lqaa.getQueryNt()),
+				column(QUERY_NT, lqaa -> lqaa.getQueryNtStart()),
 				column(REL_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
 				column(CODON_NTS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString()),
 				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()),

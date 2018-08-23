@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -554,5 +555,10 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		};
 	}
 
-	
+	public static List<QueryAlignedSegment> asQueryAlignedSegments(List<ReferenceSegment> refSegs) {
+		return refSegs.stream().map(refSeg -> 
+			new QueryAlignedSegment(refSeg.getRefStart(), refSeg.getRefEnd(), 
+				refSeg.getRefStart(), refSeg.getRefEnd()))
+				.collect(Collectors.toList());
+	}
 }

@@ -53,7 +53,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.AminoAcidFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
@@ -159,7 +158,7 @@ public class ExportReferenceCommand extends ModulePluginCommand<CommandResult, F
 			FeatureLocation featureLoc = 
 					GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refSeq.getName(), feature.getName()), true);
 			if(featureLoc != null) {
-				List<LabeledQueryAminoAcid> labeledQAAs = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
+				List<LabeledQueryAminoAcid> labeledQAAs = featureLoc.getReferenceAminoAcidContent(cmdContext);
 				labeledQAAs.forEach(lqaa -> proteinStringBuf.append(lqaa.getLabeledAminoAcid().getAminoAcid()));
 			}
 			ProteinSequence proteinSeq = FastaUtils.proteinStringToSequence(proteinStringBuf.toString());

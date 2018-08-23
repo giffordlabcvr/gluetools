@@ -42,7 +42,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
@@ -97,12 +96,14 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 			String refName, Map<String, DNASequence> queryIdToNucleotides) {
 		String featureName = getFeatureName();
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName), true);
-		
+
 		if(featureLoc == null && allowFeatureToBeMissing) {
 			return new CodonAwareBlastAlignerResult(Collections.emptyMap());
 		}
-		
-		List<LabeledQueryAminoAcid> featureLocAminoAcids = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
+
+		featureLoc.getFeature().checkCodesAminoAcids();
+
+		List<LabeledQueryAminoAcid> featureLocAminoAcids = featureLoc.getReferenceAminoAcidContent(cmdContext);
 		StringBuffer buf = new StringBuffer();
 		TIntIntMap aaToNtMap = new TIntIntHashMap();
 		int i = 1;

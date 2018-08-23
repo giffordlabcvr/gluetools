@@ -43,6 +43,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extends MemberModeCommand<R> {
 
@@ -71,8 +73,9 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		Sequence memberSequence = almtMember.getSequence();
 		NucleotideContentProvider memberSeqObj = memberSequence.getSequenceObject();
 
+		Translator translator = new CommandContextTranslator(cmdContext);
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
-				FeatureLocation.translateNtContent(cmdContext, featureLoc, memberToRelatedRefSegs, memberSeqObj);
+				featureLoc.translateQueryNucleotides(cmdContext, translator, memberToRelatedRefSegs, memberSeqObj);
 		return labeledQueryAminoAcids;
 	}
 

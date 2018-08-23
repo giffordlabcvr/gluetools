@@ -46,7 +46,7 @@ public class MemberAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid
 		super("memberAminoAcidsResult", 
 				rowData, 
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
-				column(MEMBER_NT, lqaa -> lqaa.getQueryNt()),
+				column(MEMBER_NT, lqaa -> lqaa.getQueryNtStart()),
 				column(REL_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),
 				column(CODON_NTS, lqaa -> lqaa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString()),
 				column(AMINO_ACID, lqaa -> lqaa.getLabeledAminoAcid().getAminoAcid()),

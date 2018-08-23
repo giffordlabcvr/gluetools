@@ -46,7 +46,7 @@ public class FeatureLocAminoAcidCommand extends FeatureLocBaseAminoAcidCommand<F
 	@Override
 	public FeatureLocAminoAcidResult execute(CommandContext cmdContext) {
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = featureLocAminoAcids(cmdContext, featureLoc);
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = featureLoc.getReferenceAminoAcidContent(cmdContext);
 		return new FeatureLocAminoAcidResult(labeledQueryAminoAcids);
 	}
 

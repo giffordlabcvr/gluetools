@@ -25,25 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
-import gnu.trove.map.TIntObjectMap;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class TranslationUtils {
 
@@ -219,62 +206,4 @@ public class TranslationUtils {
 	public static int getNt(int codon1Start, int codon) {
 		return ((codon-1) * 3)+codon1Start;
 	}
-
-	public static List<LabeledQueryAminoAcid> translateQaSegments(
-			CommandContext cmdContext, ReferenceSequence refSequence,
-			String featureName,
-			List<QueryAlignedSegment> queryToRefSegs,
-			String queryNucleotides) {
-		FeatureLocation featureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refSequence.getName(), featureName), false);
-		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
-	
-		
-		// trim down to the feature area.
-		List<ReferenceSegment> featureLocRefSegs = featureLoc.segmentsAsReferenceSegments();
-		
-		List<QueryAlignedSegment> queryToFeatureLocRefSegs = ReferenceSegment.intersection(queryToRefSegs, featureLocRefSegs,
-				ReferenceSegment.cloneLeftSegMerger());
-		
-		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
-		List<QueryAlignedSegment> queryToFeatureLocRefSegsMerged = QueryAlignedSegment.mergeAbutting(queryToFeatureLocRefSegs, 
-				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-	
-		
-		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-		List<QueryAlignedSegment> queryToFeatureLocRefSegsCodonAligned = truncateToCodonAligned(codon1Start, queryToFeatureLocRefSegsMerged);
-	
-		final Translator translator = new CommandContextTranslator(cmdContext);
-	
-	
-		if(queryToFeatureLocRefSegsCodonAligned.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		TIntObjectMap<LabeledCodon> relRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-	
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-	
-		
-		for(QueryAlignedSegment queryToRefSeg: queryToFeatureLocRefSegsCodonAligned) {
-			CharSequence segmentNucleotides = FastaUtils.subSequence(queryNucleotides, queryToRefSeg.getQueryStart(), queryToRefSeg.getQueryEnd());
-			List<AmbigNtTripletInfo> segAAs = translator.translate(segmentNucleotides);
-			int refNt = queryToRefSeg.getRefStart();
-			int queryNt = queryToRefSeg.getQueryStart();
-			for(int i = 0; i < segAAs.size(); i++) {
-				AmbigNtTripletInfo ambigNtTripletInfo = segAAs.get(i);
-				LabeledCodon labeledCodon = relRefNtToLabeledCodon.get(refNt);
-				int ntLength = labeledCodon.getNtLength();
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(
-						new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo), queryNt));
-				refNt = refNt+ntLength;
-				queryNt = queryNt+ntLength;
-				
-			}
-		}
-		return labeledQueryAminoAcids;
-	}
-
 }

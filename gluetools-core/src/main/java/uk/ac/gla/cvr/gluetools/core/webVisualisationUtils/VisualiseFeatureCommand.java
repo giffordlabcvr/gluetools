@@ -13,10 +13,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocBaseAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -24,8 +24,11 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.CodonLabelAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.FeatureVisualisation;
+import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryAaContentAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryNtContentAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryNtIndexAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.RefAaContentAnnotation;
@@ -75,6 +78,9 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		String referenceNucleotides = 
 				featureLoc.getReferenceSequence().getSequence().getSequenceObject().getNucleotides(cmdContext);
 
+		Translator translator = new CommandContextTranslator(cmdContext);
+
+		
 		// initial alignment uspace includes just the reference sequence.
 		int refLength = referenceNucleotides.length();
 		AllColumnsAlignment<String> allColumnsAlmt = new AllColumnsAlignment<String>("reference", refLength);
@@ -150,9 +156,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 
 		VisualisationAnnotationRow codonLabelRow = null;
 		VisualisationAnnotationRow refAaRow = null;
-		/*
 		VisualisationAnnotationRow queryAaRow = null;
-		*/
 		
 		if(featureLoc.getFeature().codesAminoAcids()) {
 			codonLabelRow = new VisualisationAnnotationRow();
@@ -161,11 +165,11 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			refAaRow = new VisualisationAnnotationRow();
 			refAaRow.annotationType = "refAa";
 
-			List<LabeledQueryAminoAcid> refLqaas = FeatureLocBaseAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
+			List<LabeledQueryAminoAcid> refLqaas = featureLoc.getReferenceAminoAcidContent(cmdContext);
 			for(LabeledQueryAminoAcid refLqaa: refLqaas) {
 				LabeledAminoAcid labeledAminoAcid = refLqaa.getLabeledAminoAcid();
 
-				int refNt = refLqaa.getQueryNt();
+				int refNt = refLqaa.getQueryNtStart();
 				QueryAlignedSegment qaSeg = new QueryAlignedSegment(refNt, refNt, refNt, refNt);
 				int displayNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), refToUSegs).get(0).getRefStart()-displayNtOffset;
 				
@@ -182,27 +186,27 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				refAaContentAnnotation.displayNtPos = displayNtPos;
 				refAaRow.annotations.add(refAaContentAnnotation);
 			}
-			/*
 			queryAaRow = new VisualisationAnnotationRow();
 			queryAaRow.annotationType = "queryAa";
 
-			List<LabeledQueryAminoAcid> queryLqaas = TranslationUtils
-					.translateQaSegments(cmdContext, featureLoc.getReferenceSequence(), featureName, queryToRefSegments, queryNucleotides);
+			List<LabeledQueryAminoAcid> queryLqaas = 
+					featureLoc.translateQueryNucleotides(cmdContext, translator, queryToRefSegments, 
+							new SimpleNucleotideContentProvider(queryNucleotides));
+			
 			for(LabeledQueryAminoAcid queryLqaa: queryLqaas) {
 				LabeledAminoAcid labeledAminoAcid = queryLqaa.getLabeledAminoAcid();
 
-				int queryNt = queryLqaa.getQueryNt();
+				int queryNt = queryLqaa.getQueryNtStart();
 				QueryAlignedSegment qaSeg = new QueryAlignedSegment(queryNt, queryNt, queryNt, queryNt);
-				int uNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), queryToUFeatureSegs).get(0).getRefStart();
+				int displayNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), queryToUSegs).get(0).getRefStart()-displayNtOffset;
 
 				LabeledCodon labeledCodon = labeledAminoAcid.getLabeledCodon();
 				QueryAaContentAnnotation queryAaContentAnnotation = new QueryAaContentAnnotation();
 				queryAaContentAnnotation.aa = labeledAminoAcid.getAminoAcid();
 				queryAaContentAnnotation.ntWidth = labeledCodon.getNtLength();
-				queryAaContentAnnotation.uNtPos = uNtPos;
+				queryAaContentAnnotation.displayNtPos = displayNtPos;
 				queryAaRow.annotations.add(queryAaContentAnnotation);
 			}
-			*/
 		
 		}
 
@@ -220,11 +224,9 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		}
 		featureVisualisation.annotationRows.add(refNtContentRow);
 		featureVisualisation.annotationRows.add(refNtIndexRow);
-		/*
 		if(queryAaRow != null) {
 			featureVisualisation.annotationRows.add(queryAaRow);
 		}
-		 */
 		featureVisualisation.annotationRows.add(queryNtContentRow);
 		featureVisualisation.annotationRows.add(queryNtIndexRow);
 		

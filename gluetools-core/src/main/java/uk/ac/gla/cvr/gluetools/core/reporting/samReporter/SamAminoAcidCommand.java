@@ -47,6 +47,8 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -59,6 +61,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
@@ -68,7 +71,6 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.StringUtils;
@@ -182,18 +184,17 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			// translate segments to related reference
 			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
+			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
+
 			// trim down to the feature area.
-			List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
-					.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
-			List<QueryAlignedSegment> samRefToRelatedRefSegs = 
-					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<QueryAlignedSegment> samRefToRelatedRefSegsUnmerged = 
+					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, labeledCodonReferenceSegments, ReferenceSegment.cloneLeftSegMerger());
 
-			// truncate to codon aligned
-			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+			List<QueryAlignedSegment> samRefToRelatedRefSegs = QueryAlignedSegment.mergeAbutting(samRefToRelatedRefSegsUnmerged, 
+					QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
+					QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
 
-			List<QueryAlignedSegment> samRefToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, samRefToRelatedRefSegs);
-
-			if(samRefToRelatedRefSegsCodonAligned.isEmpty()) {
+			if(samRefToRelatedRefSegs.isEmpty()) {
 				return new SamAminoAcidResult(Collections.emptyList());
 			}
 
@@ -204,11 +205,11 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			// build a map from related ref NT to AA read count.
 			TIntObjectHashMap<AminoAcidReadCount> relatedRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
 			List<Integer> mappedRelatedRefNts = new ArrayList<Integer>();
-			for(QueryAlignedSegment qaSeg: samRefToRelatedRefSegsCodonAligned) {
+			for(QueryAlignedSegment qaSeg: samRefToRelatedRefSegs) {
 				for(int relatedRefNt = qaSeg.getRefStart(); relatedRefNt <= qaSeg.getRefEnd(); relatedRefNt++) {
-					if(TranslationUtils.isAtStartOfCodon(codon1Start, relatedRefNt)) {
+					LabeledCodon labeledCodon = relatedRefNtToLabeledCodon.get(relatedRefNt);
+					if(labeledCodon != null) {
 						mappedRelatedRefNts.add(relatedRefNt);
-						LabeledCodon labeledCodon = relatedRefNtToLabeledCodon.get(relatedRefNt);
 						int samRefNt = relatedRefNt + qaSeg.getReferenceToQueryOffset();
 						int resultSamRefNt = samRefNt;
 						if(samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
@@ -226,10 +227,11 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			Supplier<SamAminoAcidContext> contextSupplier = () -> {
 				SamAminoAcidContext context = new SamAminoAcidContext();
 				context.samReporter = samReporter;
+				context.cmdContext = cmdContext;
 				context.translator = translator;
 				context.samRefInfo = samRefInfo;
 				context.samRefSense = samRefSense;
-				context.codon1Start = codon1Start;
+				context.featureLoc = featureLoc;
 				// clone these segments
 				synchronized(samRefToRelatedRefSegs) {
 					context.samRefToRelatedRefSegs = QueryAlignedSegment.cloneList(samRefToRelatedRefSegs);
@@ -279,41 +281,7 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 	}
 
 
-	public void processSamRecord(SamAminoAcidContext context, SAMRecord samRecord) {
-		if(!context.samRecordFilter.recordPasses(samRecord)) {
-			return;
-		}
-		
-		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
-		String readString = samRecord.getReadString().toUpperCase();
-		String qualityString = samRecord.getBaseQualityString();
-		if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), context.samRefInfo.getSamRefLength());
-			readString = FastaUtils.reverseComplement(readString);
-			qualityString = StringUtils.reverseString(qualityString);
-		}
 
-		
-		
-		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
-		
-		
-		List<QueryAlignedSegment> readToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToRelatedRefSegs);
-
-		List<QueryAlignedSegment> readToRelatedRefSegsFiltered = filterByQuality(readToRelatedRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
-		
-		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsFiltered) {
-			CharSequence nts = SegmentUtils.base1SubString(readString, readToRelatedRefSeg.getQueryStart(), readToRelatedRefSeg.getQueryEnd());
-			String segAAs = context.translator.translateToAaString(nts);
-			Integer relatedRefNt = readToRelatedRefSeg.getRefStart();
-			for(int i = 0; i < segAAs.length(); i++) {
-				char segAA = segAAs.charAt(i);
-				AminoAcidReadCount aminoAcidReadCount = context.relatedRefNtToAminoAcidReadCount.get(relatedRefNt);
-				aminoAcidReadCount.addAaRead(segAA);
-				relatedRefNt += 3;
-			}
-		}
-	}
 	
 	private TIntObjectMap<AminoAcidWithQuality> translateReadWithQualityScores(SamAminoAcidContext context, SAMRecord samRecord) {
 
@@ -325,32 +293,34 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			readString = FastaUtils.reverseComplement(readString);
 			qualityString = StringUtils.reverseString(qualityString);
 		}
-		
 		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
-		List<QueryAlignedSegment> readToRelatedRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(context.codon1Start, readToRelatedRefSegs);
-		List<QueryAlignedSegment> readToRelatedRefSegsFiltered = filterByQuality(readToRelatedRefSegsCodonAligned, qualityString, getMinQScore(context.samReporter)); 
+		
+		List<LabeledQueryAminoAcid> labeledReadAas = context.featureLoc.translateQueryNucleotides(context.cmdContext,
+				context.translator, readToRelatedRefSegs, new SimpleNucleotideContentProvider(readString));
 		
 		TIntObjectMap<AminoAcidWithQuality> refNtToAminoAcidWithQuality = new TIntObjectHashMap<SamAminoAcidCommand.AminoAcidWithQuality>();
 		
-		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsFiltered) {
-			Integer queryStart = readToRelatedRefSeg.getQueryStart();
-			Integer queryEnd = readToRelatedRefSeg.getQueryEnd();
-			CharSequence nts = SegmentUtils.base1SubString(readString, queryStart, queryEnd);
-			
-			String segAAs = context.translator.translateToAaString(nts);
-			Integer relatedRefNt = readToRelatedRefSeg.getRefStart();
-			Integer readNt = readToRelatedRefSeg.getQueryStart();
-			for(int i = 0; i < segAAs.length(); i++) {
-				CharSequence quals = SegmentUtils.base1SubString(qualityString, readNt, readNt+2);
-				int worstQual = SamUtils.qualityCharToQScore(quals.charAt(0));
-				for(int j = 1; j < quals.length(); j++) {
-					worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(quals.charAt(j)));
-				}
-				char segAA = segAAs.charAt(i);
-				refNtToAminoAcidWithQuality.put(relatedRefNt, new AminoAcidWithQuality(segAA, worstQual));
-				relatedRefNt += 3;
-				readNt += 3;
-			}
+		int minQScore = getMinQScore(context.samReporter); 
+		// put the AAs resulting from translating the read into the map. 
+		for(LabeledQueryAminoAcid labeledReadAa: labeledReadAas) {
+			int worstQual;
+			char qualityChar1 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtStart());
+			worstQual = SamUtils.qualityCharToQScore(qualityChar1);
+			if(SamUtils.qualityCharToQScore(qualityChar1) < minQScore) {
+				continue;
+			} 
+			char qualityChar2 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtMiddle());
+			worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(qualityChar2));
+			if(SamUtils.qualityCharToQScore(qualityChar2) < minQScore) {
+				continue;
+			} 
+			char qualityChar3 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtEnd());
+			worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(qualityChar3));
+			if(SamUtils.qualityCharToQScore(qualityChar3) < minQScore) {
+				continue;
+			} 
+			refNtToAminoAcidWithQuality.put(labeledReadAa.getLabeledAminoAcid().getLabeledCodon().getNtStart(), 
+					new AminoAcidWithQuality(labeledReadAa.getLabeledAminoAcid().getAminoAcid().charAt(0), worstQual));
 		}
 		return refNtToAminoAcidWithQuality;
 	}
@@ -366,40 +336,6 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		}
 	}
 	
-	private List<QueryAlignedSegment> filterByQuality(
-			List<QueryAlignedSegment> readToRelatedRefSegsCodonAligned,
-			String qualityString, int minQScore) {
-		List<ReferenceSegment> poorQualityCodons = new ArrayList<ReferenceSegment>();
-		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsCodonAligned) {
-			for(int r = readToRelatedRefSeg.getRefStart(); r <= readToRelatedRefSeg.getRefEnd(); r += 3) {
-				int q = r+readToRelatedRefSeg.getReferenceToQueryOffset();
-				boolean poorQuality = false;
-				char qualityChar1 = SegmentUtils.base1Char(qualityString, q);
-				if(SamUtils.qualityCharToQScore(qualityChar1) < minQScore) {
-					poorQuality = true;
-				} else {
-					if(q+1 <= readToRelatedRefSeg.getQueryEnd()) {
-						char qualityChar2 = SegmentUtils.base1Char(qualityString, q+1);
-						if(SamUtils.qualityCharToQScore(qualityChar2) < minQScore) {
-							poorQuality = true;
-						}
-					} else {
-						if(q+2 <= readToRelatedRefSeg.getQueryEnd()) {
-							char qualityChar3 = SegmentUtils.base1Char(qualityString, q+2);
-							if(SamUtils.qualityCharToQScore(qualityChar3) < minQScore) {
-								poorQuality = true;
-							}
-						}
-					}
-				}
-				if(poorQuality) {
-					poorQualityCodons.add(new ReferenceSegment(r, r+2));
-				}
-			}
-		}
-		return ReferenceSegment.subtract(readToRelatedRefSegsCodonAligned, poorQualityCodons);
-	}
-
 	public static class AminoAcidReadCount {
 		private LabeledCodon labeledCodon;
 		private int samRefNt;
@@ -486,13 +422,14 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 
 
 	public static class SamAminoAcidContext {
+		CommandContext cmdContext;
 		SamReporter samReporter;
 		SamRefInfo samRefInfo;
 		List<QueryAlignedSegment> samRefToRelatedRefSegs;
-		Integer codon1Start;
 		SamRefSense samRefSense;
 		TIntObjectMap<AminoAcidReadCount> relatedRefNtToAminoAcidReadCount;
-		Translator translator; 
+		Translator translator;
+		FeatureLocation featureLoc;
 		SamRecordFilter samRecordFilter;
 	}
 

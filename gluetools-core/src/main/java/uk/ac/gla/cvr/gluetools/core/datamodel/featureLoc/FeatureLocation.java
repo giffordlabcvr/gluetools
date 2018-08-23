@@ -29,6 +29,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
@@ -91,6 +93,13 @@ public class FeatureLocation extends _FeatureLocation {
 	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
 	private Map<String, LabeledCodon> labelToLabeledCodon;
 	private List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments;
+
+	// set to true iff:
+	// (a) is a coding feature
+	// (b) is defined by a single contiguous reference segment.
+	// (c) all labeled codons are of length 3
+	// (d) labeled codons run along the reference in a straightforward order.
+	private Boolean isSimpleCodingFeature;
 	
 	
 	@Override
@@ -98,7 +107,7 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 
-	public List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
+	public synchronized List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
 		Feature feature = getFeature();
 		feature.checkCodesAminoAcids();
 		if(labeledCodons == null) {
@@ -144,7 +153,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return labeledCodons;
 	}
 	
-	public List<LabeledCodonReferenceSegment> getLabeledCodonReferenceSegments(CommandContext cmdContext) {
+	public synchronized List<LabeledCodonReferenceSegment> getLabeledCodonReferenceSegments(CommandContext cmdContext) {
 		if(labeledCodonReferenceSegments == null) {
 			labeledCodonReferenceSegments = getLabeledCodons(cmdContext).stream()
 					.flatMap(lc -> lc.getLcRefSegments().stream())
@@ -153,7 +162,44 @@ public class FeatureLocation extends _FeatureLocation {
 		return labeledCodonReferenceSegments;
 	}
 	
-	public TIntObjectMap<LabeledCodon> getRefNtToLabeledCodon(CommandContext cmdContext) {
+	public synchronized Boolean getSimpleCodingFeature(CommandContext cmdContext) {
+		if(isSimpleCodingFeature == null) {
+			List<FeatureSegment> segments = getSegments();
+			if(segments.size() != 1) {
+				isSimpleCodingFeature = false;
+			} else {
+				ReferenceSegment singleFeatureSeg = segments.get(0).asReferenceSegment();
+				List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = getLabeledCodonReferenceSegments(cmdContext);
+				int nt = singleFeatureSeg.getRefStart();
+				int labeledCodonIndex = 0;
+				while(nt <= singleFeatureSeg.getRefEnd() - 2 && labeledCodonIndex < labeledCodonReferenceSegments.size()) {
+					LabeledCodonReferenceSegment labeledCodonRefSeg = labeledCodonReferenceSegments.get(labeledCodonIndex);
+					if(labeledCodonRefSeg.getRefStart() != nt) {
+						isSimpleCodingFeature = false;
+						break;
+					}
+					if(labeledCodonRefSeg.getCurrentLength() != 3) {
+						isSimpleCodingFeature = false;
+						break;
+					}
+					nt += 3;
+					labeledCodonIndex ++;
+				}
+				if(isSimpleCodingFeature == null) {
+					if(nt <= singleFeatureSeg.getRefEnd() - 2) {
+						isSimpleCodingFeature = false;
+					} else if(labeledCodonIndex < labeledCodonReferenceSegments.size()) {
+						isSimpleCodingFeature = false;
+					} else {
+						isSimpleCodingFeature = true;
+					}
+				}
+			}
+		}
+		return isSimpleCodingFeature;
+	}
+	
+	public synchronized TIntObjectMap<LabeledCodon> getRefNtToLabeledCodon(CommandContext cmdContext) {
 		if(refNtToLabeledCodon == null) {
 			refNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
 			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
@@ -164,7 +210,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return refNtToLabeledCodon;
 	}
 	
-	public Map<String, LabeledCodon> getLabelToLabeledCodon(CommandContext cmdContext) {
+	public synchronized Map<String, LabeledCodon> getLabelToLabeledCodon(CommandContext cmdContext) {
 		if(labelToLabeledCodon == null) {
 			labelToLabeledCodon = new LinkedHashMap<String, LabeledCodon>();
 			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
@@ -175,7 +221,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return labelToLabeledCodon;
 	}
 	
-	public LabeledCodon getLabeledCodon(CommandContext cmdContext, String label) {
+	public synchronized LabeledCodon getLabeledCodon(CommandContext cmdContext, String label) {
 		LabeledCodon labeledCodon = getLabelToLabeledCodon(cmdContext).get(label);
 		if(labeledCodon == null) {
 			throw new FeatureLocationException(Code.FEATURE_LOCATION_INVALID_CODON_LABEL, 
@@ -348,26 +394,85 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 
+	public List<LabeledQueryAminoAcid> getReferenceAminoAcidContent(CommandContext cmdContext) {
+		// feature area coordinates.
+		List<ReferenceSegment> featureLocRefSegs = this.segmentsAsReferenceSegments();
+		// maps reference to itself in the feature area.
+		List<QueryAlignedSegment> featureLocQaSegs = ReferenceSegment.asQueryAlignedSegments(featureLocRefSegs);
+		AbstractSequenceObject refSeqObj = this.getReferenceSequence().getSequence().getSequenceObject();
+		Translator translator = new CommandContextTranslator(cmdContext);
+		return translateQueryNucleotides(cmdContext, translator, featureLocQaSegs, refSeqObj);
+	}
+
+
 	/**
-	 * Given some nucleotide query content, a featureLoc on some reference, and a mapping between the query and the reference, 
+	 * Given some nucleotide query content, and a mapping between the query and this feature loc's reference, 
 	 * translate the content to AAs, labeled according to the reference codon numbering.
 	 */
-	public static List<LabeledQueryAminoAcid> translateNtContent(
-			CommandContext cmdContext, FeatureLocation featureLoc,
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(
+			CommandContext cmdContext, 
+			Translator translator,
 			List<QueryAlignedSegment> queryToRefSegs,
 			NucleotideContentProvider queryNucleotideContent) {
-		List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
-	
-		List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
-				ReferenceSegment.intersection(queryToRefSegs, labeledCodonReferenceSegments,
-				new BiFunction<QueryAlignedSegment, LabeledCodonReferenceSegment, LabeledCodonQueryAlignedSegment>() {
-					@Override
-					public LabeledCodonQueryAlignedSegment apply(
-							QueryAlignedSegment qaSeg,
-							LabeledCodonReferenceSegment lcRefSeg) {
+		if(this.getSimpleCodingFeature(cmdContext)) {
+			ReferenceSegment singleRefSeg = this.getSegments().get(0).asReferenceSegment();
+			List<QueryAlignedSegment> queryToRefFeatureSegs = ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(singleRefSeg), ReferenceSegment.cloneLeftSegMerger());
+			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
+			TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getRefNtToLabeledCodon(cmdContext);
+			LabeledCodon labeledCodon = null;
+			char[] nextAaNts = new char[3];
+			Integer queryNtStart = null;
+			Integer queryNtMiddle = null;
+			Integer queryNtEnd = null;
+			
+			for(QueryAlignedSegment queryToRefFeatureSeg: queryToRefFeatureSegs) {
+				for(int offset = 0; offset < queryToRefFeatureSeg.getCurrentLength(); offset++) {
+					int refNt = queryToRefFeatureSeg.getRefStart()+offset;
+					LabeledCodon foundLabeledCodon = refNtToLabeledCodon.get(refNt);
+					if(foundLabeledCodon != null) {
+						labeledCodon = foundLabeledCodon;
+						queryNtStart = queryToRefFeatureSeg.getQueryStart()+offset;
+						queryNtMiddle = null;
+						queryNtEnd = null;
+					} else if(labeledCodon != null) {
+						if(refNt == labeledCodon.getNtMiddle()) {
+							queryNtMiddle = queryToRefFeatureSeg.getQueryStart()+offset;
+						} else if(refNt == labeledCodon.getNtEnd()) {
+							queryNtEnd = queryToRefFeatureSeg.getQueryStart()+offset;
+							if(queryNtStart != null && queryNtMiddle != null) {
+								nextAaNts[0] = queryNucleotideContent.nt(cmdContext, queryNtStart);
+								nextAaNts[1] = queryNucleotideContent.nt(cmdContext, queryNtMiddle);
+								nextAaNts[2] = queryNucleotideContent.nt(cmdContext, queryNtEnd);
+								AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nextAaNts)).get(0);
+								LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
+								labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, 
+										queryNtStart, queryNtMiddle, queryNtEnd));
+							}
+						} else {
+							labeledCodon = null;
+							queryNtStart = null;
+							queryNtMiddle = null;
+							queryNtEnd = null;
+						}
+					}
+				}
+			}
+			return labeledQueryAminoAcids;
+		} else {
+			// one segment per labeled codon associating it with its reference location.
+			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = this.getLabeledCodonReferenceSegments(cmdContext);
+
+
+			List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
+					ReferenceSegment.intersection(queryToRefSegs, labeledCodonReferenceSegments,
+							new BiFunction<QueryAlignedSegment, LabeledCodonReferenceSegment, LabeledCodonQueryAlignedSegment>() {
+						@Override
+						public LabeledCodonQueryAlignedSegment apply(
+								QueryAlignedSegment qaSeg,
+								LabeledCodonReferenceSegment lcRefSeg) {
 							LabeledCodonQueryAlignedSegment lcQaSeg = new LabeledCodonQueryAlignedSegment(lcRefSeg.getLabeledCodon(), 
-											qaSeg.getRefStart(), qaSeg.getRefEnd(), 
-											qaSeg.getQueryStart(), qaSeg.getQueryEnd());
+									qaSeg.getRefStart(), qaSeg.getRefEnd(), 
+									qaSeg.getQueryStart(), qaSeg.getQueryEnd());
 							int leftOverhang = lcRefSeg.getRefStart() - qaSeg.getRefStart();
 							if(leftOverhang > 0) {
 								lcQaSeg.truncateLeft(leftOverhang);
@@ -376,47 +481,54 @@ public class FeatureLocation extends _FeatureLocation {
 							if(rightOverhang > 0) {
 								lcQaSeg.truncateRight(rightOverhang);
 							}
-							
-						return lcQaSeg;
+
+							return lcQaSeg;
+						}
+					});
+
+
+			Map<LabeledCodon, List<LabeledCodonQueryAlignedSegment>> labeledCodonToLcQaSegs = 
+					lcQaSegs.stream().collect(Collectors.groupingBy(LabeledCodonQueryAlignedSegment::getLabeledCodon));
+
+			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
+
+			ArrayList<LabeledCodon> labeledCodons = new ArrayList<LabeledCodon>(labeledCodonToLcQaSegs.keySet());
+			labeledCodons.sort(new Comparator<LabeledCodon>() {
+				@Override
+				public int compare(LabeledCodon o1, LabeledCodon o2) {
+					return Integer.compare(o1.getNtStart(), o2.getNtStart());
+				}
+			});
+
+			labeledCodons.forEach(labeledCodon -> {
+				List<LabeledCodonQueryAlignedSegment> codonLcQaSegs = labeledCodonToLcQaSegs.get(labeledCodon);
+				if(ReferenceSegment.covers(codonLcQaSegs, labeledCodon.getLcRefSegments())) {
+					char[] nts = new char[3];
+					Integer queryNtStart = null;
+					Integer queryNtMiddle = null;
+					Integer queryNtEnd = null;
+					for(LabeledCodonQueryAlignedSegment lcQaSeg : codonLcQaSegs) {
+						for(int i = 0; i < lcQaSeg.getCurrentLength(); i++) {
+							if(lcQaSeg.getRefStart()+i == labeledCodon.getNtStart()) {
+								queryNtStart = lcQaSeg.getQueryStart()+i;
+								nts[0] = queryNucleotideContent.nt(cmdContext, queryNtStart);
+							} else if(lcQaSeg.getRefStart()+i == labeledCodon.getNtMiddle()) {
+								queryNtMiddle = lcQaSeg.getQueryStart()+i;
+								nts[1] = queryNucleotideContent.nt(cmdContext, queryNtMiddle);
+							} else if(lcQaSeg.getRefStart()+i == labeledCodon.getNtEnd()) {
+								queryNtEnd = lcQaSeg.getQueryStart()+i;
+								nts[2] = queryNucleotideContent.nt(cmdContext, queryNtEnd);
+							} 
+						}
 					}
-				});
-		
-	
-		Map<LabeledCodon, List<LabeledCodonQueryAlignedSegment>> labeledCodonToLcQaSegs = 
-				lcQaSegs.stream().collect(Collectors.groupingBy(LabeledCodonQueryAlignedSegment::getLabeledCodon));
-		
-		final Translator translator = new CommandContextTranslator(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-	
-		ArrayList<LabeledCodon> labeledCodons = new ArrayList<LabeledCodon>(labeledCodonToLcQaSegs.keySet());
-		labeledCodons.sort(new Comparator<LabeledCodon>() {
-			@Override
-			public int compare(LabeledCodon o1, LabeledCodon o2) {
-				return Integer.compare(o1.getNtStart(), o2.getNtStart());
-			}
-		});
-		
-		labeledCodons.forEach(labeledCodon -> {
-			List<LabeledCodonQueryAlignedSegment> codonLcQaSegs = labeledCodonToLcQaSegs.get(labeledCodon);
-			if(ReferenceSegment.covers(codonLcQaSegs, labeledCodon.getLcRefSegments())) {
-				final char[] nts = new char[3];
-				codonLcQaSegs.forEach(lcQaSeg -> {
-					for(int i = 0; i < lcQaSeg.getCurrentLength(); i++) {
-						if(lcQaSeg.getRefStart()+i == labeledCodon.getNtStart()) {
-							nts[0] = queryNucleotideContent.nt(cmdContext, lcQaSeg.getQueryStart()+i);
-						} else if(lcQaSeg.getRefStart()+i == labeledCodon.getNtMiddle()) {
-							nts[1] = queryNucleotideContent.nt(cmdContext, lcQaSeg.getQueryStart()+i);
-						} else if(lcQaSeg.getRefStart()+i == labeledCodon.getNtEnd()) {
-							nts[2] = queryNucleotideContent.nt(cmdContext, lcQaSeg.getQueryStart()+i);
-						} 
-					}
-				});
-				AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nts)).get(0);
-				LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
-				labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, QueryAlignedSegment.minQueryStart(codonLcQaSegs)));
-			};
-		});
-		return labeledQueryAminoAcids;
+					AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nts)).get(0);
+					LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
+					labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, 
+							queryNtStart, queryNtMiddle, queryNtEnd));
+				};
+			});
+			return labeledQueryAminoAcids;
+		}
 	}
 	
 

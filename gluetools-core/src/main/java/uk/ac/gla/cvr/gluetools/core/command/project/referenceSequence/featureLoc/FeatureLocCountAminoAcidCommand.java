@@ -67,7 +67,7 @@ public class FeatureLocCountAminoAcidCommand extends FeatureLocBaseAminoAcidComm
 	@Override
 	public FeatureLocCountAminoAcidResult execute(CommandContext cmdContext) {
 		FeatureLocation featureLoc = lookupFeatureLoc(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = featureLocAminoAcids(cmdContext, featureLoc);
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = featureLoc.getReferenceAminoAcidContent(cmdContext);
 		int count = 0;
 		for(LabeledQueryAminoAcid lqaa : labeledQueryAminoAcids) {
 			if(lqaa.getLabeledAminoAcid().getAminoAcid().charAt(0) == aminoAcid) {
