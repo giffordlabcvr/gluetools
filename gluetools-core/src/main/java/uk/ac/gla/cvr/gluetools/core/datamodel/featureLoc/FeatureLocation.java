@@ -61,7 +61,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
@@ -353,24 +352,13 @@ public class FeatureLocation extends _FeatureLocation {
 		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
 	}
 
-	
 	public static List<VariationScanResult<?>> variationScan(
 			CommandContext cmdContext,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString, List<Variation> variationsToScan, 
-			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
-		List<BaseVariationScanner<?>> scanners = variationsToScan
-				.stream()
-				.map(variation -> variation.getScanner(cmdContext))
-				.collect(Collectors.toList());
-		return variationScan(queryToRefNtSegs, queryNts, qualityString, scanners, excludeAbsent, excludeInsufficientCoverage);
-	}
-	
-	public static List<VariationScanResult<?>> variationScan(
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString, List<BaseVariationScanner<?>> scanners, 
+			List<QueryAlignedSegment> queryToRefSegs, String queryNts, String qualityString, List<BaseVariationScanner<?>> scanners, 
 			boolean excludeAbsent, boolean excludeInsufficientCoverage) {
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		for(BaseVariationScanner<?> scanner: scanners) {
-			VariationScanResult<?> scanResult = scanner.scan(queryToRefNtSegs, queryNts, qualityString);
+			VariationScanResult<?> scanResult = scanner.scan(cmdContext, queryToRefSegs, queryNts, qualityString);
 			if(scanResult.isPresent() || !excludeAbsent) {
 				if(scanResult.isSufficientCoverage() || !excludeInsufficientCoverage) {
 					variationScanResults.add(scanResult);

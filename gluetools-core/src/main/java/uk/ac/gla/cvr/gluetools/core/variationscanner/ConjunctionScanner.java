@@ -11,7 +11,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchResult> {
@@ -104,26 +104,27 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 
 	@Override
 	protected VariationScanResult<ConjunctionMatchResult> scanInternal(
-			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToRefSegs,
 			String queryNts, String qualityString) {
-		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefSegs);
 		ConjunctionMatchResult conjunctionMatchResult = new ConjunctionMatchResult();
 		conjunctionMatchResult.setNumConjuncts(numConjuncts);
 		boolean isPresent = sufficientCoverage;
 		for(int i = 1; i <= numConjuncts; i++) {
 			BaseVariationScanner<?> conjunctScanner = conjunctScanners.get(i-1);
 			Class<? extends VariationScannerMatchResult> conjunctMatchResultClass = conjunctScanner.getVariation().getVariationType().getMatchResultClass();
-			isPresent &= updateConjunctionMatchResult(conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, queryToRefNtSegs, queryNts, qualityString);
+			isPresent &= updateConjunctionMatchResult(cmdContext, conjunctMatchResultClass, conjunctionMatchResult, conjunctScanner, i, queryToRefSegs, queryNts, qualityString);
 		}
 		return new VariationScanResult<ConjunctionMatchResult>(this, refStart, refEnd, sufficientCoverage, Arrays.asList(conjunctionMatchResult), isPresent);
 	}
 	
-	private <D extends VariationScannerMatchResult> boolean updateConjunctionMatchResult(Class<D> conjunctMatchResultClass, 
+	private <D extends VariationScannerMatchResult> boolean updateConjunctionMatchResult(CommandContext cmdContext, Class<D> conjunctMatchResultClass, 
 			ConjunctionMatchResult conjunctionMatchResult, BaseVariationScanner<?> conjunctScanner, int conjunctIndex,
-			List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString) {
+			List<QueryAlignedSegment> queryToRefSegs, String queryNts, String qualityString) {
 		@SuppressWarnings("unchecked")
 		BaseVariationScanner<D> castConjunctScanner = (BaseVariationScanner<D>) conjunctScanner;
-		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(queryToRefNtSegs, queryNts, qualityString);
+		VariationScanResult<D> conjunctScanResult = castConjunctScanner.scan(cmdContext, queryToRefSegs, queryNts, qualityString);
 		conjunctionMatchResult.setConjunctResult(conjunctIndex, conjunctScanResult);
 		Integer currentWorstQScore = conjunctionMatchResult.getWorstContributingQScore();
 		Integer conjunctQScore = conjunctScanResult.getQScore();

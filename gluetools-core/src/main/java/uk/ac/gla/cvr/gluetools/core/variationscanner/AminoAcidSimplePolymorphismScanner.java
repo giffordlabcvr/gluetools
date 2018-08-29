@@ -25,23 +25,22 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import gnu.trove.map.TIntObjectMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationScanner<AminoAcidSimplePolymorphismMatchResult> {
@@ -65,8 +64,6 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 	// Default is 1.0 (no ambiguity).
 	private Double minCombinedTripletFraction;
 	private Translator translator;
-	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
-	private Integer codon1Start;
 
 
 	public AminoAcidSimplePolymorphismScanner() {
@@ -82,47 +79,48 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 			this.minCombinedTripletFraction = 1.0;
 		}
 		this.translator = new CommandContextTranslator(cmdContext);
-		Variation variation = getVariation();
-		FeatureLocation featureLoc = variation.getFeatureLoc();
-		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
 	}
 
 
 
 	@Override
 	protected VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scanInternal(
-			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			CommandContext cmdContext,
+			List<QueryAlignedSegment> queryToRefSegs,
 			String queryNts, String qualityString) {
 		List<AminoAcidSimplePolymorphismMatchResult> matchResults = new ArrayList<AminoAcidSimplePolymorphismMatchResult>();
-		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefSegs);
 		Variation variation = getVariation();
 
-		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+		List<QueryAlignedSegment> queryToRefSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
 						ReferenceSegment.cloneLeftSegMerger());
 
-		List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
+		List<LabeledQueryAminoAcid> queryLqaas = variation.getFeatureLoc().translateQueryNucleotides(cmdContext, translator, queryToRefSegsVariationRegion, 
+				new SimpleNucleotideContentProvider(queryNts));
+		
+		List<List<LabeledQueryAminoAcid>> contiguousLqaaSections = LabeledQueryAminoAcid.findContiguousLqaaSections(queryLqaas);
+		
 		if(sufficientCoverage) {
 
-			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
-				String segNts = ntQaSeg.getNucleotides().toString();
-				List<AmbigNtTripletInfo> ambigTripletInfos = translator.translate(segNts);
+			for(List<LabeledQueryAminoAcid> contiguousLqaaSection: contiguousLqaaSections) {
 				TripletInfosMatch tripletInfosMatch;
 				int nextIndex = 0;
 				do {
-					tripletInfosMatch = tripletInfosMatch(ambigTripletInfos, nextIndex, simpleAaPattern, minCombinedTripletFraction);
+					tripletInfosMatch = tripletInfosMatch(contiguousLqaaSection, nextIndex, simpleAaPattern, minCombinedTripletFraction);
 					if(tripletInfosMatch != null) {
-						int queryNtStart = ntQaSeg.getQueryStart() + (tripletInfosMatch.index*3);
-						int queryNtEnd = queryNtStart + (((simpleAaPattern.length()-1)*3)+2);
-						int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
-						int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-						String polymorphismQueryNts = segNts.substring(
-								queryNtStart - ntQaSeg.getQueryStart(), 
-								(queryNtEnd - ntQaSeg.getQueryStart())+1);
+						LabeledQueryAminoAcid matchStartLqaa = contiguousLqaaSection.get(tripletInfosMatch.index);
+						LabeledQueryAminoAcid matchEndLqaa = contiguousLqaaSection.get(tripletInfosMatch.index+simpleAaPattern.length()-1);
+						LabeledCodon firstLabeledCodon = matchStartLqaa.getLabeledAminoAcid().getLabeledCodon();
+						LabeledCodon lastLabeledCodon = matchEndLqaa.getLabeledAminoAcid().getLabeledCodon();
+						int queryNtStart = matchStartLqaa.getQueryNtStart();
+						int queryNtEnd = matchEndLqaa.getQueryNtEnd();
+						int refNtStart = firstLabeledCodon.getNtStart();
+						int refNtEnd = lastLabeledCodon.getNtEnd();
+						String polymorphismQueryNts = SegmentUtils.base1SubString(queryNts, queryNtStart, queryNtEnd);
 						String queryAAs = tripletInfosMatch.queryAas.toString();
-						String firstRefCodon = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
-						String lastRefCodon = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
+						String firstRefCodon = firstLabeledCodon.getCodonLabel();
+						String lastRefCodon = lastLabeledCodon.getCodonLabel();
 						AminoAcidSimplePolymorphismMatchResult aaspmr = 
 								new AminoAcidSimplePolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 										refNtStart, refNtEnd, 
@@ -136,10 +134,11 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 				} while(tripletInfosMatch != null);
 			}
 		}
-		VariationScanResult<AminoAcidSimplePolymorphismMatchResult> variationScanResult = new VariationScanResult<AminoAcidSimplePolymorphismMatchResult>(this, sufficientCoverage, matchResults);
+		VariationScanResult<AminoAcidSimplePolymorphismMatchResult> variationScanResult = 
+				new VariationScanResult<AminoAcidSimplePolymorphismMatchResult>(this, sufficientCoverage, matchResults);
 		if(sufficientCoverage && qualityString != null) {
 			if(matchResults.isEmpty()) {
-				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, ntQaSegsCdnAligned));
+				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, queryToRefSegsVariationRegion));
 			} else {
 				variationScanResult.setQScore(bestQScoreOfMatchResults(matchResults));
 			}
@@ -147,21 +146,20 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 		return variationScanResult;
 	}
 
-
 	private static class TripletInfosMatch {
 		int index;
 		StringBuffer queryAas = new StringBuffer();
 		double combinedTripletFraction = 1.0;
 	}
 
-	private TripletInfosMatch tripletInfosMatch(List<AmbigNtTripletInfo> ambigTripletInfos, int fromIndex, String pattern, double minCombinedTripletFraction) {
-		for(int startIndex = fromIndex; startIndex < (ambigTripletInfos.size() - pattern.length()) + 1; startIndex++) {
+	private TripletInfosMatch tripletInfosMatch(List<LabeledQueryAminoAcid> contiguousLqaaSection, int fromIndex, String pattern, double minCombinedTripletFraction) {
+		for(int startIndex = fromIndex; startIndex < (contiguousLqaaSection.size() - pattern.length()) + 1; startIndex++) {
 			TripletInfosMatch tripletInfosMatch = new TripletInfosMatch();
 			tripletInfosMatch.index = startIndex;
 			boolean match = true;
 			for(int i = 0; i < pattern.length(); i++) {
 				char aa = pattern.charAt(i);
-				AmbigNtTripletInfo ambigNtTripletInfo = ambigTripletInfos.get(startIndex+i);
+				AmbigNtTripletInfo ambigNtTripletInfo = contiguousLqaaSection.get(startIndex+i).getLabeledAminoAcid().getTranslationInfo();
 				double aaTripletsFraction = ambigNtTripletInfo.getPossibleAaTripletsFraction(aa);
 				tripletInfosMatch.combinedTripletFraction *= aaTripletsFraction;
 				tripletInfosMatch.queryAas.append(ambigNtTripletInfo.getSingleCharTranslation());

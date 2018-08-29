@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
@@ -47,9 +46,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
@@ -169,17 +167,9 @@ public class MemberVariationScanCommand extends MemberModeCommand<CommandResult>
 		
 		String memberNts = memberSeqObj.getNucleotides(cmdContext);
 		
-		List<NtQueryAlignedSegment> memberToRelatedRefNtSegs = 
-				memberToRelatedRefRefSegs.stream()
-				.map(seg -> new NtQueryAlignedSegment(
-						seg.getRefStart(), seg.getRefEnd(), 
-						seg.getQueryStart(), seg.getQueryEnd(), 
-						SegmentUtils.base1SubString(memberNts, seg.getQueryStart(), seg.getQueryEnd())))
-				.collect(Collectors.toList());
-		
-		
+		List<BaseVariationScanner<?>> scanners = Variation.variationsToScanners(cmdContext, variationsToScan);
 		List<VariationScanResult<?>> variationScanResults = FeatureLocation.
-				variationScan(cmdContext, memberToRelatedRefNtSegs, memberNts, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage);
+				variationScan(cmdContext, memberToRelatedRefRefSegs, memberNts, null, scanners, excludeAbsent, excludeInsufficientCoverage);
 		VariationScanResult.sortVariationScanResults(variationScanResults);
 
 		return variationScanResults;

@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.DNASequence;
@@ -52,9 +51,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
@@ -141,14 +139,9 @@ public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenc
 			List<QueryAlignedSegment> queryToRelatedRefSegs = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, relatedRef);
 
 			String fastaNTs = fastaNTSeq.getSequenceAsString();
-
-			List<NtQueryAlignedSegment> queryToRelatedRefNtSegs =
-					queryToRelatedRefSegs.stream()
-					.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
-							SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
-							.collect(Collectors.toList());
-
-			variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToRelatedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
+			List<BaseVariationScanner<?>> scanners = Variation.variationsToScanners(cmdContext, variationsToScan);
+			variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToRelatedRefSegs, fastaNTs, null, 
+					scanners, excludeAbsent, excludeInsufficientCoverage));
 
 		}
 		

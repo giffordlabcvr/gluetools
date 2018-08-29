@@ -39,7 +39,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
@@ -113,15 +112,15 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		return allowedMetatagTypes;
 	}
 
-	public final VariationScanResult<M> scan(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString) {
+	public final VariationScanResult<M> scan(CommandContext cmdContext, List<QueryAlignedSegment> queryToRefSegs, String queryNts, String qualityString) {
 		if(!this.validated) {
 			this.validate();
 			this.validated = true;
 		}
-		return this.scanInternal(queryToRefNtSegs, queryNts, qualityString);
+		return this.scanInternal(cmdContext, queryToRefSegs, queryNts, qualityString);
 	}
 
-	protected abstract VariationScanResult<M> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, String queryNts, String qualityString);
+	protected abstract VariationScanResult<M> scanInternal(CommandContext cmdContext, List<QueryAlignedSegment> queryToRefSegs, String queryNts, String qualityString);
 
 	protected Pattern parseRegex(String stringPattern) {
 		try {
@@ -132,10 +131,10 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		}
 	}
 
-	protected final boolean computeSufficientCoverage(List<NtQueryAlignedSegment> queryToRefNtSegs) {
+	protected final boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
 		List<ReferenceSegment> coverageSegments = getSegmentsToCover();
 		List<ReferenceSegment> segmentsToCover = coverageSegments;
-		return ReferenceSegment.covers(queryToRefNtSegs, segmentsToCover);
+		return ReferenceSegment.covers(queryToRefSegs, segmentsToCover);
 	}
 
 	public abstract List<ReferenceSegment> getSegmentsToCover();

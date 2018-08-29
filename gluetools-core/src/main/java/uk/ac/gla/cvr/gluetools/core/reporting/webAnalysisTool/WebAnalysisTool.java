@@ -71,19 +71,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter.TranslatedQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.ObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidRegexPolymorphismMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidSimplePolymorphismMatchResult;
+import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.ConjunctionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -453,14 +450,8 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			Alignment tipAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(tipAlignmentName));
 			// translate segments to scanned reference
 			List<QueryAlignedSegment> queryToScannedRefSegs = tipAlignment.translateToAncConstrainingRef(cmdContext, queryToTipAlmtRefSegs, acRefSequence);
-			
-			List<NtQueryAlignedSegment> queryToScannedRefNtSegs =
-					queryToScannedRefSegs.stream()
-					.map(seg -> new NtQueryAlignedSegment(seg.getRefStart(), seg.getRefEnd(), seg.getQueryStart(), seg.getQueryEnd(),
-							SegmentUtils.base1SubString(fastaNTs, seg.getQueryStart(), seg.getQueryEnd())))
-							.collect(Collectors.toList());
-	
-			variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToScannedRefNtSegs, fastaNTs, null, variationsToScan, excludeAbsent, excludeInsufficientCoverage));
+			List<BaseVariationScanner<?>> scanners = Variation.variationsToScanners(cmdContext, variationsToScan);
+			variationScanResults.addAll(FeatureLocation.variationScan(cmdContext, queryToScannedRefSegs, fastaNTs, null, scanners, excludeAbsent, excludeInsufficientCoverage));
 		}
 		
 		return variationScanResults;

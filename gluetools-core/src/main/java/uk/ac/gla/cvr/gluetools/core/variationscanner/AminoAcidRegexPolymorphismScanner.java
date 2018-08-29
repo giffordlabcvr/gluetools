@@ -25,8 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import gnu.trove.map.TIntObjectMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,15 +32,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationScanner<AminoAcidRegexPolymorphismMatchResult> {
@@ -51,10 +50,8 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 			Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
 
-	private String regexAaPattern;
+	private Pattern regexAaPattern;
 	private Translator translator;
-	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
-	private Integer codon1Start;
 
 	public AminoAcidRegexPolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -65,50 +62,58 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 	@Override
 	protected void init(CommandContext cmdContext) {
 		super.init(cmdContext);		
-		this.regexAaPattern = getStringMetatagValue(VariationMetatagType.REGEX_AA_PATTERN);
+		String patternMetatagValue = getStringMetatagValue(VariationMetatagType.REGEX_AA_PATTERN);
+		if(patternMetatagValue != null) {
+			this.regexAaPattern = parseRegex(patternMetatagValue);
+		}
 		this.translator = new CommandContextTranslator(cmdContext);
-		Variation variation = getVariation();
-		FeatureLocation featureLoc = variation.getFeatureLoc();
-		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
-		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
-
 	}
 
 	@Override
 	protected VariationScanResult<AminoAcidRegexPolymorphismMatchResult> scanInternal(
-			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToRefSegs,
 			String queryNts, String qualityString) {
 		List<AminoAcidRegexPolymorphismMatchResult> matchResults = new ArrayList<AminoAcidRegexPolymorphismMatchResult>();
-		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefSegs);
 		Variation variation = getVariation();
 
-		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+		List<QueryAlignedSegment> queryToRefSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
 						ReferenceSegment.cloneLeftSegMerger());
 
-		List<NtQueryAlignedSegment> ntQaSegsCdnAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefNtSegsVariationRegion);
+		List<LabeledQueryAminoAcid> queryLqaas = variation.getFeatureLoc().translateQueryNucleotides(cmdContext, translator, queryToRefSegsVariationRegion, 
+				new SimpleNucleotideContentProvider(queryNts));
+		
+		List<List<LabeledQueryAminoAcid>> contiguousLqaaSections = LabeledQueryAminoAcid.findContiguousLqaaSections(queryLqaas);
+
 		if(sufficientCoverage) {
-
-			Pattern pattern = parseRegex(regexAaPattern);
-
-			
-			for(NtQueryAlignedSegment ntQaSeg: ntQaSegsCdnAligned) {
-				String segNts = ntQaSeg.getNucleotides().toString();
-				String segAas = translator.translateToAaString(segNts);
-				Matcher matcher = pattern.matcher(segAas);
+			for(List<LabeledQueryAminoAcid> contiguousLqaaSection: contiguousLqaaSections) {
+				
+				char[] segAaChars = new char[contiguousLqaaSection.size()];
+				for(int i = 0; i < contiguousLqaaSection.size(); i++) {
+					segAaChars[i] = contiguousLqaaSection.get(i).getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation();
+				}
+				String segAas = new String(segAaChars);
+				Matcher matcher = regexAaPattern.matcher(segAas);
 				while(matcher.find()) {
 					int matcherStart = matcher.start();
 					int matcherEnd = matcher.end();
-					int queryNtStart = ntQaSeg.getQueryStart() + (matcherStart*3);
-					int queryNtEnd = ntQaSeg.getQueryStart() + (matcherEnd*3) - 1;
-					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
-					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
-					String polymorphismQueryNts = segNts.substring(
-							queryNtStart - ntQaSeg.getQueryStart(), 
-							(queryNtEnd - ntQaSeg.getQueryStart())+1);
+					LabeledQueryAminoAcid matchStartLqaa = contiguousLqaaSection.get(matcherStart);
+					LabeledQueryAminoAcid matchEndLqaa = contiguousLqaaSection.get(matcherEnd-1);
+					LabeledCodon firstLabeledCodon = matchStartLqaa.getLabeledAminoAcid().getLabeledCodon();
+					LabeledCodon lastLabeledCodon = matchEndLqaa.getLabeledAminoAcid().getLabeledCodon();
+
+					int queryNtStart = matchStartLqaa.getQueryNtStart();
+					int queryNtEnd = matchEndLqaa.getQueryNtEnd();
+					int refNtStart = firstLabeledCodon.getNtStart();
+					int refNtEnd = lastLabeledCodon.getNtEnd();
+					
+					String polymorphismQueryNts = SegmentUtils.base1SubString(queryNts, queryNtStart, queryNtEnd);
+
 					String queryAAs = segAas.substring(matcherStart, matcherEnd);
-					String firstRefCodon = refNtToLabeledCodon.get(refNtStart).getCodonLabel();
-					String lastRefCodon = refNtToLabeledCodon.get(refNtEnd-2).getCodonLabel();
+					String firstRefCodon = firstLabeledCodon.getCodonLabel();
+					String lastRefCodon = lastLabeledCodon.getCodonLabel();
 					AminoAcidRegexPolymorphismMatchResult aapmr = 
 							new AminoAcidRegexPolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 									refNtStart, refNtEnd, 
@@ -123,7 +128,7 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 		VariationScanResult<AminoAcidRegexPolymorphismMatchResult> variationScanResult = new VariationScanResult<AminoAcidRegexPolymorphismMatchResult>(this, sufficientCoverage, matchResults);
 		if(sufficientCoverage && qualityString != null) {
 			if(matchResults.isEmpty()) {
-				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, ntQaSegsCdnAligned));
+				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, queryToRefSegsVariationRegion));
 			} else {
 				variationScanResult.setQScore(bestQScoreOfMatchResults(matchResults));
 			}

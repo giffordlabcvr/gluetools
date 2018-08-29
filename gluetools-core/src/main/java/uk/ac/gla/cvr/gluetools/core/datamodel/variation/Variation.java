@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
@@ -245,5 +246,12 @@ public class Variation extends _Variation implements HasDisplayName {
 	public String getMetatagValueByName(String metatagName) {
 		return getMetatagsMap().get(VariationMetatagType.valueOf(metatagName));
 	}
-	
+
+	public static List<BaseVariationScanner<?>> variationsToScanners(CommandContext cmdContext, List<Variation> variations) {
+		return variations
+				.stream()
+				.map(variation -> variation.getScanner(cmdContext))
+				.collect(Collectors.toList());
+	}
+
 }

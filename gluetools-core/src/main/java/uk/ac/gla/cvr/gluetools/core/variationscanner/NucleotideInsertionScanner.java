@@ -32,7 +32,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
@@ -106,21 +106,23 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	// these segments.
 	
 	@Override
-	protected VariationScanResult<NucleotideInsertionMatchResult> scanInternal(List<NtQueryAlignedSegment> queryToRefNtSegs, 
+	protected VariationScanResult<NucleotideInsertionMatchResult> scanInternal(
+			CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToRefSegs, 
 			String queryNts, String qualityString) {
 		List<NucleotideInsertionMatchResult> matchResults = new ArrayList<NucleotideInsertionMatchResult>();
-		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefSegs);
 		if(sufficientCoverage) {
 			Integer flankingStart = computeFlankingStart();
 			Integer flankingEnd = computeFlankingEnd();
 
-			List<NtQueryAlignedSegment> queryToRefNtSegsTrimmed = 
-					ReferenceSegment.intersection(queryToRefNtSegs,
+			List<QueryAlignedSegment> queryToRefSegsTrimmed = 
+					ReferenceSegment.intersection(queryToRefSegs,
 							Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd)), ReferenceSegment.cloneLeftSegMerger());
 			
-			NtQueryAlignedSegment lastSegment = null;
+			QueryAlignedSegment lastSegment = null;
 			
-			for(NtQueryAlignedSegment currentSegment: queryToRefNtSegsTrimmed) {
+			for(QueryAlignedSegment currentSegment: queryToRefSegsTrimmed) {
 				if(lastSegment != null) {
 					int refLastNtBeforeIns = lastSegment.getRefEnd();
 					int refFirstNtAfterIns = currentSegment.getRefStart();

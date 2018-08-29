@@ -25,6 +25,9 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class LabeledQueryAminoAcid {
 
@@ -54,6 +57,30 @@ public class LabeledQueryAminoAcid {
 
 	public int getQueryNtEnd() {
 		return queryNtEnd;
+	}
+
+	public static List<List<LabeledQueryAminoAcid>> findContiguousLqaaSections(
+			List<LabeledQueryAminoAcid> lqaas) {
+		List<List<LabeledQueryAminoAcid>> contiguousLqaaSections = new ArrayList<List<LabeledQueryAminoAcid>>();
+		LabeledQueryAminoAcid lastLqaa = null;
+		List<LabeledQueryAminoAcid> currentSection = null;
+		for(LabeledQueryAminoAcid lqaa: lqaas) {
+			if(lastLqaa == null) {
+				currentSection = new ArrayList<LabeledQueryAminoAcid>();
+				currentSection.add(lqaa);
+				contiguousLqaaSections.add(currentSection);
+			} else {
+				if(lastLqaa.getQueryNtEnd() == lqaa.getQueryNtStart() - 1) {
+					currentSection.add(lqaa);
+				} else {
+					currentSection = new ArrayList<LabeledQueryAminoAcid>();
+					currentSection.add(lqaa);
+					contiguousLqaaSections.add(currentSection);
+				}
+			}
+			lastLqaa = lqaa;
+		}
+		return contiguousLqaaSections;
 	}
 
 }

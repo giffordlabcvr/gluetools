@@ -35,8 +35,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 
 public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationScanner<NucleotideRegexPolymorphismMatchResult> {
 
@@ -58,26 +59,27 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 
 	@Override
 	protected VariationScanResult<NucleotideRegexPolymorphismMatchResult> scanInternal(
-			List<NtQueryAlignedSegment> queryToRefNtSegs,
+			CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToRefSegs,
 			String queryNts, String qualityString) {
 		List<NucleotideRegexPolymorphismMatchResult> matchResults = new ArrayList<NucleotideRegexPolymorphismMatchResult>();
-		boolean sufficientCoverage = computeSufficientCoverage(queryToRefNtSegs);
+		boolean sufficientCoverage = computeSufficientCoverage(queryToRefSegs);
 		Variation variation = getVariation();
 
-		List<NtQueryAlignedSegment> queryToRefNtSegsVariationRegion = 
-				ReferenceSegment.intersection(queryToRefNtSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
+		List<QueryAlignedSegment> queryToRefSegsVariationRegion = 
+				ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(new ReferenceSegment(variation.getRefStart(), variation.getRefEnd())), 
 						ReferenceSegment.cloneLeftSegMerger());
 
 		Pattern pattern = parseRegex(regexNtPattern);
 
 		if(sufficientCoverage) {
-			for(NtQueryAlignedSegment ntQaSeg: queryToRefNtSegsVariationRegion) {
-				Matcher matcher = pattern.matcher(ntQaSeg.getNucleotides());
+			for(QueryAlignedSegment qaSeg: queryToRefSegsVariationRegion) {
+				Matcher matcher = pattern.matcher(SegmentUtils.base1SubString(queryNts, qaSeg.getQueryStart(), qaSeg.getQueryEnd()));
 				while(matcher.find()) {
-					int queryNtStart = ntQaSeg.getQueryStart() + matcher.start();
-					int queryNtEnd = ntQaSeg.getQueryStart() + matcher.end()-1;
-					int refNtStart = queryNtStart + ntQaSeg.getQueryToReferenceOffset();
-					int refNtEnd = queryNtEnd + ntQaSeg.getQueryToReferenceOffset();
+					int queryNtStart = qaSeg.getQueryStart() + matcher.start();
+					int queryNtEnd = qaSeg.getQueryStart() + matcher.end()-1;
+					int refNtStart = queryNtStart + qaSeg.getQueryToReferenceOffset();
+					int refNtEnd = queryNtEnd + qaSeg.getQueryToReferenceOffset();
 					String polymorphismQueryNts = matcher.group();
 					NucleotideRegexPolymorphismMatchResult nrpmr = 
 							new NucleotideRegexPolymorphismMatchResult(refNtStart, refNtEnd, queryNtStart, queryNtEnd, polymorphismQueryNts);
@@ -92,7 +94,7 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 		VariationScanResult<NucleotideRegexPolymorphismMatchResult> variationScanResult = new VariationScanResult<NucleotideRegexPolymorphismMatchResult>(this, sufficientCoverage, matchResults);
 		if(sufficientCoverage && qualityString != null) {
 			if(matchResults.isEmpty()) {
-				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, queryToRefNtSegsVariationRegion));
+				variationScanResult.setQScore(worstQScoreOfSegments(qualityString, queryToRefSegsVariationRegion));
 			} else {
 				variationScanResult.setQScore(bestQScoreOfMatchResults(matchResults));
 			}

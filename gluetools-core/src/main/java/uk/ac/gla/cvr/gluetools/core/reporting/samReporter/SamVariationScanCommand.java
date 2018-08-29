@@ -64,7 +64,6 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationResult;
-import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
@@ -230,6 +229,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 
 					Supplier<VariationContext> contextSupplier = () -> {
 						VariationContext context = new VariationContext();
+						context.cmdContext = cmdContext;
 						context.samRefInfo = samRefInfo;
 						context.samRefSense = samRefSense;
 						context.varCovSegTree = new ReferenceSegmentTree<VariationCoverageSegment>();
@@ -339,19 +339,10 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		
 		List<VariationScanResult<?>> variationScanResults = new ArrayList<VariationScanResult<?>>();
 		if(!varCovSegs.isEmpty()) {
-			// convert to ntQaSegments
-			List<NtQueryAlignedSegment> readToRelatedRefNtSegs = new ArrayList<NtQueryAlignedSegment>();
-			for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegsMerged) {
-				readToRelatedRefNtSegs.add(
-						new NtQueryAlignedSegment(
-								readToRelatedRefSeg.getRefStart(), readToRelatedRefSeg.getRefEnd(), readToRelatedRefSeg.getQueryStart(), readToRelatedRefSeg.getQueryEnd(),
-								SegmentUtils.base1SubString(readString, readToRelatedRefSeg.getQueryStart(), readToRelatedRefSeg.getQueryEnd()))
-						);
-			}
 			// find the scanners.
 			List<BaseVariationScanner<?>> scannersForSegment = findScannersFromVarCovSegs(varCovSegs);
 			// do the scan
-			variationScanResults.addAll(FeatureLocation.variationScan(readToRelatedRefNtSegs, readString, qualityString, scannersForSegment, false, false));
+			variationScanResults.addAll(FeatureLocation.variationScan(context.cmdContext, readToRelatedRefSegsMerged, readString, qualityString, scannersForSegment, false, false));
 		}
 		return variationScanResults;
 	}
@@ -402,6 +393,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 	}
 	
 	public static class VariationContext {
+		public CommandContext cmdContext;
 		public SamRefInfo samRefInfo;
 		public String samFileName;
 		public String suppliedSamRefName;
