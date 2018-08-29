@@ -25,9 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -38,18 +35,11 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceException.Code;
-import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
-import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @PluginClass(elemName="fastaSequenceReporter",
@@ -89,57 +79,6 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		return aligner.computeConstrained(cmdContext, targetRefName, fastaID, fastaNTSeq);
 	}
 	
-	
-	public List<TranslatedQueryAlignedSegment> translateNucleotides(
-			CommandContext cmdContext, FeatureLocation featureLoc,
-			List<QueryAlignedSegment> queryToRefSegsFeatureArea, String queryNTs) {
-			
-		// truncate to codon aligned
-		Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
-
-		List<QueryAlignedSegment> queryToRefSegsCodonAligned = TranslationUtils.truncateToCodonAligned(codon1Start, queryToRefSegsFeatureArea);
-
-		final Translator translator = new CommandContextTranslator(cmdContext);
-		
-		if(queryToRefSegsCodonAligned.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
-		queryToRefSegsCodonAligned = QueryAlignedSegment.mergeAbutting(queryToRefSegsCodonAligned, 
-				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-
-		
-		List<TranslatedQueryAlignedSegment> translatedQaSegs = new ArrayList<TranslatedQueryAlignedSegment>();
-		
-		for(QueryAlignedSegment queryToRefSeg: queryToRefSegsCodonAligned) {
-			CharSequence nts = SegmentUtils.base1SubString(queryNTs, queryToRefSeg.getQueryStart(), queryToRefSeg.getQueryEnd());
-			List<AmbigNtTripletInfo> segTranslationInfos = translator.translate(nts);
-			translatedQaSegs.add(new TranslatedQueryAlignedSegment(queryToRefSeg, segTranslationInfos));
-		}
-		return translatedQaSegs;
-	}
-
-
-	public static class TranslatedQueryAlignedSegment {
-
-		private QueryAlignedSegment queryAlignedSegment;
-		private List<AmbigNtTripletInfo> translation;
-		
-		public TranslatedQueryAlignedSegment(QueryAlignedSegment queryAlignedSegment, List<AmbigNtTripletInfo> translation) {
-			this.queryAlignedSegment = queryAlignedSegment;
-			this.translation = translation;
-		}
-
-		public QueryAlignedSegment getQueryAlignedSegment() {
-			return queryAlignedSegment;
-		}
-
-		public List<AmbigNtTripletInfo> getTranslation() {
-			return translation;
-		}
-	}
 	
 	public static Entry<String, DNASequence> getFastaEntry(ConsoleCommandContext consoleCmdContext, String fileName) {
 		byte[] fastaFileBytes = consoleCmdContext.loadBytes(fileName);

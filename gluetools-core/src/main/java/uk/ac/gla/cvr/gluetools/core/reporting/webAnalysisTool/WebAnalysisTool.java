@@ -612,6 +612,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			FastaSequenceReporter fastaSequenceReporter,
 			Map<String, QueryAnalysis> fastaIdToQueryAnalysis,
 			AllColumnsAlignment<Key> allColsAlmt) {
+		/*
 		for(QueryAnalysis queryAnalysis: fastaIdToQueryAnalysis.values()) {
 			List<QueryAlignedSegment> targetRefToUSegs = allColsAlmt.getSegments(new ReferenceKey(queryAnalysis.targetRefName));
 			
@@ -646,12 +647,14 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			}
 			queryAnalysis.sequenceFeatureAnalysis = sequenceFeatureAnalyses;
 		}
+		*/
 	}
 
 	private void populateReferenceAnalyses(CommandContext cmdContext,
 			FastaSequenceReporter fastaSequenceReporter,
 			Map<String, ReferenceAnalysis> refNameToAnalysis,
 			AllColumnsAlignment<Key> allColsAlmt) {
+		/*
 		for(ReferenceAnalysis refAnalysis: refNameToAnalysis.values()) {
 			List<QueryAlignedSegment> refToUSegs = allColsAlmt.getSegments(new ReferenceKey(refAnalysis.refName));
 			// sequence feature analyses
@@ -691,6 +694,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 			}
 			refAnalysis.sequenceFeatureAnalysis = sequenceFeatureAnalyses;
 		}
+		*/
 	}
 
 	// compute diffs between every query and ancestor reference pair, for every feature that exists on both
@@ -938,6 +942,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		return queryToTargetRefSegs;
 	}
 
+	/*
 	private <C extends Aa> List<C> generateAas(List<TranslatedQueryAlignedSegment> translatedQueryToRefSegs, 
 			List<QueryAlignedSegment> refToUSegs, 
 			Supplier<C> supplier) {
@@ -983,6 +988,7 @@ public class WebAnalysisTool extends ModulePlugin<WebAnalysisTool> {
 		});
 		return aas;
 	}
+	*/
 	
 	public static abstract class Key {}
 	
