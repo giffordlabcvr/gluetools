@@ -57,7 +57,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
-		description = "Import a phylogeny into the alignment tree", 
+		description = "Import a phylogeny into an alignment tree", 
 		docoptUsages={"<alignmentName> [-c] [-n] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
@@ -68,13 +68,19 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-f <fieldName>, --fieldName <fieldName>        Phylogeny field name",
 			"-p, --preview                                  Preview only"},
 		metaTags = {CmdMeta.consoleOnly}, 
-		furtherHelp = "Imports a phylogenetic tree from a file, and breaks it up in order to annotate \n"+
-		"the alignment tree, by populating field <fieldName> of alignment objects. \n"+
-		"The the leaf nodes of the imported tree are matched up with the alignment members selected by the \n"+
-		"<alignmentName>, --recursive and <whereClause>/--allMembers options.\n"+
-		"However, if --anyAlignment is used the alignment mentioned in the name of the incoming leaf\n"+
+		furtherHelp = "Imports a phylogenetic tree from a file, and uses it to populate a custom column of the "+
+		"alignment table, for a single unconstrained alignment object, or one or more alignment objects within an alignment tree."+
+		"The the leaf nodes of the imported tree matched up with the alignment members selected by the "+
+		"<alignmentName>, --recursive and <whereClause>/--allMembers options. "+
+		"There must be exactly one leaf node per selected member, otherwise an error will be thrown. "+
+		"Leaf nodes are mapped to alignment member objects by having the format: "+
+		"alignment/<almtName>/member/<sourceName>/<sequenceID> "+
+		"If the --anyAlignment option is used the alignment mentioned in the name of the incoming leaf\n"+
 		"is ignored, instead the member source / seqID must specify a unique member within the selected\n"+
-		"alignment members. The gross structure of the imported tree must also match the structure of the alignment tree."
+		"alignment members set. "+
+		"For alignment trees, the gross phylogenetic structure of the imported tree must match the structure of the alignment tree, "+
+		"otherwise an error is thrown. "+
+		"The imported tree will be broken up if necessary with the relavent sections annotating each alignment in the alignment tree."
 )
 public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyResult, PhyloImporter>{
 
