@@ -60,7 +60,7 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 
 			for(AlignmentMember almtMember: almtMembers) {
 				String almtRowString = generateAminoAcidAlmtRowString(cmdContext, featureRefSegs, minMaxSeg, alignment, almtMember);
-				if((!excludeEmptyRows) || almtRowString.matches("-*")) {
+				if((!excludeEmptyRows) || !almtRowString.matches("-*")) {
 					almtRowConsumer.consumeAlmtRow(cmdContext, almtMember, almtRowString);
 				}
 			}
