@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -97,20 +98,48 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaves representing "+almtMemberPkMaps.size()+" outgroup alignment member(s) were not found in the tree. See log for details.");
 		}
 		
+		/**
+		 * Algorithm for inferring the single dominating internal node from the leaf set.
+		 * Visited means the node has been in the frontier but now is not.
+		 * 
+		 * 
+		 * Add all leaves to the frontier set.
+		 * Visited := empty
+		 * While true
+		 *   If frontier.size == 1, break
+		 *   newFrontier := empty
+		 *   newVisited := empty
+		 *   For each member X of the current frontier
+		 *     If X has exactly one neighbour Y not in visited
+		 *       Add X to newVisited and add Y to newFrontier
+		 *     Else
+		 *       Add X to the newFrontier
+		 *     End If
+		 *   End For
+		 *   If newFrontier == frontier, break
+		 *   frontier = newFrontier
+		 *   add all newVisited to visited
+		 * End While
+		 * 
+		 */
+		
 		LinkedHashSet<PhyloSubtree<?>> frontier = new LinkedHashSet<PhyloSubtree<?>>();
 		frontier.addAll(memberPkMapToLeaf.values());
 		
 		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
 		
 		while(true) {
+			//GlueLogger.getGlueLogger().log(Level.FINEST, "Visited size "+visited.size());
+			//GlueLogger.getGlueLogger().log(Level.FINEST, "Frontier size "+frontier.size());
 			if(frontier.size() == 1) {
 				break;
 			}
 			LinkedHashSet<PhyloSubtree<?>> newFrontier = new LinkedHashSet<PhyloSubtree<?>>();
+			List<PhyloSubtree<?>> newVisited = new ArrayList<PhyloSubtree<?>>();
 			for(PhyloSubtree<?> subtree: frontier) {
 				List<PhyloSubtree<?>> unvisitedNeighbours = unvisitedNeighbours(visited, subtree);
 				if(unvisitedNeighbours.size() == 1) {
-					visited.add(subtree);
+					newVisited.add(subtree);
 					newFrontier.add(unvisitedNeighbours.get(0)); // single unvisited neighbour replaces subtree.
 				} else if(unvisitedNeighbours.size() > 1) {
 					newFrontier.add(subtree);
@@ -120,8 +149,7 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 				break;
 			}
 			frontier = newFrontier;
-			//GlueLogger.getGlueLogger().log(Level.FINEST, "Visited size "+visited.size());
-			//GlueLogger.getGlueLogger().log(Level.FINEST, "Frontier size "+frontier.size());
+			visited.addAll(newVisited);
 		}
 		if(frontier.size() == 0) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Outgroup rerooting impossible as outgroup covers whole tree");
@@ -130,6 +158,8 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Outgroup rerooting impossible as outgroup does not have unique ancestor");
 		}
 		PhyloSubtree<?> finalNode = frontier.iterator().next();
+		// GlueLogger.getGlueLogger().log(Level.FINEST, "Final node bootstraps: "+finalNode.getUserData().get("bootstraps"));
+		
 		Optional<PhyloBranch> rerootBranch = finalNode.getNeighbourBranches().stream().filter(branch -> !visited.contains(branch.otherSubtree(finalNode))).findFirst();
 		if(rerootBranch.isPresent()) {
 			return rerootBranch.get();
